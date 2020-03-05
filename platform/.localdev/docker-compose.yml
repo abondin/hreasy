@@ -1,0 +1,14 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2017-CU12
+    environment:
+      SA_PASSWORD: HREasyPassword2019!
+      ACCEPT_EULA: Y
+      MSSQL_COLLATION: Cyrillic_General_100_CI_AS
+    ports:
+      - 1433:1433
+    container_name: mssql-hreasy

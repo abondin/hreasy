@@ -1,0 +1,17 @@
+spring:
+  ldap:
+    embedded:
+      base-dn: dc=springframework,dc=org
+      ldif: classpath://test-server.ldif
+      port: 8389
+      validation:
+        enabled: false
+
+
+hreasy:
+  ldap:
+    server-url: "ldap://localhost:8389"
+    user-dn:
+    user-password:
+    search-base: "dc=springframework,dc=org"
+    search-filter: "uid={0},ou=people"

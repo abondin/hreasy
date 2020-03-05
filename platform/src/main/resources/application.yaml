@@ -1,0 +1,37 @@
+server:
+  port: 8081
+
+hreasy:
+  # Hack to support both Flyway JDBC and Spring R2DBC urls to the database
+  db:
+    host:
+    port: 1433
+    database: master
+    username:
+    password:
+    # migrate, clean, repair, undo
+    flyway-commands: migrate
+  ldap:
+    server-url: "ldap://dc.stm.local"
+    user-dn: "CN=<USER NAME>,CN=Users,DC=stm,DC=local"
+    user-password: "Specify Password"
+    search-base: "OU=Internal,OU=Enterprise,DC=stm,DC=local"
+    search-filter: "sAMAccountName={0}"
+    email-suffix: "@stm-labs.ru"
+
+spring:
+  security:
+    cors
+  # Do not modify URL part. Override hreasy.db.* properties
+  r2dbc:
+    url: r2dbc:mssql://${hreasy.db.host}:${hreasy.db.port}/${hreasy.db.database}
+    username: ${hreasy.db.username}
+    password: ${hreasy.db.password}
+  # Do not modify URL part. Override hreasy.db.* properties
+  flyway:
+    url: jdbc:sqlserver://${hreasy.db.host}:${hreasy.db.port};databasename=${hreasy.db.database}
+    user: ${hreasy.db.username}
+    password: ${hreasy.db.password}
+    enabled: false
+    baseline-version: 0
+    baseline-on-migrate: true
