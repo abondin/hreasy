@@ -15,7 +15,6 @@ import ru.abondin.hreasy.platform.logger
  */
 @Configuration
 class CustomFlywayConfiguration() {
-
     @Bean
     fun flywayProperties(): FlywayProperties = FlywayProperties();
 
@@ -25,6 +24,7 @@ class CustomFlywayConfiguration() {
     @Bean
     @ConditionalOnProperty("spring.flyway.url")
     fun flywayMigrationInitializer(flywayProperties: FlywayProperties, hrEasyDbProperties: HrEasyDbProperties): FlywayMigrationInitializer {
+        logger().info("Initialize Flyway Migration url={}, user={}", flywayProperties.url, flywayProperties.user)
         val flyway = Flyway.configure()
                 .dataSource(flywayProperties.url, flywayProperties.user, flywayProperties.password)
                 .baselineVersion(flywayProperties.baselineVersion)

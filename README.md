@@ -15,8 +15,16 @@
 
 # Technologies Stack
 
- - Java on backend
+ - Kotlin on backend
  - SQL Server as database
  - Spring Reactive
  - Vue on frontend
+ 
+# Local build
+
+```shell script
+export DOCKER_REPOSITORY=<Your Repository> (optional)
+export CI_DEPLOY_TAG=latest (optional)
+./devops/build.sh
+```
 

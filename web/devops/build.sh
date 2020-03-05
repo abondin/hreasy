@@ -10,19 +10,12 @@ function out {
   echo -e "${COLOR}[HREASY]: $1${COLOR_OFF}"
 }
 
-# TODO
-export CI_DEPLOY_TAG=latest
+DEVOPS_FOLDER=$(cd `dirname $0` && pwd)
 
-cd ../
+cd ${DEVOPS_FOLDER}/../
 
-export HOME_FOLDER=`pwd`
-
-DOCKER_REPOSITORY=
-#docker.k8s-usn.stm.local:80
 
 function build {
-    out "Build in docker"
-
     if  [ -z "$DOCKER_REPOSITORY" ]
     then
       DOCKER_IMAGE=hreasyweb
@@ -31,8 +24,7 @@ function build {
     fi
     DOCKER_JOB_IMAGE_TAG=${DOCKER_IMAGE}:${CI_DEPLOY_TAG}
 
-    out "DOCKER_IMAGE=$DOCKER_IMAGE"
-    out "DOCKER_JOB_IMAGE_TAG=$DOCKER_JOB_IMAGE_TAG"
+    out "Build in docker $DOCKER_JOB_IMAGE_TAG"
 
     versionHash=`git rev-parse HEAD`
     versionBuild=$CI_DEPLOY_TAG
@@ -50,6 +42,12 @@ function build {
     docker tag $DOCKER_JOB_IMAGE_TAG $DOCKER_IMAGE:latest
     #docker push $DOCKER_IMAGE:latest
 }
+
+out "----------------------------------------------------"
+out "Platform web:"
+out ">> DOCKER_REPOSITORY= ${DOCKER_REPOSITORY}"
+out ">> CI_DEPLOY_TAG= ${CI_DEPLOY_TAG}"
+
 
 build
 

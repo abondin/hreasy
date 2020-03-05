@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="MarkdownNavigator.ProfileManager" plain-text-search-scope="Project Files" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/platform/pom.xml" />
+      </list>
+    </option>
+  </component>
+</project>

@@ -31,7 +31,7 @@ class HrEasyCorsWebFilter(val secProps: HrEasySecurityProps) : WebFilter {
      */
     fun setupCors(exchange: ServerWebExchange): Boolean { // CORS, allow all use our API via Ajax
         if (secProps.corsAllowedOrigins.isEmpty()) {
-            logger().warn("CORS is disabled. To enable CORS set at least one origin in 'hreasy.web.sec.cors-allowed-origins' property")
+            logger().debug("CORS is disabled. To enable CORS set at least one origin in 'hreasy.web.sec.cors-allowed-origins' property")
             return false;
         }
         val headers = exchange.response.headers
