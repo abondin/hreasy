@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.api.model
 
-import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDate
 
 
@@ -17,6 +16,7 @@ data class EmployeeDto(
         var lastname: String?,
         var firstname: String?,
         var patronymicName: String?,
+        var displayName: String?,
         var birthday: LocalDate?,
         var sex: String?,
         var department: SimpleDictDto?,

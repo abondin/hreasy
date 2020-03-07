@@ -28,3 +28,19 @@ export CI_DEPLOY_TAG=latest (optional)
 ./devops/build.sh
 ```
 
+# Local run in Docker-compose
+
+Docker Compose file is located in `.hreasy-localdev`
+
+```shell script
+cd .hreasy-localdev
+docker-compose up -d
+```
+
+*Tip* The following command updates single service
+
+```shell script
+docker-compose up -d --no-deps --force-recreate --build hreasyplatform
+``` 
+
+

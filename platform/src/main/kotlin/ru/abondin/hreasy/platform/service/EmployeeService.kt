@@ -19,7 +19,7 @@ class EmployeeService(
     val logger = logger();
 
     fun findAll(auth: AuthContext, includeFired: Boolean = false): Flux<EmployeeDto> {
-            logger.debug("Find all employee from ${auth.email} account");
+        logger.debug("Find all employee from ${auth.email} account");
         //TODO Add filtering and ordering
         var criteria: Criteria? = null;
         criteria = if (includeFired) criteria else addNotFiredCriteria(criteria);
@@ -51,6 +51,7 @@ fun employeeEntryToDtoMap(entry: EmployeeEntry): EmployeeDto {
             entry.lastname,
             entry.firstname,
             entry.patronymicName,
+            listOfNotNull(entry.lastname, entry.firstname, entry.patronymicName).joinToString(" "),
             entry.birthday,
             entry.sex,
             nullableDictFromNullableValues(entry.departmentId, (entry as? EmployeeDetailedEntry)?.departmentName),

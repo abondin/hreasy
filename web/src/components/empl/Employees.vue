@@ -20,9 +20,6 @@
                     :items="employees"
                     :search="search"
             >
-                <template v-slot:item.fullname="{ item }">
-                    {{ item.lastname }} {{item.firstname}} {{item.patronymicName}}
-                </template>
             </v-data-table>
         </v-card>
     </v-container>
@@ -46,13 +43,7 @@
          * Lifecycle hook
          */
         created() {
-            this.headers.push(
-                {
-                    text: this.$tc('ФИО'),
-                    align: 'start',
-                    sortable: true,
-                    value: 'fullname'
-                });
+            this.headers.push({text: this.$tc('ФИО'), value: 'displayName'});
             this.headers.push({text: this.$tc('E-mail'), value: 'email'});
             this.fetchData()
         }
