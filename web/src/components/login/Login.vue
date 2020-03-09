@@ -13,16 +13,10 @@
                         sm="8"
                         md="4"
                 >
-                    <v-card class="elevation-12">
-                        <v-toolbar
-                                color="primary"
-                                dark
-                                flat
-                        >
-                            <v-toolbar-title>{{ $t('Вход_в_систему')}}</v-toolbar-title>
-                            <v-spacer/>
-
-                        </v-toolbar>
+                    <v-card class="elevation-12" :loading="loading">
+                        <v-card-title>
+                            {{ $t('Вход_в_систему')}}>
+                        </v-card-title>
                         <v-card-text>
                             <v-form>
                                 <v-text-field
@@ -48,7 +42,7 @@
                         </v-card-text>
                         <v-card-actions>
                             <v-spacer/>
-                            <v-btn color="primary" v-on:click="login" type="submit">{{ $t('Войти')}}</v-btn>
+                            <v-btn :disabled="loading" color="primary" v-on:click="login" type="submit">{{ $t('Войти')}}</v-btn>
                             <!--                                <v-btn color="primary" v-on:click="currentUser">Current User</v-btn>-->
                             <!--                                <v-btn color="primary" v-on:click="getEmployees">Employees</v-btn>-->
                             <!--                                <v-btn color="warning" v-on:click="logout">Logout</v-btn>-->
@@ -76,6 +70,8 @@
         loginField: string = '';
         passwordField: string = '';
 
+        private loading = false;
+
         public responseError: string = '';
 
         @State("auth")
@@ -88,7 +84,6 @@
         login() {
             this.responseError = '';
             this.wrapResponse(this.loginAction(new LoginRequest(this.loginField, this.passwordField)))
-                .then(data => new Promise((resolve, reject) => setTimeout(() => resolve(data), 5000)))
                 .then(loginResponse => {
                     return this.$router.push("/");
                 })
@@ -96,12 +91,15 @@
         }
 
         private wrapResponse(p: Promise<any>): Promise<any> {
+            this.loading = true;
             return p.catch(error => {
                 this.responseError = error.message;
                 if (!(error instanceof AuthenticationError)) {
                     return Promise.reject(error);
                 }
                 return Promise.resolve();
+            }).finally(() => {
+                this.loading = false;
             });
         }
     }

@@ -51,7 +51,7 @@
         private fetchData() {
             this.loading = true;
             return employeeService.findAll()
-                //       .then(data => new Promise((resolve, reject) => setTimeout(() => resolve(data), 5000)))
+                .then(data => new Promise((resolve, reject) => setTimeout(() => resolve(data), 5000)))
                 .then(data => {
                         this.employees = data as Employee[];
                     }

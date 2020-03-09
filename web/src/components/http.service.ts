@@ -6,8 +6,7 @@ function createAxios(): AxiosInstance {
     const http = axios.create(
         {
             withCredentials: true,
-            baseURL: '/api/',
-            timeout: 15000
+            baseURL: '/api/'
         }
     )
 

@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.reactive.function.server.router
 import ru.abondin.hreasy.platform.sec.AuthHandler
 import ru.abondin.hreasy.platform.sec.CurrentUserDto
+import java.time.Duration
 
 /**
  * API for login/logout
@@ -37,7 +38,8 @@ class AuthRoutes {
                                     val r = tuple.t1;
                                     val session = tuple.t2;
                                     return@flatMap authHandler.login(UsernamePasswordAuthenticationToken(r.username, r.password), session)
-                                }.flatMap { response -> ok().bodyValue(response) };
+                                }
+                                .flatMap { response -> ok().bodyValue(response) };
                     }
                 }
     }
