@@ -10,3 +10,9 @@ hreasy:
     sec:
       cors-allowed-origins: http://localhost:8080
       master-password: qwe123
+
+logging:
+  level:
+    org:
+      springframework:
+        data: TRACE

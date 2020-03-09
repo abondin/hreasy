@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.server.body
+import org.springframework.web.reactive.function.server.queryParamOrNull
 import org.springframework.web.reactive.function.server.router
 import ru.abondin.hreasy.platform.sec.AuthHandler
 import ru.abondin.hreasy.platform.service.EmployeeService
@@ -30,7 +31,7 @@ class Routes() {
         (accept(MediaType.APPLICATION_JSON) and (hrFullUrl("vacation")))
                 .nest {
                     GET("/") { req ->
-                        ok().body(service.findAll())
+                        ok().body(service.findAll(null))
                     }
                 }
     }

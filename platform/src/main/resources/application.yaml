@@ -35,3 +35,34 @@ spring:
     enabled: false
     baseline-version: 0
     baseline-on-migrate: true
+
+management:
+  security:
+    enabled: "false"
+  add-application-context-header: "false"
+  endpoint:
+    prometheus:
+      enabled: "true"
+    metrics:
+      enabled: "true"
+    loggers:
+      enabled: "true"
+  metrics:
+    export:
+      prometheus:
+        enabled: "true"
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info,prometheus,loggers
+    jmx:
+      enabled: "false"
+endpoints:
+  jmx:
+    enabled: "false"
+  trace:
+    enabled: "false"
+  metrics:
+    enabled: "true"
+  prometheus:
+    enabled: "true"

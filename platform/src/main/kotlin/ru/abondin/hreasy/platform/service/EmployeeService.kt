@@ -12,6 +12,8 @@ import ru.abondin.hreasy.platform.repo.EmployeeDetailedEntry
 import ru.abondin.hreasy.platform.repo.EmployeeEntry
 import ru.abondin.hreasy.platform.repo.EmployeeRepo
 
+fun employeeDisplayName(lastname: String?, firstname: String?, patronymicName: String?) = listOfNotNull(lastname, firstname, patronymicName).joinToString(" ");
+
 @Component
 class EmployeeService(
         val emplRepo: EmployeeRepo,
@@ -51,7 +53,7 @@ fun employeeEntryToDtoMap(entry: EmployeeEntry): EmployeeDto {
             entry.lastname,
             entry.firstname,
             entry.patronymicName,
-            listOfNotNull(entry.lastname, entry.firstname, entry.patronymicName).joinToString(" "),
+            employeeDisplayName(entry.lastname, entry.firstname, entry.patronymicName),
             entry.birthday,
             entry.sex,
             nullableDictFromNullableValues(entry.departmentId, (entry as? EmployeeDetailedEntry)?.departmentName),
