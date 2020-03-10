@@ -15,7 +15,7 @@
                 >
                     <v-card class="elevation-12" :loading="loading">
                         <v-card-title>
-                            {{ $t('Вход_в_систему')}}>
+                            {{ $t('Вход_в_систему')}}
                         </v-card-title>
                         <v-card-text>
                             <v-form>
@@ -42,7 +42,9 @@
                         </v-card-text>
                         <v-card-actions>
                             <v-spacer/>
-                            <v-btn :disabled="loading" color="primary" v-on:click="login" type="submit">{{ $t('Войти')}}</v-btn>
+                            <v-btn :disabled="loading" color="primary" v-on:click="login" type="submit">{{
+                                $t('Войти')}}
+                            </v-btn>
                             <!--                                <v-btn color="primary" v-on:click="currentUser">Current User</v-btn>-->
                             <!--                                <v-btn color="primary" v-on:click="getEmployees">Employees</v-btn>-->
                             <!--                                <v-btn color="warning" v-on:click="logout">Logout</v-btn>-->

@@ -5,9 +5,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
+import org.springframework.web.reactive.config.EnableWebFlux
 
 @SpringBootApplication
 @EnableWebFluxSecurity
+@EnableWebFlux
 class HreasyPlatformApplication
 
 fun main(args: Array<String>) {

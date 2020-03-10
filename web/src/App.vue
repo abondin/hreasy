@@ -1,6 +1,7 @@
 <template>
     <v-app id="hreasy">
         <v-navigation-drawer
+                v-if="username"
                 v-model="drawer"
                 app
                 clipped
@@ -12,6 +13,15 @@
                     </v-list-item-action>
                     <v-list-item-title class="grey--text text--darken-1">
                         <router-link to="/employees">{{ $tc('Сотрудники')}}</router-link>
+                    </v-list-item-title>
+                </v-list-item>
+
+                <v-list-item link>
+                    <v-list-item-action>
+                        <v-icon color="grey darken-1">mdi-calendar-text</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title class="grey--text text--darken-1">
+                        <router-link to="/vacations">{{ $tc('Отпуска')}}</router-link>
                     </v-list-item-title>
                 </v-list-item>
             </v-list>
@@ -71,7 +81,7 @@
 
     @Component
     export default class App extends Vue {
-        drawer: boolean = false;
+        drawer: boolean = true;
 
         @Action("logout", {namespace})
         logoutAction: any;

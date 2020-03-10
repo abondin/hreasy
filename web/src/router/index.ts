@@ -4,13 +4,15 @@ import Login from "@/components/login/Login.vue";
 import Employees from "@/components/empl/Employees.vue";
 import store from '@/store';
 import logger from "@/logger";
+import VacationsList from "@/components/vacations/VacationsList.vue";
 
 Vue.use(VueRouter)
 
 const routes = [
     {path: "/", redirect: '/employees'},
     {path: "/login", component: Login},
-    {path: "/employees", component: Employees}
+    {path: "/employees", component: Employees},
+    {path: "/vacations", component: VacationsList}
 ]
 const router = new VueRouter({
     mode: 'history',

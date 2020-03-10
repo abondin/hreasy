@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.platform.api.model
+package ru.abondin.hreasy.platform.api.vacation
 
 import java.time.LocalDate
 

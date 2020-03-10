@@ -4,8 +4,8 @@ import org.springframework.data.domain.Sort.sort
 import org.springframework.data.r2dbc.query.Criteria
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
-import ru.abondin.hreasy.platform.api.model.EmployeeDto
-import ru.abondin.hreasy.platform.api.model.SimpleDictDto
+import ru.abondin.hreasy.platform.api.employee.EmployeeDto
+import ru.abondin.hreasy.platform.api.employee.SimpleDictDto
 import ru.abondin.hreasy.platform.config.AuthContext
 import ru.abondin.hreasy.platform.logger
 import ru.abondin.hreasy.platform.repo.EmployeeDetailedEntry

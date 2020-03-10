@@ -14,6 +14,7 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint
 import org.springframework.security.web.server.authorization.ServerAccessDeniedHandler
 import org.springframework.stereotype.Component
+import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import ru.abondin.hreasy.platform.BusinessError
@@ -52,6 +53,10 @@ class GlobalWebErrorsHandler(
             is AccessDeniedException -> {
                 response.statusCode = HttpStatus.FORBIDDEN;
                 errorDto = BusinessErrorDto("errors.access.denied", localize("errors.access.denied"), mapOf());
+            }
+            is ResponseStatusException ->{
+                response.statusCode = HttpStatus.NOT_FOUND;
+                errorDto = BusinessErrorDto("errors.response.not.found", localize("errors.response.not.found"), mapOf());
             }
             else -> {
                 response.statusCode = HttpStatus.INTERNAL_SERVER_ERROR;

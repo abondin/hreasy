@@ -11,9 +11,6 @@ import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.core.context.ReactiveSecurityContextHolder
-import org.springframework.security.core.context.SecurityContext
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.ldap.authentication.BindAuthenticator
 import org.springframework.security.ldap.authentication.LdapAuthenticationProvider
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch
@@ -23,12 +20,10 @@ import org.springframework.security.web.server.context.ServerSecurityContextRepo
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.config.WebFluxConfigurer
-import reactor.core.publisher.Mono
 import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler
 import ru.abondin.hreasy.platform.sec.DbAuthoritiesPopulator
 import ru.abondin.hreasy.platform.sec.EmployeeUserContextMapperAdapter
 import ru.abondin.hreasy.platform.sec.MasterPasswordAuthenticationProvider
-import ru.abondin.hreasy.platform.sec.UserDetailsWithEmployeeInfo
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -102,7 +97,6 @@ data class AuthContext(
         val employeeInfo: EmployeeInfo?) {
     data class EmployeeInfo(val id: Int);
 }
-
 
 
 /**
