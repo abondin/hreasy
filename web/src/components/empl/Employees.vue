@@ -43,8 +43,11 @@
          * Lifecycle hook
          */
         created() {
-            this.headers.push({text: this.$tc('ФИО'), value: 'displayName'});
-            this.headers.push({text: this.$tc('E-mail'), value: 'email'});
+            this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: "20%"});
+            this.headers.push({text: this.$tc('E-mail'), value: 'email', width: "20%"});
+            this.headers.push({text: this.$tc('Отдел'), value: 'department.name', width: "20%"});
+            this.headers.push({text: this.$tc('Позиция'), value: 'position.name', width: "20%"});
+            this.headers.push({text: this.$tc('Текущий Проект'), value: 'currentProject.name', width: "20%"});
             this.fetchData()
         }
 

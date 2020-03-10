@@ -26,6 +26,8 @@ open class EmployeeEntry {
     var departmentId: Int? = null;
     @Column("position")
     var positionId: Int? = null;
+    @Column("current_project")
+    var currentProjectId: Int? = null;
     var email: String? = null;
     var phone: String? = null;
     var skype: String? = null;
@@ -73,6 +75,7 @@ open class EmployeeDetailedEntry : EmployeeEntry() {
     var departmentName: String? = null;
     var positionName: String? = null;
     var levelName: String? = null;
+    var currentProjectName: String? = null;
 }
 
 @Table("v_employee_detailed")

@@ -58,6 +58,7 @@ fun employeeEntryToDtoMap(entry: EmployeeEntry): EmployeeDto {
             entry.sex,
             nullableDictFromNullableValues(entry.departmentId, (entry as? EmployeeDetailedEntry)?.departmentName),
             nullableDictFromNullableValues(entry.positionId, (entry as? EmployeeDetailedEntry)?.positionName),
+            nullableDictFromNullableValues(entry.currentProjectId, (entry as? EmployeeDetailedEntry)?.currentProjectName),
             entry.email,
             entry.phone,
             entry.skype
