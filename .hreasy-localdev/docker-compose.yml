@@ -19,8 +19,11 @@ services:
   hreasyplatform:
     image: docker.k8s-usn.stm.local:80/hreasyplatform:latest
     restart: "no" #unless-stopped
+    volumes:
+      - ./store:/opt/hreasy/store
     environment:
       SERVER_PORT: 80
+      HREASY_FS_RESOURCE_PATH: file:/opt/hreasy/store
       HREASY_DB_HOST: hreasydb
       HREASY_DB_USERNAME: sa
       HREASY_DB_PASSWORD: HREasyPassword2019!

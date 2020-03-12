@@ -20,7 +20,6 @@ data class EmployeeDto(
         var birthday: LocalDate?,
         var sex: String?,
         var department: SimpleDictDto?,
-        var position: SimpleDictDto?,
         var currentProject: SimpleDictDto?,
         var email: String?,
         var phone: String?,

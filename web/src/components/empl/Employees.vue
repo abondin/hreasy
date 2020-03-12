@@ -20,6 +20,23 @@
                     :items="employees"
                     :search="search"
             >
+                <template v-slot:item.displayName="{ item }">
+                    <v-row align="center"
+                           class="spacer"
+                           no-gutters>
+                        <v-col cols="2">
+                            <v-avatar size="64px">
+                                <img :src="getAvatarUrl(item.id)"/>
+                            </v-avatar>
+                        </v-col>
+                        <v-col
+                                class="hidden-xs-only"
+                               cols="10"
+                        >
+                            <strong v-html="item.displayName"></strong>
+                        </v-col>
+                    </v-row>
+                </template>
             </v-data-table>
         </v-card>
     </v-container>
@@ -43,10 +60,9 @@
          * Lifecycle hook
          */
         created() {
-            this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: "20%"});
+            this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: "40%"});
             this.headers.push({text: this.$tc('E-mail'), value: 'email', width: "20%"});
             this.headers.push({text: this.$tc('Отдел'), value: 'department.name', width: "20%"});
-            this.headers.push({text: this.$tc('Позиция'), value: 'position.name', width: "20%"});
             this.headers.push({text: this.$tc('Текущий Проект'), value: 'currentProject.name', width: "20%"});
             this.fetchData()
         }
@@ -60,6 +76,10 @@
                 ).finally(() => {
                     this.loading = false
                 });
+        }
+
+        private getAvatarUrl(employeeId: number) {
+            return employeeService.getAvatarUrl(employeeId);
         }
     }
 </script>

@@ -62,7 +62,11 @@ class WebSecurityConfig(val prop: LdapConfigurationProperties) {
     ): SecurityWebFilterChain? {
         return http
                 .authorizeExchange()
-                .pathMatchers("/api/v1/login", "/actuator/**").permitAll()
+                .pathMatchers(
+                        "/api/v1/login",
+                        "/api/v1/fs/**",
+                        "/actuator/**",
+                        "/favicon.ico").permitAll()
                 .anyExchange().authenticated()
                 .and()
                 .csrf().disable()

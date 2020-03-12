@@ -49,19 +49,18 @@ class EmployeeService(
  */
 fun employeeEntryToDtoMap(entry: EmployeeEntry): EmployeeDto {
     return EmployeeDto(
-            entry.id,
-            entry.lastname,
-            entry.firstname,
-            entry.patronymicName,
-            employeeDisplayName(entry.lastname, entry.firstname, entry.patronymicName),
-            entry.birthday,
-            entry.sex,
-            nullableDictFromNullableValues(entry.departmentId, (entry as? EmployeeDetailedEntry)?.departmentName),
-            nullableDictFromNullableValues(entry.positionId, (entry as? EmployeeDetailedEntry)?.positionName),
-            nullableDictFromNullableValues(entry.currentProjectId, (entry as? EmployeeDetailedEntry)?.currentProjectName),
-            entry.email,
-            entry.phone,
-            entry.skype
+            id = entry.id,
+            lastname = entry.lastname,
+            firstname = entry.firstname,
+            patronymicName = entry.patronymicName,
+            displayName = employeeDisplayName(entry.lastname, entry.firstname, entry.patronymicName),
+            birthday = entry.birthday,
+            sex = entry.sex,
+            department = nullableDictFromNullableValues(entry.departmentId, (entry as? EmployeeDetailedEntry)?.departmentName),
+            currentProject = nullableDictFromNullableValues(entry.currentProjectId, (entry as? EmployeeDetailedEntry)?.currentProjectName),
+            email = entry.email,
+            phone = entry.phone,
+            skype = entry.skype
     );
 }
 
