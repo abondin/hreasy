@@ -34,7 +34,7 @@ services:
     depends_on:
       - hreasydb
     ports:
-      - 80
+      - 80:80
     container_name: hreasyplatform
   hreasyweb:
     image: docker.k8s-usn.stm.local:80/hreasyweb:latest
