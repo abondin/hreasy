@@ -36,13 +36,6 @@ spring:
     baseline-version: 0
     baseline-on-migrate: true
 
-  jackson:
-    deserialization:
-      ACCEPT_FLOAT_AS_INT: false
-      ADJUST_DATES_TO_CONTEXT_TIME_ZONE: true
-    serialization:
-      WRITE_DATES_AS_TIMESTAMPS: false
-
 management:
   security:
     enabled: "false"
