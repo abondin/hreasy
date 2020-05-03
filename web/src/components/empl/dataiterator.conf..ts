@@ -20,23 +20,23 @@ interface DataIteratorConf {
 class DefaultDataIteratorConf implements DataIteratorConf {
     public constructor(
         public search = '',
-        public itemsPerPage = 20,
+        public itemsPerPage = 30,
         public page = 1,
         public sortBy = 'displayName',
         public sortDesc = false,
         public sortKeys:Array<DataIteratorSortElement>  = [],
         public numberOfPages = 0,
+        public nextPage = () => {
+            if (this.page + 1 <= this.numberOfPages) {
+                this.page += 1
+            }
+        },
+        public formerPage = () => {
+            if (this.page - 1 >= 1) this.page -= 1
+        }
     ) {
     }
-    formerPage(): void {
-        if (this.page - 1 >= 1) this.page -= 1
-    }
 
-    nextPage(): void {
-        if (this.page + 1 <= this.numberOfPages) {
-            this.page += 1
-        }
-    }
 }
 
 export default DefaultDataIteratorConf;
