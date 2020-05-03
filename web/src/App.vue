@@ -1,13 +1,11 @@
 <template>
     <v-app id="hreasy">
         <v-navigation-drawer
-                v-if="username"
-                v-model="drawer"
                 app
-                clipped
-        >
+                v-if="username"
+                v-model="drawer">
             <v-list dense>
-                <v-list-item>
+                <v-list-item @click.stop="drawer = !drawer">
                     {{userDisplayName}}
                 </v-list-item>
                 <v-list-item link>
@@ -41,10 +39,7 @@
         </v-navigation-drawer>
 
         <v-app-bar
-                app
-                clipped-left
-                dense
-        >
+                app >
             <v-app-bar-nav-icon @click.stop="drawer = !drawer"/>
             <v-icon class="mx-4">fab fa-youtube</v-icon>
             <v-toolbar-title class="mr-12 align-center">
@@ -64,7 +59,7 @@
         </v-app-bar>
 
         <v-content>
-            <v-container class="fill-height align-baseline">
+            <v-container>
                 <router-view></router-view>
             </v-container>
         </v-content>
@@ -88,7 +83,7 @@
 
     @Component
     export default class App extends Vue {
-        drawer: boolean = true;
+        drawer = null;
 
         @Action("logout", {namespace})
         logoutAction: any;
