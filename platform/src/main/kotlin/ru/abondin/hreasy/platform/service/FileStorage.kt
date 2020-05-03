@@ -23,6 +23,11 @@ class FileStorage : InitializingBean {
 
     lateinit var rootDir: File;
 
+    fun fileExists(resourceType: String, filename: String) : Boolean{
+        val resourceHome = File(rootDir, resourceType);
+        val image = File(resourceHome, filename);
+        return image.isFile();
+    }
 
     /**
      * Stream file content

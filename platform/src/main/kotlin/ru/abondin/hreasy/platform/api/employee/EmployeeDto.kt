@@ -23,7 +23,8 @@ data class EmployeeDto(
         var currentProject: SimpleDictDto?,
         var email: String?,
         var phone: String?,
-        var skype: String?
+        var skype: String?,
+        var hasAvatar: Boolean = false
 )
 
 /**

@@ -19,7 +19,8 @@ export interface Employee {
     position: Dict,
     email: string,
     phone: string,
-    skype: string
+    skype: string,
+    hasAvatar: boolean
 }
 
 export interface EmployeeService {

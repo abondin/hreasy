@@ -4,7 +4,7 @@
         <v-data-iterator
                 :loading="loading"
                 :loading-text="$t('Загрузка_данных')"
-                :items="employees"
+                :items="conf.items"
                 :items-per-page.sync="conf.itemsPerPage"
                 :page="conf.page"
                 :search="conf.search"
@@ -80,7 +80,7 @@
                         <v-card>
                             <v-row style="height: 150px">
                                 <v-col cols="2">
-                                    <v-avatar
+                                    <v-avatar v-if="empl.hasAvatar"
                                             class="profile"
                                             color="grey"
                                             size="64">
@@ -150,14 +150,13 @@
     import Vue from 'vue'
     import Component from 'vue-class-component';
     import employeeService, {Employee} from "@/components/empl/employee.service";
-    import DefaultDataIteratorConf from "@/components/empl/dataiterator.conf.";
+    import DefaultDataIteratorConf from "@/components/empl/dataiterator.conf";
 
     @Component
     export default class EmployeesComponent extends Vue {
-        employees: Employee[] = [];
         loading: boolean = false;
 
-        conf = new DefaultDataIteratorConf();
+        conf = new DefaultDataIteratorConf<Employee>();
 
         /**
          * Lifecycle hook
@@ -172,8 +171,7 @@
             this.loading = true;
             return employeeService.findAll()
                 .then(data => {
-                        this.employees = data as Employee[];
-                        this.conf.numberOfPages =  Math.ceil(this.employees.length / this.conf.itemsPerPage);
+                        this.conf.setDataItems(data as Employee[]);
                     }
                 ).finally(() => {
                     this.loading = false

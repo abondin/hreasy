@@ -3,7 +3,8 @@ interface DataIteratorSortElement {
     text: string;
 }
 
-interface DataIteratorConf {
+interface DataiteratorConf<T> {
+    items : Array<T>,
     search: string;
     itemsPerPage: number;
     page: number;
@@ -11,14 +12,14 @@ interface DataIteratorConf {
     sortDesc: boolean,
     sortKeys: Array<DataIteratorSortElement>,
     numberOfPages: number;
-
     nextPage(): void;
-
     formerPage(): void;
+    setDataItems(items :  Array<T>): void;
 }
 
-class DefaultDataIteratorConf implements DataIteratorConf {
+class DefaultDataIteratorConf<T> implements DataiteratorConf<T> {
     public constructor(
+        public items: Array<T> = [],
         public search = '',
         public itemsPerPage = 30,
         public page = 1,
@@ -33,6 +34,10 @@ class DefaultDataIteratorConf implements DataIteratorConf {
         },
         public formerPage = () => {
             if (this.page - 1 >= 1) this.page -= 1
+        },
+        public setDataItems = (items :  Array<T>) =>{
+            this.items = items;
+            this.numberOfPages =  Math.ceil(this.items.length / this.itemsPerPage);
         }
     ) {
     }
