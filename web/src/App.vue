@@ -7,6 +7,9 @@
                 clipped
         >
             <v-list dense>
+                <v-list-item>
+                    {{userDisplayName}}
+                </v-list-item>
                 <v-list-item link>
                     <v-list-item-action>
                         <v-icon color="grey darken-1">mdi-account-multiple</v-icon>
@@ -24,6 +27,16 @@
                         <router-link to="/vacations">{{ $tc('Отпуска')}}</router-link>
                     </v-list-item-title>
                 </v-list-item>
+
+                <v-list-item link>
+                    <v-list-item-action>
+                        <v-icon color="grey darken-1">mdi-logout</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title class="grey--text text--darken-1">
+                        <a href="#" v-on:click="logoutAction">{{ $tc('Выход')}}</a>
+                    </v-list-item-title>
+                </v-list-item>
+
             </v-list>
         </v-navigation-drawer>
 
@@ -44,12 +57,6 @@
             >
             </v-row>
             <v-spacer/>
-            <v-row v-if="username">
-                <span class="v-toolbar__content">
-                {{userDisplayName}}
-                    </span>
-                <v-btn v-on:click="logoutAction">{{ $t('Выход')}}</v-btn>
-            </v-row>
             <v-row v-if="!username">
                 <router-link to="/login" tag="button">{{ $t('Вход')}}</router-link>
             </v-row>

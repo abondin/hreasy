@@ -8,6 +8,8 @@ export class Dict {
 
 export interface Employee {
     id: number,
+    displayName: string,
+    currentProject: Dict,
     lastname: string,
     firstname: string,
     patronymicName: string,
