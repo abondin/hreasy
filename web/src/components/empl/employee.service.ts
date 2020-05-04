@@ -26,6 +26,8 @@ export interface Employee {
 export interface EmployeeService {
     findAll(): Promise<Employee[]>;
 
+    find(id: number): Promise<Employee>;
+
     getAvatarUrl(employeeId: number): any;
 }
 
@@ -35,6 +37,12 @@ class RestEmployeeService implements EmployeeService {
 
     public findAll(): Promise<Employee[]> {
         return httpService.get("v1/employee").then(response => {
+            return response.data;
+        });
+    }
+
+    public find(id: number): Promise<Employee> {
+        return httpService.get(`v1/employee/${id}`).then(response => {
             return response.data;
         });
     }

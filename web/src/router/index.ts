@@ -5,6 +5,7 @@ import Employees from "@/components/empl/Employees.vue";
 import store from '@/store';
 import logger from "@/logger";
 import VacationsList from "@/components/vacations/VacationsList.vue";
+import EmployeeEdit from "@/components/empl/EmployeeEdit.vue";
 
 Vue.use(VueRouter)
 
@@ -12,6 +13,7 @@ const routes = [
     {path: "/", redirect: '/employees'},
     {path: "/login", component: Login},
     {path: "/employees", component: Employees},
+    {path: "/employees/:id", component: EmployeeEdit, props: true},
     {path: "/vacations", component: VacationsList}
 ]
 const router = new VueRouter({

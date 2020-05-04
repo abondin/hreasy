@@ -2,8 +2,11 @@ package ru.abondin.hreasy.platform.service
 
 import org.springframework.data.domain.Sort.sort
 import org.springframework.data.r2dbc.query.Criteria
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
+import org.springframework.web.client.HttpClientErrorException
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import ru.abondin.hreasy.platform.api.employee.EmployeeDto
 import ru.abondin.hreasy.platform.api.employee.SimpleDictDto
 import ru.abondin.hreasy.platform.config.AuthContext
@@ -21,7 +24,7 @@ class EmployeeService(
     val logger = logger();
 
     fun findAll(auth: AuthContext, includeFired: Boolean = false): Flux<EmployeeDto> {
-        logger.debug("Find all employee from ${auth.email} account");
+        logger.debug("Find all employees from ${auth.email} account");
         //TODO Add filtering and ordering
         var criteria: Criteria? = null;
         criteria = if (includeFired) criteria else addNotFiredCriteria(criteria);
@@ -35,13 +38,22 @@ class EmployeeService(
         ).map { e -> employeeEntryToDtoMap(e) };
     }
 
-    fun addNotFiredCriteria(criteria: Criteria?): Criteria {
+    fun find(employeeId: Int, auth: AuthContext): Mono<EmployeeDto> {
+        logger.debug("Find {{employeeId}} employee from ${auth.email} account");
+        return emplRepo.findDetailed(employeeId)
+                .map { e -> employeeEntryToDtoMap(e) }
+                .switchIfEmpty(Mono.error(HttpClientErrorException(HttpStatus.NOT_FOUND, "Employee with ID=${employeeId} not found")));
+    }
+
+    private fun addNotFiredCriteria(criteria: Criteria?): Criteria {
         val notFiredCriteria =
                 criteria?.and("date_of_dismissal") ?: Criteria.where("date_of_dismissal");
 
         return notFiredCriteria.isNull().or("date_of_dismissal").greaterThan(dateTimeService.now());
 
     }
+
+
 }
 
 /**
