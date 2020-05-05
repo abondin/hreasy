@@ -81,9 +81,9 @@
                             <v-row style="height: 150px">
                                 <v-col cols="2">
                                     <v-avatar v-if="empl.hasAvatar"
-                                            class="profile"
-                                            color="grey"
-                                            size="64">
+                                              class="profile"
+                                              color="grey"
+                                              size="64">
                                         <v-img :src="getAvatarUrl(empl.id)"></v-img>
                                     </v-avatar>
                                 </v-col>
@@ -93,7 +93,11 @@
                                             dark
                                     >
                                         <v-list-item-content>
-                                            <v-list-item-title class="title">{{empl.displayName}}</v-list-item-title>
+                                            <v-list-item-title class="title">
+                                                <router-link :to="{ name: 'employeeEdit', params: {id:empl.id}}">
+                                                    {{empl.displayName}}
+                                                </router-link>
+                                            </v-list-item-title>
                                             <v-list-item-subtitle v-if="empl.department">{{empl.department.name}}
                                             </v-list-item-subtitle>
                                             <v-list-item-subtitle v-if="empl.currentProject">
