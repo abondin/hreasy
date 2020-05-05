@@ -83,7 +83,7 @@
 
     @Component
     export default class App extends Vue {
-        drawer = null;
+        drawer = false;
 
         @Action("logout", {namespace})
         logoutAction: any;

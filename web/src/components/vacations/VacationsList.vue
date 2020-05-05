@@ -1,6 +1,14 @@
 <!-- All vacations table-->
 <template>
     <v-container fluid>
+        <!-- Work in progress -->
+        <v-alert
+                color="red"
+                dark
+                icon="mdi-grill"
+                border="right">
+            Work in progress
+        </v-alert>
         <v-card>
             <v-card-title>
                 {{$t('График отпусков')}}

@@ -12,7 +12,7 @@ Vue.use(VueRouter)
 const routes = [
     {path: "/", redirect: '/employees'},
     {path: "/login", component: Login},
-    {path: "/employees", component: Employees},
+    {name: "employees", path: "/employees", component: Employees},
     {name: 'employeeEdit', path: "/employees/:id", component: EmployeeEdit, props: true},
     {path: "/vacations", component: VacationsList}
 ]

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
@@ -23,7 +24,7 @@ class FileStorage : InitializingBean {
 
     lateinit var rootDir: File;
 
-    fun fileExists(resourceType: String, filename: String) : Boolean{
+    fun fileExists(resourceType: String, filename: String): Boolean {
         val resourceHome = File(rootDir, resourceType);
         val image = File(resourceHome, filename);
         return image.isFile();
@@ -49,6 +50,13 @@ class FileStorage : InitializingBean {
             }
         }
         return Mono.just(resource);
+    }
+
+    fun uploadFile(resourceType: String, filename: String, filePart: FilePart): Mono<Void> {
+        logger().debug("Uploading '${resourceType}' file '${filename}' with original file name '${filePart.filename()}'");
+        val resourceHome = File(rootDir, resourceType);
+        validateAndCreateDir(resourceHome, true);
+        return filePart.transferTo(File(resourceHome, filename));
     }
 
 

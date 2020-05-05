@@ -29,6 +29,8 @@ export interface EmployeeService {
     find(id: number): Promise<Employee>;
 
     getAvatarUrl(employeeId: number): any;
+
+    getAvatarUploadUrl(employeeId: number): any;
 }
 
 class RestEmployeeService implements EmployeeService {
@@ -49,6 +51,10 @@ class RestEmployeeService implements EmployeeService {
 
     getAvatarUrl(employeeId: number): any {
         return `${httpService.defaults.baseURL}v1/fs/avatar/${employeeId}`;
+    }
+
+    getAvatarUploadUrl(employeeId: number): any {
+        return `${httpService.defaults.baseURL}v1/fs/avatar/${employeeId}/upload`;
     }
 }
 

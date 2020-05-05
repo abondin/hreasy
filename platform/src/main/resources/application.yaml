@@ -67,5 +67,10 @@ endpoints:
   prometheus:
     enabled: "true"
 
+logging:
+  level:
+    ru:
+      abondin: DEBUG
+
 user:
   timezone: Europe/Moscow
