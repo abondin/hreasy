@@ -27,7 +27,7 @@
                 <v-col cols="4" lg="2">
                     <div style="max-width: 164px; margin-left: 10px" align="center">
                         <v-avatar
-                                class="profile"
+                                class="profile hr-cropper"
                                 color="grey"
                                 size="164">
                             <v-img v-if="emplAvatar" :src="emplAvatar"></v-img>
@@ -50,6 +50,9 @@
                     <v-list-item>
                         <v-list-item-content>
                             <v-list-item-title class="title">{{employee.displayName}}</v-list-item-title>
+                            <v-list-item-subtitle>{{$tc('Отдел')}} :
+                                {{employee.department?employee.department.name:$tc("Не задан")}}
+                            </v-list-item-subtitle>
                             <v-list-item-subtitle>{{$tc('Текущий проект')}} :
                                 {{employee.currentProject?employee.currentProject.name:$tc("Не задан")}}
                             </v-list-item-subtitle>
@@ -67,7 +70,7 @@
 </template>
 
 <style lang="scss">
-    .avatar-cropper {
+    .hr-cropper .avatar-cropper {
         .avatar-cropper-close {
             color: white;
         }
@@ -87,8 +90,6 @@
             }
 
         }
-
-
     }
 </style>
 
