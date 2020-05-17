@@ -42,4 +42,14 @@ class EmployeeController {
                 }
             };
 
+    @Operation(summary = "Update current project for employee")
+    @PutMapping("/{employeeId}/currentProject/{newCurrentProjectId}")
+    @ResponseBody
+    fun updateCurrentProject(@PathVariable employeeId: Int,
+                             @PathVariable newCurrentProjectId: Int
+    ): Mono<Boolean> =
+            AuthHandler.currentAuth().flatMap { auth ->
+                emplService.updateCurrentProject(employeeId, newCurrentProjectId, auth)
+            };
+
 }

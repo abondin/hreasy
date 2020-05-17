@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.HttpClientErrorException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import ru.abondin.hreasy.platform.BusinessError
 import ru.abondin.hreasy.platform.api.employee.EmployeeDto
 import ru.abondin.hreasy.platform.api.employee.SimpleDictDto
 import ru.abondin.hreasy.platform.config.AuthContext
@@ -43,6 +44,20 @@ class EmployeeService(
         return emplRepo.findDetailed(employeeId)
                 .map { e -> employeeEntryToDtoMap(e) }
                 .switchIfEmpty(Mono.error(HttpClientErrorException(HttpStatus.NOT_FOUND, "Employee with ID=${employeeId} not found")));
+    }
+
+    fun updateCurrentProject(employeeId: Int, newCurrentProjectId: Int, auth: AuthContext): Mono<Boolean> {
+        logger.info("Update current project ${newCurrentProjectId} for employee ${employeeId}" +
+                "by ${auth.email}");
+        return emplRepo.updateCurrentProject(employeeId, newCurrentProjectId).map { updatedRowsCount -> updatedRowsCount > 0 };
+    }
+
+    fun updateCurrentProject(newCurrentProjectId: Int, auth: AuthContext): Mono<Boolean> {
+        if (auth.employeeInfo == null) {
+            throw BusinessError("errors.no.employee.for.auth", arrayOf(auth.email));
+        }
+        logger.info("Update own current project ${newCurrentProjectId} - ${auth.email} (${auth.employeeInfo.id})");
+        return emplRepo.updateCurrentProject(auth.employeeInfo.id, newCurrentProjectId).map { updatedRowsCount -> updatedRowsCount > 0 };
     }
 
     private fun addNotFiredCriteria(criteria: Criteria?): Criteria {

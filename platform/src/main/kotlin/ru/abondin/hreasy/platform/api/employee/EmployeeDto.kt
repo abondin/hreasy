@@ -3,11 +3,6 @@ package ru.abondin.hreasy.platform.api.employee
 import java.time.LocalDate
 
 
-data class SimpleDictDto(
-        val id: Int,
-        val name: String?
-)
-
 /**
  * Employee information, available to any authenticated user
  */

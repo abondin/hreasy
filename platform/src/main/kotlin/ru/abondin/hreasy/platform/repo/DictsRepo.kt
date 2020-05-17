@@ -3,9 +3,12 @@ package ru.abondin.hreasy.platform.repo
 import org.springframework.data.annotation.Id
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.relational.core.mapping.Table
+import org.springframework.data.repository.query.Param
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.time.OffsetDateTime
 
 
 @Table("department")
@@ -46,6 +49,13 @@ data class DictVacancyPriorityEntry(
         var name: String
 )
 
+@Table("project")
+data class DictProjectEntry(
+        @Id
+        var id: Int?,
+        var name: String
+)
+
 @Repository
 interface DepartmentRepo : ReactiveCrudRepository<DepartmentEntry, Int> {
     @Query("select * from department where name=:name")
@@ -76,3 +86,13 @@ interface DictVacancyPriorityRepo : ReactiveCrudRepository<DictVacancyPriorityEn
     @Query("select * from dict_vacancy_priority where name=:name")
     fun findByName(name: String): Mono<DictVacancyPriorityEntry>;
 }
+
+
+@Repository
+interface ProjectRepo : ReactiveCrudRepository<DictProjectEntry, Int> {
+    @Query("select * from project p where " +
+            "(p.end_date is null or :end is null) or" +
+            "p.end_date < :end order by name")
+    fun findNotEnded(@Param("endDate") endDate: OffsetDateTime?): Flux<DictProjectEntry>;
+}
+

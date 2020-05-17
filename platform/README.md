@@ -41,3 +41,14 @@ To clean-up database before tests set VM flyway commands
 Flyway commands also can be executed in maven:
 `mvn flyway:migrate -Dflyway.user=sa -Dflyway.password=HREasyPassword2019! -Dflyway.url=jdbc:sqlserver://sql.hr:1433`
 
+## Default permissions and roles
+
+|role|description|
+|----|------|
+|global_admin|Full access|
+|hr|Add/Update/Fire all employees|
+
+|permissions|roles|
+|----|------|
+|update_current_project_global|global_admin, hr|
+|update_avatar|global_admin, hr|

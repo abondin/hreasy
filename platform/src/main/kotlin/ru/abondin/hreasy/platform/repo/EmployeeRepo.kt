@@ -27,6 +27,7 @@ interface EmployeeRepo : ReactiveCrudRepository<EmployeeEntry, Int>, EmployeeDet
 interface EmployeeDetailedRepo {
     fun findDetailed(criteria: Criteria?, sort: Sort): Flux<EmployeeDetailedEntry>
     fun findDetailed(id: Int): Mono<EmployeeDetailedEntry>
+    fun updateCurrentProject(employeeId: Int, currentProjectId: Int): Mono<Int>
 }
 
 
@@ -47,5 +48,11 @@ class EmployeeDetailedRepoImpl(private val databaseClient: DatabaseClient) : Emp
         return databaseClient
                 .select()
                 .from(EmployeeDetailedEntry::class.java).matching(Criteria.where("id").isEquals(id)).fetch().one();
+    }
+
+    override fun updateCurrentProject(employeeId: Int, currentProjectId: Int): Mono<Int> {
+        return databaseClient.execute("update employee set current_project=:currentProjectId where id=:employeeId")
+                .bind("employeeId", employeeId)
+                .bind("currentProjectId", currentProjectId).fetch().rowsUpdated();
     }
 }
