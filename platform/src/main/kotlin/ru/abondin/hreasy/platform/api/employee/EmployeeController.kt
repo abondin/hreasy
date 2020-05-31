@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import ru.abondin.hreasy.platform.sec.AuthHandler
+import ru.abondin.hreasy.platform.sec.validateUpdateCurrentProject
 import ru.abondin.hreasy.platform.service.EmployeeService
 import ru.abondin.hreasy.platform.service.FileStorage
 
@@ -36,6 +37,7 @@ class EmployeeController {
     @ResponseBody
     fun employee(@PathVariable employeeId: Int): Mono<EmployeeDto> =
             AuthHandler.currentAuth().flatMap { auth ->
+                validateUpdateCurrentProject(auth, employeeId);
                 emplService.find(employeeId, auth).map { empl ->
                     empl.hasAvatar = fileStorage.fileExists("avatars", "${empl.id}.png");
                     return@map empl;

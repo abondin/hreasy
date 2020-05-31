@@ -33,6 +33,7 @@
                             <v-img v-if="emplAvatar" :src="emplAvatar"></v-img>
                             <avatar-cropper
                                     output-mime="image/jpeg"
+                                    @error="handleError"
                                     @uploaded="handleUploaded"
                                     trigger="#pick-avatar"
                                     :labels='{submit: $tc("Применить"), cancel: $tc("Отмена")}'
@@ -44,6 +45,7 @@
                         <p>
                             <button id="pick-avatar">{{$tc('Загрузить фото')}}</button>
                         </p>
+                        <div class="error" v-if="uploadError">{{uploadError}}</div>
                     </div>
                 </v-col>
                 <v-col cols="8" lg="10">
@@ -108,6 +110,7 @@
 
         private employee: Employee | null = null;
         private emplAvatar: String | null = null;
+        private uploadError: String | null = null;
 
         /**
          * Lifecycle hook
@@ -134,6 +137,10 @@
             if (this.employee) {
                 this.emplAvatar = employeeService.getAvatarUrl(this.employee.id) + '?' + Math.random();
             }
+        }
+
+        private handleError(error: Error | String) {
+            this.uploadError = error.toString();
         }
 
 

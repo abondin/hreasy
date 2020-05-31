@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import ru.abondin.hreasy.platform.logger
+import ru.abondin.hreasy.platform.sec.AuthHandler
+import ru.abondin.hreasy.platform.sec.validateUploadAvatar
 import ru.abondin.hreasy.platform.service.FileStorage
 
 @RestController()
@@ -25,9 +27,12 @@ class StaticContentController {
 
     @Operation(summary = "Upload employee avatar")
     @PostMapping(value = ["avatar/{employeeId}/upload"], produces = arrayOf(MediaType.IMAGE_PNG_VALUE))
-    fun avatar(@PathVariable employeeId: Int, @RequestPart("file") multipartFile: Flux<FilePart>): Mono<String> {
+    fun uploadAvatar(@PathVariable employeeId: Int, @RequestPart("file") multipartFile: Flux<FilePart>): Mono<String> {
         logger().debug("Upload employee avatar");
-        return multipartFile.flatMap { it -> fileStorage.uploadFile("avatars", "${employeeId}.png", it) }.then(Mono.just("OK"));
+        return AuthHandler.currentAuth().flatMap { auth ->
+            validateUploadAvatar(auth, employeeId);
+            multipartFile.flatMap { it -> fileStorage.uploadFile("avatars", "${employeeId}.png", it) }.then(Mono.just("OK"));
+        }
     }
 
 }
