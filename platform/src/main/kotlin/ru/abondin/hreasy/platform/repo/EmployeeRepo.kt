@@ -36,7 +36,8 @@ class EmployeeDetailedRepoImpl(private val databaseClient: DatabaseClient) : Emp
     override fun findDetailed(criteria: Criteria?, sort: Sort): Flux<EmployeeDetailedEntry> {
         var select = databaseClient
                 .select()
-                .from(EmployeeDetailedEntry::class.java);
+                .from(EmployeeDetailedEntry::class.java)
+                .orderBy(sort);
         if (criteria != null) {
             select = select.matching(criteria);
         }

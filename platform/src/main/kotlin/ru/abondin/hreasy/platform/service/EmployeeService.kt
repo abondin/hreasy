@@ -1,6 +1,6 @@
 package ru.abondin.hreasy.platform.service
 
-import org.springframework.data.domain.Sort.sort
+import org.springframework.data.domain.Sort
 import org.springframework.data.r2dbc.query.Criteria
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
@@ -30,12 +30,7 @@ class EmployeeService(
         var criteria: Criteria? = null;
         criteria = if (includeFired) criteria else addNotFiredCriteria(criteria);
         return emplRepo.findDetailed(criteria,
-                sort(EmployeeDetailedEntry::class.java)
-                        .by(EmployeeDetailedEntry::lastname)
-                        .and(sort(EmployeeDetailedEntry::class.java)
-                                .by(EmployeeDetailedEntry::firstname))
-                        .and(sort(EmployeeDetailedEntry::class.java)
-                                .by(EmployeeDetailedEntry::patronymicName))
+                Sort.by("lastname", "firstname", "patronymicName")
         ).map { e -> employeeEntryToDtoMap(e) };
     }
 

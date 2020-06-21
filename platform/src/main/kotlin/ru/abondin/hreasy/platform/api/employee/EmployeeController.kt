@@ -37,7 +37,6 @@ class EmployeeController {
     @ResponseBody
     fun employee(@PathVariable employeeId: Int): Mono<EmployeeDto> =
             AuthHandler.currentAuth().flatMap { auth ->
-                validateUpdateCurrentProject(auth, employeeId);
                 emplService.find(employeeId, auth).map { empl ->
                     empl.hasAvatar = fileStorage.fileExists("avatars", "${empl.id}.png");
                     return@map empl;
@@ -51,6 +50,7 @@ class EmployeeController {
                              @PathVariable newCurrentProjectId: Int
     ): Mono<Boolean> =
             AuthHandler.currentAuth().flatMap { auth ->
+                validateUpdateCurrentProject(auth, employeeId);
                 emplService.updateCurrentProject(employeeId, newCurrentProjectId, auth)
             };
 
