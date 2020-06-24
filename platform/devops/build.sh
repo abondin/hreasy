@@ -50,5 +50,5 @@ DOCKER_JOB_IMAGE_TAG=$DOCKER_IMAGE':'$CI_DEPLOY_TAG
 
 out "Build Docker Image $DOCKER_JOB_IMAGE_TAG"
 
-docker build -t $DOCKER_JOB_IMAGE_TAG --build-arg JAR_FILE=target/`getArtifactFinalName`-exec.jar .
+mvnp jib:dockerBuild -Dimage=$DOCKER_JOB_IMAGE_TAG
 echo "------------- ${DOCKER_JOB_IMAGE_TAG} has been created"
