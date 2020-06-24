@@ -1,0 +1,13 @@
+package ru.abondin.hreasy.platform;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class HreasyPlatformApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(HreasyPlatformApplication.class, args);
+	}
+
+}
