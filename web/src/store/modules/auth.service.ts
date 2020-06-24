@@ -26,7 +26,7 @@ export class CurrentUser {
 }
 
 export class EmployeeShortInfo {
-    constructor(public id: number) {
+    constructor(public employeeId: number) {
     }
 }
 
@@ -56,7 +56,33 @@ class RestAuthService implements AuthService {
     }
 }
 
+enum Authorities {
+    /**
+     * Update avatar of any employees
+     */
+   UpdateAvatar="update_avatar",
+
+    /**
+     * Update current project of any employees
+     */
+   UpdateCurrentProjectGlobal="update_current_project_global"
+}
+
+class AuthoritiesChecker {
+    public canUpdateCurrentProject(authorities: Array<String>) : boolean{
+        return true;
+        //FIXME
+        //return authorities && authorities.indexOf(Authorities.UpdateCurrentProjectGlobal)>=0;
+    }
+}
+
 const authService: AuthService = new RestAuthService(httpService);
 
 export default authService;
+export const authoritiesChecker = new AuthoritiesChecker();
+
+
+
+
+
 

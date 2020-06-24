@@ -8,6 +8,17 @@
                 <v-list-item @click.stop="drawer = !drawer">
                     {{userDisplayName}}
                 </v-list-item>
+
+                <v-list-item>
+                    <v-list-item-action>
+                        <v-icon color="grey darken-1">mdi-account</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title class="grey--text text--darken-1">
+                        <router-link to="/employees/profile">{{ $tc('Профиль')}}</router-link>
+                    </v-list-item-title>
+                </v-list-item>
+
+
                 <v-list-item link>
                     <v-list-item-action>
                         <v-icon color="grey darken-1">mdi-account-multiple</v-icon>

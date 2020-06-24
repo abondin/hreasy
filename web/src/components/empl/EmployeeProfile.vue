@@ -1,4 +1,4 @@
-<!-- Employees edit form-->
+<!-- Employees own profile page-->
 <template>
     <v-container v-if="employee">
         <!-- Work in progress -->
@@ -11,18 +11,6 @@
         </v-alert>
 
         <v-card>
-            <v-row>
-                <v-col cols="12">
-                    <v-banner>
-                        <router-link :to="{name:'employees'}">
-                            <span>
-                            <v-icon>arrow_back_ios</v-icon>
-                            {{$tc('Список сотрудников')}}
-                            </span>
-                        </router-link>
-                    </v-banner>
-                </v-col>
-            </v-row>
             <v-row align="start">
                 <v-col cols="4" lg="2">
                     <div style="max-width: 164px; margin-left: 10px" align="center">
@@ -58,21 +46,26 @@
     import Component from 'vue-class-component';
     import employeeService, {Employee} from "@/components/empl/employee.service";
     import EmployeeAvatarUploader from "@/components/empl/EmployeeAvatarUploader.vue";
+    import {Getter} from "vuex-class";
 
+    const namespace: string = 'auth';
 
     @Component({
         components: {"employee-avatar": EmployeeAvatarUploader}
     })
-    export default class EmployeesComponent extends Vue {
+    export default class EmployeeProfile extends Vue {
         loading: boolean = false;
 
         private employee: Employee | null = null;
+
+        @Getter("employeeId", {namespace})
+        employeeId!: number;
 
         /**
          * Lifecycle hook
          */
         created() {
-            this.fetchData(+this.$attrs.id);
+            this.fetchData(this.employeeId);
         }
 
         private fetchData(employeeId: number) {

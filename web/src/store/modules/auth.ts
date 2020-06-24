@@ -81,6 +81,18 @@ export const getters: GetterTree<AuthState, RootState> = {
             return state.currentUser.username;
         }
         return 'anonymous';
+    },
+    employeeId(state): number|null {
+        if (state.currentUser) {
+            return state.currentUser.employee.employeeId;
+        }
+        return null;
+    },
+    authorities(state) : Array<string> {
+        if (state.currentUser) {
+            return state.currentUser.authorities;
+        }
+        return [];
     }
 };
 
