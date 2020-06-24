@@ -19,10 +19,11 @@
                     :output-options="{width: 256, height: 256}"
             />
         </v-avatar>
-        <div class="ml-5" >
-            <v-btn x-small :disabled="!canUpdateAvatar()" :id="'pick-avatar-'+employee.id">{{$tc('Загрузить фото')}}</v-btn>
+        <div class="ml-5">
+            <v-btn x-small :disabled="!canUpdateAvatar()" :id="'pick-avatar-'+employee.id">{{$tc('Загрузить фото')}}
+            </v-btn>
+            <div class="error" v-if="uploadError">{{uploadError}}</div>
         </div>
-        <div class="error" v-if="uploadError">{{uploadError}}</div>
     </div>
 </template>
 
@@ -53,14 +54,14 @@
             }
         }
 
-        private handleUploaded(resp: any) {
+        private handleUploaded(response: any, form: any, xhr: any) {
             if (this.employee) {
                 this.emplAvatar = employeeService.getAvatarUrl(this.employee.id) + '?' + Math.random();
             }
         }
 
-        private handleError(error: Error | String) {
-            this.uploadError = error.toString();
+        private handleError(message: string, type: any, xhr: any) {
+            this.uploadError = message;
         }
 
 

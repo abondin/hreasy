@@ -30,7 +30,7 @@ export const actions: ActionTree<AuthState, RootState> = {
             commit('userLoggedIn', loginResponse.currentUser);
         });
     },
-    logout({commit}): any {
+    logout({commit}): Promise<any> {
         return authService.logout().then(response => {
             commit('clearAuth');
         });

@@ -30,7 +30,7 @@ public class EmployeeService {
         //TODO Add filtering and ordering
         Criteria criteria = null;
         if (!includeFired) {
-            addNotFiredCriteria(criteria);
+            criteria = addNotFiredCriteria(criteria);
         }
         return emplRepo.findDetailed(criteria,
                 Sort.by("lastname", "firstname", "patronymicName")

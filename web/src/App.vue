@@ -42,7 +42,7 @@
                         <v-icon color="grey darken-1">mdi-logout</v-icon>
                     </v-list-item-action>
                     <v-list-item-title class="grey--text text--darken-1">
-                        <a href="#" v-on:click="logoutAction">{{ $tc('Выход')}}</a>
+                        <a href="#" v-on:click="logout">{{ $tc('Выход')}}</a>
                     </v-list-item-title>
                 </v-list-item>
 
@@ -50,7 +50,7 @@
         </v-navigation-drawer>
 
         <v-app-bar
-                app >
+                app>
             <v-app-bar-nav-icon @click.stop="drawer = !drawer"/>
             <v-icon class="mx-4">fab fa-youtube</v-icon>
             <v-toolbar-title class="mr-12 align-center">
@@ -97,7 +97,7 @@
         drawer = false;
 
         @Action("logout", {namespace})
-        logoutAction: any;
+        logoutAction!: () => Promise<any>;
 
         @Getter("displayName", {namespace})
         userDisplayName: string | undefined;
@@ -107,6 +107,10 @@
 
         created() {
             this.$vuetify.theme.dark = true;
+        }
+
+        private logout() {
+            return this.logoutAction().then(() => this.$router.push('/login'));
         }
     }
 </script>
