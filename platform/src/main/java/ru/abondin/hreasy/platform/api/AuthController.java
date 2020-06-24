@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
+import ru.abondin.hreasy.platform.auth.AuthHandler.CurrentUserDto;
 
 @RestController()
 @RequestMapping("/api/v1")
@@ -19,6 +20,14 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 @Slf4j
 public class AuthController {
     private final AuthHandler authHandler;
+
+    @Operation(summary = "Get information about current user from Security Context")
+    @GetMapping("current-user")
+    @ResponseBody
+    public Mono<CurrentUserDto> currentUser() {
+        return AuthHandler.currentAuth().map(ctx -> new CurrentUserDto(ctx));
+    }
+
 
     @Operation(summary = "Login in")
     @PostMapping("login")

@@ -15,10 +15,10 @@
 
 # Technologies Stack
 
- - Kotlin on backend
+ - ~~Kotlin~~ Java on backend
  - SQL Server as database
  - Spring Reactive
- - Vue on frontend
+ - Vue + vuetifyjs + ts on frontend
  
 # Local build
 

@@ -19,53 +19,12 @@
                     :search="search"
                     sort-by="displayName"
                     :show-expand="$vuetify.breakpoint.mdAndUp"
-                    disable-pagination="true"
+                    disable-pagination
             >
                 <template v-slot:expanded-item="{ headers, item }">
                     <td :colspan="headers.length">
-                        <v-card
-                                class="mx-auto"
-                                max-width="434"
-                                tile
-                        >
-                            <v-img
-                                    height="100%"
-                                    src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg"
-                            >
-                                <v-row
-                                        align="end"
-                                        class="fill-height"
-                                >
-                                    <v-col
-                                            align-self="start"
-                                            class="pa-0"
-                                            cols="12"
-                                    >
-                                        <v-avatar v-if="item.hasAvatar"
-                                                  class="profile"
-                                                  color="grey"
-                                                  size="164"
-                                                  tile>
-                                            <v-img :src="getAvatarUrl(item.id)"></v-img>
-                                        </v-avatar>
-                                    </v-col>
-                                    <v-col class="py-0">
-                                        <v-list-item
-                                                color="rgba(0, 0, 0, .4)"
-                                                dark
-                                        >
-                                            <v-list-item-content>
-                                                <v-list-item-title class="title">{{item.displayName}}
-                                                    <router-link :to="{ name: 'employeeEdit', params: {id:item.id}}">
-                                                        <v-icon>edit</v-icon>
-                                                    </router-link></v-list-item-title>
-                                                <v-list-item-subtitle>{{item.currentProject?item.currentProject.name:$tc('Проект не задан')}}</v-list-item-subtitle>
-                                            </v-list-item-content>
-                                        </v-list-item>
-                                    </v-col>
-                                </v-row>
-                            </v-img>
-                        </v-card>
+                        <employee-card v-bind:employee="item">
+                        </employee-card>
                     </td>
                 </template>
             </v-data-table>
@@ -79,8 +38,11 @@
     import Component from 'vue-class-component';
     import employeeService, {Employee} from "@/components/empl/employee.service";
     import {DataTableHeader} from "vuetify";
+    import EmployeeCard from "@/components/empl/EmployeeCard.vue";
 
-    @Component
+    @Component({
+        components: {"employee-card": EmployeeCard}
+    })
     export default class EmployeesComponent extends Vue {
         headers: DataTableHeader[] = [];
         loading: boolean = false;
@@ -109,11 +71,6 @@
                     this.loading = false
                 });
         }
-
-        private getAvatarUrl(employeeId: number) {
-            return employeeService.getAvatarUrl(employeeId);
-        }
-
     }
 </script>
 

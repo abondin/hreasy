@@ -26,26 +26,7 @@
             <v-row align="start">
                 <v-col cols="4" lg="2">
                     <div style="max-width: 164px; margin-left: 10px" align="center">
-                        <v-avatar
-                                class="profile hr-cropper"
-                                color="grey"
-                                size="164">
-                            <v-img v-if="emplAvatar" :src="emplAvatar"></v-img>
-                            <avatar-cropper
-                                    output-mime="image/jpeg"
-                                    @error="handleError"
-                                    @uploaded="handleUploaded"
-                                    trigger="#pick-avatar"
-                                    :labels='{submit: $tc("Применить"), cancel: $tc("Отмена")}'
-                                    :upload-url="getAvatarUploadUrl(employee.id)"
-                                    :withCredentials=true
-                                    :output-options="{width: 256, height: 256}"
-                            />
-                        </v-avatar>
-                        <p>
-                            <button id="pick-avatar">{{$tc('Загрузить фото')}}</button>
-                        </p>
-                        <div class="error" v-if="uploadError">{{uploadError}}</div>
+                        <employee-avatar v-bind:employee="employee"></employee-avatar>
                     </div>
                 </v-col>
                 <v-col cols="8" lg="10">
@@ -71,46 +52,21 @@
     </v-container>
 </template>
 
-<style lang="scss">
-    .hr-cropper .avatar-cropper {
-        .avatar-cropper-close {
-            color: white;
-        }
-
-        .avatar-cropper-container {
-            background: black;
-
-            .avatar-cropper-footer {
-                .avatar-cropper-btn {
-                    margin: 5px;
-                    background: darken(blue, 3);
-
-                    &:hover {
-                        background: blue;
-                    }
-                }
-            }
-
-        }
-    }
-</style>
 
 <script lang="ts">
     import Vue from 'vue'
     import Component from 'vue-class-component';
     import employeeService, {Employee} from "@/components/empl/employee.service";
-    import AvatarCropper from "vue-avatar-cropper"
+    import EmployeeAvatarUploader from "@/components/empl/EmployeeAvatarUploader.vue";
 
 
     @Component({
-        components: {"avatar-cropper": AvatarCropper}
+        components: {"employee-avatar": EmployeeAvatarUploader}
     })
     export default class EmployeesComponent extends Vue {
         loading: boolean = false;
 
         private employee: Employee | null = null;
-        private emplAvatar: String | null = null;
-        private uploadError: String | null = null;
 
         /**
          * Lifecycle hook
@@ -124,29 +80,12 @@
             return employeeService.find(employeeId)
                 .then(data => {
                         this.employee = data;
-                        if (this.employee.hasAvatar) {
-                            this.emplAvatar = employeeService.getAvatarUrl(this.employee.id);
-                        }
                     }
                 ).finally(() => {
                     this.loading = false
                 });
         }
 
-        private handleUploaded(resp: any) {
-            if (this.employee) {
-                this.emplAvatar = employeeService.getAvatarUrl(this.employee.id) + '?' + Math.random();
-            }
-        }
-
-        private handleError(error: Error | String) {
-            this.uploadError = error.toString();
-        }
-
-
-        private getAvatarUploadUrl(employeeId: number) {
-            return employeeService.getAvatarUploadUrl(employeeId);
-        }
     }
 </script>
 
