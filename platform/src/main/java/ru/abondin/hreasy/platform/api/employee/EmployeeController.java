@@ -60,4 +60,14 @@ public class EmployeeController {
             return emplService.updateCurrentProject(employeeId, newCurrentProjectId, auth);
         });
     }
+
+    @Operation(summary = "Reset current project for employee")
+    @PutMapping("/{employeeId}/currentProject/reset")
+    @ResponseBody
+    public Mono<Boolean> resetCurrentProject(@PathVariable int employeeId) {
+        return AuthHandler.currentAuth().flatMap(auth -> {
+            validateUpdateCurrentProject(auth, employeeId);
+            return emplService.updateCurrentProject(employeeId, null, auth);
+        });
+    }
 }

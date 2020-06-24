@@ -2,14 +2,14 @@ import httpService from "../http.service";
 import {AxiosInstance} from "axios";
 
 export class Dict {
-    constructor(id: number, name: string) {
+    constructor(public id: number, public name: string) {
     }
 }
 
 export interface Employee {
     id: number,
     displayName: string,
-    currentProject: Dict,
+    currentProject?: Dict,
     lastname: string,
     firstname: string,
     patronymicName: string,
@@ -31,6 +31,8 @@ export interface EmployeeService {
     getAvatarUrl(employeeId: number): any;
 
     getAvatarUploadUrl(employeeId: number): any;
+
+    updateCurrentProject(employeeId: number, projectId: number | null): Promise<number>;
 }
 
 class RestEmployeeService implements EmployeeService {
@@ -55,6 +57,13 @@ class RestEmployeeService implements EmployeeService {
 
     getAvatarUploadUrl(employeeId: number): any {
         return `${httpService.defaults.baseURL}v1/fs/avatar/${employeeId}/upload`;
+    }
+
+    updateCurrentProject(employeeId: number, projectId: number | null): Promise<number> {
+        return httpService.put(`v1/employee/${employeeId}/currentProject/${projectId ? projectId : 'reset'}`).then(response => {
+            return response.data;
+        });
+
     }
 }
 

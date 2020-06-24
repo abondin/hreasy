@@ -33,7 +33,8 @@ Uses in Employees Table (Employees.vue)
                             </v-list-item-title>
                             <v-list-item-subtitle>{{employee.
                                 currentProject?employee.currentProject.name:$tc('Проект не задан')}}
-                                <v-btn v-if="canUpdateCurrentProject()" icon x-small>
+                                <v-btn v-if="canUpdateCurrentProject()"
+                                       @click.stop="openUpdateCurrentProjectDialog=true" icon x-small>
                                     <v-icon small>edit</v-icon>
                                 </v-btn>
                             </v-list-item-subtitle>
@@ -42,6 +43,11 @@ Uses in Employees Table (Employees.vue)
                 </v-col>
             </v-row>
         </v-img>
+        <v-dialog
+                v-model="openUpdateCurrentProjectDialog"
+                max-width="500">
+            <employee-update-current-project v-bind:employee="employee"/>
+        </v-dialog>
     </v-card>
 
 </template>
@@ -53,17 +59,20 @@ Uses in Employees Table (Employees.vue)
     import employeeService, {Employee} from "@/components/empl/employee.service";
     import {Prop} from "vue-property-decorator";
     import EmployeeAvatarUploader from "@/components/empl/EmployeeAvatarUploader.vue";
+    import EmployeeUpdateCurrentProject from "@/components/empl/EmployeeUpdateCurrentProject.vue";
     import permissionService from "@/store/modules/permission.service";
 
     const namespace: string = 'auth';
 
     @Component({
-        components: {EmployeeAvatarUploader}
+        components: {EmployeeAvatarUploader, EmployeeUpdateCurrentProject}
     })
     export default class EmployeeCard extends Vue {
 
         @Prop({required: true})
         employee!: Employee;
+
+        openUpdateCurrentProjectDialog = false;
 
         private getAvatarUrl(employeeId: number) {
             return employeeService.getAvatarUrl(employeeId);

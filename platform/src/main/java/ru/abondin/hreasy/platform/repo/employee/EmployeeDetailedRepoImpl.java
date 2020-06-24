@@ -5,8 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.DatabaseClient;
 import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import javax.validation.constraints.Null;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -35,9 +38,14 @@ public class EmployeeDetailedRepoImpl implements EmployeeDetailedRepo {
     }
 
     @Override
-    public Mono<Integer> updateCurrentProject(int employeeId, int currentProjectId) {
-        return databaseClient.execute("update employee set current_project=:currentProjectId where id=:employeeId")
-                .bind("employeeId", employeeId)
-                .bind("currentProjectId", currentProjectId).fetch().rowsUpdated();
+    public Mono<Integer> updateCurrentProject(int employeeId, @Nullable Integer currentProjectId) {
+        var sql= databaseClient.execute("update employee set current_project=:currentProjectId where id=:employeeId")
+                .bind("employeeId", employeeId);
+        if (currentProjectId==null){
+            sql = sql.bindNull("currentProjectId", Integer.class);
+        } else {
+            sql = sql.bind("currentProjectId", currentProjectId);
+        }
+        return sql.fetch().rowsUpdated();
     }
 }

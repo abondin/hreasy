@@ -20,7 +20,7 @@ public class DictController {
     @Operation(summary = "All projects")
     @GetMapping("/projects")
     @ResponseBody
-    Flux<SimpleDictDto> projects(@RequestParam boolean includeClosed) {
+    public Flux<SimpleDictDto> projects(@RequestParam(defaultValue = "false") boolean includeClosed) {
         return AuthHandler.currentAuth().flatMapMany(
                 auth -> dictService.findProjects(auth, includeClosed));
     }

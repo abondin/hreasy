@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex, {StoreOptions} from 'vuex'
 import auth from './modules/auth'
+import dict from './modules/dict'
 
 
 Vue.use(Vuex)
@@ -14,7 +15,8 @@ const storeOptions: StoreOptions<RootState> = {
         version: "1.0.0"
     },
     modules: {
-        auth
+        auth,
+        dict
     }
 }
 

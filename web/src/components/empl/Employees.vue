@@ -3,13 +3,29 @@
     <v-container fluid>
         <v-card>
             <v-card-title>
-                <v-text-field
-                        v-model="search"
-                        append-icon="mdi-magnify"
-                        :label="$t('Поиск')"
-                        single-line
-                        hide-details
-                ></v-text-field>
+                <v-row dense>
+                    <v-col lg="12" cols="12">
+                        <v-text-field
+                                v-model="search"
+                                append-icon="mdi-magnify"
+                                :label="$t('Поиск')"
+                                single-line
+                                hide-details
+                        ></v-text-field>
+                    </v-col>
+                    <!-- TODO
+                    <v-col lg="6" cols="12">
+                        <v-select
+                                item-value="id"
+                                item-text="name"
+                                :items="allProjects"
+                                :label="$t('Фильтр по проекту')"
+                                clearable
+                                @change="filterProject"
+                        />
+                    </v-col>
+                    -->
+                </v-row>
             </v-card-title>
             <v-data-table
                     :loading="loading"
@@ -48,17 +64,19 @@
         loading: boolean = false;
         search = '';
 
+
         employees: Employee[] = [];
 
         /**
          * Lifecycle hook
          */
         created() {
-            this.fetchData();
             this.headers.push({text: this.$tc('ФИО'), value: 'displayName'});
             this.headers.push({text: this.$tc('Отдел'), value: 'department.name'});
             this.headers.push({text: this.$tc('E-mail'), value: 'email'});
             this.headers.push({text: this.$tc('Текущий проект'), value: 'currentProject.name'});
+            // Reload projects dict to Vuex
+            return this.fetchData().then(() => this.$store.dispatch('dict/reloadProjects'));
         }
 
         private fetchData() {
@@ -71,6 +89,7 @@
                     this.loading = false
                 });
         }
+
     }
 </script>
 

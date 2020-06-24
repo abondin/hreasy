@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Flux;
@@ -46,9 +47,9 @@ public class EmployeeService {
                         "Employee with ID=" + employeeId + " not found")));
     }
 
-    public Mono<Boolean> updateCurrentProject(int employeeId, int newCurrentProjectId, AuthContext auth) {
+    public Mono<Boolean> updateCurrentProject(int employeeId, @Nullable Integer newCurrentProjectId, AuthContext auth) {
         log.info("Update current project {} for employee {}" +
-                "by {}", newCurrentProjectId, employeeId, auth.getEmail());
+                "by {}", newCurrentProjectId == null ? "<RESET>" : newCurrentProjectId, employeeId, auth.getEmail());
         return emplRepo.updateCurrentProject(employeeId, newCurrentProjectId).map(updatedRowsCount -> updatedRowsCount > 0);
     }
 

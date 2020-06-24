@@ -11,8 +11,8 @@ import java.time.OffsetDateTime;
 @Repository
 public interface DictProjectRepo extends ReactiveCrudRepository<DictProjectEntry, Integer> {
 
-    @Query("select * from project p where " +
-            "(p.end_date is null or :end is null) or" +
-            "p.end_date < :end order by name")
+    @Query("select * from project p where" +
+            " (p.end_date is null or :end is null) or" +
+            " p.end_date < :end order by name")
     Flux<DictProjectEntry> findNotEnded(@Param("endDate") OffsetDateTime endDate);
 }
