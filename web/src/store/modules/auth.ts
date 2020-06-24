@@ -17,6 +17,12 @@ export const state: AuthState = {
     userLoaded: false
 }
 
+export interface SecurityInfo {
+    username: string,
+    authorities: string[],
+    employeeId: number
+}
+
 export const actions: ActionTree<AuthState, RootState> = {
     login({commit}, loginRequest: LoginRequest): any {
         commit('clearAuth');
@@ -82,17 +88,21 @@ export const getters: GetterTree<AuthState, RootState> = {
         }
         return 'anonymous';
     },
-    employeeId(state): number|null {
+    employeeId(state): number | null {
         if (state.currentUser) {
             return state.currentUser.employee.employeeId;
         }
         return null;
     },
-    authorities(state) : Array<string> {
+    securityInfo(state): SecurityInfo | null {
         if (state.currentUser) {
-            return state.currentUser.authorities;
+            return {
+                username: state.currentUser.username,
+                authorities: state.currentUser.authorities,
+                employeeId: state.currentUser.employee.employeeId
+            };
         }
-        return [];
+        return null;
     }
 };
 
@@ -108,3 +118,4 @@ export const auth: Module<AuthState, RootState> = {
 };
 
 export default auth;
+

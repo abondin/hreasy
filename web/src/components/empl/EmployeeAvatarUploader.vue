@@ -12,15 +12,15 @@
                     output-mime="image/jpeg"
                     @error="handleError"
                     @uploaded="handleUploaded"
-                    trigger="#pick-avatar"
+                    :trigger="'#pick-avatar-'+employee.id"
                     :labels='{submit: $tc("Применить"), cancel: $tc("Отмена")}'
-                    :upload-url="getAvatarUploadUrl(employee.id)"
+                    :upload-url="getAvatarUploadUrl()"
                     :withCredentials=true
                     :output-options="{width: 256, height: 256}"
             />
         </v-avatar>
-        <div class="ml-6">
-            <button id="pick-avatar">{{$tc('Загрузить фото')}}</button>
+        <div class="ml-5" >
+            <v-btn x-small :disabled="!canUpdateAvatar()" :id="'pick-avatar-'+employee.id">{{$tc('Загрузить фото')}}</v-btn>
         </div>
         <div class="error" v-if="uploadError">{{uploadError}}</div>
     </div>
@@ -32,6 +32,7 @@
     import Vue from "vue";
     import employeeService, {Employee} from "./employee.service";
     import {Prop} from "vue-property-decorator";
+    import permissionService from "@/store/modules/permission.service";
 
     @Component({
         components: {"avatar-cropper": AvatarCropper}
@@ -63,8 +64,12 @@
         }
 
 
-        private getAvatarUploadUrl(employeeId: number) {
-            return employeeService.getAvatarUploadUrl(employeeId);
+        private getAvatarUploadUrl() {
+            return employeeService.getAvatarUploadUrl(this.employee.id);
+        }
+
+        private canUpdateAvatar() {
+            return permissionService.canUpdateAvatar(this.employee.id);
         }
     }
 </script>

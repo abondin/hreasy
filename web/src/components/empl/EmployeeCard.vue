@@ -31,8 +31,11 @@ Uses in Employees Table (Employees.vue)
                         <v-list-item-content>
                             <v-list-item-title class="title">{{employee.displayName}}
                             </v-list-item-title>
-                            <v-list-item-subtitle>{{employee.currentProject?employee.currentProject.name:$tc('Проект не задан')}}
-                                <v-btn v-if="authChecker.canUpdateCurrentProject(authorities)" icon x-small><v-icon small>edit</v-icon></v-btn>
+                            <v-list-item-subtitle>{{employee.
+                                currentProject?employee.currentProject.name:$tc('Проект не задан')}}
+                                <v-btn v-if="canUpdateCurrentProject()" icon x-small>
+                                    <v-icon small>edit</v-icon>
+                                </v-btn>
                             </v-list-item-subtitle>
                         </v-list-item-content>
                     </v-list-item>
@@ -50,8 +53,7 @@ Uses in Employees Table (Employees.vue)
     import employeeService, {Employee} from "@/components/empl/employee.service";
     import {Prop} from "vue-property-decorator";
     import EmployeeAvatarUploader from "@/components/empl/EmployeeAvatarUploader.vue";
-    import {Action} from "vuex-class";
-    import {authoritiesChecker} from '@/store/modules/auth.service';
+    import permissionService from "@/store/modules/permission.service";
 
     const namespace: string = 'auth';
 
@@ -60,18 +62,16 @@ Uses in Employees Table (Employees.vue)
     })
     export default class EmployeeCard extends Vue {
 
-        authChecker = authoritiesChecker;
-
         @Prop({required: true})
         employee!: Employee;
-
-        @Action("authorities", {namespace})
-        authorities: Array<string> = [];
 
         private getAvatarUrl(employeeId: number) {
             return employeeService.getAvatarUrl(employeeId);
         }
 
+        private canUpdateCurrentProject(): boolean {
+            return permissionService.canUpdateCurrentProject(this.employee.id);
+        }
     }
 </script>
 
