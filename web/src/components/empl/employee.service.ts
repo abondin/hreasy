@@ -17,6 +17,7 @@ export interface Employee {
     sex: string,
     department: Dict,
     position: Dict,
+    officeLocation: Dict,
     email: string,
     phone: string,
     skype: string,

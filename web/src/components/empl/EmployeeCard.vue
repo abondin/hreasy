@@ -4,52 +4,32 @@ Uses in Employees Table (Employees.vue)
  -->
 
 <template>
-    <v-card
-            class="mx-auto"
-            max-width="434"
-            tile
-    >
-        <v-img
-                height="100%"
-                src="../../assets/card-bg.jpg"
-        >
-            <v-row
-                    align="end"
-                    class="fill-height"
-            >
-                <v-col
-                        align-self="start"
-                        cols="12"
-                >
-                    <employee-avatar-uploader v-bind:employee="employee"/>
-                </v-col>
-                <v-col class="py-0">
-                    <v-list-item
-                            color="rgba(0, 0, 0, .4)"
-                            dark
-                    >
-                        <v-list-item-content>
-                            <v-list-item-title class="title">{{employee.displayName}}
-                            </v-list-item-title>
-                            <v-list-item-subtitle>{{employee.position.name}}</v-list-item-subtitle>
-                            <v-list-item-subtitle>{{employee.
-                                currentProject?employee.currentProject.name:$tc('Проект не задан')}}
-                                <v-btn v-if="canUpdateCurrentProject()"
-                                       @click.stop="openUpdateCurrentProjectDialog=true" icon x-small>
-                                    <v-icon small>edit</v-icon>
-                                </v-btn>
-                            </v-list-item-subtitle>
-                        </v-list-item-content>
-                    </v-list-item>
-                </v-col>
-            </v-row>
-        </v-img>
+    <v-card class="d-flex" img="../../assets/card-bg.jpg">
+        <employee-avatar-uploader v-bind:employee="employee"/>
+        <v-list-item class="align-self-center">
+            <v-list-item-content>
+                <v-list-item-title class="title">{{employee.displayName}}
+                </v-list-item-title>
+                <v-list-item-subtitle v-if="employee.position">{{employee.position.name}}</v-list-item-subtitle>
+                <v-list-item-subtitle v-if="employee.officeLocation">{{employee.officeLocation.name}}
+                </v-list-item-subtitle>
+                <v-list-item-subtitle>{{employee.
+                    currentProject?employee.currentProject.name:$tc('Проект не задан')}}
+                    <v-btn v-if="canUpdateCurrentProject()"
+                           @click.stop="openUpdateCurrentProjectDialog=true" icon x-small>
+                        <v-icon small>edit</v-icon>
+                    </v-btn>
+                </v-list-item-subtitle>
+            </v-list-item-content>
+        </v-list-item>
         <v-dialog
                 v-model="openUpdateCurrentProjectDialog"
                 max-width="500">
             <employee-update-current-project v-bind:employee="employee"/>
         </v-dialog>
     </v-card>
+
+
 
 </template>
 

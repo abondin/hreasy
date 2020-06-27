@@ -2,11 +2,10 @@
     Component to show and update employee avatar
 -->
 <template>
-    <div>
-        <v-avatar
+    <div class="d-flex flex-column" style="width: 164px">
+        <v-avatar height="164px" width="164px"
                 class="profile hr-cropper"
-                color="grey"
-                size="164">
+                color="grey">
             <v-img v-if="emplAvatar" :src="emplAvatar"></v-img>
             <avatar-cropper
                     output-mime="image/jpeg"
@@ -19,11 +18,11 @@
                     :output-options="{width: 256, height: 256}"
             />
         </v-avatar>
-        <div class="ml-5">
+        <div class="align-self-center">
             <v-btn x-small :disabled="!canUpdateAvatar()" :id="'pick-avatar-'+employee.id">{{$tc('Загрузить фото')}}
             </v-btn>
-            <div class="error" v-if="uploadError">{{uploadError}}</div>
         </div>
+        <div class="error" v-if="uploadError">{{uploadError}}</div>
     </div>
 </template>
 

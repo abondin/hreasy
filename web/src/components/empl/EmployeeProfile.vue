@@ -10,31 +10,28 @@
             Work in progress
         </v-alert>
 
-        <v-card>
-            <v-row align="start">
-                <v-col cols="4" lg="2">
-                    <div style="max-width: 164px; margin-left: 10px" align="center">
-                        <employee-avatar v-bind:employee="employee"></employee-avatar>
-                    </div>
-                </v-col>
-                <v-col cols="8" lg="10">
-                    <v-list-item>
-                        <v-list-item-content>
-                            <v-list-item-title class="title">{{employee.displayName}}</v-list-item-title>
-                            <v-list-item-subtitle>{{$tc('Отдел')}} :
-                                {{employee.department?employee.department.name:$tc("Не задан")}}
-                            </v-list-item-subtitle>
-                            <v-list-item-subtitle>{{$tc('Текущий проект')}} :
-                                {{employee.currentProject?employee.currentProject.name:$tc("Не задан")}}
-                            </v-list-item-subtitle>
-                            <v-list-item-subtitle>
-                                {{$tc('Почтовый адрес')}} : {{employee.email?employee.email:$tc("Не задан")}}
-                            </v-list-item-subtitle>
-                        </v-list-item-content>
-                    </v-list-item>
-                </v-col>
-
-            </v-row>
+        <v-card class="d-flex flex-column flex-lg-row pa-5">
+            <employee-avatar v-bind:employee="employee"></employee-avatar>
+            <v-list-item>
+                <v-list-item-content>
+                    <v-list-item-title class="title">{{employee.displayName}}</v-list-item-title>
+                    <v-list-item-subtitle>{{$tc('Отдел')}} :
+                        {{employee.department?employee.department.name:$tc("Не задан")}}
+                    </v-list-item-subtitle>
+                    <v-list-item-subtitle>{{$tc('Текущий проект')}} :
+                        {{employee.currentProject?employee.currentProject.name:$tc("Не задан")}}
+                    </v-list-item-subtitle>
+                    <v-list-item-subtitle>
+                        {{$tc('Почтовый адрес')}} : {{employee.email?employee.email:$tc("Не задан")}}
+                    </v-list-item-subtitle>
+                    <v-list-item-subtitle>
+                        {{$tc('Позиция')}} : {{employee.position?employee.position.name:$tc("Не задана")}}
+                    </v-list-item-subtitle>
+                    <v-list-item-subtitle>
+                        {{$tc('Кабинет')}} : {{employee.officeLocation?employee.officeLocation.name:$tc("Не задан")}}
+                    </v-list-item-subtitle>
+                </v-list-item-content>
+            </v-list-item>
         </v-card>
 
     </v-container>

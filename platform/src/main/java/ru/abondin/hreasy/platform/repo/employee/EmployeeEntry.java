@@ -25,6 +25,8 @@ public class EmployeeEntry {
     private Integer positionId;
     @Column("current_project")
     private Integer currentProjectId;
+    @Column("office_location")
+    private Integer officeLocationId;
     private String email;
     private String phone;
     private String skype;

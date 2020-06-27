@@ -21,6 +21,7 @@ public interface EmployeeDtoMapper {
     @Mapping(target = "department", source = ".", qualifiedByName = "department")
     @Mapping(target = "currentProject", source = ".", qualifiedByName = "currentProject")
     @Mapping(target = "position", source = ".", qualifiedByName = "position")
+    @Mapping(target = "officeLocation", source = ".", qualifiedByName = "officeLocation")
     EmployeeDto employeeToDto(EmployeeDetailedEntry entry);
 
     @Named("displayName")
@@ -41,6 +42,11 @@ public interface EmployeeDtoMapper {
     @Named("position")
     default SimpleDictDto position(EmployeeDetailedEntry entry) {
         return simpleDto(entry.getPositionId(), entry.getPositionCategory() == null ? entry.getPositionName() : entry.getPositionCategory());
+    }
+
+    @Named("officeLocation")
+    default SimpleDictDto officeLocation(EmployeeDetailedEntry entry) {
+        return simpleDto(entry.getOfficeLocationId(), entry.getOfficeLocationName());
     }
 
     @Named("currentProject")
