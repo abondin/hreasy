@@ -4,7 +4,7 @@ Uses in Employees Table (Employees.vue)
  -->
 
 <template>
-    <v-card class="d-flex" img="../../assets/card-bg.jpg">
+    <v-card class="d-flex pa-2">
         <employee-avatar-uploader v-bind:employee="employee"/>
         <v-list-item class="align-self-center">
             <v-list-item-content>

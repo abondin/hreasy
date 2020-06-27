@@ -3,10 +3,24 @@
 -->
 <template>
     <div class="d-flex flex-column" style="width: 164px">
+        <v-overlay :value="fullscreen" @click="fullscreen = false">
+            <v-card @click.stop="fullscreen = false">
+                <v-img max-height="500" max-width="500" v-if="emplAvatar" :src="emplAvatar"></v-img>
+                <v-btn
+                        absolute
+                        dark
+                        fab
+                        top
+                        right
+                >
+                    <v-icon>mdi-close</v-icon>
+                </v-btn>
+            </v-card>
+        </v-overlay>
         <v-avatar height="164px" width="164px"
-                class="profile hr-cropper"
-                color="grey">
-            <v-img v-if="emplAvatar" :src="emplAvatar"></v-img>
+                  class="profile hr-cropper"
+                  color="grey">
+            <v-img v-if="emplAvatar" :src="emplAvatar" @click.stop="fullscreen = !fullscreen"></v-img>
             <avatar-cropper
                     output-mime="image/jpeg"
                     @error="handleError"
@@ -43,6 +57,9 @@
 
         @Prop({required: true})
         employee!: Employee;
+
+        // Show image in fullscreen
+        private fullscreen = false;
 
         /**
          * Lifecycle hook
