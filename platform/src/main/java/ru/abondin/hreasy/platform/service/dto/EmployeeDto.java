@@ -18,6 +18,7 @@ public class EmployeeDto {
     private String sex;
     private SimpleDictDto department;
     private SimpleDictDto currentProject;
+    private SimpleDictDto position;
     private String email;
     private String phone;
     private String skype;

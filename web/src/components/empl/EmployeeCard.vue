@@ -31,6 +31,7 @@ Uses in Employees Table (Employees.vue)
                         <v-list-item-content>
                             <v-list-item-title class="title">{{employee.displayName}}
                             </v-list-item-title>
+                            <v-list-item-subtitle>{{employee.position.name}}</v-list-item-subtitle>
                             <v-list-item-subtitle>{{employee.
                                 currentProject?employee.currentProject.name:$tc('Проект не задан')}}
                                 <v-btn v-if="canUpdateCurrentProject()"
