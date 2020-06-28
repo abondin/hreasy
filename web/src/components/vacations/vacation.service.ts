@@ -5,10 +5,11 @@ import {AxiosInstance} from "axios";
 export interface Vacation {
     id: number,
     employee: number,
-    emplyeeDisplayName: String,
+    employeeDisplayName: String,
+    employeeCurrentProject: number,
     year: number,
-    startDate?: Date,
-    endDate?: Date,
+    startDate?: String,
+    endDate?: String,
     notes: String
 }
 

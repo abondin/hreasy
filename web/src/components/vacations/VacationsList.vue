@@ -11,24 +11,68 @@
         </v-alert>
         <v-card>
             <v-card-title>
-                {{$t('График отпусков')}}
-                <v-spacer></v-spacer>
-                <v-text-field
-                        v-model="search"
-                        append-icon="search"
-                        :label="$t('Поиск')"
-                        single-line
-                        hide-details
-                ></v-text-field>
+                <v-btn
+                        icon
+                        class="ma-2"
+                        @click="prev"
+                >
+                    <v-icon>mdi-chevron-left</v-icon>
+                </v-btn>
+                <span v-if="$refs.calendar">{{ $refs.calendar.title }}</span>
+                <v-btn outlined class="ma-2" @click="setToday">
+                    {{$t('Сегодня')}}
+                </v-btn>
+                <v-btn icon
+                       class="ma-2"
+                       @click="next">
+                    <v-icon>mdi-chevron-right</v-icon>
+                </v-btn>
+
             </v-card-title>
-            <v-data-table
-                    :loading="loading"
-                    :loading-text="$t('Загрузка_данных')"
-                    :headers="headers"
-                    :items="vacations"
-                    :search="search"
-            >
-            </v-data-table>
+            <v-row>
+                <v-col cols="12" lg="8">
+                    <v-calendar
+                            v-model="focus"
+                            event-name="employeeDisplayName"
+                            event-end="endDate"
+                            event-start="startDate"
+                            :event-color="getVacationColor"
+                            ref="calendar"
+                            :event-more=false
+                            :events="filteredVacations()"
+                            color="primary"
+                            type="month"
+                    ></v-calendar>
+                </v-col>
+                <v-col cols="12" lg="4">
+                    <v-list shaped>
+                        <v-list-item-group
+                                v-model="selectedProjects"
+                                multiple
+                        >
+                            <template v-for="project in allProjects">
+                                <v-list-item :key="project.id" :value="project.id"
+                                             :style="'background-color:'+getColor(project.id)">
+                                    <template v-slot:default="{ active, toggle }">
+                                        <v-list-item-content>
+                                            <v-list-item-title v-text="project.name"></v-list-item-title>
+                                        </v-list-item-content>
+
+                                        <v-list-item-action>
+                                            <v-checkbox
+                                                    color="white"
+                                                    :input-value="active"
+                                                    :true-value="project.id"
+                                                    @click="toggle"
+                                            ></v-checkbox>
+                                        </v-list-item-action>
+                                    </template>
+                                </v-list-item>
+                            </template>
+                        </v-list-item-group>
+                    </v-list>
+                </v-col>
+            </v-row>
         </v-card>
     </v-container>
 </template>
@@ -38,36 +82,87 @@
     import Vue from 'vue'
     import Component from 'vue-class-component';
     import vacationService, {Vacation} from "@/components/vacations/vacation.service";
-    import {DataTableHeader} from "vuetify";
+    import {Getter} from "vuex-class";
+    import {SimpleDict} from "@/store/modules/dict";
+
+    const namespace: string = 'dict';
 
     @Component
-    export default class EmployeesComponent extends Vue {
-        vacations: Vacation[] = [];
+    export default class VacationsListComponent extends Vue {
         loading: boolean = false;
-        search: string = '';
-        headers: DataTableHeader[] = [];
+        vacations: Vacation[] = [];
+        focus = '';
+        projectColors: Record<number, string> = {};
+        allColors = ['#AA00FF', '#6200EA', '#0091EA', '#00B8D4', '#00BFA5', '#AEEA00'];
+
+        @Getter("projects", {namespace})
+        private allProjects!: Array<SimpleDict>;
+
+        selectedProjects: Array<number> = [];
+
 
         /**
          * Lifecycle hook
          */
         created() {
-            this.headers.push({text: this.$tc('ФИО'), value: 'emplyeeDisplayName'});
-            this.headers.push({text: this.$tc('Год'), value: 'year'});
-            this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
-            this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});
-            this.headers.push({text: this.$tc('Примечание'), value: 'notes'});
             this.fetchData()
+        }
+
+        /**
+         * Lifecycle hook
+         */
+        mounted() {
+            (this.$refs.calendar as any).checkChange()
+        }
+
+        private setToday() {
+            this.focus = '';
+        }
+
+        private next() {
+            return (this.$refs.calendar as any).next();
+        }
+
+        private prev() {
+            return (this.$refs.calendar as any).prev();
+        }
+
+        private filteredVacations() {
+            return this.vacations.filter(v => !v.employeeCurrentProject ||
+                this.selectedProjects.indexOf(v.employeeCurrentProject) >= 0);
+        }
+
+        /**
+         * Vacation color depends on employee current project
+         * @param vacation
+         */
+        private getVacationColor(vacation: Vacation) {
+            return this.getColor(vacation.employeeCurrentProject);
+        }
+
+        private getColor(projectId: number) {
+            const color = projectId ? this.projectColors[projectId] : undefined;
+            return color;
         }
 
         private fetchData() {
             this.loading = true;
-            return vacationService.findAll()
-                .then(data => {
-                        this.vacations = data as Vacation[];
-                    }
-                ).finally(() => {
-                    this.loading = false
+            return this.$store.dispatch('dict/reloadProjects').then(() => {
+                this.selectedProjects = [...this.allProjects].map(p => p.id);
+                this.allProjects.forEach((project, index) => {
+                    const l = Math.min(this.allColors.length, this.allProjects.length);
+                    this.projectColors[project.id] = this.allColors[index % l];
                 });
+            }).then(() => {
+                return vacationService.findAll()
+                    .then(data => {
+                            this.vacations = (data as Vacation[]).filter(m => m.startDate && m.endDate && m.employeeDisplayName);
+                            return;
+                        }
+                    )
+            }).finally(() => {
+                this.loading = false
+            });
         }
     }
 </script>

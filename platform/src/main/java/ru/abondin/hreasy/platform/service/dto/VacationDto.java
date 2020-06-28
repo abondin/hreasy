@@ -9,6 +9,7 @@ public class VacationDto {
     private int id;
     private int employee;
     private String employeeDisplayName;
+    private Integer employeeCurrentProject;
     private int year;
     private LocalDate startDate;
     private LocalDate endDate;

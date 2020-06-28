@@ -15,6 +15,8 @@ public class VacationView {
     private String employeeLastname;
     @Column("employee_patronymic_name")
     private String employeePatronymicName;
+    @Column("employee_current_project")
+    private Integer employeeCurrentProject;
     private Integer year;
     @Column("start_date")
     private LocalDate startDate;
