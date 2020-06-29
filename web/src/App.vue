@@ -9,40 +9,40 @@
                     {{userDisplayName}}
                 </v-list-item>
 
-                <v-list-item>
+                <v-list-item link to="/profile">
                     <v-list-item-action>
-                        <v-icon color="grey darken-1">mdi-account</v-icon>
+                        <v-icon>mdi-account</v-icon>
                     </v-list-item-action>
-                    <v-list-item-title class="grey--text text--darken-1">
-                        <router-link to="/employees/profile">{{ $tc('Профиль')}}</router-link>
+                    <v-list-item-title>
+                        {{ $tc('Профиль')}}
                     </v-list-item-title>
                 </v-list-item>
 
 
-                <v-list-item link>
+                <v-list-item  to="/employees">
                     <v-list-item-action>
-                        <v-icon color="grey darken-1">mdi-account-multiple</v-icon>
+                        <v-icon>mdi-account-multiple</v-icon>
                     </v-list-item-action>
-                    <v-list-item-title class="grey--text text--darken-1">
-                        <router-link to="/employees">{{ $tc('Сотрудники')}}</router-link>
+                    <v-list-item-title>
+                        {{ $tc('Сотрудники')}}
                     </v-list-item-title>
                 </v-list-item>
 
-                <v-list-item link>
+                <v-list-item link to="/vacations">
                     <v-list-item-action>
-                        <v-icon color="grey darken-1">mdi-calendar-text</v-icon>
+                        <v-icon>mdi-calendar-text</v-icon>
                     </v-list-item-action>
-                    <v-list-item-title class="grey--text text--darken-1">
-                        <router-link to="/vacations">{{ $tc('Отпуска')}}</router-link>
+                    <v-list-item-title>
+                        {{ $tc('Отпуска')}}
                     </v-list-item-title>
                 </v-list-item>
 
-                <v-list-item link>
+                <v-list-item link v-on:click.stop="logout">
                     <v-list-item-action>
-                        <v-icon color="grey darken-1">mdi-logout</v-icon>
+                        <v-icon>mdi-logout</v-icon>
                     </v-list-item-action>
-                    <v-list-item-title class="grey--text text--darken-1">
-                        <a href="#" v-on:click="logout">{{ $tc('Выход')}}</a>
+                    <v-list-item-title>
+                        {{ $tc('Выход')}}
                     </v-list-item-title>
                 </v-list-item>
 

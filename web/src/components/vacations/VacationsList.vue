@@ -9,30 +9,33 @@
                 border="right">
             Work in progress
         </v-alert>
-        <v-card>
-            <v-card-title>
-                <v-btn
-                        icon
-                        class="ma-2"
-                        @click="prev"
-                >
-                    <v-icon>mdi-chevron-left</v-icon>
-                </v-btn>
-                <span v-if="$refs.calendar">{{ $refs.calendar.title }}</span>
-                <v-btn outlined class="ma-2" @click="setToday">
-                    {{$t('Сегодня')}}
-                </v-btn>
-                <v-btn icon
-                       class="ma-2"
-                       @click="next">
-                    <v-icon>mdi-chevron-right</v-icon>
-                </v-btn>
+        <v-row>
+            <v-col cols="12" lg="8">
+                <v-card>
+                    <v-card-title>
+                        <v-btn
+                                icon
+                                class="ma-2"
+                                @click="prev"
+                        >
+                            <v-icon>mdi-chevron-left</v-icon>
+                        </v-btn>
+                        <span v-if="$refs.calendar">{{ $refs.calendar.title }}</span>
+                        <v-btn outlined class="ma-2" @click="setToday">
+                            {{$t('Сегодня')}}
+                        </v-btn>
+                        <v-spacer></v-spacer>
+                        <v-btn icon
+                               class="ma-2"
+                               @click="next">
+                            <v-icon>mdi-chevron-right</v-icon>
+                        </v-btn>
 
-            </v-card-title>
-            <v-row>
-                <v-col cols="12" lg="8">
+                    </v-card-title>
+
                     <v-calendar
                             v-model="focus"
+                            :weekdays=weekdays
                             event-name="employeeDisplayName"
                             event-end="endDate"
                             event-start="startDate"
@@ -43,37 +46,40 @@
                             color="primary"
                             type="month"
                     ></v-calendar>
-                </v-col>
-                <v-col cols="12" lg="4">
-                    <v-list shaped>
-                        <v-list-item-group
-                                v-model="selectedProjects"
-                                multiple
-                        >
-                            <template v-for="project in allProjects">
-                                <v-list-item :key="project.id" :value="project.id"
-                                             :style="'background-color:'+getColor(project.id)">
-                                    <template v-slot:default="{ active, toggle }">
-                                        <v-list-item-content>
-                                            <v-list-item-title v-text="project.name"></v-list-item-title>
-                                        </v-list-item-content>
-
-                                        <v-list-item-action>
-                                            <v-checkbox
-                                                    color="white"
-                                                    :input-value="active"
-                                                    :true-value="project.id"
-                                                    @click="toggle"
-                                            ></v-checkbox>
-                                        </v-list-item-action>
-                                    </template>
-                                </v-list-item>
-                            </template>
-                        </v-list-item-group>
-                    </v-list>
-                </v-col>
-            </v-row>
-        </v-card>
+                </v-card>
+            </v-col>
+            <v-col cols="12" lg="4">
+                <v-card>
+                    <v-card-title>{{$t('Проекты')}}</v-card-title>
+                <v-list shaped dense>
+                    <v-list-item-group
+                            v-model="selectedProjects"
+                            multiple
+                    >
+                        <template v-for="project in allProjects">
+                            <v-list-item :key="project.id" :value="project.id"
+                                         :style="'background-color:'+getColor(project.id)"
+                                         class="ma-1">
+                                <template v-slot:default="{ active, toggle }">
+                                    <v-list-item-content>
+                                        <v-list-item-title v-text="project.name"></v-list-item-title>
+                                    </v-list-item-content>
+                                    <v-list-item-action>
+                                        <v-checkbox
+                                                color="white"
+                                                :input-value="active"
+                                                :true-value="project.id"
+                                                @click="toggle"
+                                        ></v-checkbox>
+                                    </v-list-item-action>
+                                </template>
+                            </v-list-item>
+                        </template>
+                    </v-list-item-group>
+                </v-list>
+                </v-card>
+            </v-col>
+        </v-row>
     </v-container>
 </template>
 
@@ -92,6 +98,7 @@
         loading: boolean = false;
         vacations: Vacation[] = [];
         focus = '';
+        private weekdays = [1, 2, 3, 4, 5, 6, 0];
         projectColors: Record<number, string> = {};
         allColors = ['#AA00FF', '#6200EA', '#0091EA', '#00B8D4', '#00BFA5', '#AEEA00'];
 

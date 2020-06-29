@@ -13,7 +13,7 @@ const routes = [
     {path: "/", redirect: '/employees'},
     {path: "/login", component: Login},
     {name: "employees", path: "/employees", component: Employees},
-    {name: 'employeeProfile', path: "/employees/profile", component: EmployeeProfile, props: true},
+    {name: 'employeeProfile', path: "/profile", component: EmployeeProfile, props: true},
     {path: "/vacations", component: VacationsList}
 ]
 const router = new VueRouter({
