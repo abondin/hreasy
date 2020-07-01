@@ -44,4 +44,4 @@ jobs:
       run: mvn -B package --file platform/pom.xml
     # Build Docker
     - name: Build and push docker
-      run: mvn -B jib:build -Dimage=abondin/hreasyplatform:latest --file platform/pom.xml
+      run: mvn -B jib:build -Dimage=abondin/hreasyplatform:latest -Djib.to.auth.username=abondin -Djib.to.auth.password=${GITHUB} --file platform/pom.xml
