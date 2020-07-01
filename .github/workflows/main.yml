@@ -39,5 +39,6 @@ jobs:
       run: mvn -B package --file platform/pom.xml
     # Build Docker
     - name: Build and push docker
-      env: GITHUB_TOKEN: ${{ secrets.GitHubToken }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GitHubToken }}
       run: mvn -B jib:build -Dimage='docker.io/abondin/hreasyplatform' -Djib.to.auth.username=abondin -Djib.to.auth.password=${GITHUB_TOKEN} --file platform/pom.xml
