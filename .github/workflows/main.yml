@@ -32,16 +32,12 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
-    
-    # Login to Docker Hub
-    - uses: azure/docker-login@v1
-      with:
-        username: abondin
-        password: ${GITHUB}
+  
       
     # Build with Maven
     - name: Build with Maven
       run: mvn -B package --file platform/pom.xml
     # Build Docker
     - name: Build and push docker
-      run: mvn -B jib:build -Dimage=abondin/hreasyplatform:latest -Djib.to.auth.username=abondin -Djib.to.auth.password=${GITHUB} --file platform/pom.xml
+      env: GITHUB_TOKEN: ${{ secrets.GitHubToken }}
+      run: mvn -B jib:build -Dimage='docker.io/abondin/hreasyplatform' -Djib.to.auth.username=abondin -Djib.to.auth.password=${GITHUB_TOKEN} --file platform/pom.xml
