@@ -54,4 +54,4 @@ jobs:
           username: ${{ secrets.GITHUBNAME }}
           password: ${{ secrets.GITHUBTOKEN }}
           reposiory: abondin/hreasyweb
-          path:  ./web
+          dockerfile:  web/Dockerfile
