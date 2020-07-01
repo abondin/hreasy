@@ -33,9 +33,15 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     
+    # Login to Docker Hub
+    - uses: azure/docker-login@v1
+      with:
+        username: abondin
+        password: ${GITHUB}
+      
     # Build with Maven
     - name: Build with Maven
       run: mvn -B package --file platform/pom.xml
     # Build Docker
-    - name: Build with Maven
+    - name: Build and push docker
       run: mvn -B jib:build -Dimage=abondin/hreasyplatform:latest --file platform/pom.xml
