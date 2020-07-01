@@ -40,8 +40,9 @@ jobs:
     # Build Docker
     - name: Build and push docker
       env:
-        GITHUB_TOKEN: ${{ secrets.GitHubToken }}
-      run: mvn -B jib:build -Dimage='docker.io/abondin/hreasyplatform' -Djib.to.auth.username=abondin -Djib.to.auth.password=${GITHUB_TOKEN} --file platform/pom.xml
+        GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+        GITHUB_NAME: ${{ secrets.GITHUBNAME }}
+      run: mvn -B jib:build -Dimage='docker.io/abondin/hreasyplatform' -Djib.to.auth.username=${GITHUB_NAME} -Djib.to.auth.password=${GITHUB_TOKEN} --file platform/pom.xml
       
   build-web:
     # The type of runner that the job will run on
@@ -49,10 +50,8 @@ jobs:
     steps:
       - name: Build and push Docker images
         uses: docker/build-push-action@v1.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GitHubToken }}
         with:
-          username: abondin
-          password: ${GITHUB_TOKEN}
+          username: ${{ secrets.GITHUBNAME }}
+          password: ${{ secrets.GITHUBTOKEN }}
           reposiory: abondin/hreasyweb
           path:  web/Dockerfile
