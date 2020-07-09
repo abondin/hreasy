@@ -9,7 +9,7 @@ import i18n from "@/i18n";
 
 Vue.config.productionTip = false
 
-new Vue({
+const vue = new Vue({
     i18n,
     store,
     router,
@@ -22,6 +22,7 @@ new Vue({
 
 
 window.addEventListener('unhandledrejection', function (event) {
-    logger.log('----------- unhandledrejection', event);
+    logger.log('Dispath unhandledrejection', event);
+    vue.$store.dispatch('error/unhandledrejection', event.reason);
 });
 

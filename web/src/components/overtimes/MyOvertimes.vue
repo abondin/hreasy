@@ -11,6 +11,11 @@
         </v-alert>
         <v-card>
             <v-card-title>
+                <div>{{ $tc('Сверхурочные')}}</div>
+                <v-spacer></v-spacer>
+                <v-card-actions>
+                    <v-btn>${{Добавить}}</v-btn>
+                </v-card-actions>
             </v-card-title>
             <v-data-table
                     :loading="loading"

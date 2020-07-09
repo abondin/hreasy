@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex, {StoreOptions} from 'vuex'
 import auth from './modules/auth'
 import dict from './modules/dict'
+import error from './modules/error'
 
 
 Vue.use(Vuex)
@@ -16,7 +17,8 @@ const storeOptions: StoreOptions<RootState> = {
     },
     modules: {
         auth,
-        dict
+        dict,
+        error
     }
 }
 

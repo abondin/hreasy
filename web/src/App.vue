@@ -75,7 +75,12 @@
             <v-row v-if="!username">
                 <router-link to="/login" tag="button">{{ $t('Вход')}}</router-link>
             </v-row>
-
+            <v-alert
+                    v-if="unhandledrejection"
+                    type="error"
+                    dismissible>
+                {{unhandledrejection}}
+            </v-alert>
         </v-app-bar>
 
         <v-content>
@@ -100,25 +105,30 @@
     import {Action, Getter} from "vuex-class";
     import moment from "moment";
 
-    const namespace: string = 'auth';
+    const namespace_auth: string = 'auth';
+    const namespace_error: string = 'error';
 
     @Component
     export default class App extends Vue {
         drawer = false;
 
-        @Action("logout", {namespace})
+        @Action("logout", {namespace: namespace_auth})
         logoutAction!: () => Promise<any>;
 
-        @Getter("displayName", {namespace})
+        @Getter("displayName", {namespace: namespace_auth})
         userDisplayName: string | undefined;
 
-        @Getter("username", {namespace})
+        @Getter("username", {namespace: namespace_auth})
         username: string | undefined;
+
+        @Getter("unhandledrejection", {namespace: namespace_error})
+        unhandledrejection: undefined;
 
         created() {
             this.$vuetify.theme.dark = true;
             moment.locale(this.$i18n.locale);
         }
+
 
         private logout() {
             return this.logoutAction().then(() => this.$router.push('/login'));
