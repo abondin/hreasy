@@ -18,6 +18,15 @@
                     </v-list-item-title>
                 </v-list-item>
 
+                <v-list-item link to="/profile/overtimes">
+                    <v-list-item-action>
+                        <v-icon>mdi-briefcase-clock</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>
+                        {{ $tc('Сверхурочные')}}
+                    </v-list-item-title>
+                </v-list-item>
+
 
                 <v-list-item  to="/employees">
                     <v-list-item-action>
@@ -89,6 +98,7 @@
 <script lang="ts">
     import {Component, Vue} from 'vue-property-decorator';
     import {Action, Getter} from "vuex-class";
+    import moment from "moment";
 
     const namespace: string = 'auth';
 
@@ -107,6 +117,7 @@
 
         created() {
             this.$vuetify.theme.dark = true;
+            moment.locale(this.$i18n.locale);
         }
 
         private logout() {
