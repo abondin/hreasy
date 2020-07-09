@@ -13,7 +13,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  build-platform:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -21,7 +21,37 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-
-    # Runs a single command using the runners shell
-    - name: Start build script
-      run: ./devops/build.sh
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+   
+    - name: Cache Maven packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+  
+      
+    # Build with Maven
+    - name: Build with Maven
+      run: mvn -B package --file platform/pom.xml
+    # Build Docker
+    - name: Build and push docker
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+        GITHUB_NAME: ${{ secrets.GITHUBNAME }}
+      run: mvn -B jib:build -Dimage='docker.io/abondin/hreasyplatform' -Djib.to.auth.username=${GITHUB_NAME} -Djib.to.auth.password=${GITHUB_TOKEN} --file platform/pom.xml
+      
+  build-web:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v1.1.0
+        with:
+          username: ${{ secrets.GITHUBNAME }}
+          password: ${{ secrets.GITHUBTOKEN }}
+          reposiory: abondin/hreasyweb
+          path:  web
