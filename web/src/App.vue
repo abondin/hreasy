@@ -83,11 +83,11 @@
             </v-alert>
         </v-app-bar>
 
-        <v-content>
+        <v-main>
             <v-container>
                 <router-view></router-view>
             </v-container>
-        </v-content>
+        </v-main>
 
         <v-footer>
             <v-col

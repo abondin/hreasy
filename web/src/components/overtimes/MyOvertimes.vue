@@ -14,19 +14,31 @@
                 <div>{{ $tc('Сверхурочные')}}</div>
                 <v-spacer></v-spacer>
                 <v-card-actions>
-                    <v-btn>${{Добавить}}</v-btn>
+                    <v-btn @click.stop="editItemDialog=true" color="primary">{{$t('Добавить')}}</v-btn>
                 </v-card-actions>
             </v-card-title>
+            <v-dialog
+                    v-model="editItemDialog">
+                <overtime-add-or-edit
+                        v-bind:employee-id="employeeId"
+                        v-bind:period="selectedPeriod"
+                        v-bind:all-projects="allProjects"
+                        @submit="onItemSubmit"
+                        @close="onItemClose"></overtime-add-or-edit>
+            </v-dialog>
             <v-data-table
                     :loading="loading"
                     :loading-text="$t('Загрузка_данных')"
                     :headers="headers"
-                    :items="overtimes()"
-                    sort-by="date"
+                    :items="overtimes"
+                    sort-by="updatedAt"
                     sort-desc
                     disable-pagination>
                 <template v-slot:item.date="{ item }">
                     {{formatDate(item.date)}}
+                </template>
+                <template v-slot:item.updatedAt="{ item }">
+                    {{formatDateTime(item.updatedAt)}}
                 </template>
                 <template v-slot:item.projectId="{ item }">
                     {{projectName(item.projectId)}}
@@ -42,18 +54,24 @@
     import Component from 'vue-class-component';
     import {Getter} from "vuex-class";
     import {SimpleDict} from "@/store/modules/dict";
-    import overtimeService, {OvertimeReport, OvertimeUtils} from "@/components/overtimes/overtime.service";
+    import overtimeService, {
+        OvertimeItem,
+        OvertimeReport,
+        OvertimeUtils
+    } from "@/components/overtimes/overtime.service";
     import {DataTableHeader} from "vuetify";
-    import moment from "moment";
+    import OvertimeAddOrEdit from "@/components/overtimes/OvertimeAddOrEdit.vue";
 
     const namespace_dict: string = 'dict';
     const namespace_auth: string = 'auth';
-
-    @Component
+    @Component({
+        components: {OvertimeAddOrEdit}
+    })
     export default class MyOvertimes extends Vue {
         loading: boolean = false;
         overtimeReport!: OvertimeReport;
         headers: DataTableHeader[] = [];
+        editItemDialog = false;
 
         @Getter("projects", {namespace: namespace_dict})
         private allProjects!: Array<SimpleDict>;
@@ -63,9 +81,7 @@
 
         selectedPeriod = OvertimeUtils.getPeriod(new Date());
 
-        private overtimes() {
-            return this.overtimeReport ? this.overtimeReport.overtimes : [];
-        }
+        private overtimes: OvertimeItem[] = [];
 
         /**
          * Lifecycle hook
@@ -75,6 +91,7 @@
             this.headers.push({text: this.$tc('Проект'), value: 'projectId'});
             this.headers.push({text: this.$tc('Часы'), value: 'hours'});
             this.headers.push({text: this.$tc('Комментарий'), value: 'notes'});
+            this.headers.push({text: this.$tc('Последнее обновление'), value: 'updatedAt'});
             this.fetchData()
         }
 
@@ -103,6 +120,7 @@
                                 overtimes: []
                             }
                         }
+                        this.overtimes = this.overtimeReport.overtimes;
                         return this.overtimeReport;
                     }
                 ).finally(() => {
@@ -116,12 +134,24 @@
             return OvertimeUtils.formatDate(date);
         }
 
-        private projectName(projectId: number) : string {
-            const projects = this.allProjects.filter(p=>p.id == projectId);
-            if (projects && projects.length > 0){
+        private formatDateTime(date: Date): string | undefined {
+            return OvertimeUtils.formatDateTime(date);
+        }
+
+        private projectName(projectId: number): string {
+            const projects = this.allProjects.filter(p => p.id == projectId);
+            if (projects && projects.length > 0) {
                 return projects[0].name;
             }
             return this.$tc(`Неизвестный проект ${projectId}`);
+        }
+
+        private onItemSubmit(event: any) {
+            this.fetchReport();
+        }
+
+        private onItemClose() {
+            this.editItemDialog = false;
         }
 
     }
