@@ -14,18 +14,14 @@
                 <div>{{ $tc('Сверхурочные')}}</div>
                 <v-spacer></v-spacer>
                 <v-card-actions>
-                    <v-btn @click.stop="editItemDialog=true" color="primary">{{$t('Добавить')}}</v-btn>
+                        <overtime-add-or-edit
+                                v-bind:employee-id="employeeId"
+                                v-bind:period="selectedPeriod"
+                                v-bind:all-projects="allProjects"
+                                @submit="onItemSubmit"
+                                @close="onItemDialogClose"></overtime-add-or-edit>
                 </v-card-actions>
             </v-card-title>
-            <v-dialog
-                    v-model="editItemDialog">
-                <overtime-add-or-edit
-                        v-bind:employee-id="employeeId"
-                        v-bind:period="selectedPeriod"
-                        v-bind:all-projects="allProjects"
-                        @submit="onItemSubmit"
-                        @close="onItemClose"></overtime-add-or-edit>
-            </v-dialog>
             <v-data-table
                     :loading="loading"
                     :loading-text="$t('Загрузка_данных')"
@@ -60,18 +56,17 @@
         OvertimeUtils
     } from "@/components/overtimes/overtime.service";
     import {DataTableHeader} from "vuetify";
-    import OvertimeAddOrEdit from "@/components/overtimes/OvertimeAddOrEdit.vue";
+    import OvertimeAddOrEditDialog from "@/components/overtimes/OvertimeAddOrEdit.vue";
 
     const namespace_dict: string = 'dict';
     const namespace_auth: string = 'auth';
     @Component({
-        components: {OvertimeAddOrEdit}
+        components: {OvertimeAddOrEdit: OvertimeAddOrEditDialog}
     })
     export default class MyOvertimes extends Vue {
         loading: boolean = false;
         overtimeReport!: OvertimeReport;
         headers: DataTableHeader[] = [];
-        editItemDialog = false;
 
         @Getter("projects", {namespace: namespace_dict})
         private allProjects!: Array<SimpleDict>;
@@ -82,6 +77,7 @@
         selectedPeriod = OvertimeUtils.getPeriod(new Date());
 
         private overtimes: OvertimeItem[] = [];
+
 
         /**
          * Lifecycle hook
@@ -150,9 +146,10 @@
             this.fetchReport();
         }
 
-        private onItemClose() {
-            this.editItemDialog = false;
+        private onItemDialogClose(){
+            // Do nothing?
         }
+
 
     }
 </script>
