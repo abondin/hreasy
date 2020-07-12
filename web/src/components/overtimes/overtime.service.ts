@@ -25,10 +25,55 @@ export interface OvertimeReport {
      */
     id?: number,
     /**
-     * Overtime report period in yyyymm format. For example 202006 for all overtimes, reported in June
+     * Overtime report period in yyyymm format. For example 202005 for all overtimes, reported in June
+     * @see ReportPeriod
      */
     reportPeriod: number,
     overtimes: OvertimeItem[];
+}
+
+/**
+ * Represent overtime period.
+ * <b>Keep in mind that month starts with 0</b>
+ *
+ */
+export class ReportPeriod {
+
+    public static fromPeriodId(periodId: number) {
+        return new ReportPeriod(periodId / 100, periodId - periodId / 100);
+    }
+
+    /**
+     * Employee works with overtimes for previous month before the salary calculation
+     * (hardcoded value - 5th day of every month)
+     */
+    static currentPeriod(): ReportPeriod {
+        let m = moment();
+        if (m.date() < 5) {
+            m = m.add(-1, "month");
+        }
+        return new ReportPeriod(m.year(), m.month());
+    }
+
+    constructor(private year: number, private month: number) {
+    }
+
+
+    public periodId(): number {
+        return this.year * 100 + (this.month);
+    }
+
+    public toString() {
+        return moment([this.year, this.month, 1]).format("MMMM YYYY");
+    }
+
+    public increment(){
+        this.month++;
+    }
+    public decrement(){
+        this.month--;
+    }
+
 }
 
 export interface OvertimeService {
@@ -102,9 +147,6 @@ class MockOvertimeService implements OvertimeService {
 }
 
 export class OvertimeUtils {
-    static getPeriod(date: Date): number {
-        return date.getFullYear() * 100 + (date.getMonth() + 1);
-    }
 
     static formatDate(date: Date): string | undefined {
         if (date) {

@@ -11,15 +11,22 @@
         </v-alert>
         <v-card>
             <v-card-title>
-                <div>{{ $tc('Сверхурочные')}}</div>
+                <div class="mr-2">{{ $tc('Сверхурочные')}}</div>
+                <v-btn @click.stop="decrementPeriod()" link>
+                    <v-icon>mdi-chevron-left</v-icon>
+                </v-btn>
+                <div class="ml-1 mr-2">{{selectedPeriod}}</div>
+                <v-btn @click.stop="incrementPeriod()" link>
+                    <v-icon>mdi-chevron-right</v-icon>
+                </v-btn>
                 <v-spacer></v-spacer>
                 <v-card-actions>
-                        <overtime-add-or-edit
-                                v-bind:employee-id="employeeId"
-                                v-bind:period="selectedPeriod"
-                                v-bind:all-projects="allProjects"
-                                @submit="onItemSubmit"
-                                @close="onItemDialogClose"></overtime-add-or-edit>
+                    <overtime-add-or-edit
+                            v-bind:employee-id="employeeId"
+                            v-bind:period="selectedPeriod"
+                            v-bind:all-projects="allProjects"
+                            @submit="onItemSubmit"
+                            @close="onItemDialogClose"></overtime-add-or-edit>
                 </v-card-actions>
             </v-card-title>
             <v-data-table
@@ -53,7 +60,8 @@
     import overtimeService, {
         OvertimeItem,
         OvertimeReport,
-        OvertimeUtils
+        OvertimeUtils,
+        ReportPeriod
     } from "@/components/overtimes/overtime.service";
     import {DataTableHeader} from "vuetify";
     import OvertimeAddOrEditDialog from "@/components/overtimes/OvertimeAddOrEdit.vue";
@@ -74,7 +82,7 @@
         @Getter("employeeId", {namespace: namespace_auth})
         employeeId!: number;
 
-        selectedPeriod = OvertimeUtils.getPeriod(new Date());
+        selectedPeriod = ReportPeriod.currentPeriod();
 
         private overtimes: OvertimeItem[] = [];
 
@@ -105,14 +113,15 @@
             if (showLoading) {
                 this.loading = true;
             }
-            return overtimeService.get(this.employeeId, this.selectedPeriod)
+            const periodId = this.selectedPeriod.periodId();
+            return overtimeService.get(this.employeeId, periodId)
                 .then(report => {
                         if (report) {
                             this.overtimeReport = report;
                         } else {
                             this.overtimeReport = {
                                 employeeId: this.employeeId,
-                                reportPeriod: this.selectedPeriod,
+                                reportPeriod: periodId,
                                 overtimes: []
                             }
                         }
@@ -146,10 +155,19 @@
             this.fetchReport();
         }
 
-        private onItemDialogClose(){
+        private onItemDialogClose() {
             // Do nothing?
         }
 
+        private incrementPeriod(){
+            this.selectedPeriod.increment();
+            this.fetchReport(true);
+        }
+
+        private decrementPeriod(){
+            this.selectedPeriod.decrement();
+            this.fetchReport(true);
+        }
 
     }
 </script>

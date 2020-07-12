@@ -19,7 +19,7 @@ Emits:
             </v-btn>
         </template>
         <v-form v-if="item"
-                :ref="`overtime-item-update-${employeeId}-${period}`">
+                :ref="`overtime-item-update-${employeeId}-${period.periodId()}`">
             <v-card>
                 <v-card-title>{{$t('Учёт сверхурочных за день')}}</v-card-title>
                 <v-card-text>
@@ -72,9 +72,8 @@ Emits:
     import Vue from 'vue'
     import Component from 'vue-class-component';
     import {Prop, Watch} from "vue-property-decorator";
-    import overtimeService, {OvertimeItem} from "@/components/overtimes/overtime.service";
+    import overtimeService, {OvertimeItem, ReportPeriod} from "@/components/overtimes/overtime.service";
     import {SimpleDict} from "@/store/modules/dict";
-    import logger from "@/logger";
 
 
     @Component
@@ -84,7 +83,7 @@ Emits:
         employeeId!: number;
 
         @Prop({required: true})
-        period!: number;
+        period!: ReportPeriod;
 
         @Prop({required: true})
         allProjects!: SimpleDict[];
@@ -111,9 +110,9 @@ Emits:
         }
 
         private submit() {
-            const form: any = this.$refs[`overtime-item-update-${this.employeeId}-${this.period}`];
+            const form: any = this.$refs[`overtime-item-update-${this.employeeId}-${this.period.periodId()}`];
             if (form.validate()) {
-                return overtimeService.addItem(this.employeeId, this.period, this.item).then((report) => {
+                return overtimeService.addItem(this.employeeId, this.period.periodId(), this.item).then((report) => {
                     this.$emit('submit', report);
                     this.closeDialog();
                 });
@@ -134,7 +133,7 @@ Emits:
                     hours: 8,
                     notes: undefined
                 };
-                if (this.item){
+                if (this.item) {
                     // Be careful. shallow copy. Doesn't work with nested objects
                     this.item = Object.assign({}, def);
                 } else {
