@@ -5,6 +5,10 @@ import moment from 'moment';
 
 export interface OvertimeItem {
     /**
+     * Generated on server side during persisting
+     */
+    id?: number,
+    /**
      * YYYY-MM-DD format
      */
     date: string,
@@ -29,7 +33,7 @@ export interface OvertimeReport {
      * @see ReportPeriod
      */
     reportPeriod: number,
-    overtimes: OvertimeItem[];
+    items: OvertimeItem[];
 }
 
 /**
@@ -67,10 +71,11 @@ export class ReportPeriod {
         return moment([this.year, this.month, 1]).format("MMMM YYYY");
     }
 
-    public increment(){
+    public increment() {
         this.month++;
     }
-    public decrement(){
+
+    public decrement() {
         this.month--;
     }
 
@@ -109,39 +114,8 @@ class RestOvertimeService implements OvertimeService {
         if (!item.createdAt) {
             item.createdAt = now;
         }
-        return httpService.post(`v1/overtimes/${employeeId}/report/${reportPeriod}`, item).then(response => {
+        return httpService.post(`v1/overtimes/${employeeId}/report/${reportPeriod}/item`, item).then(response => {
             return response.data;
-        });
-    }
-}
-
-class MockOvertimeService implements OvertimeService {
-
-    private myReports: OvertimeReport[] = []
-
-    public get(employeeId: number, reportPeriod: number): Promise<OvertimeReport> {
-        const reps = this.myReports.filter(r => r.reportPeriod == reportPeriod);
-        if (reps && reps.length >= 1) {
-            return Promise.resolve(reps[0]);
-        }
-        const emptyReport: OvertimeReport = {
-            employeeId: employeeId,
-            reportPeriod: reportPeriod,
-            overtimes: []
-        };
-        this.myReports.push(emptyReport)
-        return Promise.resolve(emptyReport);
-    }
-
-    addItem(employeeId: number, reportPeriod: number, item: OvertimeItem): Promise<OvertimeReport> {
-        return this.get(employeeId, reportPeriod).then(report => {
-            const now = new Date();
-            item.updatedAt = now;
-            if (!item.createdAt) {
-                item.createdAt = now;
-            }
-            report.overtimes.push(item);
-            return report;
         });
     }
 }
@@ -165,7 +139,7 @@ export class OvertimeUtils {
     }
 }
 
-const overtimeService: OvertimeService = new MockOvertimeService();
+const overtimeService: OvertimeService = new RestOvertimeService(httpService);
 
 export default overtimeService;
 

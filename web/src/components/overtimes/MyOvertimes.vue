@@ -122,10 +122,10 @@
                             this.overtimeReport = {
                                 employeeId: this.employeeId,
                                 reportPeriod: periodId,
-                                overtimes: []
+                                items: []
                             }
                         }
-                        this.overtimes = this.overtimeReport.overtimes;
+                        this.overtimes = this.overtimeReport.items;
                         return this.overtimeReport;
                     }
                 ).finally(() => {
