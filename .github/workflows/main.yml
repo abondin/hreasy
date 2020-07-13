@@ -55,5 +55,5 @@ jobs:
           path:  web
           username: ${{ secrets.GITHUBNAME }}
           password: ${{ secrets.GITHUBTOKEN }}
-          reposiory: abondin/hreasyweb
+          reposiory: docker.io/abondin/hreasyweb
           tags: latest
