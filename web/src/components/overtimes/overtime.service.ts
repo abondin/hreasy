@@ -32,7 +32,7 @@ export interface OvertimeReport {
      * Overtime report period in yyyymm format. For example 202005 for all overtimes, reported in June
      * @see ReportPeriod
      */
-    reportPeriod: number,
+    period: number,
     items: OvertimeItem[];
 }
 
@@ -96,6 +96,14 @@ export interface OvertimeService {
      * @param item
      */
     addItem(employeeId: number, reportPeriod: number, item: OvertimeItem): Promise<OvertimeReport>;
+
+    /**
+     * Delete one item from the report
+     * @param employeeId
+     * @param reportPeriod
+     * @param itemId
+     */
+    deleteItem(employeeId: number, reportPeriod: number, itemId: number): Promise<OvertimeReport>;
 }
 
 class RestOvertimeService implements OvertimeService {
@@ -115,6 +123,12 @@ class RestOvertimeService implements OvertimeService {
             item.createdAt = now;
         }
         return httpService.post(`v1/overtimes/${employeeId}/report/${reportPeriod}/item`, item).then(response => {
+            return response.data;
+        });
+    }
+
+    deleteItem(employeeId: number, reportPeriod: number, itemId: number): Promise<OvertimeReport> {
+        return httpService.delete(`v1/overtimes/${employeeId}/report/${reportPeriod}/item/${itemId}`).then(response => {
             return response.data;
         });
     }

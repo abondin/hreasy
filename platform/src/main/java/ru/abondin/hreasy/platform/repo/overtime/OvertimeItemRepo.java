@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 public interface OvertimeItemRepo extends ReactiveCrudRepository<OvertimeItemEntry, Integer> {
     @Query("select * from overtime_item where" +
             " report_id=:report_id" +
+            " and deleted_at is null" +
             " order by date")
     Flux<OvertimeItemEntry> get(@Param("reportId") int reportId);
 }

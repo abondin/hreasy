@@ -38,7 +38,42 @@
                     sort-desc
                     disable-pagination>
                 <template v-slot:item.date="{ item }">
-                    {{formatDate(item.date)}}
+                    <v-dialog
+                            v-model="deleteDialog"
+                            width="500">
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs"
+                                   v-on="on" icon>
+                                <v-icon>mdi-delete</v-icon>
+                            </v-btn>
+                        </template>
+                        <v-card>
+                            <v-card-title primary-title>
+                                {{$t('Удаление')}}
+                            </v-card-title>
+
+                            <v-card-text>
+                                {{$t('Вы уверены что хотите удалить запись?')}}
+                            </v-card-text>
+
+                            <v-divider></v-divider>
+
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn
+                                        text
+                                        @click="deleteDialog = false">
+                                    {{$t('Нет')}}
+                                </v-btn>
+                                <v-btn
+                                        color="primary"
+                                        @click="deleteItem(item)">
+                                    {{$t('Да')}}
+                                </v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-dialog>
+                    <span>{{formatDate(item.date)}}</span>
                 </template>
                 <template v-slot:item.updatedAt="{ item }">
                     {{formatDateTime(item.updatedAt)}}
@@ -86,6 +121,8 @@
 
         private overtimes: OvertimeItem[] = [];
 
+        private deleteDialog = false;
+
 
         /**
          * Lifecycle hook
@@ -116,23 +153,28 @@
             const periodId = this.selectedPeriod.periodId();
             return overtimeService.get(this.employeeId, periodId)
                 .then(report => {
-                        if (report) {
-                            this.overtimeReport = report;
-                        } else {
-                            this.overtimeReport = {
-                                employeeId: this.employeeId,
-                                reportPeriod: periodId,
-                                items: []
-                            }
-                        }
-                        this.overtimes = this.overtimeReport.items;
-                        return this.overtimeReport;
+                        return this.refreshReport(report);
                     }
                 ).finally(() => {
                     if (showLoading) {
                         this.loading = false
                     }
                 });
+        }
+
+        private refreshReport(report : OvertimeReport|undefined) : OvertimeReport {
+            if (report) {
+                this.overtimeReport = report;
+            } else {
+                const periodId = this.selectedPeriod.periodId();
+                this.overtimeReport = {
+                    employeeId: this.employeeId,
+                    period: periodId,
+                    items: []
+                }
+            }
+            this.overtimes = this.overtimeReport.items;
+            return this.overtimeReport;
         }
 
         private formatDate(date: Date): string | undefined {
@@ -155,19 +197,28 @@
             this.fetchReport();
         }
 
+        private deleteItem(item : OvertimeItem){
+            overtimeService.deleteItem(this.overtimeReport.employeeId, this.overtimeReport.period, item.id!).then((report)=>{
+                this.deleteDialog = false;
+                return this.refreshReport(report);
+            });
+        }
+
         private onItemDialogClose() {
             // Do nothing?
         }
 
-        private incrementPeriod(){
+        private incrementPeriod() {
             this.selectedPeriod.increment();
             this.fetchReport(true);
         }
 
-        private decrementPeriod(){
+        private decrementPeriod() {
             this.selectedPeriod.decrement();
             this.fetchReport(true);
         }
+
+
 
     }
 </script>

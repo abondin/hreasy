@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeService;
 import ru.abondin.hreasy.platform.service.overtime.dto.NewOvertimeItemDto;
-import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeItemDto;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeReportDto;
 
 @RestController()
@@ -30,7 +30,16 @@ public class OvertimeController {
                                               @PathVariable int period,
                                               @RequestBody NewOvertimeItemDto newItem) {
         log.debug("Adding {} to report [{}, {}]", newItem, employeeId, period);
-        return service.addItem(employeeId, period, newItem);
+        return AuthHandler.currentAuth().flatMap(auth -> service.addItem(employeeId, period, newItem, auth));
+    }
+
+    @DeleteMapping("/{employeeId}/report/{period}/item/{itemId}")
+    @ResponseBody
+    public Mono<OvertimeReportDto> deleteItem(@PathVariable int employeeId,
+                                              @PathVariable int period,
+                                              @PathVariable int itemId) {
+        log.debug("Deleting item {} from report [{}, {}]", itemId, employeeId, period);
+        return AuthHandler.currentAuth().flatMap(auth -> service.deleteItem(employeeId, period, itemId, auth));
     }
 
 }

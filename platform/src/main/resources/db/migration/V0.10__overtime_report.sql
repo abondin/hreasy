@@ -17,10 +17,14 @@ create TABLE overtime_item (
 	hours int NOT NULL,
 	notes nvarchar(1024) NULL,
     created_at datetimeoffset NOT NULL,
-    updated_at datetimeoffset NOT NULL
+    created_employee_id int NOT NULL,
+    deleted_at datetimeoffset NULL,
+    deleted_employee_id int NULL,
 )
 
 ALTER TABLE overtime_item ADD CONSTRAINT overtime_item_report_FK FOREIGN KEY (report_id) REFERENCES overtime_report(id);
+ALTER TABLE overtime_item ADD CONSTRAINT overtime_item_created_FK FOREIGN KEY (created_employee_id) REFERENCES employee(id);
+ALTER TABLE overtime_item ADD CONSTRAINT overtime_item_deleted_FK FOREIGN KEY (deleted_employee_id) REFERENCES employee(id);
 
 end
 GO

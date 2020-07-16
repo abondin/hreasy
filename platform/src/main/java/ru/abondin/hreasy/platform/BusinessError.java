@@ -3,6 +3,8 @@ package ru.abondin.hreasy.platform;
 
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -11,13 +13,16 @@ import java.util.Map;
  * Give the client clear reason of error.
  */
 @Data
-public class BusinessError extends RuntimeException{
-
+public class BusinessError extends RuntimeException {
 
 
     public BusinessError(String code, List<String> localizationArgs) {
         this.code = code;
         this.localizationArgs = localizationArgs;
+    }
+
+    public BusinessError(String code, String... localizationArgs) {
+        this(code, localizationArgs == null ? new ArrayList<>() : Arrays.asList(localizationArgs));
     }
 
     /**

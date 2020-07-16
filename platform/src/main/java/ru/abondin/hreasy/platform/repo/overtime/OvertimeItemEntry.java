@@ -2,7 +2,6 @@ package ru.abondin.hreasy.platform.repo.overtime;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
@@ -28,7 +27,10 @@ public class OvertimeItemEntry {
     private int projectId;
     private int hours;
     private String notes;
+
     private OffsetDateTime createdAt;
-    private OffsetDateTime updatedAt;
+    private Integer createdEmployeeId;
+    private OffsetDateTime deletedAt;
+    private Integer deletedEmployeeId;
 
 }
