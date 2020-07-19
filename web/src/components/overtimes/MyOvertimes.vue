@@ -162,7 +162,7 @@
                 });
         }
 
-        private refreshReport(report : OvertimeReport|undefined) : OvertimeReport {
+        private refreshReport(report: OvertimeReport | undefined): OvertimeReport {
             if (report) {
                 this.overtimeReport = report;
             } else {
@@ -197,8 +197,8 @@
             this.fetchReport();
         }
 
-        private deleteItem(item : OvertimeItem){
-            overtimeService.deleteItem(this.overtimeReport.employeeId, this.overtimeReport.period, item.id!).then((report)=>{
+        private deleteItem(item: OvertimeItem) {
+            overtimeService.deleteItem(this.overtimeReport.employeeId, this.overtimeReport.period, item.id!).then((report) => {
                 this.deleteDialog = false;
                 return this.refreshReport(report);
             });
@@ -217,7 +217,6 @@
             this.selectedPeriod.decrement();
             this.fetchReport(true);
         }
-
 
 
     }

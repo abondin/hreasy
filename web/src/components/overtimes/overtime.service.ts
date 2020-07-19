@@ -89,6 +89,8 @@ export interface OvertimeService {
      */
     get(employeeId: number, reportPeriod: number): Promise<OvertimeReport>;
 
+    getSummary(reportPeriod: number): Promise<any>;
+
     /**
      * Add one item to the report
      * @param employeeId
@@ -106,8 +108,16 @@ export interface OvertimeService {
     deleteItem(employeeId: number, reportPeriod: number, itemId: number): Promise<OvertimeReport>;
 }
 
+
+
 class RestOvertimeService implements OvertimeService {
     constructor(private httpService: AxiosInstance) {
+    }
+
+    public getSummary(reportPeriod: number): Promise<OvertimeReport> {
+        return httpService.get(`v1/overtimes/summary/${reportPeriod}`).then(response => {
+            return response.data;
+        });
     }
 
     public get(employeeId: number, reportPeriod: number): Promise<OvertimeReport> {

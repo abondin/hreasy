@@ -3,18 +3,19 @@ package ru.abondin.hreasy.platform.service.overtime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.repo.overtime.OvertimeItemRepo;
-import ru.abondin.hreasy.platform.repo.overtime.OvertimeReportEntry;
-import ru.abondin.hreasy.platform.repo.overtime.OvertimeReportRepo;
+import ru.abondin.hreasy.platform.repo.overtime.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.overtime.dto.NewOvertimeItemDto;
+import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeMapper;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeReportDto;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 public class OvertimeService {
     private final OvertimeReportRepo reportRepo;
     private final OvertimeItemRepo itemRepo;
+    private final OvertimeItemViewRepo itemViewRepo;
     private final OvertimeMapper mapper;
     private final DateTimeService dateTimeService;
 
@@ -114,5 +116,26 @@ public class OvertimeService {
                             report.setItems(items);
                             return report;
                         }));
+    }
+
+    public Flux<OvertimeEmployeeSummary> getSummary(int period) {
+        // Find all not deleted overtime items for given period
+        return itemViewRepo.findNotDeleted(period)
+                // Collect them to list. TODO - Work in flux
+                .collectList().flatMapMany(list -> {
+                    // Synchronous grouping items by employee
+                    var groupedByEmployee = list.stream()
+                            .collect(Collectors.groupingBy(OvertimeItemView::getReportEmployeeId));
+                    // Map to DTO
+                    var dto = groupedByEmployee
+                            .entrySet().stream().map(entry -> {
+                                // Convert to DTO
+                                var summary = new OvertimeEmployeeSummary();
+                                summary.setEmployeeId(entry.getKey());
+                                summary.getItems().addAll(entry.getValue().stream().map(mapper::viewToDto).collect(Collectors.toList()));
+                                return summary;
+                            });
+                    return Flux.fromStream(dto);
+                });
     }
 }
