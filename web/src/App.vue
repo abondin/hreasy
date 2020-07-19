@@ -9,16 +9,37 @@
                     {{userDisplayName}}
                 </v-list-item>
 
-                <v-list-item link to="/profile">
+                <v-list-item link to="/profile/main">
                     <v-list-item-action>
                         <v-icon>mdi-account</v-icon>
                     </v-list-item-action>
                     <v-list-item-title>
-                        {{ $tc('Профиль')}}
+                        {{ $tc('Мой профиль')}}
                     </v-list-item-title>
                 </v-list-item>
 
                 <v-list-item link to="/profile/overtimes">
+                    <v-list-item-action>
+                        <v-icon>mdi-briefcase-clock</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>
+                        {{ $tc('Мои сверхурочные')}}
+                    </v-list-item-title>
+                </v-list-item>
+
+                <v-divider></v-divider>
+
+
+                <v-list-item to="/employees">
+                    <v-list-item-action>
+                        <v-icon>mdi-account-multiple</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-title>
+                        {{ $tc('Сотрудники')}}
+                    </v-list-item-title>
+                </v-list-item>
+
+                <v-list-item to="/overtimes" v-if="canViewOvertimes()">
                     <v-list-item-action>
                         <v-icon>mdi-briefcase-clock</v-icon>
                     </v-list-item-action>
@@ -28,16 +49,7 @@
                 </v-list-item>
 
 
-                <v-list-item  to="/employees">
-                    <v-list-item-action>
-                        <v-icon>mdi-account-multiple</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>
-                        {{ $tc('Сотрудники')}}
-                    </v-list-item-title>
-                </v-list-item>
-
-                <v-list-item link to="/vacations">
+                <v-list-item link to="/vacations" v-if="canViewVacations()">
                     <v-list-item-action>
                         <v-icon>mdi-calendar-text</v-icon>
                     </v-list-item-action>
@@ -104,6 +116,7 @@
     import {Component, Vue} from 'vue-property-decorator';
     import {Action, Getter} from "vuex-class";
     import moment from "moment";
+    import permissionService from "@/store/modules/permission.service";
 
     const namespace_auth: string = 'auth';
     const namespace_error: string = 'error';
@@ -132,6 +145,14 @@
 
         private logout() {
             return this.logoutAction().then(() => this.$router.push('/login'));
+        }
+
+        private canViewOvertimes() {
+            return permissionService.canViewOvertimes();
+        }
+
+        private canViewVacations() {
+            return permissionService.canViewVacations();
         }
     }
 </script>

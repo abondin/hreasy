@@ -7,6 +7,7 @@ import logger from "@/logger";
 import VacationsList from "@/components/vacations/VacationsList.vue";
 import EmployeeProfile from "@/components/empl/EmployeeProfile.vue";
 import MyOvertimes from "@/components/overtimes/MyOvertimes.vue";
+import AllOvertimes from "@/components/overtimes/AllOvertimes.vue";
 
 Vue.use(VueRouter)
 
@@ -14,9 +15,10 @@ const routes = [
     {path: "/", redirect: '/employees'},
     {path: "/login", component: Login},
     {name: "employees", path: "/employees", component: Employees},
-    {name: 'employeeProfile', path: "/profile", component: EmployeeProfile, props: true},
+    {name: 'employeeProfile', path: "/profile/main", component: EmployeeProfile, props: true},
     {name: 'myOvertimes', path: "/profile/overtimes", component: MyOvertimes},
-    {path: "/vacations", component: VacationsList}
+    {path: "/vacations", component: VacationsList},
+    {path: "/overtimes", component: AllOvertimes}
 ]
 const router = new VueRouter({
     mode: 'history',

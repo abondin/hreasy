@@ -52,3 +52,7 @@ Flyway commands also can be executed in maven:
 |----|------|
 |update_current_project_global|global_admin, hr|
 |update_avatar|global_admin, hr|
+|overtime_view|global_admin, hr|
+|overtime_edit|global_admin, hr|
+|vacation_view|global_admin, hr|
+|vacation_edit|global_admin, hr|

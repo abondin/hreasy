@@ -1,6 +1,7 @@
 import httpService from "../http.service";
 import {AxiosInstance} from "axios";
 import moment from 'moment';
+import {SimpleDict} from "@/store/modules/dict";
 
 
 export interface OvertimeItem {
@@ -79,7 +80,27 @@ export class ReportPeriod {
         this.month--;
     }
 
+    public daysCount(): number {
+        return moment([this.year, this.month, 1]).daysInMonth();
+    }
+
 }
+
+
+/**
+ * Summary overtimes information for one employee and one period
+ */
+export interface OvertimeEmployeeSummary {
+    employeeId: number,
+    items: OvertimeDaySummary[]
+}
+
+export interface OvertimeDaySummary {
+    date: string,
+    projectId: number
+    hours: number;
+}
+
 
 export interface OvertimeService {
     /**
@@ -89,7 +110,7 @@ export interface OvertimeService {
      */
     get(employeeId: number, reportPeriod: number): Promise<OvertimeReport>;
 
-    getSummary(reportPeriod: number): Promise<any>;
+    getSummary(reportPeriod: number): Promise<OvertimeEmployeeSummary[]>;
 
     /**
      * Add one item to the report
@@ -109,12 +130,11 @@ export interface OvertimeService {
 }
 
 
-
 class RestOvertimeService implements OvertimeService {
     constructor(private httpService: AxiosInstance) {
     }
 
-    public getSummary(reportPeriod: number): Promise<OvertimeReport> {
+    public getSummary(reportPeriod: number): Promise<OvertimeEmployeeSummary[]> {
         return httpService.get(`v1/overtimes/summary/${reportPeriod}`).then(response => {
             return response.data;
         });
@@ -143,6 +163,58 @@ class RestOvertimeService implements OvertimeService {
         });
     }
 }
+
+/**
+ * Ready for view overtime summary for one employee.
+ * Converted from OvertimeEmployeeSummary.
+ *
+ * For every day might be several overtime items exist.
+ *
+ * OvertimeSummaryContainerDay - summary for one day
+ * OvertimeDaySummary - single overtime item
+ *
+ */
+export class OvertimeSummaryContainer {
+    public readonly days: OvertimeSummaryContainerDay[] = [];
+    public totalHours = 0;
+
+    constructor(public readonly employee: SimpleDict) {
+    }
+
+    public addDays(days: OvertimeDaySummary[]) {
+        days.forEach(day => {
+            const existing = this.days.find(d => d.day == day.date);
+            if (existing) {
+                existing.push(day);
+            } else {
+                this.days.push(new OvertimeSummaryContainerDay(day));
+            }
+            this.totalHours += day.hours;
+        });
+    }
+
+}
+
+export class OvertimeSummaryContainerDay {
+    private items: OvertimeDaySummary[] = [];
+    public day: string;
+
+    constructor(day: OvertimeDaySummary) {
+        this.day = day.date;
+        this.items.push(day);
+    }
+
+    public push(day: OvertimeDaySummary) {
+        this.items.push(day);
+    }
+
+    public totalHours(): number {
+        let hours = 0;
+        this.items.forEach(i => hours += i.hours);
+        return hours;
+    }
+}
+
 
 export class OvertimeUtils {
 
