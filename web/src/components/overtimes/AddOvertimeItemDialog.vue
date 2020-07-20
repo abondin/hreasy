@@ -33,12 +33,20 @@ Emits:
                             required
                     ></v-select>
 
-
-                    <!-- TODO: Simple date picker integration in form. Weird that Vuetify does not provide easy way to do it-->
                     <v-text-field
                             :label="$t('Дата')"
                             v-model="item.date"
                             :rules="[v=>(!!v || $t('Дата обязательна')), v=>(Date.parse(v) > 0 || $t('Дата в формате ГГГГ-ММ-ДД'))]">
+                        <template v-slot:prepend>
+                            <v-btn x-small icon @click="item.date = prevDay(item.date)">
+                                <v-icon>mdi-chevron-left</v-icon>
+                            </v-btn>
+                        </template>
+                        <template v-slot:append>
+                            <v-btn x-small icon @click="item.date = nextDay(item.date)">
+                                <v-icon>mdi-chevron-right</v-icon>
+                            </v-btn>
+                        </template>
                     </v-text-field>
 
                     <v-slider
@@ -58,9 +66,10 @@ Emits:
                     </v-textarea>
                 </v-card-text>
                 <v-card-actions>
+                    <v-checkbox v-model="addMore" :label="$t('Добавить ещё')"></v-checkbox>
                     <v-spacer></v-spacer>
                     <v-btn @click="closeDialog">{{$t('Закрыть')}}</v-btn>
-                    <v-btn @click="submit" color="primary">{{$t('Добавить')}}</v-btn>
+                    <v-btn @click="addMore ? submitAndNext() : submit()" color="primary">{{$t('Сохранить')}}</v-btn>
                 </v-card-actions>
             </v-card>
         </v-form>
@@ -74,6 +83,7 @@ Emits:
     import {Prop, Watch} from "vue-property-decorator";
     import overtimeService, {OvertimeItem, ReportPeriod} from "@/components/overtimes/overtime.service";
     import {SimpleDict} from "@/store/modules/dict";
+    import moment from "moment";
 
 
     @Component
@@ -88,16 +98,11 @@ Emits:
         @Prop({required: true})
         allProjects!: SimpleDict[];
 
-        item!: OvertimeItem;
+        item: OvertimeItem = this.default();
 
         private dialog = false;
 
-        /**
-         * Lifecycle hook
-         */
-        created() {
-            this.resetItem();
-        }
+        private addMore = false;
 
         @Watch("dialog")
         private watch() {
@@ -116,25 +121,56 @@ Emits:
             }
         }
 
+        private submitAndNext() {
+            const form: any = this.$refs[`overtime-item-update-${this.employeeId}-${this.period.periodId()}`];
+            if (form.validate()) {
+                return overtimeService.addItem(this.employeeId, this.period.periodId(), this.item).then((report) => {
+                    this.$emit('submit', report);
+                    this.$nextTick(() => {
+                        this.resetItem(this.item.projectId, this.nextDay(this.item.date), this.item.hours);
+                    });
+                });
+            }
+        }
+
         private closeDialog() {
             this.dialog = false;
         }
 
-        private resetItem() {
-            const def = {
-                date: new Date().toISOString().substr(0, 10),
-                projectId: undefined,
-                hours: 8,
-                notes: undefined
-            };
-            if (this.item) {
-                // Be careful. shallow copy. Doesn't work with nested objects
-                this.item = Object.assign({}, def);
-            } else {
-                this.item = def;
-            }
+        private resetItem(projectId: number | undefined = undefined, date: string | undefined = undefined,
+                          hours: number | undefined) {
+            const def = this.default(projectId, date, hours);
+            this.item = def;
         }
 
+        private default(projectId: number | undefined = undefined,
+                        date: string | undefined = undefined,
+                        hours: number = 4): OvertimeItem {
+            return {
+                date: date ? date : this.dateToString(new Date()),
+                projectId: projectId,
+                hours: hours,
+                notes: undefined
+            };
+        }
+
+        private nextDay(date: string): string {
+            const day = new Date(date);
+            let m = moment(day);
+            m = m.add(1, "days");
+            return this.dateToString(m.toDate());
+        }
+
+        private prevDay(date: string): string {
+            const day = new Date(date);
+            let m = moment(day);
+            m = m.add(-1, "days");
+            return this.dateToString(m.toDate());
+        }
+
+        private dateToString(date: Date) {
+            return date.toISOString().substr(0, 10);
+        }
 
     }
 </script>

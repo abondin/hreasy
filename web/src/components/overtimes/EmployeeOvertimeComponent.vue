@@ -5,15 +5,18 @@
             <v-card-title>
                 <div class="mr-2">{{ $tc('Сверхурочные')}}</div>
                 <div v-if="changePeriodAllowed==true">
-                    <v-btn @click.stop="decrementPeriod()" link>
+                    <v-btn @click.stop="decrementPeriod()" text x-small>
                         <v-icon>mdi-chevron-left</v-icon>
                     </v-btn>
                     <span class="ml-1 mr-2">{{selectedPeriod}}</span>
-                    <v-btn @click.stop="incrementPeriod()" link>
+                    <v-btn @click.stop="incrementPeriod()" text x-small>
                         <v-icon>mdi-chevron-right</v-icon>
                     </v-btn>
                 </div>
                 <v-spacer></v-spacer>
+                <span class="mr-5">
+                {{$t('Всего')}}: {{overtimes.map(i=>i.hours).reduce((a, b)=>a+b, 0)}}
+                    </span>
                 <v-card-actions>
                     <add-overtime-item-dialog
                             v-bind:employee-id="employeeId"
