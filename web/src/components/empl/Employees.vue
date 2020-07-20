@@ -4,7 +4,7 @@
         <v-card>
             <v-card-title>
                 <v-row dense>
-                    <v-col lg="12" cols="12">
+                    <v-col lg="6" cols="12">
                         <v-text-field
                                 v-model="search"
                                 append-icon="mdi-magnify"
@@ -13,25 +13,25 @@
                                 hide-details
                         ></v-text-field>
                     </v-col>
-                    <!-- TODO
                     <v-col lg="6" cols="12">
                         <v-select
+                                clearable
+                                class="mr-5"
+                                v-model="filter.selectedProjects"
+                                :items="allProjects"
                                 item-value="id"
                                 item-text="name"
-                                :items="allProjects"
-                                :label="$t('Фильтр по проекту')"
-                                clearable
-                                @change="filterProject"
-                        />
+                                :label="$t('Текущий проект')"
+                                multiple
+                        ></v-select>
                     </v-col>
-                    -->
                 </v-row>
             </v-card-title>
             <v-data-table
                     :loading="loading"
                     :loading-text="$t('Загрузка_данных')"
                     :headers="headers"
-                    :items="employees"
+                    :items="filtered()"
                     :search="search"
                     sort-by="displayName"
                     :show-expand="$vuetify.breakpoint.mdAndUp"
@@ -56,6 +56,14 @@
     import employeeService, {Employee} from "@/components/empl/employee.service";
     import {DataTableHeader} from "vuetify";
     import EmployeeCard from "@/components/empl/EmployeeCard.vue";
+    import {Getter} from "vuex-class";
+    import {SimpleDict} from "@/store/modules/dict";
+
+    const namespace_dict: string = 'dict';
+
+    class Filter {
+        public selectedProjects: number[] = [];
+    }
 
     @Component({
         components: {"employee-card": EmployeeCard}
@@ -65,8 +73,11 @@
         loading: boolean = false;
         search = '';
 
+        @Getter("projects", {namespace: namespace_dict})
+        private allProjects!: Array<SimpleDict>;
 
         employees: Employee[] = [];
+        private filter = new Filter();
 
         /**
          * Lifecycle hook
@@ -89,6 +100,16 @@
                 ).finally(() => {
                     this.loading = false
                 });
+        }
+
+        private filtered() {
+            return this.employees.filter(e => {
+                let filtered = true;
+                if (this.filter.selectedProjects && this.filter.selectedProjects.length > 0) {
+                    filtered = filtered && (e.currentProject != undefined && this.filter.selectedProjects.indexOf(e.currentProject!.id) >= 0);
+                }
+                return filtered;
+            });
         }
 
     }
