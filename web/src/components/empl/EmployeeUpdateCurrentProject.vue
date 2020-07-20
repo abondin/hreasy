@@ -9,7 +9,7 @@
                     v-model="selectedProject"
                     item-text="name"
                     item-value="id"
-                    :items="allProjects"
+                    :items="allProjects.filter(p=>p.active)"
                     :label="$tc('Проекты')"
             ></v-select>
             <div class="error" v-if="error">{{error}}</div>

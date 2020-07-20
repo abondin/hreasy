@@ -15,12 +15,12 @@
                 </div>
                 <v-spacer></v-spacer>
                 <v-card-actions>
-                    <overtime-add-or-edit
+                    <add-overtime-item-dialog
                             v-bind:employee-id="employeeId"
                             v-bind:period="selectedPeriod"
                             v-bind:all-projects="allProjects"
                             @submit="onItemSubmit"
-                            @close="onItemDialogClose"></overtime-add-or-edit>
+                            @close="onItemDialogClose"></add-overtime-item-dialog>
                 </v-card-actions>
             </v-card-title>
             <v-data-table
@@ -48,8 +48,8 @@
         </v-card>
 
         <v-dialog v-if="itemToDelete"
-                v-model="deleteDialog"
-                width="500">
+                  v-model="deleteDialog"
+                  width="500">
             <v-card>
                 <v-card-title primary-title>
                     {{$t('Удаление')}}
@@ -92,13 +92,13 @@
         ReportPeriod
     } from "@/components/overtimes/overtime.service";
     import {DataTableHeader} from "vuetify";
-    import OvertimeAddOrEditDialog from "@/components/overtimes/OvertimeAddOrEdit.vue";
     import {Prop} from "vue-property-decorator";
+    import AddOvertimeItemDialog from "@/components/overtimes/AddOvertimeItemDialog.vue";
 
     const namespace_dict: string = 'dict';
     const namespace_auth: string = 'auth';
     @Component({
-        components: {OvertimeAddOrEdit: OvertimeAddOrEditDialog}
+        components: {AddOvertimeItemDialog, OvertimeAddOrEdit: AddOvertimeItemDialog}
     })
     export default class EmployeeOvertimeComponent extends Vue {
         loading: boolean = false;
@@ -121,7 +121,7 @@
         private overtimes: OvertimeItem[] = [];
 
         private deleteDialog = false;
-        private itemToDelete:OvertimeItem|null = null;
+        private itemToDelete: OvertimeItem | null = null;
 
 
         /**
@@ -222,9 +222,9 @@
             this.fetchReport(true);
         }
 
-        private openDeleteDialog(item : OvertimeItem){
+        private openDeleteDialog(item: OvertimeItem) {
             this.itemToDelete = item;
-            this.$nextTick(()=>{
+            this.$nextTick(() => {
                 this.deleteDialog = true;
             });
         }

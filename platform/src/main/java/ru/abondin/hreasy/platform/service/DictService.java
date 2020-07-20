@@ -9,8 +9,6 @@ import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.DictDtoMapper;
 
-import java.time.OffsetDateTime;
-
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -21,13 +19,14 @@ public class DictService {
 
     private final DictDtoMapper mapper;
 
-    public Flux<SimpleDictDto> findProjects(AuthContext auth, boolean includeEnded) {
-        OffsetDateTime endTime = null;
-        if (includeEnded) {
-            endTime = dateTimeService.now();
-        }
+    public Flux<SimpleDictDto> findProjects(AuthContext auth) {
+        var now = dateTimeService.now().toLocalDate();
         return projectRepo
-                .findNotEnded(endTime)
-                .map(e -> mapper.projectToDto(e));
+                .findAll()
+                .map(e -> {
+                    var dto = mapper.projectToDto(e);
+                    dto.setActive(e.getEndDate() == null || e.getEndDate().isAfter(now));
+                    return dto;
+                });
     }
 }

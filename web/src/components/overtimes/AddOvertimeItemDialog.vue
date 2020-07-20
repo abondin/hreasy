@@ -25,7 +25,7 @@ Emits:
                 <v-card-text>
                     <v-select
                             v-model="item.projectId"
-                            :items="allProjects"
+                            :items="allProjects.filter(p=>p.active)"
                             item-value="id"
                             item-text="name"
                             :rules="[v => !!v || $t('Проект обязателен')]"
@@ -77,7 +77,7 @@ Emits:
 
 
     @Component
-    export default class OvertimeAddOrEditDialog extends Vue {
+    export default class AddOvertimeItemDialog extends Vue {
 
         @Prop({required: true})
         employeeId!: number;
@@ -87,9 +87,6 @@ Emits:
 
         @Prop({required: true})
         allProjects!: SimpleDict[];
-
-        @Prop({required: false})
-        itemInput: OvertimeItem | undefined;
 
         item!: OvertimeItem;
 
@@ -124,21 +121,17 @@ Emits:
         }
 
         private resetItem() {
-            if (this.itemInput) {
-                this.item = this.itemInput;
+            const def = {
+                date: new Date().toISOString().substr(0, 10),
+                projectId: undefined,
+                hours: 8,
+                notes: undefined
+            };
+            if (this.item) {
+                // Be careful. shallow copy. Doesn't work with nested objects
+                this.item = Object.assign({}, def);
             } else {
-                const def = {
-                    date: new Date().toISOString().substr(0, 10),
-                    projectId: undefined,
-                    hours: 8,
-                    notes: undefined
-                };
-                if (this.item) {
-                    // Be careful. shallow copy. Doesn't work with nested objects
-                    this.item = Object.assign({}, def);
-                } else {
-                    this.item = def;
-                }
+                this.item = def;
             }
         }
 

@@ -11,6 +11,7 @@ import dictService from "@/store/modules/dict.service";
 export interface SimpleDict {
     id: number;
     name: string;
+    active: boolean;
 }
 
 export interface DictLoadedState {

@@ -23,12 +23,12 @@
     import Component from 'vue-class-component';
     import {Getter} from "vuex-class";
     import {ReportPeriod} from "@/components/overtimes/overtime.service";
-    import OvertimeAddOrEditDialog from "@/components/overtimes/OvertimeAddOrEdit.vue";
+    import AddOvertimeItemDialog from "@/components/overtimes/AddOvertimeItemDialog.vue";
     import EmployeeOvertimeComponent from "@/components/overtimes/EmployeeOvertimeComponent.vue";
 
     const namespace_auth: string = 'auth';
     @Component({
-        components: {EmployeeOvertimeComponent, OvertimeAddOrEdit: OvertimeAddOrEditDialog}
+        components: {EmployeeOvertimeComponent, OvertimeAddOrEdit: AddOvertimeItemDialog}
     })
     export default class MyOvertimes extends Vue {
         @Getter("employeeId", {namespace: namespace_auth})

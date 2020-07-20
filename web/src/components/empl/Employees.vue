@@ -18,7 +18,7 @@
                                 clearable
                                 class="mr-5"
                                 v-model="filter.selectedProjects"
-                                :items="allProjects"
+                                :items="allProjects.filter(p=>p.active)"
                                 item-value="id"
                                 item-text="name"
                                 :label="$t('Текущий проект')"
