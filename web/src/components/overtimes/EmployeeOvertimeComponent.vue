@@ -30,43 +30,12 @@
                     :items="overtimes"
                     sort-by="updatedAt"
                     sort-desc
+                    hide-default-footer
                     disable-pagination>
                 <template v-slot:item.date="{ item }">
-                    <v-dialog
-                            v-model="deleteDialog"
-                            width="500">
-                        <template v-slot:activator="{ on, attrs }">
-                            <v-btn v-bind="attrs"
-                                   v-on="on" icon>
-                                <v-icon>mdi-delete</v-icon>
-                            </v-btn>
-                        </template>
-                        <v-card>
-                            <v-card-title primary-title>
-                                {{$t('Удаление')}}
-                            </v-card-title>
-
-                            <v-card-text>
-                                {{$t('Вы уверены что хотите удалить запись?')}}
-                            </v-card-text>
-
-                            <v-divider></v-divider>
-
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn
-                                        text
-                                        @click="deleteDialog = false">
-                                    {{$t('Нет')}}
-                                </v-btn>
-                                <v-btn
-                                        color="primary"
-                                        @click="deleteItem(item)">
-                                    {{$t('Да')}}
-                                </v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </v-dialog>
+                    <v-btn @click.stop="openDeleteDialog(item)" icon>
+                        <v-icon>mdi-delete</v-icon>
+                    </v-btn>
                     <span>{{formatDate(item.date)}}</span>
                 </template>
                 <template v-slot:item.updatedAt="{ item }">
@@ -77,6 +46,36 @@
                 </template>
             </v-data-table>
         </v-card>
+
+        <v-dialog v-if="itemToDelete"
+                v-model="deleteDialog"
+                width="500">
+            <v-card>
+                <v-card-title primary-title>
+                    {{$t('Удаление')}}
+                </v-card-title>
+
+                <v-card-text>
+                    {{$t('Вы уверены что хотите удалить запись?')}}
+                </v-card-text>
+
+                <v-divider></v-divider>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                            text
+                            @click="deleteDialog = false">
+                        {{$t('Нет')}}
+                    </v-btn>
+                    <v-btn
+                            color="primary"
+                            @click="deleteItem()">
+                        {{$t('Да')}}
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
@@ -122,6 +121,7 @@
         private overtimes: OvertimeItem[] = [];
 
         private deleteDialog = false;
+        private itemToDelete:OvertimeItem|null = null;
 
 
         /**
@@ -197,11 +197,15 @@
             this.fetchReport();
         }
 
-        private deleteItem(item: OvertimeItem) {
-            overtimeService.deleteItem(this.overtimeReport.employeeId, this.overtimeReport.period, item.id!).then((report) => {
-                this.deleteDialog = false;
-                return this.refreshReport(report);
-            });
+        private deleteItem() {
+            if (this.itemToDelete) {
+                overtimeService.deleteItem(this.overtimeReport.employeeId, this.overtimeReport.period, this.itemToDelete.id!).then((report) => {
+                    this.deleteDialog = false;
+                    return this.refreshReport(report);
+                });
+            } else {
+                alert('Some error occurs. Item to delete not selected... Please contact administrator')
+            }
         }
 
         private onItemDialogClose() {
@@ -218,6 +222,12 @@
             this.fetchReport(true);
         }
 
+        private openDeleteDialog(item : OvertimeItem){
+            this.itemToDelete = item;
+            this.$nextTick(()=>{
+                this.deleteDialog = true;
+            });
+        }
 
     }
 </script>

@@ -178,19 +178,29 @@ export class OvertimeSummaryContainer {
     public readonly days: OvertimeSummaryContainerDay[] = [];
     public totalHours = 0;
 
-    constructor(public readonly employee: SimpleDict) {
+    constructor(public readonly employee: SimpleDict, private filter: OvertimeSummaryContainerFilter) {
     }
 
     public addDays(days: OvertimeDaySummary[]) {
         days.forEach(day => {
-            const existing = this.days.find(d => d.day == day.date);
-            if (existing) {
-                existing.push(day);
-            } else {
-                this.days.push(new OvertimeSummaryContainerDay(day));
+            if (this.filterDay(day)) {
+                const existing = this.days.find(d => d.day == day.date);
+                if (existing) {
+                    existing.push(day);
+                } else {
+                    this.days.push(new OvertimeSummaryContainerDay(day));
+                }
+                this.totalHours += day.hours;
             }
-            this.totalHours += day.hours;
         });
+    }
+
+    private filterDay(day: OvertimeDaySummary): boolean {
+        let passed = true;
+        if (this.filter.selectedProjects && this.filter.selectedProjects.length > 0) {
+            return this.filter.selectedProjects.indexOf(day.projectId) >= 0;
+        }
+        return passed;
     }
 
 }
@@ -213,6 +223,10 @@ export class OvertimeSummaryContainerDay {
         this.items.forEach(i => hours += i.hours);
         return hours;
     }
+}
+
+export interface OvertimeSummaryContainerFilter {
+    selectedProjects: number[];
 }
 
 
