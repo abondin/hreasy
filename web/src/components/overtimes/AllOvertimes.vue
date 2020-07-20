@@ -156,7 +156,8 @@
             const projectsWithOvertimes: number [] = [];
             this.rawData.employees.forEach(e => this.overtimes.push(new OvertimeSummaryContainer({
                 id: e.id,
-                name: e.displayName
+                name: e.displayName,
+                active : true
             }, {
                 selectedProjects: this.filter.selectedProjects
             })));
