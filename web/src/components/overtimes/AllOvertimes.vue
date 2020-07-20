@@ -1,14 +1,26 @@
 <!-- Employees short info table-->
 <template>
     <v-container fluid>
-        <!-- Work in progress -->
-        <v-alert
-                color="red"
-                dark
-                icon="mdi-grill"
-                border="right">
-            Work in progress
-        </v-alert>
+        <div v-if="selectedEmployee">
+            <v-dialog v-model="employeeDialog" transition="dialog-bottom-transition"
+                      @input="selectedEmployee=null">
+                <v-card>
+                    <v-card-title>
+                        <v-btn text large icon @click="closeEmployeeDialog()">
+                            <v-icon>close</v-icon>
+                        </v-btn>
+                        {{$t('Сверхурочные сотрудика', {employee: selectedEmployee.name,
+                        period:selectedPeriod.toString()})}}
+                    </v-card-title>
+                    <v-card-text>
+                        <employee-overtime-component
+                                change-period-allowed="false"
+                                :employee-id="selectedEmployee.id"
+                                :selected-period="selectedPeriod"></employee-overtime-component>
+                    </v-card-text>
+                </v-card>
+            </v-dialog>
+        </div>
         <v-card>
             <v-card-title>
                 <v-row dense>
@@ -42,9 +54,10 @@
                     disable-pagination>
                 <template
                         v-slot:item.employee.name="{ item }">
-                    <v-btn text x-small>{{item.employee.name}}</v-btn>
+                    <v-btn text x-small
+                           @click="showEmployeeDialog(item.employee)">{{item.employee.name}}
+                    </v-btn>
                 </template>
-
             </v-data-table>
         </v-card>
     </v-container>
@@ -59,9 +72,11 @@
     import EmployeeCard from "@/components/empl/EmployeeCard.vue";
     import overtimeService, {OvertimeSummaryContainer, ReportPeriod} from "@/components/overtimes/overtime.service";
     import logger from "@/logger";
+    import EmployeeOvertimeComponent from "@/components/overtimes/EmployeeOvertimeComponent.vue";
+    import {SimpleDict} from "@/store/modules/dict";
 
     @Component({
-        components: {"employee-card": EmployeeCard}
+        components: {EmployeeOvertimeComponent, "employee-card": EmployeeCard}
     })
     export default class AllOvertimes extends Vue {
         headers: DataTableHeader[] = [];
@@ -71,6 +86,9 @@
         selectedPeriod = ReportPeriod.currentPeriod();
 
         overtimes: OvertimeSummaryContainer[] = [];
+
+        private selectedEmployee: SimpleDict | null = null;
+        private employeeDialog = false;
 
         /**
          * Lifecycle hook
@@ -120,6 +138,16 @@
             this.headers.length = 0;
             this.headers.push({text: this.$tc('Сотрудник'), value: 'employee.name'});
             this.headers.push({text: this.$tc('Всего'), value: 'totalHours'});
+        }
+
+        private showEmployeeDialog(employee: SimpleDict) {
+            this.selectedEmployee = employee;
+            this.employeeDialog = true;
+        }
+
+        private closeEmployeeDialog() {
+            this.selectedEmployee = null;
+            this.employeeDialog = false;
         }
 
     }
