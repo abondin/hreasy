@@ -58,6 +58,7 @@
                     :headers="headers"
                     :items="filteredOvertimes()"
                     hide-default-footer
+                    search="search"
                     sort-by="totalHours"
                     sort-desc
                     disable-pagination>
