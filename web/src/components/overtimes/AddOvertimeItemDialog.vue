@@ -107,7 +107,7 @@ Emits:
         @Watch("dialog")
         private watch() {
             if (this.dialog) {
-                this.resetItem();
+                this.resetItem(undefined, undefined, undefined);
             }
         }
 

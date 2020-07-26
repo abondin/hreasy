@@ -134,11 +134,14 @@
         private fetchData() {
             this.loading = true;
             return this.$store.dispatch('dict/reloadProjects').then(() => {
+                logger.log('All Overtimes fetch data: Loaded projects', this.allProjects);
                 employeeService.findAll()
                     .then(employees => {
                         this.rawData.employees = employees;
+                        logger.log('All Overtimes fetch data: Loaded employees', this.rawData.employees);
                         return overtimeService.getSummary(this.selectedPeriod.periodId()).then((overtimes) => {
                             this.rawData.overtimes = overtimes;
+                            logger.log('All Overtimes fetch data: Loaded overtimes', this.rawData.overtimes);
                             this.applyFilters();
                         })
                     }).finally(() => {
@@ -156,10 +159,12 @@
             this.rawData.employees.forEach(e => this.overtimes.push(new OvertimeSummaryContainer({
                 id: e.id,
                 name: e.displayName,
-                active : true
+                active: true
             }, {
                 selectedProjects: this.filter.selectedProjects
             })));
+            logger.log('All Overtimes applyFilters: Empty overtimes', this.overtimes);
+
             this.rawData.overtimes.forEach(serverOvertime => {
                 const existing = this.overtimes.find(o => o.employee.id == serverOvertime.employeeId);
                 serverOvertime.items.forEach(i => {
@@ -173,7 +178,11 @@
                     logger.error(`Unable to find overtime for employee ${serverOvertime.employeeId}`);
                 }
             });
+            logger.log('All Overtimes applyFilters: Populated overtimes', this.overtimes);
+
             this.filter.allProjects = this.allProjects.filter(p => projectsWithOvertimes.indexOf(p.id) >= 0);
+
+            logger.log('All Overtimes applyFilters: Filtered projects', this.filter.allProjects);
         }
 
         private incrementPeriod() {
