@@ -148,7 +148,6 @@ class RestOvertimeService implements OvertimeService {
 
     addItem(employeeId: number, reportPeriod: number, item: OvertimeItem): Promise<OvertimeReport> {
         const now = new Date();
-        item.updatedAt = now;
         if (!item.createdAt) {
             item.createdAt = now;
         }

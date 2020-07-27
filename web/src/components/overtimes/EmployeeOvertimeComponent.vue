@@ -32,7 +32,7 @@
           :loading-text="$t('Загрузка_данных')"
           :headers="headers"
           :items="overtimes"
-          sort-by="updatedAt"
+          sort-by="createdAt"
           sort-desc
           hide-default-footer
           disable-pagination>
