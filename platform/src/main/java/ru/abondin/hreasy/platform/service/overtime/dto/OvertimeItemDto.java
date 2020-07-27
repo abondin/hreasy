@@ -17,6 +17,6 @@ public class OvertimeItemDto {
     private int hours;
     private String notes;
     private OffsetDateTime createdAt;
-    private OffsetDateTime updatedAt;
+    private OffsetDateTime deletedAt;
 
 }

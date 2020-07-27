@@ -20,7 +20,7 @@ export interface OvertimeItem {
     hours: number,
     notes?: string,
     createdAt?: Date,
-    updatedAt?: Date;
+    deletedAt?: Date;
 }
 
 export interface OvertimeReport {
