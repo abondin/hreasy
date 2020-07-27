@@ -68,10 +68,11 @@
                         {{ $tc('Выход')}}
                     </v-list-item-title>
                 </v-list-item>
-
             </v-list>
+            <template v-slot:append>
+                <v-img src="@/assets/illustration.jpg"></v-img>
+            </template>
         </v-navigation-drawer>
-
         <v-app-bar
                 app>
             <v-app-bar-nav-icon @click.stop="drawer = !drawer"/>
@@ -86,6 +87,8 @@
             >
             </v-row>
             <v-spacer/>
+            <v-img height="100%" contain src="@/assets/logo-nav.png"></v-img>
+
             <v-row v-if="!username">
                 <router-link to="/login" tag="button">{{ $t('Вход')}}</router-link>
             </v-row>
@@ -140,7 +143,9 @@
         unhandledrejection: undefined;
 
         created() {
-            this.$vuetify.theme.dark = true;
+            this.$vuetify.theme.dark = false;
+            this.$vuetify.theme.themes.light.primary = '#E74C05';
+            this.$vuetify.theme.themes.light.secondary = '#941680';
             moment.locale(this.$i18n.locale);
         }
 
