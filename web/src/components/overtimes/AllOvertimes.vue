@@ -214,7 +214,7 @@ export default class AllOvertimes extends Vue {
       }
     });
     this.filter.projectsWithOvertimes = this.allProjects.filter(p => projectsWithOvertimes.indexOf(p.id) >= 0);
-    this.filter.allProjects = this.allProjects;
+    this.filter.allProjects = this.allProjects.filter(p=>p.active);
   }
 
   private incrementPeriod() {
