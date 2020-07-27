@@ -23,6 +23,7 @@
         </div>
         <v-card>
             <v-card-title>
+                <!-- Refresh button -->
                 <v-btn text icon @click="fetchData()" class="mr-5">
                     <v-icon>refresh</v-icon>
                 </v-btn>
@@ -38,19 +39,30 @@
                         clearable
                         class="mr-5"
                         v-model="filter.selectedProjects"
-                        :items="filter.allProjects"
+                        :items="filter.projects()"
                         item-value="id"
                         item-text="name"
                         :label="$t('Проект списания сверхурочных')"
-                        multiple
-                ></v-select>
+                        multiple>
+                    <template slot="prepend">
+                        <v-tooltip bottom>
+                            <template v-slot:activator="{on, attrs}">
+                                <v-btn icon v-bind="attrs" v-on="on" @click.stop="filter.showOnlyProjectsWithOvertimes = !filter.showOnlyProjectsWithOvertimes">
+                                    <v-icon v-if="filter.showOnlyProjectsWithOvertimes">mdi-check</v-icon>
+                                    <v-icon v-else>mdi-check-all</v-icon>
+                                </v-btn>
+                            </template>
+                            <span v-if="filter.showOnlyProjectsWithOvertimes">{{$t('Учитывать проекты со сверхурочными')}}</span>
+                            <span v-else>{{$t('Учитывать все проекты')}}</span>
+                        </v-tooltip>
+                    </template>
+                </v-select>
                 <v-checkbox :label="$t('Сотрудники без сверхурочных')" v-model="filter.showEmpty" class="mr-5">
-
                 </v-checkbox>
                 <v-text-field
                         v-model="search"
+                        @input="applyFilters()"
                         :label="$t('Поиск')"></v-text-field>
-
             </v-card-title>
             <v-data-table
                     :loading="loading"
@@ -100,6 +112,12 @@
         public showEmpty = true;
         public selectedProjects: number[] = [];
         public allProjects: SimpleDict[] = [];
+        public projectsWithOvertimes: SimpleDict[] = [];
+        public showOnlyProjectsWithOvertimes = false;
+
+        public projects(): SimpleDict[] {
+            return this.showOnlyProjectsWithOvertimes ? this.projectsWithOvertimes : this.allProjects;
+        }
     }
 
     @Component({
@@ -134,14 +152,11 @@
         private fetchData() {
             this.loading = true;
             return this.$store.dispatch('dict/reloadProjects').then(() => {
-                logger.log('All Overtimes fetch data: Loaded projects', this.allProjects);
                 employeeService.findAll()
                     .then(employees => {
                         this.rawData.employees = employees;
-                        logger.log('All Overtimes fetch data: Loaded employees', this.rawData.employees);
                         return overtimeService.getSummary(this.selectedPeriod.periodId()).then((overtimes) => {
                             this.rawData.overtimes = overtimes;
-                            logger.log('All Overtimes fetch data: Loaded overtimes', this.rawData.overtimes);
                             this.applyFilters();
                         })
                     }).finally(() => {
@@ -156,14 +171,16 @@
         private applyFilters() {
             this.overtimes.length = 0;
             const projectsWithOvertimes: number [] = [];
-            this.rawData.employees.forEach(e => this.overtimes.push(new OvertimeSummaryContainer({
-                id: e.id,
-                name: e.displayName,
-                active: true
-            }, {
-                selectedProjects: this.filter.selectedProjects
-            })));
-            logger.log('All Overtimes applyFilters: Empty overtimes', this.overtimes);
+            this.rawData.employees
+                // Filter by Employee Display Name
+                .filter(e => !this.search || e.displayName.toLowerCase().indexOf(this.search.toLowerCase()) >= 0)
+                .forEach(e => this.overtimes.push(new OvertimeSummaryContainer({
+                    id: e.id,
+                    name: e.displayName,
+                    active: true
+                }, {
+                    selectedProjects: this.filter.selectedProjects
+                })));
 
             this.rawData.overtimes.forEach(serverOvertime => {
                 const existing = this.overtimes.find(o => o.employee.id == serverOvertime.employeeId);
@@ -178,11 +195,8 @@
                     logger.error(`Unable to find overtime for employee ${serverOvertime.employeeId}`);
                 }
             });
-            logger.log('All Overtimes applyFilters: Populated overtimes', this.overtimes);
-
-            this.filter.allProjects = this.allProjects.filter(p => projectsWithOvertimes.indexOf(p.id) >= 0);
-
-            logger.log('All Overtimes applyFilters: Filtered projects', this.filter.allProjects);
+            this.filter.allProjects = this.allProjects;
+            this.filter.projectsWithOvertimes = this.allProjects.filter(p => projectsWithOvertimes.indexOf(p.id) >= 0);
         }
 
         private incrementPeriod() {

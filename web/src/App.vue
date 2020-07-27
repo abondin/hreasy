@@ -49,6 +49,7 @@
                 </v-list-item>
 
 
+                <!-- WORK IN PROGRESS
                 <v-list-item link to="/vacations" v-if="canViewVacations()">
                     <v-list-item-action>
                         <v-icon>mdi-calendar-text</v-icon>
@@ -57,6 +58,7 @@
                         {{ $tc('Отпуска')}}
                     </v-list-item-title>
                 </v-list-item>
+                -->
 
                 <v-list-item link v-on:click.stop="logout">
                     <v-list-item-action>
