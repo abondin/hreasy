@@ -1,6 +1,6 @@
 <!-- Employees short info table-->
 <template>
-    <v-container fluid>
+    <v-container>
         <div v-if="selectedEmployee">
             <v-dialog v-model="employeeDialog" transition="dialog-bottom-transition"
                       @input="selectedEmployee=null">
@@ -27,6 +27,7 @@
                 <v-btn text icon @click="fetchData()" class="mr-5">
                     <v-icon>refresh</v-icon>
                 </v-btn>
+                <!-- Report Period -->
                 <v-btn @click.stop="decrementPeriod()" text x-small>
                     <v-icon>mdi-chevron-left</v-icon>
                 </v-btn>
@@ -34,35 +35,37 @@
                 <v-btn @click.stop="incrementPeriod()" text x-small class="mr-5">
                     <v-icon>mdi-chevron-right</v-icon>
                 </v-btn>
-                <v-select
-                        @input="applyFilters()"
-                        clearable
-                        class="mr-5"
-                        v-model="filter.selectedProjects"
-                        :items="filter.projects()"
-                        item-value="id"
-                        item-text="name"
-                        :label="$t('Проект списания сверхурочных')"
-                        multiple>
-                    <template slot="prepend">
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{on, attrs}">
-                                <v-btn icon v-bind="attrs" v-on="on" @click.stop="filter.showOnlyProjectsWithOvertimes = !filter.showOnlyProjectsWithOvertimes">
-                                    <v-icon v-if="filter.showOnlyProjectsWithOvertimes">mdi-check</v-icon>
-                                    <v-icon v-else>mdi-check-all</v-icon>
-                                </v-btn>
-                            </template>
-                            <span v-if="filter.showOnlyProjectsWithOvertimes">{{$t('Учитывать проекты со сверхурочными')}}</span>
-                            <span v-else>{{$t('Учитывать все проекты')}}</span>
-                        </v-tooltip>
-                    </template>
-                </v-select>
-                <v-checkbox :label="$t('Сотрудники без сверхурочных')" v-model="filter.showEmpty" class="mr-5">
-                </v-checkbox>
+                <v-divider vertical></v-divider>
                 <v-text-field
                         v-model="search"
                         @input="applyFilters()"
-                        :label="$t('Поиск')"></v-text-field>
+                        :label="$t('ФИО Сотрудника')" class="mr-5 ml-5"></v-text-field>
+                <v-select
+                        @input="applyFilters()"
+                        class="mr-5"
+                        clearable
+                        v-model="filter.selectedEmployeeCurrentProjects"
+                        :items="filter.allProjects"
+                        item-value="id"
+                        item-text="name"
+                        :label="$t('Текущий прооект сотрудника')"
+                        multiple>
+                </v-select>
+                <v-divider vertical></v-divider>
+                <v-select
+                        @input="applyFilters()"
+                        class="ml-5 mr-5"
+                        clearable
+                        v-model="filter.selectedProjectsWithOvertimes"
+                        :items="filter.projectsWithOvertimes"
+                        item-value="id"
+                        item-text="name"
+                        :label="$t('Проекты, в которые списаны сверхурочные')"
+                        multiple>
+                </v-select>
+                <!-- Overtime projects -->
+                <v-checkbox :label="$t('Сотрудники без сверхурочных')" v-model="filter.showEmpty">
+                </v-checkbox>
             </v-card-title>
             <v-data-table
                     :loading="loading"
@@ -110,14 +113,10 @@
 
     class Filter {
         public showEmpty = true;
-        public selectedProjects: number[] = [];
-        public allProjects: SimpleDict[] = [];
+        public selectedProjectsWithOvertimes: number[] = [];
+        public selectedEmployeeCurrentProjects: number[] = [];
         public projectsWithOvertimes: SimpleDict[] = [];
-        public showOnlyProjectsWithOvertimes = false;
-
-        public projects(): SimpleDict[] {
-            return this.showOnlyProjectsWithOvertimes ? this.projectsWithOvertimes : this.allProjects;
-        }
+        public allProjects: SimpleDict[] = [];
     }
 
     @Component({
@@ -174,12 +173,15 @@
             this.rawData.employees
                 // Filter by Employee Display Name
                 .filter(e => !this.search || e.displayName.toLowerCase().indexOf(this.search.toLowerCase()) >= 0)
+                // Filter by current project
+                .filter(e => this.filter.selectedEmployeeCurrentProjects.length == 0
+                    || (e.currentProject && this.filter.selectedEmployeeCurrentProjects.indexOf(e.currentProject.id) >= 0))
                 .forEach(e => this.overtimes.push(new OvertimeSummaryContainer({
                     id: e.id,
                     name: e.displayName,
                     active: true
                 }, {
-                    selectedProjects: this.filter.selectedProjects
+                    selectedProjects: this.filter.selectedProjectsWithOvertimes
                 })));
 
             this.rawData.overtimes.forEach(serverOvertime => {
@@ -195,8 +197,8 @@
                     logger.error(`Unable to find overtime for employee ${serverOvertime.employeeId}`);
                 }
             });
-            this.filter.allProjects = this.allProjects;
             this.filter.projectsWithOvertimes = this.allProjects.filter(p => projectsWithOvertimes.indexOf(p.id) >= 0);
+            this.filter.allProjects = this.allProjects;
         }
 
         private incrementPeriod() {
