@@ -73,22 +73,24 @@
         <v-checkbox :label="$t('Сотрудники без сверхурочных')" v-model="filter.showEmpty">
         </v-checkbox>
       </v-card-title>
-      <v-data-table
-          :loading="loading"
-          :loading-text="$t('Загрузка_данных')"
-          :headers="headers"
-          :items="filteredOvertimes()"
-          hide-default-footer
-          sort-by="totalHours"
-          sort-desc
-          disable-pagination>
-        <template
-            v-slot:item.employee.name="{ item }">
-          <v-btn text x-small
-                 @click="showEmployeeDialog(item.employee)">{{ item.employee.name }}
-          </v-btn>
-        </template>
-      </v-data-table>
+      <v-card-text>
+        <v-data-table
+            :loading="loading"
+            :loading-text="$t('Загрузка_данных')"
+            :headers="headers"
+            :items="filteredOvertimes()"
+            hide-default-footer
+            sort-by="totalHours"
+            sort-desc
+            disable-pagination>
+          <template
+              v-slot:item.employee.name="{ item }">
+            <v-btn text x-small
+                   @click="showEmployeeDialog(item.employee)">{{ item.employee.name }}
+            </v-btn>
+          </template>
+        </v-data-table>
+      </v-card-text>
     </v-card>
   </v-container>
 </template>
