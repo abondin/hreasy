@@ -7,7 +7,7 @@
         <v-card>
           <v-card-title>
             {{
-              $t('Сверхурочные сотрудика', {
+              $t('Овертаймы сотрудика', {
                 employee: selectedEmployee.name,
                 period: selectedPeriod.toString()
               })
@@ -66,11 +66,11 @@
             :items="filter.projectsWithOvertimes"
             item-value="id"
             item-text="name"
-            :label="$t('Проекты, в которые списаны сверхурочные')"
+            :label="$t('Проекты, в которые списаны овертаймы')"
             multiple>
         </v-select>
         <!-- Overtime projects -->
-        <v-checkbox :label="$t('Сотрудники без сверхурочных')" v-model="filter.showEmpty">
+        <v-checkbox :label="$t('Сотрудники без овертаймов')" v-model="filter.showEmpty">
         </v-checkbox>
       </v-card-title>
       <v-card-text>

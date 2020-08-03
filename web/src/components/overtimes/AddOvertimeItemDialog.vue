@@ -21,7 +21,7 @@ Emits:
     <v-form v-if="item"
             :ref="`overtime-item-update-${employeeId}-${period.periodId()}`">
       <v-card>
-        <v-card-title>{{ $t('Учёт сверхурочных за день') }}</v-card-title>
+        <v-card-title>{{ $t('Учёт овертаймов за день') }}</v-card-title>
         <v-card-text>
           <v-select
               v-model="item.projectId"
@@ -69,7 +69,7 @@ Emits:
           <v-checkbox v-model="addMore" :label="$t('Добавить ещё')"></v-checkbox>
           <v-spacer></v-spacer>
           <v-btn @click="closeDialog">{{ $t('Закрыть') }}</v-btn>
-          <v-btn @click="addMore ? submitAndNext() : submit()" color="primary">{{ $t('Сохранить') }}</v-btn>
+          <v-btn @click="addMore ? submitAndNext() : submit()" color="primary">{{ $t('Добавить') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-form>
@@ -105,7 +105,7 @@ export default class AddOvertimeItemDialog extends Vue {
 
   private dialog = false;
 
-  private addMore = false;
+  private addMore = true;
 
   @Watch("dialog")
   private watch() {

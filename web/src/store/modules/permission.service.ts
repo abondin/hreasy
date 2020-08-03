@@ -45,11 +45,23 @@ interface PermissionService {
      * Check if given user can update project of given employee
      * @param employeeId - employee to change current project
      */
-    canUpdateAvatar(employeeId: number): boolean
+    canUpdateAvatar(employeeId: number): boolean;
 
-    canViewOvertimes(): boolean;
+    /**
+     * Check if user can view overtime for given employee
+     * @param employeeId
+     */
+    canViewOvertimes(employeeId: number): boolean;
 
-    canViewVacations(): boolean;
+    /**
+     * Check if user can update overtime for given employee
+     * @param employeeId
+     */
+    canEditOvertimes(employeeId: number): boolean;
+
+    canViewAllOvertimes(): boolean;
+
+    canViewAllVacations(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -65,12 +77,20 @@ class VuexPermissionService implements PermissionService {
         return this.simplePermissionCheckOrCurrentEmployee(Permissions.UpdateAvatar, employeeId);
     }
 
-    canViewOvertimes(): boolean {
+    canViewAllOvertimes(): boolean {
         return this.simplePermissionCheck(Permissions.ViewOvertimes);
     }
 
-    canViewVacations(): boolean {
+    canViewAllVacations(): boolean {
         return this.simplePermissionCheck(Permissions.ViewVacations);
+    }
+
+    canViewOvertimes(employeeId: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.ViewOvertimes, employeeId);
+    }
+
+    canEditOvertimes(employeeId: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.EditOvertimes, employeeId);
     }
 
     private simplePermissionCheck(permission: Permissions) {

@@ -3,7 +3,7 @@
   <v-container fluid>
     <v-card>
       <v-card-title>
-        <div class="mr-2">{{ $tc('Сверхурочные') }}</div>
+        <div class="mr-2">{{ $t('Овертаймы') }}</div>
         <div v-if="changePeriodAllowed==true">
           <v-btn @click.stop="decrementPeriod()" text x-small>
             <v-icon>mdi-chevron-left</v-icon>

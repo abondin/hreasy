@@ -15,6 +15,7 @@
             <div class="error" v-if="error">{{error}}</div>
         </v-card-text>
         <v-card-actions>
+            <v-spacer></v-spacer>
             <v-btn
                     color="primary"
                     text
@@ -71,7 +72,7 @@
                     } else {
                         this.employee.currentProject = undefined;
                     }
-                    this.error = "//TODO Close the dialog";
+                    this.$emit('close');
                 })
                 .catch(e => this.error = e);
         }

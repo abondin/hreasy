@@ -23,7 +23,7 @@
             <v-icon>mdi-briefcase-clock</v-icon>
           </v-list-item-action>
           <v-list-item-title>
-            {{ $tc('Мои сверхурочные') }}
+            {{ $tc('Мои овертаймы') }}
           </v-list-item-title>
         </v-list-item>
 
@@ -39,12 +39,12 @@
           </v-list-item-title>
         </v-list-item>
 
-        <v-list-item to="/overtimes" v-if="canViewOvertimes()">
+        <v-list-item to="/overtimes" v-if="canViewAllOvertimes()">
           <v-list-item-action>
             <v-icon>mdi-briefcase-clock</v-icon>
           </v-list-item-action>
           <v-list-item-title>
-            {{ $tc('Сверхурочные') }}
+            {{ $tc('Овертаймы') }}
           </v-list-item-title>
         </v-list-item>
 
@@ -155,12 +155,12 @@ export default class App extends Vue {
     return this.logoutAction().then(() => this.$router.push('/login'));
   }
 
-  private canViewOvertimes() {
-    return permissionService.canViewOvertimes();
+  private canViewAllOvertimes() {
+    return permissionService.canViewAllOvertimes();
   }
 
   private canViewVacations() {
-    return permissionService.canViewVacations();
+    return permissionService.canViewAllVacations();
   }
 }
 </script>
