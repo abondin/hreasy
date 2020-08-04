@@ -28,9 +28,9 @@
       </v-dialog>
     </div>
     <v-card>
-      <v-card-title>
+      <v-card-title >
         <!-- Refresh button -->
-        <v-btn text icon @click="fetchData()" class="mr-5">
+        <v-btn text icon @click="fetchData()">
           <v-icon>refresh</v-icon>
         </v-btn>
         <!-- Report Period -->
@@ -38,7 +38,7 @@
           <v-icon>mdi-chevron-left</v-icon>
         </v-btn>
         <span class="ml-1 mr-2">{{ selectedPeriod }}</span>
-        <v-btn @click.stop="incrementPeriod()" text x-small class="mr-5">
+        <v-btn @click.stop="incrementPeriod()" text x-small >
           <v-icon>mdi-chevron-right</v-icon>
         </v-btn>
         <v-divider vertical></v-divider>
@@ -73,6 +73,7 @@
         <v-checkbox :label="$t('Сотрудники без овертаймов')" v-model="filter.showEmpty">
         </v-checkbox>
       </v-card-title>
+      <v-card-subtitle>{{$t('Итого')}}: {{ $tc('hours', totalHours()) }}</v-card-subtitle>
       <v-card-text>
         <v-data-table
             :loading="loading"
@@ -104,7 +105,7 @@ import {DataTableHeader} from "vuetify";
 import EmployeeCard from "@/components/empl/EmployeeCard.vue";
 import overtimeService, {
   OvertimeEmployeeSummary,
-  OvertimeSummaryContainer,
+  OvertimeSummaryContainer, OvertimeUtils,
   ReportPeriod
 } from "@/components/overtimes/overtime.service";
 import logger from "@/logger";
@@ -252,6 +253,10 @@ export default class AllOvertimes extends Vue {
       passed = passed && (this.filter.showEmpty || i.totalHours > 0)
       return passed;
     });
+  }
+
+  private totalHours() : number{
+    return OvertimeUtils.totalHoursForSummary(this.filteredOvertimes());
   }
 
 }

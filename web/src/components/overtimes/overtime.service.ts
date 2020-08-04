@@ -251,6 +251,12 @@ export class OvertimeUtils {
         return overtimeReport && overtimeReport.items && overtimeReport.items.length > 0
             ? overtimeReport.items.map(i => i.hours).reduce((s, c) => s + c) : 0;
     }
+
+    static totalHoursForSummary(overtimeSummaryReports: OvertimeSummaryContainer[]): number {
+        return overtimeSummaryReports.length > 0
+            ? overtimeSummaryReports.map(s => s.totalHours).reduce((s, c) => s + c) : 0;
+    }
+
 }
 
 const overtimeService: OvertimeService = new RestOvertimeService(httpService);
