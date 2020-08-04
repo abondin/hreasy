@@ -7,7 +7,7 @@
         <v-card>
           <v-card-title>
             {{
-              $t('Овертаймы сотрудика', {
+              $t('overtimes_for_employee_for_period', {
                 employee: selectedEmployee.name,
                 period: selectedPeriod.toString()
               })

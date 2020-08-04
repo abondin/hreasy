@@ -18,15 +18,6 @@
           </v-list-item-title>
         </v-list-item>
 
-        <v-list-item link to="/profile/overtimes">
-          <v-list-item-action>
-            <v-icon>mdi-briefcase-clock</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>
-            {{ $tc('Мои овертаймы') }}
-          </v-list-item-title>
-        </v-list-item>
-
         <v-divider></v-divider>
 
 

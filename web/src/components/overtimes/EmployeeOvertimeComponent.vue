@@ -1,6 +1,6 @@
 <!-- All vacations table-->
 <template>
-  <v-container fluid>
+  <div>
     <v-card>
       <v-card-title>
         <div class="mr-2">{{ $t('Овертаймы') }}</div>
@@ -15,7 +15,7 @@
         </div>
         <v-spacer></v-spacer>
         <span class="mr-5">
-                {{ $t('Всего') }}: {{ overtimes.map(i => i.hours).reduce((a, b) => a + b, 0) }}
+                {{ $t('Всего') }}: {{ $tc('hours', totalOvertimeHours()) }}
                     </span>
         <v-card-actions>
           <add-overtime-item-dialog
@@ -80,7 +80,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-container>
+  </div>
 </template>
 
 
@@ -238,6 +238,10 @@ export default class EmployeeOvertimeComponent extends Vue {
     this.$nextTick(() => {
       this.deleteDialog = true;
     });
+  }
+
+  private totalOvertimeHours() {
+    return OvertimeUtils.totalHours(this.overtimeReport);
   }
 
 }
