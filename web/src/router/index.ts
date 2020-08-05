@@ -11,7 +11,7 @@ import AllOvertimes from "@/components/overtimes/AllOvertimes.vue";
 Vue.use(VueRouter)
 
 const routes = [
-    {path: "/", redirect: '/employees'},
+    {path: "/", redirect: '/profile/main'},
     {path: "/login", component: Login},
     {name: "employees", path: "/employees", component: Employees},
     {name: 'employeeProfile', path: "/profile/main", component: EmployeeProfile, props: true},
