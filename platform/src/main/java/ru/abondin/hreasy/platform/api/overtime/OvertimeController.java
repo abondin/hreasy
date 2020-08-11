@@ -60,7 +60,7 @@ public class OvertimeController {
     public Flux<OvertimeEmployeeSummary> getSummary(@PathVariable int period) {
         return AuthHandler.currentAuth().flatMapMany(auth -> {
             validateViewOvertimeSummary(auth);
-            return service.getSummary(period);
+            return service.getSummary(period, auth);
         });
     }
 

@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -14,6 +16,20 @@ import java.util.Collection;
 public class UserDetailsWithEmployeeInfo implements UserDetails {
     private UserDetails delegate;
     private Integer employeeId;
+
+    /**
+     * List of ids of departments accessible to the employee.
+     * Works for roles like overtime_view, overtime_edit, vacation_view, vacation_edit.
+     * For example employee with role overtime_edit can edit overtimes only for employees with current project from department from given list
+     */
+    private List<Integer> accessibleDepartments = new ArrayList<>();
+
+    /**
+     * Works for roles like overtime_view, overtime_edit, vacation_view, vacation_edit.
+     * For example employee with role overtime_edit can edit overtimes only for employees with current project from given list
+     * Means nothing if employee has access to the whole department
+     */
+    private List<Integer> accessibleProjects = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

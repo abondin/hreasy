@@ -14,7 +14,6 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
-import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
 import ru.abondin.hreasy.platform.sec.UserDetailsWithEmployeeInfo;
 
 import java.util.ArrayList;
@@ -79,7 +78,10 @@ public class AuthHandler {
         var email = emailFromUsername(userDetails.getUsername());
         AuthContext.EmployeeInfo employee;
         if (userDetails instanceof UserDetailsWithEmployeeInfo && ((UserDetailsWithEmployeeInfo) userDetails).getEmployeeId() != null) {
-            employee = new AuthContext.EmployeeInfo(((UserDetailsWithEmployeeInfo) userDetails).getEmployeeId());
+            var withEmployeeInfo = ((UserDetailsWithEmployeeInfo) userDetails);
+            employee = new AuthContext.EmployeeInfo(withEmployeeInfo.getEmployeeId(),
+                    withEmployeeInfo.getAccessibleDepartments(),
+                    withEmployeeInfo.getAccessibleProjects());
         } else {
             employee = null;
         }
@@ -89,7 +91,6 @@ public class AuthHandler {
     }
 
     private final ReactiveAuthenticationManager authenticationManager;
-    private final HrEasySecurityProps securityProps;
 
     public Mono<LoginResponse> login(UsernamePasswordAuthenticationToken authenticationToken, WebSession webSession) {
         return authenticationManager.authenticate(authenticationToken).flatMap(

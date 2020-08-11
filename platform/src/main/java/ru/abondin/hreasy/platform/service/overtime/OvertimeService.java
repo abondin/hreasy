@@ -118,7 +118,7 @@ public class OvertimeService {
                         }));
     }
 
-    public Flux<OvertimeEmployeeSummary> getSummary(int period) {
+    public Flux<OvertimeEmployeeSummary> getSummary(int period, AuthContext auth) {
         // Find all not deleted overtime items for given period
         return itemViewRepo.findNotDeleted(period)
                 // Collect them to list. TODO - Work in flux

@@ -28,7 +28,7 @@ public class DbAuthoritiesPopulator implements LdapAuthoritiesPopulator {
     }
 
     private Collection<? extends GrantedAuthority> getGrantedAuthoritiesBlocked(String username) {
-        return (Collection<? extends GrantedAuthority>) securityService
+        return securityService
                 .getPermissions(AuthHandler.emailFromUsername(username))
                 .map(perm -> new SimpleGrantedAuthority(perm))
                 .collectList()

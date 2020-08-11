@@ -130,10 +130,6 @@ public class TestDataGenerator {
         }));
     }
 
-    private void assignRoles() {
-
-    }
-
 
     private EmployeeEntry withEmail(EmployeeEntry employeeEntry) {
         employeeEntry.setEmail(employeeEntry.getFirstname() + "." + employeeEntry.getLastname() + "@stm-labs.ru");
