@@ -88,12 +88,32 @@ See `sec_role` and `sec_role_perm` tables.
 |----|------|
 |global_admin|Full access|
 |hr|Add/Update/Fire all employees|
+|pm|Overtime and vacation review and update|
 
 |permissions|roles|
 |----|------|
 |update_current_project_global|global_admin, hr|
 |update_avatar|global_admin, hr|
-|overtime_view|global_admin, hr|
-|overtime_edit|global_admin, hr|
-|vacation_view|global_admin, hr|
-|vacation_edit|global_admin, hr|
+|overtime_view|global_admin, hr, pm|
+|overtime_edit|global_admin, hr, pm|
+|vacation_view|global_admin, hr, pm|
+|vacation_edit|global_admin, hr, pm|
+
+
+** Default Test Data for Unit Tests **
+
+|Employee|Current Assigned Project|Roles|Accessible Departments|Accessible Projects|
+|--------|---------------|-----|----------------------|-------------------|
+|Haiden Spooner|M1 Billing|-|-|-|
+|Asiyah Bob|M1 Billing|-|-|-|
+|Maxwell May|M1 Billing|-|-|M1 Billing|
+|Percy Gough|-|-|Development|-|
+|Ammara Knott|M1 FMS|-|-|-|
+|Jenson Curtis|M1 FMS|-|-|-|
+|Jawad Mcghee|-|-|-|M1 FMS|
+|Amy Beck|M1 Policy Manager|-|-|-|
+|Kyran Neville|-|-|-|M1 Billing,M1 FMS,M1 Policy Manager|
+|Jonas Martin|M1 ERP Integration|-|-|-|
+|Toby Barrow|-|-|Development,Integration|-|
+|Maysa Sheppard|-|hr|-|-|
+|Shaan Pitts|-|global_admin|-|-|
