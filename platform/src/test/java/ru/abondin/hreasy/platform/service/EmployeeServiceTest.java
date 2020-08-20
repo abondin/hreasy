@@ -3,7 +3,6 @@ package ru.abondin.hreasy.platform.service;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,17 +14,13 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
 import ru.abondin.hreasy.platform.repo.SqlServerContextInitializer;
-import ru.abondin.hreasy.platform.repo.TestDataGenerator;
 
 // Test Data Generation is broken now
-@Disabled
 @ActiveProfiles({"test", "dev"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {SqlServerContextInitializer.class})
 @Slf4j
 public class EmployeeServiceTest {
-    @Autowired
-    private TestDataGenerator testDataGenerator;
     @Autowired
     private EmployeeService employeeService;
 
@@ -38,34 +33,28 @@ public class EmployeeServiceTest {
     private AuthContext auth;
 
     @BeforeEach
-    protected void generateData() {
+    protected void validateTestConfiguration() {
         if (securityProps.getMasterPassword().isBlank()) {
             Assertions.fail("No master password found");
         }
-        testDataGenerator.generate().then(
-                authHandler
-                        .login(new UsernamePasswordAuthenticationToken("Ivan.Ivanov", securityProps.getMasterPassword())).doOnSuccess(a -> {
-                            auth = a;
-                        }
-                )
-        ).block();
+        this.auth = authHandler.login(new UsernamePasswordAuthenticationToken("Shaan.Pitts", securityProps.getMasterPassword())).block();
     }
 
     @Test
     public void testFindNotFired() {
-        /* We have 5 not fired employees in database*/
+        /* We have 13 not fired employees in database*/
         StepVerifier
                 .create(employeeService.findAll(auth, false))
-                .expectNextCount(5)
+                .expectNextCount(13)
                 .verifyComplete();
     }
 
     @Test
     public void testFindAllEmployees() {
-        /* We have 5 not fired employees +1 employee in database*/
+        /* We have 13 not fired employees +1 employee in database*/
         StepVerifier
                 .create(employeeService.findAll(auth, true))
-                .expectNextCount(6)
+                .expectNextCount(14)
                 .verifyComplete();
     }
 

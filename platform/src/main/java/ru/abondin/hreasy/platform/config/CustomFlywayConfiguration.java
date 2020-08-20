@@ -42,6 +42,7 @@ public class CustomFlywayConfiguration {
                         flywayProperties.getPassword())
                 .baselineVersion(flywayProperties.getBaselineVersion())
                 .baselineOnMigrate(flywayProperties.isBaselineOnMigrate())
+                .locations(flywayProperties.getLocations().toArray(new String[0]))
                 .load();
         return new FlywayMigrationInitializer(flyway,
                 new CustomFlywayMigrationStrategy(hrEasyDbProperties.getFlywayCommands()));

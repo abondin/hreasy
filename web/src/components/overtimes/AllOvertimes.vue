@@ -73,7 +73,7 @@
         <v-checkbox :label="$t('Сотрудники без овертаймов')" v-model="filter.showEmpty">
         </v-checkbox>
       </v-card-title>
-      <v-card-subtitle>{{$t('Итого')}}: {{ $tc('hours', totalHours()) }}</v-card-subtitle>
+      <v-card-subtitle>{{$t('Итого (с учётом фильтров)')}}: {{ $tc('hours', totalHours()) }}</v-card-subtitle>
       <v-card-text>
         <v-data-table
             :loading="loading"
