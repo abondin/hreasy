@@ -13,7 +13,10 @@ import org.testcontainers.containers.MSSQLServerContainer;
 @Slf4j
 public class SqlServerContextInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-    private final static KMSSQLServerContainer sqlServer = new KMSSQLServerContainer()
+    /**
+     * Single container shared between test methods
+     */
+    private final static MSSQLServerContainer sqlServer = new MSSQLServerContainer<>()
             .withEnv("MSSQL_COLLATION", "Cyrillic_General_100_CI_AS");
 
     @Override
@@ -36,13 +39,5 @@ public class SqlServerContextInitializer implements ApplicationContextInitialize
         }
     }
 
-    /**
-     * Hack to work with GenericContainer<SELF>
-     * https://github.com/testcontainers/testcontainers-java/issues/318
-     */
-    public static class KMSSQLServerContainer extends MSSQLServerContainer<KMSSQLServerContainer> {
-    }
-
-    ;
 }
 

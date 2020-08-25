@@ -11,7 +11,6 @@ import ru.abondin.hreasy.platform.service.EmployeeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 
-import static ru.abondin.hreasy.platform.sec.SecurityUtils.validateUpdateCurrentProject;
 
 @RestController()
 @RequestMapping("/api/v1/employee")
@@ -55,19 +54,14 @@ public class EmployeeController {
     @ResponseBody
     public Mono<Boolean> updateCurrentProject(@PathVariable int employeeId,
                                               @PathVariable int newCurrentProjectId) {
-        return AuthHandler.currentAuth().flatMap(auth -> {
-            validateUpdateCurrentProject(auth, employeeId);
-            return emplService.updateCurrentProject(employeeId, newCurrentProjectId, auth);
-        });
+        return AuthHandler.currentAuth().flatMap(auth -> emplService.updateCurrentProject(employeeId, newCurrentProjectId, auth));
     }
 
     @Operation(summary = "Reset current project for employee")
     @PutMapping("/{employeeId}/currentProject/reset")
     @ResponseBody
     public Mono<Boolean> resetCurrentProject(@PathVariable int employeeId) {
-        return AuthHandler.currentAuth().flatMap(auth -> {
-            validateUpdateCurrentProject(auth, employeeId);
-            return emplService.updateCurrentProject(employeeId, null, auth);
-        });
+        return AuthHandler.currentAuth().flatMap(auth ->
+                emplService.updateCurrentProject(employeeId, null, auth));
     }
 }

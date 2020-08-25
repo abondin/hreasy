@@ -7,8 +7,11 @@ IF NOT EXISTS (
 begin
 
 -- Add employee id in external ERP system to correlate data in two systems
-ALTER TABLE employee ADD ext_erp_id int
+ALTER TABLE employee ADD ext_erp_id nvarchar(255)
+end
 
+if not exists (select * from sysobjects where name='sec_role' and xtype='U')
+begin
 -- Add role and permissions table to normalize database structure
 CREATE TABLE sec_role (
     role  nvarchar(255) NOT NULL,
@@ -20,7 +23,7 @@ INSERT INTO sec_role (role) select distinct role from sec_role_perm;
 ALTER TABLE sec_user_role ADD CONSTRAINT sec_user_role_role_FK FOREIGN KEY (role) REFERENCES sec_role(role)
 ALTER TABLE sec_role_perm ADD CONSTRAINT sec_role_perm_role_FK FOREIGN KEY (role) REFERENCES sec_role(role)
 
-CREATE TABLE sec_perm (
+create TABLE sec_perm (
     permission  nvarchar(255) NOT NULL,
     description nvarchar(1024) NULL,
     primary key (permission)
@@ -31,14 +34,14 @@ ALTER TABLE sec_role_perm ADD CONSTRAINT sec_role_perm_perm_FK FOREIGN KEY (perm
 
 
   -- User assesible departments
-CREATE TABLE employee_accessible_departments (
+create TABLE employee_accessible_departments (
 	employee_id int NOT NULL,
 	department_id int NOT NULL,
 	primary key (employee_id, department_id)
 )
 
   -- User accessible projects. Means nothing if employee has access to the whole department
-CREATE TABLE employee_accessible_projects (
+create TABLE employee_accessible_projects (
 	employee_id int NOT NULL,
 	project_id int NOT NULL,
 	primary key (employee_id, project_id)

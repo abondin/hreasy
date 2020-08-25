@@ -18,6 +18,8 @@ import ru.abondin.hreasy.platform.service.mapper.EmployeeDtoMapper;
 
 import java.util.Arrays;
 
+import static ru.abondin.hreasy.platform.sec.SecurityUtils.validateUpdateCurrentProject;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -50,7 +52,8 @@ public class EmployeeService {
     public Mono<Boolean> updateCurrentProject(int employeeId, @Nullable Integer newCurrentProjectId, AuthContext auth) {
         log.info("Update current project {} for employee {}" +
                 "by {}", newCurrentProjectId == null ? "<RESET>" : newCurrentProjectId, employeeId, auth.getEmail());
-        return emplRepo.updateCurrentProject(employeeId, newCurrentProjectId).map(updatedRowsCount -> updatedRowsCount > 0);
+        return validateUpdateCurrentProject(auth, employeeId)
+                .flatMap(valid -> emplRepo.updateCurrentProject(employeeId, newCurrentProjectId).map(updatedRowsCount -> updatedRowsCount > 0));
     }
 
     public Mono<Boolean> updateCurrentProject(int newCurrentProjectId, AuthContext auth) {
