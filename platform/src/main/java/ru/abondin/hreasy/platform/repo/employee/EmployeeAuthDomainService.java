@@ -17,11 +17,13 @@ public class EmployeeAuthDomainService {
         return employeeRepo.findIdByEmail(email).flatMap(id -> {
             var entry = new EmployeeAuthInfoEntry();
             entry.setId(id);
-            return Mono.zip(employeeRepo.findAccessibleDepartments(id).collectList(), employeeRepo.findAccessibleProjects(id).collectList()).map(result -> {
-                entry.setAccessibleDepartments(result.getT1());
-                entry.setAccessibleProjects(result.getT2());
-                return entry;
-            });
+            return employeeRepo.findAccessibleDepartments(id).collectList()
+                    .flatMap(deps -> employeeRepo.findAccessibleProjects(id).collectList()
+                            .map(projects -> {
+                                entry.setAccessibleDepartments(deps);
+                                entry.setAccessibleProjects(projects);
+                                return entry;
+                            }));
         });
     }
 }

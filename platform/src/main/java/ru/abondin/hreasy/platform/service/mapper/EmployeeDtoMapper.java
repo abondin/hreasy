@@ -22,6 +22,7 @@ public interface EmployeeDtoMapper {
     @Mapping(target = "currentProject", source = ".", qualifiedByName = "currentProject")
     @Mapping(target = "position", source = ".", qualifiedByName = "position")
     @Mapping(target = "officeLocation", source = ".", qualifiedByName = "officeLocation")
+    @Mapping(target = "hasAvatar", ignore = true)
     EmployeeDto employeeToDto(EmployeeDetailedEntry entry);
 
     @Named("displayName")
