@@ -13,4 +13,5 @@ public class DictProjectEntry {
     private Integer id;
     private String name;
     private LocalDate endDate;
+    private Integer departmentId;
 }

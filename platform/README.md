@@ -50,7 +50,7 @@ Security model based on two main entities:
 2) User - employee projection in security scheme.
 Currently we consider that *User = Employee*.
 Also we have the assumption that user and employee are always associated via email. (implicit dependency)
-Entity user designed for future features when we have portal user without employee projection.
+Entity "User" designed for future features when we have portal user without employee projection.
 It might be system account or some kind of portal admin. 
 
 User (more accurately employee) may have access to the actions for employees, currently assigned to the specific project.
@@ -76,7 +76,7 @@ See `sec_role` and `sec_role_perm` tables.
 |----|------|------|------|
 |update_current_project_global|N|N|Change current employee project|
 |update_avatar|N|Y|Update employee avatar|
-|overtime_view|Y|Y|View overtimes of given employee|
+|overtime_view|N|Y|View overtimes of given employee|
 |overtime_edit|Y|Y|View overtimes of given employee|
 |vacation_view|Y|Y|View overtimes of given employee|
 |vacation_edit|Y|Y|View overtimes of given employee|

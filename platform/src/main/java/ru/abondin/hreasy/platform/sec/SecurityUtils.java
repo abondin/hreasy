@@ -26,32 +26,4 @@ public class SecurityUtils {
         });
     }
 
-    public static Mono validateEditOvertimeItem(AuthContext auth, int employeeId) {
-        return Mono.defer(() -> {
-            if (!auth.getAuthorities().contains("overtime_edit") && employeeId != auth.getEmployeeInfo().getEmployeeId()) {
-                return Mono.error(new AccessDeniedException("Only logged in user or user with permission overtime_edit can update the overtime item"));
-            }
-            return Mono.just(true);
-        });
-    }
-
-    public static Mono validateViewOvertime(AuthContext auth, int employeeId) {
-        return Mono.defer(() -> {
-            if (!auth.getAuthorities().contains("overtime_view") && employeeId != auth.getEmployeeInfo().getEmployeeId()) {
-                return Mono.error(new AccessDeniedException("Only logged in user or user with permission overtime_view can view the overtime repotr"));
-            }
-            return Mono.just(true);
-        });
-    }
-
-
-    public static Mono validateViewOvertimeSummary(AuthContext auth) {
-        return Mono.defer(() -> {
-            if (!auth.getAuthorities().contains("overtime_view")) {
-                return Mono.error(new AccessDeniedException("Only user with permission overtime_view can view the overtime report"));
-            }
-            return Mono.just(true);
-        });
-    }
-
 }
