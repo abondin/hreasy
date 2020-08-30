@@ -94,13 +94,11 @@ public class AuthHandler {
 
     public Mono<LoginResponse> login(UsernamePasswordAuthenticationToken authenticationToken, WebSession webSession) {
         return authenticationManager.authenticate(authenticationToken).flatMap(
-                authResult -> {
-                    return ReactiveSecurityContextHolder.getContext().map(
-                            securityContext -> {
-                                securityContext.setAuthentication(authResult);
-                                return securityContext;
-                            }).subscriberContext(ReactiveSecurityContextHolder.withAuthentication(authResult));
-                }
+                authResult -> ReactiveSecurityContextHolder.getContext().map(
+                        securityContext -> {
+                            securityContext.setAuthentication(authResult);
+                            return securityContext;
+                        }).subscriberContext(ReactiveSecurityContextHolder.withAuthentication(authResult))
         ).flatMap(securityContext -> {
             webSession.getAttributes().put(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
             return webSession.save();

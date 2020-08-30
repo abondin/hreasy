@@ -37,10 +37,8 @@ public class TestDataContainer {
     public Mono<?> initAsync() {
         this.projects.clear();
         this.employees.clear();
-        return Mono.zip(
-                simpleDicts("project", projects),
-                employees()
-        );
+        return simpleDicts("project", projects)
+                .then(employees());
     }
 
     private Mono<?> simpleDicts(String dictTableName, Map<String, Integer> dictMap) {
