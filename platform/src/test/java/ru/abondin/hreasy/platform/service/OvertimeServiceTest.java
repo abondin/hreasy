@@ -66,10 +66,15 @@ public class OvertimeServiceTest {
     @Test
     public void testGetOvertimeSummary() {
         var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
-        //TODO Validate the actual result
         StepVerifier
-                .create(overtimeService.getSummary(202008, ctx))
-                .expectNextCount(1).verifyComplete();
+                .create(
+                        overtimeService.addItem(
+                                ctx.getEmployeeInfo().getEmployeeId(),
+                                202008,
+                                new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 1, "testGetOvertimeSummary"),
+                                ctx).thenMany(overtimeService.getSummary(202008, ctx)))
+                //TODO Validate the actual result
+                .expectNextMatches(o -> true).verifyComplete();
     }
 
     @Test
@@ -86,13 +91,11 @@ public class OvertimeServiceTest {
         var ctx = auth(TestEmployees.FMS_Empl_Jenson_Curtis).block(MONO_DEFAULT_TIMEOUT);
         StepVerifier
                 .create(
-                        overtimeService.getOrStub(jensonId, 202008, ctx)
-                                .then(overtimeService.addItem(
-                                        jensonId,
-                                        202008,
-                                        new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 4, null),
-                                        ctx))
-                )
+                        overtimeService.addItem(
+                                jensonId,
+                                202008,
+                                new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 4, null),
+                                ctx))
                 .expectNextCount(1).verifyComplete();
     }
 
@@ -103,16 +106,15 @@ public class OvertimeServiceTest {
         var uuidComment = UUID.randomUUID().toString();
         StepVerifier
                 .create(
-                        overtimeService.getOrStub(jensonId, 202008, ctx)
-                                .then(overtimeService.addItem(
-                                        jensonId,
-                                        202008,
-                                        new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 7, uuidComment),
-                                        ctx)
-                                        .flatMap(r -> {
-                                            var itemId = r.getItems().stream().filter(i -> uuidComment.equals(i.getNotes())).findFirst().get().getId();
-                                            return overtimeService.deleteItem(jensonId, 202008, itemId, ctx);
-                                        }))
+                        overtimeService.addItem(
+                                jensonId,
+                                202008,
+                                new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 7, uuidComment),
+                                ctx)
+                                .flatMap(r -> {
+                                    var itemId = r.getItems().stream().filter(i -> uuidComment.equals(i.getNotes())).findFirst().get().getId();
+                                    return overtimeService.deleteItem(jensonId, 202008, itemId, ctx);
+                                })
                 ).expectNextCount(1).verifyComplete();
     }
 
@@ -122,12 +124,11 @@ public class OvertimeServiceTest {
         var jensonId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
         var ctx = auth(TestEmployees.Billing_Manager_Maxwell_May).block(MONO_DEFAULT_TIMEOUT);
         StepVerifier
-                .create(overtimeService.getOrStub(jensonId, 202008, ctx)
-                        .then(overtimeService.addItem(
-                                jensonId,
-                                202008,
-                                new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 2, "testAddOvertimeItemForEmployeeFromAnotherProject"),
-                                ctx)))
+                .create(overtimeService.addItem(
+                        jensonId,
+                        202008,
+                        new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 2, "testAddOvertimeItemForEmployeeFromAnotherProject"),
+                        ctx))
                 .expectError(AccessDeniedException.class).verify(MONO_DEFAULT_TIMEOUT);
     }
 
@@ -136,12 +137,11 @@ public class OvertimeServiceTest {
         var jensonId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
         var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
         StepVerifier
-                .create(overtimeService.getOrStub(jensonId, 202008, ctx)
-                        .then(overtimeService.addItem(
-                                jensonId,
-                                202008,
-                                new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 6, "testAddOvertimeOfMyProject"),
-                                ctx)))
+                .create(overtimeService.addItem(
+                        jensonId,
+                        202008,
+                        new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 6, "testAddOvertimeOfMyProject"),
+                        ctx))
                 .expectNextCount(1).verifyComplete();
     }
 
