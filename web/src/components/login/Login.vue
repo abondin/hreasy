@@ -14,11 +14,11 @@
                         md="4"
                 >
                     <v-card class="elevation-12" :loading="loading">
+                      <v-form v-on:submit.prevent="login">
                         <v-card-title>
                             {{ $t('Вход_в_систему')}}
                         </v-card-title>
                         <v-card-text>
-                            <v-form>
                                 <v-text-field
                                         v-model="loginField"
                                         :label="$t('Пользователь')"
@@ -35,20 +35,20 @@
                                         type="password"
                                         v-model="passwordField"
                                 />
-                            </v-form>
                         </v-card-text>
                         <v-card-text class="error--text">
                             {{responseError}}
                         </v-card-text>
                         <v-card-actions>
                             <v-spacer/>
-                            <v-btn :disabled="loading" color="primary" v-on:click="login" type="submit">{{
+                            <v-btn :disabled="loading" color="primary" type="submit">{{
                                 $t('Войти')}}
                             </v-btn>
                             <!--                                <v-btn color="primary" v-on:click="currentUser">Current User</v-btn>-->
                             <!--                                <v-btn color="primary" v-on:click="getEmployees">Employees</v-btn>-->
                             <!--                                <v-btn color="warning" v-on:click="logout">Logout</v-btn>-->
                         </v-card-actions>
+                      </v-form>
                     </v-card>
                 </v-col>
             </v-row>
@@ -63,7 +63,7 @@
     import {AuthState} from "@/store/modules/auth";
     import {Action, State} from 'vuex-class';
     import {LoginRequest} from "@/store/modules/auth.service";
-    import {AuthenticationError} from "@/components/errors";
+    import {AuthenticationError, errorUtils} from "@/components/errors";
 
     const namespace: string = 'auth';
 
@@ -95,7 +95,7 @@
         private wrapResponse(p: Promise<any>): Promise<any> {
             this.loading = true;
             return p.catch(error => {
-                this.responseError = error.message;
+                this.responseError = errorUtils.shortMessage(error);
                 if (!(error instanceof AuthenticationError)) {
                     return Promise.reject(error);
                 }

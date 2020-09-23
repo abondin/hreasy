@@ -14,7 +14,7 @@ public class OvertimeItemDto {
      */
     private LocalDate date;
     private int projectId;
-    private int hours;
+    private float hours;
     private String notes;
     private OffsetDateTime createdAt;
     private OffsetDateTime deletedAt;

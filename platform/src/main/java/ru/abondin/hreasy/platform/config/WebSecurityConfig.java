@@ -74,6 +74,7 @@ public class WebSecurityConfig {
                 .authorizeExchange()
                 .pathMatchers(
                         "/api/v1/login",
+                        "/api/v1/logout",
                         "/api/v1/fs/**",
                         "/actuator/**",
                         "/favicon.ico").permitAll()

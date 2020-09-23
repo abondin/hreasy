@@ -26,9 +26,9 @@ export class AccessDeniedError extends Error {
  */
 export class BusinessError extends Error {
     constructor(
-                public message: string,
-                public code?: string,
-                public attrs?: Map<string, string>) {
+        public message: string,
+        public code?: string,
+        public attrs?: Map<string, string>) {
         super(message);
     }
 }
@@ -38,3 +38,28 @@ export class UnknownBackendError extends Error {
         super(message);
     }
 }
+
+
+export class ErrorUtils {
+    public shortMessage(error: any): string {
+        if (!error) {
+            return "Unknown Error without any description";
+        }
+        if (error instanceof AccessDeniedError) {
+            return error.message;
+        }
+        if (error instanceof AuthenticationError) {
+            return error.message;
+        }
+        if (error instanceof BusinessError) {
+            //TODO Resolve all attributes
+            return error.message;
+        }
+        if (error instanceof UnknownBackendError) {
+            return error.message;
+        }
+        return error.toString();
+    }
+}
+
+export const errorUtils = new ErrorUtils();

@@ -15,6 +15,6 @@ public class NewOvertimeItemDto {
      */
     private LocalDate date;
     private int projectId;
-    private int hours;
+    private float hours;
     private String notes;
 }

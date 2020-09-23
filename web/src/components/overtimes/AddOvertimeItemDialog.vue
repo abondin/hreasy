@@ -51,10 +51,11 @@ Emits:
 
           <v-slider
               :label="$t('Часы')"
-              min="1"
+              min="0.5"
               max="24"
-              step="1"
+              step="0.5"
               thumbLabel="always"
+              class="mr-2"
               v-model="item.hours"
               :rules="[v=>(!!v || $t('Часы обязательны'))]">
           </v-slider>
@@ -64,6 +65,12 @@ Emits:
               v-model="item.notes"
               :label="$t('Комментарий')">
           </v-textarea>
+
+          <!-- Error block -->
+          <v-alert v-if="error" type="error">
+            {{ error }}
+          </v-alert>
+
         </v-card-text>
         <v-card-actions>
           <v-checkbox v-model="addMore" :label="$t('Добавить ещё')"></v-checkbox>
@@ -84,6 +91,7 @@ import {Prop, Watch} from "vue-property-decorator";
 import overtimeService, {OvertimeItem, ReportPeriod} from "@/components/overtimes/overtime.service";
 import {SimpleDict} from "@/store/modules/dict";
 import moment from "moment";
+import {errorUtils} from "@/components/errors";
 
 
 @Component
@@ -107,6 +115,8 @@ export default class AddOvertimeItemDialog extends Vue {
 
   private addMore = true;
 
+  private error: String|null = null;
+
   @Watch("dialog")
   private watch() {
     if (this.dialog) {
@@ -120,6 +130,8 @@ export default class AddOvertimeItemDialog extends Vue {
       return overtimeService.addItem(this.employeeId, this.period.periodId(), this.item).then((report) => {
         this.$emit('submit', report);
         this.closeDialog();
+      }).catch(error=>{
+        this.error = errorUtils.shortMessage(error);
       });
     }
   }
@@ -132,6 +144,8 @@ export default class AddOvertimeItemDialog extends Vue {
         this.$nextTick(() => {
           this.resetItem(this.item.projectId, this.nextDay(this.item.date), this.item.hours);
         });
+      }).catch(error=>{
+        this.error = errorUtils.shortMessage(error);
       });
     }
   }
@@ -142,6 +156,7 @@ export default class AddOvertimeItemDialog extends Vue {
 
   private resetItem(projectId: number | undefined = undefined, date: string | undefined = undefined,
                     hours: number | undefined) {
+    this.error = null;
     const def = this.default(projectId, date, hours);
     this.item = def;
   }

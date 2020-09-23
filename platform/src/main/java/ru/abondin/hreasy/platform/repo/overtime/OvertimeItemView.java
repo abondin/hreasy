@@ -17,5 +17,5 @@ public class OvertimeItemView {
 
     private LocalDate date;
     private int projectId;
-    private int hours;
+    private float hours;
 }
