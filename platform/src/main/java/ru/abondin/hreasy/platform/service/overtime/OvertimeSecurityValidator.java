@@ -6,7 +6,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.sec.ProjectHierarchyService;
+import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 
 /**
  * Validate security rules to get and update overtimes
@@ -16,7 +16,7 @@ import ru.abondin.hreasy.platform.sec.ProjectHierarchyService;
 @RequiredArgsConstructor
 public class OvertimeSecurityValidator {
 
-    private final ProjectHierarchyService projectHierarchyService;
+    private final ProjectHierarchyAccessor projectHierarchyService;
 
     public Mono<Boolean> validateEditOvertimeItem(AuthContext auth, int employeeId) {
         return Mono.defer(() -> {

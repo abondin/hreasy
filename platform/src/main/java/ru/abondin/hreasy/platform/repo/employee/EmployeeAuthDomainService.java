@@ -14,11 +14,13 @@ public class EmployeeAuthDomainService {
     private final EmployeeRepo employeeRepo;
 
     public Mono<EmployeeAuthInfoEntry> findIdByEmail(String email) {
-        return employeeRepo.findIdByEmail(email).flatMap(id -> {
+        return employeeRepo.findIdByEmail(email).flatMap(empl -> {
             var entry = new EmployeeAuthInfoEntry();
-            entry.setId(id);
-            return employeeRepo.findAccessibleDepartments(id).collectList()
-                    .flatMap(deps -> employeeRepo.findAccessibleProjects(id).collectList()
+            entry.setId(empl.getId());
+            entry.setDepartmentId(empl.getDepartmentId());
+            entry.setCurrentProjectId(empl.getCurrentProjectId());
+            return employeeRepo.findAccessibleDepartments(empl.getId()).collectList()
+                    .flatMap(deps -> employeeRepo.findAccessibleProjects(empl.getId()).collectList()
                             .map(projects -> {
                                 entry.setAccessibleDepartments(deps);
                                 entry.setAccessibleProjects(projects);

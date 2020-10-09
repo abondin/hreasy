@@ -75,6 +75,7 @@ See `sec_role` and `sec_role_perm` tables.
 |permission|depends on department|always available to oneself |description|
 |----|------|------|------|
 |update_current_project_global|N|N|Change current employee project|
+|update_current_project|Y|N|Update current project for employee from my projects or my departments|
 |update_avatar|N|Y|Update employee avatar|
 |overtime_view|N|Y|View overtimes of given employee|
 |overtime_edit|Y|Y|View overtimes of given employee|
@@ -88,11 +89,12 @@ See `sec_role` and `sec_role_perm` tables.
 |----|------|
 |global_admin|Full access|
 |hr|Add/Update/Fire all employees|
-|pm|Overtime and vacation review and update|
+|pm|Overtime and vacation review and update, reasign empoyee between managed projects|
 
 |permissions|roles|
 |----|------|
 |update_current_project_global|global_admin, hr|
+|update_current_project|global_admin, hr, pm|
 |update_avatar|global_admin, hr|
 |overtime_view|global_admin, hr, pm|
 |overtime_edit|global_admin, hr, pm|

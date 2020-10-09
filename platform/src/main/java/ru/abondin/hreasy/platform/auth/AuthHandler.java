@@ -80,6 +80,8 @@ public class AuthHandler {
         if (userDetails instanceof UserDetailsWithEmployeeInfo && ((UserDetailsWithEmployeeInfo) userDetails).getEmployeeId() != null) {
             var withEmployeeInfo = ((UserDetailsWithEmployeeInfo) userDetails);
             employee = new AuthContext.EmployeeInfo(withEmployeeInfo.getEmployeeId(),
+                    withEmployeeInfo.getDepartmentId(),
+                    withEmployeeInfo.getCurrentProjectId(),
                     withEmployeeInfo.getAccessibleDepartments(),
                     withEmployeeInfo.getAccessibleProjects());
         } else {

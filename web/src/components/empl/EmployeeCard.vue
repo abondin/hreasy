@@ -26,7 +26,8 @@ Uses in Employees Table (Employees.vue)
     <v-dialog
         v-model="openUpdateCurrentProjectDialog"
         max-width="500">
-      <employee-update-current-project v-bind:employee="employee" v-on:close="openUpdateCurrentProjectDialog=false"/>
+      <employee-update-current-project v-bind:employee="employee"
+                                       v-on:close="openUpdateCurrentProjectDialog=false"/>
     </v-dialog>
   </v-card>
 

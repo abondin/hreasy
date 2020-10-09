@@ -16,6 +16,16 @@ import java.util.List;
 public class UserDetailsWithEmployeeInfo implements UserDetails {
     private UserDetails delegate;
     private Integer employeeId;
+    /**
+     * Id of department, employee assigned to
+     */
+    private Integer departmentId;
+
+    /**
+     * Id of project, employee assigned to
+     */
+    private Integer currentProjectId;
+
 
     /**
      * List of ids of departments accessible to the employee.

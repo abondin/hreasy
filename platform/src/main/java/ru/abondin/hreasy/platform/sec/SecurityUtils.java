@@ -17,13 +17,4 @@ public class SecurityUtils {
         });
     }
 
-    public static Mono<Boolean> validateUpdateCurrentProject(AuthContext auth, int employeeId) {
-        return Mono.defer(() -> {
-            if (!auth.getAuthorities().contains("update_current_project_global") && employeeId != auth.getEmployeeInfo().getEmployeeId()) {
-                return Mono.error(new AccessDeniedException("Only logged in user or user with permission update_current_project_global can update the current project"));
-            }
-            return Mono.just(true);
-        });
-    }
-
 }

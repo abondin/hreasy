@@ -13,6 +13,13 @@ export enum Permissions {
     UpdateCurrentProjectGlobal = "update_current_project_global",
 
     /**
+     * Allow to update project with update_current_project permission if logged in user is
+     * 1. Manager of whole department
+     * 2. Manager of old project (if exists) and new project
+     */
+    UpdateCurrentProject = "update_current_project",
+
+    /**
      * View overtimes of all employees
      */
     ViewOvertimes = "overtime_view",
@@ -70,7 +77,8 @@ class VuexPermissionService implements PermissionService {
 
 
     public canUpdateCurrentProject(employeeId: number): boolean {
-        return this.simplePermissionCheckOrCurrentEmployee(Permissions.UpdateCurrentProjectGlobal, employeeId);
+        return this.simplePermissionsCheckOrCurrentEmployee([Permissions.UpdateCurrentProjectGlobal,
+            Permissions.UpdateCurrentProject], employeeId);
     }
 
     public canUpdateAvatar(employeeId: number): boolean {
@@ -98,11 +106,25 @@ class VuexPermissionService implements PermissionService {
         return securityInfo && securityInfo.authorities && securityInfo.authorities.indexOf(permission) >= 0;
     }
 
-    private simplePermissionCheckOrCurrentEmployee(permission: Permissions, employeeId: number) {
+    private simplePermissionCheckOrCurrentEmployee(permission: Permissions, employeeId: number): boolean {
         const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
         return securityInfo
             && (employeeId == securityInfo.employeeId ||
                 (securityInfo.authorities && securityInfo.authorities.indexOf(permission) >= 0));
+    }
+
+    /**
+     *
+     * @param permissions
+     * @param employeeId
+     * @private
+     */
+    private simplePermissionsCheckOrCurrentEmployee(permissions: Permissions[], employeeId: number): boolean {
+        const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
+        return securityInfo
+            && (employeeId == securityInfo.employeeId ||
+                permissions.map(p => securityInfo.authorities && securityInfo.authorities.indexOf(p))
+                    .reduce((result, perm) => Boolean(result || perm >= 0), Boolean(false)));
     }
 }
 

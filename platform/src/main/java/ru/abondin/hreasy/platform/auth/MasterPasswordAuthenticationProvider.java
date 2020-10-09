@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
-import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
 import ru.abondin.hreasy.platform.sec.UserDetailsWithEmployeeInfo;
 
 /**
@@ -46,7 +45,10 @@ public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticat
                                                     var user = new UserDetailsWithEmployeeInfo(new User(
                                                             username,
                                                             "",
-                                                            authorities), employeeAuthInfoEntry.getId(),
+                                                            authorities),
+                                                            employeeAuthInfoEntry.getId(),
+                                                            employeeAuthInfoEntry.getDepartmentId(),
+                                                            employeeAuthInfoEntry.getCurrentProjectId(),
                                                             employeeAuthInfoEntry.getAccessibleDepartments(),
                                                             employeeAuthInfoEntry.getAccessibleProjects());
                                                     var result = new UsernamePasswordAuthenticationToken(user, password, authorities);

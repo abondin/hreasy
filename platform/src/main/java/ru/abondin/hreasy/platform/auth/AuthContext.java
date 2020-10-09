@@ -27,6 +27,18 @@ public class AuthContext {
     @AllArgsConstructor
     public static class EmployeeInfo {
         private Integer employeeId;
+
+        /**
+         * Id of department, employee assigned to
+         */
+        private Integer departmentId;
+
+        /**
+         * Id of project, employee assigned to
+         */
+        private Integer currentProjectId;
+
+
         /**
          * List of ids of departments accessible to the employee.
          * Works for roles like overtime_view, overtime_edit, vacation_view, vacation_edit.
@@ -43,7 +55,11 @@ public class AuthContext {
 
 
         public EmployeeInfo(EmployeeInfo employeeInfo) {
-            this(employeeInfo.getEmployeeId(), employeeInfo.getAccessibleDepartments(), employeeInfo.getAccessibleProjects());
+            this(employeeInfo.getEmployeeId(),
+                    employeeInfo.getDepartmentId(),
+                    employeeInfo.getCurrentProjectId(),
+                    employeeInfo.getAccessibleDepartments(),
+                    employeeInfo.getAccessibleProjects());
         }
     }
 }

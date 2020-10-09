@@ -13,12 +13,11 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
+import ru.abondin.hreasy.platform.service.currentproject.EmployeeProjectSecurityValidator;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.mapper.EmployeeDtoMapper;
 
 import java.util.Arrays;
-
-import static ru.abondin.hreasy.platform.sec.SecurityUtils.validateUpdateCurrentProject;
 
 @Service
 @Slf4j
@@ -27,6 +26,7 @@ public class EmployeeService {
     private final EmployeeDtoMapper mapper;
     private final DateTimeService dateTimeService;
     private final EmployeeRepo emplRepo;
+    private final EmployeeProjectSecurityValidator employeeProjectSecurityValidator;
 
     public Flux<EmployeeDto> findAll(AuthContext auth, boolean includeFired) {
         log.debug("Find all employees from {} account", auth.getEmail());
@@ -52,7 +52,7 @@ public class EmployeeService {
     public Mono<Boolean> updateCurrentProject(int employeeId, @Nullable Integer newCurrentProjectId, AuthContext auth) {
         log.info("Update current project {} for employee {}" +
                 "by {}", newCurrentProjectId == null ? "<RESET>" : newCurrentProjectId, employeeId, auth.getEmail());
-        return validateUpdateCurrentProject(auth, employeeId)
+        return employeeProjectSecurityValidator.validateUpdateCurrentProject(auth, employeeId, newCurrentProjectId)
                 .flatMap(valid -> emplRepo.updateCurrentProject(employeeId, newCurrentProjectId).map(updatedRowsCount -> updatedRowsCount > 0));
     }
 

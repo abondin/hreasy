@@ -34,6 +34,8 @@ public class EmployeeUserContextMapperAdapter implements UserDetailsContextMappe
         var employeeAuthInfoEntry = employeeAuthDomainService.findIdByEmail(email).block();
         return new UserDetailsWithEmployeeInfo(user,
                 employeeAuthInfoEntry.getId(),
+                employeeAuthInfoEntry.getDepartmentId(),
+                employeeAuthInfoEntry.getCurrentProjectId(),
                 employeeAuthInfoEntry.getAccessibleDepartments(),
                 employeeAuthInfoEntry.getAccessibleProjects());
     }
