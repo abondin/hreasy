@@ -33,21 +33,42 @@ Emits:
               required
           ></v-select>
 
-          <v-text-field
-              :label="$t('Дата')"
-              v-model="item.date"
-              :rules="[v=>(!!v || $t('Дата обязательна')), v=>(Date.parse(v) > 0 || $t('Дата в формате ГГГГ-ММ-ДД'))]">
-            <template v-slot:prepend>
-              <v-btn x-small icon @click="item.date = prevDay(item.date)">
-                <v-icon>mdi-chevron-left</v-icon>
-              </v-btn>
+
+          <v-menu
+              ref="dateMenu"
+              v-model="dateMenu"
+              :close-on-content-click="false"
+              :nudge-right="40"
+              transition="scale-transition"
+              offset-y
+              min-width="290px">
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
+                  :label="$t('Дата')"
+                  v-model="item.date"
+                  :rules="[v=>(!!v || $t('Дата обязательна')), v=>(Date.parse(v) > 0 || $t('Дата в формате ГГГГ-ММ-ДД'))]">
+                <template v-slot:prepend>
+                  <v-btn x-small icon @click="item.date = prevDay(item.date)">
+                    <v-icon>mdi-chevron-left</v-icon>
+                  </v-btn>
+                  <v-btn x-small icon @click="item.date = nextDay(item.date)">
+                    <v-icon>mdi-chevron-right</v-icon>
+                  </v-btn>
+                </template>
+                <template v-slot:append>
+                  <v-btn x-small icon v-bind="attrs" v-on="on">
+                    <v-icon>mdi-calendar</v-icon>
+                  </v-btn>
+                </template>
+              </v-text-field>
+
             </template>
-            <template v-slot:append>
-              <v-btn x-small icon @click="item.date = nextDay(item.date)">
-                <v-icon>mdi-chevron-right</v-icon>
-              </v-btn>
-            </template>
-          </v-text-field>
+            <v-date-picker
+                v-model="item.date"
+                @input="dateMenu=false">
+            </v-date-picker>
+          </v-menu>
+
 
           <v-slider
               :label="$t('Часы')"
@@ -115,7 +136,9 @@ export default class AddOvertimeItemDialog extends Vue {
 
   private addMore = true;
 
-  private error: String|null = null;
+  private error: String | null = null;
+
+  private dateMenu = false;
 
   @Watch("dialog")
   private watch() {
@@ -130,7 +153,7 @@ export default class AddOvertimeItemDialog extends Vue {
       return overtimeService.addItem(this.employeeId, this.period.periodId(), this.item).then((report) => {
         this.$emit('submit', report);
         this.closeDialog();
-      }).catch(error=>{
+      }).catch(error => {
         this.error = errorUtils.shortMessage(error);
       });
     }
@@ -144,7 +167,7 @@ export default class AddOvertimeItemDialog extends Vue {
         this.$nextTick(() => {
           this.resetItem(this.item.projectId, this.nextDay(this.item.date), this.item.hours);
         });
-      }).catch(error=>{
+      }).catch(error => {
         this.error = errorUtils.shortMessage(error);
       });
     }

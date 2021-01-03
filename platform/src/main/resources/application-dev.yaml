@@ -3,7 +3,7 @@ hreasy:
   db:
     host: sql.hr
     port: 1433
-    database: master
+    database: hr
     username: sa
     password: HREasyPassword2019!
   web:

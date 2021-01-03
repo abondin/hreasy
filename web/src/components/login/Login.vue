@@ -23,6 +23,8 @@
                                         v-model="loginField"
                                         :label="$t('Пользователь')"
                                         name="login"
+                                        autofocus
+                                        autocomplete="current-login"
                                         prepend-icon="person"
                                         type="text"
                                 />
@@ -33,6 +35,7 @@
                                         name="password"
                                         prepend-icon="lock"
                                         type="password"
+                                        autocomplete="current-password"
                                         v-model="passwordField"
                                 />
                         </v-card-text>
