@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.overtime;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -9,10 +10,7 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.overtime.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
-import ru.abondin.hreasy.platform.service.overtime.dto.NewOvertimeItemDto;
-import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
-import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeMapper;
-import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeReportDto;
+import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -25,6 +23,7 @@ public class OvertimeService {
     private final OvertimeReportRepo reportRepo;
     private final OvertimeItemRepo itemRepo;
     private final OvertimeItemViewRepo itemViewRepo;
+    private final OvertimeApprovalDecisionRepo approvalRepo;
     private final OvertimeMapper mapper;
     private final DateTimeService dateTimeService;
 
@@ -117,6 +116,35 @@ public class OvertimeService {
                 }));
     }
 
+    public Mono<OvertimeReportDto> approveReport(int employeeId, int periodId,
+                                                 OvertimeApprovalDecisionDto.ApprovalDecision decision,
+                                                 @Nullable String comment, AuthContext auth) {
+        // 1. Validate security
+        return securityValidator.validateApproveOvertime(auth, employeeId).then(
+                // 2. Get Overtime Report
+                get(employeeId, periodId).flatMap(report ->
+                        // 3. Check that we don't have not canceled approval from given manager
+                        approvalRepo.existsNotCanceled(report.getId(), auth.getEmployeeInfo().getEmployeeId()).flatMap(exists -> {
+                            if (exists) {
+                                return Mono.error(new BusinessError("errors.approval.already.exists",
+                                        Integer.toString(employeeId),
+                                        Integer.toString(periodId),
+                                        auth.getUsername()));
+                            }
+                            return Mono.just(report);
+                        }).flatMap(r -> {
+                            // 4. Save approval decision
+                            var approvalEntry = new OvertimeApprovalDecisionEntry();
+                            approvalEntry.setApprover(auth.getEmployeeInfo().getEmployeeId());
+                            approvalEntry.setReportId(report.getId());
+                            approvalEntry.setDecisionTime(dateTimeService.now());
+                            approvalEntry.setDecision(decision);
+                            approvalEntry.setComment(comment);
+                            return approvalRepo.save(approvalEntry);
+                            // 5. Just reload whole report to populate all required fields for approval entry
+                        }).flatMap(approvalEntry -> get(employeeId, periodId))));
+    }
+
 
     private OvertimeReportDto stub(int employeeId, int periodId) {
         var stub = new OvertimeReportDto();
@@ -147,7 +175,17 @@ public class OvertimeService {
                         .map(items -> {
                             report.setItems(items);
                             return report;
-                        }));
+                        }))
+                // 7. Load all approvals
+                .flatMap(report -> approvalRepo.findNotCanceledByReportId(report.getId())
+                        .map(approvalEntry -> mapper.approvalToDto(approvalEntry)).collectList()
+                        .defaultIfEmpty(new ArrayList<>())
+                        // 8. Populate report with approvals
+                        .map(approvals -> {
+                            report.setApprovals(approvals);
+                            return report;
+                        })
+                );
     }
 
 

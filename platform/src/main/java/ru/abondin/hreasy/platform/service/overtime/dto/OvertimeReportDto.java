@@ -20,4 +20,6 @@ public class OvertimeReportDto {
     private int period;
 
     private List<OvertimeItemDto> items = new ArrayList<>();
+
+    private List<OvertimeApprovalDecisionDto> approvals = new ArrayList<>();
 }

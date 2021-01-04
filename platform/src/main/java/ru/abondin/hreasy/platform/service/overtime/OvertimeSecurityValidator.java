@@ -56,4 +56,18 @@ public class OvertimeSecurityValidator {
             return Mono.just(true);
         });
     }
+
+    public Mono<Boolean> validateApproveOvertime(AuthContext auth, int employeeId) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("overtime_edit")) {
+                return Mono.just(false);
+            }
+            return projectHierarchyService.isManager(auth, employeeId);
+        }).flatMap(r -> {
+            if (r) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only user with permission overtime_edit can approve the overtime"));
+        });
+    }
 }
