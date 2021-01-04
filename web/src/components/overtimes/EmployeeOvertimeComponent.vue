@@ -32,18 +32,8 @@
       <!-- Согласующие -->
       <v-card-subtitle v-if="approvals">
         <v-chip-group column>
-          <v-chip v-for="approval in approvals"
-                  v-bind:key="approval.id" outlined>
-            <v-avatar left>
-              <v-icon v-if="approval.decision=='APPROVED'"
-                      class="success" style="color: white">mdi-checkbox-marked-circle
-              </v-icon>
-              <v-icon v-if="approval.decision=='DECLINED'"
-                      class="error" style="color: white">mdi-alert-circle
-              </v-icon>
-            </v-avatar>
-            {{ approval.approverDisplayName }}
-          </v-chip>
+          <overtime-approval-chip v-for="approval in approvals"
+                                  v-bind:key="approval.id" :approval="approval"></overtime-approval-chip>
         </v-chip-group>
       </v-card-subtitle>
       <v-data-table
@@ -119,11 +109,12 @@ import {DataTableHeader} from "vuetify";
 import {Prop} from "vue-property-decorator";
 import AddOvertimeItemDialog from "@/components/overtimes/AddOvertimeItemDialog.vue";
 import employeeService from "@/components/empl/employee.service";
+import OvertimeApprovalChip from "@/components/overtimes/OvertimeApprovalChip.vue";
 
 const namespace_dict: string = 'dict';
 const namespace_auth: string = 'auth';
 @Component({
-  components: {AddOvertimeItemDialog, OvertimeAddOrEdit: AddOvertimeItemDialog}
+  components: {OvertimeApprovalChip, AddOvertimeItemDialog, OvertimeAddOrEdit: AddOvertimeItemDialog}
 })
 export default class EmployeeOvertimeComponent extends Vue {
   loading: boolean = false;
