@@ -3,6 +3,7 @@
   <div>
     <v-card>
       <v-card-title>
+        <!-- Шапка -->
         <div class="mr-2">{{ $t('Овертаймы') }}</div>
         <div v-if="changePeriodAllowed==true">
           <v-btn @click.stop="decrementPeriod()" text x-small>
@@ -27,6 +28,24 @@
               @close="onItemDialogClose"></add-overtime-item-dialog>
         </v-card-actions>
       </v-card-title>
+
+      <!-- Согласующие -->
+      <v-card-subtitle v-if="approvals">
+        <v-chip-group column>
+          <v-chip v-for="approval in approvals"
+                  v-bind:key="approval.id" outlined>
+            <v-avatar left>
+              <v-icon v-if="approval.decision=='APPROVED'"
+                      class="success" style="color: white">mdi-checkbox-marked-circle
+              </v-icon>
+              <v-icon v-if="approval.decision=='DECLINED'"
+                      class="error" style="color: white">mdi-alert-circle
+              </v-icon>
+            </v-avatar>
+            {{ approval.approverDisplayName }}
+          </v-chip>
+        </v-chip-group>
+      </v-card-subtitle>
       <v-data-table
           :loading="loading"
           :loading-text="$t('Загрузка_данных')"
@@ -90,6 +109,7 @@ import Component from 'vue-class-component';
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import overtimeService, {
+  ApprovalDecision,
   OvertimeItem,
   OvertimeReport,
   OvertimeUtils,
@@ -127,6 +147,7 @@ export default class EmployeeOvertimeComponent extends Vue {
   selectedPeriod!: ReportPeriod;
 
   private overtimes: OvertimeItem[] = [];
+  private approvals: ApprovalDecision[] = [];
 
   private deleteDialog = false;
   private itemToDelete: OvertimeItem | null = null;
@@ -181,10 +202,12 @@ export default class EmployeeOvertimeComponent extends Vue {
       this.overtimeReport = {
         employeeId: this.employeeId,
         period: periodId,
-        items: []
+        items: [],
+        approvals: []
       }
     }
     this.overtimes = this.overtimeReport.items;
+    this.approvals = this.overtimeReport.approvals;
     return this.overtimeReport;
   }
 

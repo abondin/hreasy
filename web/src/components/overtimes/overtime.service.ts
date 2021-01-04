@@ -23,6 +23,24 @@ export interface OvertimeItem {
     deletedAt?: Date;
 }
 
+export interface ApprovalDecision {
+    /**
+     * Generated on server side during persisting
+     */
+    id?: number,
+    /**
+     * YYYY-MM-DD format
+     */
+    decisionTime: string,
+
+    decision : 'APPROVED'|'DECLINED';
+    /**
+     * Display Name of approver
+     */
+    approverDisplayName: string,
+    comment?: string
+}
+
 export interface OvertimeReport {
     employeeId: number,
     /**
@@ -35,6 +53,7 @@ export interface OvertimeReport {
      */
     period: number,
     items: OvertimeItem[];
+    approvals: ApprovalDecision[];
 }
 
 /**
