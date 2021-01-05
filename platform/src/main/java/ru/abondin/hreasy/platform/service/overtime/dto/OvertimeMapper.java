@@ -38,7 +38,7 @@ public interface OvertimeMapper {
     OvertimeEmployeeSummary.OvertimeDaySummary viewToDto(OvertimeItemView overtimeItemView);
 
     @Mapping(target = "approverDisplayName", source = ".", qualifiedByName = "toDisplayName")
-    OvertimeApprovalDecisionDto approvalToDto(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry);
+    OvertimeApprovalDecisionDto fromEntry(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry);
 
     @Named("toDisplayName")
     default String toDisplayName(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry) {
@@ -50,4 +50,11 @@ public interface OvertimeMapper {
                 .collect(Collectors.joining(" "));
     }
 
+    default OvertimeApprovalDecisionDto approvalToDtoIncludeOutdated(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry approvalEntry,
+                                                                     OvertimeReportDto report) {
+        var dto = fromEntry(approvalEntry);
+        var lastUpdate = report.getLastUpdate();
+        dto.setOutdated(lastUpdate != null && dto.getDecisionTime().isBefore(lastUpdate));
+        return dto;
+    }
 }

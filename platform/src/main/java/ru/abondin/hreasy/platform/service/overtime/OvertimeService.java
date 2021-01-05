@@ -178,7 +178,7 @@ public class OvertimeService {
                         }))
                 // 7. Load all approvals
                 .flatMap(report -> approvalRepo.findNotCanceledByReportId(report.getId())
-                        .map(approvalEntry -> mapper.approvalToDto(approvalEntry)).collectList()
+                        .map(approvalEntry -> mapper.approvalToDtoIncludeOutdated(approvalEntry, report)).collectList()
                         .defaultIfEmpty(new ArrayList<>())
                         // 8. Populate report with approvals
                         .map(approvals -> {

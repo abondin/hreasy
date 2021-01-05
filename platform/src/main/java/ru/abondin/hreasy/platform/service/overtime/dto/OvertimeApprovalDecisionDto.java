@@ -49,4 +49,9 @@ public class OvertimeApprovalDecisionDto {
 
     @Nullable
     private String comment;
+
+    /**
+     * true if any overtime items were added after approval decision time
+     */
+    private boolean outdated = false;
 }

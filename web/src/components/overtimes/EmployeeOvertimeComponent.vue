@@ -33,7 +33,8 @@
       <v-card-subtitle v-if="approvals">
         <v-chip-group column>
           <overtime-approval-chip v-for="approval in approvals"
-                                  v-bind:key="approval.id" :approval="approval"></overtime-approval-chip>
+                                  v-bind:key="approval.id"
+                                  :approval="approval" :reportLastUpdateTime="overtimeReport.lastUpdate"></overtime-approval-chip>
         </v-chip-group>
       </v-card-subtitle>
       <v-data-table

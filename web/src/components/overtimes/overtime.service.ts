@@ -38,7 +38,13 @@ export interface ApprovalDecision {
      * Display Name of approver
      */
     approverDisplayName: string,
-    comment?: string
+
+    comment?: string,
+
+    /**
+     * true if any overtime items were added after approval decision time
+     */
+    outdated: boolean
 }
 
 export interface OvertimeReport {
@@ -54,6 +60,8 @@ export interface OvertimeReport {
     period: number,
     items: OvertimeItem[];
     approvals: ApprovalDecision[];
+
+    lastUpdate: String;
 }
 
 /**
@@ -93,10 +101,18 @@ export class ReportPeriod {
 
     public increment() {
         this.month++;
+        if (this.month>=12){
+            this.month = 0;
+            this.year++;
+        }
     }
 
     public decrement() {
         this.month--;
+        if (this.month<0){
+            this.month=11;
+            this.year--;
+        }
     }
 
     public daysCount(): number {
@@ -261,6 +277,14 @@ export class OvertimeUtils {
     static formatDateTime(date: Date): string | undefined {
         if (date) {
             return moment(date).format('LLLL');
+        } else {
+            return undefined;
+        }
+    }
+
+    static formatDateTimeShort(date: Date): string | undefined {
+        if (date) {
+            return moment(date).format('LLL');
         } else {
             return undefined;
         }

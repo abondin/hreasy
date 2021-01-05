@@ -12,18 +12,25 @@ Expandable chip to show overtime report approve or decline decision
   >
     <template v-slot:activator="{ on }">
       <v-chip outlined pill v-on="on">
-        <v-avatar left>
           <v-icon v-if="approval.decision=='APPROVED'"
-                  class="success" style="color: white">mdi-checkbox-marked-circle
+                  class="approved">mdi-checkbox-marked-circle
           </v-icon>
           <v-icon v-if="approval.decision=='DECLINED'"
-                  class="error" style="color: white">mdi-alert-circle
+                  class="declined">mdi-do-not-disturb
           </v-icon>
-        </v-avatar>
         {{ approval.approverDisplayName }}
+        <v-icon v-if="approval.outdated" class="outdated">mdi-clock-alert</v-icon>
       </v-chip>
     </template>
     <v-card width="400">
+      <v-list v-if="approval.outdated">
+        <v-list-item @click="() => {}">
+          <dl>
+            <dt>{{ $t('Рассмотрено') }}:</dt><dd>{{formatDateTimeShort(approval.decisionTime)}}</dd>
+            <dt>{{ $t('Внесены изменения') }}:</dt><dd class="error--text">{{formatDateTimeShort(reportLastUpdateTime)}}</dd>
+          </dl>
+        </v-list-item>
+      </v-list>
       <v-list>
         <v-list-item @click="() => {}">
           <v-list-item-action>
@@ -71,13 +78,30 @@ export default class OvertimeApprovalChip extends Vue {
   @Prop({required: true})
   approval!: ApprovalDecision;
 
+  @Prop({required: false})
+  reportLastUpdateTime!: String;
+
 
   private formatDateTime(date: Date): string | undefined {
     return OvertimeUtils.formatDateTime(date);
   }
+
+  private formatDateTimeShort(date: Date): string | undefined {
+    return OvertimeUtils.formatDateTimeShort(date);
+  }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.v-chip.v-chip--outlined .v-icon.approved {
+  color: green;
+}
 
+.v-chip.v-chip--outlined .v-icon.declined {
+  color: red
+}
+
+.v-chip.v-chip--outlined .v-icon.outdated {
+  color: orange;
+}
 </style>
