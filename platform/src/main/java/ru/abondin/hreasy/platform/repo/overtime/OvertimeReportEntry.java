@@ -3,8 +3,10 @@ package ru.abondin.hreasy.platform.repo.overtime;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
 
 @Data
 @Table("overtime_report")
@@ -23,4 +25,24 @@ public class OvertimeReportEntry {
      */
     @NotNull
     private int period;
+
+
+    /**
+     * Overtime report with summary
+     *
+     * @see OvertimeReportRepo#summary(int)
+     */
+    @Data
+    public static class OvertimeReportSummaryEntry extends OvertimeReportEntry {
+        @Nullable
+        private float totalHours;
+
+        @Nullable
+        private OffsetDateTime lastUpdate;
+        @Nullable
+        private OffsetDateTime lastApprove;
+        @Nullable
+        private OffsetDateTime lastDecline;
+
+    }
 }

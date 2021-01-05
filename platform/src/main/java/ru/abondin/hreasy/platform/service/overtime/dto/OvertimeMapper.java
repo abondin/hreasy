@@ -4,10 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import ru.abondin.hreasy.platform.repo.overtime.OvertimeApprovalDecisionEntry;
-import ru.abondin.hreasy.platform.repo.overtime.OvertimeItemEntry;
-import ru.abondin.hreasy.platform.repo.overtime.OvertimeItemView;
-import ru.abondin.hreasy.platform.repo.overtime.OvertimeReportEntry;
+import ru.abondin.hreasy.platform.repo.overtime.*;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,12 +17,6 @@ public interface OvertimeMapper {
 
     OvertimeItemDto itemToDto(OvertimeItemEntry entry);
 
-    OvertimeReportEntry reportToEntry(OvertimeReportDto dto);
-
-    @Mapping(target = "reportId", ignore = true)
-    @Mapping(target = "createdEmployeeId", ignore = true)
-    @Mapping(target = "deletedEmployeeId", ignore = true)
-    OvertimeItemEntry itemToEntry(OvertimeItemDto dto);
 
     @Mapping(target = "reportId", ignore = true)
     @Mapping(target = "id", ignore = true)
@@ -35,7 +26,10 @@ public interface OvertimeMapper {
     @Mapping(target = "deletedAt", ignore = true)
     OvertimeItemEntry itemToEntry(NewOvertimeItemDto dto);
 
-    OvertimeEmployeeSummary.OvertimeDaySummary viewToDto(OvertimeItemView overtimeItemView);
+    OvertimeEmployeeSummary.OvertimeDaySummary viewToDto(OvertimeItemsGroupedByDateAndProjectView overtimeItemView);
+
+    @Mapping(source = "id", target = "reportId")
+    OvertimeEmployeeSummary summaryFromEntry(OvertimeReportEntry.OvertimeReportSummaryEntry entry);
 
     @Mapping(target = "approverDisplayName", source = ".", qualifiedByName = "toDisplayName")
     OvertimeApprovalDecisionDto fromEntry(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry);

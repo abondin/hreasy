@@ -13,7 +13,6 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -96,16 +95,18 @@ public class OvertimeService {
     public Flux<OvertimeEmployeeSummary> getSummary(int period, AuthContext auth) {
         // Validate auth
         return securityValidator.validateViewOvertimeSummary(auth).thenMany(
-                // Find all not deleted overtime items for given period
-                itemViewRepo.findNotDeleted(period).groupBy(OvertimeItemView::getReportEmployeeId)).flatMap(e -> {
-            var summary = new OvertimeEmployeeSummary();
-            summary.setEmployeeId(e.key());
-            return e.map(mapper::viewToDto).collectList().map(items -> {
-                summary.setItems(items);
-                return summary;
-            });
-        });
+                // Find all reports
+                reportRepo.summary(period).map(mapper::summaryFromEntry)
+                        // For each report find all items grouped by project and employee
+                        .flatMap(summary -> itemViewRepo.gropedByProjectAndDate(summary.getReportId())
+                                .map(mapper::viewToDto)
+                                .collectList()
+                                .map(items -> {
+                                    summary.setItems(items);
+                                    return summary;
+                                })));
     }
+
 
     public Mono<OvertimeReportDto> approveReport(int employeeId, int periodId,
                                                  OvertimeApprovalDecisionDto.ApprovalDecision decision,
