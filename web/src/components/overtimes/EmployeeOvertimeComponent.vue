@@ -195,7 +195,8 @@ export default class EmployeeOvertimeComponent extends Vue {
         employeeId: this.employeeId,
         period: periodId,
         items: [],
-        approvals: []
+        approvals: [],
+        lastUpdate: null
       }
     }
     this.overtimes = this.overtimeReport.items;

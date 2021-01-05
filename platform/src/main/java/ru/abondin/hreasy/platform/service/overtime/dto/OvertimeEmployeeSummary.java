@@ -19,6 +19,7 @@ public class OvertimeEmployeeSummary {
     public static class OvertimeDaySummary {
         private LocalDate date;
         private int projectId;
+        private int reportId;
         private float hours;
     }
 

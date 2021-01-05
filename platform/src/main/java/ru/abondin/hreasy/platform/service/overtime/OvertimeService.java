@@ -97,23 +97,14 @@ public class OvertimeService {
         // Validate auth
         return securityValidator.validateViewOvertimeSummary(auth).thenMany(
                 // Find all not deleted overtime items for given period
-                itemViewRepo.findNotDeleted(period)
-                        // Collect them to list. TODO - Work in flux
-                        .collectList().flatMapMany(list -> {
-                    // Synchronous grouping items by employee
-                    var groupedByEmployee = list.stream()
-                            .collect(Collectors.groupingBy(OvertimeItemView::getReportEmployeeId));
-                    // Map to DTO
-                    var dto = groupedByEmployee
-                            .entrySet().stream().map(entry -> {
-                                // Convert to DTO
-                                var summary = new OvertimeEmployeeSummary();
-                                summary.setEmployeeId(entry.getKey());
-                                summary.getItems().addAll(entry.getValue().stream().map(mapper::viewToDto).collect(Collectors.toList()));
-                                return summary;
-                            });
-                    return Flux.fromStream(dto);
-                }));
+                itemViewRepo.findNotDeleted(period).groupBy(OvertimeItemView::getReportEmployeeId)).flatMap(e -> {
+            var summary = new OvertimeEmployeeSummary();
+            summary.setEmployeeId(e.key());
+            return e.map(mapper::viewToDto).collectList().map(items -> {
+                summary.setItems(items);
+                return summary;
+            });
+        });
     }
 
     public Mono<OvertimeReportDto> approveReport(int employeeId, int periodId,

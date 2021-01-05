@@ -61,7 +61,7 @@ export interface OvertimeReport {
     items: OvertimeItem[];
     approvals: ApprovalDecision[];
 
-    lastUpdate: String;
+    lastUpdate: string|null;
 }
 
 /**

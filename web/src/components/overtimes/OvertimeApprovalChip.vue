@@ -12,10 +12,10 @@ Expandable chip to show overtime report approve or decline decision
   >
     <template v-slot:activator="{ on }">
       <v-chip outlined pill v-on="on">
-          <v-icon v-if="approval.decision=='APPROVED'"
+          <v-icon v-if="approval.decision==='APPROVED'"
                   class="approved">mdi-checkbox-marked-circle
           </v-icon>
-          <v-icon v-if="approval.decision=='DECLINED'"
+          <v-icon v-if="approval.decision==='DECLINED'"
                   class="declined">mdi-do-not-disturb
           </v-icon>
         {{ approval.approverDisplayName }}
@@ -26,15 +26,15 @@ Expandable chip to show overtime report approve or decline decision
       <v-list v-if="approval.outdated">
         <v-list-item @click="() => {}">
           <dl>
-            <dt>{{ $t('Рассмотрено') }}:</dt><dd>{{formatDateTimeShort(approval.decisionTime)}}</dd>
-            <dt>{{ $t('Внесены изменения') }}:</dt><dd class="error--text">{{formatDateTimeShort(reportLastUpdateTime)}}</dd>
+            <dt class="font-weight-bold">{{ $t('Рассмотрено') }}:</dt><dd>{{formatDateTimeShort(approval.decisionTime)}}</dd>
+            <dt class="font-weight-bold">{{ $t('Внесены изменения') }}:</dt><dd class="error--text">{{formatDateTimeShort(reportLastUpdateTime)}}</dd>
           </dl>
         </v-list-item>
       </v-list>
       <v-list>
         <v-list-item @click="() => {}">
           <v-list-item-action>
-            <v-icon>{{ approval.decision == 'APPROVED' ? 'mdi-checkbox-marked-circle' : 'mdi-alert-circle' }}</v-icon>
+            <v-icon>{{ approval.decision === 'APPROVED' ? 'mdi-checkbox-marked-circle' : 'mdi-alert-circle' }}</v-icon>
           </v-list-item-action>
           <v-list-item-subtitle>{{ $t('APPROVAL_DECISION_ENUM.' + approval.decision) }}</v-list-item-subtitle>
         </v-list-item>
