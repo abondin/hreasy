@@ -124,7 +124,7 @@ public class OvertimeService {
                                                  OvertimeApprovalDecisionDto.ApprovalDecision decision,
                                                  Integer previousApprovalId,
                                                  @Nullable String comment, AuthContext auth) {
-        log.info("Approve overtime report for employee: {}, period: {}, decision: {} by {}",
+        log.debug("Approve overtime report for employee: {}, period: {}, decision: {} by {}",
                 employeeId, periodId, decision, auth.getUsername());
         // 1. Validate security
         return securityValidator.validateApproveOvertime(auth, employeeId).then(

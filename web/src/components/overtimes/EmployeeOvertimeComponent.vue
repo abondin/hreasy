@@ -32,7 +32,8 @@
               v-bind:period="selectedPeriod"
               v-bind:previous-decision="myApproval"
               @submit="onItemSubmit"
-              @close="onItemDialogClose"></approve-overtime-report-dialog>
+              @close="onItemDialogClose"
+          ></approve-overtime-report-dialog>
         </v-card-actions>
       </v-card-title>
 
@@ -164,7 +165,7 @@ export default class EmployeeOvertimeComponent extends Vue {
   /**
    * Latest Approval of current user
    */
-  private myApproval: ApprovalDecision|null = null;
+  private myApproval: ApprovalDecision | null = null;
 
   private deleteDialog = false;
   private itemToDelete: OvertimeItem | null = null;
@@ -227,7 +228,7 @@ export default class EmployeeOvertimeComponent extends Vue {
     this.overtimes = this.overtimeReport.items;
     this.approvals = this.overtimeReport.approvals;
     this.myApproval = this.overtimeReport.approvals && this.overtimeReport.approvals
-        .find(ap=>ap.approver==this.currentUserEmployeeId) || null;
+        .find(ap => ap.approver == this.currentUserEmployeeId) || null;
     return this.overtimeReport;
   }
 
@@ -288,7 +289,8 @@ export default class EmployeeOvertimeComponent extends Vue {
   }
 
   private canApproveOvertimeReport(): boolean {
-    if (this.overtimeReport && this.overtimeReport.employeeId) {
+    if (this.overtimeReport && this.overtimeReport.employeeId &&
+        this.overtimeReport.items && this.overtimeReport.items.length > 0) {
       return permissionService.canApproveOvertimeReport(this.overtimeReport.employeeId);
     } else {
       return false;

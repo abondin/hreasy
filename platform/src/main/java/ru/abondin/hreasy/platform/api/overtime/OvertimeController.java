@@ -63,7 +63,6 @@ public class OvertimeController {
     public Mono<OvertimeReportDto> approveReport(@PathVariable int employeeId,
                                                  @PathVariable int period,
                                                  @RequestBody ApproveReportBody body) {
-        log.debug("Approve overtime report {} from report [{}, {}]", employeeId, period);
         return AuthHandler.currentAuth().flatMap(auth -> service.approveReport(employeeId,
                 period,
                 OvertimeApprovalDecisionDto.ApprovalDecision.APPROVED,
@@ -79,7 +78,6 @@ public class OvertimeController {
     public Mono<OvertimeReportDto> declineReport(@PathVariable int employeeId,
                                                  @PathVariable int period,
                                                  @RequestBody DeclineReportBody body) {
-        log.debug("Approve overtime report {} from report [{}, {}]", employeeId, period);
         return AuthHandler.currentAuth().flatMap(auth -> service.approveReport(employeeId,
                 period,
                 OvertimeApprovalDecisionDto.ApprovalDecision.DECLINED,

@@ -13,9 +13,24 @@ Emits:
       max-width="800"
       v-model="dialog">
     <template v-slot:activator="{on, attrs}">
-      <v-btn v-bind="attrs"
-             v-on="on">{{ $t('Согласовать') }}
-      </v-btn>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on: ton, attrs: tattrs}">
+          <div v-bind="tattrs" v-on="ton">
+            <v-btn-toggle>
+              <v-btn icon
+                     :disabled="previousDecision && previousDecision.decision=='APPROVED' && !previousDecision.outdated"
+                     @click="approveNoDialog()">
+                <v-icon color="success">mdi-checkbox-marked-circle-outline</v-icon>
+              </v-btn>
+              <v-btn v-bind="attrs"
+                     v-on="on" icon>
+                <v-icon>mdi-dots-horizontal</v-icon>
+              </v-btn>
+            </v-btn-toggle>
+          </div>
+        </template>
+        <span>{{ $t('Согласование овертаймов') }}</span>
+      </v-tooltip>
     </template>
     <v-form :ref="`overtime-approve-${employeeId}-${period.periodId()}`">
       <v-card>
@@ -34,8 +49,11 @@ Emits:
         </v-card-text>
         <v-card-actions>
           <v-btn @click="closeDialog">{{ $t('Закрыть') }}</v-btn>
-          <v-btn @click="approve()" color="primary">{{ $t('Согласовать') }}</v-btn>
-          <v-btn @click="decline()" color="error">{{ $t('Отклонить') }}</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn-toggle>
+            <v-btn @click="approve()" color="success">{{ $t('Согласовать') }}</v-btn>
+            <v-btn @click="decline()" color="error">{{ $t('Отклонить') }}</v-btn>
+          </v-btn-toggle>
         </v-card-actions>
       </v-card>
     </v-form>
@@ -108,6 +126,18 @@ export default class ApproveOvertimeReportDialog extends Vue {
             this.error = errorUtils.shortMessage(error);
           });
     }
+  }
+
+  private approveNoDialog() {
+    return overtimeService.approve(this.employeeId, this.period.periodId(), null,
+        this.previousDecision ? this.previousDecision.id : null)
+        .then((result) => {
+          this.$emit('submit', 'APPROVED');
+          this.closeDialog();
+        }).catch(error => {
+          this.error = errorUtils.shortMessage(error);
+          this.dialog = true;
+        });
   }
 
   private closeDialog() {
