@@ -26,6 +26,13 @@
               v-bind:all-projects="allProjects"
               @submit="onItemSubmit"
               @close="onItemDialogClose"></add-overtime-item-dialog>
+          <approve-overtime-report-dialog
+              v-if="canApproveOvertimeReport()"
+              v-bind:employee-id="employeeId"
+              v-bind:period="selectedPeriod"
+              v-bind:previous-decision="myApproval"
+              @submit="onItemSubmit"
+              @close="onItemDialogClose"></approve-overtime-report-dialog>
         </v-card-actions>
       </v-card-title>
 
@@ -34,7 +41,8 @@
         <v-chip-group column>
           <overtime-approval-chip v-for="approval in approvals"
                                   v-bind:key="approval.id"
-                                  :approval="approval" :reportLastUpdateTime="overtimeReport.lastUpdate"></overtime-approval-chip>
+                                  :approval="approval"
+                                  :reportLastUpdateTime="overtimeReport.lastUpdate"></overtime-approval-chip>
         </v-chip-group>
       </v-card-subtitle>
       <v-data-table
@@ -111,11 +119,19 @@ import {Prop} from "vue-property-decorator";
 import AddOvertimeItemDialog from "@/components/overtimes/AddOvertimeItemDialog.vue";
 import employeeService from "@/components/empl/employee.service";
 import OvertimeApprovalChip from "@/components/overtimes/OvertimeApprovalChip.vue";
+import ApproveOvertimeReportDialog from "@/components/overtimes/ApproveOvertimeReportDialog.vue";
+import permissionService from "@/store/modules/permission.service";
+import auth from "@/store/modules/auth";
 
 const namespace_dict: string = 'dict';
 const namespace_auth: string = 'auth';
 @Component({
-  components: {OvertimeApprovalChip, AddOvertimeItemDialog, OvertimeAddOrEdit: AddOvertimeItemDialog}
+  components: {
+    ApproveOvertimeReportDialog,
+    OvertimeApprovalChip,
+    AddOvertimeItemDialog,
+    OvertimeAddOrEdit: AddOvertimeItemDialog
+  }
 })
 export default class EmployeeOvertimeComponent extends Vue {
   loading: boolean = false;
@@ -124,6 +140,10 @@ export default class EmployeeOvertimeComponent extends Vue {
 
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<SimpleDict>;
+
+  @Getter("employeeId", {namespace: namespace_auth})
+  private currentUserEmployeeId!: number;
+
 
   @Prop({required: true})
   employeeId!: number;
@@ -140,6 +160,11 @@ export default class EmployeeOvertimeComponent extends Vue {
 
   private overtimes: OvertimeItem[] = [];
   private approvals: ApprovalDecision[] = [];
+
+  /**
+   * Latest Approval of current user
+   */
+  private myApproval: ApprovalDecision|null = null;
 
   private deleteDialog = false;
   private itemToDelete: OvertimeItem | null = null;
@@ -201,6 +226,8 @@ export default class EmployeeOvertimeComponent extends Vue {
     }
     this.overtimes = this.overtimeReport.items;
     this.approvals = this.overtimeReport.approvals;
+    this.myApproval = this.overtimeReport.approvals && this.overtimeReport.approvals
+        .find(ap=>ap.approver==this.currentUserEmployeeId) || null;
     return this.overtimeReport;
   }
 
@@ -258,6 +285,14 @@ export default class EmployeeOvertimeComponent extends Vue {
 
   private totalOvertimeHours() {
     return OvertimeUtils.totalHours(this.overtimeReport);
+  }
+
+  private canApproveOvertimeReport(): boolean {
+    if (this.overtimeReport && this.overtimeReport.employeeId) {
+      return permissionService.canApproveOvertimeReport(this.overtimeReport.employeeId);
+    } else {
+      return false;
+    }
   }
 
 }

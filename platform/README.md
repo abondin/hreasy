@@ -78,9 +78,9 @@ See `sec_role` and `sec_role_perm` tables.
 |update_current_project|Y|N|Update current project for employee from my projects or my departments|
 |update_avatar|N|Y|Update employee avatar|
 |overtime_view|N|Y|View overtimes of given employee|
-|overtime_edit|Y|Y|View overtimes of given employee|
-|vacation_view|Y|Y|View overtimes of given employee|
-|vacation_edit|Y|Y|View overtimes of given employee|
+|overtime_edit|Y|Y|Edit and approve overtimes of given employee|
+|vacation_view|Y|Y|View vacations of given employee|
+|vacation_edit|Y|Y|View vacations of given employee|
 
 **Default permissions and roles**
 

@@ -1,15 +1,21 @@
 package ru.abondin.hreasy.platform.api.overtime;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeService;
 import ru.abondin.hreasy.platform.service.overtime.dto.NewOvertimeItemDto;
+import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeApprovalDecisionDto;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeReportDto;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 @RestController()
 @RequestMapping("/api/v1/overtimes")
@@ -50,4 +56,53 @@ public class OvertimeController {
         return AuthHandler.currentAuth().flatMapMany(auth -> service.getSummary(period, auth));
     }
 
+
+    @PostMapping("/{employeeId}/report/{period}/approve")
+    @ResponseBody
+    @Valid
+    public Mono<OvertimeReportDto> approveReport(@PathVariable int employeeId,
+                                                 @PathVariable int period,
+                                                 @RequestBody ApproveReportBody body) {
+        log.debug("Approve overtime report {} from report [{}, {}]", employeeId, period);
+        return AuthHandler.currentAuth().flatMap(auth -> service.approveReport(employeeId,
+                period,
+                OvertimeApprovalDecisionDto.ApprovalDecision.APPROVED,
+                body.previousApprovalId,
+                body.comment,
+                auth));
+    }
+
+
+    @PostMapping("/{employeeId}/report/{period}/decline")
+    @ResponseBody
+    @Valid
+    public Mono<OvertimeReportDto> declineReport(@PathVariable int employeeId,
+                                                 @PathVariable int period,
+                                                 @RequestBody DeclineReportBody body) {
+        log.debug("Approve overtime report {} from report [{}, {}]", employeeId, period);
+        return AuthHandler.currentAuth().flatMap(auth -> service.approveReport(employeeId,
+                period,
+                OvertimeApprovalDecisionDto.ApprovalDecision.DECLINED,
+                body.previousApprovalId,
+                body.comment,
+                auth));
+    }
+
+    @Data
+    @Valid
+    public static class ApproveReportBody {
+        @Nullable
+        private String comment;
+        @Nullable
+        private Integer previousApprovalId;
+    }
+
+    @Data
+    @Valid
+    public static class DeclineReportBody {
+        @NotNull(message = "Comment is required to decline overtime report")
+        private String comment;
+        @Nullable
+        private Integer previousApprovalId;
+    }
 }

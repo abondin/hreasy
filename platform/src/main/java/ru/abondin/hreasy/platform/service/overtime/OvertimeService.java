@@ -13,6 +13,7 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 @Service
@@ -108,33 +109,60 @@ public class OvertimeService {
     }
 
 
+    /**
+     * Approve or decline overtime report
+     *
+     * @param employeeId
+     * @param periodId
+     * @param decision
+     * @param previousApprovalId - automatically cancel previous approval decision of loggedin user
+     * @param comment
+     * @param auth
+     * @return
+     */
     public Mono<OvertimeReportDto> approveReport(int employeeId, int periodId,
                                                  OvertimeApprovalDecisionDto.ApprovalDecision decision,
+                                                 Integer previousApprovalId,
                                                  @Nullable String comment, AuthContext auth) {
+        log.info("Approve overtime report for employee: {}, period: {}, decision: {} by {}",
+                employeeId, periodId, decision, auth.getUsername());
         // 1. Validate security
         return securityValidator.validateApproveOvertime(auth, employeeId).then(
                 // 2. Get Overtime Report
                 get(employeeId, periodId).flatMap(report ->
-                        // 3. Check that we don't have not canceled approval from given manager
-                        approvalRepo.existsNotCanceled(report.getId(), auth.getEmployeeInfo().getEmployeeId()).flatMap(exists -> {
-                            if (exists) {
-                                return Mono.error(new BusinessError("errors.approval.already.exists",
-                                        Integer.toString(employeeId),
-                                        Integer.toString(periodId),
-                                        auth.getUsername()));
-                            }
-                            return Mono.just(report);
-                        }).flatMap(r -> {
-                            // 4. Save approval decision
-                            var approvalEntry = new OvertimeApprovalDecisionEntry();
-                            approvalEntry.setApprover(auth.getEmployeeInfo().getEmployeeId());
-                            approvalEntry.setReportId(report.getId());
-                            approvalEntry.setDecisionTime(dateTimeService.now());
-                            approvalEntry.setDecision(decision);
-                            approvalEntry.setComment(comment);
-                            return approvalRepo.save(approvalEntry);
-                            // 5. Just reload whole report to populate all required fields for approval entry
-                        }).flatMap(approvalEntry -> get(employeeId, periodId))));
+                        // 3. Cancel previous approval decision if required
+                        cancelPreviousApproval(previousApprovalId, auth).then(
+                                // 4. Check that we don't have not canceled approval from given manager
+                                approvalRepo.existsNotCanceled(report.getId(), auth.getEmployeeInfo().getEmployeeId()).flatMap(exists -> {
+                                    if (exists) {
+                                        return Mono.error(new BusinessError("errors.approval.already.exists",
+                                                Integer.toString(employeeId),
+                                                Integer.toString(periodId),
+                                                auth.getUsername()));
+                                    }
+                                    return Mono.just(report);
+                                }).flatMap(r -> {
+                                    // 5. Save approval decision
+                                    var approvalEntry = new OvertimeApprovalDecisionEntry();
+                                    approvalEntry.setApprover(auth.getEmployeeInfo().getEmployeeId());
+                                    approvalEntry.setReportId(report.getId());
+                                    approvalEntry.setDecisionTime(dateTimeService.now());
+                                    approvalEntry.setDecision(decision);
+                                    approvalEntry.setComment(comment);
+                                    return approvalRepo.save(approvalEntry);
+                                    // 6. Just reload whole report to populate all required fields for approval entry
+                                }).flatMap(approvalEntry -> get(employeeId, periodId)))));
+    }
+
+    private Mono<OvertimeApprovalDecisionEntry> cancelPreviousApproval(Integer previousApprovalId, AuthContext auth) {
+        if (previousApprovalId == null) {
+            return Mono.empty();
+        }
+        return approvalRepo.findById(previousApprovalId).flatMap(approval -> {
+            approval.setCancelDecisionTime(dateTimeService.now());
+            approval.setComment("Canceled because of new approval added");
+            return approvalRepo.save(approval);
+        }).switchIfEmpty(Mono.error(new BusinessError("errors.approval.not.found", Integer.toString(previousApprovalId))));
     }
 
 

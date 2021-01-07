@@ -1,11 +1,8 @@
 /**
  * Store current logged in user
  */
-import authService, {CurrentUser, LoginRequest} from "@/store/modules/auth.service";
 import {ActionTree, GetterTree, Module, MutationTree} from "vuex";
 import {RootState} from "@/store";
-import logger from "@/logger";
-import {AuthenticationError} from "@/components/errors";
 import dictService from "@/store/modules/dict.service";
 
 export interface SimpleDict {

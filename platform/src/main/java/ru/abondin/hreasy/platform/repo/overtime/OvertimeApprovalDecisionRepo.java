@@ -25,8 +25,8 @@ public interface OvertimeApprovalDecisionRepo extends R2dbcRepository<OvertimeAp
     @Query("update overtime_approval_decision where id=:approvalId set cancel_decision_time=:cancelDecisionTime")
     int cancelDecision(@Param("approvalId") int reportId, @Param("cancelDecisionTime") OffsetDateTime cancelDecisionTime);
 
-    @Query("exists (select id from overtime_approval_decision where report_id=:reportId" +
-            " and approver=:approver" +
-            " and cancel_decision_time is null)")
+    @Query("select cast(case when count(id)>0 then 1 else 0 end as bit) as canceled_exist\n" +
+            " from overtime_approval_decision where\n" +
+            " report_id=:reportId and approver=:approver and cancel_decision_time is null;")
     Mono<Boolean> existsNotCanceled(@Param("reportId") Integer reportId, @Param("approver") Integer approver);
 }

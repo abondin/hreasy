@@ -27,13 +27,18 @@ export interface ApprovalDecision {
     /**
      * Generated on server side during persisting
      */
-    id?: number,
+    id: number,
     /**
      * YYYY-MM-DD format
      */
     decisionTime: string,
 
-    decision : 'APPROVED'|'DECLINED';
+    decision: 'APPROVED' | 'DECLINED';
+
+    /**
+     * Id of approver
+     */
+    approver: number,
     /**
      * Display Name of approver
      */
@@ -61,7 +66,7 @@ export interface OvertimeReport {
     items: OvertimeItem[];
     approvals: ApprovalDecision[];
 
-    lastUpdate: string|null;
+    lastUpdate: string | null;
 }
 
 /**
@@ -101,7 +106,7 @@ export class ReportPeriod {
 
     public increment() {
         this.month++;
-        if (this.month>=12){
+        if (this.month >= 12) {
             this.month = 0;
             this.year++;
         }
@@ -109,8 +114,8 @@ export class ReportPeriod {
 
     public decrement() {
         this.month--;
-        if (this.month<0){
-            this.month=11;
+        if (this.month < 0) {
+            this.month = 11;
             this.year--;
         }
     }
@@ -127,8 +132,13 @@ export class ReportPeriod {
  */
 export interface OvertimeEmployeeSummary {
     employeeId: number,
-    items: OvertimeDaySummary[]
+    items: OvertimeDaySummary[],
+    commonApprovalStatus: CommonApprovalStatusEnum;
 }
+
+export type CommonApprovalStatusEnum =
+    'NO_DECISIONS' | 'DECLINED' | 'APPROVED_NO_DECLINED' | 'APPROVED_OUTDATED';
+
 
 export interface OvertimeDaySummary {
     date: string,
@@ -162,6 +172,24 @@ export interface OvertimeService {
      * @param itemId
      */
     deleteItem(employeeId: number, reportPeriod: number, itemId: number): Promise<OvertimeReport>;
+
+    /**
+     * Approve overtime report
+     * @param employeeId
+     * @param reportPeriod
+     * @param comment
+     * @param previousDecision
+     */
+    approve(employeeId: number, reportPeriod: number, comment: String | null, previousDecision: number | null): Promise<OvertimeReport>;
+
+    /**
+     * Decline overtime report
+     * @param employeeId
+     * @param reportPeriod
+     * @param comment
+     * @param previousDecision
+     */
+    decline(employeeId: number, reportPeriod: number, comment: String, previousDecision: number | null): Promise<OvertimeReport>;
 }
 
 
@@ -196,6 +224,24 @@ class RestOvertimeService implements OvertimeService {
             return response.data;
         });
     }
+
+    approve(employeeId: number, reportPeriod: number, comment: String | null, previousDecision: number | null): Promise<OvertimeReport> {
+        return httpService.post(`v1/overtimes/${employeeId}/report/${reportPeriod}/approve`, {
+            comment: comment,
+            previousApprovalId: previousDecision
+        }).then(response => {
+            return response.data;
+        });
+    }
+
+    decline(employeeId: number, reportPeriod: number, comment: String, previousDecision: number | null): Promise<OvertimeReport> {
+        return httpService.post(`v1/overtimes/${employeeId}/report/${reportPeriod}/decline`, {
+            comment: comment,
+            previousApprovalId: previousDecision
+        }).then(response => {
+            return response.data;
+        });
+    }
 }
 
 /**
@@ -211,6 +257,7 @@ class RestOvertimeService implements OvertimeService {
 export class OvertimeSummaryContainer {
     public readonly days: OvertimeSummaryContainerDay[] = [];
     public totalHours = 0;
+    public commonApprovalStatus: CommonApprovalStatusEnum = "NO_DECISIONS";
 
     constructor(public readonly employee: SimpleDict, private filter: OvertimeSummaryContainerFilter) {
     }

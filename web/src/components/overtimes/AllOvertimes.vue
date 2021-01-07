@@ -28,7 +28,7 @@
       </v-dialog>
     </div>
     <v-card>
-      <v-card-title >
+      <v-card-title>
         <!-- Refresh button -->
         <v-btn text icon @click="fetchData()">
           <v-icon>refresh</v-icon>
@@ -38,7 +38,7 @@
           <v-icon>mdi-chevron-left</v-icon>
         </v-btn>
         <span class="ml-1 mr-2">{{ selectedPeriod }}</span>
-        <v-btn @click.stop="incrementPeriod()" text x-small >
+        <v-btn @click.stop="incrementPeriod()" text x-small>
           <v-icon>mdi-chevron-right</v-icon>
         </v-btn>
         <v-divider vertical></v-divider>
@@ -60,7 +60,7 @@
         <v-divider vertical></v-divider>
         <v-select
             @input="applyFilters()"
-            class="ml-5 mr-5"
+            class="ml-3 mr-3"
             clearable
             v-model="filter.selectedProjectsWithOvertimes"
             :items="filter.projectsWithOvertimes"
@@ -73,7 +73,7 @@
         <v-checkbox :label="$t('Сотрудники без овертаймов')" v-model="filter.showEmpty">
         </v-checkbox>
       </v-card-title>
-      <v-card-subtitle>{{$t('Итого (с учётом фильтров)')}}: {{ $tc('hours', totalHours()) }}</v-card-subtitle>
+      <v-card-subtitle>{{ $t('Итого (с учётом фильтров)') }}: {{ $tc('hours', totalHours()) }}</v-card-subtitle>
       <v-card-text>
         <v-data-table
             :loading="loading"
@@ -90,6 +90,20 @@
                    @click="showEmployeeDialog(item.employee)">{{ item.employee.name }}
             </v-btn>
           </template>
+          <template v-slot:item.commonApprovalStatus="{ item }">
+            <v-chip v-if="item.commonApprovalStatus==='DECLINED'" outlined>
+              <v-icon class="declined">mdi-do-not-disturb</v-icon>
+              {{ $t('APPROVAL_DECISION_ENUM.DECLINED') }}
+            </v-chip>
+            <v-chip v-else-if="item.commonApprovalStatus==='APPROVED_NO_DECLINED'" outlined>
+              <v-icon class="approved">mdi-checkbox-marked-circle</v-icon>
+              {{ $t('APPROVAL_DECISION_ENUM.APPROVED') }}
+            </v-chip>
+            <v-chip o v-else-if="item.commonApprovalStatus==='APPROVED_OUTDATED'" outlined>
+              <v-icon class="outdated">mdi-clock-alert</v-icon>
+              {{ $t('Изменения после согласования') }}
+            </v-chip>
+          </template>
         </v-data-table>
       </v-card-text>
     </v-card>
@@ -105,7 +119,8 @@ import {DataTableHeader} from "vuetify";
 import EmployeeCard from "@/components/empl/EmployeeCard.vue";
 import overtimeService, {
   OvertimeEmployeeSummary,
-  OvertimeSummaryContainer, OvertimeUtils,
+  OvertimeSummaryContainer,
+  OvertimeUtils,
   ReportPeriod
 } from "@/components/overtimes/overtime.service";
 import logger from "@/logger";
@@ -209,13 +224,14 @@ export default class AllOvertimes extends Vue {
         }
       });
       if (existing) {
+        existing.commonApprovalStatus = serverOvertime.commonApprovalStatus;
         existing.addDays(serverOvertime.items);
       } else {
         logger.error(`Unable to find overtime for employee ${serverOvertime.employeeId}`);
       }
     });
     this.filter.projectsWithOvertimes = this.allProjects.filter(p => projectsWithOvertimes.indexOf(p.id) >= 0);
-    this.filter.allProjects = this.allProjects.filter(p=>p.active);
+    this.filter.allProjects = this.allProjects.filter(p => p.active);
   }
 
   private incrementPeriod() {
@@ -234,6 +250,10 @@ export default class AllOvertimes extends Vue {
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Сотрудник'), value: 'employee.name'});
     this.headers.push({text: this.$tc('Всего'), value: 'totalHours'});
+    this.headers.push({
+      text: this.$tc('Статус согласования'),
+      value: 'commonApprovalStatus', width: '10%'
+    });
   }
 
   private showEmployeeDialog(employee: SimpleDict) {
@@ -255,13 +275,24 @@ export default class AllOvertimes extends Vue {
     });
   }
 
-  private totalHours() : number{
+  private totalHours(): number {
     return OvertimeUtils.totalHoursForSummary(this.filteredOvertimes());
   }
 
 }
 </script>
 
-<style scoped>
+<!-- TODO Move to separate style (uses in OvertimeApprovalChip as well) -->
+<style scoped lang="scss">
+.v-chip.v-chip--outlined .v-icon.approved {
+  color: green;
+}
 
+.v-chip.v-chip--outlined .v-icon.declined {
+  color: red
+}
+
+.v-chip.v-chip--outlined .v-icon.outdated {
+  color: orange;
+}
 </style>
