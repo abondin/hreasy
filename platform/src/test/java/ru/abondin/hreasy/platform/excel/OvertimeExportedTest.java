@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
-import ru.abondin.hreasy.platform.service.overtime.OvertimeReportExporter;
+import ru.abondin.hreasy.platform.service.overtime.OvertimeReportExcelExporter;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
 
 import java.io.File;
@@ -39,10 +39,10 @@ public class OvertimeExportedTest {
     );
 
 
-    private OvertimeReportExporter.OvertimeExportBundle bundle;
+    private OvertimeReportExcelExporter.OvertimeExportBundle bundle;
 
 
-    private OvertimeReportExporter exporter;
+    private OvertimeReportExcelExporter exporter;
 
     @BeforeEach
     public void before() {
@@ -64,7 +64,7 @@ public class OvertimeExportedTest {
             report.setTotalHours(roundToHalf((Math.random() * 24)));
             overtimes.add(report);
         }
-        this.bundle = OvertimeReportExporter.OvertimeExportBundle.builder()
+        this.bundle = OvertimeReportExcelExporter.OvertimeExportBundle.builder()
                 .exportTime(OffsetDateTime.now())
                 .overtimes(overtimes)
                 .employees(employees)
@@ -72,7 +72,7 @@ public class OvertimeExportedTest {
                 .projects(projects)
                 .build();
 
-        exporter = new OvertimeReportExporter(new I18Helper() {
+        exporter = new OvertimeReportExcelExporter(new I18Helper() {
             @Override
             public String localize(String code, Object... args) {
                 return code;
@@ -91,7 +91,7 @@ public class OvertimeExportedTest {
         log.debug("Writing test file to {}", destination);
         // Save
         try (var fileOut = new FileOutputStream(destination)) {
-            exporter.exportReportForPeriod(bundle, fileOut).block(Duration.ofSeconds(10));
+            exporter.exportReportForPeriod(bundle, fileOut);
         }
 
     }

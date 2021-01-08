@@ -3,11 +3,13 @@ package ru.abondin.hreasy.platform.api.overtime;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
+import ru.abondin.hreasy.platform.service.overtime.OvertimeExportService;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeService;
 import ru.abondin.hreasy.platform.service.overtime.dto.NewOvertimeItemDto;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeApprovalDecisionDto;
@@ -24,6 +26,7 @@ import javax.validation.constraints.NotNull;
 public class OvertimeController {
 
     private final OvertimeService service;
+    private final OvertimeExportService exportService;
 
     @GetMapping("/{employeeId}/report/{period}")
     @ResponseBody
@@ -84,6 +87,11 @@ public class OvertimeController {
                 body.previousApprovalId,
                 body.comment,
                 auth));
+    }
+
+    @GetMapping("/summary/{period}/export")
+    public Mono<Resource> export(@PathVariable int period) {
+        return AuthHandler.currentAuth().flatMap(auth -> exportService.export(period, auth));
     }
 
     @Data

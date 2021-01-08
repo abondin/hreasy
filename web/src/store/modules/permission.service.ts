@@ -38,6 +38,12 @@ export enum Permissions {
     ApproveOvertimes = "overtime_edit",
 
     /**
+     * Export all overtimes for period
+     * (= EditOvertimes)
+     */
+    ExportOvertimes = "overtime_edit",
+
+    /**
      * View vacations of all employees
      */
     ViewVacations = "vacation_view",
@@ -84,6 +90,8 @@ interface PermissionService {
     canViewAllOvertimes(): boolean;
 
     canViewAllVacations(): boolean;
+
+    canExportOvertimes(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -118,6 +126,10 @@ class VuexPermissionService implements PermissionService {
 
     canApproveOvertimeReport(employeeId: number): boolean {
         return this.simplePermissionCheck(Permissions.ApproveOvertimes);
+    }
+
+    canExportOvertimes(): boolean {
+        return this.simplePermissionCheck(Permissions.ExportOvertimes);
     }
 
     private simplePermissionCheck(permission: Permissions) {

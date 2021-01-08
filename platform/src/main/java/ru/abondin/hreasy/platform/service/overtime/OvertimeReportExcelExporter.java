@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 //TODO Use messageSource
-public class OvertimeReportExporter {
+public class OvertimeReportExcelExporter {
 
     private final I18Helper i18Helper;
 
@@ -50,20 +50,14 @@ public class OvertimeReportExporter {
     }
 
 
-    public Mono<Integer> exportReportForPeriod(OvertimeExportBundle bundle, OutputStream out) {
-        return Mono.defer(() -> {
-                    try (XSSFWorkbook wb = new XSSFWorkbook()) {
-                        var styles = styles(wb);
-                        var mainSheet = createMainSheet(wb, styles, bundle);
-                        wb.write(out);
-                        return Mono.just(1);
-                    } catch (IOException ex) {
-                        log.error("Unable to generate overtime report document", ex);
-                        return Mono.error(new BusinessError("errors.overtime.export"));
-                    }
-                }
-        );
+    public void exportReportForPeriod(OvertimeExportBundle bundle, OutputStream out) throws IOException {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            var styles = styles(wb);
+            var mainSheet = createMainSheet(wb, styles, bundle);
+            wb.write(out);
+        }
     }
+
 
     private XSSFSheet createMainSheet(XSSFWorkbook wb, Map<String, XSSFCellStyle> styles, OvertimeExportBundle bundle) {
         var sheet = wb.createSheet(i18Helper.localize("overtimeexport.mainsheet"));
@@ -86,10 +80,13 @@ public class OvertimeReportExporter {
         cell.setCellStyle(styles.get("generalStyle"));
 
         for (var e : bundle.employees.stream().sorted(Comparator.comparing(EmployeeDto::getDisplayName)).collect(Collectors.toList())) {
-            row = sheet.createRow(rowIndex++);
             var report = bundle.overtimes.stream()
-                    .filter(r -> r.getEmployeeId() == e.getId()).findFirst()
-                    .orElseThrow(() -> new RuntimeException("Overtime export error: Unable to find report for employee with id=" + e.getId()));
+                    .filter(r -> r.getEmployeeId() == e.getId()).findFirst().orElse(null);
+            if (report == null) {
+                // no overtimes for this employee
+                continue;
+            }
+            row = sheet.createRow(rowIndex++);
             var currentProject = i18Helper.localize("overtimeexport.noproject");
             if (e.getCurrentProject() != null) {
                 currentProject = bundle.projects.stream().filter(p -> p.getId() == e.getCurrentProject().getId())
@@ -107,7 +104,7 @@ public class OvertimeReportExporter {
             cell.setCellValue(report.getTotalHours());
             cell.setCellStyle(styles.get("generalStyle"));
             cell = row.createCell(3);
-            cell.setCellValue(i18Helper.localize("enum.OvertimeApprovalCommonStatus."+report.getCommonApprovalStatus().toString()));
+            cell.setCellValue(i18Helper.localize("enum.OvertimeApprovalCommonStatus." + report.getCommonApprovalStatus().toString()));
             cell.setCellStyle(styles.get("generalStyle"));
         }
         createTable(wb, sheet, firstRowIndex, rowIndex--);
@@ -126,7 +123,7 @@ public class OvertimeReportExporter {
 
         row = sheet.createRow((short) 1);
         cell = row.createCell((short) 0);
-        cell.setCellValue(new XSSFRichTextString(i18Helper.localize("overtimeexport.period")+":"));
+        cell.setCellValue(new XSSFRichTextString(i18Helper.localize("overtimeexport.period") + ":"));
         cell.setCellStyle(styles.get("generalStyle"));
         cell = row.createCell((short) 1);
         cell.setCellValue(new XSSFRichTextString(formatPeriod(bundle.period)));
@@ -134,7 +131,7 @@ public class OvertimeReportExporter {
 
         row = sheet.createRow((short) 2);
         cell = row.createCell((short) 0);
-        cell.setCellValue(new XSSFRichTextString(i18Helper.localize("overtimeexport.exported.at")+":"));
+        cell.setCellValue(new XSSFRichTextString(i18Helper.localize("overtimeexport.exported.at") + ":"));
         cell.setCellStyle(styles.get("generalStyle"));
         cell = row.createCell((short) 1);
         cell.setCellValue(bundle.getExportTime().toLocalDateTime());

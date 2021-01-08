@@ -190,6 +190,8 @@ export interface OvertimeService {
      * @param previousDecision
      */
     decline(employeeId: number, reportPeriod: number, comment: String, previousDecision: number | null): Promise<OvertimeReport>;
+
+    export(reportPeriod: number): Promise<void>;
 }
 
 
@@ -240,6 +242,18 @@ class RestOvertimeService implements OvertimeService {
             previousApprovalId: previousDecision
         }).then(response => {
             return response.data;
+        });
+    }
+
+    export(reportPeriod: number): Promise<void> {
+        return httpService.get(`v1/overtimes/summary/${reportPeriod}/export`, {
+            responseType: 'arraybuffer',
+        }).then(response => {
+            let blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+            let link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = `Overtimes-${reportPeriod}.xlsx`;
+            link.click();
         });
     }
 }

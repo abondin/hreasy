@@ -73,7 +73,40 @@
         <v-checkbox :label="$t('Сотрудники без овертаймов')" v-model="filter.showEmpty">
         </v-checkbox>
       </v-card-title>
-      <v-card-subtitle>{{ $t('Итого (с учётом фильтров)') }}: {{ $tc('hours', totalHours()) }}</v-card-subtitle>
+      <v-card-subtitle>
+        <div class="row">
+          <div class="col-auto">{{ $t('Итого (с учётом фильтров)') }}: {{ $tc('hours', totalHours()) }}</div>
+          <v-spacer></v-spacer>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <div v-bind="tattrs" v-on="ton" class="col-auto">
+                <v-btn v-if="canExportOvertimes()" link :disabled="loading" @click="exportToExcel()" icon>
+                  <v-icon>mdi-file-excel</v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <span>{{ $t('Экспорт то Excel') }}</span>
+          </v-tooltip>
+          <v-snackbar
+              v-model="exportCompleted"
+              timeout="5000"
+          >
+            {{ $t('Экспорт успешно завершён. Файл скачен.') }}
+
+            <template v-slot:action="{ attrs }">
+              <v-btn
+                  color="blue"
+                  icon
+                  v-bind="attrs"
+                  @click="exportCompleted = false"
+              >
+                <v-icon>mdi-close-circle-outline</v-icon>
+              </v-btn>
+            </template>
+          </v-snackbar>
+
+        </div>
+      </v-card-subtitle>
       <v-card-text>
         <v-data-table
             :loading="loading"
@@ -128,6 +161,7 @@ import EmployeeOvertimeComponent from "@/components/overtimes/EmployeeOvertimeCo
 import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
 import {Watch} from "vue-property-decorator";
+import permissionService from "@/store/modules/permission.service";
 
 const namespace_dict: string = 'dict';
 
@@ -163,6 +197,8 @@ export default class AllOvertimes extends Vue {
   private filter = new Filter();
   private selectedEmployee: SimpleDict | null = null;
   private employeeDialog = false;
+
+  private exportCompleted = false;
 
   /**
    * Lifecycle hook
@@ -273,6 +309,19 @@ export default class AllOvertimes extends Vue {
       passed = passed && (this.filter.showEmpty || i.totalHours > 0)
       return passed;
     });
+  }
+
+  private exportToExcel() {
+    this.loading = true;
+    overtimeService.export(this.selectedPeriod.periodId()).then(() => {
+      this.exportCompleted = true;
+    }).finally(() => {
+      this.loading = false;
+    })
+  }
+
+  private canExportOvertimes(): boolean {
+    return permissionService.canExportOvertimes();
   }
 
   private totalHours(): number {
