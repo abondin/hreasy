@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
-import org.springframework.context.MessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -21,10 +20,10 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.config.HrEasyCorsWebFilter;
 
 import java.util.HashMap;
-import java.util.Locale;
 
 /**
  * Handle errors
@@ -35,7 +34,7 @@ import java.util.Locale;
 @Slf4j
 public class GlobalWebErrorsHandler implements ErrorWebExceptionHandler, ServerAccessDeniedHandler, ServerAuthenticationEntryPoint {
     private final HrEasyCorsWebFilter corsWebFilter;
-    private final MessageSource messageSource;
+    private final I18Helper i18Helper;
     private final ObjectMapper json;
 
     @Override
@@ -56,19 +55,19 @@ public class GlobalWebErrorsHandler implements ErrorWebExceptionHandler, ServerA
         final Object errorDto;
         if (ex instanceof BusinessError) {
             response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
-            errorDto = new BusinessErrorDto(((BusinessError) ex).getCode(), localize(((BusinessError) ex).getCode(), ((BusinessError) ex).getLocalizationArgs()), ((BusinessError) ex).getAttrs());
+            errorDto = new BusinessErrorDto(((BusinessError) ex).getCode(), i18Helper.localize(((BusinessError) ex).getCode(), ((BusinessError) ex).getLocalizationArgs()), ((BusinessError) ex).getAttrs());
         } else if (ex instanceof BadCredentialsException) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
-            errorDto = new BusinessErrorDto("errors.bad.credentials", localize("errors.bad.credentials"), new HashMap<>());
+            errorDto = new BusinessErrorDto("errors.bad.credentials", i18Helper.localize("errors.bad.credentials"), new HashMap<>());
         } else if (ex instanceof AuthenticationException) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
-            errorDto = new BusinessErrorDto("errors.not.authenticated", localize("errors.not.authenticated"), new HashMap<>());
+            errorDto = new BusinessErrorDto("errors.not.authenticated", i18Helper.localize("errors.not.authenticated"), new HashMap<>());
         } else if (ex instanceof AccessDeniedException) {
             response.setStatusCode(HttpStatus.FORBIDDEN);
-            errorDto = new BusinessErrorDto("errors.access.denied", localize("errors.access.denied"), new HashMap<>());
+            errorDto = new BusinessErrorDto("errors.access.denied", i18Helper.localize("errors.access.denied"), new HashMap<>());
         } else if (ex instanceof ResponseStatusException) {
             response.setStatusCode(HttpStatus.NOT_FOUND);
-            errorDto = new BusinessErrorDto("errors.response.not.found", localize("errors.response.not.found"), new HashMap<>());
+            errorDto = new BusinessErrorDto("errors.response.not.found", i18Helper.localize("errors.response.not.found"), new HashMap<>());
         } else {
             response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
             errorDto = new AnyExceptionDto(ex);
@@ -78,7 +77,4 @@ public class GlobalWebErrorsHandler implements ErrorWebExceptionHandler, ServerA
         return response.writeWith(Mono.just(response.bufferFactory().wrap(json.writeValueAsBytes(errorDto))));
     }
 
-    private String localize(String code, Object... args) {
-        return messageSource.getMessage(code, args, new Locale("ru"));
-    }
 }

@@ -1,6 +1,8 @@
 package ru.abondin.hreasy.platform.service.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
@@ -8,6 +10,8 @@ import java.time.LocalDate;
  * Employee information, available to any authenticated user
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class EmployeeDto {
     private Integer id;
     private String lastname;
