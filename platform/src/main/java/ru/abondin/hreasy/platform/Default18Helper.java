@@ -13,6 +13,6 @@ public class Default18Helper implements I18Helper{
 
     @Override
     public String localize(String code, Object... args) {
-        return messageSource.getMessage(code, args, new Locale("ru"));
+        return messageSource.getMessage(code, args, new Locale("RU"));
     }
 }
