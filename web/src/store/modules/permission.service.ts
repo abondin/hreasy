@@ -97,6 +97,8 @@ interface PermissionService {
     canViewAllVacations(): boolean;
 
     canExportOvertimes(): boolean;
+
+    canAdminOvertimes(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -135,6 +137,10 @@ class VuexPermissionService implements PermissionService {
 
     canExportOvertimes(): boolean {
         return this.simplePermissionCheck(Permissions.ExportOvertimes);
+    }
+
+    canAdminOvertimes(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminOvertimes);
     }
 
     private simplePermissionCheck(permission: Permissions) {

@@ -19,14 +19,14 @@ public class AdminController {
 
     private final OvertimeAdminService overtimeAdminService;
 
-    @PostMapping("/overtime/{period}/close")
+    @PostMapping("/overtimes/{period}/close")
     public Mono<Integer> closeOvertimePeriod(@PathVariable int period,
                                              @RequestBody CloseOvertimePeriodBody body) {
         return AuthHandler.currentAuth().flatMap(auth ->
                 overtimeAdminService.closeOvertimePeriod(auth, period, body.getComment()));
     }
 
-    @PostMapping("/overtime/{period}/reopen")
+    @PostMapping("/overtimes/{period}/reopen")
     public Mono<Void> reopenOvertimePeriod(@PathVariable int period,
                                            @RequestBody ReopenOvertimePeriodBody body) {
         return AuthHandler.currentAuth().flatMap(auth ->

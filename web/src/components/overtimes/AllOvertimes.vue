@@ -39,7 +39,8 @@
         </v-btn>
         <span class="ml-1 mr-2">
           {{ selectedPeriod }}
-          <v-icon v-if="periodClosed()" color="primary" :title="$t('Период закрыт для внесения изменений')">mdi-lock</v-icon>
+          <v-icon v-if="periodClosed()" color="primary"
+                  :title="$t('Период закрыт для внесения изменений')">mdi-lock</v-icon>
         </span>
         <v-btn @click.stop="incrementPeriod()" text x-small>
           <v-icon>mdi-chevron-right</v-icon>
@@ -80,6 +81,7 @@
         <div class="row">
           <div class="col-auto">{{ $t('Итого (с учётом фильтров)') }}: {{ $tc('hours', totalHours()) }}</div>
           <v-spacer></v-spacer>
+          <!-- Export -->
           <v-tooltip bottom>
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <div v-bind="tattrs" v-on="ton" class="col-auto">
@@ -95,19 +97,28 @@
               timeout="5000"
           >
             {{ $t('Экспорт успешно завершён. Файл скачен.') }}
-
             <template v-slot:action="{ attrs }">
-              <v-btn
-                  color="blue"
-                  icon
-                  v-bind="attrs"
-                  @click="exportCompleted = false"
-              >
+              <v-btn color="blue" icon v-bind="attrs" @click="exportCompleted = false">
                 <v-icon>mdi-close-circle-outline</v-icon>
               </v-btn>
             </template>
           </v-snackbar>
-
+          <!-- Configuration -->
+          <v-menu offset-y v-if="canAdminOvertimes()">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on" icon link>
+                <v-icon>settings</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item>
+                <v-list-item-title>
+                  <v-btn v-if="periodClosed()" @click="reopenPeriod()">{{ $t('Переоткрыть период') }}</v-btn>
+                  <v-btn v-else @click="closePeriod()">{{ $t('Закрыть период') }}</v-btn>
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </div>
       </v-card-subtitle>
       <v-card-text>
@@ -166,6 +177,7 @@ import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
 import {Watch} from "vue-property-decorator";
 import permissionService from "@/store/modules/permission.service";
+import adminService from "@/components/admin/admin.service";
 
 const namespace_dict: string = 'dict';
 
@@ -328,8 +340,29 @@ export default class AllOvertimes extends Vue {
     })
   }
 
+  private closePeriod() {
+    this.loading = true;
+    adminService.closeOvertimePeriod(this.selectedPeriod.periodId()).then(() => {
+      return this.fetchData();
+    }).finally(() => {
+      this.loading = false;
+    })
+  }
+  private reopenPeriod() {
+    this.loading = true;
+    adminService.reopenOvertimePeriod(this.selectedPeriod.periodId()).then(() => {
+      return this.fetchData();
+    }).finally(() => {
+      this.loading = false;
+    })
+  }
+
   private canExportOvertimes(): boolean {
     return permissionService.canExportOvertimes();
+  }
+
+  private canAdminOvertimes(): boolean {
+    return permissionService.canAdminOvertimes();
   }
 
   private totalHours(): number {

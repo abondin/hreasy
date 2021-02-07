@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.repo.overtime;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.lang.Nullable;
 
@@ -13,7 +14,7 @@ import java.time.OffsetDateTime;
  */
 @Data
 @Table("overtime_closed_period")
-public class OvertimeClosedPeriodEntry {
+public class OvertimeClosedPeriodEntry implements Persistable<Integer> {
     /**
      * Overtime report period in yyyymm format.
      * For example 202005 for all overtimes, reported in June
@@ -37,4 +38,20 @@ public class OvertimeClosedPeriodEntry {
     @Nullable
     private String comment;
 
+
+    /**
+     * No update operation for this entity required
+     *
+     * @return
+     */
+    @Override
+    public boolean isNew() {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public Integer getId() {
+        return period;
+    }
 }
