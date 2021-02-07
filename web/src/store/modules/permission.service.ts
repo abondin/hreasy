@@ -44,6 +44,11 @@ export enum Permissions {
     ExportOvertimes = "overtime_edit",
 
     /**
+     * Admin overtimes. Close overtime period
+     */
+    AdminOvertimes = "overtime_admin",
+
+    /**
      * View vacations of all employees
      */
     ViewVacations = "vacation_view",

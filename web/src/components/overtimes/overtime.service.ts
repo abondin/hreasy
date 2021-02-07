@@ -95,6 +95,7 @@ export class ReportPeriod {
     constructor(private year: number, private month: number) {
     }
 
+    private closed = false;
 
     public periodId(): number {
         return this.year * 100 + (this.month);
@@ -136,6 +137,13 @@ export interface OvertimeEmployeeSummary {
     commonApprovalStatus: CommonApprovalStatusEnum;
 }
 
+export interface ClosedOvertimePeriod {
+    period: number,
+    closedBy: number,
+    closedAt: Date,
+    comment: string
+}
+
 export type CommonApprovalStatusEnum =
     'NO_DECISIONS' | 'DECLINED' | 'APPROVED_NO_DECLINED' | 'APPROVED_OUTDATED';
 
@@ -156,6 +164,8 @@ export interface OvertimeService {
     get(employeeId: number, reportPeriod: number): Promise<OvertimeReport>;
 
     getSummary(reportPeriod: number): Promise<OvertimeEmployeeSummary[]>;
+
+    getClosedOvertimes(): Promise<ClosedOvertimePeriod[]>;
 
     /**
      * Add one item to the report
@@ -201,6 +211,12 @@ class RestOvertimeService implements OvertimeService {
 
     public getSummary(reportPeriod: number): Promise<OvertimeEmployeeSummary[]> {
         return httpService.get(`v1/overtimes/summary/${reportPeriod}`).then(response => {
+            return response.data;
+        });
+    }
+
+    public getClosedOvertimes(): Promise<ClosedOvertimePeriod[]> {
+        return httpService.get(`v1/overtimes/closed-periods`).then(response => {
             return response.data;
         });
     }

@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
+import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeClosedPeriodDto;
 
 /**
  * Validate security rules to get and update overtimes
@@ -77,6 +79,16 @@ public class OvertimeSecurityValidator {
     public Mono<Boolean> validateExportOvertimes(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("overtime_edit")) {
+                return Mono.just(false);
+            }
+            return Mono.just(true);
+        });
+    }
+
+    // Check if user has acess to admin all overtime stuff
+    public Mono<Boolean>  validateAdminOvertime(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("overtime_admin")) {
                 return Mono.just(false);
             }
             return Mono.just(true);

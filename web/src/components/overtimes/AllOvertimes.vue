@@ -37,7 +37,10 @@
         <v-btn @click.stop="decrementPeriod()" text x-small>
           <v-icon>mdi-chevron-left</v-icon>
         </v-btn>
-        <span class="ml-1 mr-2">{{ selectedPeriod }}</span>
+        <span class="ml-1 mr-2">
+          {{ selectedPeriod }}
+          <v-icon v-if="periodClosed()" color="primary" :title="$t('Период закрыт для внесения изменений')">mdi-lock</v-icon>
+        </span>
         <v-btn @click.stop="incrementPeriod()" text x-small>
           <v-icon>mdi-chevron-right</v-icon>
         </v-btn>
@@ -151,6 +154,7 @@ import employeeService, {Employee} from "@/components/empl/employee.service";
 import {DataTableHeader} from "vuetify";
 import EmployeeCard from "@/components/empl/EmployeeCard.vue";
 import overtimeService, {
+  ClosedOvertimePeriod,
   OvertimeEmployeeSummary,
   OvertimeSummaryContainer,
   OvertimeUtils,
@@ -190,6 +194,7 @@ export default class AllOvertimes extends Vue {
 
   overtimes: OvertimeSummaryContainer[] = [];
   private rawData = new RawData();
+  private closedPeriods: ClosedOvertimePeriod[] = [];
 
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<SimpleDict>;
@@ -222,10 +227,13 @@ export default class AllOvertimes extends Vue {
       employeeService.findAll()
           .then(employees => {
             this.rawData.employees = employees;
-            return overtimeService.getSummary(this.selectedPeriod.periodId()).then((overtimes) => {
-              this.rawData.overtimes = overtimes;
-              this.applyFilters();
-            })
+            return overtimeService.getClosedOvertimes().then((data) => {
+              this.closedPeriods = data;
+              return overtimeService.getSummary(this.selectedPeriod.periodId()).then((overtimes) => {
+                this.rawData.overtimes = overtimes;
+                this.applyFilters();
+              })
+            });
           }).finally(() => {
         this.loading = false
       });
@@ -326,6 +334,12 @@ export default class AllOvertimes extends Vue {
 
   private totalHours(): number {
     return OvertimeUtils.totalHoursForSummary(this.filteredOvertimes());
+  }
+
+  private periodClosed(): boolean {
+    return this.selectedPeriod &&
+        this.closedPeriods
+        && this.closedPeriods.map(p => p.period).indexOf(this.selectedPeriod.periodId()) >= 0;
   }
 
 }

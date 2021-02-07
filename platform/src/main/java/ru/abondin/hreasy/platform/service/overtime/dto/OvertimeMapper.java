@@ -34,6 +34,8 @@ public interface OvertimeMapper {
     @Mapping(target = "approverDisplayName", source = ".", qualifiedByName = "toDisplayName")
     OvertimeApprovalDecisionDto fromEntry(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry);
 
+    OvertimeClosedPeriodDto fromEntry(OvertimeClosedPeriodEntry entry);
+
     @Named("toDisplayName")
     default String toDisplayName(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry) {
         return entry == null ? null : Stream.of(

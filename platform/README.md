@@ -4,21 +4,24 @@
 
 # Technologies Stack
 
- - SQL Server as database
- - Spring Reactive
-
+- SQL Server as database
+- Spring Reactive
 
 # Run locally
- - ./localdev - contains docker-compose to start 3pty components (Microsoft SQL Server)
- - `*.hr` hosts are using in application configuration by default. Please locate it to your docker IP address in `hosts` file
-   - `10.0.75.1 sql.hr`
- - LDAP - HREasy based to LDAP authentication. It is important to correctly specify LDAP attributes in application.yaml
- - Activate DEV Spring Boot profile `-Dspring.profiles.active=dev` to enable CORS from localhost:8080 and other DEV stuff
+
+- ./localdev - contains docker-compose to start 3pty components (Microsoft SQL Server)
+- `*.hr` hosts are using in application configuration by default. Please locate it to your docker IP address in `hosts`
+  file
+    - `10.0.75.1 sql.hr`
+- LDAP - HREasy based to LDAP authentication. It is important to correctly specify LDAP attributes in application.yaml
+- Activate DEV Spring Boot profile `-Dspring.profiles.active=dev` to enable CORS from localhost:8080 and other DEV stuff
 
 # Run in Docker
 
- - In folder `devops` execute `./build.sh`. New docker image will be created (script prints the image name). For example `hreasyplatform:latest`
- - Run docker container. For example run development configuration
+- In folder `devops` execute `./build.sh`. New docker image will be created (script prints the image name). For
+  example `hreasyplatform:latest`
+- Run docker container. For example run development configuration
+
  ```shell script
 docker run -d -e SPRING.PROFILES.ACTIVE=dev --name hreasyplatform -p8081:8081 hreasyplatform:latest
 ```
@@ -29,10 +32,10 @@ docker run -d -e SPRING.PROFILES.ACTIVE=dev --name hreasyplatform -p8081:8081 hr
 Docker Installer required
 </aside>
 
-[Testcontainers](https://www.testcontainers.org) uses to run SQL Server Docker Container for tests.
-You may use your own container by setting VM option
- 
-`-Dhreasy.test.existing-database-docker=true` 
+[Testcontainers](https://www.testcontainers.org) uses to run SQL Server Docker Container for tests. You may use your own
+container by setting VM option
+
+`-Dhreasy.test.existing-database-docker=true`
 
 To clean-up database before tests set VM flyway commands
 
@@ -46,29 +49,28 @@ Flyway commands also can be executed in maven:
 ![Security Database](./.architecture/hr_sec.png "Security Database Scheme")
 
 Security model based on two main entities:
-1) Employee - key entity of the whole project. Describe company employee
-2) User - employee projection in security scheme.
-Currently we consider that *User = Employee*.
-Also we have the assumption that user and employee are always associated via email. (implicit dependency)
-Entity "User" designed for future features when we have portal user without employee projection.
-It might be system account or some kind of portal admin. 
 
-User (more accurately employee) may have access to the actions for employees, currently assigned to the specific project.
-Or to the actions for employees, currently assigned to any project from specific department.
-Please take a look on `employee_accessible_departments` and `employee_accessible_projects` tables respectively.
-Permissions depended on `employee_accessible_departments` and `employee_accessible_projects` marked in the table bellow.
-   
+1) Employee - key entity of the whole project. Describe company employee
+2) User - employee projection in security scheme. Currently we consider that *User = Employee*. Also we have the
+   assumption that user and employee are always associated via email. (implicit dependency)
+   Entity "User" designed for future features when we have portal user without employee projection. It might be system
+   account or some kind of portal admin.
+
+User (more accurately employee) may have access to the actions for employees, currently assigned to the specific
+project. Or to the actions for employees, currently assigned to any project from specific department. Please take a look
+on `employee_accessible_departments` and `employee_accessible_projects` tables respectively. Permissions depended
+on `employee_accessible_departments` and `employee_accessible_projects` marked in the table bellow.
+
 Many permissions are always allowed the the currently logged in employee. Also marked in the permission table.
 
-*For example*: we have employee *John* with accessible project *Project1* and role with permission *overtime_view*.
-Also we have employee *Dave* without any role currently assigned to the *Project1*.
-In that case John can see his overtimes and Dave's overtimes. Dave can see only his own overtimes.        
-   
+*For example*: we have employee *John* with accessible project *Project1* and role with permission *overtime_view*. Also
+we have employee *Dave* without any role currently assigned to the *Project1*. In that case John can see his overtimes
+and Dave's overtimes. Dave can see only his own overtimes.
+
 - List of permissions are code based. Database table must be always in sync with backend and frontend code.
-- Set of permissions combined to the role.
-List of roles is code independent and can be updated in database (and in admin UI in future releases). 
-See `sec_role` and `sec_role_perm` tables.
-- Roles assigned to the user in `sec_user_role` table (and in admin UI in future releases). 
+- Set of permissions combined to the role. List of roles is code independent and can be updated in database (and in
+  admin UI in future releases). See `sec_role` and `sec_role_perm` tables.
+- Roles assigned to the user in `sec_user_role` table (and in admin UI in future releases).
 
 **List of supported permissions**:
 
@@ -79,11 +81,11 @@ See `sec_role` and `sec_role_perm` tables.
 |update_avatar|N|Y|Update employee avatar|
 |overtime_view|N|Y|View overtimes of given employee|
 |overtime_edit|Y|Y|Edit and approve overtimes of given employee|
+|overtime_admin|N|N|Admin overtime configuration. Close overtime period and other stuff|
 |vacation_view|Y|Y|View vacations of given employee|
 |vacation_edit|Y|Y|View vacations of given employee|
 
 **Default permissions and roles**
-
 
 |role|description|
 |----|------|
@@ -98,9 +100,9 @@ See `sec_role` and `sec_role_perm` tables.
 |update_avatar|global_admin, hr|
 |overtime_view|global_admin, hr, pm|
 |overtime_edit|global_admin, hr, pm|
+|overtime_admin|global_admin|
 |vacation_view|global_admin, hr, pm|
 |vacation_edit|global_admin, hr, pm|
-
 
 **Default Test Data for Unit Tests**
 

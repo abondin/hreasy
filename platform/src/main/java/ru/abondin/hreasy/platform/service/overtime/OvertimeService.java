@@ -26,6 +26,7 @@ public class OvertimeService {
     private final OvertimeApprovalDecisionRepo approvalRepo;
     private final OvertimeMapper mapper;
     private final DateTimeService dateTimeService;
+    private final OvertimeClosedPeriodRepo closedPeriodRepo;
 
     private final OvertimeSecurityValidator securityValidator;
 
@@ -50,7 +51,9 @@ public class OvertimeService {
      */
     public Mono<OvertimeReportDto> addItem(int employeeId, int periodId, NewOvertimeItemDto newItem, AuthContext auth) {
         // 0. Validate auth
-        return securityValidator.validateEditOvertimeItem(auth, employeeId).then(
+        return securityValidator.validateEditOvertimeItem(auth, employeeId)
+                .then(validatePeriodNotClosed(periodId))
+                .then(
                 // 1. Get report
                 get(employeeId, periodId)
                         // 2. Create entry if not exists
@@ -80,7 +83,8 @@ public class OvertimeService {
      */
     public Mono<OvertimeReportDto> deleteItem(int employeeId, int periodId, int itemId, AuthContext auth) {
         // 0. Validate auth
-        return securityValidator.validateEditOvertimeItem(auth, employeeId).then(
+        return securityValidator.validateEditOvertimeItem(auth, employeeId)
+                .then(validatePeriodNotClosed(periodId)).then(
                 // 1. Get item
                 itemRepo.findById(itemId)
                         .flatMap(item -> {
@@ -127,7 +131,8 @@ public class OvertimeService {
         log.debug("Approve overtime report for employee: {}, period: {}, decision: {} by {}",
                 employeeId, periodId, decision, auth.getUsername());
         // 1. Validate security
-        return securityValidator.validateApproveOvertime(auth, employeeId).then(
+        return securityValidator.validateApproveOvertime(auth, employeeId)
+                .then(validatePeriodNotClosed(periodId)).then(
                 // 2. Get Overtime Report
                 get(employeeId, periodId).flatMap(report ->
                         // 3. Cancel previous approval decision if required
@@ -152,6 +157,16 @@ public class OvertimeService {
                                     return approvalRepo.save(approvalEntry);
                                     // 6. Just reload whole report to populate all required fields for approval entry
                                 }).flatMap(approvalEntry -> get(employeeId, periodId)))));
+    }
+
+
+    /**
+     * Public method accessible to everyone
+     *
+     * @return
+     */
+    public Flux<OvertimeClosedPeriodDto> getClosedPeriods() {
+        return closedPeriodRepo.allClosed().map(mapper::fromEntry);
     }
 
     private Mono<OvertimeApprovalDecisionEntry> cancelPreviousApproval(Integer previousApprovalId, AuthContext auth) {
@@ -208,5 +223,12 @@ public class OvertimeService {
                 );
     }
 
+
+    private Mono<Boolean> validatePeriodNotClosed(int period) {
+        return closedPeriodRepo.findById(period)
+                .flatMap(p -> Mono.error(new BusinessError("overtime.period.closed", Integer.toString(p.getPeriod()))))
+                .map(p -> false)
+                .defaultIfEmpty(true);
+    }
 
 }

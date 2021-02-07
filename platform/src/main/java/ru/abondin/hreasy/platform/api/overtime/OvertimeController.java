@@ -11,10 +11,7 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeExportService;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeService;
-import ru.abondin.hreasy.platform.service.overtime.dto.NewOvertimeItemDto;
-import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeApprovalDecisionDto;
-import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
-import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeReportDto;
+import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -51,6 +48,12 @@ public class OvertimeController {
                                               @PathVariable int itemId) {
         log.debug("Deleting item {} from report [{}, {}]", itemId, employeeId, period);
         return AuthHandler.currentAuth().flatMap(auth -> service.deleteItem(employeeId, period, itemId, auth));
+    }
+
+    @GetMapping("/closed-periods")
+    @ResponseBody
+    public Flux<OvertimeClosedPeriodDto> getClosedPeriods() {
+        return service.getClosedPeriods();
     }
 
     @GetMapping("/summary/{period}")
