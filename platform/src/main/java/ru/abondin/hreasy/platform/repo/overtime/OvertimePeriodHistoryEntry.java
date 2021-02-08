@@ -20,7 +20,7 @@ public class OvertimePeriodHistoryEntry {
 
 
     @Id
-    private int id;
+    private Integer id;
 
     private short action;
 
