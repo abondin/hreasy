@@ -103,22 +103,26 @@
               </v-btn>
             </template>
           </v-snackbar>
+
           <!-- Configuration -->
-          <v-menu offset-y v-if="canAdminOvertimes()">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on" icon link>
-                <v-icon>settings</v-icon>
-              </v-btn>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <div v-bind="tattrs" v-on="ton" class="col-auto">
+                <v-btn v-if="canAdminOvertimes() && !periodClosed()" link :disabled="loading" @click="closePeriod()"
+                       icon>
+                  <v-icon>mdi-lock</v-icon>
+                </v-btn>
+                <v-btn v-if="canAdminOvertimes() && periodClosed()" link :disabled="loading" @click="reopenPeriod()"
+                       icon>
+                  <v-icon>mdi-lock-open</v-icon>
+                </v-btn>
+              </div>
             </template>
-            <v-list>
-              <v-list-item>
-                <v-list-item-title>
-                  <v-btn v-if="periodClosed()" @click="reopenPeriod()">{{ $t('Переоткрыть период') }}</v-btn>
-                  <v-btn v-else @click="closePeriod()">{{ $t('Закрыть период') }}</v-btn>
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+            <span>{{
+                $t(periodClosed() ? 'Переоткрыть период. Вернуть возможность вносить изменения'
+                    : 'Закрыть период. Запретить внесение изменений.')
+              }}</span>
+          </v-tooltip>
         </div>
       </v-card-subtitle>
       <v-card-text>
@@ -348,6 +352,7 @@ export default class AllOvertimes extends Vue {
       this.loading = false;
     })
   }
+
   private reopenPeriod() {
     this.loading = true;
     adminService.reopenOvertimePeriod(this.selectedPeriod.periodId()).then(() => {

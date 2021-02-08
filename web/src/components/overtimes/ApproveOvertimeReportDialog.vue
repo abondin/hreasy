@@ -50,7 +50,7 @@ Emits:
         <v-card-actions>
           <v-btn @click="closeDialog">{{ $t('Закрыть') }}</v-btn>
           <v-spacer></v-spacer>
-          <v-btn-toggle rounded>
+          <v-btn-toggle>
             <v-btn @click="approve()" color="success">{{ $t('Согласовать') }}</v-btn>
             <v-btn @click="decline()" color="error">{{ $t('Отклонить') }}</v-btn>
           </v-btn-toggle>

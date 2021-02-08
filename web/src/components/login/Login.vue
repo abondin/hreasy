@@ -39,6 +39,12 @@
                                         v-model="passwordField"
                                 />
                         </v-card-text>
+                        <v-banner>
+                          <v-icon slot="icon" large color="info">
+                            mdi-information
+                          </v-icon>
+                          {{$t('Учётную запись следует вводить без @stm-labs.ru. То есть ivan.ivanov, а не ivan.ivanov@stm-labs')}}
+                        </v-banner>
                         <v-card-text class="error--text">
                             {{responseError}}
                         </v-card-text>
