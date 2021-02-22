@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.admin.dto;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
 
 import java.time.OffsetDateTime;
@@ -12,7 +13,9 @@ public interface ProjectDtoMapper {
 
     DictProjectEntry fromDto(ProjectDto dto);
 
-    ProjectDto fromEntry(DictProjectEntry entry);
+    @Mapping(source = "departmentId", target = "department.id")
+    @Mapping(source = "departmentName", target = "department.name")
+    ProjectDto fromEntry(DictProjectEntry.ProjectFullEntry entry);
 
 
     default DictProjectEntry.ProjectHistoryEntry historyEntry(int empoyeeId, OffsetDateTime updateTime, DictProjectEntry projectEntry) {

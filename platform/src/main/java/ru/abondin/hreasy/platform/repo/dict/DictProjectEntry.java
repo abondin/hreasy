@@ -40,6 +40,13 @@ public class DictProjectEntry {
     private Integer createdBy;
 
 
+    @Data
+    public static class ProjectFullEntry extends DictProjectEntry {
+        @NotNull
+        private String departmentName;
+    }
+
+
     @Table("project_history")
     @Data
     public static class ProjectHistoryEntry {

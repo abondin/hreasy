@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.admin.dto;
 
 import lombok.Data;
 import lombok.ToString;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
@@ -29,7 +30,7 @@ public class ProjectDto {
     private LocalDate endDate;
 
     @NotNull
-    private Integer departmentId;
+    private SimpleDictDto department;
 
     private int createdBy;
 

@@ -42,4 +42,12 @@ public class AdminSecurityValidator {
     }
 
 
+    public Mono<Boolean> validateFindAllProject(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("project_admin_area")) {
+                return Mono.error(new AccessDeniedException("Only user with permission project_admin_area can access project admin area"));
+            }
+            return Mono.just(true);
+        });
+    }
 }

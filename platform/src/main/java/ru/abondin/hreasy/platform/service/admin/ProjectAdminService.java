@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectHistoryRepo;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
@@ -26,7 +27,7 @@ public class ProjectAdminService {
     private final AdminSecurityValidator securityValidator;
     private final ProjectDtoMapper mapper;
 
-    public Mono<ProjectDto> create(AuthContext auth, ProjectDto.CreateOrUpdateProjectDto newProject) {
+    public Mono<Integer> create(AuthContext auth, ProjectDto.CreateOrUpdateProjectDto newProject) {
         log.info("Creating new project by ? : ?", auth.getUsername(), newProject);
         var now = dateTimeService.now();
         var entry = mapper.fromDto(newProject);
@@ -35,10 +36,10 @@ public class ProjectAdminService {
         var history = mapper.historyEntry(auth.getEmployeeInfo().getEmployeeId(), now, entry);
         return securityValidator.validateCreateProject(auth).flatMap(s ->
                 historyRepo.save(history).flatMap((h) ->
-                        repo.save(entry).map(mapper::fromEntry)));
+                        repo.save(entry).map(DictProjectEntry::getId)));
     }
 
-    public Mono<ProjectDto> update(AuthContext auth, int projectId, ProjectDto.CreateOrUpdateProjectDto projectToUpdate) {
+    public Mono<Integer> update(AuthContext auth, int projectId, ProjectDto.CreateOrUpdateProjectDto projectToUpdate) {
         log.info("Updating project by ? : ?", auth.getUsername(), projectToUpdate);
         var now = dateTimeService.now();
         var entry = mapper.fromDto(projectToUpdate);
@@ -54,10 +55,11 @@ public class ProjectAdminService {
                     return securityValidator.validateUpdateProject(auth, existing);
                 })
                 .flatMap(s -> historyRepo.save(history).flatMap((h) -> repo.save(entry))
-                        .map(mapper::fromEntry));
+                        .map(DictProjectEntry::getId));
     }
 
     public Flux<ProjectDto> findAll(AuthContext auth) {
-        return repo.findAll().map(mapper::fromEntry);
+        return securityValidator.validateFindAllProject(auth).flatMapMany(s ->
+                repo.findFullInfo().map(mapper::fromEntry));
     }
 }

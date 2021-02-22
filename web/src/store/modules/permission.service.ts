@@ -57,6 +57,11 @@ export enum Permissions {
      * Edit vacations of any employee
      */
     EditVacations = "vacation_edit",
+
+    /**
+     * Access to see all projects and admin them
+     */
+    AdminProjects = "project_admin_area",
 }
 
 interface PermissionService {
@@ -99,6 +104,8 @@ interface PermissionService {
     canExportOvertimes(): boolean;
 
     canAdminOvertimes(): boolean;
+
+    canAdminProjects(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -141,6 +148,10 @@ class VuexPermissionService implements PermissionService {
 
     canAdminOvertimes(): boolean {
         return this.simplePermissionCheck(Permissions.AdminOvertimes);
+    }
+
+    canAdminProjects(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminProjects);
     }
 
     private simplePermissionCheck(permission: Permissions) {
