@@ -7,13 +7,19 @@
         <v-btn text icon @click="fetchData()">
           <v-icon>refresh</v-icon>
         </v-btn>
+        <v-divider vertical></v-divider>
+        <v-text-field
+            v-model="filter.search"
+            :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
+        <v-checkbox :label="$t('Показать закрытые проекты')" v-model="filter.showClosed">
+        </v-checkbox>
       </v-card-title>
       <v-card-text>
         <v-data-table
             :loading="loading"
             :loading-text="$t('Загрузка_данных')"
             :headers="headers"
-            :items="projects"
+            :items="filteredProjects()"
             hide-default-footer
             sort-by="name"
             sort
@@ -42,7 +48,8 @@ import {OvertimeUtils} from "@/components/overtimes/overtime.service";
 
 
 class Filter {
-  public showClosed = true;
+  public showClosed = false;
+  public search = '';
 }
 
 @Component
@@ -74,8 +81,24 @@ export default class AdminProjects extends Vue {
         });
   }
 
-  private applyFilters() {
-    // TODO
+
+  private filteredProjects() {
+    return this.projects.filter((p) => {
+      var filtered = true;
+      if (!this.filter.showClosed) {
+        filtered = filtered && (!p.endDate || p.endDate <= new Date());
+      }
+      if (this.filter.search) {
+        const search = this.filter.search.trim().toLowerCase();
+        filtered = filtered &&
+            (
+                (p.name.toLowerCase().indexOf(search) >= 0) ||
+                (p.department && p.department.name && p.department.name.toLowerCase().indexOf(search) >= 0) ||
+                (p.customer && p.customer.toLowerCase().indexOf(search) >= 0)
+            ) as boolean
+      }
+      return filtered;
+    });
   }
 
 

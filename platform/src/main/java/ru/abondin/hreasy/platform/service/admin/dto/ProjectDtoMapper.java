@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.admin.dto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.OffsetDateTime;
 
@@ -13,8 +14,7 @@ public interface ProjectDtoMapper {
 
     DictProjectEntry fromDto(ProjectDto dto);
 
-    @Mapping(source = "departmentId", target = "department.id")
-    @Mapping(source = "departmentName", target = "department.name")
+    @Mapping(target = "department", qualifiedByName = "department", source = ".")
     ProjectDto fromEntry(DictProjectEntry.ProjectFullEntry entry);
 
 
@@ -27,4 +27,12 @@ public interface ProjectDtoMapper {
 
     DictProjectEntry.ProjectHistoryEntry partionCopyHistory(DictProjectEntry projectEntry);
 
+
+    default SimpleDictDto department(DictProjectEntry.ProjectFullEntry entry) {
+        return simpleDto(entry.getDepartmentId(), entry.getDepartmentName());
+    }
+
+    default SimpleDictDto simpleDto(Integer id, String name) {
+        return id == null ? null : new SimpleDictDto(id, name);
+    }
 }

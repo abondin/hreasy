@@ -1,5 +1,6 @@
 import httpService from "../http.service";
 import {AxiosInstance} from "axios";
+import {SimpleDict} from "@/store/modules/dict";
 
 export interface CreateOrUpdateProject {
     name: string;
@@ -15,7 +16,7 @@ export interface ProjectFullInfo {
     startDate?: Date,
     endDate?: Date,
     customer?: string,
-    departmentId: number
+    department: SimpleDict
     createdBy?: number,
     createdAt?: Date,
 }
