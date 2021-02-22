@@ -84,6 +84,9 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |overtime_admin|N|N|Admin overtime configuration. Close overtime period and other stuff|
 |vacation_view|Y|Y|View vacations of given employee|
 |vacation_edit|Y|Y|View vacations of given employee|
+|project_admin_area|N|N|Access to project admin area in UI|
+|update_project|N|N|Admin permission to update information of any project. Without this permission user can update only projects created by himself|
+|create_project|N|N|Admin permission to create new project|
 
 **Default permissions and roles**
 
@@ -103,6 +106,9 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |overtime_admin|global_admin|
 |vacation_view|global_admin, hr, pm|
 |vacation_edit|global_admin, hr, pm|
+|project_admin_area|global_admin,pm|
+|update_project|global_admin|
+|create_project|global_admin, pm|
 
 **Default Test Data for Unit Tests**
 
