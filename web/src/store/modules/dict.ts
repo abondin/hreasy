@@ -13,10 +13,12 @@ export interface SimpleDict {
 
 export interface DictLoadedState {
     projects : Array<SimpleDict>;
+    departments: Array<SimpleDict>;
 }
 
 export const dictState: DictLoadedState = {
-    projects: []
+    projects: [],
+    departments: []
 }
 
 
@@ -25,12 +27,20 @@ export const dictActions: ActionTree<DictLoadedState, RootState> = {
         return dictService.loadAllProjects().then(projects => {
             commit('projectsLoaded', projects);
         });
+    },
+    reloadDepartments({commit}): any {
+        return dictService.loadAllDepartments().then(deps => {
+            commit('departmentsLoaded', deps);
+        });
     }
 }
 
 export const dictMutations: MutationTree<DictLoadedState> = {
     projectsLoaded(state, projects: Array<SimpleDict>) {
         state.projects = projects;
+    },
+    departmentsLoaded(state, deps: Array<SimpleDict>) {
+        state.departments = deps;
     }
 }
 
@@ -39,6 +49,9 @@ export const dictGetters: GetterTree<DictLoadedState, RootState> = {
     projects(state): Array<SimpleDict> {
         return state.projects;
     },
+    departments(state): Array<SimpleDict> {
+        return state.departments;
+    }
 };
 
 const namespaced: boolean = true;

@@ -39,6 +39,28 @@
           </v-list-item-title>
         </v-list-item>
 
+        <v-divider></v-divider>
+        <v-list-group
+            no-action
+            v-if="canAdminProjects()"
+        >
+          <template v-slot:activator>
+            <v-list-item-action>
+              <v-icon>mdi-cogs</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>{{ $t('Админка') }}</v-list-item-title>
+            </v-list-item-content>
+          </template>
+
+          <v-list-item to="/admin/projects" v-if="canAdminProjects()">
+            <v-list-item-title>
+              {{ $t('Все проекты') }}
+            </v-list-item-title>
+          </v-list-item>
+
+        </v-list-group>
+
 
         <!-- WORK IN PROGRESS
         <v-list-item link to="/vacations" v-if="canViewVacations()">
@@ -51,6 +73,7 @@
         </v-list-item>
         -->
 
+        <v-divider></v-divider>
         <v-list-item link v-on:click.stop="logout">
           <v-list-item-action>
             <v-icon>mdi-logout</v-icon>
@@ -80,7 +103,7 @@
       <v-spacer/>
 
       <v-row v-if="!username">
-          <router-link to="/login" tag="button">{{ $t('Вход') }}</router-link>
+        <router-link to="/login" tag="button">{{ $t('Вход') }}</router-link>
       </v-row>
       <v-img v-else max-width="70px" max-height="50px" contain src="@/assets/logo-nav.png"></v-img>
 
@@ -153,6 +176,11 @@ export default class App extends Vue {
   private canViewVacations() {
     return permissionService.canViewAllVacations();
   }
+
+  private canAdminProjects() {
+    return permissionService.canAdminProjects();
+  }
+
 }
 </script>
 

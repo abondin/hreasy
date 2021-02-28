@@ -343,7 +343,7 @@ export interface OvertimeSummaryContainerFilter {
 
 export class OvertimeUtils {
 
-    static formatDate(date: Date): string | undefined {
+    static formatDate(date: Date|null): string | undefined {
         if (date) {
             return moment(date).format('LL');
         } else {
