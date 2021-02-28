@@ -5,6 +5,7 @@ import {SimpleDict} from "@/store/modules/dict";
 
 export interface DictService {
     loadAllProjects(): Promise<Array<SimpleDict>>;
+    loadAllDepartments(): Promise<Array<SimpleDict>>;
 }
 
 class RestDictService implements DictService {
@@ -13,6 +14,10 @@ class RestDictService implements DictService {
 
     public loadAllProjects(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/dict/projects").then(response => response.data);
+    }
+
+    public loadAllDepartments(): Promise<Array<SimpleDict>> {
+        return httpService.get("v1/dict/departments").then(response => response.data);
     }
 }
 

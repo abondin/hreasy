@@ -3,6 +3,7 @@ begin
     create TABLE project_history (
 	history_id int PRIMARY KEY,
 	project_id int NOT NULL,
+	department_id int NULL,
 	name nvarchar(255) NULL,
     start_date datetime NULL,
     end_date datetime NULL,

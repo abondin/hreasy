@@ -40,22 +40,23 @@ public class ProjectAdminService {
     }
 
     public Mono<Integer> update(AuthContext auth, int projectId, ProjectDto.CreateOrUpdateProjectDto projectToUpdate) {
-        log.info("Updating project by ? : ?", auth.getUsername(), projectToUpdate);
+        log.info("Updating project by {} : {}", auth.getUsername(), projectToUpdate);
         var now = dateTimeService.now();
         var entry = mapper.fromDto(projectToUpdate);
-        var history = mapper.historyEntry(auth.getEmployeeInfo().getEmployeeId(), now, entry);
         return repo.findById(projectId)
                 .switchIfEmpty(Mono.error(new BusinessError("entity.not.found", Integer.toString(projectId))))
                 .flatMap(existing -> {
+                    entry.setId(projectId);
                     entry.setCreatedBy(existing.getCreatedBy());
                     entry.setCreatedAt(existing.getCreatedAt());
                     // TODO Person of contact is now is not editable to UI
                     // Just copy it from current value from database
                     entry.setPersonOfContact(existing.getPersonOfContact());
-                    return securityValidator.validateUpdateProject(auth, existing);
+                    var history = mapper.historyEntry(auth.getEmployeeInfo().getEmployeeId(), now, entry);
+                    return securityValidator.validateUpdateProject(auth, existing)
+                            .flatMap(s -> historyRepo.save(history).flatMap((h) -> repo.save(entry)));
                 })
-                .flatMap(s -> historyRepo.save(history).flatMap((h) -> repo.save(entry))
-                        .map(DictProjectEntry::getId));
+                .map(DictProjectEntry::getId);
     }
 
     public Flux<ProjectDto> findAll(AuthContext auth) {

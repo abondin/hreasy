@@ -4,8 +4,8 @@ import {SimpleDict} from "@/store/modules/dict";
 
 export interface CreateOrUpdateProject {
     name: string;
-    startDate?: Date,
-    endDate?: Date,
+    startDate?: string,
+    endDate?: string,
     customer?: string,
     departmentId: number
 }
@@ -13,8 +13,8 @@ export interface CreateOrUpdateProject {
 export interface ProjectFullInfo {
     id: number,
     name: string;
-    startDate?: Date,
-    endDate?: Date,
+    startDate?: string,
+    endDate?: string,
     customer?: string,
     department: SimpleDict
     createdBy?: number,

@@ -27,4 +27,12 @@ public class DictController {
         return AuthHandler.currentAuth().flatMapMany(
                 auth -> dictService.findProjects(auth));
     }
+
+    @Operation(summary = "All departments")
+    @GetMapping("/departments")
+    @ResponseBody
+    public Flux<SimpleDictDto> departments() {
+        return AuthHandler.currentAuth().flatMapMany(
+                auth -> dictService.findDepartments(auth));
+    }
 }

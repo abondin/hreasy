@@ -25,6 +25,7 @@ public interface ProjectDtoMapper {
         return result;
     }
 
+    @Mapping(source = "id", target = "projectId")
     DictProjectEntry.ProjectHistoryEntry partionCopyHistory(DictProjectEntry projectEntry);
 
 

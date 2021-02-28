@@ -13,6 +13,19 @@
             :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
         <v-checkbox :label="$t('Показать закрытые проекты')" v-model="filter.showClosed">
         </v-checkbox>
+        <v-divider vertical class="mr-5 ml-5"></v-divider>
+        <!-- Add new project -->
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="col-auto">
+              <v-btn text color="primary" :disabled="loading" @click="openProjectDialog(undefined)" icon>
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{ $t('Создать новый проект') }}</span>
+        </v-tooltip>
+
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -24,6 +37,10 @@
             sort-by="name"
             sort
             disable-pagination>
+          <template v-slot:item.name="{ item }">
+            <v-btn text @click="openProjectDialog(item)">{{ item.name }}
+            </v-btn>
+          </template>
           <template
               v-slot:item.startDate="{ item }">
             {{ formatDate(item.startDate) }}
@@ -33,6 +50,14 @@
             {{ formatDate(item.endDate) }}
           </template>
         </v-data-table>
+
+        <v-dialog v-model="projectDialog">
+          <admin-project-form
+              v-bind:input="selectedProject"
+              :allDepartments="allDepartments"
+              @close="projectDialog=false"></admin-project-form>
+        </v-dialog>
+
       </v-card-text>
     </v-card>
   </v-container>
@@ -45,14 +70,22 @@ import {DataTableHeader} from "vuetify";
 import adminProjectService, {ProjectFullInfo} from "@/components/admin/admin.project.service";
 import Component from "vue-class-component";
 import {OvertimeUtils} from "@/components/overtimes/overtime.service";
+import AdminProjectForm from "@/components/admin/AdminProjectForm.vue";
+import logger from "@/logger";
+import {SimpleDict} from "@/store/modules/dict";
+import {Getter} from "vuex-class";
 
+const namespace_dict: string = 'dict';
 
 class Filter {
   public showClosed = false;
   public search = '';
 }
 
-@Component
+@Component({
+      components: {AdminProjectForm}
+    }
+)
 export default class AdminProjects extends Vue {
   headers: DataTableHeader[] = [];
   loading: boolean = false;
@@ -61,13 +94,20 @@ export default class AdminProjects extends Vue {
 
   private filter = new Filter();
 
+  private projectDialog = false;
+  private selectedProject: ProjectFullInfo | null = null;
+
+  @Getter("departments", {namespace: namespace_dict})
+  private allDepartments!: Array<SimpleDict>;
+
   /**
    * Lifecycle hook
    */
   created() {
+    logger.log('Admin Project component created');
     this.reloadHeaders();
     // Reload projects dict to Vuex
-    return this.fetchData();
+    return this.$store.dispatch('dict/reloadDepartments').then(() => this.fetchData());
   }
 
   private fetchData() {
@@ -86,7 +126,7 @@ export default class AdminProjects extends Vue {
     return this.projects.filter((p) => {
       var filtered = true;
       if (!this.filter.showClosed) {
-        filtered = filtered && (!p.endDate || p.endDate <= new Date());
+        filtered = filtered && (!p.endDate || new Date(p.endDate) <= new Date());
       }
       if (this.filter.search) {
         const search = this.filter.search.trim().toLowerCase();
@@ -109,6 +149,11 @@ export default class AdminProjects extends Vue {
     this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
     this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});
     this.headers.push({text: this.$tc('Отдел'), value: 'department.name'});
+  }
+
+  public openProjectDialog(projectToUpdate: ProjectFullInfo | null) {
+    this.selectedProject = projectToUpdate;
+    this.projectDialog = true;
   }
 
   private formatDate(date: Date): string | undefined {
