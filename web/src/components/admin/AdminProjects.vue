@@ -55,7 +55,7 @@
           <admin-project-form
               v-bind:input="selectedProject"
               :allDepartments="allDepartments"
-              @close="projectDialog=false"></admin-project-form>
+              @close="projectDialog=false;fetchData()"></admin-project-form>
         </v-dialog>
 
       </v-card-text>
@@ -126,7 +126,7 @@ export default class AdminProjects extends Vue {
     return this.projects.filter((p) => {
       var filtered = true;
       if (!this.filter.showClosed) {
-        filtered = filtered && (!p.endDate || new Date(p.endDate) <= new Date());
+        filtered = filtered && (p.active);
       }
       if (this.filter.search) {
         const search = this.filter.search.trim().toLowerCase();

@@ -36,6 +36,8 @@ public class ProjectDto {
 
     private OffsetDateTime createdAt;
 
+    private boolean active;
+
     @Data
     @ToString
     public static class CreateOrUpdateProjectDto {

@@ -19,6 +19,7 @@ export interface ProjectFullInfo {
     department: SimpleDict
     createdBy?: number,
     createdAt?: Date,
+    active: boolean
 }
 
 

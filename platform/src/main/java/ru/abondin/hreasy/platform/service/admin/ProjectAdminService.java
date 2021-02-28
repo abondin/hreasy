@@ -60,7 +60,12 @@ public class ProjectAdminService {
     }
 
     public Flux<ProjectDto> findAll(AuthContext auth) {
+        var now = dateTimeService.now();
         return securityValidator.validateFindAllProject(auth).flatMapMany(s ->
-                repo.findFullInfo().map(mapper::fromEntry));
+                repo.findFullInfo().map(e -> {
+                    var dto = mapper.fromEntry(e);
+                    dto.setActive(e.getEndDate() == null || e.getEndDate().isAfter(now.toLocalDate()));
+                    return dto;
+                }));
     }
 }

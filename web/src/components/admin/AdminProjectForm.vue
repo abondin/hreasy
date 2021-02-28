@@ -5,8 +5,6 @@
       <v-card-title v-if="projectForm.isNew">{{ $t('Создание проекта') }}</v-card-title>
       <v-card-title v-else>{{ $t('Изменение проекта') }}</v-card-title>
       <v-card-text>
-        {{projectForm}}
-
         <!-- department -->
         <v-select
             v-model="projectForm.departmentId"
@@ -20,6 +18,7 @@
         <v-text-field
             v-model="projectForm.name"
             :counter="255"
+            :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более 255 символов'))]"
             :label="$t('Наименование')"
             required>
           >
@@ -29,6 +28,7 @@
         <v-text-field
             v-model="projectForm.customer"
             :counter="255"
+            :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более 255 символов'))]"
             :label="$t('Заказчик')"
             required>
           >
