@@ -29,7 +29,7 @@
                     :labels='{submit: $tc("Применить"), cancel: $tc("Отмена")}'
                     :upload-url="getAvatarUploadUrl()"
                     :withCredentials=true
-                    :output-options="{width: 256, height: 256}"
+                    :output-options="{width: 1024, height: 1024}"
             />
         </v-avatar>
         <div class="align-self-center">

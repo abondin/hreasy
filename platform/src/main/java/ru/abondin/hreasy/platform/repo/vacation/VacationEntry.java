@@ -23,7 +23,8 @@ public class VacationEntry {
     /**
      * 0 - planned
      * 1 - taken
-     * 2 - canceled
+     * 2 -
+     * 3 - canceled
      */
     @Column("stat")
     private int status;

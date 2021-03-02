@@ -45,7 +45,6 @@
             :label="$t('Статус')"
             multiple
         ></v-select>
-        <v-divider vertical class="mr-5 ml-5"></v-divider>
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -53,9 +52,9 @@
             :loading-text="$t('Загрузка_данных')"
             :headers="headers"
             :items="filteredItems()"
+            multi-sort
             hide-default-footer
-            sort-by="name"
-            sort
+            :sort-by="['startDate', 'endDate']"
             disable-pagination>
           <template
               v-slot:item.employeeCurrentProject="{ item }">
@@ -136,7 +135,7 @@ export default class VacationsListComponent extends Vue {
     this.allMonths = [...Array(12).keys()].map(m => {
       return {
         value: m,
-        text: moment(m+1, 'MM').format("MMMM")
+        text: moment(m + 1, 'MM').format("MMMM")
       }
     });
     this.reloadHeaders();
@@ -170,9 +169,9 @@ export default class VacationsListComponent extends Vue {
         const project = item.employeeCurrentProject;
         filtered = filtered && project && this.filter.selectedProjects.indexOf(project.id) >= 0;
       }
-      if (this.filter.selectedMonths.length > 0){
-        var dateInclude = !item.startDate || this.filter.selectedMonths.indexOf(new Date(item.startDate).getMonth())>=0;
-        dateInclude = dateInclude || (!item.endDate || this.filter.selectedMonths.indexOf(new Date(item.endDate).getMonth())>=0)
+      if (this.filter.selectedMonths.length > 0) {
+        var dateInclude = !item.startDate || this.filter.selectedMonths.indexOf(new Date(item.startDate).getMonth()) >= 0;
+        dateInclude = dateInclude || (!item.endDate || this.filter.selectedMonths.indexOf(new Date(item.endDate).getMonth()) >= 0)
         filtered = filtered && dateInclude;
       }
       return filtered;
