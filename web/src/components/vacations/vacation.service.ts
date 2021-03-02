@@ -6,17 +6,17 @@ import {SimpleDict} from "@/store/modules/dict";
 export interface Vacation {
     id: number,
     employee: number,
-    employeeDisplayName: String,
+    employeeDisplayName: string,
     employeeCurrentProject: SimpleDict,
     year: number,
-    startDate?: String,
-    endDate?: String,
-    notes: String,
+    startDate?: string,
+    endDate?: string,
+    notes: string,
     canceled: boolean,
-    plannedStartDate?: String,
-    plannedEndDate?: String,
+    plannedStartDate?: string,
+    plannedEndDate?: string,
     status: 'PLANNED'|'TAKEN'|'CANCELED',
-    documents: String,
+    documents: string,
     daysNumber: number
 }
 
