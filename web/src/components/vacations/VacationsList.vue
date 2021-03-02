@@ -1,177 +1,203 @@
 <!-- All vacations table-->
 <template>
-    <v-container fluid>
-        <!-- Work in progress -->
-        <v-alert
-                color="red"
-                dark
-                icon="mdi-grill"
-                border="right">
-            Work in progress
-        </v-alert>
-        <v-row>
-            <v-col cols="12" lg="8">
-                <v-card>
-                    <v-card-title>
-                        <v-btn
-                                icon
-                                class="ma-2"
-                                @click="prev"
-                        >
-                            <v-icon>mdi-chevron-left</v-icon>
-                        </v-btn>
-                        <span v-if="$refs.calendar">{{ $refs.calendar.title }}</span>
-                        <v-btn outlined class="ma-2" @click="setToday">
-                            {{$t('Сегодня')}}
-                        </v-btn>
-                        <v-spacer></v-spacer>
-                        <v-btn icon
-                               class="ma-2"
-                               @click="next">
-                            <v-icon>mdi-chevron-right</v-icon>
-                        </v-btn>
+  <v-container>
+    <v-card>
+      <v-card-title>
+        <!-- Refresh button -->
+        <v-btn text icon @click="fetchData()">
+          <v-icon>refresh</v-icon>
+        </v-btn>
+        <v-divider vertical></v-divider>
+        <v-text-field
+            v-model="filter.search"
+            :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
+        <v-select
+            clearable
+            class="mr-5"
+            v-model="filter.selectedYears"
+            :items="allYears"
+            :label="$t('Год')"
+            multiple
+        ></v-select>
+        <v-select
+            clearable
+            class="mr-5"
+            v-model="filter.selectedMonths"
+            :items="allMonths"
+            :label="$t('Месяц')"
+            multiple
+        ></v-select>
+        <v-select
+            clearable
+            class="mr-5"
+            v-model="filter.selectedProjects"
+            :items="allProjects.filter(p=>p.active)"
+            item-value="id"
+            item-text="name"
+            :label="$t('Текущий проект')"
+            multiple
+        ></v-select>
+        <v-select
+            clearable
+            class="mr-5"
+            v-model="filter.selectedStatuses"
+            :items="allStatuses"
+            :label="$t('Статус')"
+            multiple
+        ></v-select>
+        <v-divider vertical class="mr-5 ml-5"></v-divider>
+      </v-card-title>
+      <v-card-text>
+        <v-data-table
+            :loading="loading"
+            :loading-text="$t('Загрузка_данных')"
+            :headers="headers"
+            :items="filteredItems()"
+            hide-default-footer
+            sort-by="name"
+            sort
+            disable-pagination>
+          <template
+              v-slot:item.employeeCurrentProject="{ item }">
+            {{ item.employeeCurrentProject ? item.employeeCurrentProject.name : '' }}
+          </template>
+          <template
+              v-slot:item.startDate="{ item }">
+            {{ formatDate(item.startDate) }}
+          </template>
+          <template
+              v-slot:item.endDate="{ item }">
+            {{ formatDate(item.endDate) }}
+          </template>
+          <template
+              v-slot:item.plannedStartDate="{ item }">
+            {{ formatDate(item.plannedStartDate) }}
+          </template>
+          <template
+              v-slot:item.plannedEndDate="{ item }">
+            {{ formatDate(item.plannedEndDate) }}
+          </template>
+          <template
+              v-slot:item.status="{ item }">
+            {{ $t(`VACATION_STATUS_ENUM.${item.status}`) }}
+          </template>
+        </v-data-table>
 
-                    </v-card-title>
-
-                    <v-calendar
-                            v-model="focus"
-                            :weekdays=weekdays
-                            event-name="employeeDisplayName"
-                            event-end="endDate"
-                            event-start="startDate"
-                            :event-color="getVacationColor"
-                            ref="calendar"
-                            :event-more=false
-                            :events="filteredVacations()"
-                            color="primary"
-                            type="month"
-                    ></v-calendar>
-                </v-card>
-            </v-col>
-            <v-col cols="12" lg="4">
-                <v-card>
-                    <v-card-title>{{$t('Проекты')}}</v-card-title>
-                <v-list shaped dense>
-                    <v-list-item-group
-                            v-model="selectedProjects"
-                            multiple
-                    >
-                        <template v-for="project in allProjects">
-                            <v-list-item :key="project.id" :value="project.id"
-                                         :style="'background-color:'+getColor(project.id)"
-                                         class="ma-1">
-                                <template v-slot:default="{ active, toggle }">
-                                    <v-list-item-content>
-                                        <v-list-item-title v-text="project.name"></v-list-item-title>
-                                    </v-list-item-content>
-                                    <v-list-item-action>
-                                        <v-checkbox
-                                                color="white"
-                                                :input-value="active"
-                                                :true-value="project.id"
-                                                @click="toggle"
-                                        ></v-checkbox>
-                                    </v-list-item-action>
-                                </template>
-                            </v-list-item>
-                        </template>
-                    </v-list-item-group>
-                </v-list>
-                </v-card>
-            </v-col>
-        </v-row>
-    </v-container>
+      </v-card-text>
+    </v-card>
+  </v-container>
 </template>
 
 
 <script lang="ts">
-    import Vue from 'vue'
-    import Component from 'vue-class-component';
-    import vacationService, {Vacation} from "@/components/vacations/vacation.service";
-    import {Getter} from "vuex-class";
-    import {SimpleDict} from "@/store/modules/dict";
+import Vue from 'vue'
+import Component from 'vue-class-component';
+import vacationService, {Vacation} from "@/components/vacations/vacation.service";
+import {Getter} from "vuex-class";
+import {SimpleDict} from "@/store/modules/dict";
+import {DataTableHeader} from "vuetify";
+import {OvertimeUtils} from "@/components/overtimes/overtime.service";
+import moment from 'moment';
 
-    const namespace: string = 'dict';
+const namespace: string = 'dict';
 
-    @Component
-    export default class VacationsListComponent extends Vue {
-        loading: boolean = false;
-        vacations: Vacation[] = [];
-        focus = '';
-        private weekdays = [1, 2, 3, 4, 5, 6, 0];
-        projectColors: Record<number, string> = {};
-        allColors = ['#AA00FF', '#6200EA', '#0091EA', '#00B8D4', '#00BFA5', '#AEEA00'];
+class Filter {
+  public selectedStatuses: Array<string> = ['PLANNED', 'TAKEN'];
+  public search = '';
+  public selectedProjects: Array<number> = [];
+  public selectedYears: Array<number> = [new Date().getFullYear()];
+  public selectedMonths: Array<number> = [new Date().getMonth()];
+}
 
-        @Getter("projects", {namespace})
-        private allProjects!: Array<SimpleDict>;
+@Component
+export default class VacationsListComponent extends Vue {
+  headers: DataTableHeader[] = [];
+  loading: boolean = false;
+  vacations: Vacation[] = [];
 
-        selectedProjects: Array<number> = [];
+  @Getter("projects", {namespace})
+  private allProjects!: Array<SimpleDict>;
+
+  private filter: Filter = new Filter();
+
+  public allStatuses: Array<any> = [];
+  public allYears: Array<number> = [];
+  public allMonths: Array<any> = [];
+
+  /**
+   * Lifecycle hook
+   */
+  created() {
+    this.allStatuses = ['PLANNED', 'TAKEN', 'CANCELED'].map(status => {
+      return {value: status, text: this.$tc(`VACATION_STATUS_ENUM.${status}`)}
+    });
+    const currentYear = new Date().getFullYear();
+    this.allYears = [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];
+    this.allMonths = [...Array(12).keys()].map(m => {
+      return {
+        value: m,
+        text: moment(m+1, 'MM').format("MMMM")
+      }
+    });
+    this.reloadHeaders();
+    this.$store.dispatch('dict/reloadProjects').then(() => this.fetchData());
+  }
+
+  private reloadHeaders() {
+    this.headers.length = 0;
+    this.headers.push({text: this.$tc('ФИО'), value: 'employeeDisplayName'});
+    this.headers.push({text: this.$tc('Текущий проект'), value: 'employeeCurrentProject'});
+    this.headers.push({text: this.$tc('Год'), value: 'year'});
+    this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
+    this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});
+    this.headers.push({text: this.$tc('Статус'), value: 'status'});
+  }
 
 
-        /**
-         * Lifecycle hook
-         */
-        created() {
-            this.fetchData()
-        }
+  private filteredItems() {
+    return this.vacations.filter(item => {
+      var filtered = true;
+      if (this.filter.search) {
+        filtered = filtered && item.employeeDisplayName.toLowerCase().indexOf(this.filter.search) >= 0;
+      }
+      if (this.filter.selectedStatuses.length > 0) {
+        filtered = filtered && this.filter.selectedStatuses.indexOf(item.status) >= 0;
+      }
+      if (this.filter.selectedYears.length > 0) {
+        filtered = filtered && this.filter.selectedYears.indexOf(item.year) >= 0;
+      }
+      if (this.filter.selectedProjects.length > 0) {
+        const project = item.employeeCurrentProject;
+        filtered = filtered && project && this.filter.selectedProjects.indexOf(project.id) >= 0;
+      }
+      if (this.filter.selectedMonths.length > 0){
+        var dateInclude = !item.startDate || this.filter.selectedMonths.indexOf(new Date(item.startDate).getMonth())>=0;
+        dateInclude = dateInclude || (!item.endDate || this.filter.selectedMonths.indexOf(new Date(item.endDate).getMonth())>=0)
+        filtered = filtered && dateInclude;
+      }
+      return filtered;
+    });
+  }
 
-        /**
-         * Lifecycle hook
-         */
-        mounted() {
-            (this.$refs.calendar as any).checkChange()
-        }
 
-        private setToday() {
-            this.focus = '';
-        }
+  private fetchData() {
+    this.loading = true;
+    return vacationService.findAll()
+        .then(data => {
+              this.vacations = (data as Vacation[]).filter(m => m.startDate && m.endDate && m.employeeDisplayName);
+              return;
+            }
+        ).finally(() => {
+          this.loading = false
+        });
+  }
 
-        private next() {
-            return (this.$refs.calendar as any).next();
-        }
+  private formatDate(date: Date): string | undefined {
+    return OvertimeUtils.formatDate(date);
+  }
 
-        private prev() {
-            return (this.$refs.calendar as any).prev();
-        }
 
-        private filteredVacations() {
-            return this.vacations.filter(v => !v.employeeCurrentProject ||
-                this.selectedProjects.indexOf(v.employeeCurrentProject) >= 0);
-        }
-
-        /**
-         * Vacation color depends on employee current project
-         * @param vacation
-         */
-        private getVacationColor(vacation: Vacation) {
-            return this.getColor(vacation.employeeCurrentProject);
-        }
-
-        private getColor(projectId: number) {
-            const color = projectId ? this.projectColors[projectId] : undefined;
-            return color;
-        }
-
-        private fetchData() {
-            this.loading = true;
-            return this.$store.dispatch('dict/reloadProjects').then(() => {
-                this.selectedProjects = [...this.allProjects].map(p => p.id);
-                this.allProjects.forEach((project, index) => {
-                    const l = Math.min(this.allColors.length, this.allProjects.length);
-                    this.projectColors[project.id] = this.allColors[index % l];
-                });
-            }).then(() => {
-                return vacationService.findAll()
-                    .then(data => {
-                            this.vacations = (data as Vacation[]).filter(m => m.startDate && m.endDate && m.employeeDisplayName);
-                            return;
-                        }
-                    )
-            }).finally(() => {
-                this.loading = false
-            });
-        }
-    }
+}
 </script>
 
 <style scoped>
