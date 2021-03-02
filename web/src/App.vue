@@ -39,6 +39,15 @@
           </v-list-item-title>
         </v-list-item>
 
+        <v-list-item link to="/vacations" v-if="canViewVacations()">
+          <v-list-item-action>
+            <v-icon>mdi-calendar-text</v-icon>
+          </v-list-item-action>
+          <v-list-item-title>
+            {{ $tc('Отпуска')}}
+          </v-list-item-title>
+        </v-list-item>
+
         <v-divider></v-divider>
         <v-list-group
             no-action
@@ -62,16 +71,7 @@
         </v-list-group>
 
 
-        <!-- WORK IN PROGRESS
-        <v-list-item link to="/vacations" v-if="canViewVacations()">
-            <v-list-item-action>
-                <v-icon>mdi-calendar-text</v-icon>
-            </v-list-item-action>
-            <v-list-item-title>
-                {{ $tc('Отпуска')}}
-            </v-list-item-title>
-        </v-list-item>
-        -->
+
 
         <v-divider></v-divider>
         <v-list-item link v-on:click.stop="logout">

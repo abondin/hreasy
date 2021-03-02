@@ -1,16 +1,23 @@
 import httpService from "../http.service";
 import {AxiosInstance} from "axios";
+import {SimpleDict} from "@/store/modules/dict";
 
 
 export interface Vacation {
     id: number,
     employee: number,
     employeeDisplayName: String,
-    employeeCurrentProject: number,
+    employeeCurrentProject: SimpleDict,
     year: number,
     startDate?: String,
     endDate?: String,
-    notes: String
+    notes: String,
+    canceled: boolean,
+    plannedStartDate?: String,
+    plannedEndDate?: String,
+    status: 'PLANNED'|'TAKEN'|'CANCELED',
+    documents: String,
+    daysNumber: number
 }
 
 export interface VacationService {

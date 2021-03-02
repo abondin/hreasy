@@ -5,6 +5,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.vacation.VacationView;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.dto.VacationDto;
 
 import java.util.stream.Collectors;
@@ -17,6 +18,8 @@ import java.util.stream.Stream;
 public interface VacationDtoMapper {
 
     @Mapping(target = "employeeDisplayName", source = ".", qualifiedByName = "toDisplayName")
+    @Mapping(target = "status", source = "status", qualifiedByName = "vacationStatusFromId")
+    @Mapping(target = "employeeCurrentProject", qualifiedByName = "employeeCurrentProject", source = ".")
     VacationDto vacationToDto(VacationView entry);
 
     @Named("toDisplayName")
@@ -29,4 +32,17 @@ public interface VacationDtoMapper {
                 .collect(Collectors.joining(" "));
     }
 
+    @Named("vacationStatusFromId")
+    default VacationDto.VacationStatus vacationStatusFromId(int statusId) {
+        return VacationDto.VacationStatus.fromId(statusId);
+    }
+
+    @Named("employeeCurrentProject")
+    default SimpleDictDto employeeCurrentProject(VacationView entry) {
+        return simpleDto(entry.getEmployeeCurrentProject(), entry.getEmployeeCurrentProjectName());
+    }
+
+    default SimpleDictDto simpleDto(Integer id, String name) {
+        return id == null ? null : new SimpleDictDto(id, name);
+    }
 }
