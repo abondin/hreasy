@@ -23,7 +23,7 @@ public class VacationEntry {
     /**
      * 0 - planned
      * 1 - taken
-     * 2 -
+     * 2 - compensation
      * 3 - canceled
      */
     @Column("stat")

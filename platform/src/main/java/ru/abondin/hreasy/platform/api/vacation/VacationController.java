@@ -11,7 +11,7 @@ import ru.abondin.hreasy.platform.service.VacationService;
 import ru.abondin.hreasy.platform.service.dto.VacationDto;
 
 @RestController()
-@RequestMapping("/api/v1/vacation")
+@RequestMapping("/api/v1/vacations")
 @RequiredArgsConstructor
 @Slf4j
 public class VacationController {

@@ -35,7 +35,8 @@ public class VacationDto {
     public enum VacationStatus {
         PLANNED(0),
         TAKEN(1),
-        CANCELED(2);
+        COMPENSATION(2),
+        CANCELED(3);
 
         private final int statusId;
 

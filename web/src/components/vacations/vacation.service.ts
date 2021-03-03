@@ -9,19 +9,40 @@ export interface Vacation {
     employeeDisplayName: string,
     employeeCurrentProject: SimpleDict,
     year: number,
-    startDate?: string,
-    endDate?: string,
+    startDate: string,
+    endDate: string,
     notes: string,
     canceled: boolean,
     plannedStartDate?: string,
     plannedEndDate?: string,
-    status: 'PLANNED'|'TAKEN'|'CANCELED',
+    status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED',
+    documents: string,
+    daysNumber: number
+}
+
+export interface CreateOrUpdateVacation {
+    startDate: string,
+    endDate: string,
+    plannedStartDate: string,
+    plannedEndDate: string,
+    status: string,
+    notes: string,
     documents: string,
     daysNumber: number
 }
 
 export interface VacationService {
     findAll(): Promise<Vacation[]>;
+
+    /**
+     * Create new vacation entry
+     */
+    create(employeeId: number, body: CreateOrUpdateVacation): Promise<number>;
+
+    /**
+     * Update vacation entry
+     */
+    update(employeeId: number, vacationId: number, body: CreateOrUpdateVacation): Promise<number>;
 }
 
 class RestVacationService implements VacationService {
@@ -29,7 +50,19 @@ class RestVacationService implements VacationService {
     }
 
     public findAll(): Promise<Vacation[]> {
-        return httpService.get("v1/vacation").then(response => {
+        return httpService.get("v1/vacations").then(response => {
+            return response.data;
+        });
+    }
+
+    public create(employeeId: number, body: CreateOrUpdateVacation): Promise<number> {
+        return httpService.post(`v1/vacations/${employeeId}`, body).then(response => {
+            return response.data;
+        });
+    }
+
+    public update(employeeId: number, vacationId: number, body: CreateOrUpdateVacation): Promise<number> {
+        return httpService.put(`v1/vacations/${employeeId}/${vacationId}`, body).then(response => {
             return response.data;
         });
     }
