@@ -6,6 +6,16 @@
       <v-card-title v-else>{{ $t('Изменение отпуска') }}</v-card-title>
       <v-card-text>
 
+        <!-- employee -->
+        <v-autocomplete
+            :disabled="!vacationForm.isNew"
+            v-model="vacationForm.employeeId"
+            :items="allEmployees"
+            item-value="id"
+            item-text="name"
+            :label="$t('Сотрудник')+`*`"
+            :rules="[v=>(v || $t('Обязательное поле'))]"
+          ></v-autocomplete>
 
         <!-- start date -->
         <my-date-form-component
@@ -21,26 +31,36 @@
             :rules="[v=>(v && Date.parse(v) > 0 || $t('Дата в формате ГГГГ-ММ-ДД'))]"
         ></my-date-form-component>
 
-        <!-- planned start date -->
-        <my-date-form-component
-            v-model="vacationForm.plannedStartDate"
-            :label="$t('Планируемое начало')"
-            :rules="[v=>(!v || Date.parse(v) > 0 || $t('Дата в формате ГГГГ-ММ-ДД'))]"
-        ></my-date-form-component>
-
-        <!-- planned end date -->
-        <my-date-form-component
-            v-model="vacationForm.plannedEndDate"
-            :label="$t('Планируемое окончание')"
-            :rules="[v=>(!v || Date.parse(v) > 0 || $t('Дата в формате ГГГГ-ММ-ДД'))]"
-        ></my-date-form-component>
-
         <!-- status -->
         <v-select
             v-model="vacationForm.status"
             :items="allStatuses"
             :label="$t('Статус')"
         ></v-select>
+
+        <v-slider
+            :label="$t('Количество дней')"
+            min="0"
+            max="31"
+            step="1"
+            thumbLabel="always"
+            v-model="vacationForm.daysNumber">
+        </v-slider>
+
+        <v-text-field
+          v-model="vacationForm.documents"
+          :label="$t('Документ')"
+          :counter="255"
+          :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+          ></v-text-field>
+
+        <v-textarea
+            v-model="vacationForm.notes"
+            row-height="5"
+            :counter="255"
+            :rules="[v=>(!v ||  v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
+            :label="$t('Примечание')"
+        ></v-textarea>
 
         <!-- Error block -->
         <v-alert v-if="error" type="error">
@@ -65,13 +85,13 @@ import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 import vacationService, {CreateOrUpdateVacation, Vacation} from "@/components/vacations/vacation.service";
+import {SimpleDict} from "@/store/modules/dict";
 
 
 class VacationForm {
   public isNew = true;
   public id?: number;
-  public employeeId: number = -1;
-  public employeeDisplayName = '';
+  public employeeId?: number;
   public startDate = '';
   public endDate = '';
   public plannedStartDate = '';
@@ -100,6 +120,9 @@ export default class VacationEditForm extends Vue {
   @Prop({required: true})
   public allStatuses!: Array<any>;
 
+  @Prop({required: true})
+  public allEmployees!: Array<SimpleDict>;
+
 
   @Watch("input")
   private watch() {
@@ -113,7 +136,7 @@ export default class VacationEditForm extends Vue {
   private reset() {
     this.vacationForm.isNew = true;
     this.vacationForm.id = undefined;
-    this.vacationForm.employeeDisplayName = '';
+    this.vacationForm.employeeId = undefined;
     this.vacationForm.startDate = '';
     this.vacationForm.endDate = '';
     this.vacationForm.plannedStartDate = '';
@@ -121,12 +144,12 @@ export default class VacationEditForm extends Vue {
     this.vacationForm.status = 'PLANNED';
     this.vacationForm.notes = '';
     this.vacationForm.documents = '';
-    this.vacationForm.daysNumber=undefined;
+    this.vacationForm.daysNumber=14;
 
     if (this.input) {
       this.vacationForm.isNew = false;
       this.vacationForm.id = this.input.id;
-      this.vacationForm.employeeDisplayName = this.input.employeeDisplayName;
+      this.vacationForm.employeeId = this.input.employee;
       this.vacationForm.startDate = this.input.startDate;
       this.vacationForm.endDate = this.input.endDate;
       this.vacationForm.plannedStartDate = this.input.plannedStartDate ? this.input.plannedStartDate: '';

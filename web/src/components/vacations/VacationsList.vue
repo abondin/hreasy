@@ -72,6 +72,10 @@
             hide-default-footer
             :sort-by="['startDate', 'endDate']"
             disable-pagination>
+          <template v-slot:item.employeeDisplayName="{ item }">
+            <v-btn text @click="openVacationDialog(item)">{{ item.employeeDisplayName }}
+            </v-btn>
+          </template>
           <template
               v-slot:item.employeeCurrentProject="{ item }">
             {{ item.employeeCurrentProject ? item.employeeCurrentProject.name : '' }}
@@ -100,6 +104,7 @@
 
         <v-dialog v-model="vacationDialog">
           <vacation-edit-form
+              v-bind:all-employees="allEmployees"
               v-bind:all-statuses="allStatuses"
               v-bind:input="selectedVacation"
               @close="vacationDialog=false;fetchData()"></vacation-edit-form>
@@ -121,6 +126,7 @@ import {DataTableHeader} from "vuetify";
 import {OvertimeUtils} from "@/components/overtimes/overtime.service";
 import moment from 'moment';
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
+import employeeService from "@/components/empl/employee.service";
 
 const namespace: string = 'dict';
 
@@ -148,6 +154,7 @@ export default class VacationsListComponent extends Vue {
   public allStatuses: Array<any> = [];
   public allYears: Array<number> = [];
   public allMonths: Array<any> = [];
+  public allEmployees: Array<SimpleDict> = [];
 
   private vacationDialog = false;
   private selectedVacation: Vacation | null = null;
@@ -156,7 +163,7 @@ export default class VacationsListComponent extends Vue {
    * Lifecycle hook
    */
   created() {
-    this.allStatuses = ['PLANNED', 'TAKEN','COMPENSATION', 'CANCELED'].map(status => {
+    this.allStatuses = ['PLANNED', 'TAKEN', 'COMPENSATION', 'CANCELED'].map(status => {
       return {value: status, text: this.$tc(`VACATION_STATUS_ENUM.${status}`)}
     });
     const currentYear = new Date().getFullYear();
@@ -168,7 +175,14 @@ export default class VacationsListComponent extends Vue {
       }
     });
     this.reloadHeaders();
-    this.$store.dispatch('dict/reloadProjects').then(() => this.fetchData());
+    this.$store.dispatch('dict/reloadProjects')
+        .then(() => employeeService.findAll().then(data => {
+          this.allEmployees = data.map(e => {
+            return {id: e.id, name: e.displayName} as SimpleDict
+          });
+          return this.allEmployees;
+        }))
+        .then(() => this.fetchData());
   }
 
   private reloadHeaders() {
@@ -179,6 +193,8 @@ export default class VacationsListComponent extends Vue {
     this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
     this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});
     this.headers.push({text: this.$tc('Статус'), value: 'status'});
+    this.headers.push({text: this.$tc('Документ'), value: 'document'});
+    this.headers.push({text: this.$tc('Примечание'), value: 'notes'});
   }
 
 
