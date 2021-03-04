@@ -3,49 +3,65 @@
   <v-container>
     <v-card>
       <v-card-title>
-        <!-- Refresh button -->
-        <v-btn text icon @click="fetchData()">
-          <v-icon>refresh</v-icon>
-        </v-btn>
-        <v-divider vertical></v-divider>
-        <v-text-field
-            v-model="filter.search"
-            :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
-        <v-select
-            clearable
-            class="mr-5"
-            v-model="filter.selectedYears"
-            :items="allYears"
-            :label="$t('Год')"
-            multiple
-        ></v-select>
-        <v-select
-            clearable
-            class="mr-5"
-            v-model="filter.selectedMonths"
-            :items="allMonths"
-            :label="$t('Месяц')"
-            multiple
-        ></v-select>
-        <v-select
-            clearable
-            class="mr-5"
-            v-model="filter.selectedProjects"
-            :items="allProjects.filter(p=>p.active)"
-            item-value="id"
-            item-text="name"
-            :label="$t('Текущий проект')"
-            multiple
-        ></v-select>
-        <v-select
-            clearable
-            class="mr-5"
-            v-model="filter.selectedStatuses"
-            :items="allStatuses"
-            :label="$t('Статус')"
-            multiple
-        ></v-select>
+        <div class="d-flex align-center justify-space-between">
+          <!-- Refresh button -->
+          <v-btn text icon @click="fetchData()">
+            <v-icon>refresh</v-icon>
+          </v-btn>
+          <v-divider vertical></v-divider>
+          <v-text-field
+              v-model="filter.search"
+              :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
+          <v-select
+              clearable
+              class="mr-5"
+              v-model="filter.selectedYears"
+              :items="allYears"
+              :label="$t('Год')"
+              multiple
+          ></v-select>
+          <v-select
+              clearable
+              class="mr-5"
+              v-model="filter.selectedMonths"
+              :items="allMonths"
+              :label="$t('Месяц')"
+              multiple
+          ></v-select>
+          <v-select
+              clearable
+              class="mr-5"
+              v-model="filter.selectedProjects"
+              :items="allProjects.filter(p=>p.active)"
+              item-value="id"
+              item-text="name"
+              :label="$t('Текущий проект')"
+              multiple
+          ></v-select>
+          <v-select
+              clearable
+              class="mr-5"
+              v-model="filter.selectedStatuses"
+              :items="allStatuses"
+              :label="$t('Статус')"
+              multiple
+          ></v-select>
+
+          <v-divider vertical></v-divider>
+          <!-- Add new project -->
+          <v-tooltip bottom v-if="canEditVacations">
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <div v-bind="tattrs" v-on="ton" class="col-auto">
+                <v-btn text color="primary" :disabled="loading" @click="openVacationDialog(undefined)" icon>
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <span>{{ $t('Добавить отпуск') }}</span>
+          </v-tooltip>
+        </div>
       </v-card-title>
+
       <v-card-text>
         <v-data-table
             :loading="loading"
@@ -56,6 +72,10 @@
             hide-default-footer
             :sort-by="['startDate', 'endDate']"
             disable-pagination>
+          <template v-slot:item.employeeDisplayName="{ item }">
+            <v-btn :disabled="!canEditVacations()" text @click="openVacationDialog(item)">{{ item.employeeDisplayName }}
+            </v-btn>
+          </template>
           <template
               v-slot:item.employeeCurrentProject="{ item }">
             {{ item.employeeCurrentProject ? item.employeeCurrentProject.name : '' }}
@@ -82,6 +102,15 @@
           </template>
         </v-data-table>
 
+        <v-dialog v-model="vacationDialog">
+          <vacation-edit-form
+              v-bind:all-employees="allEmployees"
+              v-bind:all-statuses="allStatuses"
+              v-bind:allYears="allYears"
+              v-bind:input="selectedVacation"
+              @close="vacationDialog=false;fetchData()"></vacation-edit-form>
+        </v-dialog>
+
       </v-card-text>
     </v-card>
   </v-container>
@@ -97,6 +126,9 @@ import {SimpleDict} from "@/store/modules/dict";
 import {DataTableHeader} from "vuetify";
 import {OvertimeUtils} from "@/components/overtimes/overtime.service";
 import moment from 'moment';
+import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
+import employeeService from "@/components/empl/employee.service";
+import permissionService from "@/store/modules/permission.service";
 
 const namespace: string = 'dict';
 
@@ -108,7 +140,9 @@ class Filter {
   public selectedMonths: Array<number> = [new Date().getMonth()];
 }
 
-@Component
+@Component({
+  components: {VacationEditForm}
+})
 export default class VacationsListComponent extends Vue {
   headers: DataTableHeader[] = [];
   loading: boolean = false;
@@ -122,12 +156,16 @@ export default class VacationsListComponent extends Vue {
   public allStatuses: Array<any> = [];
   public allYears: Array<number> = [];
   public allMonths: Array<any> = [];
+  public allEmployees: Array<SimpleDict> = [];
+
+  private vacationDialog = false;
+  private selectedVacation: Vacation | null = null;
 
   /**
    * Lifecycle hook
    */
   created() {
-    this.allStatuses = ['PLANNED', 'TAKEN', 'CANCELED'].map(status => {
+    this.allStatuses = ['PLANNED', 'TAKEN', 'COMPENSATION', 'CANCELED'].map(status => {
       return {value: status, text: this.$tc(`VACATION_STATUS_ENUM.${status}`)}
     });
     const currentYear = new Date().getFullYear();
@@ -139,7 +177,14 @@ export default class VacationsListComponent extends Vue {
       }
     });
     this.reloadHeaders();
-    this.$store.dispatch('dict/reloadProjects').then(() => this.fetchData());
+    this.$store.dispatch('dict/reloadProjects')
+        .then(() => employeeService.findAll().then(data => {
+          this.allEmployees = data.map(e => {
+            return {id: e.id, name: e.displayName} as SimpleDict
+          });
+          return this.allEmployees;
+        }))
+        .then(() => this.fetchData());
   }
 
   private reloadHeaders() {
@@ -150,6 +195,8 @@ export default class VacationsListComponent extends Vue {
     this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
     this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});
     this.headers.push({text: this.$tc('Статус'), value: 'status'});
+    this.headers.push({text: this.$tc('Документ'), value: 'document'});
+    this.headers.push({text: this.$tc('Примечание'), value: 'notes'});
   }
 
 
@@ -191,8 +238,17 @@ export default class VacationsListComponent extends Vue {
         });
   }
 
+  public openVacationDialog(vacationToUpdate: Vacation | null) {
+    this.selectedVacation = vacationToUpdate;
+    this.vacationDialog = true;
+  }
+
   private formatDate(date: Date): string | undefined {
     return OvertimeUtils.formatDate(date);
+  }
+
+  private canEditVacations() : boolean{
+    return permissionService.canEditAllVacations();
   }
 
 

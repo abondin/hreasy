@@ -36,10 +36,10 @@ Emits:
       <v-card>
         <v-card-title>{{ $t('Согласование овертаймов') }}</v-card-title>
         <v-card-text>
-          <!-- TODO: Add max length -->
           <v-textarea
               autofocus
               v-model="comment"
+              :rules="[v=>(!v ||  v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
               :label="$t('Комментарий')">
           </v-textarea>
           <!-- Error block -->

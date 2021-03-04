@@ -7,6 +7,7 @@ import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -49,6 +50,7 @@ public class EmployeeService {
                         "Employee with ID=" + employeeId + " not found")));
     }
 
+    @Transactional
     public Mono<Boolean> updateCurrentProject(int employeeId, @Nullable Integer newCurrentProjectId, AuthContext auth) {
         log.info("Update current project {} for employee {}" +
                 "by {}", newCurrentProjectId == null ? "<RESET>" : newCurrentProjectId, employeeId, auth.getEmail());
@@ -56,6 +58,7 @@ public class EmployeeService {
                 .flatMap(valid -> emplRepo.updateCurrentProject(employeeId, newCurrentProjectId).map(updatedRowsCount -> updatedRowsCount > 0));
     }
 
+    @Transactional
     public Mono<Boolean> updateCurrentProject(int newCurrentProjectId, AuthContext auth) {
         if (auth.getEmployeeInfo() == null) {
             throw new BusinessError("errors.no.employee.for.auth", Arrays.asList(auth.getEmail()));

@@ -18,7 +18,7 @@
         <v-text-field
             v-model="projectForm.name"
             :counter="255"
-            :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более 255 символов'))]"
+            :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
             :label="$t('Наименование')"
             required>
           >
@@ -28,7 +28,7 @@
         <v-text-field
             v-model="projectForm.customer"
             :counter="255"
-            :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более 255 символов'))]"
+            :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
             :label="$t('Заказчик')"
             required>
           >

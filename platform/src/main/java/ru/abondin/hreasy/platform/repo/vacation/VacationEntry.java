@@ -23,7 +23,7 @@ public class VacationEntry {
     /**
      * 0 - planned
      * 1 - taken
-     * 2 -
+     * 2 - compensation
      * 3 - canceled
      */
     @Column("stat")
@@ -46,6 +46,7 @@ public class VacationEntry {
     private OffsetDateTime updatedAt;
 
     @Data
+    @Table("vacation_history")
     public static class VacationHistoryEntry {
         @Id
         private Integer id;

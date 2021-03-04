@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
@@ -49,6 +50,7 @@ public class OvertimeService {
      *
      * @return
      */
+    @Transactional
     public Mono<OvertimeReportDto> addItem(int employeeId, int periodId, NewOvertimeItemDto newItem, AuthContext auth) {
         // 0. Validate auth
         return securityValidator.validateEditOvertimeItem(auth, employeeId)
@@ -81,6 +83,7 @@ public class OvertimeService {
      *
      * @return
      */
+    @Transactional
     public Mono<OvertimeReportDto> deleteItem(int employeeId, int periodId, int itemId, AuthContext auth) {
         // 0. Validate auth
         return securityValidator.validateEditOvertimeItem(auth, employeeId)
@@ -124,6 +127,7 @@ public class OvertimeService {
      * @param auth
      * @return
      */
+    @Transactional
     public Mono<OvertimeReportDto> approveReport(int employeeId, int periodId,
                                                  OvertimeApprovalDecisionDto.ApprovalDecision decision,
                                                  Integer previousApprovalId,

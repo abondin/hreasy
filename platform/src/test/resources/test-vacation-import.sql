@@ -1,4 +1,4 @@
-insert into vacation (employee,[year],start_date,end_date,days_number,stat,documents,created_at, created_by)
+insert into vacation (employee,[year],start_date,end_date,days_number,stat,documents,created_at, created_by, notes)
 select e.id, v.[Год отпуска],
 	convert(datetime, v.[Начало отпуска], 4),
 	convert(datetime, v.[Конец отпуска ] , 4), v.[Количество дней],
@@ -9,7 +9,8 @@ select e.id, v.[Год отпуска],
 	end,
 	v.Документы,
 	SYSDATETIMEOFFSET(),
-	5
+	5,
+	v.[Первоначально запланированные даты отпуска]
 from vacation_import v
 	left join employee e on lower(replace(v.[﻿ФИО], 'ё', 'е')) like
 lower(
@@ -19,3 +20,5 @@ replace(
 	  ,concat(' ',substring(e.firstname,0, 2),'.')
 	), 'ё', 'е'
 ))+'%';
+
+

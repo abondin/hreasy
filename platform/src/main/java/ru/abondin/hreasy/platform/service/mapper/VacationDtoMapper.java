@@ -4,9 +4,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationView;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
-import ru.abondin.hreasy.platform.service.dto.VacationDto;
+import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
+import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,6 +23,17 @@ public interface VacationDtoMapper {
     @Mapping(target = "status", source = "status", qualifiedByName = "vacationStatusFromId")
     @Mapping(target = "employeeCurrentProject", qualifiedByName = "employeeCurrentProject", source = ".")
     VacationDto vacationToDto(VacationView entry);
+
+
+    @Mapping(target = "status", qualifiedByName = "vacationStatusToId", source = "status")
+    VacationEntry toEntry(VacationCreateOrUpdateDto body);
+
+
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "vacationId", source = "id")
+    @Mapping(target = "id", ignore = true)
+    VacationEntry.VacationHistoryEntry history(VacationEntry v);
 
     @Named("toDisplayName")
     default String toDisplayName(VacationView entry) {
@@ -37,6 +50,11 @@ public interface VacationDtoMapper {
         return VacationDto.VacationStatus.fromId(statusId);
     }
 
+    @Named("vacationStatusToId")
+    default int vacationStatusToId(VacationDto.VacationStatus status) {
+        return status.getStatusId();
+    }
+
     @Named("employeeCurrentProject")
     default SimpleDictDto employeeCurrentProject(VacationView entry) {
         return simpleDto(entry.getEmployeeCurrentProject(), entry.getEmployeeCurrentProjectName());
@@ -45,4 +63,6 @@ public interface VacationDtoMapper {
     default SimpleDictDto simpleDto(Integer id, String name) {
         return id == null ? null : new SimpleDictDto(id, name);
     }
+
+
 }

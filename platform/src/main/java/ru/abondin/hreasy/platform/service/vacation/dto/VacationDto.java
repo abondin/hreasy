@@ -1,8 +1,10 @@
-package ru.abondin.hreasy.platform.service.dto;
+package ru.abondin.hreasy.platform.service.vacation.dto;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -32,10 +34,12 @@ public class VacationDto {
     }
 
     @RequiredArgsConstructor
+    @Getter
     public enum VacationStatus {
         PLANNED(0),
         TAKEN(1),
-        CANCELED(2);
+        COMPENSATION(2),
+        CANCELED(3);
 
         private final int statusId;
 
