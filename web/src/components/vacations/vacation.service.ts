@@ -20,6 +20,20 @@ export interface Vacation {
     daysNumber: number
 }
 
+export interface MyVacation {
+    id: number,
+    year: number,
+    startDate: string,
+    endDate: string,
+    notes: string,
+    canceled: boolean,
+    plannedStartDate?: string,
+    plannedEndDate?: string,
+    status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED',
+    documents: string,
+    daysNumber: number
+}
+
 export interface CreateOrUpdateVacation {
     year: number,
     startDate: string,
@@ -34,6 +48,8 @@ export interface CreateOrUpdateVacation {
 
 export interface VacationService {
     findAll(): Promise<Vacation[]>;
+
+    myFutureVacations(): Promise<MyVacation[]>;
 
     /**
      * Create new vacation entry
@@ -52,6 +68,12 @@ class RestVacationService implements VacationService {
 
     public findAll(): Promise<Vacation[]> {
         return httpService.get("v1/vacations").then(response => {
+            return response.data;
+        });
+    }
+
+    myFutureVacations(): Promise<Vacation[]> {
+        return httpService.get("v1/vacations/my").then(response => {
             return response.data;
         });
     }

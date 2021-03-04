@@ -31,6 +31,8 @@
         :employee-id="employeeId"
         :selected-period="currentOvertimePeriod"></employee-overtime-component>
 
+    <my-vacations class="mt-5"></my-vacations>
+
   </v-container>
 </template>
 
@@ -43,11 +45,12 @@ import EmployeeAvatarUploader from "@/components/empl/EmployeeAvatarUploader.vue
 import {Getter} from "vuex-class";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import EmployeeOvertimeComponent from "@/components/overtimes/EmployeeOvertimeComponent.vue";
+import MyVacations from "@/components/vacations/MyVacations.vue";
 
 const namespace: string = 'auth';
 
 @Component({
-  components: {"employee-avatar": EmployeeAvatarUploader, EmployeeOvertimeComponent}
+  components: {"employee-avatar": EmployeeAvatarUploader, EmployeeOvertimeComponent, MyVacations}
 })
 export default class EmployeeProfile extends Vue {
   loading: boolean = false;

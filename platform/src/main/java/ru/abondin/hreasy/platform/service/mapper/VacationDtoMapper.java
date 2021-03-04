@@ -7,6 +7,7 @@ import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationView;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.vacation.dto.MyVacationDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 
@@ -24,6 +25,8 @@ public interface VacationDtoMapper {
     @Mapping(target = "employeeCurrentProject", qualifiedByName = "employeeCurrentProject", source = ".")
     VacationDto vacationToDto(VacationView entry);
 
+    @Mapping(target = "status", source = "status", qualifiedByName = "vacationStatusFromId")
+    MyVacationDto toMyDto(VacationEntry e);
 
     @Mapping(target = "status", qualifiedByName = "vacationStatusToId", source = "status")
     VacationEntry toEntry(VacationCreateOrUpdateDto body);
@@ -63,6 +66,7 @@ public interface VacationDtoMapper {
     default SimpleDictDto simpleDto(Integer id, String name) {
         return id == null ? null : new SimpleDictDto(id, name);
     }
+
 
 
 }

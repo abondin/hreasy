@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Repository
 public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Integer> {
@@ -19,4 +20,14 @@ public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Inte
             " where v.end_date>=:endDateSince" +
             " order by v.end_date asc")
     Flux<VacationView> findAll(LocalDate endDateSince);
+
+    /**
+     * @param employeeId
+     * @param now
+     * @return
+     */
+    @Query("select v.* from vacation v " +
+            "where v.employee=:employeeId and (v.start_date>=:now or v.end_date>=:now)" +
+            " order by v.end_date asc")
+    Flux<VacationEntry> findFuture(Integer employeeId, OffsetDateTime now);
 }

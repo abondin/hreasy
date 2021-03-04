@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -15,6 +16,7 @@ import ru.abondin.hreasy.platform.repo.vacation.VacationHistoryRepo;
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.mapper.VacationDtoMapper;
+import ru.abondin.hreasy.platform.service.vacation.dto.MyVacationDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 
@@ -27,6 +29,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 @Slf4j
 public class VacationService {
+
 
     @Data
     @AllArgsConstructor
@@ -46,6 +49,12 @@ public class VacationService {
                 filter.endDateSince
         ).map(e -> mapper.vacationToDto(e)));
     }
+
+    public Flux<MyVacationDto> my(AuthContext auth) {
+        var now =dateTimeService.now();
+        return vacationRepo.findFuture(auth.getEmployeeInfo().getEmployeeId(), now).map(e->mapper.toMyDto(e));
+    }
+
 
     @Transactional
     public Mono<Integer> create(AuthContext auth, int employeeId, VacationCreateOrUpdateDto body) {

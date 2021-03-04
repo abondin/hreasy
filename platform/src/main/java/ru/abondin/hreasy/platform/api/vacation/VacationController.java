@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.vacation.VacationService;
+import ru.abondin.hreasy.platform.service.vacation.dto.MyVacationDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 
@@ -24,6 +25,17 @@ public class VacationController {
     public Flux<VacationDto> findAll() {
         return
                 AuthHandler.currentAuth().flatMapMany(auth -> vacationService.findAll(auth, new VacationService.VacationFilter()));
+    }
+
+    /**
+     * Future or current vacations for current user
+     * @return
+     */
+    @GetMapping("/my")
+    @ResponseBody
+    public Flux<MyVacationDto> my() {
+        return
+                AuthHandler.currentAuth().flatMapMany(auth -> vacationService.my(auth));
     }
 
 
