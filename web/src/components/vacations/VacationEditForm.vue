@@ -17,6 +17,13 @@
             :rules="[v=>(v || $t('Обязательное поле'))]"
           ></v-autocomplete>
 
+
+        <v-select
+            v-model="vacationForm.year"
+            :items="allYears"
+            :label="$t('Год')"
+        ></v-select>
+
         <!-- start date -->
         <my-date-form-component
             v-model="vacationForm.startDate"
@@ -58,7 +65,7 @@
             v-model="vacationForm.notes"
             row-height="5"
             :counter="255"
-            :rules="[v=>(!v ||  v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
+            :rules="[v=>(!v ||  v.length <= 255 || $t('Не более N символов', {n:255}))]"
             :label="$t('Примечание')"
         ></v-textarea>
 
@@ -91,6 +98,7 @@ import {SimpleDict} from "@/store/modules/dict";
 class VacationForm {
   public isNew = true;
   public id?: number;
+  public year = new Date().getFullYear();
   public employeeId?: number;
   public startDate = '';
   public endDate = '';
@@ -121,6 +129,9 @@ export default class VacationEditForm extends Vue {
   public allStatuses!: Array<any>;
 
   @Prop({required: true})
+  public allYears!: Array<any>;
+
+  @Prop({required: true})
   public allEmployees!: Array<SimpleDict>;
 
 
@@ -134,8 +145,10 @@ export default class VacationEditForm extends Vue {
   }
 
   private reset() {
+    this.error = null;
     this.vacationForm.isNew = true;
     this.vacationForm.id = undefined;
+    this.vacationForm.year = new Date().getFullYear();
     this.vacationForm.employeeId = undefined;
     this.vacationForm.startDate = '';
     this.vacationForm.endDate = '';
@@ -149,6 +162,7 @@ export default class VacationEditForm extends Vue {
     if (this.input) {
       this.vacationForm.isNew = false;
       this.vacationForm.id = this.input.id;
+      this.vacationForm.year = this.input.year;
       this.vacationForm.employeeId = this.input.employee;
       this.vacationForm.startDate = this.input.startDate;
       this.vacationForm.endDate = this.input.endDate;
@@ -172,6 +186,7 @@ export default class VacationEditForm extends Vue {
     const form: any = this.$refs.vacationEditForm;
     if (form.validate()) {
       const body = {
+        year: this.vacationForm.year,
         startDate: this.vacationForm.startDate,
         endDate: this.vacationForm.endDate,
         plannedStartDate: this.vacationForm.plannedStartDate,

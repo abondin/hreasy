@@ -21,6 +21,7 @@ export interface Vacation {
 }
 
 export interface CreateOrUpdateVacation {
+    year: number,
     startDate: string,
     endDate: string,
     plannedStartDate: string,

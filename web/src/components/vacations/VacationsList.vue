@@ -49,7 +49,7 @@
 
           <v-divider vertical></v-divider>
           <!-- Add new project -->
-          <v-tooltip bottom>
+          <v-tooltip bottom v-if="canEditVacations">
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <div v-bind="tattrs" v-on="ton" class="col-auto">
                 <v-btn text color="primary" :disabled="loading" @click="openVacationDialog(undefined)" icon>
@@ -73,7 +73,7 @@
             :sort-by="['startDate', 'endDate']"
             disable-pagination>
           <template v-slot:item.employeeDisplayName="{ item }">
-            <v-btn text @click="openVacationDialog(item)">{{ item.employeeDisplayName }}
+            <v-btn :disabled="!canEditVacations()" text @click="openVacationDialog(item)">{{ item.employeeDisplayName }}
             </v-btn>
           </template>
           <template
@@ -106,6 +106,7 @@
           <vacation-edit-form
               v-bind:all-employees="allEmployees"
               v-bind:all-statuses="allStatuses"
+              v-bind:allYears="allYears"
               v-bind:input="selectedVacation"
               @close="vacationDialog=false;fetchData()"></vacation-edit-form>
         </v-dialog>
@@ -127,6 +128,7 @@ import {OvertimeUtils} from "@/components/overtimes/overtime.service";
 import moment from 'moment';
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
 import employeeService from "@/components/empl/employee.service";
+import permissionService from "@/store/modules/permission.service";
 
 const namespace: string = 'dict';
 
@@ -243,6 +245,10 @@ export default class VacationsListComponent extends Vue {
 
   private formatDate(date: Date): string | undefined {
     return OvertimeUtils.formatDate(date);
+  }
+
+  private canEditVacations() : boolean{
+    return permissionService.canEditAllVacations();
   }
 
 

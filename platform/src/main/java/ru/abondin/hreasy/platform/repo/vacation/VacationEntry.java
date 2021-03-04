@@ -46,6 +46,7 @@ public class VacationEntry {
     private OffsetDateTime updatedAt;
 
     @Data
+    @Table("vacation_history")
     public static class VacationHistoryEntry {
         @Id
         private Integer id;

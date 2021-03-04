@@ -24,6 +24,7 @@ export enum Permissions {
      */
     ViewOvertimes = "overtime_view",
 
+
     /**
      * Edit overtimes of any employee
      * (if logged user is employee assigned or overtime reported project manager)
@@ -101,6 +102,8 @@ interface PermissionService {
 
     canViewAllVacations(): boolean;
 
+    canEditAllVacations(): boolean;
+
     canExportOvertimes(): boolean;
 
     canAdminOvertimes(): boolean;
@@ -132,6 +135,10 @@ class VuexPermissionService implements PermissionService {
 
     canViewOvertimes(employeeId: number): boolean {
         return this.simplePermissionCheckOrCurrentEmployee(Permissions.ViewOvertimes, employeeId);
+    }
+
+    canEditAllVacations(): boolean {
+        return this.simplePermissionCheck(Permissions.EditVacations);
     }
 
     canEditOvertimes(employeeId: number): boolean {

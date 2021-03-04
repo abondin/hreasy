@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.admin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
@@ -27,6 +28,7 @@ public class ProjectAdminService {
     private final AdminSecurityValidator securityValidator;
     private final ProjectDtoMapper mapper;
 
+    @Transactional
     public Mono<Integer> create(AuthContext auth, ProjectDto.CreateOrUpdateProjectDto newProject) {
         log.info("Creating new project by ? : ?", auth.getUsername(), newProject);
         var now = dateTimeService.now();
@@ -39,6 +41,7 @@ public class ProjectAdminService {
                         repo.save(entry).map(DictProjectEntry::getId)));
     }
 
+    @Transactional
     public Mono<Integer> update(AuthContext auth, int projectId, ProjectDto.CreateOrUpdateProjectDto projectToUpdate) {
         log.info("Updating project by {} : {}", auth.getUsername(), projectToUpdate);
         var now = dateTimeService.now();
