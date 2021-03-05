@@ -14,12 +14,9 @@
             :label="label"
             :value="formattedValue"
             @input="textFieldUpdated"
-            :rules="rules">
-          <template v-slot:prepend>
-            <v-btn x-small icon v-bind="attrs" v-on="on">
-              <v-icon>mdi-calendar</v-icon>
-            </v-btn>
-          </template>
+            :rules="rules"
+            v-bind="attrs" v-on="on"
+        >
         </v-text-field>
       </template>
       <v-date-picker
@@ -92,8 +89,8 @@ export default class MyDateFormComponent extends Vue {
   }
 
   private emit(d: Moment) {
-    this.menu=false;
     if (d.isValid()){
+      this.menu=false;
       this.date = d.format(moment.HTML5_FMT.DATE);
       logger.log(`emit new value ${this.date}`);
       this.$emit('input', this.date);
