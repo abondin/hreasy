@@ -28,14 +28,14 @@
         <my-date-form-component
             v-model="vacationForm.startDate"
             :label="$t('Начало')+`*`"
-            :rules="[v=>(v && Date.parse(v) > 0 || $t('Дата в формате ГГГГ-ММ-ДД'))]"
+            :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
         ></my-date-form-component>
 
         <!-- end date -->
         <my-date-form-component
             v-model="vacationForm.endDate"
             :label="$t('Окончание')+`*`"
-            :rules="[v=>(v && Date.parse(v) > 0 || $t('Дата в формате ГГГГ-ММ-ДД'))]"
+            :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
         ></my-date-form-component>
 
         <!-- status -->
@@ -94,6 +94,7 @@ import {errorUtils} from "@/components/errors";
 import vacationService, {CreateOrUpdateVacation, Vacation} from "@/components/vacations/vacation.service";
 import {SimpleDict} from "@/store/modules/dict";
 import moment from "moment";
+import {DateTimeUtils} from "@/components/datetimeutils";
 
 
 class VacationForm {
@@ -222,7 +223,7 @@ export default class VacationEditForm extends Vue {
     const startDate = moment(this.vacationForm.startDate, moment.HTML5_FMT.DATE, true);
     if (startDate.isValid()) {
       if (!this.vacationForm.endDate) {
-        this.vacationForm.endDate = startDate.add(this.defaultNumberOrDays-1, "days").format(moment.HTML5_FMT.DATE);
+        this.vacationForm.endDate = startDate.add(this.defaultNumberOrDays - 1, "days").format(moment.HTML5_FMT.DATE);
       }
       this.updateDaysNumber();
     }
@@ -241,9 +242,13 @@ export default class VacationEditForm extends Vue {
       const start = moment(this.vacationForm.startDate, moment.HTML5_FMT.DATE, true);
       const end = moment(this.vacationForm.endDate, moment.HTML5_FMT.DATE, true);
       if (start.isValid() && end.isValid()) {
-        this.vacationForm.daysNumber = moment.duration(end.diff(start)).days()+1;
+        this.vacationForm.daysNumber = moment.duration(end.diff(start)).days() + 1;
       }
     }
+  }
+
+  private validateDate(formattedDate: string, allowEmpty = true): boolean {
+    return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
   }
 
 }

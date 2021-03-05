@@ -38,14 +38,14 @@
         <my-date-form-component
             v-model="projectForm.startDate"
             :label="$t('Начало')"
-            :rules="[v=>(!v || Date.parse(v) > 0 || $t('Дата в формате ГГГГ-ММ-ДД'))]"
+            :rules="[v=>(!v || Date.parse(v) > 0 || $t('Дата в формате ДД.ММ.ГГ'))]"
         ></my-date-form-component>
 
         <!-- end date -->
         <my-date-form-component
             v-model="projectForm.endDate"
             :label="$t('Окончание')"
-            :rules="[v=>(!v || Date.parse(v) > 0 || $t('Дата в формате ГГГГ-ММ-ДД'))]"
+            :rules="[v=>(!v || Date.parse(v) > 0 || $t('Дата в формате ДД.ММ.ГГ'))]"
         ></my-date-form-component>
 
 

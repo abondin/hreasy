@@ -343,6 +343,10 @@ export interface OvertimeSummaryContainerFilter {
 
 export class OvertimeUtils {
 
+    /**
+     * @deprecated use DateTimeService
+     * @param date
+     */
     static formatDate(date: Date|null): string | undefined {
         if (date) {
             return moment(date).format('LL');

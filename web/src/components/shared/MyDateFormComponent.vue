@@ -12,8 +12,9 @@
         <v-text-field
             ref="dateField"
             :label="label"
-            @input="emitValue"
-            :value="date" :rules="rules">
+            :value="formattedValue"
+            @input="textFieldUpdated"
+            :rules="rules">
           <template v-slot:prepend>
             <v-btn x-small icon v-bind="attrs" v-on="on">
               <v-icon>mdi-calendar</v-icon>
@@ -23,7 +24,7 @@
       </template>
       <v-date-picker
           :value="date"
-          @input="emitValue">
+          @input="calendarSelected">
       </v-date-picker>
     </v-menu>
   </div>
@@ -34,7 +35,9 @@
 import Component from "vue-class-component";
 import Vue from 'vue'
 import {Prop, Watch} from "vue-property-decorator";
+import moment, {Moment} from "moment";
 import logger from "@/logger";
+import {DateTimeUtils} from "@/components/datetimeutils";
 
 
 @Component
@@ -53,16 +56,49 @@ export default class MyDateFormComponent extends Vue {
 
   private date = this.value ? this.value : '';
 
+  private formattedValue = '';
+
+  created(){
+    this.date = this.value ? this.value : '';
+    this.updateFormattedValue(this.date);
+  }
+
   @Watch("value")
   watchValue() {
     this.date = this.value ? this.value : '';
+    this.updateFormattedValue(this.date);
   }
 
 
-  private emitValue(event: any) {
+
+
+  private updateFormattedValue(value: string){
+    this.formattedValue = '';
+    const d =  DateTimeUtils.dateFromIsoString(value);
+    if (d.isValid()){
+      this.formattedValue = d.format(DateTimeUtils.DEFAULT_DATE_PATERN);
+    }
+  }
+
+  private calendarSelected(isoDate:any){
+    const d = DateTimeUtils.dateFromIsoString(isoDate);
+    this.updateFormattedValue(isoDate);
+    this.emit(d)
+  }
+
+  private textFieldUpdated(formattedDate:string){
+    const d = DateTimeUtils.dateFromFormattedString(formattedDate);
+    this.emit(d);
+  }
+
+  private emit(d: Moment) {
     this.menu=false;
-    this.date = event;
-    return this.$emit('input', this.date);
+    if (d.isValid()){
+      this.date = d.format(moment.HTML5_FMT.DATE);
+      logger.log(`emit new value ${this.date}`);
+      this.$emit('input', this.date);
+    }
+
   }
 
 }

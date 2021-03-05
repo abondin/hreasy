@@ -129,6 +129,7 @@ import moment from 'moment';
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
 import employeeService from "@/components/empl/employee.service";
 import permissionService from "@/store/modules/permission.service";
+import {DateTimeUtils} from "@/components/datetimeutils";
 
 const namespace: string = 'dict';
 
@@ -243,8 +244,8 @@ export default class VacationsListComponent extends Vue {
     this.vacationDialog = true;
   }
 
-  private formatDate(date: Date): string | undefined {
-    return OvertimeUtils.formatDate(date);
+  private formatDate(date: string): string | undefined {
+    return DateTimeUtils.formatFromIso(date);
   }
 
   private canEditVacations() : boolean{
