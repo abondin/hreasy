@@ -222,7 +222,7 @@ export default class VacationEditForm extends Vue {
     const startDate = moment(this.vacationForm.startDate, moment.HTML5_FMT.DATE, true);
     if (startDate.isValid()) {
       if (!this.vacationForm.endDate) {
-        this.vacationForm.endDate = startDate.add(this.defaultNumberOrDays, "days").format(moment.HTML5_FMT.DATE);
+        this.vacationForm.endDate = startDate.add(this.defaultNumberOrDays-1, "days").format(moment.HTML5_FMT.DATE);
       }
       this.updateDaysNumber();
     }
@@ -241,7 +241,7 @@ export default class VacationEditForm extends Vue {
       const start = moment(this.vacationForm.startDate, moment.HTML5_FMT.DATE, true);
       const end = moment(this.vacationForm.endDate, moment.HTML5_FMT.DATE, true);
       if (start.isValid() && end.isValid()) {
-        this.vacationForm.daysNumber = moment.duration(end.diff(start)).days();
+        this.vacationForm.daysNumber = moment.duration(end.diff(start)).days()+1;
       }
     }
   }
