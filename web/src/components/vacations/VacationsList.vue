@@ -204,7 +204,7 @@ export default class VacationsListComponent extends Vue {
     return this.vacations.filter(item => {
       var filtered = true;
       if (this.filter.search) {
-        filtered = filtered && item.employeeDisplayName.toLowerCase().indexOf(this.filter.search) >= 0;
+        filtered = filtered && item.employeeDisplayName.toLowerCase().indexOf(this.filter.search.toLowerCase()) >= 0;
       }
       if (this.filter.selectedStatuses.length > 0) {
         filtered = filtered && this.filter.selectedStatuses.indexOf(item.status) >= 0;

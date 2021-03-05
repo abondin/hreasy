@@ -14,7 +14,7 @@
             item-value="id"
             item-text="name"
             :label="$t('Сотрудник')+`*`"
-            :rules="[v=>(v || $t('Обязательное поле'))]"
+            :rules="[v=>(v ? true:false || $t('Обязательное поле'))]"
           ></v-autocomplete>
 
 
