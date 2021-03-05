@@ -15,7 +15,7 @@
             item-text="name"
             :label="$t('Сотрудник')+`*`"
             :rules="[v=>(v ? true:false || $t('Обязательное поле'))]"
-          ></v-autocomplete>
+        ></v-autocomplete>
 
 
         <v-select
@@ -55,11 +55,11 @@
         </v-slider>
 
         <v-text-field
-          v-model="vacationForm.documents"
-          :label="$t('Документ')"
-          :counter="255"
-          :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-          ></v-text-field>
+            v-model="vacationForm.documents"
+            :label="$t('Документ')"
+            :counter="255"
+            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+        ></v-text-field>
 
         <v-textarea
             v-model="vacationForm.notes"
@@ -93,6 +93,7 @@ import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 import vacationService, {CreateOrUpdateVacation, Vacation} from "@/components/vacations/vacation.service";
 import {SimpleDict} from "@/store/modules/dict";
+import moment from "moment";
 
 
 class VacationForm {
@@ -134,11 +135,13 @@ export default class VacationEditForm extends Vue {
   @Prop({required: true})
   public allEmployees!: Array<SimpleDict>;
 
+  public defaultNumberOrDays = 14;
 
   @Watch("input")
   private watch() {
     this.reset();
   }
+
 
   private created() {
     this.reset();
@@ -157,7 +160,7 @@ export default class VacationEditForm extends Vue {
     this.vacationForm.status = 'PLANNED';
     this.vacationForm.notes = '';
     this.vacationForm.documents = '';
-    this.vacationForm.daysNumber=14;
+    this.vacationForm.daysNumber = 0;
 
     if (this.input) {
       this.vacationForm.isNew = false;
@@ -166,8 +169,8 @@ export default class VacationEditForm extends Vue {
       this.vacationForm.employeeId = this.input.employee;
       this.vacationForm.startDate = this.input.startDate;
       this.vacationForm.endDate = this.input.endDate;
-      this.vacationForm.plannedStartDate = this.input.plannedStartDate ? this.input.plannedStartDate: '';
-      this.vacationForm.plannedEndDate = this.input.plannedEndDate ? this.input.plannedEndDate: '';
+      this.vacationForm.plannedStartDate = this.input.plannedStartDate ? this.input.plannedStartDate : '';
+      this.vacationForm.plannedEndDate = this.input.plannedEndDate ? this.input.plannedEndDate : '';
       this.vacationForm.status = this.input.status;
       this.vacationForm.notes = this.input.notes;
       this.vacationForm.documents = this.input.documents;
@@ -210,6 +213,36 @@ export default class VacationEditForm extends Vue {
           .catch(error => {
             this.error = errorUtils.shortMessage(error);
           });
+    }
+  }
+
+
+  @Watch("vacationForm.startDate")
+  private watchStartDate() {
+    const startDate = moment(this.vacationForm.startDate, moment.HTML5_FMT.DATE, true);
+    if (startDate.isValid()) {
+      if (!this.vacationForm.endDate) {
+        this.vacationForm.endDate = startDate.add(this.defaultNumberOrDays, "days").format(moment.HTML5_FMT.DATE);
+      }
+      this.updateDaysNumber();
+    }
+  }
+
+  @Watch("vacationForm.endDate")
+  private watchEndDate() {
+    const endDate = moment(this.vacationForm.endDate, moment.HTML5_FMT.DATE, true);
+    if (endDate.isValid()) {
+      this.updateDaysNumber();
+    }
+  }
+
+  private updateDaysNumber() {
+    if (this.vacationForm.startDate && this.vacationForm.endDate) {
+      const start = moment(this.vacationForm.startDate, moment.HTML5_FMT.DATE, true);
+      const end = moment(this.vacationForm.endDate, moment.HTML5_FMT.DATE, true);
+      if (start.isValid() && end.isValid()) {
+        this.vacationForm.daysNumber = moment.duration(end.diff(start)).days();
+      }
     }
   }
 
