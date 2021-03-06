@@ -1,6 +1,6 @@
 # HREasy - HR Portal for STM Internal Uses
 
-@author Alexander Bondin 2019-2020
+@author Alexander Bondin 2019-2021
 
 # Technologies Stack
 
@@ -43,74 +43,6 @@ To clean-up database before tests set VM flyway commands
 
 Flyway commands also can be executed in maven:
 `mvn flyway:migrate -Dflyway.user=sa -Dflyway.password=HREasyPassword2019! -Dflyway.url=jdbc:sqlserver://sql.hr:1433`
-
-# Permissions and roles
-
-![Security Database](./.architecture/hr_sec.png "Security Database Scheme")
-
-Security model based on two main entities:
-
-1) Employee - key entity of the whole project. Describe company employee
-2) User - employee projection in security scheme. Currently we consider that *User = Employee*. Also we have the
-   assumption that user and employee are always associated via email. (implicit dependency)
-   Entity "User" designed for future features when we have portal user without employee projection. It might be system
-   account or some kind of portal admin.
-
-User (more accurately employee) may have access to the actions for employees, currently assigned to the specific
-project. Or to the actions for employees, currently assigned to any project from specific department. Please take a look
-on `employee_accessible_departments` and `employee_accessible_projects` tables respectively. Permissions depended
-on `employee_accessible_departments` and `employee_accessible_projects` marked in the table bellow.
-
-Many permissions are always allowed the the currently logged in employee. Also marked in the permission table.
-
-*For example*: we have employee *John* with accessible project *Project1* and role with permission *overtime_view*. Also
-we have employee *Dave* without any role currently assigned to the *Project1*. In that case John can see his overtimes
-and Dave's overtimes. Dave can see only his own overtimes.
-
-- List of permissions are code based. Database table must be always in sync with backend and frontend code.
-- Set of permissions combined to the role. List of roles is code independent and can be updated in database (and in
-  admin UI in future releases). See `sec_role` and `sec_role_perm` tables.
-- Roles assigned to the user in `sec_user_role` table (and in admin UI in future releases).
-
-**List of supported permissions**:
-
-|permission|depends on department|always available to oneself |description|
-|----|------|------|------|
-|update_current_project_global|N|N|Change current employee project|
-|update_current_project|Y|N|Update current project for employee from my projects or my departments|
-|update_avatar|N|Y|Update employee avatar|
-|overtime_view|N|Y|View overtimes of given employee|
-|overtime_edit|Y|Y|Edit and approve overtimes of given employee|
-|overtime_admin|N|N|Admin overtime configuration. Close overtime period and other stuff|
-|vacation_view|Y|Y|View vacations of given employee|
-|vacation_edit|Y|Y|View vacations of given employee|
-|project_admin_area|N|N|Access to project admin area in UI|
-|update_project|N|N|Admin permission to update information of any project. Without this permission user can update only projects created by himself|
-|create_project|N|N|Admin permission to create new project|
-|admin_users|N|N|Admin user. Assign roles. Assign accessible projects and departments|
-
-**Default permissions and roles**
-
-|role|description|
-|----|------|
-|global_admin|Full access|
-|hr|Add/Update/Fire all employees|
-|pm|Overtime and vacation review and update, reasign empoyee between managed projects|
-
-|permissions|roles|
-|----|------|
-|update_current_project_global|global_admin, hr|
-|update_current_project|global_admin, hr, pm|
-|update_avatar|global_admin, hr|
-|overtime_view|global_admin, hr, pm|
-|overtime_edit|global_admin, hr, pm|
-|overtime_admin|global_admin|
-|vacation_view|global_admin, hr, pm|
-|vacation_edit|global_admin, hr, pm|
-|project_admin_area|global_admin,pm|
-|update_project|global_admin|
-|create_project|global_admin, pm|
-|admin_users|global_admin|
 
 
 **Default Test Data for Unit Tests**

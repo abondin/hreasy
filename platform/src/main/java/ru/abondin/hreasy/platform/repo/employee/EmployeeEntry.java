@@ -27,6 +27,7 @@ public class EmployeeEntry {
     private Integer currentProjectId;
     @Column("office_location")
     private Integer officeLocationId;
+    private LocalDate dateOfDismissal;
     private String email;
     private String phone;
     private String skype;

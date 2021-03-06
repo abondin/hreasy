@@ -51,7 +51,7 @@
         <v-divider></v-divider>
         <v-list-group
             no-action
-            v-if="canAdminProjects()"
+            v-if="canAdminProjects() || canAdminUsers()"
         >
           <template v-slot:activator>
             <v-list-item-action>
@@ -65,6 +65,11 @@
           <v-list-item to="/admin/projects" v-if="canAdminProjects()">
             <v-list-item-title>
               {{ $t('Все проекты') }}
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item to="/admin/users" v-if="canAdminUsers()">
+            <v-list-item-title>
+              {{ $t('Пользователи и роли') }}
             </v-list-item-title>
           </v-list-item>
 
@@ -179,6 +184,10 @@ export default class App extends Vue {
 
   private canAdminProjects() {
     return permissionService.canAdminProjects();
+  }
+
+  private canAdminUsers() {
+    return permissionService.canAdminUsers();
   }
 
 }

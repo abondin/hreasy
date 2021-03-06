@@ -10,8 +10,8 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
 import ru.abondin.hreasy.platform.repo.sec.UserRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
-import ru.abondin.hreasy.platform.service.admin.dto.EmployeeWithSecurityInfoDto;
-import ru.abondin.hreasy.platform.service.admin.dto.EmployeeWithSecurityMapper;
+import ru.abondin.hreasy.platform.service.admin.dto.UserSecurityInfoDto;
+import ru.abondin.hreasy.platform.service.admin.dto.UserSecurityInfoMapper;
 
 @Service
 @Slf4j
@@ -20,16 +20,16 @@ public class AdminUserRolesService {
 
     private final UserRepo userRepo;
     private final EmployeeRepo employeeRepo;
-    private final EmployeeWithSecurityMapper mapper;
+    private final UserSecurityInfoMapper mapper;
     private final DateTimeService dateTimeService;
     private final AdminSecurityValidator validator;
 
-    public Flux<EmployeeWithSecurityInfoDto> users(AuthContext auth, @Nullable AdminUserRolesController.AdminUserListFilter filter) {
+    public Flux<UserSecurityInfoDto> users(AuthContext auth, @Nullable AdminUserRolesController.AdminUserListFilter filter) {
         var now = dateTimeService.now();
         return validator.validateGetEmployeeWithSecurity(auth).flatMapMany(b ->
                 employeeRepo.findWithSecurityInfo().map(mapper::fromEntry).filter(employee -> {
                     if (filter == null && !filter.isIncludeFired()) {
-                        return employee.getDateOfDismissal() == null || employee.getDateOfDismissal().isAfter(now.toLocalDate());
+                        return employee.getDateOfDismissal() == null || employee.getDateOfDismissal().isBefore(now.toLocalDate());
                     }
                     return true;
                 }));

@@ -12,7 +12,7 @@ import java.util.List;
  * DTO for admin page with list of all employees to assign roles, projects and departments
  */
 @Data
-public class EmployeeWithSecurityInfoDto {
+public class UserSecurityInfoDto {
     private SimpleDictDto employee;
 
     /**

@@ -8,6 +8,7 @@ import VacationsList from "@/components/vacations/VacationsList.vue";
 import EmployeeProfile from "@/components/empl/EmployeeProfile.vue";
 import AllOvertimes from "@/components/overtimes/AllOvertimes.vue";
 import AdminProjects from "@/components/admin/AdminProjects.vue";
+import AdminUsers from "@/components/admin/AdminUsers.vue";
 
 Vue.use(VueRouter)
 
@@ -18,7 +19,8 @@ const routes = [
     {name: 'employeeProfile', path: "/profile/main", component: EmployeeProfile, props: true},
     {path: "/vacations", component: VacationsList},
     {path: "/overtimes", component: AllOvertimes},
-    {path: "/admin/projects", component: AdminProjects}
+    {path: "/admin/projects", component: AdminProjects},
+    {path: "/admin/users", component: AdminUsers}
 
 ]
 const router = new VueRouter({

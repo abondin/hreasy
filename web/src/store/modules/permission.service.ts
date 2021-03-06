@@ -63,6 +63,11 @@ export enum Permissions {
      * Access to see all projects and admin them
      */
     AdminProjects = "project_admin_area",
+
+    /**
+     * Admin user. Assign roles. Assign accessible projects and departments
+     */
+    AdminUsers = "admin_users"
 }
 
 interface PermissionService {
@@ -109,6 +114,8 @@ interface PermissionService {
     canAdminOvertimes(): boolean;
 
     canAdminProjects(): boolean;
+
+    canAdminUsers(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -159,6 +166,10 @@ class VuexPermissionService implements PermissionService {
 
     canAdminProjects(): boolean {
         return this.simplePermissionCheck(Permissions.AdminProjects);
+    }
+
+    canAdminUsers(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminUsers);
     }
 
     private simplePermissionCheck(permission: Permissions) {

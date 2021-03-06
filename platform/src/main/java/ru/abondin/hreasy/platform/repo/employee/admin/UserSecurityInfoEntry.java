@@ -2,30 +2,14 @@ package ru.abondin.hreasy.platform.repo.employee.admin;
 
 import lombok.Data;
 import org.springframework.lang.Nullable;
+import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
 
 import java.time.LocalDate;
 
 @Data
-public class EmployeeWithSecurityInfoEntry {
-    private int employeeId;
+public class UserSecurityInfoEntry extends EmployeeEntry {
     private Integer userId;
-    private String lastname;
-    private String firstname;
-    private String patronymicName;
 
-    private LocalDate dateOfDismissal;
-
-    /**
-     * Id of department, employee assigned to
-     */
-    @Nullable
-    private Integer departmentId;
-
-    /**
-     * Id of project, employee assigned to
-     */
-    @Nullable
-    private Integer currentProjectId;
 
     /**
      * Comma separated list of projects

@@ -8,7 +8,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithSecurityInfoEntry;
+import ru.abondin.hreasy.platform.repo.employee.admin.UserSecurityInfoEntry;
 
 @Repository
 public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Integer>, EmployeeDetailedRepo {
@@ -21,8 +21,8 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
     @Query("select project_id from employee_accessible_projects where employee_id=:employeeId")
     Flux<Integer> findAccessibleProjects(int employeeId);
 
-    @Query("select e.id as employee_id, u.id as user_id, e.lastname, e.firstname, e.patronymic_name,\n" +
-            "e.current_project current_project_id, e.department department_id,\n" +
+    @Query("select e.id as id, u.id as user_id, e.lastname, e.firstname, e.patronymic_name,\n" +
+            "e.current_project current_project, e.department department,\n" +
             "e.date_of_dismissal,\n" +
             "pr.accessible_projects as accessible_projects,\n" +
             "deps.accessible_departments as accessible_departments,\n" +
@@ -38,7 +38,7 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
             "\tleft join \n" +
             "\t\t(select r.user_id, STRING_AGG(r.[role], ',') roles from sec_user_role r group by r.user_id) r\n" +
             "\t\ton u.id=r.user_id")
-    Flux<EmployeeWithSecurityInfoEntry> findWithSecurityInfo();
+    Flux<UserSecurityInfoEntry> findWithSecurityInfo();
 
 //    default <S extends EmployeeEntry> Mono<S> save(S entity) {
 //        return Mono.error(new UnsupportedOperationException("Save method is deprecated. Use FullEmployeeRepo.save"));

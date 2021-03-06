@@ -74,6 +74,7 @@ import AdminProjectForm from "@/components/admin/AdminProjectForm.vue";
 import logger from "@/logger";
 import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
+import {DateTimeUtils} from "@/components/datetimeutils";
 
 const namespace_dict: string = 'dict';
 
@@ -156,8 +157,8 @@ export default class AdminProjects extends Vue {
     this.projectDialog = true;
   }
 
-  private formatDate(date: Date): string | undefined {
-    return OvertimeUtils.formatDate(date);
+  private formatDate(date: string|undefined): string | undefined {
+    return DateTimeUtils.formatFromIso(date);
   }
 
 }
