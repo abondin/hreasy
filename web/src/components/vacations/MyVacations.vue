@@ -41,6 +41,7 @@ import {DataTableHeader} from "vuetify";
 import {OvertimeUtils} from "@/components/overtimes/overtime.service";
 import moment from 'moment';
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
+import {DateTimeUtils} from "@/components/datetimeutils";
 
 const namespace: string = 'dict';
 
@@ -102,8 +103,8 @@ export default class MyVacations extends Vue {
         });
   }
 
-  private formatDate(date: Date): string | undefined {
-    return OvertimeUtils.formatDate(date);
+  private formatDate(date: string): string | undefined {
+    return DateTimeUtils.formatFromIso(date);
   }
 
 

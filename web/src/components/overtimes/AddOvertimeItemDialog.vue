@@ -46,7 +46,7 @@ Emits:
               <v-text-field
                   :label="$t('Дата')"
                   v-model="item.date"
-                  :rules="[v=>(!!v || $t('Дата обязательна')), v=>(Date.parse(v) > 0 || $t('Дата в формате ДД.ММ.ГГ'))]">
+                  :rules="[v=>(!!v || $t('Дата обязательна')), v=>(Date.parse(v) > 0 || $t('Дата в формате ГГГГ.ММ.ДД'))]">
                 <template v-slot:prepend>
                   <v-btn x-small icon @click="item.date = prevDay(item.date)">
                     <v-icon>mdi-chevron-left</v-icon>
