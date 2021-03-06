@@ -2,10 +2,10 @@ package ru.abondin.hreasy.platform.service.admin.dto;
 
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.lang.Nullable;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
@@ -21,12 +21,12 @@ public class ProjectDto {
     @NotNull
     private String name;
 
-    @Null
+    @Nullable
     private String customer;
 
-    @Null
+    @Nullable
     private LocalDate startDate;
-    @Null
+    @Nullable
     private LocalDate endDate;
 
     @NotNull
@@ -44,12 +44,12 @@ public class ProjectDto {
         @NotNull
         private String name;
 
-        @Null
+        @Nullable
         private String customer;
 
-        @Null
+        @Nullable
         private LocalDate startDate;
-        @Null
+        @Nullable
         private LocalDate endDate;
 
         @NotNull

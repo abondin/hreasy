@@ -50,4 +50,14 @@ public class AdminSecurityValidator {
             return Mono.just(true);
         });
     }
+
+    public Mono<Boolean> validateGetEmployeeWithSecurity(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("admin_users")) {
+                return Mono.error(new AccessDeniedException("Only user with permission admin_users can view employee " +
+                        "info with security info"));
+            }
+            return Mono.just(true);
+        });
+    }
 }
