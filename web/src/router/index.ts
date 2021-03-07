@@ -7,8 +7,8 @@ import logger from "@/logger";
 import VacationsList from "@/components/vacations/VacationsList.vue";
 import EmployeeProfile from "@/components/empl/EmployeeProfile.vue";
 import AllOvertimes from "@/components/overtimes/AllOvertimes.vue";
-import AdminProjects from "@/components/admin/AdminProjects.vue";
-import AdminUsers from "@/components/admin/AdminUsers.vue";
+import AdminProjects from "@/components/admin/project/AdminProjects.vue";
+import AdminUsers from "@/components/admin/users/AdminUsers.vue";
 
 Vue.use(VueRouter)
 

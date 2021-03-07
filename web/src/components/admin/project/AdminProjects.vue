@@ -67,10 +67,9 @@
 <script lang="ts">
 import Vue from 'vue'
 import {DataTableHeader} from "vuetify";
-import adminProjectService, {ProjectFullInfo} from "@/components/admin/admin.project.service";
+import adminProjectService, {ProjectFullInfo} from "@/components/admin/project/admin.project.service";
 import Component from "vue-class-component";
-import {OvertimeUtils} from "@/components/overtimes/overtime.service";
-import AdminProjectForm from "@/components/admin/AdminProjectForm.vue";
+import AdminProjectForm from "@/components/admin/project/AdminProjectForm.vue";
 import logger from "@/logger";
 import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";

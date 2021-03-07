@@ -1,4 +1,4 @@
-import httpService from "../http.service";
+import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
 
 

@@ -4,15 +4,16 @@ package ru.abondin.hreasy.platform.api.admin;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.admin.AdminUserRolesService;
 import ru.abondin.hreasy.platform.service.admin.dto.UserSecurityInfoDto;
+
+import java.util.List;
 
 @RestController()
 @RequestMapping("/api/v1/admin/users")
@@ -29,6 +30,18 @@ public class AdminUserRolesController {
                 .build()));
     }
 
+    @PutMapping("/roles/{employeeId}")
+    public Mono<Integer> updateUserRoles(@PathVariable("employeeId") int employeeId, @RequestBody UserRolesUpdateBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.updateRoles(auth, employeeId, body));
+    }
+
+    @Data
+    @ToString
+    public static class UserRolesUpdateBody {
+        private List<String> roles;
+        private List<Integer> accessibleDepartments;
+        private List<Integer> accessibleProjects;
+    }
 
     @Data
     @Builder

@@ -1,10 +1,7 @@
 package ru.abondin.hreasy.platform.repo.employee.admin;
 
 import lombok.Data;
-import org.springframework.lang.Nullable;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
-
-import java.time.LocalDate;
 
 @Data
 public class UserSecurityInfoEntry extends EmployeeEntry {

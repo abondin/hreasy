@@ -24,44 +24,47 @@
             sort
             disable-pagination>
 
+          <template v-slot:item.employee.name="{ item }">
+            <v-btn text @click="openEditDialog(item)">{{ item.employee.name }}
+            </v-btn>
+          </template>
+
           <!-- Roles -->
           <template v-slot:item.roles="{ item }">
-            <v-chip
-                small
-                v-for="r in item.roles" v-bind:key="r"
-                close close-icon="mdi-delete"
-                @click:close="removeRole(r)">
-              <v-avatar left>
-                <v-icon>mdi-checkbox-marked-circle</v-icon>
-              </v-avatar>
-              {{r}}
+            <v-chip small
+                    v-for="r in item.roles" v-bind:key="r">
+              {{ getById(allRoles, r) }}
             </v-chip>
           </template>
 
 
           <!-- Departments -->
           <template v-slot:item.accessibleDepartments="{ item }">
-            <v-chip
-                small
-                v-for="depId in item.accessibleDepartments" v-bind:key="depId"
-                close close-icon="mdi-delete"
-                @click:close="removeDepartment(depId)">
-              {{getById(allDepartments, depId)}}
+            <v-chip small
+                    v-for="depId in item.accessibleDepartments" v-bind:key="depId">
+              {{ getById(allDepartments, depId) }}
             </v-chip>
           </template>
 
           <!-- Projects -->
           <template v-slot:item.accessibleProjects="{ item }">
-            <v-chip
-                small
-                v-for="projectId in item.accessibleProjects" v-bind:key="projectId"
-                close close-icon="mdi-delete"
-                @click:close="removeProject(projectId)">
-              {{getById(allProjects, projectId)}}
+            <v-chip small
+                    v-for="projectId in item.accessibleProjects" v-bind:key="projectId">
+              {{ getById(allProjects, projectId) }}
             </v-chip>
           </template>
 
         </v-data-table>
+
+        <v-dialog v-model="editDialog">
+          <admin-user-roles-form
+              v-bind:input="selectedItem"
+              :all-projects="allProjects.filter(p=>p.active)"
+              :all-departments="allDepartments.filter(p=>p.active)"
+              :all-roles="allRoles"
+              @close="editDialog=false;fetchData()"></admin-user-roles-form>
+        </v-dialog>
+
       </v-card-text>
     </v-card>
   </v-container>
@@ -75,8 +78,9 @@ import Component from "vue-class-component";
 import logger from "@/logger";
 import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
-import adminUserService, {UserSecurityInfo} from "@/components/admin/admin.user.service";
+import adminUserService, {RoleDict, UserSecurityInfo} from "@/components/admin/users/admin.user.service";
 import {DateTimeUtils} from "@/components/datetimeutils";
+import AdminUserRolesForm from "@/components/admin/users/AdminUserRolesForm.vue";
 
 const namespace_dict: string = 'dict';
 
@@ -84,7 +88,7 @@ class Filter {
   public search = '';
 }
 
-@Component({})
+@Component({components: {AdminUserRolesForm}})
 export default class AdminUsers extends Vue {
   headers: DataTableHeader[] = [];
   loading: boolean = false;
@@ -92,6 +96,8 @@ export default class AdminUsers extends Vue {
   data: UserSecurityInfo[] = [];
 
   private filter = new Filter();
+
+  private editDialog = false;
 
   private selectedItem: UserSecurityInfo | null = null;
 
@@ -101,15 +107,17 @@ export default class AdminUsers extends Vue {
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<SimpleDict>;
 
+  private allRoles: Array<RoleDict> = [];
+
   /**
    * Lifecycle hook
    */
   created() {
     logger.log('Admin Employees component created');
     this.reloadHeaders();
-    // Reload projects dict to Vuex
+    this.allRoles = this.getAllRoles();
     return this.$store.dispatch('dict/reloadProjects')
-        .then(()=>this.$store.dispatch('dict/reloadDepartments'))
+        .then(() => this.$store.dispatch('dict/reloadDepartments'))
         .then(() => this.fetchData());
   }
 
@@ -130,14 +138,15 @@ export default class AdminUsers extends Vue {
       var filtered = true;
       if (this.filter.search) {
         const search = this.filter.search.trim().toLowerCase();
-        const projectIds = this.allProjects.filter(p=>p.name.toLowerCase().indexOf(search)>=0).map(p=>p.id);
-        const departmentIds = this.allDepartments.filter(p=>p.name.toLowerCase().indexOf(search)>=0).map(p=>p.id);
+        const projectIds = this.allProjects.filter(p => p.name.toLowerCase().indexOf(search) >= 0).map(p => p.id);
+        const departmentIds = this.allDepartments.filter(p => p.name.toLowerCase().indexOf(search) >= 0).map(p => p.id);
+        const roleIds = this.allRoles.filter(p => p.name.toLowerCase().indexOf(search) >= 0).map(p => p.id);
         filtered = filtered &&
             (
-            (item.employee.name.toLowerCase().indexOf(search) >= 0) ||
-                (projectIds && item.accessibleProjects && item.accessibleProjects.some(i=>projectIds.includes(i))) ||
-                (departmentIds && item.accessibleDepartments && item.accessibleDepartments.some(i=>departmentIds.includes(i))) ||
-                (item.roles && item.roles.filter(r=>r.toLocaleString().indexOf(search)>=0).length>0)
+                (item.employee.name.toLowerCase().indexOf(search) >= 0) ||
+                (projectIds && item.accessibleProjects && item.accessibleProjects.some(i => projectIds.includes(i))) ||
+                (departmentIds && item.accessibleDepartments && item.accessibleDepartments.some(i => departmentIds.includes(i))) ||
+                (roleIds && item.roles && item.roles.some(i => roleIds.includes(i)))
             ) as boolean
       }
       return filtered;
@@ -153,19 +162,7 @@ export default class AdminUsers extends Vue {
     this.headers.push({text: this.$tc('Доступные проекты'), value: 'accessibleProjects'});
   }
 
-  private removeRole(role: string){
-    alert(`Removing role ${role}`);
-  }
-
-  private removeDepartment(departmentId: string){
-    alert(`Removing department ${departmentId}`);
-  }
-
-  private removeProject(projectId: string){
-    alert(`Removing project ${projectId}`);
-  }
-
-  private getById(array: SimpleDict[], id?: number): string{
+  private getById(array: SimpleDict[], id?: number): string {
     if (id) {
       const find = array.find(e => e.id == id);
       return find ? find.name : this.$tc("Не найден: ") + id;
@@ -174,9 +171,22 @@ export default class AdminUsers extends Vue {
     }
   }
 
-  private formatDate(date: string|undefined): string | undefined {
+  private formatDate(date: string | undefined): string | undefined {
     return DateTimeUtils.formatFromIso(date);
   }
 
+  public openEditDialog(selectedUser: UserSecurityInfo) {
+    this.selectedItem = selectedUser;
+    this.editDialog = true;
+  }
+
+  //TODO Get from server/database
+  private getAllRoles(): Array<RoleDict> {
+    return [
+      {id: "global_admin", name: this.$tc('role.global_admin'), disabled:true},
+      {id: "hr", name: this.$tc('role.hr'), disabled:false},
+      {id: "pm", name: this.$tc('role.pm'), disabled:false}
+    ] as Array<RoleDict>
+  }
 }
 </script>

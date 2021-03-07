@@ -15,6 +15,9 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
     @Query("select id from employee where email=:email")
     Mono<EmployeeShortInfoEntry> findIdByEmail(String email);
 
+    @Query("select email from employee where id=:employeeId")
+    Mono<String> findEmailById(int employeeId);
+
     @Query("select department_id from employee_accessible_departments where employee_id=:employeeId")
     Flux<Integer> findAccessibleDepartments(int employeeId);
 

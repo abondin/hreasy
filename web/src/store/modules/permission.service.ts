@@ -1,5 +1,6 @@
 import store from "@/store";
 import {SecurityInfo} from "@/store/modules/auth";
+import {SimpleDict} from "@/store/modules/dict";
 
 export enum Permissions {
     /**
@@ -197,6 +198,7 @@ class VuexPermissionService implements PermissionService {
                 permissions.map(p => securityInfo.authorities && securityInfo.authorities.indexOf(p))
                     .reduce((result, perm) => Boolean(result || perm >= 0), Boolean(false)));
     }
+
 }
 
 const permissionService: PermissionService = new VuexPermissionService();

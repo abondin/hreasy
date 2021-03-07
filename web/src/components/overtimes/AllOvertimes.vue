@@ -181,7 +181,7 @@ import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
 import {Watch} from "vue-property-decorator";
 import permissionService from "@/store/modules/permission.service";
-import adminOvertimeService from "@/components/admin/admin.overtime.service";
+import adminOvertimeService from "@/components/admin/overtime/admin.overtime.service";
 
 const namespace_dict: string = 'dict';
 

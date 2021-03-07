@@ -40,7 +40,7 @@ console.log(` -- localeFilesPattern: ${localeFilesPattern}`);
 
 const VueI18NExtract = require('vue-i18n-extract').default;
 
-const report = VueI18NExtract.createI18NReport(vueFilesPattern, localeFilesPattern);
+const report = VueI18NExtract.createI18NReport(vueFilesPattern, localeFilesPattern, {});
 
 
 console.log(JSON.stringify(report, undefined, 2));
