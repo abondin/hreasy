@@ -13,6 +13,7 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.api.admin.AdminUserRolesController;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
+import ru.abondin.hreasy.platform.repo.employee.admin.SecAdminUserRolesRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.UserRoleHistoryEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.UserRoleHistoryRepo;
 import ru.abondin.hreasy.platform.repo.sec.UserEntry;
@@ -37,7 +38,7 @@ public class AdminUserRolesService {
     private final AdminSecurityValidator securityValidator;
     private final UserRoleHistoryRepo historyRepo;
 
-    private final DatabaseClient dbClient;
+    private final SecAdminUserRolesRepo adminUserRolesRepo;
 
 
     public Flux<UserSecurityInfoDto> users(AuthContext auth, @Nullable AdminUserRolesController.AdminUserListFilter filter) {
@@ -86,37 +87,16 @@ public class AdminUserRolesService {
                 // 1. Save history
                 historyRepo.save(history)
                         // 2. Update roles
-                        .then(doDeleteAndInsert("sec_user_role", "user_id", userId,
-                                "role", body.getRoles()))
+                        .then(adminUserRolesRepo.updateRoles(userId, body.getRoles()))
                         // 3. Update accessible departments
-                        .then(doDeleteAndInsert("employee_accessible_departments", "employee_id", employeeId,
-                                "department_id", body.getAccessibleDepartments()))
+                        .then(adminUserRolesRepo.updateAccessibleDepartments(employeeId, body.getAccessibleDepartments()))
                         // 4. Update accessible projects
-                        .then(doDeleteAndInsert("employee_accessible_projects", "employee_id", employeeId,
-                                "project_id", body.getAccessibleProjects()))
+                        .then(adminUserRolesRepo.updateAccessibleProjects(employeeId, body.getAccessibleProjects()))
                         .then(Mono.just(employeeId));
     }
 
 
-    private <T> Mono<Integer> doDeleteAndInsert(String tableName,
-                                                String idFieldName,
-                                                int id,
-                                                String valueFieldName,
-                                                List<T> values) {
-        var inserts = new ArrayList<Mono<Integer>>();
-        for (var r : values) {
-            var i = dbClient.insert()
-                    .into(tableName)
-                    .value(idFieldName, id).value(valueFieldName, r).fetch().rowsUpdated();
-            inserts.add(i);
-        }
-        // Delete all rows
-        return dbClient.execute("delete from " + tableName + " where " + idFieldName + "=:id")
-                .bind("id", id)
-                .fetch().rowsUpdated()
-                // 2. Insert new roles
-                .then(values.isEmpty() ? Mono.just(0) : Mono.zip(inserts, (a) -> a.length));
-    }
+
 
 
 }

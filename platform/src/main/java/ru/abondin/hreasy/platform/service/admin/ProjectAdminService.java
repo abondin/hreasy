@@ -11,6 +11,7 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectHistoryRepo;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
+import ru.abondin.hreasy.platform.repo.employee.admin.SecAdminUserRolesRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.admin.dto.ProjectDto;
 import ru.abondin.hreasy.platform.service.admin.dto.ProjectDtoMapper;
@@ -27,18 +28,29 @@ public class ProjectAdminService {
     private final DateTimeService dateTimeService;
     private final AdminSecurityValidator securityValidator;
     private final ProjectDtoMapper mapper;
+    private final SecAdminUserRolesRepo adminUserRolesRepo;
 
     @Transactional
     public Mono<Integer> create(AuthContext auth, ProjectDto.CreateOrUpdateProjectDto newProject) {
-        log.info("Creating new project by ? : ?", auth.getUsername(), newProject);
+        log.info("Creating new project by {} : {}", auth.getUsername(), newProject);
         var now = dateTimeService.now();
+        var employeeId = auth.getEmployeeInfo().getEmployeeId();
         var entry = mapper.fromDto(newProject);
         entry.setCreatedAt(now);
         entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-        var history = mapper.historyEntry(auth.getEmployeeInfo().getEmployeeId(), now, entry);
+        var history = mapper.historyEntry(employeeId, now, entry);
         return securityValidator.validateCreateProject(auth).flatMap(s ->
-                historyRepo.save(history).flatMap((h) ->
-                        repo.save(entry).map(DictProjectEntry::getId)));
+                // 1. Save project
+                repo.save(entry).flatMap(savedProject -> {
+                    //2. Save history
+                    var projectId = savedProject.getId();
+                    history.setProjectId(projectId);
+                    return historyRepo.save(history).flatMap((h) ->
+                            //3. Save entry
+                            adminUserRolesRepo.addAccessibleProject(employeeId, projectId)
+                                    .map(a -> projectId)
+                    );
+                }));
     }
 
     @Transactional
