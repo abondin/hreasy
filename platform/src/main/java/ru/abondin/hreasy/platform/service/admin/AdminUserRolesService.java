@@ -3,7 +3,6 @@ package ru.abondin.hreasy.platform.service.admin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.r2dbc.core.DatabaseClient;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +21,7 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.admin.dto.UserSecurityInfoDto;
 import ru.abondin.hreasy.platform.service.admin.dto.UserSecurityInfoMapper;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -45,8 +42,8 @@ public class AdminUserRolesService {
         var now = dateTimeService.now();
         return securityValidator.validateGetEmployeeWithSecurity(auth).flatMapMany(b ->
                 employeeRepo.findWithSecurityInfo().map(mapper::fromEntry).filter(employee -> {
-                    if (filter == null && !filter.isIncludeFired()) {
-                        return employee.getDateOfDismissal() == null || employee.getDateOfDismissal().isBefore(now.toLocalDate());
+                    if (filter != null && !filter.isIncludeFired()) {
+                        return employee.getDateOfDismissal() == null || employee.getDateOfDismissal().isAfter(  now.toLocalDate());
                     }
                     return true;
                 }));
@@ -94,9 +91,6 @@ public class AdminUserRolesService {
                         .then(adminUserRolesRepo.updateAccessibleProjects(employeeId, body.getAccessibleProjects()))
                         .then(Mono.just(employeeId));
     }
-
-
-
 
 
 }
