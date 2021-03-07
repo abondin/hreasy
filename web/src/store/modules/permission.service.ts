@@ -1,5 +1,6 @@
 import store from "@/store";
 import {SecurityInfo} from "@/store/modules/auth";
+import {SimpleDict} from "@/store/modules/dict";
 
 export enum Permissions {
     /**
@@ -63,6 +64,11 @@ export enum Permissions {
      * Access to see all projects and admin them
      */
     AdminProjects = "project_admin_area",
+
+    /**
+     * Admin user. Assign roles. Assign accessible projects and departments
+     */
+    AdminUsers = "admin_users"
 }
 
 interface PermissionService {
@@ -109,6 +115,8 @@ interface PermissionService {
     canAdminOvertimes(): boolean;
 
     canAdminProjects(): boolean;
+
+    canAdminUsers(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -161,6 +169,10 @@ class VuexPermissionService implements PermissionService {
         return this.simplePermissionCheck(Permissions.AdminProjects);
     }
 
+    canAdminUsers(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminUsers);
+    }
+
     private simplePermissionCheck(permission: Permissions) {
         const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
         return securityInfo && securityInfo.authorities && securityInfo.authorities.indexOf(permission) >= 0;
@@ -186,6 +198,7 @@ class VuexPermissionService implements PermissionService {
                 permissions.map(p => securityInfo.authorities && securityInfo.authorities.indexOf(p))
                     .reduce((result, perm) => Boolean(result || perm >= 0), Boolean(false)));
     }
+
 }
 
 const permissionService: PermissionService = new VuexPermissionService();

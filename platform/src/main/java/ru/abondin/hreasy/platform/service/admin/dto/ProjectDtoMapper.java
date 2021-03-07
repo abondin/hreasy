@@ -4,11 +4,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
 import java.time.OffsetDateTime;
 
 @Mapper(componentModel = "spring")
-public interface ProjectDtoMapper {
+public interface ProjectDtoMapper extends MapperBase {
 
     DictProjectEntry fromDto(ProjectDto.CreateOrUpdateProjectDto dto);
 
@@ -33,7 +34,4 @@ public interface ProjectDtoMapper {
         return simpleDto(entry.getDepartmentId(), entry.getDepartmentName());
     }
 
-    default SimpleDictDto simpleDto(Integer id, String name) {
-        return id == null ? null : new SimpleDictDto(id, name);
-    }
 }

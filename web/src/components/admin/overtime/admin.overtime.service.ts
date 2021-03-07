@@ -1,8 +1,8 @@
-import httpService from "../http.service";
+import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
 
 
-export interface AdminService {
+export interface AdminOvertimeService {
     /**
      * Close overtime period for editing
      * @param periodId - report period in yyyymm format. For example 202006 for all overtimes, reported in June
@@ -20,7 +20,7 @@ export interface AdminService {
 }
 
 
-class RestAdminService implements AdminService {
+class RestAdminOvertimeService implements AdminOvertimeService {
     constructor(private httpService: AxiosInstance) {
     }
 
@@ -38,7 +38,7 @@ class RestAdminService implements AdminService {
 }
 
 
-const adminService: AdminService = new RestAdminService(httpService);
+const adminOvertimeService: AdminOvertimeService = new RestAdminOvertimeService(httpService);
 
-export default adminService;
+export default adminOvertimeService;
 

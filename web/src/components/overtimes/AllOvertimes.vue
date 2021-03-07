@@ -181,7 +181,7 @@ import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
 import {Watch} from "vue-property-decorator";
 import permissionService from "@/store/modules/permission.service";
-import adminService from "@/components/admin/admin.service";
+import adminOvertimeService from "@/components/admin/overtime/admin.overtime.service";
 
 const namespace_dict: string = 'dict';
 
@@ -346,7 +346,7 @@ export default class AllOvertimes extends Vue {
 
   private closePeriod() {
     this.loading = true;
-    adminService.closeOvertimePeriod(this.selectedPeriod.periodId()).then(() => {
+    adminOvertimeService.closeOvertimePeriod(this.selectedPeriod.periodId()).then(() => {
       return this.fetchData();
     }).finally(() => {
       this.loading = false;
@@ -355,7 +355,7 @@ export default class AllOvertimes extends Vue {
 
   private reopenPeriod() {
     this.loading = true;
-    adminService.reopenOvertimePeriod(this.selectedPeriod.periodId()).then(() => {
+    adminOvertimeService.reopenOvertimePeriod(this.selectedPeriod.periodId()).then(() => {
       return this.fetchData();
     }).finally(() => {
       this.loading = false;

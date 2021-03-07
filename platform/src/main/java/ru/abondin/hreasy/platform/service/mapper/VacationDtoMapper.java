@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  * Map all dictionaries database entries to API DTO
  */
 @Mapper(componentModel = "spring")
-public interface VacationDtoMapper {
+public interface VacationDtoMapper extends MapperBase {
 
     @Mapping(target = "employeeDisplayName", source = ".", qualifiedByName = "toDisplayName")
     @Mapping(target = "status", source = "status", qualifiedByName = "vacationStatusFromId")
@@ -62,11 +62,6 @@ public interface VacationDtoMapper {
     default SimpleDictDto employeeCurrentProject(VacationView entry) {
         return simpleDto(entry.getEmployeeCurrentProject(), entry.getEmployeeCurrentProjectName());
     }
-
-    default SimpleDictDto simpleDto(Integer id, String name) {
-        return id == null ? null : new SimpleDictDto(id, name);
-    }
-
 
 
 }

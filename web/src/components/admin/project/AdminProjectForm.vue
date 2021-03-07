@@ -67,7 +67,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import adminProjectService, {CreateOrUpdateProject, ProjectFullInfo} from "@/components/admin/admin.project.service";
+import adminProjectService, {CreateOrUpdateProject, ProjectFullInfo} from "@/components/admin/project/admin.project.service";
 import Component from "vue-class-component";
 import {Prop, Watch} from "vue-property-decorator";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";

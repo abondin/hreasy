@@ -15,7 +15,7 @@ import java.util.stream.Stream;
  * Map all dictionaries database entries to API DTO
  */
 @Mapper(componentModel = "spring")
-public interface EmployeeDtoMapper {
+public interface EmployeeDtoMapper extends MapperBase {
 
     @Mapping(target = "displayName", source = ".", qualifiedByName = "displayName")
     @Mapping(target = "department", source = ".", qualifiedByName = "department")
@@ -53,10 +53,6 @@ public interface EmployeeDtoMapper {
     @Named("currentProject")
     default SimpleDictDto currentProject(EmployeeDetailedEntry entry) {
         return simpleDto(entry.getCurrentProjectId(), entry.getCurrentProjectName());
-    }
-
-    default SimpleDictDto simpleDto(Integer id, String name) {
-        return id == null ? null : new SimpleDictDto(id, name);
     }
 
 }

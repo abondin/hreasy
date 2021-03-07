@@ -6,7 +6,6 @@ import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
@@ -19,15 +18,15 @@ public class DictProjectEntry {
     @NotNull
     private String name;
 
-    @Null
+    @Nullable
     private String customer;
 
     @Nullable
     private Integer personOfContact;
 
-    @Null
+    @Nullable
     private LocalDate startDate;
-    @Null
+    @Nullable
     private LocalDate endDate;
 
     @NotNull
@@ -59,15 +58,15 @@ public class DictProjectEntry {
         @NotNull
         private String name;
 
-        @Null
+        @Nullable
         private String customer;
 
         @Nullable
         private Integer personOfContact;
 
-        @Null
+        @Nullable
         private LocalDate startDate;
-        @Null
+        @Nullable
         private LocalDate endDate;
 
         @NotNull

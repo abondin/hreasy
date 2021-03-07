@@ -1,4 +1,4 @@
-import httpService from "../http.service";
+import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
 import {SimpleDict} from "@/store/modules/dict";
 
@@ -40,7 +40,7 @@ export interface AdminProjectService {
 }
 
 
-class RestAdminService implements AdminProjectService {
+class RestAdminProjectService implements AdminProjectService {
     constructor(private httpService: AxiosInstance) {
     }
 
@@ -64,7 +64,7 @@ class RestAdminService implements AdminProjectService {
 }
 
 
-const adminProjectService: AdminProjectService = new RestAdminService(httpService);
+const adminProjectService: AdminProjectService = new RestAdminProjectService(httpService);
 
 export default adminProjectService;
 

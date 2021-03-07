@@ -12,21 +12,21 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeAdminService;
 
 @RestController()
-@RequestMapping("/api/v1/admin")
+@RequestMapping("/api/v1/admin/overtimes")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminController {
+public class OvertimeAdminController {
 
     private final OvertimeAdminService overtimeAdminService;
 
-    @PostMapping("/overtimes/{period}/close")
+    @PostMapping("/{period}/close")
     public Mono<Integer> closeOvertimePeriod(@PathVariable int period,
                                              @RequestBody CloseOvertimePeriodBody body) {
         return AuthHandler.currentAuth().flatMap(auth ->
                 overtimeAdminService.closeOvertimePeriod(auth, period, body.getComment()));
     }
 
-    @PostMapping("/overtimes/{period}/reopen")
+    @PostMapping("/{period}/reopen")
     public Mono<Void> reopenOvertimePeriod(@PathVariable int period,
                                            @RequestBody ReopenOvertimePeriodBody body) {
         return AuthHandler.currentAuth().flatMap(auth ->
