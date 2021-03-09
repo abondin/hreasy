@@ -55,4 +55,23 @@ public class EmployeeProjectSecurityValidator {
                     " update_current_project_global can update the current project"));
         });
     }
+
+
+    public Mono<Boolean> validateAddSkill(AuthContext auth, int employeeId) {
+        return Mono.defer(() -> {
+            if (employeeId == auth.getEmployeeInfo().getEmployeeId()) {
+                return Mono.just(true);
+            }
+            if (!auth.getAuthorities().contains("edit_skills")) {
+                return Mono.just(false);
+            }
+            return projectHierarchyService.isManager(auth, employeeId);
+        }).flatMap(r -> {
+            if (r) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only logged in user or user with permission edit_skills can update employee skills"));
+        });
+    }
+
 }

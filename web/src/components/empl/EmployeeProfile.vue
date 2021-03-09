@@ -33,6 +33,8 @@
 
     <my-vacations class="mt-5"></my-vacations>
 
+    <my-skills class="mt-5"></my-skills>
+
   </v-container>
 </template>
 
@@ -46,11 +48,12 @@ import {Getter} from "vuex-class";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import EmployeeOvertimeComponent from "@/components/overtimes/EmployeeOvertimeComponent.vue";
 import MyVacations from "@/components/vacations/MyVacations.vue";
+import MySkills from "@/components/empl/skills/MySkills.vue";
 
 const namespace: string = 'auth';
 
 @Component({
-  components: {"employee-avatar": EmployeeAvatarUploader, EmployeeOvertimeComponent, MyVacations}
+  components: {MySkills, "employee-avatar": EmployeeAvatarUploader, EmployeeOvertimeComponent, MyVacations}
 })
 export default class EmployeeProfile extends Vue {
   loading: boolean = false;
