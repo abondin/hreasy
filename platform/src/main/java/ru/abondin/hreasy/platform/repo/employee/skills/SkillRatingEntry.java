@@ -20,6 +20,8 @@ public class SkillRatingEntry {
 
     private OffsetDateTime createdAt;
 
+    private OffsetDateTime updatedAt;
+
     private Integer createdBy;
 
     private OffsetDateTime deletedAt;

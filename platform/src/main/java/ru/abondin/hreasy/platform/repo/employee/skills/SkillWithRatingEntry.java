@@ -6,5 +6,7 @@ import lombok.Data;
 public class SkillWithRatingEntry extends SkillEntry {
     private float averageRating;
 
+    private int ratingsCount;
+
     private String groupName;
 }

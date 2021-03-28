@@ -42,6 +42,7 @@ begin
 	notes nvarchar(4000) NULL,
     created_by int NOT NULL,
     created_at datetimeoffset NOT NULL,
+    updated_at datetimeoffset NOT NULL,
     deleted_by int NULL,
     deleted_at datetimeoffset NULL,
     CONSTRAINT skill_rating_UK UNIQUE(skill_id,created_by)

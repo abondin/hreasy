@@ -1,9 +1,9 @@
 <!-- Add new employee skill form-->
 <template>
-  <v-form ref="addSkillForm">
-    <v-card>
-      <v-card-title>{{ $t('Добавление навыка') }}</v-card-title>
-      <v-card-text>
+  <v-card>
+    <v-card-title>{{ $t('Добавление навыка') }}</v-card-title>
+    <v-card-text>
+      <v-form ref="addSkillForm">
         <!-- Group -->
         <v-autocomplete
             autofocus
@@ -40,23 +40,23 @@
             :rules="[v=>(!v ||  v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
             :label="$t('Примечание к уровню')">
         </v-textarea>
+      </v-form>
 
-        <v-alert v-if="createdSkill" type="success">
-          {{ $t('Навык успешно создан', {skill: this.createdSkill}) }}
-        </v-alert>
-        <!-- Error block -->
-        <v-alert v-if="error" type="error">
-          {{ error }}
-        </v-alert>
-      </v-card-text>
-      <v-card-actions>
-        <v-checkbox v-model="addMore" :label="$t('Добавить ещё')"></v-checkbox>
-        <v-spacer></v-spacer>
-        <v-btn @click="closeDialog()">{{ $t('Закрыть') }}</v-btn>
-        <v-btn @click="submit()" color="primary">{{ $t('Добавить') }}</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-form>
+      <v-alert v-if="createdSkill" type="success">
+        {{ $t('Навык успешно создан', {skill: this.createdSkill}) }}
+      </v-alert>
+      <!-- Error block -->
+      <v-alert v-if="error" type="error">
+        {{ error }}
+      </v-alert>
+    </v-card-text>
+    <v-card-actions>
+      <v-checkbox v-model="addMore" :label="$t('Добавить ещё')"></v-checkbox>
+      <v-spacer></v-spacer>
+      <v-btn @click="closeDialog()">{{ $t('Закрыть') }}</v-btn>
+      <v-btn @click="submit()" color="primary">{{ $t('Добавить') }}</v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 
@@ -64,7 +64,6 @@
 import Vue from 'vue'
 import Component from "vue-class-component";
 import {Prop, Watch} from "vue-property-decorator";
-import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 import skillsService, {AddSkillBody} from "@/components/empl/skills/skills.service";
 import {SimpleDict} from "@/store/modules/dict";
@@ -109,8 +108,8 @@ export default class AddSkillForm extends Vue {
     this.reset();
   }
 
-  private reset(groupId?:number, createdSkill?:string) {
-    this.createdSkill = createdSkill? createdSkill : null;
+  private reset(groupId?: number, createdSkill?: string) {
+    this.createdSkill = createdSkill ? createdSkill : null;
     this.addSkillForm.groupId = groupId ? groupId : null;
     this.addSkillForm.name = '';
     this.addSkillForm.ratingValue = null;
@@ -125,7 +124,9 @@ export default class AddSkillForm extends Vue {
   }
 
   private submit() {
-    const form: any = this.$refs.addSkillForm;
+    this.createdSkill = null;
+    this.error = null;
+    const form = this.$refs.addSkillForm as HTMLFormElement;
     if (form.validate()) {
       const body = {
         groupId: this.addSkillForm.groupId!,
@@ -135,10 +136,11 @@ export default class AddSkillForm extends Vue {
           notes: this.addSkillForm.ratingNotes
         } : null
       } as AddSkillBody;
-      logger.log(`Add skill ${body}`);
       return skillsService.addMySkill(body)
           .then((result) => {
-            this.reset(body.groupId, body.name);
+            form.reset();
+            this.$nextTick(()=>this.reset(body.groupId, body.name));
+            this.$emit('submit', result);
             if (!this.addMore) {
               this.$emit('close');
             }

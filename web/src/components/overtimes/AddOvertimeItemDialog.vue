@@ -64,6 +64,7 @@ Emits:
 
             </template>
             <v-date-picker
+                :first-day-of-week="1"
                 v-model="item.date"
                 @input="dateMenu=false">
             </v-date-picker>

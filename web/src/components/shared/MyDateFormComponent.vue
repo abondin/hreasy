@@ -20,6 +20,7 @@
         </v-text-field>
       </template>
       <v-date-picker
+          :first-day-of-week="1"
           :value="date"
           @input="calendarSelected">
       </v-date-picker>

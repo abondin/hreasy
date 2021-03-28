@@ -45,6 +45,17 @@ public class EmployeeSkillsController {
                 auth.getEmployeeInfo().getEmployeeId(), body));
     }
 
+    /**
+     * @param skillId
+     * @param body
+     * @return skill with updated
+     */
+    @PutMapping("{skillId}/rating")
+    public Mono<SkillDto> updateRating(@PathVariable int skillId, @RequestBody SkillRatingBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.updateRating(auth,
+                skillId, body));
+    }
+
     @Data
     @ToString(of = "name")
     public static class AddSkillBody {

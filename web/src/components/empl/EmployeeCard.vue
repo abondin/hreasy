@@ -21,6 +21,9 @@ Uses in Employees Table (Employees.vue)
             <v-icon small>edit</v-icon>
           </v-btn>
         </v-list-item-subtitle>
+        <v-list-item-subtitle v-if="employee">
+          {{$t('Навыки')}}: <skills-chips :skills="employee.skills"></skills-chips>
+        </v-list-item-subtitle>
       </v-list-item-content>
     </v-list-item>
     <v-dialog
@@ -43,11 +46,12 @@ import {Prop} from "vue-property-decorator";
 import EmployeeAvatarUploader from "@/components/empl/EmployeeAvatarUploader.vue";
 import EmployeeUpdateCurrentProject from "@/components/empl/EmployeeUpdateCurrentProject.vue";
 import permissionService from "@/store/modules/permission.service";
+import SkillsChips from "@/components/empl/skills/SkillsChips.vue";
 
 const namespace: string = 'auth';
 
 @Component({
-  components: {EmployeeAvatarUploader, EmployeeUpdateCurrentProject}
+  components: {SkillsChips, EmployeeAvatarUploader, EmployeeUpdateCurrentProject}
 })
 export default class EmployeeCard extends Vue {
 

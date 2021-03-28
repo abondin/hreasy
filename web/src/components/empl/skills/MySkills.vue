@@ -18,16 +18,17 @@
       </v-card-title>
 
       <v-card-text>
-        <div v-for="s in skills" v-bind:key="s.id">
-          {{ s.name }}
-        </div>
+        <skills-chips
+            @submit="fetchData()"
+            :skills="skills"></skills-chips>
       </v-card-text>
     </v-card>
     <v-dialog v-model="addSkillDialog" max-width="600">
       <add-skill-form
           :all-groups="allSkillGroups"
           :all-shared-skills="allSharedSkills"
-          @close="addSkillDialog=false;fetchData()"></add-skill-form>
+          @submit="fetchData()"
+          @close="addSkillDialog=false"></add-skill-form>
     </v-dialog>
   </div>
 </template>
@@ -42,11 +43,12 @@ import AddSkillForm from "@/components/empl/skills/AddSkillForm.vue";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import {SharedSkillName} from "@/store/modules/dict.service";
+import SkillsChips from "@/components/empl/skills/SkillsChips.vue";
 
 const namespace: string = 'dict';
 
 @Component({
-  components: {AddSkillForm}
+  components: {SkillsChips, AddSkillForm}
 })
 export default class MySkills extends Vue {
   loading: boolean = false;
@@ -89,7 +91,7 @@ export default class MySkills extends Vue {
         });
   }
 
-  public openAddSkillDialog() {
+  private openAddSkillDialog() {
     this.addSkillDialog = true;
   }
 

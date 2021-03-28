@@ -18,6 +18,8 @@ public class SkillDto {
     @NotNull
     private SimpleDictDto group;
 
+    private Integer id;
+
     /**
      * Java, Spring, French, etc
      */
@@ -28,5 +30,8 @@ public class SkillDto {
      * From 1 to 5
      */
     @Nullable
-    private Float rating;
+    private Float averageRating;
+
+    @Nullable
+    private int ratingsCount;
 }

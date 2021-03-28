@@ -1,5 +1,6 @@
 import httpService from "../http.service";
 import {AxiosInstance} from "axios";
+import {Skill} from "@/components/empl/skills/skills.service";
 
 export class Dict {
     constructor(public id: number, public name: string) {
@@ -21,8 +22,10 @@ export interface Employee {
     email: string,
     phone: string,
     skype: string,
-    hasAvatar: boolean
+    hasAvatar: boolean,
+    skills: Skill[]
 }
+
 
 export interface EmployeeService {
     findAll(): Promise<Employee[]>;

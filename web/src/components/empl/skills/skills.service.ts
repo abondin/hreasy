@@ -14,15 +14,17 @@ export interface Skill {
      */
     name: string,
     /**
-     * From 1 to 10
+     * From 1 to 5
      */
-    rating?: number
+    averageRating?: number
+
+    ratingsCount?: number
 }
 
 export interface AddSkillBody {
     groupId: number,
     name: string,
-    rating: SkillRatingBody|null
+    rating: SkillRatingBody | null
 }
 
 export interface SkillRatingBody {
@@ -30,11 +32,16 @@ export interface SkillRatingBody {
     notes: string
 }
 
+export interface UpdateRatingValue {
+    rating: number
+}
 
 export interface SkillsService {
     my(): Promise<Skill[]>;
 
     addMySkill(body: AddSkillBody): Promise<number>;
+
+    updateRating(id: number, rating: UpdateRatingValue): Promise<number>;
 }
 
 
@@ -50,6 +57,12 @@ class RestSkillsService implements SkillsService {
 
     addMySkill(body: AddSkillBody): Promise<number> {
         return httpService.post(`v1/employee/skills`, body).then(response => {
+            return response.data;
+        });
+    }
+
+    updateRating(id: number, rating: UpdateRatingValue): Promise<number> {
+        return httpService.put(`v1/employee/skills/${id}/rating`, rating).then(response => {
             return response.data;
         });
     }
