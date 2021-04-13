@@ -38,8 +38,8 @@ public class SkillService {
     }
 
     public Flux<SkillDto> mySkills(AuthContext auth) {
-        var now = dateTimeService.now();
-        return skillRepo.findWithRatingByEmployeeId(auth.getEmployeeInfo().getEmployeeId(), now).map(mapper::skillWithRating);
+        return skillRepo.findWithRatingByEmployeeId(auth.getEmployeeInfo().getEmployeeId())
+                .map(e -> mapper.skillWithRatings(e, auth.getEmployeeInfo().getEmployeeId()));
     }
 
     @Transactional
@@ -99,8 +99,8 @@ public class SkillService {
                                                     ratingToSave.setUpdatedAt(now);
                                                     return ratingRepo.save(ratingToSave);
                                                     // 6. Reload skill to recalculate average rating
-                                                }).flatMap(persisted -> skillRepo.findWithRatingByEmployeeAndSkillId(skillEntry.getEmployeeId(), skillId, now)
-                                                .map(mapper::skillWithRating)
+                                                }).flatMap(persisted -> skillRepo.findWithRatingByEmployeeAndSkillId(skillEntry.getEmployeeId(), skillId)
+                                                .map(e -> mapper.skillWithRatings(e, auth.getEmployeeInfo().getEmployeeId()))
                                         )));
     }
 

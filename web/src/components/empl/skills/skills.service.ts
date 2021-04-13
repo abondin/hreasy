@@ -13,12 +13,19 @@ export interface Skill {
      * Java, Spring, French, etc
      */
     name: string,
+
+    ratings: Ratings
+}
+
+export interface Ratings {
     /**
      * From 1 to 5
      */
     averageRating?: number
 
     ratingsCount?: number
+
+    myRating?: number;
 }
 
 export interface AddSkillBody {

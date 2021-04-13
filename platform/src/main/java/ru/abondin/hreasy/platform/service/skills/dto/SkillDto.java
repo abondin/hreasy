@@ -26,12 +26,25 @@ public class SkillDto {
     @NotNull
     private String name;
 
-    /**
-     * From 1 to 5
-     */
     @Nullable
-    private Float averageRating;
+    private Ratings ratings;
 
-    @Nullable
-    private int ratingsCount;
+    @Data
+    public static class Ratings{
+        /**
+         * From 1 to 5
+         */
+        @Nullable
+        private Float averageRating;
+
+        /**
+         * From 1 to 5
+         */
+        @Nullable
+        private Float myRating;
+
+
+        @Nullable
+        private int ratingsCount;
+    }
 }

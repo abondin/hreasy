@@ -7,14 +7,28 @@
         <div v-for="s in g.skills" v-bind:key="s.id">
           <v-menu v-model="s.menu" bottom right transition="scale-transition" origin="top left">
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" class="mr-2">{{ s.name }} ({{ s.averageRating }})
+              <v-chip v-on="on" class="mr-2">{{ s.name }}
+                ({{
+                  $t('Средний рейтинг') + ': ' + (s.ratings.averageRating ? s.ratings.averageRating : $t('Нет оценок'))
+                }})
               </v-chip>
             </template>
             <v-sheet>
-              <v-rating half :value="s.averageRating" @input="v=>updateRating(s, v)"></v-rating>
-              <span v-if="s.averageRating">{{ $t('Текущий рейтинг') }}: {{
-                  s.averageRating
-                }} ({{ $tc('ratingCounts', s.ratingsCount) }} )</span>
+              <v-rating half :value="s.ratings.myRating" @input="v=>updateRating(s, v)"></v-rating>
+              <ul>
+                <li>
+                  {{ $t('Мой рейтинг') + ': ' + (s.ratings.myRating ? s.ratings.myRating : $t('Не задан')) }}
+                </li>
+                <li>{{ $t('Средний рейтинг') }}:
+                  <span v-if="s.ratings.averageRating">{{
+                      s.ratings.averageRating
+                    }} ({{ $tc('ratingCounts', s.ratings.ratingsCount) }} )</span>
+                  <span v-else>
+                    {{$t('Нет оценок')}}
+                  </span>
+                </li>
+              </ul>
+
             </v-sheet>
           </v-menu>
         </div>
@@ -80,6 +94,7 @@ export default class AddSkillForm extends Vue {
   private updateRating(skill: SkillWithMenu, newValue: number) {
     skillsService.updateRating(skill.id, {rating: newValue}).then(() => {
       skill.menu = false;
+      sk
       this.$emit("submit")
     });
   }
