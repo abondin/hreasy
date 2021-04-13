@@ -92,9 +92,9 @@ export default class AddSkillForm extends Vue {
   }
 
   private updateRating(skill: SkillWithMenu, newValue: number) {
-    skillsService.updateRating(skill.id, {rating: newValue}).then(() => {
+    skillsService.updateRating(skill.id, {rating: newValue}).then((updated) => {
       skill.menu = false;
-      sk
+      skill.ratings = updated.ratings;
       this.$emit("submit")
     });
   }

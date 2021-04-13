@@ -21,10 +21,10 @@ create view v_employee_detailed as select e.*,
         left join sec_user us on e.id = us.employee_id
         left join (
             select sr.employee_id, STRING_AGG(CONCAT_WS( '|#|',sr.id, sr.name, gr.id, gr.name, sr.str), '|$|') rating from (
-                          select s.employee_id, s.id, s.name, STRING_AGG(CONCAT_WS(',', r.created_by, r.rating), '/') str
-                           from skill s left join skill_rating r  on s.id=r.skill_id and r.deleted_at is null
-                        	group by s.employee_id, s.id, s.name
-                        ) sr  inner join skill_group gr on gr.id=sr.id group by sr.employee_id
+                                      select s.employee_id, s.group_id, s.id, s.name, STRING_AGG(CONCAT_WS(',', r.created_by, r.rating), '/') str
+                                       from skill s left join skill_rating r  on s.id=r.skill_id and r.deleted_at is null
+                                    	group by s.employee_id, s.group_id, s.id, s.name
+                                    ) sr  inner join skill_group gr on gr.id=sr.group_id group by sr.employee_id
 
         ) sk
  on e.id = sk.employee_id;
