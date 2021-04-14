@@ -16,6 +16,7 @@
         ></v-autocomplete>
 
         <v-combobox
+            @input.native="e => addSkillForm.name = e.target.value"
             :label="$t('Название навыка')"
             :items="filteredSkills(allSharedSkills)"
             :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
@@ -54,7 +55,7 @@
       <v-checkbox v-model="addMore" :label="$t('Добавить ещё')"></v-checkbox>
       <v-spacer></v-spacer>
       <v-btn @click="closeDialog()">{{ $t('Закрыть') }}</v-btn>
-      <v-btn @click="submit()" color="primary">{{ $t('Добавить') }}</v-btn>
+      <v-btn @click="submit()" ref="submitButton" color="primary">{{ $t('Добавить') }}</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -68,6 +69,7 @@ import {errorUtils} from "@/components/errors";
 import skillsService, {AddSkillBody} from "@/components/empl/skills/skills.service";
 import {SimpleDict} from "@/store/modules/dict";
 import {SharedSkillName} from "@/store/modules/dict.service";
+import logger from "@/logger";
 
 
 class SkillForm {
@@ -129,6 +131,7 @@ export default class AddSkillForm extends Vue {
   private submit() {
     this.createdSkill = null;
     this.error = null;
+
     const form = this.$refs.addSkillForm as HTMLFormElement;
     if (form.validate()) {
       const body = {
@@ -142,7 +145,7 @@ export default class AddSkillForm extends Vue {
       return skillsService.addSkill(this.employeeId, body)
           .then((result) => {
             form.reset();
-            this.$nextTick(()=>this.reset(body.groupId, body.name));
+            this.$nextTick(() => this.reset(body.groupId, body.name));
             this.$emit('submit', result);
             if (!this.addMore) {
               this.$emit('close');
