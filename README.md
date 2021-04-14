@@ -90,6 +90,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |update_project|N|N|Admin permission to update information of any project. Without this permission user can update only projects created by himself|
 |create_project|N|N|Admin permission to create new project|
 |admin_users|N|N|Admin user. Assign roles. Assign accessible projects and departments|
+|edit_skills|Y|Y|Add/Delete employee skills of managed project/department|
 
 **Default permissions and roles**
 
@@ -113,3 +114,4 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |update_project|global_admin|
 |create_project|global_admin, pm|
 |admin_users|global_admin|
+|edit_skills|global_admin,pm,hr|

@@ -38,14 +38,14 @@ public class EmployeeService {
         }
         return emplRepo.findDetailed(criteria,
                 Sort.by("lastname", "firstname", "patronymicName")
-        ).map(e -> mapper.employeeToDto(e));
+        ).map(e -> mapper.employeeWithSkills(e, auth.getEmployeeInfo().getEmployeeId()));
     }
 
 
     public Mono<EmployeeDto> find(int employeeId, AuthContext auth) {
         log.debug("Find {} employee from {} account", employeeId, auth.getEmail());
         return emplRepo.findDetailed(employeeId)
-                .map(e -> mapper.employeeToDto(e))
+                .map(e -> mapper.employeeWithSkills(e, auth.getEmployeeInfo().getEmployeeId()))
                 .switchIfEmpty(Mono.error(new HttpClientErrorException(HttpStatus.NOT_FOUND,
                         "Employee with ID=" + employeeId + " not found")));
     }

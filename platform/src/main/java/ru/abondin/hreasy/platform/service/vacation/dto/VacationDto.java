@@ -45,7 +45,7 @@ public class VacationDto {
 
         public static VacationStatus fromId(int statusId) {
             return Arrays.stream(values()).filter(s -> s.statusId == statusId).findFirst()
-                    .orElseThrow(() -> new BusinessError("unsupported.vacation.status", Integer.toString(statusId)));
+                    .orElseThrow(() -> new BusinessError("errors.unsupported.vacation.status", Integer.toString(statusId)));
         }
     }
 }

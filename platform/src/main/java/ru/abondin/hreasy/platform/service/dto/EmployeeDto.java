@@ -3,8 +3,11 @@ package ru.abondin.hreasy.platform.service.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.abondin.hreasy.platform.service.skills.dto.SkillDto;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Employee information, available to any authenticated user
@@ -28,4 +31,5 @@ public class EmployeeDto {
     private String phone;
     private String skype;
     private boolean hasAvatar;
+    private List<SkillDto> skills = new ArrayList<>();
 }

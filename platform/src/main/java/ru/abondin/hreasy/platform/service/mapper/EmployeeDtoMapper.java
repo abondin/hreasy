@@ -7,6 +7,7 @@ import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedEntry;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.skills.dto.RatingsMapper;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,15 +16,24 @@ import java.util.stream.Stream;
  * Map all dictionaries database entries to API DTO
  */
 @Mapper(componentModel = "spring")
-public interface EmployeeDtoMapper extends MapperBase {
+public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
 
     @Mapping(target = "displayName", source = ".", qualifiedByName = "displayName")
     @Mapping(target = "department", source = ".", qualifiedByName = "department")
     @Mapping(target = "currentProject", source = ".", qualifiedByName = "currentProject")
     @Mapping(target = "position", source = ".", qualifiedByName = "position")
     @Mapping(target = "officeLocation", source = ".", qualifiedByName = "officeLocation")
+    @Mapping(target = "skills", ignore = true)
     @Mapping(target = "hasAvatar", ignore = true)
-    EmployeeDto employeeToDto(EmployeeDetailedEntry entry);
+    EmployeeDto employeeNoSkills(EmployeeDetailedEntry entry);
+
+    default EmployeeDto employeeWithSkills(EmployeeDetailedEntry entry, int loggedInEmployee) {
+        var result = employeeNoSkills(entry);
+        if (result != null) {
+            result.setSkills(parseAssembledSkills(entry.getAggregatedSkills(), loggedInEmployee));
+        }
+        return result;
+    }
 
     @Named("displayName")
     default String displayName(EmployeeDetailedEntry entry) {
@@ -54,5 +64,6 @@ public interface EmployeeDtoMapper extends MapperBase {
     default SimpleDictDto currentProject(EmployeeDetailedEntry entry) {
         return simpleDto(entry.getCurrentProjectId(), entry.getCurrentProjectName());
     }
+
 
 }

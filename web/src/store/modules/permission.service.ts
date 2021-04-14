@@ -1,6 +1,5 @@
 import store from "@/store";
 import {SecurityInfo} from "@/store/modules/auth";
-import {SimpleDict} from "@/store/modules/dict";
 
 export enum Permissions {
     /**
@@ -68,7 +67,12 @@ export enum Permissions {
     /**
      * Admin user. Assign roles. Assign accessible projects and departments
      */
-    AdminUsers = "admin_users"
+    AdminUsers = "admin_users",
+
+    /**
+     * Edit skills of any employee
+     */
+    EditSkills = "edit_skills"
 }
 
 interface PermissionService {
@@ -117,6 +121,8 @@ interface PermissionService {
     canAdminProjects(): boolean;
 
     canAdminUsers(): boolean;
+
+    canEditSkills(employeeId: number): boolean;
 }
 
 const namespace: string = 'auth';
@@ -171,6 +177,10 @@ class VuexPermissionService implements PermissionService {
 
     canAdminUsers(): boolean {
         return this.simplePermissionCheck(Permissions.AdminUsers);
+    }
+
+    canEditSkills(employeeId: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.EditSkills, employeeId);
     }
 
     private simplePermissionCheck(permission: Permissions) {

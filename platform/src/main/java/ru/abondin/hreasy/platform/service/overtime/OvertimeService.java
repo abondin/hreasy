@@ -230,7 +230,7 @@ public class OvertimeService {
 
     private Mono<Boolean> validatePeriodNotClosed(int period) {
         return closedPeriodRepo.findById(period)
-                .flatMap(p -> Mono.error(new BusinessError("overtime.period.closed", Integer.toString(p.getPeriod()))))
+                .flatMap(p -> Mono.error(new BusinessError("errors.overtime.period.closed", Integer.toString(p.getPeriod()))))
                 .map(p -> false)
                 .defaultIfEmpty(true);
     }
