@@ -22,7 +22,10 @@ Uses in Employees Table (Employees.vue)
           </v-btn>
         </v-list-item-subtitle>
         <v-list-item-subtitle v-if="employee">
-          {{$t('Навыки')}}: <skills-chips :skills="employee.skills"></skills-chips>
+          {{$t('Навыки')}}: <skills-chips
+            :skills="employee.skills"
+            :employee-id="employee.id"
+          ></skills-chips>
         </v-list-item-subtitle>
       </v-list-item-content>
     </v-list-item>

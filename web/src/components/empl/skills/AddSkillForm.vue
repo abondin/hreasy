@@ -92,6 +92,9 @@ export default class AddSkillForm extends Vue {
   private allGroups!: SimpleDict[];
 
   @Prop({required: true})
+  private employeeId!: number;
+
+  @Prop({required: true})
   private allSharedSkills!: SharedSkillName[];
 
   private addMore = true;
@@ -136,7 +139,7 @@ export default class AddSkillForm extends Vue {
           notes: this.addSkillForm.ratingNotes
         } : null
       } as AddSkillBody;
-      return skillsService.addMySkill(body)
+      return skillsService.addSkill(this.employeeId, body)
           .then((result) => {
             form.reset();
             this.$nextTick(()=>this.reset(body.groupId, body.name));

@@ -4,32 +4,15 @@
     <v-card>
       <v-card-title>
         <div>{{ $t('Мои навыки') }}</div>
-        <v-spacer></v-spacer>
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="col-auto">
-              <v-btn text color="primary" :disabled="loading" @click="openAddSkillDialog()" icon>
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <span>{{ $t('Добавить навык') }}</span>
-        </v-tooltip>
       </v-card-title>
 
       <v-card-text>
         <skills-chips
             @submit="fetchData()"
-            :skills="skills"></skills-chips>
+            :skills="skills"
+            :employee-id="currentUserEmployeeId"></skills-chips>
       </v-card-text>
     </v-card>
-    <v-dialog v-model="addSkillDialog" max-width="600">
-      <add-skill-form
-          :all-groups="allSkillGroups"
-          :all-shared-skills="allSharedSkills"
-          @submit="fetchData()"
-          @close="addSkillDialog=false"></add-skill-form>
-    </v-dialog>
   </div>
 </template>
 
@@ -39,28 +22,22 @@ import Vue from 'vue'
 import Component from 'vue-class-component';
 import {DateTimeUtils} from "@/components/datetimeutils";
 import skillsService, {Skill} from "@/components/empl/skills/skills.service";
-import AddSkillForm from "@/components/empl/skills/AddSkillForm.vue";
 import {Getter} from "vuex-class";
-import {SimpleDict} from "@/store/modules/dict";
-import {SharedSkillName} from "@/store/modules/dict.service";
 import SkillsChips from "@/components/empl/skills/SkillsChips.vue";
 
 const namespace: string = 'dict';
+const namespace_auth: string = 'auth';
+
 
 @Component({
-  components: {SkillsChips, AddSkillForm}
+  components: {SkillsChips}
 })
 export default class MySkills extends Vue {
   loading: boolean = false;
   skills: Skill[] = [];
 
-  private addSkillDialog = false;
-
-  @Getter("skillGroups", {namespace})
-  private allSkillGroups!: Array<SimpleDict>;
-
-  @Getter("sharedSkills", {namespace})
-  private allSharedSkills!: Array<SharedSkillName>;
+  @Getter("employeeId", {namespace: namespace_auth})
+  private currentUserEmployeeId!: number;
 
   /**
    * Lifecycle hook
@@ -89,10 +66,6 @@ export default class MySkills extends Vue {
         ).finally(() => {
           this.loading = false
         });
-  }
-
-  private openAddSkillDialog() {
-    this.addSkillDialog = true;
   }
 
   private formatDate(date: string): string | undefined {

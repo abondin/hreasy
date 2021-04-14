@@ -114,4 +114,4 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |update_project|global_admin|
 |create_project|global_admin, pm|
 |admin_users|global_admin|
-|edit_skills|global_admin,pm|
+|edit_skills|global_admin,pm,hr|

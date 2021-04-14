@@ -43,7 +43,7 @@ public class SkillService {
     }
 
     @Transactional
-    public Mono<Integer> addSkill(AuthContext auth, int employeeId, EmployeeSkillsController.AddSkillBody body) {
+    public Mono<SkillDto> addSkill(AuthContext auth, int employeeId, EmployeeSkillsController.AddSkillBody body) {
         log.info("New skill {} for {} added by {}", auth.getUsername(), employeeId, body);
         var now = dateTimeService.now();
         return
@@ -64,8 +64,12 @@ public class SkillService {
                                         return ratingRepo.save(rating).map((r) -> saved.getId());
                                     }
                                 })
-                        );
+                        ).flatMap(ratingId ->
+                        skillRepo.findWithRatingByEmployeeAndSkillId(employeeId, ratingId)
+                                .map(e -> mapper.skillWithRatings(e, auth.getEmployeeInfo().getEmployeeId()))
+                );
     }
+
 
     public Flux<SharedSkillNameDto> sharedSkillsNames(AuthContext auth) {
         return skillRepo.sharedSkills().map(e -> new SharedSkillNameDto(e.getGroupId(), e.getName()));

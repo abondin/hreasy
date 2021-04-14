@@ -39,10 +39,16 @@ public class EmployeeSkillsController {
         return AuthHandler.currentAuth().flatMapMany(auth -> service.groups(auth));
     }
 
-    @PostMapping
-    public Mono<Integer> addMySkill(@RequestBody AddSkillBody body) {
+    /**
+     * Add new skill to employee
+     *
+     * @param body
+     * @return
+     */
+    @PostMapping("{employeeId}")
+    public Mono<SkillDto> addSkill(@PathVariable int employeeId, @RequestBody AddSkillBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> service.addSkill(auth,
-                auth.getEmployeeInfo().getEmployeeId(), body));
+                employeeId, body));
     }
 
     /**
