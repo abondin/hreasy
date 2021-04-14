@@ -62,6 +62,14 @@ public class EmployeeSkillsController {
                 skillId, body));
     }
 
+
+    @DeleteMapping("{employeeId}/{skillId}")
+    public Mono<Integer> delete(@PathVariable int employeeId, @PathVariable int skillId) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.delete(auth, employeeId,
+                skillId));
+    }
+
+
     @Data
     @ToString(of = "name")
     public static class AddSkillBody {

@@ -49,6 +49,8 @@ export interface SkillsService {
     addSkill(employeeId: number, body: AddSkillBody): Promise<Skill>;
 
     updateRating(id: number, rating: UpdateRatingValue): Promise<Skill>;
+
+    deleteSkill(employeeId: number, skillIdToDelete: number): Promise<void>;
 }
 
 
@@ -70,6 +72,12 @@ class RestSkillsService implements SkillsService {
 
     updateRating(id: number, rating: UpdateRatingValue): Promise<Skill> {
         return httpService.put(`v1/employee/skills/${id}/rating`, rating).then(response => {
+            return response.data;
+        });
+    }
+
+    deleteSkill(employeeId: number, skillIdToDelete: number): Promise<void> {
+        return httpService.delete(`v1/employee/skills/${employeeId}/${skillIdToDelete}`).then(response => {
             return response.data;
         });
     }

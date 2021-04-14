@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.OffsetDateTime;
+
 @Repository
 public interface SkillRepo extends ReactiveCrudRepository<SkillEntry, Integer> {
 
@@ -31,6 +33,9 @@ public interface SkillRepo extends ReactiveCrudRepository<SkillEntry, Integer> {
      */
     @Query(findWithRatingByEmployeeIdQuery + " and s.id=:skillId")
     Mono<SkillWithRatingEntry> findWithRatingByEmployeeAndSkillId(Integer employeeId, Integer skillId);
+
+    @Query("update skill set deleted_by=:employeeId, deleted_at=:now where id=:skillId")
+    Mono<Integer> markAsDeleted(Integer skillId, Integer employeeId, OffsetDateTime now);
 
 
     @Query("select distinct group_id, name from skill where shared=1")

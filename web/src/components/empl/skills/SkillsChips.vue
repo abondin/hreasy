@@ -8,7 +8,7 @@
         <div v-for="s in g.skills" v-bind:key="s.id">
           <v-menu v-model="s.menu" bottom right transition="scale-transition" origin="top left">
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" class="mr-2">{{ s.name }}
+              <v-chip v-on="on" class="mr-2" close @click:close="openDeleteSkillDialog(s)">{{ s.name }}
                 ({{
                   $t('Средний рейтинг') + ': ' + (s.ratings.averageRating ? s.ratings.averageRating : $t('Нет оценок'))
                 }})
@@ -58,6 +58,26 @@
           @submit="skillAdded"
           @close="addSkillDialog=false"></add-skill-form>
     </v-dialog>
+
+    <v-dialog v-model="deleteDialog" max-width="600">
+      <v-card v-if="skillToDelete">
+        <v-card-title primary-title>{{ $t('Удаление') + ' ' + skillToDelete.name }}</v-card-title>
+        <v-card-text>
+          {{ $t('Вы уверены что хотите удалить запись?') }}
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="skillToDelete = null;deleteDialog=false">
+            {{ $t('Нет') }}
+          </v-btn>
+          <v-btn color="primary" @click="deleteSkill()">
+            {{ $t('Да') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -108,6 +128,8 @@ export default class SkillsChips extends Vue {
   private mySkills: Skill[] = [];
 
   private addSkillDialog = false;
+  private deleteDialog = false;
+  private skillToDelete: Skill | null = null;
 
   public created() {
     this.mySkills = [...this.skills];
@@ -155,8 +177,24 @@ export default class SkillsChips extends Vue {
     this.groupSkills();
   }
 
-  private skillsChipsEditable(employeeId: number): boolean{
+  private skillsChipsEditable(employeeId: number): boolean {
     return permissionService.canEditSkills(employeeId);
+  }
+
+  private openDeleteSkillDialog(skill: Skill) {
+    this.skillToDelete = skill;
+    this.deleteDialog=true;
+  }
+
+  private deleteSkill() {
+    this.deleteDialog = false;
+    if (this.skillToDelete) {
+      skillsService.deleteSkill(this.employeeId, this.skillToDelete.id).then(() => {
+        this.mySkills = this.mySkills.filter(s => s.id != this.skillToDelete!.id);
+        this.skillToDelete = null;
+        this.groupSkills();
+      });
+    }
   }
 
 }

@@ -47,7 +47,7 @@ public class SkillService {
         log.info("New skill {} for {} added by {}", auth.getUsername(), employeeId, body);
         var now = dateTimeService.now();
         return
-                securityValidator.validateAddSkill(auth, employeeId)
+                securityValidator.validateAddOrDeleteSkill(auth, employeeId)
                         .then(validateNotExists(employeeId, body.getGroupId(), body.getName()))
                         .then(doSave(auth, employeeId, body, now)
                                 .flatMap(saved -> {
@@ -70,6 +70,22 @@ public class SkillService {
                 );
     }
 
+    public Mono<Integer> delete(AuthContext auth, int employeeId, int skillId) {
+        log.info("Skill {}:{} deleted by {}", employeeId, skillId, auth.getUsername());
+        var now = dateTimeService.now();
+        return
+                securityValidator.validateAddOrDeleteSkill(auth, employeeId)
+                        .then(skillRepo.findById(skillId))
+                        .switchIfEmpty(Mono.error(new BusinessError("entity.not.found", Integer.toString(skillId))))
+                        .flatMap(entry -> {
+                            if (employeeId!=entry.getEmployeeId()){
+                                return Mono.error(new BusinessError("illegal.argument", "employeeId",
+                                        entry.getEmployeeId().toString(),
+                                        Integer.toString(employeeId)));
+                            }
+                            return skillRepo.markAsDeleted(skillId, employeeId, now);
+                        });
+    }
 
     public Flux<SharedSkillNameDto> sharedSkillsNames(AuthContext auth) {
         return skillRepo.sharedSkills().map(e -> new SharedSkillNameDto(e.getGroupId(), e.getName()));
@@ -130,5 +146,6 @@ public class SkillService {
                                 skillName))
                 ).switchIfEmpty(Mono.just(1));
     }
+
 
 }

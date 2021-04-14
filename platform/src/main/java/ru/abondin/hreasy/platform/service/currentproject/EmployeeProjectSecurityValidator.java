@@ -58,7 +58,7 @@ public class EmployeeProjectSecurityValidator {
     }
 
 
-    public Mono<Boolean> validateAddSkill(AuthContext auth, int employeeId) {
+    public Mono<Boolean> validateAddOrDeleteSkill(AuthContext auth, int employeeId) {
         return Mono.defer(() -> {
             if (employeeId == auth.getEmployeeInfo().getEmployeeId()) {
                 return Mono.just(true);
