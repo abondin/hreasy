@@ -33,7 +33,7 @@ class RestDictService implements DictService {
     }
 
     public loadSharedSkills(): Promise<Array<SharedSkillName>> {
-        return httpService.get("/v1/employee/skills//shared/names").then(response => response.data);
+        return httpService.get("/v1/employee/skills/shared/names").then(response => response.data);
     }
 }
 
