@@ -48,7 +48,6 @@ public class SkillService {
         var now = dateTimeService.now();
         return
                 securityValidator.validateAddOrDeleteSkill(auth, employeeId)
-                        .then(validateNotExists(employeeId, body.getGroupId(), body.getName()))
                         .then(doSave(auth, employeeId, body, now)
                                 .flatMap(saved -> {
                                     if (body.getRating() == null) {
@@ -76,14 +75,17 @@ public class SkillService {
         return
                 securityValidator.validateAddOrDeleteSkill(auth, employeeId)
                         .then(skillRepo.findById(skillId))
-                        .switchIfEmpty(Mono.error(new BusinessError("entity.not.found", Integer.toString(skillId))))
+                        .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(skillId))))
                         .flatMap(entry -> {
-                            if (employeeId!=entry.getEmployeeId()){
-                                return Mono.error(new BusinessError("illegal.argument", "employeeId",
+                            if (employeeId != entry.getEmployeeId()) {
+                                return Mono.error(new BusinessError("errors.illegal.argument", "employeeId",
                                         entry.getEmployeeId().toString(),
                                         Integer.toString(employeeId)));
                             }
-                            return skillRepo.markAsDeleted(skillId, employeeId, now);
+                            // Mark all ratings as deleted
+                            return ratingRepo.markAllAsDeleted(skillId, employeeId, now)
+                                    // Mark skill as deleted
+                                    .then(skillRepo.markAsDeleted(skillId, employeeId, now));
                         });
     }
 
@@ -103,7 +105,7 @@ public class SkillService {
         newSkillRating.setCreatedBy(createdBy);
         // 1. Get skill from DB
         return skillRepo.findById(skillId)
-                .switchIfEmpty(Mono.error(new BusinessError("entity.not.found", Integer.toString(skillId))))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(skillId))))
                 .flatMap(skillEntry ->
                         //2. Validate security
                         securityValidator.validateUpdateRating(auth, skillEntry.getEmployeeId(), skillId)
@@ -117,6 +119,8 @@ public class SkillService {
                                                     ratingToSave.setRating(body.getRating());
                                                     ratingToSave.setNotes(body.getNotes());
                                                     ratingToSave.setUpdatedAt(now);
+                                                    ratingToSave.setDeletedAt(null);
+                                                    ratingToSave.setDeletedBy(null);
                                                     return ratingRepo.save(ratingToSave);
                                                     // 6. Reload skill to recalculate average rating
                                                 }).flatMap(persisted -> skillRepo.findWithRatingByEmployeeAndSkillId(skillEntry.getEmployeeId(), skillId)
@@ -126,26 +130,30 @@ public class SkillService {
 
 
     private Mono<SkillEntry> doSave(AuthContext auth, int employeeId, EmployeeSkillsController.AddSkillBody body, OffsetDateTime now) {
-        var skillEntry = new SkillEntry();
-        skillEntry.setEmployeeId(employeeId);
-        skillEntry.setCreatedAt(now);
-        skillEntry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-        skillEntry.setGroupId(body.getGroupId());
-        skillEntry.setName(body.getName());
-        skillEntry.setShared(props.isSkillAddDefaultShared());
+        var newEntry = new SkillEntry();
+        newEntry.setEmployeeId(employeeId);
+        newEntry.setCreatedAt(now);
+        newEntry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
+        newEntry.setGroupId(body.getGroupId());
+        newEntry.setName(body.getName());
+        newEntry.setShared(props.isSkillAddDefaultShared());
 
-        return skillRepo.save(skillEntry);
-    }
-
-    private Mono<Object> validateNotExists(int employeeId, int skillGroupId, String skillName) {
-        return skillRepo.findUnique(employeeId, skillGroupId, skillName)
-                .flatMap(r -> Mono.error(
+        // Find skill
+        return skillRepo.findUnique(employeeId, body.getGroupId(), body.getName()).flatMap(entry -> {
+            // Throw error if we have not deleted one
+            if (entry.getDeletedAt() == null) {
+                return Mono.error(
                         new BusinessError("errors.skill.already.exists",
                                 Integer.toString(employeeId),
-                                Integer.toString(skillGroupId),
-                                skillName))
-                ).switchIfEmpty(Mono.just(1));
+                                Integer.toString(body.getGroupId()),
+                                body.getName()));
+            } else {
+                // Restore deleted skill
+                entry.setDeletedAt(null);
+                entry.setDeletedBy(null);
+                return Mono.just(entry);
+            }
+        }).switchIfEmpty(Mono.just(newEntry)).flatMap(e -> skillRepo.save(e));
     }
-
 
 }

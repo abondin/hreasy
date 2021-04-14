@@ -38,7 +38,7 @@ public interface SkillRepo extends ReactiveCrudRepository<SkillEntry, Integer> {
     Mono<Integer> markAsDeleted(Integer skillId, Integer employeeId, OffsetDateTime now);
 
 
-    @Query("select distinct group_id, name from skill where shared=1")
+    @Query("select distinct group_id, name from skill where shared=1 and deleted_at is null")
     Flux<SkillEntry> sharedSkills();
 
     @Query("select * from skill where employee_id=:employeeId and group_id=:groupId and name=:name")

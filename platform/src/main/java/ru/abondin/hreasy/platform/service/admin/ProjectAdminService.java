@@ -59,7 +59,7 @@ public class ProjectAdminService {
         var now = dateTimeService.now();
         var entry = mapper.fromDto(projectToUpdate);
         return repo.findById(projectId)
-                .switchIfEmpty(Mono.error(new BusinessError("entity.not.found", Integer.toString(projectId))))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(projectId))))
                 .flatMap(existing -> {
                     entry.setId(projectId);
                     entry.setCreatedBy(existing.getCreatedBy());
