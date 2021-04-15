@@ -19,7 +19,7 @@
             @input.native="e => addSkillForm.name = e.target.value"
             :label="$t('Название навыка')"
             :items="filteredSkills(allSharedSkills)"
-            :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
+            :rules="[v=>(v && v.trim() && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
             v-model="addSkillForm.name">
         </v-combobox>
 
@@ -136,7 +136,7 @@ export default class AddSkillForm extends Vue {
     if (form.validate()) {
       const body = {
         groupId: this.addSkillForm.groupId!,
-        name: this.addSkillForm.name,
+        name: this.addSkillForm.name.trim(),
         rating: this.addSkillForm.ratingValue ? {
           rating: this.addSkillForm.ratingValue,
           notes: this.addSkillForm.ratingNotes

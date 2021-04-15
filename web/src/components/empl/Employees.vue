@@ -6,7 +6,7 @@
         <v-row dense>
           <v-col lg="6" cols="12">
             <v-text-field
-                v-model="search"
+                v-model="filter.search"
                 append-icon="mdi-magnify"
                 :label="$t('Поиск')"
                 single-line
@@ -32,7 +32,6 @@
           :loading-text="$t('Загрузка_данных')"
           :headers="headers"
           :items="filtered()"
-          :search="search"
           sort-by="displayName"
           :show-expand="$vuetify.breakpoint.mdAndUp"
           disable-pagination
@@ -63,6 +62,7 @@ const namespace_dict: string = 'dict';
 
 class Filter {
   public selectedProjects: number[] = [];
+  public search: string = "";
 }
 
 @Component({
@@ -71,7 +71,6 @@ class Filter {
 export default class EmployeesComponent extends Vue {
   headers: DataTableHeader[] = [];
   loading: boolean = false;
-  search = '';
 
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<SimpleDict>;
@@ -110,6 +109,13 @@ export default class EmployeesComponent extends Vue {
       let filtered = true;
       if (this.filter.selectedProjects && this.filter.selectedProjects.length > 0) {
         filtered = filtered && (e.currentProject != undefined && this.filter.selectedProjects.indexOf(e.currentProject!.id) >= 0);
+      }
+      if (this.filter.search) {
+        const str = this.filter.search.trim().toLocaleLowerCase();
+        let searchFilter = false;
+        searchFilter = searchFilter || e.displayName.toLocaleLowerCase().indexOf(str) >= 0;
+        searchFilter = searchFilter || e.skills.filter(s => s.name.toLocaleLowerCase().indexOf(str) >= 0).length > 0;
+        filtered = filtered && searchFilter;
       }
       return filtered;
     });
