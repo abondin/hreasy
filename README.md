@@ -91,6 +91,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |create_project|N|N|Admin permission to create new project|
 |admin_users|N|N|Admin user. Assign roles. Assign accessible projects and departments|
 |edit_skills|Y|Y|Add/Delete employee skills of managed project/department|
+|edit_business_account|N|N|Add/Update business account and create/update BA positions|
+|assign_to_ba_position|Y|N|Assign employee to business account position|
 
 **Default permissions and roles**
 
@@ -99,6 +101,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |global_admin|Full access|
 |hr|Add/Update/Fire all employees|
 |pm|Overtime and vacation review and update, reasign empoyee between managed projects|
+|finance|Work with business account positions and expenses
 
 |permissions|roles|
 |----|------|
@@ -115,3 +118,5 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |create_project|global_admin, pm|
 |admin_users|global_admin|
 |edit_skills|global_admin,pm,hr|
+|edit_business_account|global_admin,finance|
+|assign_to_ba_position|global_admin,pm,finance|

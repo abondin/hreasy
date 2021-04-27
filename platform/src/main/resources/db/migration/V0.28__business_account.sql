@@ -1,3 +1,4 @@
+-- business_account
 if not exists (select * from sysobjects where name='business_account' and xtype='U')
 begin
     create TABLE business_account (
@@ -13,9 +14,14 @@ begin
     alter table business_account add CONSTRAINT ba_responsible_FK FOREIGN KEY (responsible_employee) REFERENCES employee(id);
     alter table business_account add CONSTRAINT ba_archived_FK FOREIGN KEY (archived_by) REFERENCES employee(id);
     alter table business_account add CONSTRAINT ba_created_FK FOREIGN KEY (created_by) REFERENCES employee(id);
+
+    -- Update project - add optional link to business account
+    alter table project add ba_id int NULL;
+    alter table project_history add ba_id int NULL;
 end
 GO
 
+-- ba_position
 if not exists (select * from sysobjects where name='ba_position' and xtype='U')
 begin
     create TABLE ba_position (
@@ -35,6 +41,7 @@ begin
 end
 GO
 
+-- ba_assignment
 if not exists (select * from sysobjects where name='ba_assignment' and xtype='U')
 begin
     create TABLE ba_assignment (
@@ -70,4 +77,25 @@ begin
     alter table ba_assignment add CONSTRAINT ba_assignment_created_FK FOREIGN KEY (created_by) REFERENCES employee(id);
 end
 GO
+
+
+if not exists (select * from sec_perm where permission='edit_business_account')
+    begin
+        insert into sec_perm(permission, description) values ('edit_business_account',
+            'Add/Update business account and create/update BA positions');
+        insert into sec_role_perm(role,permission) values ('global_admin','edit_business_account');
+end
+if not exists (select * from sec_perm where permission='assign_to_ba_position')
+    begin
+        insert into sec_perm(permission, description) values ('assign_to_ba_position',
+            'Assign/Unassign employee to/from business account position');
+        insert into sec_role_perm(role,permission) values ('global_admin','assign_to_ba_position');
+        insert into sec_role_perm(role,permission) values ('pm','assign_to_ba_position');
+end
+-- Add permissions to admin business account
+if not exists (select * from sec_role where role='finance')
+    begin
+        insert into sec_role (role, description) values ('finance', 'Work with business account positions and expenses');
+        insert into sec_role_perm(role,permission) values ('finance','edit_business_account');
+end
 

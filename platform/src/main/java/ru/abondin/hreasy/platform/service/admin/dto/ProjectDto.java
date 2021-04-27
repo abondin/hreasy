@@ -54,5 +54,8 @@ public class ProjectDto {
 
         @NotNull
         private Integer departmentId;
+
+        @Nullable
+        private Integer baId;
     }
 }

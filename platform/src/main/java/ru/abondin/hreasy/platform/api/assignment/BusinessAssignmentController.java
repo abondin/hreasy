@@ -15,14 +15,14 @@ import ru.abondin.hreasy.platform.service.ba.dto.BusinessAccountDto;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api/v1/business_assignment")
+@RequestMapping("/api/v1/business_account")
 public class BusinessAssignmentController {
 
     private final BusinessAccountService baService;
 
     @GetMapping
     public Flux<BusinessAccountDto> allActive() {
-        return baService.activeBusinessAccounts();
+        return baService.findAll(false);
     }
 
 }

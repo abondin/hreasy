@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.repo.ba;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
@@ -11,6 +12,7 @@ import java.time.OffsetDateTime;
 @Data
 @Table("business_account")
 public class BusinessAccountEntry {
+    @Id
     private Integer id;
     private String name;
     private Integer responsibleEmployee;

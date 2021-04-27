@@ -28,6 +28,7 @@ public class AdminSecurityValidator {
         });
     }
 
+
     public Mono<Boolean> validateUpdateProject(AuthContext auth, DictProjectEntry entry) {
         return Mono.defer(() -> {
             if (auth.getEmployeeInfo().getEmployeeId().equals(entry.getCreatedBy())) {
@@ -65,6 +66,16 @@ public class AdminSecurityValidator {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("admin_users")) {
                 return Mono.error(new AccessDeniedException("Only user with permission admin_users can update roles"));
+            }
+            return Mono.just(true);
+        });
+    }
+
+    public Mono<Boolean> validateAddOrUpdateBusinessAccount(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("edit_business_account")) {
+                return Mono.error(new AccessDeniedException("Only user with permission edit_business_account can create" +
+                        " add or update business accounts"));
             }
             return Mono.just(true);
         });

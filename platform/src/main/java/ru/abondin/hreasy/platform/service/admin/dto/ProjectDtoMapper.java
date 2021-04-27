@@ -19,15 +19,15 @@ public interface ProjectDtoMapper extends MapperBase {
     ProjectDto fromEntry(DictProjectEntry.ProjectFullEntry entry);
 
 
-    default DictProjectEntry.ProjectHistoryEntry historyEntry(int empoyeeId, OffsetDateTime updateTime, DictProjectEntry projectEntry) {
-        var result = partionCopyHistory(projectEntry);
+    default DictProjectEntry.ProjectHistoryEntry historyEntry(int employeeId, OffsetDateTime updateTime, DictProjectEntry projectEntry) {
+        var result = partialCopyHistory(projectEntry);
         result.setUpdatedAt(updateTime);
-        result.setUpdatedBy(empoyeeId);
+        result.setUpdatedBy(employeeId);
         return result;
     }
 
     @Mapping(source = "id", target = "projectId")
-    DictProjectEntry.ProjectHistoryEntry partionCopyHistory(DictProjectEntry projectEntry);
+    DictProjectEntry.ProjectHistoryEntry partialCopyHistory(DictProjectEntry projectEntry);
 
 
     default SimpleDictDto department(DictProjectEntry.ProjectFullEntry entry) {

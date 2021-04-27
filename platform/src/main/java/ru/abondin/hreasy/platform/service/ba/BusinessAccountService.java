@@ -19,9 +19,8 @@ public class BusinessAccountService {
      *
      * @return
      */
-    public Flux<BusinessAccountDto> activeBusinessAccounts() {
+    public Flux<BusinessAccountDto> findAll(boolean includeArchived) {
         // Public information. No security required.
-        return baRepo.findActive().map(mapper::fromEntry);
+        return (includeArchived ? baRepo.findDetailed() : baRepo.findActive()).map(mapper::fromEntry);
     }
-
 }
