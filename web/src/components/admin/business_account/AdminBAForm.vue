@@ -15,6 +15,14 @@
           >
         </v-text-field>
 
+        <v-autocomplete
+            v-model="baForm.responsibleEmployee"
+            :items="allEmployees"
+            item-value="id"
+            item-text="displayName"
+            :label="$t('Ответственный сотрудник')"
+        ></v-autocomplete>
+
         <!-- description -->
         <v-text-field
             v-model="baForm.description"
@@ -71,6 +79,9 @@ export default class AdminBAForm extends Vue {
 
   @Prop({required: false})
   private input: BusinessAccount | undefined;
+
+  @Prop({required: true})
+  private allEmployees!: Employee[];
 
   private baForm = new BaForm();
 

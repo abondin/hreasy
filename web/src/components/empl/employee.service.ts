@@ -49,6 +49,7 @@ class RestEmployeeService implements EmployeeService {
         });
     }
 
+
     public find(id: number): Promise<Employee> {
         return httpService.get(`v1/employee/${id}`).then(response => {
             return response.data;

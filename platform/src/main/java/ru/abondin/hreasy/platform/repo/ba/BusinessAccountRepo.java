@@ -8,14 +8,14 @@ import reactor.core.publisher.Flux;
 @Repository
 public interface BusinessAccountRepo extends ReactiveCrudRepository<BusinessAccountEntry, Integer> {
 
-    @Query("select ba.*, trim(concat_ws(' ', re.lastname, re.firstname, re.patronymic_name)) as responsibleEmployeeName " +
+    @Query("select ba.*, trim(concat_ws(' ', re.lastname, re.firstname, re.patronymic_name)) as responsible_employee_name " +
             " from business_account ba left join employee re on ba.responsible_employee=re.id" +
-            " order by name")
+            "  order by responsible_employee_name")
     Flux<BusinessAccountEntryView> findDetailed();
 
-    @Query("select ba.*, trim(concat_ws(' ', re.lastname, re.firstname, re.patronymic_name)) as responsibleEmployeeName " +
+    @Query("select ba.*, trim(concat_ws(' ', re.lastname, re.firstname, re.patronymic_name)) as responsible_employee_name " +
             " from business_account ba left join employee re on ba.responsible_employee=re.id" +
-            " where archived_at is null order by name")
+            "  where ba.archived_at is null order by responsible_employee_name")
     Flux<BusinessAccountEntryView> findActive();
 
 

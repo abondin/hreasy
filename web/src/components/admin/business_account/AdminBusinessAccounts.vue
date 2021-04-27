@@ -46,6 +46,7 @@
         <v-dialog v-model="baDialog">
           <admin-b-a-form
               v-bind:input="selectedBA"
+              v-bind:allEmployees="allEmployees"
               @close="baDialog=false;fetchData()"></admin-b-a-form>
         </v-dialog>
 
@@ -62,8 +63,7 @@ import Component from "vue-class-component";
 import logger from "@/logger";
 import AdminBAForm from "@/components/admin/business_account/AdminBAForm.vue";
 import adminBaService, {BusinessAccount} from "@/components/admin/business_account/admin.ba.service";
-
-const namespace_dict: string = 'dict';
+import employeeService, {Employee} from "@/components/empl/employee.service";
 
 class Filter {
   public showArchived = false;
@@ -84,6 +84,7 @@ export default class AdminBusinessAccounts extends Vue {
 
   private baDialog = false;
   private selectedBA: BusinessAccount | null = null;
+  private allEmployees: Employee[] = [];
 
   /**
    * Lifecycle hook
@@ -91,7 +92,10 @@ export default class AdminBusinessAccounts extends Vue {
   created() {
     logger.log('Admin BA component created');
     this.reloadHeaders();
-    this.fetchData();
+    employeeService.findAll().then(employees => {
+          this.allEmployees = employees;
+        }
+    ).then(() => this.fetchData());
   }
 
   private fetchData() {
