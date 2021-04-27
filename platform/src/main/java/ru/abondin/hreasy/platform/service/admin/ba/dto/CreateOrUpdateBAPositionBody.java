@@ -5,15 +5,18 @@ import lombok.ToString;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 @Data
 @ToString
-public class CreateOrUpdateBABody {
+public class CreateOrUpdateBAPositionBody {
     @NotNull
     private String name;
     @Nullable
-    private Integer responsibleEmployee;
+    private Integer businessAccountId;
     @Nullable
     private String description;
+    @NotNull
+    private BigDecimal rate;
 
 }

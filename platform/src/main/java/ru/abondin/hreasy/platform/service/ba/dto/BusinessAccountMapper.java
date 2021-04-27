@@ -5,6 +5,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.ba.BusinessAccountEntryView;
+import ru.abondin.hreasy.platform.repo.ba.BusinessAccountPositionEntry;
+import ru.abondin.hreasy.platform.service.admin.ba.dto.BusinessAccountPositionWithRateDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
@@ -19,4 +21,6 @@ public interface BusinessAccountMapper extends MapperBase {
     default SimpleDictDto skillGroupToSimpleDict(BusinessAccountEntryView entry) {
         return simpleDto(entry.getResponsibleEmployee(), entry.getResponsibleEmployeeName());
     }
+
+    BusinessAccountPositionWithRateDto toPositionWithRate(BusinessAccountPositionEntry entry);
 }

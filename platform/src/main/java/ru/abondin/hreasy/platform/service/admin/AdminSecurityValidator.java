@@ -80,4 +80,8 @@ public class AdminSecurityValidator {
             return Mono.just(true);
         });
     }
+
+    public Mono<Boolean> validateGetBusinessAccountDetailed(AuthContext auth) {
+        return validateAddOrUpdateBusinessAccount(auth);
+    }
 }

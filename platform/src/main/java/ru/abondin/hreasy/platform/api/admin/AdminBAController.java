@@ -17,30 +17,26 @@ import ru.abondin.hreasy.platform.service.ba.dto.BusinessAccountDto;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api/v1/admin/business_account")
+@RequestMapping("/api/v1/admin/business_accounts")
 public class AdminBAController {
 
     private final BusinessAccountService baService;
     private final AdminBusinessAccountService adminService;
 
     @GetMapping
-    public Flux<BusinessAccountDto> all(@RequestParam boolean includeArchived) {
+    public Flux<BusinessAccountDto> allBAs(@RequestParam boolean includeArchived) {
         return baService.findAll(includeArchived);
     }
 
     @PostMapping
-    public Mono<Integer> create(@RequestBody CreateOrUpdateBABody body) {
+    public Mono<Integer> createBA(@RequestBody CreateOrUpdateBABody body) {
         return AuthHandler.currentAuth().flatMap(auth -> adminService.create(auth, body));
     }
 
     @PutMapping("/{baId}")
-    public Mono<Integer> create(@PathVariable int baId, @RequestBody CreateOrUpdateBABody body) {
+    public Mono<Integer> updateBA(@PathVariable int baId, @RequestBody CreateOrUpdateBABody body) {
         return AuthHandler.currentAuth().flatMap(auth -> adminService.update(auth, baId, body));
     }
 
-    @DeleteMapping("/{baId}")
-    public Mono<Integer> arhive(@PathVariable int baId) {
-        return AuthHandler.currentAuth().flatMap(auth -> adminService.archive(auth, baId));
-    }
 
 }
