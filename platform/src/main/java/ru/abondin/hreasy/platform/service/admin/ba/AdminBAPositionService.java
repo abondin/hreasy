@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.platform.service.admin;
+package ru.abondin.hreasy.platform.service.admin.ba;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +11,7 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.ba.BusinessAccountPositionEntry;
 import ru.abondin.hreasy.platform.repo.ba.BusinessAccountPositionRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
 import ru.abondin.hreasy.platform.service.admin.ba.dto.BusinessAccountPositionWithRateDto;
 import ru.abondin.hreasy.platform.service.admin.ba.dto.CreateOrUpdateBAPositionBody;
 import ru.abondin.hreasy.platform.service.ba.dto.BusinessAccountMapper;
@@ -25,20 +26,20 @@ public class AdminBAPositionService {
     private final AdminSecurityValidator securityValidator;
     private final DateTimeService dateTimeService;
 
-    public Flux<BusinessAccountPositionWithRateDto> allPositions(AuthContext auth, int businessAccountId, boolean includeArchived) {
+    public Flux<BusinessAccountPositionWithRateDto> allPositions(AuthContext auth, int businessAccountId) {
         return securityValidator.validateGetBusinessAccountDetailed(auth)
-                .flatMapMany((s) ->
-                        (includeArchived ? positionRepo.findAll(businessAccountId) : positionRepo.findNotArchived(businessAccountId)))
+                .flatMapMany((s) -> positionRepo.findAll(businessAccountId))
                 .map(mapper::toPositionWithRate);
     }
 
+
     /**
-     * Create new business accounts.
+     * Create new business account position.
      *
      * @return
      */
     @Transactional
-    public Mono<Integer> create(AuthContext auth, int businessAccountId, CreateOrUpdateBAPositionBody body) {
+    public Mono<Integer> createPosition(AuthContext auth, int businessAccountId, CreateOrUpdateBAPositionBody body) {
         log.info("Create new position {} for ba {} by {}", body, businessAccountId, auth.getUsername());
         var now = dateTimeService.now();
         return securityValidator.validateAddOrUpdateBusinessAccount(auth).flatMap((s) -> {
@@ -58,7 +59,7 @@ public class AdminBAPositionService {
      * @return
      */
     @Transactional
-    public Mono<Integer> update(AuthContext auth, int baId, int positionId, CreateOrUpdateBAPositionBody body) {
+    public Mono<Integer> updatePosition(AuthContext auth, int baId, int positionId, CreateOrUpdateBAPositionBody body) {
         log.info("Update business account position {} for ba {} with {} by {}", positionId, baId, body, auth.getUsername());
         var now = dateTimeService.now();
         return securityValidator.validateAddOrUpdateBusinessAccount(auth)
@@ -79,7 +80,7 @@ public class AdminBAPositionService {
      * @return
      */
     @Transactional
-    public Mono<Integer> archive(AuthContext auth, int baId, int positionId) {
+    public Mono<Integer> archivePosition(AuthContext auth, int baId, int positionId) {
         log.info("Archive business account position {} for ba {} by {}", positionId, baId, auth.getUsername());
         var now = dateTimeService.now();
         return securityValidator.validateAddOrUpdateBusinessAccount(auth)
@@ -92,4 +93,5 @@ public class AdminBAPositionService {
                 })
                 .map(e -> e.getId());
     }
+
 }

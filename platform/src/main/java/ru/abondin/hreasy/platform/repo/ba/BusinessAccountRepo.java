@@ -4,6 +4,7 @@ import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Repository
 public interface BusinessAccountRepo extends ReactiveCrudRepository<BusinessAccountEntry, Integer> {
@@ -20,4 +21,6 @@ public interface BusinessAccountRepo extends ReactiveCrudRepository<BusinessAcco
     Flux<BusinessAccountEntryView> findActive();
 
 
+    @Query(FIND_QUERY_PREFIX + " where ba.id=:baId")
+    Mono<BusinessAccountEntryView> findDetailedById(int baId);
 }

@@ -38,6 +38,8 @@ export interface AdminBAService {
 
     findAll(): Promise<BusinessAccount[]>;
 
+    get(baId: number): Promise<BusinessAccount>;
+
 }
 
 
@@ -46,25 +48,30 @@ class RestAdminBAService implements AdminBAService {
     }
 
     create(body: CreateOrUpdateBusinessAccount): Promise<number> {
-        return httpService.post(`v1/admin/business_accounts`, body).then(response => {
+        return httpService.post(`v1/admin/business_account`, body).then(response => {
             return response.data;
         });
     }
 
     update(baId: number, body: CreateOrUpdateBusinessAccount): Promise<number> {
-        return httpService.put(`v1/admin/business_accounts/${baId}`, body).then(response => {
+        return httpService.put(`v1/admin/business_account/${baId}`, body).then(response => {
             return response.data;
         });
     }
 
     archive(baId: number): Promise<number> {
-        return httpService.delete(`v1/admin/business_accounts/${baId}`).then(response => {
+        return httpService.delete(`v1/admin/business_account/${baId}`).then(response => {
             return response.data;
         });
     }
 
     findAll(): Promise<BusinessAccount[]> {
-        return httpService.get(`v1/admin/business_accounts?includeArchived=true`).then(response => {
+        return httpService.get(`v1/admin/business_account?includeArchived=true`).then(response => {
+            return response.data;
+        });
+    }
+    get(baId: number): Promise<BusinessAccount> {
+        return httpService.get(`v1/admin/business_account/${baId}`).then(response => {
             return response.data;
         });
     }

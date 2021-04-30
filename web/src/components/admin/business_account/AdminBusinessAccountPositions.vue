@@ -2,8 +2,11 @@
 <template>
   <v-container>
     <v-card>
+
+    </v-card>
+    <v-card>
       <v-card-title>
-        <!-- Refresh button -->
+        <div class="mr-2">{{ $t('Овертаймы') }}</div>
         <v-btn text icon @click="fetchData()">
           <v-icon>refresh</v-icon>
         </v-btn>
@@ -11,10 +14,10 @@
         <v-text-field
             v-model="filter.search"
             :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
-        <v-checkbox :label="$t('Показать закрытые бизнес аккаунты')" v-model="filter.showArchived">
+        <v-checkbox :label="$t('Показать закрытые позиции')" v-model="filter.showArchived">
         </v-checkbox>
         <v-divider vertical class="mr-5 ml-5"></v-divider>
-        <!-- Add new businessAccount -->
+        <!-- Add new position -->
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
             <div v-bind="tattrs" v-on="ton" class="col-auto">
@@ -38,7 +41,7 @@
             sort
             disable-pagination>
           <template v-slot:item.name="{ item }">
-            <v-btn text link :to="'/admin/ba/'+item.id">{{ item.name }}
+            <v-btn text @click="openBADialog(item)">{{ item.name }}
             </v-btn>
           </template>
         </v-data-table>
@@ -92,12 +95,10 @@ export default class AdminBusinessAccounts extends Vue {
   created() {
     logger.log('Admin BA component created');
     this.reloadHeaders();
-    this.loading = true;
     employeeService.findAll().then(employees => {
           this.allEmployees = employees;
         }
-    ).finally(() => this.loading = false)
-        .then(() => this.fetchData());
+    ).then(() => this.fetchData());
   }
 
   private fetchData() {
