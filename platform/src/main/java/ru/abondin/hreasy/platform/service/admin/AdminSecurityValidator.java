@@ -84,4 +84,8 @@ public class AdminSecurityValidator {
     public Mono<Boolean> validateGetBusinessAccountDetailed(AuthContext auth) {
         return validateAddOrUpdateBusinessAccount(auth);
     }
+
+    public Mono<Boolean> validateUpdateBAPosition(AuthContext auth, int baId) {
+        return validateAddOrUpdateBusinessAccount(auth);
+    }
 }

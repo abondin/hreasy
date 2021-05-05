@@ -42,13 +42,14 @@ public class AdminBAPositionService {
     public Mono<Integer> createPosition(AuthContext auth, int businessAccountId, CreateOrUpdateBAPositionBody body) {
         log.info("Create new position {} for ba {} by {}", body, businessAccountId, auth.getUsername());
         var now = dateTimeService.now();
-        return securityValidator.validateAddOrUpdateBusinessAccount(auth).flatMap((s) -> {
+        return securityValidator.validateUpdateBAPosition(auth, businessAccountId).flatMap((s) -> {
             var entry = new BusinessAccountPositionEntry();
             entry.setCreatedAt(now);
             entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
             entry.setDescription(body.getDescription());
             entry.setName(body.getName());
-            entry.setBusinessAccount(body.getBusinessAccountId());
+            entry.setBusinessAccount(businessAccountId);
+            entry.setRate(body.getRate());
             return positionRepo.save(entry);
         }).map(e -> e.getId());
     }
@@ -62,13 +63,14 @@ public class AdminBAPositionService {
     public Mono<Integer> updatePosition(AuthContext auth, int baId, int positionId, CreateOrUpdateBAPositionBody body) {
         log.info("Update business account position {} for ba {} with {} by {}", positionId, baId, body, auth.getUsername());
         var now = dateTimeService.now();
-        return securityValidator.validateAddOrUpdateBusinessAccount(auth)
+        return securityValidator.validateUpdateBAPosition(auth, baId)
                 .flatMap(s -> positionRepo.findById(positionId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(baId))))
                 .flatMap(entry -> {
                     entry.setDescription(body.getDescription());
                     entry.setName(body.getName());
-                    entry.setBusinessAccount(body.getBusinessAccountId());
+                    entry.setBusinessAccount(baId);
+                    entry.setRate(body.getRate());
                     return positionRepo.save(entry);
                 })
                 .map(e -> e.getId());
@@ -83,9 +85,9 @@ public class AdminBAPositionService {
     public Mono<Integer> archivePosition(AuthContext auth, int baId, int positionId) {
         log.info("Archive business account position {} for ba {} by {}", positionId, baId, auth.getUsername());
         var now = dateTimeService.now();
-        return securityValidator.validateAddOrUpdateBusinessAccount(auth)
-                .flatMap(s -> positionRepo.findById(baId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(baId))))
+        return securityValidator.validateUpdateBAPosition(auth, baId)
+                .flatMap(s -> positionRepo.findById(positionId))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(positionId))))
                 .flatMap(entry -> {
                     entry.setArchivedBy(auth.getEmployeeInfo().getEmployeeId());
                     entry.setArchivedAt(now);

@@ -55,7 +55,8 @@ public class GlobalWebErrorsHandler implements ErrorWebExceptionHandler, ServerA
         final Object errorDto;
         if (ex instanceof BusinessError) {
             response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
-            errorDto = new BusinessErrorDto(((BusinessError) ex).getCode(), i18Helper.localize(((BusinessError) ex).getCode(), ((BusinessError) ex).getLocalizationArgs()), ((BusinessError) ex).getAttrs());
+            errorDto = new BusinessErrorDto(((BusinessError) ex).getCode(),
+                    i18Helper.localize(((BusinessError) ex).getCode(), ((BusinessError) ex).getLocalizationArgs()), ((BusinessError) ex).getAttrs());
         } else if (ex instanceof BadCredentialsException) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             errorDto = new BusinessErrorDto("errors.bad.credentials", i18Helper.localize("errors.bad.credentials"), new HashMap<>());

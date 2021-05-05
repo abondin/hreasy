@@ -16,7 +16,7 @@ import ru.abondin.hreasy.platform.service.admin.ba.dto.CreateOrUpdateBAPositionB
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api/v1/admin/business_account/positions/{baId}")
+@RequestMapping("/api/v1/admin/business_account/{baId}/positions")
 public class AdminBAPositionController {
 
     private final AdminBAPositionService adminService;

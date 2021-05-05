@@ -15,9 +15,22 @@ export interface BusinessAccount {
     description?: string,
     createdBy?: number,
     createdAt?: Date,
-    archived: boolean
+    archivedAt?: Date
 }
 
+export interface BusinessAccountPosition {
+    id: number,
+    name: string;
+    description?: string,
+    archivedAt?: Date
+    rate: number
+}
+
+export interface CreateOrUpdateBAPosition {
+    name: string;
+    description?: string;
+    rate: number
+}
 
 export interface AdminBAService {
     /**
@@ -40,6 +53,22 @@ export interface AdminBAService {
 
     get(baId: number): Promise<BusinessAccount>;
 
+    findPositions(baId: number): Promise<BusinessAccountPosition[]>;
+
+    /**
+     * Create new Business Account Position
+     */
+    createPosition(baId: number, body: CreateOrUpdateBAPosition): Promise<number>;
+
+    /**
+     * Update existing Business Account Position
+     */
+    updatePosition(baId: number, positionId: number, body: CreateOrUpdateBAPosition): Promise<number>;
+
+    /**
+     * Archive  Business Account Position
+     */
+    archivePosition(baId: number, positionId: number): Promise<number>;
 }
 
 
@@ -70,8 +99,33 @@ class RestAdminBAService implements AdminBAService {
             return response.data;
         });
     }
+
     get(baId: number): Promise<BusinessAccount> {
         return httpService.get(`v1/admin/business_account/${baId}`).then(response => {
+            return response.data;
+        });
+    }
+
+    findPositions(baId: number): Promise<BusinessAccountPosition[]> {
+        return httpService.get(`v1/admin/business_account/${baId}/positions`).then(response => {
+            return response.data;
+        });
+    }
+
+    createPosition(baId: number, body: CreateOrUpdateBAPosition): Promise<number> {
+        return httpService.post(`v1/admin/business_account/${baId}/positions`, body).then(response => {
+            return response.data;
+        });
+    }
+
+    updatePosition(baId: number, positionId: number, body: CreateOrUpdateBAPosition): Promise<number> {
+        return httpService.put(`v1/admin/business_account/${baId}/positions/${positionId}`, body).then(response => {
+            return response.data;
+        });
+    }
+
+    archivePosition(baId: number, positionId: number): Promise<number> {
+        return httpService.delete(`v1/admin/business_account/${baId}/positions/${positionId}`).then(response => {
             return response.data;
         });
     }

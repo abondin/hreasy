@@ -38,7 +38,8 @@
             sort
             disable-pagination>
           <template v-slot:item.name="{ item }">
-            <v-btn text link :to="'/admin/ba/'+item.id">{{ item.name }}
+            <v-btn text link :to="'/admin/ba/'+item.id">
+              {{ item.name }}
             </v-btn>
           </template>
         </v-data-table>
@@ -116,7 +117,7 @@ export default class AdminBusinessAccounts extends Vue {
     return this.bas.filter((p) => {
       var filtered = true;
       if (!this.filter.showArchived) {
-        filtered = filtered && (!p.archived);
+        filtered = filtered && (!p.archivedAt);
       }
       if (this.filter.search) {
         const search = this.filter.search.trim().toLowerCase();

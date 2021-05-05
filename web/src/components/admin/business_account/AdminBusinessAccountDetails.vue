@@ -15,7 +15,23 @@
         <div v-if="businessAccount">{{ businessAccount.name }} ({{ businessAccount.description }})</div>
         <v-spacer></v-spacer>
         <v-divider vertical class="mr-5 ml-5"></v-divider>
-        <!-- Add new businessAccount -->
+
+        <!-- Add to archive businessAccount -->
+        <v-btn v-if="businessAccount && businessAccount.archivedAt" icon>
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+        <v-tooltip v-else bottom>
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="col-auto">
+              <v-btn text color="secondary" :disabled="loading" @click="openDeleteDialog()" icon>
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{ $t('Архивировать бизнес акаунт') }}</span>
+        </v-tooltip>
+
+        <!-- Update businessAccount -->
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
             <div v-bind="tattrs" v-on="ton" class="col-auto">
@@ -24,7 +40,7 @@
               </v-btn>
             </div>
           </template>
-          <span>{{ $t('Редактировать') }}</span>
+          <span>{{ $t('Редактировать бизнес акаунт') }}</span>
         </v-tooltip>
 
       </v-card-title>
@@ -37,6 +53,41 @@
           @close="baDialog=false;fetchDetails()"></admin-b-a-form>
     </v-dialog>
 
+    <admin-b-a-positions
+        ref="baPositions"
+        :load-on-create=false
+        v-bind:business-account-id="businessAccountId"></admin-b-a-positions>
+
+    <!-- Delete ba dialog -->
+    <v-dialog v-model="deleteDialog"
+              width="500">
+      <v-card>
+        <v-card-title primary-title>
+          {{ $t('Удаление') }}
+        </v-card-title>
+
+        <v-card-text>
+          {{ $t('Вы уверены что хотите удалить запись?') }}
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+              text
+              @click="deleteDialog = false">
+            {{ $t('Нет') }}
+          </v-btn>
+          <v-btn
+              color="primary"
+              @click="deleteItem()">
+            {{ $t('Да') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -46,19 +97,23 @@ import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
 import AdminBAForm from "@/components/admin/business_account/AdminBAForm.vue";
-import adminBaService, {BusinessAccount} from "@/components/admin/business_account/admin.ba.service";
+import adminBaService, {
+  BusinessAccount,
+  BusinessAccountPosition
+} from "@/components/admin/business_account/admin.ba.service";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import {Prop} from "vue-property-decorator";
+import AdminBAPositions from "@/components/admin/business_account/AdminBAPositions.vue";
 
 
 @Component({
-      components: {AdminBAForm}
+      components: {AdminBAPositions, AdminBAForm}
     }
 )
 export default class AdminBusinessAccountDetails extends Vue {
   loading: boolean = false;
   baDialog = false;
-
+  deleteDialog = false;
 
   @Prop({required: true})
   private businessAccountId!: number;
@@ -85,6 +140,7 @@ export default class AdminBusinessAccountDetails extends Vue {
     return adminBaService.get(this.businessAccountId)
         .then(ba => {
           this.businessAccount = ba;
+          (this.$refs.baPositions as AdminBAPositions).refresh();
         }).finally(() => {
           if (showLoadingBar) this.loading = false;
         });
@@ -93,6 +149,19 @@ export default class AdminBusinessAccountDetails extends Vue {
 
   public openBADialog() {
     this.baDialog = true;
+  }
+
+  private openDeleteDialog(item: BusinessAccountPosition) {
+    this.$nextTick(() => {
+      this.deleteDialog = true;
+    });
+  }
+
+  private deleteItem() {
+      adminBaService.archive(this.businessAccountId).then(() => {
+        this.deleteDialog = false;
+        return this.fetchDetails();
+      });
   }
 
 }

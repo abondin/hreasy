@@ -28,7 +28,7 @@ public class BusinessAccountService {
 
     public Mono<BusinessAccountDto> get(int baId) {
         return baRepo.findDetailedById(baId)
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(baId))))
-                .map(mapper::fromEntry);
+                .map(mapper::fromEntry)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(baId))));
     }
 }

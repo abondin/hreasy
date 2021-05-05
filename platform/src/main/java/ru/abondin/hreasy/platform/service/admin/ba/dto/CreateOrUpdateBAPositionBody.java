@@ -13,8 +13,6 @@ public class CreateOrUpdateBAPositionBody {
     @NotNull
     private String name;
     @Nullable
-    private Integer businessAccountId;
-    @Nullable
     private String description;
     @NotNull
     private BigDecimal rate;

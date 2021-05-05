@@ -24,14 +24,14 @@
         ></v-autocomplete>
 
         <!-- description -->
-        <v-text-field
+        <v-textarea
             v-model="baForm.description"
-            :counter="255"
-            :rules="[v=>(!v || v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024}))]"
+            :counter="1024"
+            :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
             :label="$t('Описание')"
             required>
           >
-        </v-text-field>
+        </v-textarea>
 
 
         <!-- Error block -->
