@@ -11,7 +11,7 @@
         <v-text-field
             v-model="filter.search"
             :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
-        <v-checkbox :label="$t('Показать закрытые бизнес аккаунты')" v-model="filter.showArchived">
+        <v-checkbox :label="$t('Показать архивные бизнес аккаунты')" v-model="filter.showArchived">
         </v-checkbox>
         <v-divider vertical class="mr-5 ml-5"></v-divider>
         <!-- Add new businessAccount -->
@@ -38,7 +38,7 @@
             sort
             disable-pagination>
           <template v-slot:item.name="{ item }">
-            <v-btn text link :to="'/admin/ba/'+item.id">
+            <v-btn text link :to="'/admin/ba/'+item.id" :class="{archived:item.archived}">
               {{ item.name }}
             </v-btn>
           </template>
@@ -117,7 +117,7 @@ export default class AdminBusinessAccounts extends Vue {
     return this.bas.filter((p) => {
       var filtered = true;
       if (!this.filter.showArchived) {
-        filtered = filtered && (!p.archivedAt);
+        filtered = filtered && (!p.archived);
       }
       if (this.filter.search) {
         const search = this.filter.search.trim().toLowerCase();
@@ -147,3 +147,9 @@ export default class AdminBusinessAccounts extends Vue {
 
 }
 </script>
+
+<style>
+.archived{
+  text-decoration: line-through;
+}
+</style>

@@ -6,13 +6,11 @@ begin
 	name nvarchar(255) NOT NULL,
 	responsible_employee int NULL,
 	description ntext NULL,
-	archived_at datetimeoffset NULL,
-	archived_by int NULL,
+	archived bit default(0),
 	created_at datetimeoffset NULL,
 	created_by int NULL
     )
     alter table business_account add CONSTRAINT ba_responsible_FK FOREIGN KEY (responsible_employee) REFERENCES employee(id);
-    alter table business_account add CONSTRAINT ba_archived_FK FOREIGN KEY (archived_by) REFERENCES employee(id);
     alter table business_account add CONSTRAINT ba_created_FK FOREIGN KEY (created_by) REFERENCES employee(id);
 
     -- Update project - add optional link to business account
@@ -30,13 +28,11 @@ begin
 	name nvarchar(255) NOT NULL,
 	rate DECIMAL(19,4) NOT NULL,
 	description ntext NULL,
-	archived_at datetimeoffset NULL,
-	archived_by int NULL,
+	archived bit default(0),
 	created_at datetimeoffset NULL,
 	created_by int NULL
     )
     alter table ba_position add CONSTRAINT bapos_ba_FK FOREIGN KEY (business_account) REFERENCES business_account(id);
-    alter table ba_position add CONSTRAINT bapos_archived_FK FOREIGN KEY (archived_by) REFERENCES employee(id);
     alter table ba_position add CONSTRAINT bapos_created_FK FOREIGN KEY (created_by) REFERENCES employee(id);
 end
 GO
@@ -58,8 +54,7 @@ begin
 	end_date datetime NULL,
 	planned_start_date datetime NULL,
 	planned_end_date datetime NULL,
-	archived_at datetimeoffset NULL,
-	archived_by int NULL,
+	archived bit default(0),
 	closed_at datetimeoffset NULL,
 	closed_by int NULL,
 	closed_reason nvarchar(255) NULL,
@@ -72,7 +67,6 @@ begin
     alter table ba_assignment add CONSTRAINT ba_assignment_project_FK FOREIGN KEY (project) REFERENCES project(id);
     alter table ba_assignment add CONSTRAINT ba_assignment_parent_assignment_FK FOREIGN KEY (parent_assignment) REFERENCES ba_assignment(id);
     alter table ba_assignment add CONSTRAINT ba_assignment_employee_FK FOREIGN KEY (employee) REFERENCES employee(id);
-    alter table ba_assignment add CONSTRAINT ba_assignment_archived_FK FOREIGN KEY (archived_by) REFERENCES employee(id);
     alter table ba_assignment add CONSTRAINT ba_assignment_closed_FK FOREIGN KEY (closed_by) REFERENCES employee(id);
     alter table ba_assignment add CONSTRAINT ba_assignment_created_FK FOREIGN KEY (created_by) REFERENCES employee(id);
 end

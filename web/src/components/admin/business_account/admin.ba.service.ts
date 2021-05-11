@@ -5,7 +5,8 @@ import {SimpleDict} from "@/store/modules/dict";
 export interface CreateOrUpdateBusinessAccount {
     name: string;
     description?: string;
-    responsibleEmployeeId?: number
+    responsibleEmployeeId?: number,
+    archived: boolean
 }
 
 export interface BusinessAccount {
@@ -15,21 +16,22 @@ export interface BusinessAccount {
     description?: string,
     createdBy?: number,
     createdAt?: Date,
-    archivedAt?: Date
+    archived: boolean
 }
 
 export interface BusinessAccountPosition {
     id: number,
     name: string;
     description?: string,
-    archivedAt?: Date
+    archived: boolean
     rate: number
 }
 
 export interface CreateOrUpdateBAPosition {
     name: string;
     description?: string;
-    rate: number
+    rate: number,
+    archived: boolean
 }
 
 export interface AdminBAService {
@@ -42,11 +44,6 @@ export interface AdminBAService {
      * Update existing Business Account
      */
     update(baId: number, body: CreateOrUpdateBusinessAccount): Promise<number>;
-
-    /**
-     * Archive Business Account
-     */
-    archive(baId: number): Promise<number>;
 
 
     findAll(): Promise<BusinessAccount[]>;
@@ -64,11 +61,6 @@ export interface AdminBAService {
      * Update existing Business Account Position
      */
     updatePosition(baId: number, positionId: number, body: CreateOrUpdateBAPosition): Promise<number>;
-
-    /**
-     * Archive  Business Account Position
-     */
-    archivePosition(baId: number, positionId: number): Promise<number>;
 }
 
 

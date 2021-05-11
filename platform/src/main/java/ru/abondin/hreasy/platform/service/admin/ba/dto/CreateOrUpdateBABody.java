@@ -16,4 +16,6 @@ public class CreateOrUpdateBABody {
     @Nullable
     private String description;
 
+    private boolean archived = false;
+
 }

@@ -17,8 +17,7 @@ public class BusinessAccountEntry {
     private String name;
     private Integer responsibleEmployee;
     private String description;
-    private OffsetDateTime archivedAt;
-    private Integer archivedBy;
+    private boolean archived;
     private OffsetDateTime createdAt;
     private Integer createdBy;
 }

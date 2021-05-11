@@ -36,10 +36,4 @@ public class AdminBAPositionController {
         return AuthHandler.currentAuth().flatMap(auth -> adminService.updatePosition(auth, baId, positionId, body));
     }
 
-    @DeleteMapping("/{positionId}")
-    public Mono<Integer> archivePosition(@PathVariable int baId, @PathVariable int positionId) {
-        return AuthHandler.currentAuth().flatMap(auth -> adminService.archivePosition(auth, baId, positionId));
-    }
-
-
 }

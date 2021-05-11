@@ -39,8 +39,7 @@ public class BusinessAccountAssignmentDto {
     private LocalDate endDate;
     private LocalDate plannedStartDate;
     private LocalDate plannedEndDate;
-    private OffsetDateTime archivedAt;
-    private Integer archivedBy;
+    private boolean archived=false;
     private OffsetDateTime closedAt;
     private Integer closedBy;
     private String closedReason;

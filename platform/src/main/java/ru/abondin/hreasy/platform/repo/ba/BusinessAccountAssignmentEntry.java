@@ -31,8 +31,8 @@ public class BusinessAccountAssignmentEntry {
     @Id
     private Integer id;
     private int businessAccount;
-    private int employee;
-    private int project;
+    private Integer employee;
+    private Integer project;
     private Integer parentAssignment;
     private Integer baPosition;
     private Float employmentRate;
@@ -42,8 +42,7 @@ public class BusinessAccountAssignmentEntry {
     private LocalDate endDate;
     private LocalDate plannedStartDate;
     private LocalDate plannedEndDate;
-    private OffsetDateTime archivedAt;
-    private Integer archivedBy;
+    private boolean archived;
     private OffsetDateTime closedAt;
     private Integer closedBy;
     private String closedReason;

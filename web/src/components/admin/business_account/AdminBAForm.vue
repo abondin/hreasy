@@ -33,6 +33,11 @@
           >
         </v-textarea>
 
+        <v-select
+            v-model="baForm.archived"
+            :label="$t('Архив')"
+            :items="[{value:false, text:'Нет'}, {value:true, text:'Да'}]">
+        </v-select>
 
         <!-- Error block -->
         <v-alert v-if="error" type="error">
@@ -69,6 +74,7 @@ class BaForm {
   public name = '';
   public description = '';
   public responsibleEmployee?: number;
+  public archived=false;
 }
 
 @Component(
@@ -104,6 +110,7 @@ export default class AdminBAForm extends Vue {
     this.baForm.name = '';
     this.baForm.description = '';
     this.baForm.responsibleEmployee = undefined;
+    this.baForm.archived = false;
 
     if (this.input) {
       this.baForm.isNew = false;
@@ -111,6 +118,7 @@ export default class AdminBAForm extends Vue {
       this.baForm.name = this.input.name ? this.input.name : '';
       this.baForm.description = this.input.description ? this.input.description : '';
       this.baForm.responsibleEmployee = this.input.responsibleEmployee ? this.input.responsibleEmployee.id : undefined;
+      this.baForm.archived = this.input.archived;
     }
   }
 
@@ -128,8 +136,9 @@ export default class AdminBAForm extends Vue {
         name: this.baForm.name,
         description: this.baForm.description,
         responsibleEmployee: this.baForm.responsibleEmployee,
+        archived: this.baForm.archived
       } as CreateOrUpdateBusinessAccount;
-      var serverRequest;
+      let serverRequest;
       if (this.baForm.isNew) {
         logger.log(`Create business account ${JSON.stringify(this.baForm)}`);
         serverRequest = adminBaService.create(body)

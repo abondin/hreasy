@@ -18,8 +18,7 @@ public class BusinessAccountDto {
     private String name;
     private SimpleDictDto responsibleEmployee;
     private String description;
-    private OffsetDateTime archivedAt;
-    private Integer archivedBy;
+    private boolean archived=false;
     @NotNull
     private OffsetDateTime createdAt;
     @NotNull

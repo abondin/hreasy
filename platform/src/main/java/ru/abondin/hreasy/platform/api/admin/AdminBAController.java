@@ -44,9 +44,4 @@ public class AdminBAController {
         return AuthHandler.currentAuth().flatMap(auth -> adminService.update(auth, baId, body));
     }
 
-    @DeleteMapping("/{baId}")
-    public Mono<Integer> archiveBA(@PathVariable int baId) {
-        return AuthHandler.currentAuth().flatMap(auth -> adminService.archive(auth, baId));
-    }
-
 }

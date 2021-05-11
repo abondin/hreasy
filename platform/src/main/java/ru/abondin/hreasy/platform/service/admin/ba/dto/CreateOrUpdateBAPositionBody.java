@@ -17,4 +17,5 @@ public class CreateOrUpdateBAPositionBody {
     @NotNull
     private BigDecimal rate;
 
+    private boolean archived = false;
 }

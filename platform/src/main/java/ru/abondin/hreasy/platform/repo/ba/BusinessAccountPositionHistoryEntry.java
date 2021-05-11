@@ -11,10 +11,11 @@ import java.time.OffsetDateTime;
  * Business account position that generates profit
  */
 @Data
-@Table("ba_position")
-public class BusinessAccountPositionEntry {
+@Table("ba_position_history")
+public class BusinessAccountPositionHistoryEntry {
     @Id
     private Integer id;
+    private int baPositionId;
     private int businessAccount;
     private String name;
     private String description;
@@ -23,6 +24,6 @@ public class BusinessAccountPositionEntry {
      */
     private BigDecimal rate;
     private boolean archived;
-    private OffsetDateTime createdAt;
-    private Integer createdBy;
+    private OffsetDateTime updatedAt;
+    private Integer updatedBy;
 }

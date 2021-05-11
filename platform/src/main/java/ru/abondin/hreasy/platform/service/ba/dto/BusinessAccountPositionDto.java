@@ -20,7 +20,5 @@ public class BusinessAccountPositionDto {
     private String name;
     @Nullable
     private String description;
-    private OffsetDateTime archivedAt;
-    private Integer archivedBy;
-
+    private boolean archived=false;
 }

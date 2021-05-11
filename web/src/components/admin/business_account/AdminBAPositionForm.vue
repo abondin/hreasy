@@ -35,6 +35,13 @@
           >
         </v-textarea>
 
+
+        <v-select
+            v-model="baPositionForm.archived"
+            :label="$t('Архив')"
+            :items="[{value:false, text:'Нет'}, {value:true, text:'Да'}]">
+        </v-select>
+
         <!-- Error block -->
         <v-alert v-if="error" type="error">
           {{ error }}
@@ -58,18 +65,18 @@ import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 import adminBaService, {
-  BusinessAccount, BusinessAccountPosition, CreateOrUpdateBAPosition,
-  CreateOrUpdateBusinessAccount
+  BusinessAccountPosition,
+  CreateOrUpdateBAPosition
 } from "@/components/admin/business_account/admin.ba.service";
-import {Employee} from "@/components/empl/employee.service";
 
 
 class BaPositionForm {
   public isNew = true;
   public id?: number;
   public name = '';
-  public rate: number=0;
+  public rate: number = 0;
   public description = '';
+  public archived = false;
 }
 
 @Component(
@@ -104,6 +111,7 @@ export default class AdminBaPositionForm extends Vue {
     this.baPositionForm.id = undefined;
     this.baPositionForm.name = '';
     this.baPositionForm.description = '';
+    this.baPositionForm.archived = false;
 
     if (this.input) {
       this.baPositionForm.isNew = false;
@@ -111,6 +119,7 @@ export default class AdminBaPositionForm extends Vue {
       this.baPositionForm.name = this.input.name ? this.input.name : '';
       this.baPositionForm.description = this.input.description ? this.input.description : '';
       this.baPositionForm.rate = this.input.rate;
+      this.baPositionForm.archived = this.input.archived;
     }
   }
 
@@ -128,8 +137,9 @@ export default class AdminBaPositionForm extends Vue {
         name: this.baPositionForm.name,
         description: this.baPositionForm.description,
         rate: this.baPositionForm.rate,
+        archived: this.baPositionForm.archived
       } as CreateOrUpdateBAPosition;
-      var serverRequest;
+      let serverRequest;
       if (this.baPositionForm.isNew) {
         logger.log(`Create business account position ${JSON.stringify(this.baPositionForm)}`);
         serverRequest = adminBaService.createPosition(this.businessAccountId, body)
