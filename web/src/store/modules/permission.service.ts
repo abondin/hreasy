@@ -72,7 +72,12 @@ export enum Permissions {
     /**
      * Edit skills of any employee
      */
-    EditSkills = "edit_skills"
+    EditSkills = "edit_skills",
+
+    /**
+     * Add/Update business account and create/update BA positions
+     */
+    EditBusinessAccount="edit_business_account"
 }
 
 interface PermissionService {
@@ -123,6 +128,8 @@ interface PermissionService {
     canAdminUsers(): boolean;
 
     canEditSkills(employeeId: number): boolean;
+
+    canAdminBusinessAccounts(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -182,6 +189,11 @@ class VuexPermissionService implements PermissionService {
     canEditSkills(employeeId: number): boolean {
         return this.simplePermissionCheckOrCurrentEmployee(Permissions.EditSkills, employeeId);
     }
+
+    canAdminBusinessAccounts(): boolean {
+        return this.simplePermissionCheck(Permissions.EditBusinessAccount);
+    }
+
 
     private simplePermissionCheck(permission: Permissions) {
         const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];

@@ -32,6 +32,9 @@ public class DictProjectEntry {
     @NotNull
     private Integer departmentId;
 
+    @Nullable
+    private Integer baId;
+
     @NotNull
     private OffsetDateTime createdAt;
 
@@ -71,6 +74,9 @@ public class DictProjectEntry {
 
         @NotNull
         private Integer departmentId;
+
+        @Nullable
+        private Integer baId;
 
         @NotNull
         private OffsetDateTime updatedAt;

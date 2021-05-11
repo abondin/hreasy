@@ -96,7 +96,7 @@ public class OvertimeService {
                             item.setDeletedEmployeeId(auth.getEmployeeInfo().getEmployeeId());
                             return itemRepo.save(item);
                         })
-                        .switchIfEmpty(Mono.error(new BusinessError("errors.entry.not.found", Integer.toString(itemId))))
+                        .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(itemId))))
                         .then(get(employeeId, periodId)));
     }
 

@@ -9,6 +9,8 @@ import EmployeeProfile from "@/components/empl/EmployeeProfile.vue";
 import AllOvertimes from "@/components/overtimes/AllOvertimes.vue";
 import AdminProjects from "@/components/admin/project/AdminProjects.vue";
 import AdminUsers from "@/components/admin/users/AdminUsers.vue";
+import AdminBusinessAccounts from "@/components/admin/business_account/AdminBusinessAccounts.vue";
+import AdminBusinessAccountDetails from "@/components/admin/business_account/AdminBusinessAccountDetails.vue";
 
 Vue.use(VueRouter)
 
@@ -20,7 +22,9 @@ const routes = [
     {path: "/vacations", component: VacationsList},
     {path: "/overtimes", component: AllOvertimes},
     {path: "/admin/projects", component: AdminProjects},
-    {path: "/admin/users", component: AdminUsers}
+    {path: "/admin/users", component: AdminUsers},
+    {path: "/admin/ba", component: AdminBusinessAccounts},
+    {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true}
 
 ]
 const router = new VueRouter({

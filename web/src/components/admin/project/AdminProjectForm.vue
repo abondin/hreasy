@@ -38,14 +38,14 @@
         <my-date-form-component
             v-model="projectForm.startDate"
             :label="$t('Начало')"
-            :rules="[v=>(!v || Date.parse(v) > 0 || $t('Дата в формате ДД.ММ.ГГ'))]"
+            :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
         ></my-date-form-component>
 
         <!-- end date -->
         <my-date-form-component
             v-model="projectForm.endDate"
             :label="$t('Окончание')"
-            :rules="[v=>(!v || Date.parse(v) > 0 || $t('Дата в формате ДД.ММ.ГГ'))]"
+            :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
         ></my-date-form-component>
 
 
@@ -67,13 +67,15 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import adminProjectService, {CreateOrUpdateProject, ProjectFullInfo} from "@/components/admin/project/admin.project.service";
+import adminBaService, {CreateOrUpdateProject, ProjectFullInfo} from "@/components/admin/project/admin.project.service";
 import Component from "vue-class-component";
 import {Prop, Watch} from "vue-property-decorator";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 import {SimpleDict} from "@/store/modules/dict";
+import adminProjectService from "@/components/admin/project/admin.project.service";
+import {DateTimeUtils} from "@/components/datetimeutils";
 
 
 class ProjectForm {
@@ -166,6 +168,10 @@ export default class AdminProjectForm extends Vue {
             this.error = errorUtils.shortMessage(error);
           });
     }
+  }
+
+  private validateDate(formattedDate: string, allowEmpty = true): boolean {
+    return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
   }
 
 }
