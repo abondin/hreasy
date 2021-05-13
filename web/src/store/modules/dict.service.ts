@@ -9,6 +9,7 @@ export interface SharedSkillName {
 
 export interface DictService {
     loadAllProjects(): Promise<Array<SimpleDict>>;
+    loadAllBusinessAccounts(): Promise<Array<SimpleDict>>;
     loadAllDepartments(): Promise<Array<SimpleDict>>;
 
     loadAllSkillGroups():  Promise<Array<SimpleDict>>;
@@ -34,6 +35,10 @@ class RestDictService implements DictService {
 
     public loadSharedSkills(): Promise<Array<SharedSkillName>> {
         return httpService.get("/v1/employee/skills/shared/names").then(response => response.data);
+    }
+
+    public loadAllBusinessAccounts(): Promise<Array<SimpleDict>> {
+        return httpService.get("v1/business_account").then(response => response.data);
     }
 }
 

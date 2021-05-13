@@ -32,6 +32,9 @@ public class ProjectDto {
     @NotNull
     private SimpleDictDto department;
 
+    @Nullable
+    private SimpleDictDto businessAccount;
+
     private int createdBy;
 
     private OffsetDateTime createdAt;

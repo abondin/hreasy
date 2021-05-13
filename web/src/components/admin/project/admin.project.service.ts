@@ -7,7 +7,8 @@ export interface CreateOrUpdateProject {
     startDate?: string,
     endDate?: string,
     customer?: string,
-    departmentId: number
+    departmentId: number,
+    baId: number
 }
 
 export interface ProjectFullInfo {
@@ -16,7 +17,8 @@ export interface ProjectFullInfo {
     startDate?: string,
     endDate?: string,
     customer?: string,
-    department: SimpleDict
+    department: SimpleDict,
+    businessAccount: SimpleDict
     createdBy?: number,
     createdAt?: Date,
     active: boolean

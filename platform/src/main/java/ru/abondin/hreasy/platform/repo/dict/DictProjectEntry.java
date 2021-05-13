@@ -46,6 +46,7 @@ public class DictProjectEntry {
     public static class ProjectFullEntry extends DictProjectEntry {
         @NotNull
         private String departmentName;
+        private String baName;
     }
 
 

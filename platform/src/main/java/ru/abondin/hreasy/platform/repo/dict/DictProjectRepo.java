@@ -21,6 +21,11 @@ public interface DictProjectRepo extends ReactiveCrudRepository<DictProjectEntry
     Flux<DictProjectEntry> findByIds(List<Integer> ids);
 
 
-    @Query("select p.*, d.name as department_name from project p left join department d on p.department_id=d.id")
+    @Query("select p.*, " +
+            "  d.name as department_name, s" +
+            "  ba.name as ba_name " +
+            "from project p" +
+            " left join department d on p.department_id=d.id"+
+            " left join business_account ba on p.ba_id=ba.id")
     Flux<DictProjectEntry.ProjectFullEntry> findFullInfo();
 }

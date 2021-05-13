@@ -13,6 +13,7 @@ export interface SimpleDict {
 
 export interface DictLoadedState {
     projects : Array<SimpleDict>;
+    businessAccounts: Array<SimpleDict>;
     departments: Array<SimpleDict>;
     skillGroups: Array<SimpleDict>;
     sharedSkillsNames: Array<SharedSkillName>;
@@ -20,6 +21,7 @@ export interface DictLoadedState {
 
 export const dictState: DictLoadedState = {
     projects: [],
+    businessAccounts: [],
     departments: [],
     skillGroups: [],
     sharedSkillsNames: []
@@ -30,6 +32,11 @@ export const dictActions: ActionTree<DictLoadedState, RootState> = {
     reloadProjects({commit}): any {
         return dictService.loadAllProjects().then(projects => {
             commit('projectsLoaded', projects);
+        });
+    },
+    reloadBusinessAccounts({commit}): any {
+        return dictService.loadAllBusinessAccounts().then(projects => {
+            commit('businessAccountsLoaded', projects);
         });
     },
     reloadDepartments({commit}): any {
@@ -53,6 +60,9 @@ export const dictMutations: MutationTree<DictLoadedState> = {
     projectsLoaded(state, projects: Array<SimpleDict>) {
         state.projects = projects;
     },
+    businessAccountsLoaded(state, bas: Array<SimpleDict>) {
+        state.businessAccounts = bas;
+    },
     departmentsLoaded(state, deps: Array<SimpleDict>) {
         state.departments = deps;
     },
@@ -68,6 +78,9 @@ export const dictMutations: MutationTree<DictLoadedState> = {
 export const dictGetters: GetterTree<DictLoadedState, RootState> = {
     projects(state): Array<SimpleDict> {
         return state.projects;
+    },
+    businessAccounts(state): Array<SimpleDict> {
+        return state.businessAccounts;
     },
     departments(state): Array<SimpleDict> {
         return state.departments;

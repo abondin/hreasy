@@ -54,7 +54,8 @@
         <v-dialog v-model="projectDialog">
           <admin-project-form
               v-bind:input="selectedProject"
-              :allDepartments="allDepartments"
+              :all-departments="allDepartments"
+              :all-business-accounts="allBusinessAccounts"
               @close="projectDialog=false;fetchData()"></admin-project-form>
         </v-dialog>
 
@@ -100,6 +101,10 @@ export default class AdminProjects extends Vue {
   @Getter("departments", {namespace: namespace_dict})
   private allDepartments!: Array<SimpleDict>;
 
+  @Getter("businessAccounts", {namespace: namespace_dict})
+  private allBusinessAccounts!: Array<SimpleDict>;
+
+
   /**
    * Lifecycle hook
    */
@@ -107,7 +112,9 @@ export default class AdminProjects extends Vue {
     logger.log('Admin Project component created');
     this.reloadHeaders();
     // Reload projects dict to Vuex
-    return this.$store.dispatch('dict/reloadDepartments').then(() => this.fetchData());
+    return this.$store.dispatch('dict/reloadDepartments')
+        .then(()=>this.$store.dispatch("dict/reloadBusinessAccounts"))
+        .then(() => this.fetchData());
   }
 
   private fetchData() {
@@ -134,6 +141,7 @@ export default class AdminProjects extends Vue {
             (
                 (p.name.toLowerCase().indexOf(search) >= 0) ||
                 (p.department && p.department.name && p.department.name.toLowerCase().indexOf(search) >= 0) ||
+                (p.businessAccount && p.businessAccount.name && p.businessAccount.name.toLowerCase().indexOf(search) >= 0) ||
                 (p.customer && p.customer.toLowerCase().indexOf(search) >= 0)
             ) as boolean
       }
@@ -145,6 +153,7 @@ export default class AdminProjects extends Vue {
   private reloadHeaders() {
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Наименование'), value: 'name'});
+    this.headers.push({text: this.$tc('Бизнес акаунт'), value: 'businessAccount.name'});
     this.headers.push({text: this.$tc('Заказчик'), value: 'customer'});
     this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
     this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});

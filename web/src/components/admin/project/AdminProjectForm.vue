@@ -14,6 +14,16 @@
             :label="$t('Отдел')"
         ></v-select>
 
+        <!-- business account -->
+        <v-select
+            v-model="projectForm.baId"
+            :items="basWithCurrent"
+            item-text="name"
+            item-value="id"
+            :label="$t('Бизнес акаунт')"
+        ></v-select>
+
+
         <!-- name -->
         <v-text-field
             v-model="projectForm.name"
@@ -86,6 +96,7 @@ class ProjectForm {
   public endDate = '';
   public customer = '';
   public departmentId?: number;
+  public baId?: number;
 }
 
 @Component(
@@ -99,7 +110,17 @@ export default class AdminProjectForm extends Vue {
   private input: ProjectFullInfo | undefined;
 
   @Prop({required: true, type: Array})
-  private allDepartments!: Array<SimpleDict>
+  private allDepartments!: Array<SimpleDict>;
+
+  @Prop({required: true, type: Array})
+  private allBusinessAccounts!: Array<SimpleDict>;
+
+  /**
+   * If current BA is archived we should add it to select combobox all values
+   * @private
+   */
+  private basWithCurrent: Array<SimpleDict> = [];
+
 
   private projectForm = new ProjectForm();
 
@@ -116,6 +137,10 @@ export default class AdminProjectForm extends Vue {
   }
 
   private reset() {
+    this.basWithCurrent = [...this.allBusinessAccounts];
+    if (this.input && this.input.businessAccount){
+      this.basWithCurrent.push(this.input.businessAccount);
+    }
     this.projectForm.isNew = true;
     this.projectForm.name = '';
     this.projectForm.id = undefined;
@@ -123,6 +148,7 @@ export default class AdminProjectForm extends Vue {
     this.projectForm.departmentId = undefined;
     this.projectForm.startDate = '';
     this.projectForm.endDate = '';
+    this.projectForm.baId=undefined;
 
     if (this.input) {
       this.projectForm.isNew = false;
@@ -132,6 +158,7 @@ export default class AdminProjectForm extends Vue {
       this.projectForm.departmentId = this.input.department ? this.input.department.id : undefined;
       this.projectForm.startDate = this.input.startDate ? this.input.startDate : '';
       this.projectForm.endDate = this.input.endDate ? this.input.endDate : '';
+      this.projectForm.baId = this.input.businessAccount? this.input.businessAccount.id : undefined;
     }
   }
 
@@ -150,7 +177,8 @@ export default class AdminProjectForm extends Vue {
         startDate: this.projectForm.startDate,
         customer: this.projectForm.customer,
         endDate: this.projectForm.endDate,
-        departmentId: this.projectForm.departmentId
+        departmentId: this.projectForm.departmentId,
+        baId : this.projectForm.baId
       } as CreateOrUpdateProject;
       var serverRequest;
       if (this.projectForm.isNew) {
