@@ -120,3 +120,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |edit_skills|global_admin,pm,hr|
 |edit_business_account|global_admin,finance|
 |assign_to_ba_position|global_admin,pm,finance|
+
+# Articles
+
+HR Easy uses markdown to show articles (news and shared information).
+To add new article you should just add new markdown file to `<hreasy.fs.resource-path>/article/shared` folder.

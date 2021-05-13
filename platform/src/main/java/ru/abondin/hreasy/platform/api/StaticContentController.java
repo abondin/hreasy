@@ -25,7 +25,7 @@ public class StaticContentController {
     public Mono<Resource> avatar(@PathVariable int employeeId) {
         return fileStorage.streamImage("avatars", employeeId + ".png", true);
     }
-
+    
     @Operation(summary = "Upload employee avatar")
     @PostMapping(value = "avatar/{employeeId}/upload")
     public Mono<String> uploadAvatar(@PathVariable int employeeId, @RequestPart("file") Flux<FilePart> multipartFile) {

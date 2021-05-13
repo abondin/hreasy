@@ -35,6 +35,8 @@
 
     <my-skills class="mt-5"></my-skills>
 
+    <my-shared-articles class="mt-5"></my-shared-articles>
+
   </v-container>
 </template>
 
@@ -49,11 +51,15 @@ import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import EmployeeOvertimeComponent from "@/components/overtimes/EmployeeOvertimeComponent.vue";
 import MyVacations from "@/components/vacations/MyVacations.vue";
 import MySkills from "@/components/empl/skills/MySkills.vue";
+import MySharedArticles from "@/components/article/MySharedArticles.vue";
 
 const namespace: string = 'auth';
 
 @Component({
-  components: {MySkills, "employee-avatar": EmployeeAvatarUploader, EmployeeOvertimeComponent, MyVacations}
+  components: {
+    MySharedArticles,
+    MySkills, "employee-avatar": EmployeeAvatarUploader, EmployeeOvertimeComponent, MyVacations
+  }
 })
 export default class EmployeeProfile extends Vue {
   loading: boolean = false;

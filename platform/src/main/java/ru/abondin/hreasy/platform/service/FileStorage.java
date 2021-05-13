@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.config.HrEasyFileStorageProperties;
 
@@ -24,7 +25,7 @@ import java.io.IOException;
 public class FileStorage implements InitializingBean {
     private final HrEasyFileStorageProperties props;
 
-    private File rootDir ;
+    private File rootDir;
 
     public boolean fileExists(String resourceType, String filename) {
         var resourceHome = new File(rootDir, resourceType);
@@ -34,8 +35,9 @@ public class FileStorage implements InitializingBean {
 
     /**
      * Stream file content
+     *
      * @param resourceType - type of the resource. <b>userAvatars</b> for example
-     * @param filename - name of the file
+     * @param filename     - name of the file
      */
     public Mono<Resource> streamImage(String resourceType, String filename, boolean returnFailback) {
         Resource resource;
@@ -48,13 +50,42 @@ public class FileStorage implements InitializingBean {
             if (returnFailback) {
                 resource = props.getFailbackImage();
             } else {
-                return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Image "+filename+" not found. Failback image is disabled"));
+                return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Image " + filename + " not found. Failback image is disabled"));
             }
         }
         return Mono.just(resource);
     }
 
-    public Mono<Void> uploadFile(String resourceType, String filename, FilePart filePart)  {
+    /**
+     * Stream file content
+     *
+     * @param resourceType - type of the resource. <b>userAvatars</b> for example
+     * @param filename     - name of the file
+     */
+    public Mono<Resource> streamFile(String resourceType, String filename) {
+        var resourceHome = new File(rootDir, resourceType);
+        validateAndCreateDir(resourceHome, true);
+        var file = new File(resourceHome, filename);
+        if (file.exists()) {
+            return Mono.just(new FileSystemResource(file));
+        } else {
+            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "File " + filename + " not found"));
+        }
+    }
+
+    /**
+     * Simple file list
+     *
+     * @param path
+     * @return
+     */
+    public Flux<String> listFiles(String path, boolean autocreateFolder) {
+        var resourceHome = new File(rootDir, path);
+        validateAndCreateDir(resourceHome, autocreateFolder);
+        return Flux.fromArray(resourceHome.listFiles((file) -> file.isFile())).map(File::getName).sort();
+    }
+
+    public Mono<Void> uploadFile(String resourceType, String filename, FilePart filePart) {
         log.debug("Uploading '{}' file '{}' with original file name '{}'",
                 resourceType, filename, filePart.filename());
         var resourceHome = new File(rootDir, resourceType);
@@ -82,7 +113,9 @@ public class FileStorage implements InitializingBean {
             validateAndCreateDir(dir, false);
         }
         if (!dir.isDirectory()) {
-            throw new IllegalArgumentException("File Storage Dir "+dir+" is not a directory");
+            throw new IllegalArgumentException("File Storage Dir " + dir + " is not a directory");
         }
     }
+
+
 }
