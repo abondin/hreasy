@@ -10,9 +10,10 @@
     "i18n-add-missing-keys": "node i18n-add-missing-keys.js"
   },
   "dependencies": {
+    "@types/markdown-it": "^12.0.1",
+    "@types/punycode": "^2.1.0",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
-    "marked": "^2.0.3",
     "material-design-icons-iconfont": "^5.0.1",
     "moment": "^2.27.0",
     "vue": "^2.6.10",
@@ -21,6 +22,7 @@
     "vue-property-decorator": "^8.5.1",
     "vue-router": "^3.3.4",
     "vuetify": "^2.3.2",
+    "vuetify-markdown-editor": "^3.3.3",
     "vuex": "^3.4.0",
     "vuex-class": "^0.3.2"
   },

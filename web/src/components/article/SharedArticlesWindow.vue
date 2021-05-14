@@ -3,21 +3,18 @@ Window to show shared articles for all employees
  -->
 
 <template>
-  <v-carousel hide-delimiters>
-    <template v-slot:prev="{ on, attrs }">
-      <v-btn v-bind="attrs" v-on="on" @click="prev" icon><v-icon>mdi-arrow-left</v-icon></v-btn>
-    </template>
-    <template v-slot:next="{ on, attrs }">
-      <v-btn v-bind="attrs" v-on="on" @click="next" icon><v-icon>mdi-arrow-right</v-icon></v-btn>
-    </template>
-
-    <v-skeleton-loader class="mx-auto" type="card" v-if="loading"></v-skeleton-loader>
-    <v-carousel-item transition="fade-transition" v-if="!loading">
-      <v-sheet class="border_all" style="border: 5px red solid">
-        <div v-html="content"></div>
-      </v-sheet>
-    </v-carousel-item>
-  </v-carousel>
+  <v-card>
+    <v-skeleton-loader v-if="loading" class="mx-auto" type="card"></v-skeleton-loader>
+    <Editor v-if="!loading" v-model="content" mode="viewer" ref="editor"></Editor>
+    <v-card-actions class="justify-space-between">
+      <v-btn text @click="prev">
+        <v-icon>mdi-chevron-left</v-icon>
+      </v-btn>
+      <v-btn text @click="next">
+        <v-icon>mdi-chevron-right</v-icon>
+      </v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 
@@ -25,13 +22,13 @@ Window to show shared articles for all employees
 import Vue from 'vue'
 import Component from 'vue-class-component';
 import articleService, {ArticleMeta} from "@/components/article/article.service";
-import logger from "@/logger";
-
-const marked = require("marked");
+import {Editor} from "vuetify-markdown-editor";
 
 const namespace: string = 'auth';
 
-@Component({})
+@Component({
+  components: {Editor}
+})
 export default class SharedArticlesWindow extends Vue {
 
   private allArticles: ArticleMeta[] = [];
@@ -72,13 +69,7 @@ export default class SharedArticlesWindow extends Vue {
     }
     articleService
         .getSharedArticleContent(this.allArticles[this.selectedArticleIndex].name).then(markdown => {
-      let formatted = markdown;
-      try {
-        formatted = marked(markdown)
-      } catch (error) {
-        logger.error("Unable parse markdown document", error)
-      }
-      this.content = formatted;
+      this.content = markdown;
     })
         .finally(() => {
           if (showLoading) {

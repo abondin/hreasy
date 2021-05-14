@@ -1,12 +1,6 @@
 <template>
   <v-card>
-    <v-card-title>
-      <div>{{ $t('Важная информация') }}</div>
-    </v-card-title>
-
-    <v-card-text>
-      <shared-articles-window></shared-articles-window>
-    </v-card-text>
+    <shared-articles-window></shared-articles-window>
   </v-card>
 </template>
 
