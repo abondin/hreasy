@@ -11,6 +11,8 @@ export interface ArticleService {
     listShared(): Promise<ArticleMeta[]>;
 
     getSharedArticleUrl(articleName: string): string;
+
+    getSharedArticleContent(articleName: string): Promise<string>;
 }
 
 class RestArticleService implements ArticleService {
@@ -19,6 +21,12 @@ class RestArticleService implements ArticleService {
 
     listShared(): Promise<ArticleMeta[]> {
         return httpService.get(`v1/article/shared`).then(response => {
+            return response.data;
+        });
+    }
+
+    getSharedArticleContent(articleName: string): Promise<string> {
+        return httpService.get(`v1/article/shared/${articleName}`).then(response => {
             return response.data;
         });
     }
