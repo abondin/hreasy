@@ -88,4 +88,14 @@ public class AdminSecurityValidator {
     public Mono<Boolean> validateUpdateBAPosition(AuthContext auth, int baId) {
         return validateAddOrUpdateBusinessAccount(auth);
     }
+
+    public Mono<Boolean> validateEditArticle(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("edit_articles")) {
+                return Mono.error(new AccessDeniedException("Only user with permission edit_articles can create" +
+                        " or update article"));
+            }
+            return Mono.just(true);
+        });
+    }
 }

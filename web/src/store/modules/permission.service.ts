@@ -77,7 +77,12 @@ export enum Permissions {
     /**
      * Add/Update business account and create/update BA positions
      */
-    EditBusinessAccount="edit_business_account"
+    EditBusinessAccount="edit_business_account",
+
+    /**
+     * Create/update and moderate articles and news
+     */
+    EditArticles="edit_articles"
 }
 
 interface PermissionService {
@@ -130,6 +135,8 @@ interface PermissionService {
     canEditSkills(employeeId: number): boolean;
 
     canAdminBusinessAccounts(): boolean;
+
+    canAdminArticles(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -192,6 +199,10 @@ class VuexPermissionService implements PermissionService {
 
     canAdminBusinessAccounts(): boolean {
         return this.simplePermissionCheck(Permissions.EditBusinessAccount);
+    }
+
+    canAdminArticles(): boolean {
+        return this.simplePermissionCheck(Permissions.EditArticles);
     }
 
 

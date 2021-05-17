@@ -11,6 +11,7 @@ import AdminProjects from "@/components/admin/project/AdminProjects.vue";
 import AdminUsers from "@/components/admin/users/AdminUsers.vue";
 import AdminBusinessAccounts from "@/components/admin/business_account/AdminBusinessAccounts.vue";
 import AdminBusinessAccountDetails from "@/components/admin/business_account/AdminBusinessAccountDetails.vue";
+import AdminArticlesList from "@/components/admin/article/AdminArticlesList.vue";
 
 Vue.use(VueRouter)
 
@@ -24,7 +25,8 @@ const routes = [
     {path: "/admin/projects", component: AdminProjects},
     {path: "/admin/users", component: AdminUsers},
     {path: "/admin/ba", component: AdminBusinessAccounts},
-    {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true}
+    {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true},
+    {path: "/admin/articles", component: AdminArticlesList},
 
 ]
 const router = new VueRouter({

@@ -3,9 +3,10 @@ Window to show shared articles for all employees
  -->
 
 <template>
-  <v-card>
+  <v-card
+      v-if="allArticles && allArticles.length>0 && selectedArticleIndex>=0 && allArticles[selectedArticleIndex].content">
     <v-skeleton-loader v-if="loading" class="mx-auto" type="card"></v-skeleton-loader>
-    <Editor v-if="!loading" v-model="content" mode="viewer" ref="editor"></Editor>
+    <Editor v-if="!loading" v-model="allArticles[selectedArticleIndex].content" mode="viewer" ref="editor"></Editor>
     <v-card-actions class="justify-space-between">
       <v-btn text @click="prev">
         <v-icon>mdi-chevron-left</v-icon>
@@ -21,7 +22,7 @@ Window to show shared articles for all employees
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
-import articleService, {ArticleMeta} from "@/components/article/article.service";
+import articleService, {Article} from "@/components/article/article.service";
 import {Editor} from "vuetify-markdown-editor";
 
 const namespace: string = 'auth';
@@ -31,10 +32,9 @@ const namespace: string = 'auth';
 })
 export default class SharedArticlesWindow extends Vue {
 
-  private allArticles: ArticleMeta[] = [];
+  private allArticles: Article[] = [];
   private selectedArticleIndex = -1;
   private loading = false;
-  private content = '';
 
   /**
    * Lifecycle hook
@@ -46,37 +46,18 @@ export default class SharedArticlesWindow extends Vue {
   private fetchMeta() {
     this.loading = true;
     this.selectedArticleIndex = -1;
-    articleService.listShared()
+    articleService.getShared()
         .then((result) => {
           this.allArticles = result;
           if (this.allArticles.length > 0) {
             this.selectedArticleIndex = 0;
           }
         })
-        .then(() => this.renderContent(false))
         .finally(() => {
           this.loading = false;
         })
   }
 
-  private renderContent(showLoading = true) {
-    if (this.selectedArticleIndex == -1) {
-      this.content = '';
-      return;
-    }
-    if (showLoading) {
-      this.loading = true;
-    }
-    articleService
-        .getSharedArticleContent(this.allArticles[this.selectedArticleIndex].name).then(markdown => {
-      this.content = markdown;
-    })
-        .finally(() => {
-          if (showLoading) {
-            this.loading = false;
-          }
-        })
-  }
 
   private prev() {
     if (this.allArticles && this.allArticles.length > 0) {
@@ -84,7 +65,6 @@ export default class SharedArticlesWindow extends Vue {
       if (this.selectedArticleIndex < 0) {
         this.selectedArticleIndex = this.allArticles.length - 1;
       }
-      this.renderContent();
     }
   }
 
@@ -94,7 +74,6 @@ export default class SharedArticlesWindow extends Vue {
       if (this.selectedArticleIndex >= this.allArticles.length) {
         this.selectedArticleIndex = 0;
       }
-      this.renderContent();
     }
   }
 

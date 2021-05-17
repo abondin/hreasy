@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.sec.SecurityUtils;
 import ru.abondin.hreasy.platform.service.FileStorage;
+import ru.abondin.hreasy.platform.service.article.ArticleService;
 
 @RestController()
 @RequestMapping("/api/v1/fs")
@@ -25,7 +26,13 @@ public class StaticContentController {
     public Mono<Resource> avatar(@PathVariable int employeeId) {
         return fileStorage.streamImage("avatars", employeeId + ".png", true);
     }
-    
+
+    @Operation(summary = "Get article static attachment")
+    @GetMapping(value = "article/{articleId}/{attachmentName}")
+    public Mono<Resource> articleAttachment(@PathVariable int articleId, @PathVariable String attachmentName) {
+        return fileStorage.streamFile(ArticleService.getArticleAttachmentFolder(articleId), attachmentName);
+    }
+
     @Operation(summary = "Upload employee avatar")
     @PostMapping(value = "avatar/{employeeId}/upload")
     public Mono<String> uploadAvatar(@PathVariable int employeeId, @RequestPart("file") Flux<FilePart> multipartFile) {

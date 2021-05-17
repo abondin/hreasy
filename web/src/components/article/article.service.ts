@@ -2,37 +2,29 @@ import httpService from "../http.service";
 import {AxiosInstance} from "axios";
 
 
-export interface ArticleMeta {
-    name: string
+export interface Article {
+    name: string,
+    articleGroup: string,
+    description: string,
+    content: string,
+    updatedAt: Date
 }
 
+const SHARED_GROUP='shared';
+export const ALL_ARTICLES_GROUPS = [SHARED_GROUP];
 
 export interface ArticleService {
-    listShared(): Promise<ArticleMeta[]>;
-
-    getSharedArticleUrl(articleName: string): string;
-
-    getSharedArticleContent(articleName: string): Promise<string>;
+    getShared(): Promise<Article[]>;
 }
 
 class RestArticleService implements ArticleService {
     constructor(private httpService: AxiosInstance) {
     }
 
-    listShared(): Promise<ArticleMeta[]> {
-        return httpService.get(`v1/article/shared`).then(response => {
-            return response.data;
+    getShared(): Promise<Article[]> {
+        return httpService.get(`v1/article`).then(response => {
+            return (response.data as Article[]).filter(a=>a.articleGroup==SHARED_GROUP);
         });
-    }
-
-    getSharedArticleContent(articleName: string): Promise<string> {
-        return httpService.get(`v1/article/shared/${articleName}`).then(response => {
-            return response.data;
-        });
-    }
-
-    getSharedArticleUrl(articleName: string): string {
-        return `${httpService.defaults.baseURL}v1/article/shared/${articleName}`;
     }
 }
 

@@ -76,7 +76,6 @@ public class WebSecurityConfig {
                         "/api/v1/login",
                         "/api/v1/logout",
                         "/api/v1/fs/**",
-                        "/api/v1/article/shared/**",
                         "/actuator/**",
                         "/favicon.ico").permitAll()
                 .anyExchange().authenticated()

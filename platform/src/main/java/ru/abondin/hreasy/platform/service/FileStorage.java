@@ -59,13 +59,13 @@ public class FileStorage implements InitializingBean {
     /**
      * Stream file content
      *
-     * @param resourceType - type of the resource. <b>userAvatars</b> for example
+     * @param resourceHome - type of the resource. <b>userAvatars</b> for example
      * @param filename     - name of the file
      */
-    public Mono<Resource> streamFile(String resourceType, String filename) {
-        var resourceHome = new File(rootDir, resourceType);
-        validateAndCreateDir(resourceHome, true);
-        var file = new File(resourceHome, filename);
+    public Mono<Resource> streamFile(String resourceHome, String filename) {
+        var resourceAbsoluteHome = new File(rootDir, resourceHome);
+        validateAndCreateDir(resourceAbsoluteHome, true);
+        var file = new File(resourceAbsoluteHome, filename);
         if (file.exists()) {
             return Mono.just(new FileSystemResource(file));
         } else {
