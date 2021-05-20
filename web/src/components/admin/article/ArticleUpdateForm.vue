@@ -143,6 +143,7 @@ export default class ArticleEditForm extends Vue {
       return articleAdminService.update(this.input.id, body)
           .then((result) => {
             logger.log(`Article updated: ${result}`);
+            this.$emit('submit');
             this.$emit('close');
           })
           .catch(error => {

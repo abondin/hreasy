@@ -62,6 +62,14 @@
             </v-btn>
           </template>
           <template
+              v-slot:item.moderated="{ item }">
+            {{ item.moderated ? $t('Да') : $t('Нет') }}
+          </template>
+          <template
+              v-slot:item.archived="{ item }">
+            {{ item.archived ? $t('Да') : $t('Нет') }}
+          </template>
+          <template
               v-slot:item.createdAt="{ item }">
             {{ formatDate(item.createdAt) }}
           </template>
@@ -135,7 +143,7 @@ export default class AdminArticlesList extends Vue {
     this.headers.push({text: this.$tc('Группа'), value: 'articleGroup'});
     this.headers.push({text: this.$tc('Статья'), value: 'name'});
     this.headers.push({text: this.$tc('Модерированная'), value: 'moderated'});
-    this.headers.push({text: this.$tc('Архивная'), value: 'moderated'});
+    this.headers.push({text: this.$tc('Архивная'), value: 'archived'});
     this.headers.push({text: this.$tc('Создана'), value: 'createdAt'});
     this.headers.push({text: this.$tc('Обновлена'), value: 'updatedAt'});
   }
