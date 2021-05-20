@@ -10,7 +10,8 @@
                   :label="$t('Модерированная')"></v-select>
 
 
-        <Editor v-model="articleForm.content" mode="review">
+        <Editor
+            v-model="articleForm.content" mode="editorMode">
         </Editor>
 
         <v-select class="mr-5"
@@ -91,6 +92,8 @@ export default class ArticleEditForm extends Vue {
   private articleForm = new ArticleForm();
 
   private error: String | null = null;
+
+  private editorMode: 'preview'|'editor'|'viewer' = 'preview';
 
   @Prop({required:true})
   private input!: ArticleFull;

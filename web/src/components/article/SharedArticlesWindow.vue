@@ -4,13 +4,16 @@ Window to show shared articles for all employees
 
 <template>
   <v-card
-      v-if="allArticles && allArticles.length>0 && selectedArticleIndex>=0 && allArticles[selectedArticleIndex].content">
+      v-if="allArticles && allArticles.length>0
+       && selectedArticleIndex>=0">
     <v-card-actions class="justify-space-between">
-      <v-btn text @click="prev">
+      <v-btn text @click="prev" small>
         <v-icon>mdi-chevron-left</v-icon>
+        {{ getPrevArticleName() }}
       </v-btn>
-      {{allArticles[selectedArticleIndex].name}}
-      <v-btn text @click="next">
+      <span class="font-weight-bold">{{ allArticles[selectedArticleIndex].name }}</span>
+      <v-btn text @click="next" small>
+        {{ getNextArticleName() }}
         <v-icon>mdi-chevron-right</v-icon>
       </v-btn>
     </v-card-actions>
@@ -62,20 +65,38 @@ export default class SharedArticlesWindow extends Vue {
 
   private prev() {
     if (this.allArticles && this.allArticles.length > 0) {
-      this.selectedArticleIndex--;
-      if (this.selectedArticleIndex < 0) {
-        this.selectedArticleIndex = this.allArticles.length - 1;
-      }
+      this.selectedArticleIndex =
+          (this.selectedArticleIndex <= 0 ? (this.allArticles.length - 1) : (this.selectedArticleIndex - 1));
     }
   }
 
   private next() {
     if (this.allArticles && this.allArticles.length > 0) {
-      this.selectedArticleIndex++;
-      if (this.selectedArticleIndex >= this.allArticles.length) {
-        this.selectedArticleIndex = 0;
-      }
+      this.selectedArticleIndex =
+          (this.selectedArticleIndex >= (this.allArticles.length - 1) ? 0 : (this.selectedArticleIndex + 1));
     }
+  }
+
+  private getPrevArticleName(): string | undefined {
+    if (this.allArticles && this.allArticles.length > 1) {
+      let index = this.selectedArticleIndex == 0 ? this.allArticles.length - 1 : this.selectedArticleIndex - 1;
+      const article = this.allArticles[index];
+      return article && article.name ? this.truncate(article.name, 15) : undefined;
+    }
+    return undefined;
+  }
+
+  private getNextArticleName(): string | undefined {
+    if (this.allArticles && this.allArticles.length > 1) {
+      let index = this.selectedArticleIndex == this.allArticles.length - 1 ? 0 : this.selectedArticleIndex + 1;
+      const article = this.allArticles[index];
+      return article && article.name ? this.truncate(article.name, 15) : undefined;
+    }
+    return undefined;
+  }
+
+  truncate(str: string, n: number) {
+    return (str.length > n) ? str.substr(0, n - 1) + '&hellip;' : str;
   }
 
 }
