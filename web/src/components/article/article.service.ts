@@ -10,8 +10,8 @@ export interface Article {
     updatedAt: Date
 }
 
-const SHARED_GROUP='shared';
-export const ALL_ARTICLES_GROUPS = [SHARED_GROUP];
+export const ARTICLE_SHARED_GROUP='shared';
+export const ALL_ARTICLES_GROUPS = [ARTICLE_SHARED_GROUP];
 
 export interface ArticleService {
     getShared(): Promise<Article[]>;
@@ -23,7 +23,7 @@ class RestArticleService implements ArticleService {
 
     getShared(): Promise<Article[]> {
         return httpService.get(`v1/article`).then(response => {
-            return (response.data as Article[]).filter(a=>a.articleGroup==SHARED_GROUP);
+            return (response.data as Article[]).filter(a=>a.articleGroup==ARTICLE_SHARED_GROUP);
         });
     }
 }

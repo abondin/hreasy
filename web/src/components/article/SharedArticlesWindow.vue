@@ -5,16 +5,17 @@ Window to show shared articles for all employees
 <template>
   <v-card
       v-if="allArticles && allArticles.length>0 && selectedArticleIndex>=0 && allArticles[selectedArticleIndex].content">
-    <v-skeleton-loader v-if="loading" class="mx-auto" type="card"></v-skeleton-loader>
-    <Editor v-if="!loading" v-model="allArticles[selectedArticleIndex].content" mode="viewer" ref="editor"></Editor>
     <v-card-actions class="justify-space-between">
       <v-btn text @click="prev">
         <v-icon>mdi-chevron-left</v-icon>
       </v-btn>
+      {{allArticles[selectedArticleIndex].name}}
       <v-btn text @click="next">
         <v-icon>mdi-chevron-right</v-icon>
       </v-btn>
     </v-card-actions>
+    <v-skeleton-loader v-if="loading" class="mx-auto" type="card"></v-skeleton-loader>
+    <Editor v-if="!loading" v-model="allArticles[selectedArticleIndex].content" mode="viewer" ref="editor"></Editor>
   </v-card>
 </template>
 

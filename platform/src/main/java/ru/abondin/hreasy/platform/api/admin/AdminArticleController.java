@@ -31,12 +31,12 @@ public class AdminArticleController {
     }
 
     @PostMapping("")
-    public Mono<Integer> createArticle(CreateArticleBody body) {
+    public Mono<Integer> createArticle(@RequestBody CreateArticleBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> service.createArticle(auth, body));
     }
 
     @PutMapping("{articleId}")
-    public Mono<Integer> createArticle(int articleId, UpdateArticleBody body) {
+    public Mono<Integer> createArticle(@PathVariable int articleId, @RequestBody UpdateArticleBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> service.updateArticle(auth, articleId, body));
     }
 

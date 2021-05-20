@@ -6,7 +6,7 @@ begin
 	article_group nvarchar(255) NOT NULL,
 	name nvarchar(255) NOT NULL,
 	description ntext NULL,
-	content ntext NOT NULL,
+	content ntext NULL,
 	moderated bit default(0),
 	archived bit default(0),
 	created_at datetimeoffset NULL,
@@ -23,13 +23,11 @@ begin
 	article_group nvarchar(255) NOT NULL,
     name nvarchar(255) NOT NULL,
     description ntext NULL,
-	content ntext NOT NULL,
+	content ntext NULL,
     moderated bit default(0),
     archived bit default(0),
     created_at datetimeoffset NULL,
     created_by int NULL,
-    updated_at datetimeoffset NULL,
-    updated_by int NULL
     )
 
 end

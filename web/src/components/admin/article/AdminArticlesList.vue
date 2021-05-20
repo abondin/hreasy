@@ -13,21 +13,15 @@
               v-model="filter.search"
               :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
           <v-select
-              clearable
               class="mr-5"
               v-model="filter.articleGroup"
               :items="allGroups()"
-              :label="$t('Группа')"
-              multiple
-          ></v-select>
+              :label="$t('Группа')"></v-select>
           <v-select
-              clearable
               class="mr-5"
               v-model="filter.onlyModerated"
               :items="[{value:false, text:$t('Нет')}, {value:true, text:$t('Да')}]"
-              :label="$t('Только модерированные')"
-              multiple
-          ></v-select>
+              :label="$t('Только модерированные')"></v-select>
 
           <v-select
               clearable
@@ -78,11 +72,14 @@
         </v-data-table>
 
         <v-dialog v-model="createArticleDialog">
-          <div>//TODO Create new article</div>
+          <article-new-form @close="createArticleDialog=false" @submit="fetchData()"></article-new-form>
         </v-dialog>
 
         <v-dialog v-model="updateArticleDialog">
-          <div>//TODO update article</div>
+          <article-update-form
+              v-bind:input="selectedArticle"
+              @close="updateArticleDialog=false"
+              @submit="fetchData()"></article-update-form>
         </v-dialog>
 
       </v-card-text>
@@ -98,6 +95,8 @@ import {DataTableHeader} from "vuetify";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import articleAdminService, {ArticleFull} from "@/components/admin/article/admin.article.service";
 import {ALL_ARTICLES_GROUPS} from "@/components/article/article.service";
+import ArticleNewForm from "@/components/admin/article/ArticleNewForm.vue";
+import ArticleUpdateForm from "@/components/admin/article/ArticleUpdateForm.vue";
 
 const namespace: string = 'dict';
 
@@ -109,7 +108,7 @@ class Filter {
 }
 
 @Component({
-  //components: {VacationEditForm}
+  components: {ArticleUpdateForm, ArticleNewForm}
 })
 export default class AdminArticlesList extends Vue {
   headers: DataTableHeader[] = [];
@@ -174,16 +173,16 @@ export default class AdminArticlesList extends Vue {
         });
   }
 
-  openEditArticleDialog(){
+  openEditArticleDialog(item: ArticleFull) {
+    this.selectedArticle = item;
     this.updateArticleDialog = true;
-    //TODO
-  }
-  openNewArticleDialog(){
-    this.createArticleDialog = true;
-    //TODO
   }
 
-  allGroups(){
+  openNewArticleDialog() {
+    this.createArticleDialog = true;
+  }
+
+  allGroups() {
     return ALL_ARTICLES_GROUPS;
   }
 

@@ -3,6 +3,7 @@ import {AxiosInstance} from "axios";
 
 
 export interface ArticleFull {
+    id: number,
     name: string,
     articleGroup: string,
     description?: string,
@@ -48,13 +49,13 @@ class RestAdminArticleService implements AdminArticleService {
     }
 
     create(body: CreateEmptyArticleBody): Promise<number> {
-        return httpService.post(`v1/admin/article`).then((response) => {
+        return httpService.post(`v1/admin/article`, body).then((response) => {
             return response.data;
         });
     }
 
     update(articleId: number, body: UpdateArticleBody): Promise<number> {
-        return httpService.put(`v1/admin/article/${articleId}`).then((response) => {
+        return httpService.put(`v1/admin/article/${articleId}`, body).then((response) => {
             return response.data;
         });
     }
