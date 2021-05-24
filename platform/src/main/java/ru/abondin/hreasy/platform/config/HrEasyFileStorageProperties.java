@@ -31,4 +31,6 @@ public class HrEasyFileStorageProperties {
      * Image to return as failback
      */
     private Resource failbackImage = new ClassPathResource("static/noimage.png");
+
+    private String articleAttachmentRelativePattern="v1/fs/article/{articleId}/{fileName}";
 }

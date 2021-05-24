@@ -20,6 +20,7 @@
 
         <VueEditor
             autofocus
+            useCustomImageHandler @image-added="handleImageAdded"
             v-model="articleForm.content">
         </VueEditor>
 
@@ -66,6 +67,7 @@ import {Prop, Watch} from "vue-property-decorator";
 import {VueEditor} from "vue2-editor";
 
 class ArticleForm {
+  public id: number | undefined;
   public isNew = true;
   public name = '';
   public articleGroup = '';
@@ -99,6 +101,7 @@ export default class ArticleEditForm extends Vue {
 
   private reset() {
     this.articleForm.isNew = true;
+    this.articleForm.id = undefined;
     this.error = null;
     this.articleForm.name = '';
     this.articleForm.articleGroup = ARTICLE_SHARED_GROUP;
@@ -106,6 +109,7 @@ export default class ArticleEditForm extends Vue {
     this.articleForm.moderated = false;
     this.articleForm.archived = false;
     if (this.input) {
+      this.articleForm.id = this.input.id;
       this.articleForm.isNew = false;
       this.articleForm.name = this.input.name;
       this.articleForm.articleGroup = this.input.articleGroup;
@@ -134,14 +138,14 @@ export default class ArticleEditForm extends Vue {
       } as CreateOrUpdateArticleBody;
       const promise = this.articleForm.isNew ?
           articleAdminService.create(body) :
-          articleAdminService.update(this.input.id, body);
+          articleAdminService.update(this.articleForm.id!, body);
       return promise
-          .then((result) => {
+          .then((result: any) => {
             logger.log(`Article created/updated: ${result}`);
             this.$emit('submit');
             this.closeDialog();
           })
-          .catch(error => {
+          .catch((error: any) => {
             this.error = errorUtils.shortMessage(error);
           });
     }
@@ -151,6 +155,19 @@ export default class ArticleEditForm extends Vue {
     return ALL_ARTICLES_GROUPS.map(g => {
       return {value: g, text: this.$tc('ARTICLE_GROUP.' + g)}
     });
+  }
+
+  private handleImageAdded(file: File, Editor: any, cursorLocation: any, resetUploader: any) {
+    var formData = new FormData();
+    formData.append("file", file);
+    articleAdminService.uploadImage(this.input.id, formData)
+        .then((imageFullUrl: string) => {
+          Editor.insertEmbed(cursorLocation, "image", imageFullUrl);
+          resetUploader();
+        })
+        .catch((err: any) => {
+          logger.log(err);
+        });
   }
 
 }

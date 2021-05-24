@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.config.HrEasyFileStorageProperties;
 import ru.abondin.hreasy.platform.repo.article.ArticleEntry;
 import ru.abondin.hreasy.platform.repo.article.ArticleHistoryRepo;
 import ru.abondin.hreasy.platform.repo.article.ArticleRepo;
@@ -16,10 +17,7 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
 import ru.abondin.hreasy.platform.service.article.ArticleService;
-import ru.abondin.hreasy.platform.service.article.dto.ArticleDto;
-import ru.abondin.hreasy.platform.service.article.dto.ArticleMapper;
-import ru.abondin.hreasy.platform.service.article.dto.CreateArticleBody;
-import ru.abondin.hreasy.platform.service.article.dto.UpdateArticleBody;
+import ru.abondin.hreasy.platform.service.article.dto.*;
 
 import java.time.OffsetDateTime;
 
@@ -30,7 +28,6 @@ import java.time.OffsetDateTime;
 @Slf4j
 @RequiredArgsConstructor
 public class AdminArticleService {
-    private final String ARTICLE_BASE_DIR = "article";
 
     private final FileStorage fileStorage;
 
@@ -39,6 +36,7 @@ public class AdminArticleService {
     private final ArticleMapper mapper;
     private final DateTimeService dateTimeService;
     private final AdminSecurityValidator securityValidator;
+    private final HrEasyFileStorageProperties properties;
 
     public Flux<ArticleDto> all(AuthContext auth) {
         return securityValidator.validateEditArticle(auth)
@@ -89,13 +87,18 @@ public class AdminArticleService {
      *
      * @param auth
      * @param articleId
-     * @param filename
      * @param file
      * @return
      */
-    public Mono<Void> uploadArticleAttachment(AuthContext auth, int articleId, String filename, FilePart file) {
+    public Mono<UploadArticleAttachmentResponse> uploadArticleAttachment(AuthContext auth, int articleId, FilePart file) {
         return securityValidator.validateEditArticle(auth)
-                .flatMap(sec -> fileStorage.uploadFile(ArticleService.getArticleAttachmentFolder(articleId), filename, file));
+                .flatMap(sec -> {
+                    var filename = file.filename();
+                    return fileStorage.uploadFile(ArticleService.getArticleAttachmentFolder(articleId), filename, file)
+                            .then(Mono.just(new UploadArticleAttachmentResponse(properties.getArticleAttachmentRelativePattern()
+                            .replace("{articleId}", Integer.toString(articleId))
+                            .replace("{fileName}", filename))));
+                });
     }
 
     private Mono<Integer> doUpdate(AuthContext auth, ArticleEntry entry, OffsetDateTime now) {

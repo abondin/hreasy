@@ -1,5 +1,5 @@
 import httpService from "../../http.service";
-import {AxiosInstance} from "axios";
+import {AxiosInstance, AxiosResponse} from "axios";
 
 
 export interface ArticleFull {
@@ -24,6 +24,10 @@ export interface CreateOrUpdateArticleBody {
     archived: boolean
 }
 
+interface UploadArticleAttachmentResponse {
+    relativeAttachmentUrl: string;
+}
+
 
 export interface AdminArticleService {
     getAll(): Promise<ArticleFull[]>;
@@ -31,6 +35,15 @@ export interface AdminArticleService {
     create(body: CreateOrUpdateArticleBody): Promise<number>;
 
     update(articleId: number, body: CreateOrUpdateArticleBody): Promise<number>;
+
+    /**
+     *
+     * @param articleId
+     * @param formData
+     * return image full URL
+     */
+    uploadImage(articleId: number, formData: FormData): Promise<string>;
+
 }
 
 class RestAdminArticleService implements AdminArticleService {
@@ -54,6 +67,18 @@ class RestAdminArticleService implements AdminArticleService {
             return response.data;
         });
     }
+
+    uploadImage(articleId: number, formData: FormData): Promise<string> {
+        return httpService.post(`v1/admin/article/${articleId}/attachment`, formData)
+            .then((response: AxiosResponse<UploadArticleAttachmentResponse>) => {
+                return this.getImagePath(response.data.relativeAttachmentUrl);
+            });
+    }
+
+    private getImagePath(imageRelativePath: string): string {
+        return httpService.defaults.baseURL + imageRelativePath;
+    }
+
 }
 
 const articleAdminService: AdminArticleService = new RestAdminArticleService(httpService);

@@ -12,6 +12,7 @@ import ru.abondin.hreasy.platform.service.admin.article.AdminArticleService;
 import ru.abondin.hreasy.platform.service.article.dto.ArticleDto;
 import ru.abondin.hreasy.platform.service.article.dto.CreateArticleBody;
 import ru.abondin.hreasy.platform.service.article.dto.UpdateArticleBody;
+import ru.abondin.hreasy.platform.service.article.dto.UploadArticleAttachmentResponse;
 
 /**
  * Static Markdown articles (news for example)
@@ -41,13 +42,11 @@ public class AdminArticleController {
     }
 
     @Operation(summary = "Upload article attachment")
-    @PostMapping(value = "{articleId}/attachment/{attachmentName}")
-    public Mono<String> uploadAvatar(@PathVariable int articleId,
-                                     @PathVariable String attachmentName,
-                                     @RequestPart("file") Flux<FilePart> multipartFile) {
-        log.debug("Upload new attachment {} for article {}", attachmentName, articleId);
+    @PostMapping(value = "{articleId}/attachment")
+    public Mono<UploadArticleAttachmentResponse> uploadAttachment(@PathVariable int articleId,
+                                                              @RequestPart("file") Mono<FilePart> multipartFile) {
+        log.debug("Upload new attachment {} for article {}", articleId);
         return AuthHandler.currentAuth().flatMap(auth -> multipartFile
-                .flatMap(it -> service.uploadArticleAttachment(auth, articleId, attachmentName, it))
-                .then(Mono.just("OK")));
+                .flatMap(it -> service.uploadArticleAttachment(auth, articleId, it)));
     }
 }
