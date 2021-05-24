@@ -13,6 +13,8 @@
               v-model="filter.search"
               :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
           <v-select
+              multiple
+              clearable
               class="mr-5"
               v-model="filter.articleGroup"
               :items="allGroups()"
@@ -37,7 +39,7 @@
           <v-tooltip bottom>
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <div v-bind="tattrs" v-on="ton" class="col-auto">
-                <v-btn text color="primary" :disabled="loading" @click="openNewArticleDialog()" icon>
+                <v-btn text color="primary" :disabled="loading" @click="openEditArticleDialog(null)" icon>
                   <v-icon>mdi-plus</v-icon>
                 </v-btn>
               </div>
@@ -70,18 +72,14 @@
             {{ item.archived ? $t('Да') : $t('Нет') }}
           </template>
           <template
-              v-slot:item.createdAt="{ item }">
-            {{ formatDate(item.createdAt) }}
+              v-slot:item.articleGroup="{ item }">
+            {{ getGroupName(item.articleGroup) }}
           </template>
           <template
               v-slot:item.updatedAt="{ item }">
             {{ formatDate(item.updatedAt) }}
           </template>
         </v-data-table>
-
-        <v-dialog v-model="createArticleDialog">
-          <article-new-form @close="createArticleDialog=false" @submit="fetchData()"></article-new-form>
-        </v-dialog>
 
         <v-dialog v-model="updateArticleDialog">
           <article-update-form
@@ -103,8 +101,7 @@ import {DataTableHeader} from "vuetify";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import articleAdminService, {ArticleFull} from "@/components/admin/article/admin.article.service";
 import {ALL_ARTICLES_GROUPS} from "@/components/article/article.service";
-import ArticleNewForm from "@/components/admin/article/ArticleNewForm.vue";
-import ArticleUpdateForm from "@/components/admin/article/ArticleUpdateForm.vue";
+import ArticleUpdateForm from "@/components/admin/article/ArticleEditForm.vue";
 
 const namespace: string = 'dict';
 
@@ -116,7 +113,7 @@ class Filter {
 }
 
 @Component({
-  components: {ArticleUpdateForm, ArticleNewForm}
+  components: {ArticleUpdateForm}
 })
 export default class AdminArticlesList extends Vue {
   headers: DataTableHeader[] = [];
@@ -126,7 +123,6 @@ export default class AdminArticlesList extends Vue {
   private filter: Filter = new Filter();
 
 
-  private createArticleDialog = false;
   private updateArticleDialog = false;
   private selectedArticle: ArticleFull | null = null;
 
@@ -140,11 +136,10 @@ export default class AdminArticlesList extends Vue {
 
   private reloadHeaders() {
     this.headers.length = 0;
-    this.headers.push({text: this.$tc('Группа'), value: 'articleGroup'});
     this.headers.push({text: this.$tc('Статья'), value: 'name'});
+    this.headers.push({text: this.$tc('Группа'), value: 'articleGroup'});
     this.headers.push({text: this.$tc('Модерированная'), value: 'moderated'});
     this.headers.push({text: this.$tc('Архивная'), value: 'archived'});
-    this.headers.push({text: this.$tc('Создана'), value: 'createdAt'});
     this.headers.push({text: this.$tc('Обновлена'), value: 'updatedAt'});
   }
 
@@ -186,16 +181,26 @@ export default class AdminArticlesList extends Vue {
     this.updateArticleDialog = true;
   }
 
-  openNewArticleDialog() {
-    this.createArticleDialog = true;
+  allGroups() {
+    return ALL_ARTICLES_GROUPS.map(g => {
+      return {value: g, text: this.$tc('ARTICLE_GROUP.' + g)}
+    });
   }
 
-  allGroups() {
-    return ALL_ARTICLES_GROUPS;
+  getGroupName(groupKey: string | undefined): string {
+    let name = '';
+    if (groupKey) {
+      const group = this.allGroups().find(g => g.value == groupKey);
+      if (group) {
+        name = group.text;
+      }
+    }
+    return name;
   }
+
 
   private formatDate(date: string): string | undefined {
-    return DateTimeUtils.formatFromIso(date);
+    return DateTimeUtils.formatDateTimeFromIso(date);
   }
 
 }

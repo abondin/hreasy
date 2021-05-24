@@ -51,7 +51,8 @@ public class AdminArticleService {
         var now = dateTimeService.now();
         return securityValidator.validateEditArticle(auth).flatMap((sec) -> {
             var entry = new ArticleEntry();
-            entry.setModerated(false);
+            entry.setModerated(body.isModerated());
+            entry.setContent(body.getContent());
             entry.setArchived(false);
             entry.setArticleGroup(body.getArticleGroup());
             entry.setName(body.getName());

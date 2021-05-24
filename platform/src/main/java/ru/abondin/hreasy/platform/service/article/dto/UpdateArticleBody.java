@@ -21,7 +21,7 @@ public class UpdateArticleBody {
     private String articleGroup;
     @Nullable
     private String description;
-    @NotNull
+    @Nullable
     private String content;
     private boolean moderated = true;
     private boolean archived = false;

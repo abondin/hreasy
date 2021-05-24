@@ -20,4 +20,8 @@ public class CreateArticleBody {
     private String articleGroup;
     @Nullable
     private String description;
+    @Nullable
+    private String content;
+    private boolean moderated = true;
+
 }

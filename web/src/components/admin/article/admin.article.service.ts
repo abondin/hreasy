@@ -14,13 +14,8 @@ export interface ArticleFull {
     archived: boolean
 }
 
-export interface CreateEmptyArticleBody {
-    articleGroup: string
-    name: string,
-    description?: string
-}
 
-export interface UpdateArticleBody {
+export interface CreateOrUpdateArticleBody {
     articleGroup: string
     name: string,
     description?: string
@@ -33,9 +28,9 @@ export interface UpdateArticleBody {
 export interface AdminArticleService {
     getAll(): Promise<ArticleFull[]>;
 
-    create(body: CreateEmptyArticleBody): Promise<number>;
+    create(body: CreateOrUpdateArticleBody): Promise<number>;
 
-    update(articleId: number, body: UpdateArticleBody): Promise<number>;
+    update(articleId: number, body: CreateOrUpdateArticleBody): Promise<number>;
 }
 
 class RestAdminArticleService implements AdminArticleService {
@@ -48,13 +43,13 @@ class RestAdminArticleService implements AdminArticleService {
         });
     }
 
-    create(body: CreateEmptyArticleBody): Promise<number> {
+    create(body: CreateOrUpdateArticleBody): Promise<number> {
         return httpService.post(`v1/admin/article`, body).then((response) => {
             return response.data;
         });
     }
 
-    update(articleId: number, body: UpdateArticleBody): Promise<number> {
+    update(articleId: number, body: CreateOrUpdateArticleBody): Promise<number> {
         return httpService.put(`v1/admin/article/${articleId}`, body).then((response) => {
             return response.data;
         });
