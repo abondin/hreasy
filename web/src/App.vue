@@ -119,7 +119,7 @@
       <v-spacer/>
 
       <v-row v-if="!username">
-        <router-link to="/login" tag="button">{{ $t('Вход') }}</router-link>
+        <router-link to="/login">{{ $t('Вход') }}</router-link>
       </v-row>
       <v-img v-else max-width="70px" max-height="50px" contain src="@/assets/logo-nav.png"></v-img>
 

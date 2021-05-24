@@ -18,10 +18,10 @@
                   :label="$t('Модерированная')"></v-select>
 
 
-        <Editor
+        <VueEditor
             autofocus
-            v-model="articleForm.content" mode="editorMode">
-        </Editor>
+            v-model="articleForm.content">
+        </VueEditor>
 
         <v-select class="mr-5"
                   v-model="articleForm.articleGroup"
@@ -62,9 +62,8 @@ import articleAdminService, {
   ArticleFull,
   CreateOrUpdateArticleBody
 } from "@/components/admin/article/admin.article.service";
-import {Editor} from "vuetify-markdown-editor";
 import {Prop, Watch} from "vue-property-decorator";
-
+import {VueEditor} from "vue2-editor";
 
 class ArticleForm {
   public isNew = true;
@@ -76,7 +75,7 @@ class ArticleForm {
 }
 
 @Component(
-    {components: {MyDateFormComponent, Editor}}
+    {components: {MyDateFormComponent, VueEditor}}
 )
 
 export default class ArticleEditForm extends Vue {
@@ -85,8 +84,6 @@ export default class ArticleEditForm extends Vue {
   private articleForm = new ArticleForm();
 
   private error: String | null = null;
-
-  private editorMode: 'preview' | 'editor' | 'viewer' = 'preview';
 
   @Prop({required: true})
   private input!: ArticleFull;

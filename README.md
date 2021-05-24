@@ -42,10 +42,12 @@ cd .hreasy-localdev
 docker-compose up -d
 ```
 
-*Tip* The following command updates single service
+*Tip* The following command pulls and updates single services
 
 ```shell script
-docker-compose up -d --no-deps --force-recreate --build hreasyplatform
+sudo docker pull docker.io/abondin/hreasyplatform:latest
+sudo docker pull docker.io/abondin/hreasyweb:latest
+sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hreasyplatform hreasyweb
 ``` 
 
 # Permissions and roles

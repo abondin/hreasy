@@ -18,7 +18,7 @@ Window to show shared articles for all employees
       </v-btn>
     </v-card-actions>
     <v-skeleton-loader v-if="loading" class="mx-auto" type="card"></v-skeleton-loader>
-    <Editor v-if="!loading" v-model="allArticles[selectedArticleIndex].content" mode="viewer" ref="editor"></Editor>
+    <div v-if="!loading" v-html="allArticles[selectedArticleIndex].content"></div>
   </v-card>
 </template>
 
@@ -27,12 +27,11 @@ Window to show shared articles for all employees
 import Vue from 'vue'
 import Component from 'vue-class-component';
 import articleService, {Article} from "@/components/article/article.service";
-import {Editor} from "vuetify-markdown-editor";
 
 const namespace: string = 'auth';
 
 @Component({
-  components: {Editor}
+  components: {}
 })
 export default class SharedArticlesWindow extends Vue {
 
