@@ -58,6 +58,7 @@
             multi-sort
             hide-default-footer
             :sort-by="['updatedAt']"
+            sort-desc
             disable-pagination>
           <template v-slot:item.name="{ item }">
             <v-btn text @click="openEditArticleDialog(item)">{{ item.name }}
@@ -81,7 +82,7 @@
           </template>
         </v-data-table>
 
-        <v-dialog v-model="updateArticleDialog">
+        <v-dialog v-model="updateArticleDialog" persistent>
           <article-update-form
               v-bind:input="selectedArticle"
               @close="updateArticleDialog=false"
