@@ -24,7 +24,8 @@ public class VacationEntry {
      * 0 - planned
      * 1 - taken
      * 2 - compensation
-     * 3 - canceled
+     * 3 - canceled (canceled by employee)
+     * 4 - rejected (created by mistake)
      */
     @Column("stat")
     private int status;

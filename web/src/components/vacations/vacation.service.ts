@@ -15,7 +15,7 @@ export interface Vacation {
     canceled: boolean,
     plannedStartDate?: string,
     plannedEndDate?: string,
-    status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED',
+    status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED' | 'REJECTED',
     documents: string,
     daysNumber: number
 }
@@ -26,10 +26,9 @@ export interface MyVacation {
     startDate: string,
     endDate: string,
     notes: string,
-    canceled: boolean,
     plannedStartDate?: string,
     plannedEndDate?: string,
-    status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED',
+    status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED' | 'REJECTED',
     documents: string,
     daysNumber: number
 }

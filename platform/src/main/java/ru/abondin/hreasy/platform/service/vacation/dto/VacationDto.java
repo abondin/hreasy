@@ -29,17 +29,14 @@ public class VacationDto {
     private LocalDate plannedStartDate;
     private LocalDate plannedEndDate;
 
-    public boolean isCanceled() {
-        return this.status == VacationStatus.CANCELED;
-    }
-
     @RequiredArgsConstructor
     @Getter
     public enum VacationStatus {
         PLANNED(0),
         TAKEN(1),
         COMPENSATION(2),
-        CANCELED(3);
+        CANCELED(3),
+        REJECTED(4);
 
         private final int statusId;
 

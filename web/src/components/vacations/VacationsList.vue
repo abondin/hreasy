@@ -166,7 +166,7 @@ export default class VacationsListComponent extends Vue {
    * Lifecycle hook
    */
   created() {
-    this.allStatuses = ['PLANNED', 'TAKEN', 'COMPENSATION', 'CANCELED'].map(status => {
+    this.allStatuses = ['PLANNED', 'TAKEN', 'COMPENSATION', 'CANCELED', 'REJECTED'].map(status => {
       return {value: status, text: this.$tc(`VACATION_STATUS_ENUM.${status}`)}
     });
     const currentYear = new Date().getFullYear();

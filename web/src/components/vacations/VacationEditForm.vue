@@ -106,7 +106,7 @@ class VacationForm {
   public endDate = '';
   public plannedStartDate = '';
   public plannedEndDate = '';
-  public status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED' = 'PLANNED'
+  public status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED' | 'REJECTED' = 'PLANNED'
   public notes = '';
   public documents = '';
   public daysNumber?: number;
