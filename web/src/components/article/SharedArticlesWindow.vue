@@ -18,7 +18,7 @@ Window to show shared articles for all employees
       </v-btn>
     </v-card-actions>
     <v-skeleton-loader v-if="loading" class="mx-auto" type="card"></v-skeleton-loader>
-    <div  class="ma-5" v-if="!loading" v-html="allArticles[selectedArticleIndex].content"></div>
+    <div  class="pa-5" v-if="!loading" v-html="allArticles[selectedArticleIndex].content"></div>
   </v-card>
 </template>
 
