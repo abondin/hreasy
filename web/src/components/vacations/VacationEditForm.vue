@@ -2,8 +2,14 @@
 <template>
   <v-form ref="vacationEditForm">
     <v-card>
-      <v-card-title v-if="vacationForm.isNew">{{ $t('Добавление отпуска') }}</v-card-title>
-      <v-card-title v-else>{{ $t('Изменение отпуска') }}</v-card-title>
+      <v-card-title>
+        <span v-if="vacationForm.isNew">{{ $t('Добавление отпуска') }}</span>
+        <span v-else>{{ $t('Изменение отпуска') }}</span>
+        <v-spacer></v-spacer>
+        <v-btn icon @click="closeDialog()">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-card-title>
       <v-card-text>
 
         <!-- employee -->

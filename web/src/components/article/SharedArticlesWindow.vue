@@ -18,7 +18,7 @@ Window to show shared articles for all employees
       </v-btn>
     </v-card-actions>
     <v-skeleton-loader v-if="loading" class="mx-auto" type="card"></v-skeleton-loader>
-    <div v-if="!loading" v-html="allArticles[selectedArticleIndex].content"></div>
+    <div  class="ma-5" v-if="!loading" v-html="allArticles[selectedArticleIndex].content"></div>
   </v-card>
 </template>
 
@@ -80,7 +80,7 @@ export default class SharedArticlesWindow extends Vue {
     if (this.allArticles && this.allArticles.length > 1) {
       let index = this.selectedArticleIndex == 0 ? this.allArticles.length - 1 : this.selectedArticleIndex - 1;
       const article = this.allArticles[index];
-      return article && article.name ? this.truncate(article.name, 15) : undefined;
+      return article && article.name ? this.truncate(article.name, 30) : undefined;
     }
     return undefined;
   }
@@ -89,7 +89,7 @@ export default class SharedArticlesWindow extends Vue {
     if (this.allArticles && this.allArticles.length > 1) {
       let index = this.selectedArticleIndex == this.allArticles.length - 1 ? 0 : this.selectedArticleIndex + 1;
       const article = this.allArticles[index];
-      return article && article.name ? this.truncate(article.name, 15) : undefined;
+      return article && article.name ? this.truncate(article.name, 30) : undefined;
     }
     return undefined;
   }

@@ -2,7 +2,13 @@
 <template>
   <v-form ref="articleEditHtmlForm">
     <v-card>
-      <v-card-title>{{ articleForm.isNew ? $t('Создание статьи') : $t('Редактирование статьи') }}</v-card-title>
+      <v-card-title>
+        {{ articleForm.isNew ? $t('Создание статьи') : $t('Редактирование статьи') }}
+        <v-spacer></v-spacer>
+        <v-btn icon @click="closeDialog()">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-card-title>
 
       <v-card-text>
         <v-text-field
