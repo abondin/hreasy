@@ -16,7 +16,7 @@ public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Inte
             ", p.name as employee_current_project_name" +
             ", v.* from  vacation v " +
             " inner join employee e on e.id=v.employee" +
-            " inner join project p on e.current_project=p.id" +
+            " left join project p on e.current_project=p.id" +
             " where v.end_date>=:endDateSince" +
             " order by v.end_date asc")
     Flux<VacationView> findAll(LocalDate endDateSince);
