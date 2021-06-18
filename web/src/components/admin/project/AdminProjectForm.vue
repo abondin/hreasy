@@ -96,7 +96,7 @@ class ProjectForm {
   public endDate = '';
   public customer = '';
   public departmentId?: number;
-  public baId?: number;
+  public baId: number|null = null;
 }
 
 @Component(
@@ -148,7 +148,7 @@ export default class AdminProjectForm extends Vue {
     this.projectForm.departmentId = undefined;
     this.projectForm.startDate = '';
     this.projectForm.endDate = '';
-    this.projectForm.baId=undefined;
+    this.projectForm.baId=null;
 
     if (this.input) {
       this.projectForm.isNew = false;
@@ -158,7 +158,7 @@ export default class AdminProjectForm extends Vue {
       this.projectForm.departmentId = this.input.department ? this.input.department.id : undefined;
       this.projectForm.startDate = this.input.startDate ? this.input.startDate : '';
       this.projectForm.endDate = this.input.endDate ? this.input.endDate : '';
-      this.projectForm.baId = this.input.businessAccount? this.input.businessAccount.id : undefined;
+      this.projectForm.baId = this.input.businessAccount? this.input.businessAccount.id : null;
     }
   }
 
