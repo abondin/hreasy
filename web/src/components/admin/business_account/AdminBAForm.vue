@@ -148,7 +148,7 @@ export default class AdminBAForm extends Vue {
       return serverRequest
           .then((result) => {
             logger.log(`Business Account updated/created: ${result}`);
-            this.$emit('close');
+            this.closeDialog();
           })
           .catch(error => {
             this.error = errorUtils.shortMessage(error);
