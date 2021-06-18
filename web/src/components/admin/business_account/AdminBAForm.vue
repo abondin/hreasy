@@ -73,7 +73,7 @@ class BaForm {
   public id?: number;
   public name = '';
   public description = '';
-  public responsibleEmployee?: number;
+  public responsibleEmployee: number|null = null;
   public archived=false;
 }
 
@@ -109,7 +109,7 @@ export default class AdminBAForm extends Vue {
     this.baForm.id = undefined;
     this.baForm.name = '';
     this.baForm.description = '';
-    this.baForm.responsibleEmployee = undefined;
+    this.baForm.responsibleEmployee = null;
     this.baForm.archived = false;
 
     if (this.input) {
@@ -117,7 +117,7 @@ export default class AdminBAForm extends Vue {
       this.baForm.id = this.input.id;
       this.baForm.name = this.input.name ? this.input.name : '';
       this.baForm.description = this.input.description ? this.input.description : '';
-      this.baForm.responsibleEmployee = this.input.responsibleEmployee ? this.input.responsibleEmployee.id : undefined;
+      this.baForm.responsibleEmployee = this.input.responsibleEmployee ? this.input.responsibleEmployee.id : null;
       this.baForm.archived = this.input.archived;
     }
   }
@@ -148,7 +148,7 @@ export default class AdminBAForm extends Vue {
       return serverRequest
           .then((result) => {
             logger.log(`Business Account updated/created: ${result}`);
-            this.$emit('close');
+            this.closeDialog();
           })
           .catch(error => {
             this.error = errorUtils.shortMessage(error);
