@@ -82,7 +82,12 @@ export enum Permissions {
     /**
      * Create/update and moderate articles and news
      */
-    EditArticles="edit_articles"
+    EditArticles="edit_articles",
+
+    /**
+     * View employee all fields including personal
+     */
+    AdminViewEmployeeFull = "view_employee_full"
 }
 
 interface PermissionService {
@@ -129,6 +134,8 @@ interface PermissionService {
     canAdminOvertimes(): boolean;
 
     canAdminProjects(): boolean;
+
+    canAdminEmployees(): boolean;
 
     canAdminUsers(): boolean;
 
@@ -192,6 +199,10 @@ class VuexPermissionService implements PermissionService {
     canAdminUsers(): boolean {
         return this.simplePermissionCheck(Permissions.AdminUsers);
     }
+
+    canAdminEmployees(): boolean {
+    return this.simplePermissionCheck(Permissions.AdminViewEmployeeFull);
+}
 
     canEditSkills(employeeId: number): boolean {
         return this.simplePermissionCheckOrCurrentEmployee(Permissions.EditSkills, employeeId);

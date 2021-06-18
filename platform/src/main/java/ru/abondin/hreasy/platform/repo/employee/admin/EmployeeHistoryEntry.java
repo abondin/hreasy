@@ -7,6 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 /**
  * All employee table for HR to add or update employee information
@@ -14,7 +15,7 @@ import java.time.LocalDate;
 @Data
 @Table("employee_history")
 public class EmployeeHistoryEntry extends EmployeeWithAllDetailsEntry {
-    @Id
-    private Integer id;
     private int employee;
+    private OffsetDateTime createdAt;
+    private int createdBy;
 }

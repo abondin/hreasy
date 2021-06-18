@@ -98,6 +98,9 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |edit_business_account|N|N|Add/Update business account and create/update BA positions|
 |assign_to_ba_position|Y|N|Assign employee to business account position|
 |edit_articles|N|N|Create, update and moderate articles and news|
+|edit_employee_full|N|N|Create/update employee|
+|view_employee_full|N|N|View employee all fields including personal|
+
 
 **Default permissions and roles**
 
@@ -105,7 +108,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |----|------|
 |global_admin|Full access|
 |hr|Add/Update/Fire all employees|
-|pm|Overtime and vacation review and update, reasign empoyee between managed projects|
+|pm|Overtime and vacation review and update, reasign employee between managed projects|
 |finance|Work with business account positions and expenses|
 |content_management|Create, update and moderate articles and news|
 
@@ -127,3 +130,6 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |edit_business_account|global_admin,finance|
 |assign_to_ba_position|global_admin,pm,finance|
 |edit_articles|global_admin,content_management|
+|edit_employee_full|global_admin,hr|
+|view_employee_full|global_admin,hr|
+
