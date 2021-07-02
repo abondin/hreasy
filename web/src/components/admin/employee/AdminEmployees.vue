@@ -19,15 +19,41 @@
             :loading-text="$t('Загрузка_данных')"
             :headers="headers"
             :items="filteredData()"
-            hide-default-footer
-            sort-by="employee.displayName"
-            sort
-            disable-pagination>
+            sort-by="displayName">
 
-          <template v-slot:item.employee.name="{ item }">
-            <v-btn text @click="openEditDialog(item)">{{ item.employee.displayName }}
+          <template v-slot:item.displayName="{ item }">
+            <v-btn text @click="openEditDialog(item)">{{ item.displayName }}
             </v-btn>
           </template>
+
+          <template v-slot:item.departmentId="{ item }">
+            {{ getById(allDepartments, item.departmentId) }}
+          </template>
+
+          <template v-slot:item.positionId="{ item }">
+            {{ getById(allPositions, item.positionId) }}
+          </template>
+
+          <template v-slot:item.currentProjectId="{ item }">
+            {{ getById(allProjects, item.currentProjectId) }}
+          </template>
+
+          <template v-slot:item.levelId="{ item }">
+            {{ getById(allLevels, item.levelId) }}
+          </template>
+
+          <template v-slot:item.birthday="{ item }">
+            {{ formatDate(item.birthday) }}
+          </template>
+
+          <template v-slot:item.dateOfEmployment="{ item }">
+            {{ formatDate(item.dateOfEmployment) }}
+          </template>
+
+          <template v-slot:item.dateOfDismissal="{ item }">
+            {{ formatDate(item.dateOfDismissal) }}
+          </template>
+
 
         </v-data-table>
 
@@ -79,6 +105,12 @@ export default class AdminEmployees extends Vue {
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<SimpleDict>;
 
+  @Getter("positions", {namespace: namespace_dict})
+  private allPositions!: Array<SimpleDict>;
+
+  @Getter("levels", {namespace: namespace_dict})
+  private allLevels!: Array<SimpleDict>;
+
   /**
    * Lifecycle hook
    */
@@ -87,6 +119,8 @@ export default class AdminEmployees extends Vue {
     this.reloadHeaders();
     return this.$store.dispatch('dict/reloadProjects')
         .then(() => this.$store.dispatch('dict/reloadDepartments'))
+        .then(() => this.$store.dispatch('dict/reloadPositions'))
+        .then(() => this.$store.dispatch('dict/reloadLevels'))
         .then(() => this.fetchData());
   }
 
@@ -116,8 +150,28 @@ export default class AdminEmployees extends Vue {
 
   private reloadHeaders() {
     this.headers.length = 0;
-    this.headers.push({text: this.$tc('Email'), value: 'email'});
-    this.headers.push({text: this.$tc('ФИО'), value: 'displayName'});
+    this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 280});
+    this.headers.push({text: this.$tc('Email'), value: 'email', width: 280});
+    this.headers.push({text: this.$tc('Текущий проект'), value: 'currentProjectId', width: 280});
+    this.headers.push({text: this.$tc('Телефон'), value: 'phone', width: 150});
+    this.headers.push({text: this.$tc('Skype'), value: 'skype', width: 150});
+    this.headers.push({text: this.$tc('День рождения'), value: 'birthday', width: 150});
+    this.headers.push({text: this.$tc('Дата трудоустройства'), value: 'dateOfEmployment', width: 150});
+    this.headers.push({text: this.$tc('Дата увольнения'), value: 'dateOfDismissal', width: 150});
+    this.headers.push({text: this.$tc('Позиция'), value: 'positionId', width: 280});
+    this.headers.push({text: this.$tc('Уровень экспертизы'), value: 'levelId', width: 150});
+    this.headers.push({text: this.$tc('Документ УЛ'), value: 'documentFull', width: 280});
+    this.headers.push({text: this.$tc('Адрес по регистрации'), value: 'registrationAddress', width: 500});
+    this.headers.push({text: this.$tc('Пол'), value: 'sex', width: 100});
+    this.headers.push({text: this.$tc('ФИО супруга/супруги'), value: 'spouseName', width: 280});
+    this.headers.push({text: this.$tc('Рабочий день'), value: 'workDay', width: 100});
+    this.headers.push({text: this.$tc('Место работы'), value: 'workType', width: 150});
+    this.headers.push({text: this.$tc('Подразделение'), value: 'departmentId', width: 300});
+    this.headers.push({text: this.$tc('Город проживания'), value: 'cityOfResidence', width: 250});
+    this.headers.push({text: this.$tc('Дети'), value: 'children', width: 280});
+    this.headers.push({text: this.$tc('Семейный статус'), value: 'familyStatus', width: 150});
+    this.headers.push({text: this.$tc('Загранпаспорт'), value: 'foreignPassport', width: 150});
+    this.headers.push({text: this.$tc('Уровень английского'), value: 'englishLevel', width: 280});
     //TODO Add fields
   }
 

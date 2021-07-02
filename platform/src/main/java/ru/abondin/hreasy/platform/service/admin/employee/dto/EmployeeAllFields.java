@@ -16,10 +16,6 @@ public class EmployeeAllFields {
     private String patronymicName;
     private LocalDate birthday;
     private String sex;
-    private SimpleDictDto department;
-    private SimpleDictDto currentProject;
-    private SimpleDictDto position;
-    private SimpleDictDto officeLocation;
     @NotNull
     private String email;
     private String phone;

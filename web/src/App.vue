@@ -64,7 +64,7 @@
 
           <v-list-item to="/admin/employees" v-if="canAdminEmployees()">
             <v-list-item-title>
-              {{ $t('Подробная информация по сотрудникам') }}
+              {{ $t('Админка сотрудников') }}
             </v-list-item-title>
           </v-list-item>
           <v-list-item to="/admin/projects" v-if="canAdminProjects()">

@@ -5,7 +5,36 @@ import {CreateOrUpdateBusinessAccount} from "@/components/admin/business_account
 
 
 export interface EmployeeWithAllDetails extends Employee {
-    //TODO Add fields
+    id: number,
+    displayName: string,
+    currentProjectId?: number,
+    lastname: string,
+    firstname: string,
+    patronymicName: string,
+    birthday: string,
+    sex: string,
+    email: string,
+    phone: string,
+    skype: string,
+    dateOfEmployment?: string,
+    levelId?: number,
+    workType?: string,
+    workDay?: string,
+    registrationAddress?: string,
+    documentSeries?: string,
+    documentNumber?: string,
+    documentIssuedBy?: string,
+    documentIssuedDate?: string,
+    foreignPassport?: string,
+    cityOfResidence?: string,
+    englishLevel?: string,
+    familyStatus?: string,
+    spouseName?: string,
+    children?: string,
+    dateOfDismissal?: string,
+    documentFull?: string,
+    positionId?: number,
+    officeLocationId?: number
 }
 
 export interface CreateOrUpdateEmployeeBody{

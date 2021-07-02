@@ -15,6 +15,8 @@ export interface DictLoadedState {
     projects : Array<SimpleDict>;
     businessAccounts: Array<SimpleDict>;
     departments: Array<SimpleDict>;
+    positions: Array<SimpleDict>;
+    levels: Array<SimpleDict>;
     skillGroups: Array<SimpleDict>;
     sharedSkillsNames: Array<SharedSkillName>;
 }
@@ -23,6 +25,8 @@ export const dictState: DictLoadedState = {
     projects: [],
     businessAccounts: [],
     departments: [],
+    positions: [],
+    levels: [],
     skillGroups: [],
     sharedSkillsNames: []
 }
@@ -42,6 +46,16 @@ export const dictActions: ActionTree<DictLoadedState, RootState> = {
     reloadDepartments({commit}): any {
         return dictService.loadAllDepartments().then(deps => {
             commit('departmentsLoaded', deps);
+        });
+    },
+    reloadPositions({commit}): any {
+        return dictService.loadAllPositions().then(deps => {
+            commit('positionsLoaded', deps);
+        });
+    },
+    reloadLevels({commit}): any {
+        return dictService.loadAllLevels().then(deps => {
+            commit('levelsLoaded', deps);
         });
     },
     reloadSkillGroups({commit}): any {
@@ -66,6 +80,12 @@ export const dictMutations: MutationTree<DictLoadedState> = {
     departmentsLoaded(state, deps: Array<SimpleDict>) {
         state.departments = deps;
     },
+    positionsLoaded(state, value: Array<SimpleDict>) {
+        state.positions = value;
+    },
+    levelsLoaded(state, value: Array<SimpleDict>) {
+        state.levels = value;
+    },
     skillGroupsLoaded(state, groups: Array<SimpleDict>) {
         state.skillGroups = groups;
     },
@@ -84,6 +104,12 @@ export const dictGetters: GetterTree<DictLoadedState, RootState> = {
     },
     departments(state): Array<SimpleDict> {
         return state.departments;
+    },
+    positions(state): Array<SimpleDict> {
+        return state.positions;
+    },
+    levels(state): Array<SimpleDict> {
+        return state.levels;
     },
     skillGroups(state): Array<SimpleDict> {
         return state.skillGroups;
