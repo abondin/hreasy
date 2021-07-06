@@ -15,14 +15,18 @@
       </v-card-title>
       <v-card-text>
         <v-data-table
+            dense
             :loading="loading"
             :loading-text="$t('Загрузка_данных')"
             :headers="headers"
+            :items-per-page="15"
             :items="filteredData()"
-            sort-by="displayName">
+            sort-by="displayName"
+            class="text-truncate"
+        >
 
           <template v-slot:item.displayName="{ item }">
-            <v-btn text @click="openEditDialog(item)">{{ item.displayName }}
+            <v-btn small text @click="openEditDialog(item)">{{ item.displayName }}
             </v-btn>
           </template>
 
@@ -138,10 +142,15 @@ export default class AdminEmployees extends Vue {
 
   private filteredData(): EmployeeWithAllDetails[] {
     return this.data.filter((item) => {
-      var filtered = true;
+      let filtered = true;
       if (this.filter.search) {
         const search = this.filter.search.trim().toLowerCase();
-        //TODO
+        filtered = (
+            (item.displayName && item.displayName.toLowerCase().indexOf(search) >= 0)
+            || (item.email && item.email.toLowerCase().indexOf(search) >= 0)
+            || (item.skype && item.skype.toLowerCase().indexOf(search) >= 0)
+            || (item.phone && item.phone.toLowerCase().indexOf(search) >= 0)
+        ) as boolean;
       }
       return filtered;
     });
@@ -172,7 +181,6 @@ export default class AdminEmployees extends Vue {
     this.headers.push({text: this.$tc('Семейный статус'), value: 'familyStatus', width: 150});
     this.headers.push({text: this.$tc('Загранпаспорт'), value: 'foreignPassport', width: 150});
     this.headers.push({text: this.$tc('Уровень английского'), value: 'englishLevel', width: 280});
-    //TODO Add fields
   }
 
   private getById(array: SimpleDict[], id?: number): string {
