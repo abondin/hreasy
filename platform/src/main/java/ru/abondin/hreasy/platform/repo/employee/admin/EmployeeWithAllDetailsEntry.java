@@ -1,17 +1,18 @@
-package ru.abondin.hreasy.platform.repo.employee;
+package ru.abondin.hreasy.platform.repo.employee.admin;
 
 import lombok.Data;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
 
 import java.time.LocalDate;
 
 /**
- * All required fields to create new employee
+ * All employee table for HR to add or update employee information
  */
 @Data
 @Table("employee")
-public class EmployeeCreationEntry extends EmployeeEntry{
+public class EmployeeWithAllDetailsEntry extends EmployeeEntry {
     @Column("date_of_employment")
     private LocalDate dateOfEmployment;
     @Column("level")
@@ -43,4 +44,5 @@ public class EmployeeCreationEntry extends EmployeeEntry{
     private String children;
     @Column("date_of_dismissal")
     private LocalDate dateOfDismissal;
+
 }

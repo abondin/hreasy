@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -29,6 +30,7 @@ public class EmployeeEntry {
     private Integer officeLocationId;
     private LocalDate dateOfDismissal;
     private String email;
-    private String phone;
+    //TODO Set phone datatype in database to string
+    private BigDecimal phone;
     private String skype;
 }

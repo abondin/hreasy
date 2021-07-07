@@ -35,4 +35,20 @@ public class DictController {
         return AuthHandler.currentAuth().flatMapMany(
                 auth -> dictService.findDepartments(auth));
     }
+
+    @Operation(summary = "All employee positions (developer, QA, ect)")
+    @GetMapping("/positions")
+    @ResponseBody
+    public Flux<SimpleDictDto> positions() {
+        return AuthHandler.currentAuth().flatMapMany(
+                auth -> dictService.findPositions(auth));
+    }
+
+    @Operation(summary = "All employee level (junior, middle, senior, ect)")
+    @GetMapping("/levels")
+    @ResponseBody
+    public Flux<SimpleDictDto> levels() {
+        return AuthHandler.currentAuth().flatMapMany(
+                auth -> dictService.findLevels(auth));
+    }
 }

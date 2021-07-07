@@ -135,7 +135,7 @@ export default class AdminUsers extends Vue {
 
   private filteredData(): UserSecurityInfo[] {
     return this.data.filter((item) => {
-      var filtered = true;
+      let filtered = true;
       if (this.filter.search) {
         const search = this.filter.search.trim().toLowerCase();
         const projectIds = this.allProjects.filter(p => p.name.toLowerCase().indexOf(search) >= 0).map(p => p.id);

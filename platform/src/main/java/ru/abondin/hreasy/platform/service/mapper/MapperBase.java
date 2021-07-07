@@ -4,12 +4,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public interface MapperBase {
+
+    DateTimeFormatter DATE_FORMATTER=DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
+
     default SimpleDictDto simpleDto(Integer id, String name) {
         return id == null ? null : new SimpleDictDto(id, name);
     }

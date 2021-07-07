@@ -11,6 +11,8 @@ export interface DictService {
     loadAllProjects(): Promise<Array<SimpleDict>>;
     loadAllBusinessAccounts(): Promise<Array<SimpleDict>>;
     loadAllDepartments(): Promise<Array<SimpleDict>>;
+    loadAllPositions(): Promise<Array<SimpleDict>>;
+    loadAllLevels(): Promise<Array<SimpleDict>>;
 
     loadAllSkillGroups():  Promise<Array<SimpleDict>>;
 
@@ -27,6 +29,14 @@ class RestDictService implements DictService {
 
     public loadAllDepartments(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/dict/departments").then(response => response.data);
+    }
+
+    loadAllPositions(): Promise<Array<SimpleDict>> {
+        return httpService.get("v1/dict/positions").then(response => response.data);
+    }
+
+    loadAllLevels(): Promise<Array<SimpleDict>> {
+        return httpService.get("v1/dict/levels").then(response => response.data);
     }
 
     public loadAllSkillGroups(): Promise<Array<SimpleDict>> {

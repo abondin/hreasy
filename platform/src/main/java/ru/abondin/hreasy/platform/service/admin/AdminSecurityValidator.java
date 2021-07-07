@@ -98,4 +98,23 @@ public class AdminSecurityValidator {
             return Mono.just(true);
         });
     }
+
+    public Mono<Boolean> validateEditEmployee(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("edit_employee_full")) {
+                return Mono.error(new AccessDeniedException("Only user with permission edit_employee_full can create " +
+                        " or update employee all information"));
+            }
+            return Mono.just(true);
+        });
+    }
+    public Mono<Boolean> validateViewEmployeeFull(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("view_employee_full")) {
+                return Mono.error(new AccessDeniedException("Only user with permission view_employee_full can see" +
+                        " full employee info"));
+            }
+            return Mono.just(true);
+        });
+    }
 }
