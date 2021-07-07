@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import ru.abondin.hreasy.platform.auth.AuthContext;
@@ -28,6 +29,8 @@ public class DictService {
 
     private final DictDtoMapper mapper;
 
+    private final Sort defaultSimpleDictSort = Sort.by("name").ascending();
+
     public Flux<SimpleDictDto> findProjects(AuthContext auth) {
         var now = dateTimeService.now().toLocalDate();
         return projectRepo
@@ -36,46 +39,42 @@ public class DictService {
                     var dto = mapper.projectToDto(e);
                     dto.setActive(e.getEndDate() == null || e.getEndDate().isAfter(now));
                     return dto;
-                })
-                .sort(Comparator.comparing(SimpleDictDto::getName));
+                });
     }
 
     public Publisher<? extends SimpleDictDto> findDepartments(AuthContext auth) {
         return departmentRepo
-                .findAll()
+                .findAll(defaultSimpleDictSort)
                 .map(e -> {
                     var dto = new SimpleDictDto();
                     dto.setId(e.getId());
                     dto.setName(e.getName());
                     dto.setActive(true);
                     return dto;
-                })
-                .sort(Comparator.comparing(SimpleDictDto::getName));
+                });
     }
 
     public Publisher<? extends SimpleDictDto> findPositions(AuthContext auth) {
         return positionRepo
-                .findAll()
+                .findAll(defaultSimpleDictSort)
                 .map(e -> {
                     var dto = new SimpleDictDto();
                     dto.setId(e.getId());
                     dto.setName(e.getName());
                     dto.setActive(true);
                     return dto;
-                })
-                .sort(Comparator.comparing(SimpleDictDto::getName));
+                });
     }
 
     public Publisher<? extends SimpleDictDto> findLevels(AuthContext auth) {
         return levelRepo
-                .findAll()
+                .findAll(defaultSimpleDictSort)
                 .map(e -> {
                     var dto = new SimpleDictDto();
                     dto.setId(e.getId());
                     dto.setName(e.getName());
                     dto.setActive(true);
                     return dto;
-                })
-                .sort(Comparator.comparing(SimpleDictDto::getName));
+                });
     }
 }

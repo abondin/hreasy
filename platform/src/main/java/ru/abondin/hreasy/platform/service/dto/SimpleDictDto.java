@@ -8,6 +8,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SimpleDictDto{
     private int id;
+    private String name;
+    /**
+     * false if element should be hidden or UI by default
+     */
+    private boolean active = true;
 
     public SimpleDictDto(int id, String name) {
         this(id, name, true);
@@ -19,9 +24,4 @@ public class SimpleDictDto{
         this.active = active;
     }
 
-    private String name;
-    /**
-     * false if element should be hidden or UI by default
-     */
-    private boolean active = true;
 }

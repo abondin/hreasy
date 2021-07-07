@@ -2,12 +2,12 @@
 <template>
   <v-form ref="baEditForm">
     <v-card>
-      <v-card-title v-if="emplForm.isNew">{{ $t('Создание бизнес акаунта') }}</v-card-title>
+      <v-card-title v-if="baForm.isNew">{{ $t('Создание бизнес акаунта') }}</v-card-title>
       <v-card-title v-else>{{ $t('Изменение бизнес акаунта') }}</v-card-title>
       <v-card-text>
         <!-- name -->
         <v-text-field
-            v-model="emplForm.name"
+            v-model="baForm.name"
             :counter="255"
             :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
             :label="$t('Наименование')"
@@ -16,7 +16,7 @@
         </v-text-field>
 
         <v-autocomplete
-            v-model="emplForm.responsibleEmployee"
+            v-model="baForm.responsibleEmployee"
             :items="allEmployees"
             item-value="id"
             item-text="displayName"
@@ -25,7 +25,7 @@
 
         <!-- description -->
         <v-textarea
-            v-model="emplForm.description"
+            v-model="baForm.description"
             :counter="1024"
             :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
             :label="$t('Описание')"
@@ -34,7 +34,7 @@
         </v-textarea>
 
         <v-select
-            v-model="emplForm.archived"
+            v-model="baForm.archived"
             :label="$t('Архив')"
             :items="[{value:false, text:'Нет'}, {value:true, text:'Да'}]">
         </v-select>
