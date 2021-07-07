@@ -35,11 +35,27 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
     @Mapping(target = "createdBy", ignore = true)
     EmployeeHistoryEntry historyBase(EmployeeWithAllDetailsEntry persisted);
 
+    /**
+     * Do not maps active field. Please use fromEntry method
+     *
+     * @param entry
+     * @return
+     */
     @Mapping(target = "displayName", source = ".", qualifiedByName = "displayName")
     @Mapping(target = "documentFull", source = ".", qualifiedByName = "documentFull")
     @Mapping(target = "phone", source = "phone", qualifiedByName = "phoneToString")
-        //TODO Set phone datatype in database to string
-    EmployeeWithAllDetailsDto fromEntry(EmployeeWithAllDetailsEntry entry);
+    //TODO Set phone datatype in database to string
+    EmployeeWithAllDetailsDto fromEntryPartially(EmployeeWithAllDetailsEntry entry);
+
+    default EmployeeWithAllDetailsDto fromEntry(EmployeeWithAllDetailsEntry entry, OffsetDateTime now) {
+        var result = fromEntryPartially(entry);
+        /**
+         * Set employee active if dismissal date is not set or set to the future
+         */
+        result.setActive(entry.getDateOfDismissal() == null ||
+                entry.getDateOfDismissal().isAfter(now.toLocalDate()));
+        return result;
+    }
 
     //TODO Set phone datatype in database to string
     @Deprecated
@@ -67,5 +83,4 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
                 .filter(s -> StringUtils.isNotBlank(s))
                 .collect(Collectors.joining(" "));
     }
-
 }

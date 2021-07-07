@@ -5,12 +5,17 @@ import {CreateOrUpdateBusinessAccount} from "@/components/admin/business_account
 
 
 export interface EmployeeWithAllDetails extends Employee {
+    /**
+     * true if dismissal date is not set or set to the future
+     */
+    active: boolean,
     id: number,
     displayName: string,
     currentProjectId?: number,
     lastname: string,
     firstname: string,
     patronymicName: string,
+    departmentId: number,
     birthday: string,
     sex: string,
     email: string,

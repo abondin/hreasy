@@ -33,12 +33,12 @@ public class AdminEmployeeService {
 
     public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth) {
         return securityValidator.validateViewEmployeeFull(auth)
-                .flatMapMany(sec -> employeeRepo.findAll()).map(mapper::fromEntry);
+                .flatMapMany(sec -> employeeRepo.findAll()).map(m -> mapper.fromEntry(m, dateTimeService.now()));
     }
 
     public Mono<EmployeeWithAllDetailsDto> get(AuthContext auth, int employeeId) {
         return securityValidator.validateViewEmployeeFull(auth)
-                .flatMap(sec -> employeeRepo.findById(employeeId)).map(mapper::fromEntry);
+                .flatMap(sec -> employeeRepo.findById(employeeId)).map(m -> mapper.fromEntry(m, dateTimeService.now()));
     }
 
     public Mono<Integer> create(AuthContext auth, CreateOrUpdateEmployeeBody body) {

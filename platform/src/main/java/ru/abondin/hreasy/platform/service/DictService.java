@@ -13,6 +13,8 @@ import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.DictDtoMapper;
 
+import java.util.Comparator;
+
 @RequiredArgsConstructor
 @Service
 @Slf4j
@@ -34,7 +36,8 @@ public class DictService {
                     var dto = mapper.projectToDto(e);
                     dto.setActive(e.getEndDate() == null || e.getEndDate().isAfter(now));
                     return dto;
-                });
+                })
+                .sort(Comparator.comparing(SimpleDictDto::getName));
     }
 
     public Publisher<? extends SimpleDictDto> findDepartments(AuthContext auth) {
@@ -46,7 +49,8 @@ public class DictService {
                     dto.setName(e.getName());
                     dto.setActive(true);
                     return dto;
-                });
+                })
+                .sort(Comparator.comparing(SimpleDictDto::getName));
     }
 
     public Publisher<? extends SimpleDictDto> findPositions(AuthContext auth) {
@@ -58,8 +62,10 @@ public class DictService {
                     dto.setName(e.getName());
                     dto.setActive(true);
                     return dto;
-                });
+                })
+                .sort(Comparator.comparing(SimpleDictDto::getName));
     }
+
     public Publisher<? extends SimpleDictDto> findLevels(AuthContext auth) {
         return levelRepo
                 .findAll()
@@ -69,6 +75,7 @@ public class DictService {
                     dto.setName(e.getName());
                     dto.setActive(true);
                     return dto;
-                });
+                })
+                .sort(Comparator.comparing(SimpleDictDto::getName));
     }
 }

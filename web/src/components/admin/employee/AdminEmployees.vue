@@ -3,17 +3,64 @@
   <v-container>
     <v-card>
       <v-card-title>
-        <!-- Refresh button -->
         <v-btn text icon @click="fetchData()">
           <v-icon>refresh</v-icon>
         </v-btn>
-        <v-divider vertical></v-divider>
-        <v-text-field
-            v-model="filter.search"
-            :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
-        <v-divider vertical class="mr-5 ml-5"></v-divider>
+        <v-divider vertical class="mr-5"></v-divider>
+        <v-row dense>
+          <v-col lg="3" cols="12">
+            <v-text-field
+                v-model="filter.search"
+                append-icon="mdi-magnify"
+                :label="$t('Поиск')"
+                single-line
+                hide-details
+            ></v-text-field>
+          </v-col>
+          <v-col lg="2" cols="12">
+            <v-autocomplete
+                clearable
+                class="mr-5"
+                v-model="filter.selectedDepartments"
+                :items="allDepartments.filter(p=>p.active)"
+                item-value="id"
+                item-text="name"
+                :label="$t('Отдел')"
+                multiple
+            ></v-autocomplete>
+          </v-col>
+          <v-col lg="3" cols="12">
+            <v-autocomplete
+                clearable
+                class="mr-5"
+                v-model="filter.selectedProjects"
+                :items="allProjects.filter(p=>p.active)"
+                item-value="id"
+                item-text="name"
+                :label="$t('Текущий проект')"
+                multiple
+            ></v-autocomplete>
+          </v-col>
+          <v-col lg="2" cols="12">
+            <v-autocomplete
+                clearable
+                class="mr-5"
+                v-model="filter.selectedPositions"
+                :items="allPositions.filter(p=>p.active)"
+                item-value="id"
+                item-text="name"
+                :label="$t('Позиция')"
+                multiple
+            ></v-autocomplete>
+          </v-col>
+          <v-col lg="2" cols="12">
+            <v-checkbox :label="$t('Скрыть уволенных')" v-model="filter.hideDismissed">
+            </v-checkbox>
+          </v-col>
+        </v-row>
       </v-card-title>
       <v-card-text>
+        <v-alert type="error" v-if="error">{{ error }}</v-alert>
         <v-data-table
             dense
             :loading="loading"
@@ -25,10 +72,13 @@
             class="text-truncate"
         >
 
+          <!-- Work in progress -->
+          <!--
           <template v-slot:item.displayName="{ item }">
             <v-btn small text @click="openEditDialog(item)">{{ item.displayName }}
             </v-btn>
           </template>
+          -->
 
           <template v-slot:item.departmentId="{ item }">
             {{ getById(allDepartments, item.departmentId) }}
@@ -83,11 +133,16 @@ import {Getter} from "vuex-class";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import AdminEmployeeForm from "@/components/admin/employee/AdminEmployeeForm.vue";
 import adminEmployeeService, {EmployeeWithAllDetails} from "@/components/admin/employee/admin.employee.service";
+import {errorUtils} from "@/components/errors";
 
 const namespace_dict: string = 'dict';
 
 class Filter {
   public search = '';
+  public selectedProjects: number[] = [];
+  public selectedDepartments: number[] = [];
+  public selectedPositions: number[] = [];
+  public hideDismissed = true;
 }
 
 @Component({components: {AdminEmployeeForm}})
@@ -115,26 +170,34 @@ export default class AdminEmployees extends Vue {
   @Getter("levels", {namespace: namespace_dict})
   private allLevels!: Array<SimpleDict>;
 
+  private error: string | null = null;
+
   /**
    * Lifecycle hook
    */
   created() {
     logger.log('Admin Employees component created');
     this.reloadHeaders();
-    return this.$store.dispatch('dict/reloadProjects')
+    return this.$nextTick()
+        .then(() => this.$store.dispatch('dict/reloadProjects'))
         .then(() => this.$store.dispatch('dict/reloadDepartments'))
         .then(() => this.$store.dispatch('dict/reloadPositions'))
         .then(() => this.$store.dispatch('dict/reloadLevels'))
-        .then(() => this.fetchData());
+        .then(() => this.fetchData())
   }
+
 
   private fetchData() {
     this.loading = true;
     this.data = [];
+    this.error = null;
     return adminEmployeeService.findAll()
         .then(d => {
           this.data = d;
-        }).finally(() => {
+        }).catch(error => {
+          this.error = errorUtils.shortMessage(error);
+        })
+        .finally(() => {
           this.loading = false
         });
   }
@@ -143,6 +206,7 @@ export default class AdminEmployees extends Vue {
   private filteredData(): EmployeeWithAllDetails[] {
     return this.data.filter((item) => {
       let filtered = true;
+      // Search text field
       if (this.filter.search) {
         const search = this.filter.search.trim().toLowerCase();
         filtered = (
@@ -151,6 +215,22 @@ export default class AdminEmployees extends Vue {
             || (item.skype && item.skype.toLowerCase().indexOf(search) >= 0)
             || (item.phone && item.phone.toLowerCase().indexOf(search) >= 0)
         ) as boolean;
+      }
+      // Project
+      if (filtered && this.filter.selectedProjects && this.filter.selectedProjects.length > 0) {
+        filtered = (item.currentProjectId && this.filter.selectedProjects.indexOf(item.currentProjectId) >= 0) as boolean;
+      }
+      // Position
+      if (filtered && this.filter.selectedPositions && this.filter.selectedPositions.length > 0) {
+        filtered = (item.positionId && this.filter.selectedPositions.indexOf(item.positionId) >= 0) as boolean;
+      }
+      // Department
+      if (filtered && this.filter.selectedDepartments && this.filter.selectedDepartments.length > 0) {
+        filtered = (item.departmentId && this.filter.selectedDepartments.indexOf(item.departmentId) >= 0) as boolean;
+      }
+      // Hide dismissed
+      if (filtered && this.filter.hideDismissed) {
+        filtered = item.active;
       }
       return filtered;
     });
@@ -164,9 +244,18 @@ export default class AdminEmployees extends Vue {
     this.headers.push({text: this.$tc('Текущий проект'), value: 'currentProjectId', width: 280});
     this.headers.push({text: this.$tc('Телефон'), value: 'phone', width: 150});
     this.headers.push({text: this.$tc('Skype'), value: 'skype', width: 150});
-    this.headers.push({text: this.$tc('День рождения'), value: 'birthday', width: 150});
-    this.headers.push({text: this.$tc('Дата трудоустройства'), value: 'dateOfEmployment', width: 150});
-    this.headers.push({text: this.$tc('Дата увольнения'), value: 'dateOfDismissal', width: 150});
+    this.headers.push({
+      text: this.$tc('Дата трудоустройства'),
+      value: 'dateOfEmployment',
+      width: 150,
+      sort: DateTimeUtils.dateComparatorNullLast
+    });
+    this.headers.push({
+      text: this.$tc('День рождения'),
+      value: 'birthday',
+      width: 150,
+      sort: DateTimeUtils.dateComparatorNullLast
+    });
     this.headers.push({text: this.$tc('Позиция'), value: 'positionId', width: 280});
     this.headers.push({text: this.$tc('Уровень экспертизы'), value: 'levelId', width: 150});
     this.headers.push({text: this.$tc('Документ УЛ'), value: 'documentFull', width: 280});
@@ -181,6 +270,12 @@ export default class AdminEmployees extends Vue {
     this.headers.push({text: this.$tc('Семейный статус'), value: 'familyStatus', width: 150});
     this.headers.push({text: this.$tc('Загранпаспорт'), value: 'foreignPassport', width: 150});
     this.headers.push({text: this.$tc('Уровень английского'), value: 'englishLevel', width: 280});
+    this.headers.push({
+      text: this.$tc('Дата увольнения'),
+      value: 'dateOfDismissal',
+      width: 150,
+      sort: DateTimeUtils.dateComparatorNullLast
+    });
   }
 
   private getById(array: SimpleDict[], id?: number): string {
@@ -200,6 +295,5 @@ export default class AdminEmployees extends Vue {
     this.selectedItem = selectedEmployee;
     this.editDialog = true;
   }
-
 }
 </script>
