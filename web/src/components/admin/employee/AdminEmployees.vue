@@ -69,16 +69,9 @@
             :items-per-page="15"
             :items="filteredData()"
             sort-by="displayName"
-            class="text-truncate"
+            class="text-truncate table-cursor"
+            @click:row="openEditDialog"
         >
-
-          <!-- Work in progress -->
-          <!--
-          <template v-slot:item.displayName="{ item }">
-            <v-btn small text @click="openEditDialog(item)">{{ item.displayName }}
-            </v-btn>
-          </template>
-          -->
 
           <template v-slot:item.departmentId="{ item }">
             {{ getById(allDepartments, item.departmentId) }}
@@ -106,6 +99,10 @@
 
           <template v-slot:item.dateOfDismissal="{ item }">
             {{ formatDate(item.dateOfDismissal) }}
+          </template>
+
+          <template v-slot:item.officeLocationId="{ item }">
+            {{ getById(allOfficeLocations, item.officeLocationId) }}
           </template>
 
 
@@ -170,6 +167,9 @@ export default class AdminEmployees extends Vue {
   @Getter("levels", {namespace: namespace_dict})
   private allLevels!: Array<SimpleDict>;
 
+  @Getter("officeLocations", {namespace: namespace_dict})
+  private allOfficeLocations!: Array<SimpleDict>;
+
   private error: string | null = null;
 
   /**
@@ -183,6 +183,7 @@ export default class AdminEmployees extends Vue {
         .then(() => this.$store.dispatch('dict/reloadDepartments'))
         .then(() => this.$store.dispatch('dict/reloadPositions'))
         .then(() => this.$store.dispatch('dict/reloadLevels'))
+        .then(() => this.$store.dispatch('dict/reloadOfficeLocations'))
         .then(() => this.fetchData())
   }
 
@@ -258,6 +259,7 @@ export default class AdminEmployees extends Vue {
     });
     this.headers.push({text: this.$tc('Позиция'), value: 'positionId', width: 280});
     this.headers.push({text: this.$tc('Уровень экспертизы'), value: 'levelId', width: 150});
+    this.headers.push({text: this.$tc('Рабочее место'), value: 'officeLocationId', width: 280});
     this.headers.push({text: this.$tc('Документ УЛ'), value: 'documentFull', width: 280});
     this.headers.push({text: this.$tc('Адрес по регистрации'), value: 'registrationAddress', width: 500});
     this.headers.push({text: this.$tc('Пол'), value: 'sex', width: 100});
@@ -297,3 +299,9 @@ export default class AdminEmployees extends Vue {
   }
 }
 </script>
+
+<style scoped lang="css">
+.table-cursor >>> tbody tr :hover {
+  cursor: pointer;
+}
+</style>
