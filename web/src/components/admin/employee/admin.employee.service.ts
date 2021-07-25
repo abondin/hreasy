@@ -1,26 +1,28 @@
 import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
-import {Employee} from "@/components/empl/employee.service";
-import {CreateOrUpdateBusinessAccount} from "@/components/admin/business_account/admin.ba.service";
+import {Dict, Employee} from "@/components/empl/employee.service";
+import {Skill} from "@/components/empl/skills/skills.service";
 
 
-export interface EmployeeWithAllDetails extends Employee {
-    /**
-     * true if dismissal date is not set or set to the future
-     */
-    active: boolean,
+/**
+ * 32 fields
+ * If new fields added please don't forgot to update AdminEmployeeForm#EmployeeFrom
+ */
+export interface EmployeeWithAllDetails {
     id: number,
-    displayName: string,
-    currentProjectId?: number,
     lastname: string,
     firstname: string,
     patronymicName: string,
-    departmentId: number,
     birthday: string,
     sex: string,
     email: string,
     phone: string,
     skype: string,
+    skills: Skill[],
+    active: boolean,
+    displayName: string,
+    currentProjectId?: number,
+    departmentId: number,
     dateOfEmployment?: string,
     levelId?: number,
     workType?: string,
@@ -42,7 +44,7 @@ export interface EmployeeWithAllDetails extends Employee {
     officeLocationId?: number
 }
 
-export interface CreateOrUpdateEmployeeBody{
+export interface CreateOrUpdateEmployeeBody {
     email: string,
     //TODO Add fields
 }

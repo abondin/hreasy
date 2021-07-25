@@ -108,9 +108,14 @@
 
         </v-data-table>
 
-        <v-dialog v-model="editDialog">
+        <v-dialog v-model="editDialog" persistent>
           <admin-employee-form
               v-bind:input="selectedItem"
+              :all-departments="allDepartments"
+              :all-levels="allLevels"
+              :all-office-locations="allOfficeLocations"
+              :all-positions="allPositions"
+              :all-projects="allProjects"
               @close="editDialog=false;fetchData()"></admin-employee-form>
         </v-dialog>
 
