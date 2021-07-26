@@ -74,7 +74,7 @@ export default class MyDateFormComponent extends Vue {
     this.formattedValue = '';
     const d =  DateTimeUtils.dateFromIsoString(value);
     if (d.isValid()){
-      this.formattedValue = d.format(DateTimeUtils.DEFAULT_DATE_PATERN);
+      this.formattedValue = d.format(DateTimeUtils.DEFAULT_DATE_PATTERN);
     }
   }
 

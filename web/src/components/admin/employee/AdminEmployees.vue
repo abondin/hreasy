@@ -6,6 +6,17 @@
         <v-btn text icon @click="fetchData()">
           <v-icon>refresh</v-icon>
         </v-btn>
+        <!-- Add new employee -->
+        <v-tooltip bottom v-if="canEditEmployees">
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="col-auto">
+              <v-btn text color="primary" :disabled="loading" @click="openEditDialog(undefined)" icon>
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{ $t('Добавить информацию о сотруднике') }}</span>
+        </v-tooltip>
         <v-divider vertical class="mr-5"></v-divider>
         <v-row dense>
           <v-col lg="3" cols="12">
@@ -136,6 +147,7 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import AdminEmployeeForm from "@/components/admin/employee/AdminEmployeeForm.vue";
 import adminEmployeeService, {EmployeeWithAllDetails} from "@/components/admin/employee/admin.employee.service";
 import {errorUtils} from "@/components/errors";
+import permissionService from "@/store/modules/permission.service";
 
 const namespace_dict: string = 'dict';
 
@@ -302,6 +314,11 @@ export default class AdminEmployees extends Vue {
     this.selectedItem = selectedEmployee;
     this.editDialog = true;
   }
+
+  private canEditEmployees() {
+    return permissionService.canAdminEmployees();
+  }
+
 }
 </script>
 

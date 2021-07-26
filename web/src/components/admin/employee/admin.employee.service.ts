@@ -1,6 +1,5 @@
 import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
-import {Dict, Employee} from "@/components/empl/employee.service";
 import {Skill} from "@/components/empl/skills/skills.service";
 
 
@@ -45,8 +44,34 @@ export interface EmployeeWithAllDetails {
 }
 
 export interface CreateOrUpdateEmployeeBody {
-    email: string,
-    //TODO Add fields
+    currentProjectId?: number|null,
+    lastname?: string,
+    firstname?: string,
+    patronymicName?: string,
+    departmentId?: number|null,
+    birthday?: string,
+    sex?: string,
+    email?: string,
+    phone?: string,
+    skype?: string,
+    dateOfEmployment?: string,
+    levelId?: number|null,
+    workType?: string,
+    workDay?: string,
+    registrationAddress?: string,
+    documentSeries?: string,
+    documentNumber?: string,
+    documentIssuedBy?: string,
+    documentIssuedDate?: string,
+    foreignPassport?: string,
+    cityOfResidence?: string,
+    englishLevel?: string,
+    familyStatus?: string,
+    spouseName?: string,
+    children?: string,
+    dateOfDismissal?: string,
+    positionId?: number|null,
+    officeLocationId?: number|null
 }
 
 export interface AdminEmployeeService {

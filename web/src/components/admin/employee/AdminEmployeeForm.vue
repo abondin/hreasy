@@ -3,7 +3,7 @@
   <v-form ref="employeeEditForm">
     <v-card>
       <v-card-title>
-        <span v-if="employeeFrom.isNew">{{ $t('Создание карточки сотрудника') }}</span>
+        <span v-if="employeeForm.isNew">{{ $t('Создание карточки сотрудника') }}</span>
         <span v-else>{{ $t('Изменение карточки сотрудника') }}</span>
         <v-spacer></v-spacer>
         <v-btn icon @click="closeDialog()">
@@ -15,7 +15,7 @@
           <!--<editor-fold desc="First row (email, lastname, firstname, patronymicName)">-->
           <v-row>
             <v-col>
-              <v-text-field v-model="employeeFrom.email"
+              <v-text-field v-model="employeeForm.email"
                             :counter="255"
                             :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
                             :label="$t('Email')"
@@ -24,7 +24,7 @@
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.lastname"
+              <v-text-field v-model="employeeForm.lastname"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Фамилия')">
@@ -32,7 +32,7 @@
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.firstname"
+              <v-text-field v-model="employeeForm.firstname"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Имя')">
@@ -40,7 +40,7 @@
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.patronymicName"
+              <v-text-field v-model="employeeForm.patronymicName"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Отчество')">
@@ -53,8 +53,8 @@
           <!--<editor-fold desc="Second row (currentProjectId, phone, skype, dateOfEmployment)">-->
           <v-row>
             <v-col>
-              <v-autocomplete v-model="employeeFrom.currentProjectId"
-                              :items="allProjects"
+              <v-autocomplete v-model="employeeForm.currentProjectId"
+                              :items="allProjectsWithCurrent"
                               item-value="id"
                               item-text="name"
                               :label="$t('Текущий проект')"
@@ -62,7 +62,7 @@
             </v-col>
 
             <v-col>
-              <v-text-field v-model="employeeFrom.phone"
+              <v-text-field v-model="employeeForm.phone"
                             :counter="11"
                             :rules="[v=>(!v || /^\d{11}$/.test(v) || $t('Число 11 символов'))]"
                             :label="$t('Телефон')"
@@ -71,7 +71,7 @@
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.skype"
+              <v-text-field v-model="employeeForm.skype"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', 255))]"
                             :label="$t('Skype')"
@@ -80,7 +80,7 @@
               </v-text-field>
             </v-col>
             <v-col>
-              <my-date-form-component v-model="employeeFrom.dateOfEmployment"
+              <my-date-form-component v-model="employeeForm.dateOfEmployment"
                                       :label="$t('Дата трудоустройства')"
                                       :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
               ></my-date-form-component>
@@ -91,31 +91,31 @@
           <!--<editor-fold desc="Third row (birthday, positionId, levelId, officeLocationId)">-->
           <v-row>
             <v-col>
-              <my-date-form-component v-model="employeeFrom.birthday"
+              <my-date-form-component v-model="employeeForm.birthday"
                                       :label="$t('День рождения')"
                                       :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
               ></my-date-form-component>
             </v-col>
 
             <v-col>
-              <v-autocomplete v-model="employeeFrom.positionId"
-                              :items="allPositions"
+              <v-autocomplete v-model="employeeForm.positionId"
+                              :items="allPositionsWithCurrent"
                               item-value="id"
                               item-text="name"
                               :label="$t('Позиция')"
               ></v-autocomplete>
             </v-col>
             <v-col>
-              <v-autocomplete v-model="employeeFrom.levelId"
-                              :items="allLevels"
+              <v-autocomplete v-model="employeeForm.levelId"
+                              :items="allLevelsWithCurrent"
                               item-value="id"
                               item-text="name"
                               :label="$t('Уровень экспертизы')"
               ></v-autocomplete>
             </v-col>
             <v-col>
-              <v-autocomplete v-model="employeeFrom.officeLocationId"
-                              :items="allOfficeLocations"
+              <v-autocomplete v-model="employeeForm.officeLocationId"
+                              :items="allOfficeLocationsWithCurrent"
                               item-value="id"
                               item-text="name"
                               :label="$t('Рабочее место')"
@@ -127,27 +127,27 @@
           <!--<editor-fold desc="fourth row (documentSeries, documentNumber, documentIssuedDate, documentIssuedBy)">-->
           <v-row>
             <v-col>
-              <v-text-field v-model="employeeFrom.documentSeries"
+              <v-text-field v-model="employeeForm.documentSeries"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Серия документа')">
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.documentNumber"
+              <v-text-field v-model="employeeForm.documentNumber"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Номер документа')">
               </v-text-field>
             </v-col>
             <v-col>
-              <my-date-form-component v-model="employeeFrom.documentIssuedDate"
+              <my-date-form-component v-model="employeeForm.documentIssuedDate"
                                       :label="$t('Документ выдан (когда)')"
                                       :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
               ></my-date-form-component>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.documentIssuedBy"
+              <v-text-field v-model="employeeForm.documentIssuedBy"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Документ выдан (кем)')">
@@ -160,28 +160,28 @@
           <!--<editor-fold desc="fifth row (registrationAddress, sex, spouseName, workDay)">-->
           <v-row>
             <v-col>
-              <v-text-field v-model="employeeFrom.registrationAddress"
+              <v-text-field v-model="employeeForm.registrationAddress"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Адрес по регистрации')">
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.sex"
+              <v-text-field v-model="employeeForm.sex"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Пол')">
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.spouseName"
+              <v-text-field v-model="employeeForm.spouseName"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('ФИО супруга/супруги')">
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.workDay"
+              <v-text-field v-model="employeeForm.workDay"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Рабочий день (Полный/Неполный)')">
@@ -193,29 +193,29 @@
           <!--<editor-fold desc="sixth row (workType, departmentId, cityOfResidence, children)">-->
           <v-row>
             <v-col>
-              <v-text-field v-model="employeeFrom.workType"
+              <v-text-field v-model="employeeForm.workType"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Место работы')">
               </v-text-field>
             </v-col>
             <v-col>
-              <v-autocomplete v-model="employeeFrom.departmentId"
-                              :items="allDepartments"
+              <v-autocomplete v-model="employeeForm.departmentId"
+                              :items="allDepartmentsWithCurrent"
                               item-value="id"
                               item-text="name"
                               :label="$t('Подразделение')"
               ></v-autocomplete>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.cityOfResidence"
+              <v-text-field v-model="employeeForm.cityOfResidence"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Город проживания')">
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.children"
+              <v-text-field v-model="employeeForm.children"
                             :counter="1024"
                             :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
                             :label="$t('Дети')">
@@ -227,28 +227,28 @@
           <!--<editor-fold desc="seventh row (familyStatus, departmentId, englishLevel, dateOfEmployment)">-->
           <v-row>
             <v-col>
-              <v-text-field v-model="employeeFrom.familyStatus"
+              <v-text-field v-model="employeeForm.familyStatus"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Семейный статус')">
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.foreignPassport"
+              <v-text-field v-model="employeeForm.foreignPassport"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Загранпаспорт')">
               </v-text-field>
             </v-col>
             <v-col>
-              <v-text-field v-model="employeeFrom.englishLevel"
+              <v-text-field v-model="employeeForm.englishLevel"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Уровень английского')">
               </v-text-field>
             </v-col>
             <v-col>
-              <my-date-form-component v-model="employeeFrom.dateOfEmployment"
+              <my-date-form-component v-model="employeeForm.dateOfEmployment"
                                       :label="$t('Дата увольнения')"
                                       :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
               ></my-date-form-component>
@@ -267,7 +267,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn @click="closeDialog()">{{ $t('Закрыть') }}</v-btn>
-        <v-btn @click="submit()" color="primary">{{ employeeFrom.isNew ? $t('Создать') : $t('Изменить') }}</v-btn>
+        <v-btn @click="submit()" color="primary">{{ employeeForm.isNew ? $t('Создать') : $t('Изменить') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-form>
@@ -298,37 +298,37 @@ import {DateTimeUtils} from "@/components/datetimeutils";
  * ------------------
  * Expected field counts: 29
  */
-class EmployeeFrom {
+class employeeForm {
   public isNew = true;
-  public id?: number;
-  currentProjectId?: number;
-  lastname?: string;
-  firstname?: string;
-  patronymicName?: string;
-  departmentId?: number;
-  birthday?: string;
-  sex?: string;
-  email?: string;
-  phone?: string;
-  skype?: string;
-  dateOfEmployment?: string;
-  levelId?: number;
-  workType?: string;
-  workDay?: string;
-  registrationAddress?: string;
-  documentSeries?: string;
-  documentNumber?: string;
-  documentIssuedBy?: string;
-  documentIssuedDate?: string;
-  foreignPassport?: string;
-  cityOfResidence?: string;
-  englishLevel?: string;
-  familyStatus?: string;
-  spouseName?: string;
-  children?: string;
-  dateOfDismissal?: string;
-  positionId?: number;
-  officeLocationId?: number;
+  public id: number | null = null;
+  currentProjectId: number | null = null;
+  lastname: string | null = null;
+  firstname: string | null = null;
+  patronymicName: string | null = null;
+  departmentId: number | null = null;
+  birthday: string | null = null;
+  sex: string | null = null;
+  email: string | null = null;
+  phone: string | null = null;
+  skype: string | null = null;
+  dateOfEmployment: string | null = null;
+  levelId: number | null = null;
+  workType: string | null = null;
+  workDay: string | null = null;
+  registrationAddress: string | null = null;
+  documentSeries: string | null = null;
+  documentNumber: string | null = null;
+  documentIssuedBy: string | null = null;
+  documentIssuedDate: string | null = null;
+  foreignPassport: string | null = null;
+  cityOfResidence: string | null = null;
+  englishLevel: string | null = null;
+  familyStatus: string | null = null;
+  spouseName: string | null = null;
+  children: string | null = null;
+  dateOfDismissal: string | null = null;
+  positionId: number | null = null;
+  officeLocationId: number | null = null;
 }
 
 @Component(
@@ -343,20 +343,25 @@ export default class AdminEmployeeForm extends Vue {
 
   @Prop({required: true})
   private allDepartments!: Array<SimpleDict>;
+  private allDepartmentsWithCurrent: Array<SimpleDict>=[];
 
   @Prop({required: true})
   private allProjects!: Array<SimpleDict>;
+  private allProjectsWithCurrent: Array<SimpleDict>=[];
 
   @Prop({required: true})
   private allPositions!: Array<SimpleDict>;
+  private allPositionsWithCurrent: Array<SimpleDict>=[];
 
   @Prop({required: true})
   private allLevels!: Array<SimpleDict>;
+  private allLevelsWithCurrent: Array<SimpleDict>=[];
 
   @Prop({required: true})
   private allOfficeLocations!: Array<SimpleDict>;
+  private allOfficeLocationsWithCurrent: Array<SimpleDict>=[];
 
-  private employeeFrom = new EmployeeFrom();
+  private employeeForm = new employeeForm();
 
   private error: String | null = null;
 
@@ -374,70 +379,77 @@ export default class AdminEmployeeForm extends Vue {
    * @private
    */
   private reset() {
-    this.employeeFrom.isNew = true;
-    this.employeeFrom.id = undefined;
-    this.employeeFrom.email = '';
-    this.employeeFrom.currentProjectId = undefined;
-    this.employeeFrom.skype = '';
-    this.employeeFrom.birthday = '';
-    this.employeeFrom.dateOfEmployment = '';
-    this.employeeFrom.children = '';
-    this.employeeFrom.cityOfResidence = '';
-    this.employeeFrom.departmentId = undefined;
-    this.employeeFrom.documentIssuedBy = '';
-    this.employeeFrom.documentIssuedDate = '';
-    this.employeeFrom.documentNumber = '';
-    this.employeeFrom.documentSeries = '';
-    this.employeeFrom.englishLevel = '';
-    this.employeeFrom.familyStatus = '';
-    this.employeeFrom.dateOfDismissal = '';
-    this.employeeFrom.phone = '';
-    this.employeeFrom.foreignPassport = '';
-    this.employeeFrom.lastname = '';
-    this.employeeFrom.firstname = '';
-    this.employeeFrom.levelId = undefined;
-    this.employeeFrom.officeLocationId = undefined;
-    this.employeeFrom.patronymicName = '';
-    this.employeeFrom.spouseName = '';
-    this.employeeFrom.sex = '';
-    this.employeeFrom.positionId = undefined;
-    this.employeeFrom.registrationAddress = undefined;
-    this.employeeFrom.workDay = undefined;
-    this.employeeFrom.workType = undefined;
+    this.employeeForm.isNew = true;
+    this.employeeForm.id = null;
+    this.employeeForm.email = null;
+    this.employeeForm.currentProjectId = null;
+    this.employeeForm.skype = null;
+    this.employeeForm.birthday = null;
+    this.employeeForm.dateOfEmployment = null;
+    this.employeeForm.children = null;
+    this.employeeForm.cityOfResidence = null;
+    this.employeeForm.departmentId = null;
+    this.employeeForm.documentIssuedBy = null;
+    this.employeeForm.documentIssuedDate = null;
+    this.employeeForm.documentNumber = null;
+    this.employeeForm.documentSeries = null;
+    this.employeeForm.englishLevel = null;
+    this.employeeForm.familyStatus = null;
+    this.employeeForm.dateOfDismissal = null;
+    this.employeeForm.phone = null;
+    this.employeeForm.foreignPassport = null;
+    this.employeeForm.lastname = null;
+    this.employeeForm.firstname = null;
+    this.employeeForm.levelId = null;
+    this.employeeForm.officeLocationId = null;
+    this.employeeForm.patronymicName = null;
+    this.employeeForm.spouseName = null;
+    this.employeeForm.sex = null;
+    this.employeeForm.positionId = null;
+    this.employeeForm.registrationAddress = null;
+    this.employeeForm.workDay = this.$t('Полный') as string;
+    this.employeeForm.workType = this.$t('Основной') as string;
 
 
     if (this.input) {
-      this.employeeFrom.isNew = false;
-      this.employeeFrom.id = this.input.id;
-      this.employeeFrom.email = this.input.email;
-      this.employeeFrom.lastname = this.input.lastname;
-      this.employeeFrom.firstname = this.input.firstname;
-      this.employeeFrom.patronymicName = this.input.patronymicName;
-      this.employeeFrom.currentProjectId = this.input.currentProjectId;
-      this.employeeFrom.skype = this.input.skype;
-      this.employeeFrom.birthday = this.input.birthday;
-      this.employeeFrom.dateOfEmployment = this.input.dateOfEmployment;
-      this.employeeFrom.children = this.input.children;
-      this.employeeFrom.cityOfResidence = this.input.cityOfResidence;
-      this.employeeFrom.departmentId = this.input.departmentId;
-      this.employeeFrom.documentIssuedBy = this.input.documentIssuedBy;
-      this.employeeFrom.documentIssuedDate = this.input.documentIssuedDate;
-      this.employeeFrom.documentNumber = this.input.documentNumber;
-      this.employeeFrom.documentSeries = this.input.documentSeries;
-      this.employeeFrom.englishLevel = this.input.englishLevel;
-      this.employeeFrom.familyStatus = this.input.familyStatus;
-      this.employeeFrom.dateOfDismissal = this.input.dateOfDismissal;
-      this.employeeFrom.phone = this.input.phone;
-      this.employeeFrom.foreignPassport = this.input.foreignPassport;
-      this.employeeFrom.levelId = this.input.levelId;
-      this.employeeFrom.officeLocationId = this.input.officeLocationId;
-      this.employeeFrom.spouseName = this.input.spouseName;
-      this.employeeFrom.sex = this.input.sex;
-      this.employeeFrom.positionId = this.input.positionId;
-      this.employeeFrom.registrationAddress = this.input.registrationAddress;
-      this.employeeFrom.workDay = this.input.workDay;
-      this.employeeFrom.workType = this.input.workType;
+      this.employeeForm.isNew = false;
+      this.employeeForm.id = this.input.id;
+      this.employeeForm.email = this.input.email;
+      this.employeeForm.lastname = this.input.lastname;
+      this.employeeForm.firstname = this.input.firstname;
+      this.employeeForm.patronymicName = this.input.patronymicName;
+      this.employeeForm.currentProjectId = this.input.currentProjectId || null;
+      this.employeeForm.skype = this.input.skype;
+      this.employeeForm.birthday = this.input.birthday;
+      this.employeeForm.dateOfEmployment = this.input.dateOfEmployment || null;
+      this.employeeForm.children = this.input.children || null;
+      this.employeeForm.cityOfResidence = this.input.cityOfResidence || null;
+      this.employeeForm.departmentId = this.input.departmentId || null;
+      this.employeeForm.documentIssuedBy = this.input.documentIssuedBy || null;
+      this.employeeForm.documentIssuedDate = this.input.documentIssuedDate || null;
+      this.employeeForm.documentNumber = this.input.documentNumber || null;
+      this.employeeForm.documentSeries = this.input.documentSeries || null;
+      this.employeeForm.englishLevel = this.input.englishLevel || null;
+      this.employeeForm.familyStatus = this.input.familyStatus || null;
+      this.employeeForm.dateOfDismissal = this.input.dateOfDismissal || null;
+      this.employeeForm.phone = this.input.phone || null;
+      this.employeeForm.foreignPassport = this.input.foreignPassport || null;
+      this.employeeForm.levelId = this.input.levelId || null;
+      this.employeeForm.officeLocationId = this.input.officeLocationId || null;
+      this.employeeForm.spouseName = this.input.spouseName || null;
+      this.employeeForm.sex = this.input.sex || null;
+      this.employeeForm.positionId = this.input.positionId || null;
+      this.employeeForm.registrationAddress = this.input.registrationAddress || null;
+      this.employeeForm.workDay = this.input.workDay || null;
+      this.employeeForm.workType = this.input.workType || null;
     }
+
+    this.allDepartmentsWithCurrent = this.withCurrent(this.allDepartments, this.employeeForm.departmentId);
+    this.allProjectsWithCurrent = this.withCurrent(this.allProjects, this.employeeForm.currentProjectId);
+    this.allLevelsWithCurrent = this.withCurrent(this.allLevels, this.employeeForm.levelId);
+    this.allOfficeLocationsWithCurrent = this.withCurrent(this.allOfficeLocations, this.employeeForm.officeLocationId);
+    this.allPositionsWithCurrent = this.withCurrent(this.allPositions, this.employeeForm.positionId);
+
   }
 
   private closeDialog() {
@@ -448,18 +460,15 @@ export default class AdminEmployeeForm extends Vue {
   }
 
   private submit() {
-    const form: any = this.$refs.emplEditForm;
+    const form: any = this.$refs.employeeEditForm;
     if (form.validate()) {
-      const body = {
-        email: this.employeeFrom.email,
-        // TODO Add fields
-      } as CreateOrUpdateEmployeeBody;
+      const body = Object.assign({}, this.employeeForm) as CreateOrUpdateEmployeeBody;
       let serverRequest;
-      if (this.employeeFrom.isNew) {
-        logger.log(`Create employee ${JSON.stringify(this.employeeFrom)}`);
+      if (this.employeeForm.isNew) {
+        logger.log(`Create employee ${JSON.stringify(this.employeeForm)}`);
         serverRequest = adminEmployeeService.create(body)
       } else {
-        serverRequest = adminEmployeeService.update(this.employeeFrom.id!, body);
+        serverRequest = adminEmployeeService.update(this.employeeForm.id!, body);
       }
       return serverRequest
           .then((result) => {
@@ -474,6 +483,10 @@ export default class AdminEmployeeForm extends Vue {
 
   private validateDate(formattedDate: string, allowEmpty = true): boolean {
     return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
+  }
+
+  private withCurrent(items: Array<SimpleDict>, currentValueId: number|null) {
+    return items ? (items.filter(i => i.active || i.id == currentValueId)) : [];
   }
 
 }
