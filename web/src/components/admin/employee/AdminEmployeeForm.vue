@@ -74,8 +74,7 @@
               <v-text-field v-model="employeeForm.skype"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', 255))]"
-                            :label="$t('Skype')"
-                            hint="Формат 81112223344">
+                            :label="$t('Skype')">
                 >
               </v-text-field>
             </v-col>
