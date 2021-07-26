@@ -4,19 +4,22 @@
         ref="menu"
         v-model="menu"
         :close-on-content-click="false"
-        :nudge-right="40"
         transition="scale-transition"
         offset-y
-        min-width="290px">
+        min-width="auto"
+        max-width="290px">
       <template v-slot:activator="{ on, attrs }">
         <v-text-field
             ref="dateField"
             :label="label"
             :value="formattedValue"
             @input="textFieldUpdated"
-            :rules="rules"
-            v-bind="attrs" v-on="on"
-        >
+            :rules="rules">
+          <template v-slot:append>
+            <v-btn x-small icon v-bind="attrs" v-on="on">
+              <v-icon>mdi-calendar</v-icon>
+            </v-btn>
+          </template>
         </v-text-field>
       </template>
       <v-date-picker
@@ -56,7 +59,7 @@ export default class MyDateFormComponent extends Vue {
 
   private formattedValue = '';
 
-  created(){
+  created() {
     this.date = this.value ? this.value : '';
     this.updateFormattedValue(this.date);
   }
@@ -68,30 +71,28 @@ export default class MyDateFormComponent extends Vue {
   }
 
 
-
-
-  private updateFormattedValue(value: string){
+  private updateFormattedValue(value: string) {
     this.formattedValue = '';
-    const d =  DateTimeUtils.dateFromIsoString(value);
-    if (d.isValid()){
-      this.formattedValue = d.format(DateTimeUtils.DEFAULT_DATE_PATERN);
+    const d = DateTimeUtils.dateFromIsoString(value);
+    if (d.isValid()) {
+      this.formattedValue = d.format(DateTimeUtils.DEFAULT_DATE_PATTERN);
     }
   }
 
-  private calendarSelected(isoDate:any){
+  private calendarSelected(isoDate: any) {
     const d = DateTimeUtils.dateFromIsoString(isoDate);
     this.updateFormattedValue(isoDate);
     this.emit(d)
   }
 
-  private textFieldUpdated(formattedDate:string){
+  private textFieldUpdated(formattedDate: string) {
     const d = DateTimeUtils.dateFromFormattedString(formattedDate);
     this.emit(d);
   }
 
   private emit(d: Moment) {
-    if (d.isValid()){
-      this.menu=false;
+    if (d.isValid()) {
+      this.menu = false;
       this.date = d.format(moment.HTML5_FMT.DATE);
       logger.log(`emit new value ${this.date}`);
       this.$emit('input', this.date);

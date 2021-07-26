@@ -2,8 +2,8 @@ import moment, {Moment} from "moment";
 import {DataTableCompareFunction} from "vuetify";
 
 export class DateTimeUtils {
-    public static DEFAULT_DATE_PATERN = "DD.MM.YY";
-    public static DEFAULT_DATE_TIME_PATERN = "DD.MM.YY HH:mm";
+    public static DEFAULT_DATE_PATTERN = "DD.MM.YYYY";
+    public static DEFAULT_DATE_TIME_PATTERN = "DD.MM.YYYY HH:mm";
 
     public static dateFromIsoString(isoDate: string): Moment {
         return moment(isoDate, moment.HTML5_FMT.DATE, true);
@@ -14,14 +14,14 @@ export class DateTimeUtils {
     }
 
     public static dateFromFormattedString(formatedDate: string): Moment {
-        return moment(formatedDate, this.DEFAULT_DATE_PATERN, true);
+        return moment(formatedDate, this.DEFAULT_DATE_PATTERN, true);
     }
 
     public static validateFormattedDate(formattedDate: string, allowEmpty = true) {
         if (!formattedDate) {
             return allowEmpty;
         }
-        return moment(formattedDate, this.DEFAULT_DATE_PATERN, true).isValid();
+        return moment(formattedDate, this.DEFAULT_DATE_PATTERN, true).isValid();
     }
 
     public static formatFromIso(isoDateString: string | undefined): string {
@@ -30,7 +30,7 @@ export class DateTimeUtils {
         }
         const d = this.dateFromIsoString(isoDateString);
         if (d.isValid()) {
-            return d.format(this.DEFAULT_DATE_PATERN);
+            return d.format(this.DEFAULT_DATE_PATTERN);
         } else {
             return '';
         }
@@ -42,7 +42,7 @@ export class DateTimeUtils {
         }
         const d = this.dateTimeFromIsoString(isoDateTimeString);
         if (d.isValid()) {
-            return d.format(this.DEFAULT_DATE_TIME_PATERN);
+            return d.format(this.DEFAULT_DATE_TIME_PATTERN);
         } else {
             return '';
         }

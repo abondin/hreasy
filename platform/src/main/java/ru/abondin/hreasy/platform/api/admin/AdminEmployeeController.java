@@ -10,6 +10,8 @@ import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.CreateOrUpdateEmployeeBody;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeWithAllDetailsDto;
 
+import javax.validation.Valid;
+
 /**
  * Add new employee record and update existing one
  */
@@ -33,12 +35,12 @@ public class AdminEmployeeController {
     }
 
     @PostMapping
-    public Mono<Integer> createBA(@RequestBody CreateOrUpdateEmployeeBody body) {
+    public Mono<Integer> createBA(@RequestBody @Valid CreateOrUpdateEmployeeBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> employeeService.create(auth, body));
     }
 
     @PutMapping("/{employeeId}")
-    public Mono<Integer> updateBA(@PathVariable int employeeId, @RequestBody CreateOrUpdateEmployeeBody body) {
+    public Mono<Integer> updateBA(@PathVariable int employeeId, @RequestBody @Valid CreateOrUpdateEmployeeBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> employeeService.update(auth, employeeId, body));
     }
 

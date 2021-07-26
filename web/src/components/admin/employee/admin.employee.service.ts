@@ -1,26 +1,27 @@
 import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
-import {Employee} from "@/components/empl/employee.service";
-import {CreateOrUpdateBusinessAccount} from "@/components/admin/business_account/admin.ba.service";
+import {Skill} from "@/components/empl/skills/skills.service";
 
 
-export interface EmployeeWithAllDetails extends Employee {
-    /**
-     * true if dismissal date is not set or set to the future
-     */
-    active: boolean,
+/**
+ * 32 fields
+ * If new fields added please don't forgot to update AdminEmployeeForm#EmployeeFrom
+ */
+export interface EmployeeWithAllDetails {
     id: number,
-    displayName: string,
-    currentProjectId?: number,
     lastname: string,
     firstname: string,
     patronymicName: string,
-    departmentId: number,
     birthday: string,
     sex: string,
     email: string,
     phone: string,
     skype: string,
+    skills: Skill[],
+    active: boolean,
+    displayName: string,
+    currentProjectId?: number,
+    departmentId: number,
     dateOfEmployment?: string,
     levelId?: number,
     workType?: string,
@@ -42,9 +43,35 @@ export interface EmployeeWithAllDetails extends Employee {
     officeLocationId?: number
 }
 
-export interface CreateOrUpdateEmployeeBody{
-    email: string,
-    //TODO Add fields
+export interface CreateOrUpdateEmployeeBody {
+    currentProjectId?: number|null,
+    lastname?: string,
+    firstname?: string,
+    patronymicName?: string,
+    departmentId?: number|null,
+    birthday?: string,
+    sex?: string,
+    email?: string,
+    phone?: string,
+    skype?: string,
+    dateOfEmployment?: string,
+    levelId?: number|null,
+    workType?: string,
+    workDay?: string,
+    registrationAddress?: string,
+    documentSeries?: string,
+    documentNumber?: string,
+    documentIssuedBy?: string,
+    documentIssuedDate?: string,
+    foreignPassport?: string,
+    cityOfResidence?: string,
+    englishLevel?: string,
+    familyStatus?: string,
+    spouseName?: string,
+    children?: string,
+    dateOfDismissal?: string,
+    positionId?: number|null,
+    officeLocationId?: number|null
 }
 
 export interface AdminEmployeeService {

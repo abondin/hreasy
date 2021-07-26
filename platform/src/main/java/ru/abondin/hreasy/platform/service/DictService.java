@@ -7,14 +7,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.repo.dict.DepartmentRepo;
-import ru.abondin.hreasy.platform.repo.dict.DictLevelRepo;
-import ru.abondin.hreasy.platform.repo.dict.DictPositionRepo;
-import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
+import ru.abondin.hreasy.platform.repo.dict.*;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.DictDtoMapper;
 
-import java.util.Comparator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
@@ -26,6 +24,7 @@ public class DictService {
     private final DepartmentRepo departmentRepo;
     private final DictPositionRepo positionRepo;
     private final DictLevelRepo levelRepo;
+    private final DictOfficeLocationRepo officeLocationRepo;
 
     private final DictDtoMapper mapper;
 
@@ -73,6 +72,21 @@ public class DictService {
                     var dto = new SimpleDictDto();
                     dto.setId(e.getId());
                     dto.setName(e.getName());
+                    dto.setActive(true);
+                    return dto;
+                });
+    }
+
+    public Publisher<? extends SimpleDictDto> findOfficeLocations(AuthContext auth) {
+        return officeLocationRepo
+                .findAll(defaultSimpleDictSort)
+                .map(e -> {
+                    var dto = new SimpleDictDto();
+                    dto.setId(e.getId());
+                    dto.setName(
+                            Stream.of(e.getName(), e.getDescription())
+                                    .filter(i -> i != null)
+                                    .collect(Collectors.joining(", ")));
                     dto.setActive(true);
                     return dto;
                 });

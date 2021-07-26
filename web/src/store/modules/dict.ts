@@ -17,6 +17,7 @@ export interface DictLoadedState {
     departments: Array<SimpleDict>;
     positions: Array<SimpleDict>;
     levels: Array<SimpleDict>;
+    officeLocations: Array<SimpleDict>;
     skillGroups: Array<SimpleDict>;
     sharedSkillsNames: Array<SharedSkillName>;
 }
@@ -27,6 +28,7 @@ export const dictState: DictLoadedState = {
     departments: [],
     positions: [],
     levels: [],
+    officeLocations: [],
     skillGroups: [],
     sharedSkillsNames: []
 }
@@ -58,6 +60,11 @@ export const dictActions: ActionTree<DictLoadedState, RootState> = {
             commit('levelsLoaded', deps);
         });
     },
+    reloadOfficeLocations({commit}): any {
+        return dictService.loadAllOfficeLocations().then(locations => {
+            commit('officeLocationsLoaded', locations);
+        });
+    },
     reloadSkillGroups({commit}): any {
         return dictService.loadAllSkillGroups().then(groups => {
             commit('skillGroupsLoaded', groups);
@@ -86,6 +93,9 @@ export const dictMutations: MutationTree<DictLoadedState> = {
     levelsLoaded(state, value: Array<SimpleDict>) {
         state.levels = value;
     },
+    officeLocationsLoaded(state, value: Array<SimpleDict>) {
+        state.officeLocations = value;
+    },
     skillGroupsLoaded(state, groups: Array<SimpleDict>) {
         state.skillGroups = groups;
     },
@@ -110,6 +120,9 @@ export const dictGetters: GetterTree<DictLoadedState, RootState> = {
     },
     levels(state): Array<SimpleDict> {
         return state.levels;
+    },
+    officeLocations(state): Array<SimpleDict> {
+        return state.officeLocations;
     },
     skillGroups(state): Array<SimpleDict> {
         return state.skillGroups;

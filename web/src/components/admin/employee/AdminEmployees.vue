@@ -6,6 +6,17 @@
         <v-btn text icon @click="fetchData()">
           <v-icon>refresh</v-icon>
         </v-btn>
+        <!-- Add new employee -->
+        <v-tooltip bottom v-if="canEditEmployees">
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="col-auto">
+              <v-btn text color="primary" :disabled="loading" @click="openEditDialog(undefined)" icon>
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{ $t('Добавить информацию о сотруднике') }}</span>
+        </v-tooltip>
         <v-divider vertical class="mr-5"></v-divider>
         <v-row dense>
           <v-col lg="3" cols="12">
@@ -69,16 +80,9 @@
             :items-per-page="15"
             :items="filteredData()"
             sort-by="displayName"
-            class="text-truncate"
+            class="text-truncate table-cursor"
+            @click:row="openEditDialog"
         >
-
-          <!-- Work in progress -->
-          <!--
-          <template v-slot:item.displayName="{ item }">
-            <v-btn small text @click="openEditDialog(item)">{{ item.displayName }}
-            </v-btn>
-          </template>
-          -->
 
           <template v-slot:item.departmentId="{ item }">
             {{ getById(allDepartments, item.departmentId) }}
@@ -108,12 +112,21 @@
             {{ formatDate(item.dateOfDismissal) }}
           </template>
 
+          <template v-slot:item.officeLocationId="{ item }">
+            {{ getById(allOfficeLocations, item.officeLocationId) }}
+          </template>
+
 
         </v-data-table>
 
-        <v-dialog v-model="editDialog">
+        <v-dialog v-model="editDialog" persistent>
           <admin-employee-form
               v-bind:input="selectedItem"
+              :all-departments="allDepartments"
+              :all-levels="allLevels"
+              :all-office-locations="allOfficeLocations"
+              :all-positions="allPositions"
+              :all-projects="allProjects"
               @close="editDialog=false;fetchData()"></admin-employee-form>
         </v-dialog>
 
@@ -134,6 +147,7 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import AdminEmployeeForm from "@/components/admin/employee/AdminEmployeeForm.vue";
 import adminEmployeeService, {EmployeeWithAllDetails} from "@/components/admin/employee/admin.employee.service";
 import {errorUtils} from "@/components/errors";
+import permissionService from "@/store/modules/permission.service";
 
 const namespace_dict: string = 'dict';
 
@@ -170,6 +184,9 @@ export default class AdminEmployees extends Vue {
   @Getter("levels", {namespace: namespace_dict})
   private allLevels!: Array<SimpleDict>;
 
+  @Getter("officeLocations", {namespace: namespace_dict})
+  private allOfficeLocations!: Array<SimpleDict>;
+
   private error: string | null = null;
 
   /**
@@ -183,6 +200,7 @@ export default class AdminEmployees extends Vue {
         .then(() => this.$store.dispatch('dict/reloadDepartments'))
         .then(() => this.$store.dispatch('dict/reloadPositions'))
         .then(() => this.$store.dispatch('dict/reloadLevels'))
+        .then(() => this.$store.dispatch('dict/reloadOfficeLocations'))
         .then(() => this.fetchData())
   }
 
@@ -258,6 +276,7 @@ export default class AdminEmployees extends Vue {
     });
     this.headers.push({text: this.$tc('Позиция'), value: 'positionId', width: 280});
     this.headers.push({text: this.$tc('Уровень экспертизы'), value: 'levelId', width: 150});
+    this.headers.push({text: this.$tc('Рабочее место'), value: 'officeLocationId', width: 280});
     this.headers.push({text: this.$tc('Документ УЛ'), value: 'documentFull', width: 280});
     this.headers.push({text: this.$tc('Адрес по регистрации'), value: 'registrationAddress', width: 500});
     this.headers.push({text: this.$tc('Пол'), value: 'sex', width: 100});
@@ -295,5 +314,16 @@ export default class AdminEmployees extends Vue {
     this.selectedItem = selectedEmployee;
     this.editDialog = true;
   }
+
+  private canEditEmployees() {
+    return permissionService.canAdminEmployees();
+  }
+
 }
 </script>
+
+<style scoped lang="css">
+.table-cursor >>> tbody tr :hover {
+  cursor: pointer;
+}
+</style>
