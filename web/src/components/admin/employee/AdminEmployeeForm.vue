@@ -247,7 +247,7 @@
               </v-text-field>
             </v-col>
             <v-col>
-              <my-date-form-component v-model="employeeForm.dateOfEmployment"
+              <my-date-form-component v-model="employeeForm.dateOfDismissal"
                                       :label="$t('Дата увольнения')"
                                       :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
               ></my-date-form-component>
