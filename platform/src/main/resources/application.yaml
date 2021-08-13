@@ -28,13 +28,11 @@ hreasy:
     user-dn: "CN=<USER NAME>,CN=Users,DC=stm,DC=local"
     user-password: "Specify Password"
     search-base: "OU=Internal,OU=Enterprise,DC=stm,DC=local"
-    search-filter: "sAMAccountName={0}"
-    email-suffix: "@stm-labs.ru"
+  common:
+    default-email-suffix: "@stm-labs.ru"
 
 
 spring:
-  security:
-    cors
   # Do not modify URL part. Override hreasy.db.* properties
   r2dbc:
     url: r2dbc:mssql://${hreasy.db.host}:${hreasy.db.port}/${hreasy.db.database}

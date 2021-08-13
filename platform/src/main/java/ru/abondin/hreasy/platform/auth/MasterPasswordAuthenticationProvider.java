@@ -35,8 +35,7 @@ public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticat
             // Move control to default LDAP provider
             return Mono.empty();
         }
-        var email = AuthHandler.emailFromUsername(username);
-        return employeeAuthDomainService.findIdByEmail(email)
+        return employeeAuthDomainService.findIdByEmail(username)
                 .flatMap(
                         employeeAuthInfoEntry ->
                                 authoritiesPopulator.getGrantedAuthorities(username).collectList()
