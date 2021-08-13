@@ -1,0 +1,119 @@
+@startuml
+'https://plantuml.com/use-case-diagram
+skinparam actorStyle awesome
+
+title Main Assessment Use Case
+
+legend left
+- PM can start assessment only for employee from his project
+- Only interviewed employee can populate **Self Assessment Form**
+- Only PM can populate his **Manager Feedback Form**
+- Only PM who started assessment, invited manager, HR or admin can see
+  **Self Assessment Form** and all **Manager Feedback Form**s
+- Only PM who started assessment or invited manager, HR or admin
+ can populate **Meetings notes form**, **Conclusion and decision form** and close the assessment
+- Only interviewed employee, PM who started assessment or invited manager, HR or admin can see **Meetings notes form**
+- Only PM who started assessment or invited manager, HR or admin can see **Conclusion and decision form**
+end legend
+
+footer Alexander Bondin 2021 (c)
+
+
+:Employee: as empl
+:Manager: as man1
+
+
+rectangle Preconditions {
+    usecase create as "
+Create an assessment
+---
+Manager selects employee in UI
+and presses **New Assessment** button.
+Also manager can invite another
+manager to the assessment procedure
+"
+
+    usecase notify as "
+Schedule a meeting
+---
+Manager schedules a meeting
+with an employee and asks him
+to fill **Self Assessment Form**
+in the system.
+//TODO Automate this step
+"
+
+    usecase self as "
+Fill Self Assessment Form
+---
+Employee populates all field of
+**Self Assessment Form** in HR Easy UI
+"
+    usecase feedback as "
+Provide feedback
+---
+Manager populates
+**Manager Feedback Form**
+in UI.
+Invited manager can also
+populates his form.
+"
+}
+
+
+man1 -> (create)
+(create) -- (notify) #Strategy
+(notify) -- (self) #Strategy
+man1 -> (notify)
+
+empl -> (self)
+(notify)--(feedback) #Strategy
+man1->(feedback)
+
+rectangle "Online Meeting" {
+    usecase meeting as "
+    Online Meeting
+    ---
+    Manager and employee have
+    some online interview.
+    ===
+    As an result Manager fills
+    **Meeting notes** form.
+    "
+}
+
+(self)--(meeting) #Strategy
+(feedback)--(meeting) #Strategy
+
+man1->(meeting)
+empl->(meeting)
+
+rectangle "Post meeting actions" {
+    usecase decision as "
+    **Conclusion and decision form**
+    ---
+    Manager populates
+    **Conclusion and decision form**
+    in UI and presses **Complete** button
+    ===
+    After that all forms become read-only
+    "
+
+    usecase decisionNotification as "
+    Manager sends email with
+    **Meetings notes**
+    to HR and
+    all assessment participants.
+    ==
+    Manager sends email with
+     **Conclusion and decision form**
+    to HR, and invited managers.
+    "
+}
+
+(meeting)-(decision) #Strategy
+man1->(decision)
+(decision)--(decisionNotification) #Strategy
+man1->(decisionNotification)
+
+@enduml
