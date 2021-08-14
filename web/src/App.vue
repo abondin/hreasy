@@ -6,7 +6,7 @@
         v-model="drawer">
       <v-list dense>
         <v-list-item @click.stop="drawer = !drawer">
-          {{ userDisplayName }}
+          <span class="text-body-2">{{ userDisplayName }}</span>
         </v-list-item>
 
         <v-list-item link to="/profile/main">

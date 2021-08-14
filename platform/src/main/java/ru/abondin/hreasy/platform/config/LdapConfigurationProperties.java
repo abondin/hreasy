@@ -21,5 +21,5 @@ public class LdapConfigurationProperties {
     private String userDn = "CN=<admin_user>,CN=Users,DC=stm,DC=local";
     private String userPassword = "<PASSWORD>";
     private String searchBase = "OU=Internal,OU=Enterprise,DC=stm,DC=local";
-    private String searchFilter = "sAMAccountName={0}";
+    private String searchFilter = "userPrincipalName={0}";
 }

@@ -64,18 +64,9 @@ public class AuthHandler {
                 .map(it -> buildFromSecurityContext(it));
     }
 
-    private final static String emailSuffix = "@stm-labs.ru";
-
-    /**
-     * Get employee email from username
-     */
-    public static String emailFromUsername(String username) {
-        return username + emailSuffix;
-    }
-
     private static AuthContext buildFromSecurityContext(SecurityContext context) {
         var userDetails = (UserDetails) context.getAuthentication().getPrincipal();
-        var email = emailFromUsername(userDetails.getUsername());
+        var email = userDetails.getUsername();
         AuthContext.EmployeeInfo employee;
         if (userDetails instanceof UserDetailsWithEmployeeInfo && ((UserDetailsWithEmployeeInfo) userDetails).getEmployeeId() != null) {
             var withEmployeeInfo = ((UserDetailsWithEmployeeInfo) userDetails);

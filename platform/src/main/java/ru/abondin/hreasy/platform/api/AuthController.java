@@ -7,19 +7,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.auth.AuthHandler.CurrentUserDto;
+import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
+import ru.abondin.hreasy.platform.service.sec.AuthService;
 
 @RestController()
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {
-    private final AuthHandler authHandler;
+    private final AuthService authService;
+    private final HrEasyCommonProps props;
 
     @Operation(summary = "Get information about current user from Security Context")
     @GetMapping("current-user")
@@ -33,13 +37,14 @@ public class AuthController {
     @PostMapping("login")
     @ResponseBody
     public Mono<AuthHandler.LoginResponse> login(@RequestBody LoginRequestDto r, WebSession webSession) {
-        return authHandler.login(new UsernamePasswordAuthenticationToken(r.getUsername(), r.getPassword()), webSession);
+        var email = emailFromUserName(r.getUsername());
+        return authService.login(new UsernamePasswordAuthenticationToken(email, r.getPassword()), webSession);
     }
 
     @Operation(summary = "Logout")
     @PostMapping("logout")
     public Mono<AuthHandler.LogoutResponse> logout(WebSession webSession) {
-        return authHandler.logout(webSession);
+        return authService.logout(webSession);
     }
 
 
@@ -50,4 +55,20 @@ public class AuthController {
         private String username;
         private String password;
     }
+
+    /**
+     * We allow user to populate username without email suffix (@company.org)
+     * In that case we append email suffix automatically
+     *
+     * @param username
+     * @return
+     */
+    private String emailFromUserName(String username) {
+        if (Strings.isNotBlank(props.getDefaultEmailSuffix())
+                && Strings.isNotBlank(username) && !username.contains("@")) {
+            return username + props.getDefaultEmailSuffix();
+        }
+        return username;
+    }
+
 }

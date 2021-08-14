@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 import org.springframework.stereotype.Component;
-import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 
 import java.util.Collection;
@@ -29,9 +28,8 @@ public class EmployeeUserContextMapperAdapter implements UserDetailsContextMappe
 
     public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> authorities) {
         var user = delegate.mapUserFromContext(ctx, username, authorities);
-        var email = AuthHandler.emailFromUsername(username);
         // FIXME One more block operation to support NOT reactive Spring API
-        var employeeAuthInfoEntry = employeeAuthDomainService.findIdByEmail(email).block();
+        var employeeAuthInfoEntry = employeeAuthDomainService.findIdByEmail(username).block();
         return new UserDetailsWithEmployeeInfo(user,
                 employeeAuthInfoEntry.getId(),
                 employeeAuthInfoEntry.getDepartmentId(),

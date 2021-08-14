@@ -21,11 +21,11 @@
                         <v-card-text>
                                 <v-text-field
                                         v-model="loginField"
-                                        :label="$t('Пользователь')"
+                                        :label="$t('E-mail')"
                                         name="login"
                                         autofocus
                                         autocomplete="current-login"
-                                        prepend-icon="person"
+                                        prepend-icon="email"
                                         type="text"
                                 />
 
@@ -39,12 +39,6 @@
                                         v-model="passwordField"
                                 />
                         </v-card-text>
-                        <v-banner>
-                          <v-icon slot="icon" large color="info">
-                            mdi-information
-                          </v-icon>
-                          {{$t('Учётную запись следует вводить без @stm-labs.ru. То есть ivan.ivanov, а не ivan.ivanov@stm-labs')}}
-                        </v-banner>
                         <v-card-text class="error--text">
                             {{responseError}}
                         </v-card-text>

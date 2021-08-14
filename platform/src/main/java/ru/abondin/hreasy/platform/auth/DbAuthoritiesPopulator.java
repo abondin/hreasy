@@ -29,7 +29,7 @@ public class DbAuthoritiesPopulator implements LdapAuthoritiesPopulator {
 
     private Collection<? extends GrantedAuthority> getGrantedAuthoritiesBlocked(String username) {
         return securityService
-                .getPermissions(AuthHandler.emailFromUsername(username))
+                .getPermissions(username)
                 .map(perm -> new SimpleGrantedAuthority(perm))
                 .collectList()
                 //FIXME blocking code to support not reactive LdapAuthoritiesPopulator
@@ -38,7 +38,7 @@ public class DbAuthoritiesPopulator implements LdapAuthoritiesPopulator {
 
     public Flux<GrantedAuthority> getGrantedAuthorities(String username) {
         return securityService
-                .getPermissions(AuthHandler.emailFromUsername(username))
+                .getPermissions(username)
                 .map(perm -> new SimpleGrantedAuthority(perm));
     }
 }
