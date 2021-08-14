@@ -81,10 +81,8 @@ public class WebSecurityConfig {
                 .anyExchange().authenticated()
                 .and()
                 .csrf().disable()
-                .formLogin().disable()
-                .logout().disable()
-                .httpBasic().securityContextRepository(securityContextRepository)
-                .and().exceptionHandling().accessDeniedHandler(errorHandler).authenticationEntryPoint(errorHandler)
+                .securityContextRepository(securityContextRepository)
+                .exceptionHandling().accessDeniedHandler(errorHandler).authenticationEntryPoint(errorHandler)
                 .and().build();
     }
 
