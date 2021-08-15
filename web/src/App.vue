@@ -48,6 +48,15 @@
           </v-list-item-title>
         </v-list-item>
 
+        <v-list-item link to="/assessments" v-if="canCreateAssessments()">
+          <v-list-item-action>
+            <v-icon>mdi-book-check-outline</v-icon>
+          </v-list-item-action>
+          <v-list-item-title>
+            {{ $tc('Ассессметны')}}
+          </v-list-item-title>
+        </v-list-item>
+
         <v-divider></v-divider>
         <v-list-group
             no-action
@@ -196,6 +205,10 @@ export default class App extends Vue {
 
   private canViewVacations() {
     return permissionService.canViewAllVacations();
+  }
+
+  private canCreateAssessments() {
+    return permissionService.canCreateAssessments();
   }
 
   private canAdminProjects() {

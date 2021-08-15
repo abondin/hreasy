@@ -100,8 +100,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |edit_articles|N|N|Create, update and moderate articles and news|
 |edit_employee_full|N|N|Create/update employee|
 |view_employee_full|N|N|View employee all fields including personal|
-|view_assessment_full|N|N|View all assessment forms without restrictions/
-|create_assessment|N|N|Schedule new assessment and invite managers/
+|view_assessment_full|N|N|View all assessment forms without restrictions|
+|create_assessment|N|N|View last assessment date for employee. Schedule new assessment and invite managers|
 
 **Default permissions and roles**
 

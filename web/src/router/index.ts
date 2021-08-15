@@ -13,6 +13,7 @@ import AdminBusinessAccounts from "@/components/admin/business_account/AdminBusi
 import AdminBusinessAccountDetails from "@/components/admin/business_account/AdminBusinessAccountDetails.vue";
 import AdminArticlesList from "@/components/admin/article/AdminArticlesList.vue";
 import AdminEmployees from "@/components/admin/employee/AdminEmployees.vue";
+import AssessmentShortList from "@/components/assessment/AssessmentShortList.vue";
 
 Vue.use(VueRouter)
 
@@ -23,6 +24,7 @@ const routes = [
     {name: 'employeeProfile', path: "/profile/main", component: EmployeeProfile, props: true},
     {path: "/vacations", component: VacationsList},
     {path: "/overtimes", component: AllOvertimes},
+    {path: "/assessments", component: AssessmentShortList},
     {path: "/admin/projects", component: AdminProjects},
     {path: "/admin/users", component: AdminUsers},
     {path: "/admin/ba", component: AdminBusinessAccounts},
