@@ -12,14 +12,16 @@
           <v-text-field
               v-model="filter.search"
               :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
-          <v-select
+          <v-autocomplete
               clearable
               class="mr-5"
-              v-model="filter.showArchived"
-              :items="[{value:false, text:$t('Нет')}, {value:true, text:$t('Да')}]"
-              :label="$t('Показать архив')"
+              v-model="filter.selectedProjects"
+              :items="allProjects.filter(p=>p.active)"
+              item-value="id"
+              item-text="name"
+              :label="$t('Текущий проект')"
               multiple
-          ></v-select>
+          ></v-autocomplete>
         </div>
       </v-card-title>
 
@@ -32,11 +34,23 @@
             :items="filteredItems()"
             multi-sort
             hide-default-footer
-            :sort-by="['latestActivity']"
+            :sort-by="['daysWithoutAssessment']"
+            sort-desc
             disable-pagination>
+          <template v-slot:item.displayName="{ item }">
+            <router-link :to="'/assessments/'+item.employeeId">{{ item.displayName }}</router-link>
+          </template>
           <template
-              v-slot:item.latestActivity="{ item }">
-            {{ formatDate(item.latestActivity) }}
+              v-slot:item.employeeDateOfEmployment="{ item }">
+            {{ formatDate(item.employeeDateOfEmployment) }}
+          </template>
+          <template
+              v-slot:item.lastAssessmentCompletedDate="{ item }">
+            {{ formatDate(item.lastAssessmentCompletedDate) }}
+          </template>
+          <template
+              v-slot:item.lastAssessmentDate="{ item }">
+            {{ formatDate(item.lastAssessmentDate) }}
           </template>
         </v-data-table>
       </v-card-text>
@@ -50,21 +64,25 @@ import Vue from 'vue'
 import Component from 'vue-class-component';
 import {DataTableHeader} from "vuetify";
 import {DateTimeUtils} from "@/components/datetimeutils";
-import articleAdminService, {ArticleFull} from "@/components/admin/article/admin.article.service";
-import {ALL_ARTICLES_GROUPS} from "@/components/article/article.service";
-import assessmentService, {AssessmentShortInfo} from "@/components/assessment/assessment.service";
+import assessmentService, {EmployeeAssessmentsSummary} from "@/components/assessment/assessment.service";
+import {Getter} from "vuex-class";
+import {SimpleDict} from "@/store/modules/dict";
 
-const namespace: string = 'dict';
+const namespace_dict: string = 'dict';
 
 class Filter {
   public search = '';
+  public selectedProjects: number[] = [];
 }
 
 @Component({})
 export default class AssessmentShortList extends Vue {
   headers: DataTableHeader[] = [];
   loading: boolean = false;
-  assessments: AssessmentShortInfo[] = [];
+  assessments: EmployeeAssessmentsSummary[] = [];
+
+  @Getter("projects", {namespace: namespace_dict})
+  private allProjects!: Array<SimpleDict>;
 
   private filter: Filter = new Filter();
 
@@ -73,15 +91,17 @@ export default class AssessmentShortList extends Vue {
    */
   created() {
     this.reloadHeaders();
-    this.fetchData();
+    return this.$store.dispatch('dict/reloadProjects').then(() => this.fetchData());
   }
 
   private reloadHeaders() {
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Сотрудник'), value: 'displayName'});
+    this.headers.push({text: this.$tc('Проект'), value: 'currentProject.name'});
     this.headers.push({text: this.$tc('Дата устройства'), value: 'employeeDateOfEmployment'});
     this.headers.push({text: this.$tc('Крайний ассессмент запланирован'), value: 'lastAssessmentDate'});
     this.headers.push({text: this.$tc('Крайний ассессмент завершен'), value: 'lastAssessmentCompletedDate'});
+    this.headers.push({text: this.$tc('Дней без ассессмента'), value: 'daysWithoutAssessment'});
   }
 
 
@@ -90,6 +110,10 @@ export default class AssessmentShortList extends Vue {
       let filtered = true;
       if (this.filter.search) {
         filtered = filtered && item.displayName.toLowerCase().indexOf(this.filter.search.toLowerCase()) >= 0;
+      }
+      // Project
+      if (filtered && this.filter.selectedProjects && this.filter.selectedProjects.length > 0) {
+        filtered = (item.currentProject && this.filter.selectedProjects.indexOf(item.currentProject.id) >= 0) as boolean;
       }
       return filtered;
     });
