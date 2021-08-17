@@ -15,6 +15,7 @@ import AdminArticlesList from "@/components/admin/article/AdminArticlesList.vue"
 import AdminEmployees from "@/components/admin/employee/AdminEmployees.vue";
 import AssessmentShortList from "@/components/assessment/AssessmentShortList.vue";
 import EmployeeAssessmentProfile from "@/components/assessment/EmployeeAssessmentProfile.vue";
+import AssessmentDetailedVue from "@/components/assessment/AssessmentDetailedVue.vue";
 
 Vue.use(VueRouter)
 
@@ -27,6 +28,7 @@ const routes = [
     {path: "/overtimes", component: AllOvertimes},
     {path: "/assessments", component: AssessmentShortList},
     {path: "/assessments/:employeeId", component: EmployeeAssessmentProfile, props: true},
+    {path: "/assessments/:employeeId/:assessmentId", component: AssessmentDetailedVue, props: true},
     {path: "/admin/projects", component: AdminProjects},
     {path: "/admin/users", component: AdminUsers},
     {path: "/admin/ba", component: AdminBusinessAccounts},

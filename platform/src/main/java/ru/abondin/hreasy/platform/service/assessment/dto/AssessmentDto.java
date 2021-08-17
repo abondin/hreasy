@@ -12,7 +12,7 @@ import java.time.OffsetDateTime;
 @Data
 public class AssessmentDto {
     private int id;
-    private int employee;
+    private SimpleDictDto employee;
     private LocalDate plannedDate;
     private OffsetDateTime createdAt;
     private SimpleDictDto createdBy;

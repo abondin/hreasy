@@ -4,14 +4,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import ru.abondin.hreasy.platform.repo.assessment.AssessmentFormEntry;
 import ru.abondin.hreasy.platform.repo.assessment.AssessmentViewEntry;
 import ru.abondin.hreasy.platform.repo.assessment.EmployeeAssessmentEntry;
 import ru.abondin.hreasy.platform.service.assessment.dto.AssessmentDto;
+import ru.abondin.hreasy.platform.service.assessment.dto.AssessmentWithFormsAndFiles;
 import ru.abondin.hreasy.platform.service.assessment.dto.EmployeeAssessmentsSummary;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,20 +31,26 @@ public interface AssessmentMapper extends MapperBase {
     @Mapping(source = ".", target = "currentProject", qualifiedByName = "currentProject")
     EmployeeAssessmentsSummary shortInfo(EmployeeAssessmentEntry entry);
 
-    @Named("displayName")
-    default String displayName(EmployeeAssessmentEntry entry) {
-        return entry == null ? null : Stream.of(
-                        entry.getEmployeeLastname(),
-                        entry.getEmployeeFirstname(),
-                        entry.getEmployeePatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" "));
-    }
-
     @Mapping(source = ".", target = "createdBy", qualifiedByName = "createdBy")
     @Mapping(source = ".", target = "completedBy", qualifiedByName = "completedBy")
     @Mapping(source = ".", target = "canceledBy", qualifiedByName = "canceledBy")
+    @Mapping(source = ".", target = "employee", qualifiedByName = "assessmentEmployeeName")
     AssessmentDto assessmentBaseFromEntry(AssessmentViewEntry assessmentEntry);
+
+    @Mapping(source = "assessmentEntry.id", target = "id")
+    @Mapping(source = "assessmentEntry.", target = "employee", qualifiedByName = "assessmentEmployeeName")
+    @Mapping(source = "assessmentEntry.plannedDate", target = "plannedDate")
+    @Mapping(source = "assessmentEntry.createdAt", target = "createdAt")
+    @Mapping(source = "assessmentEntry.completedAt", target = "completedAt")
+    @Mapping(source = "assessmentEntry.canceledAt", target = "canceledAt")
+    @Mapping(source = "assessmentEntry", target = "createdBy", qualifiedByName = "createdBy")
+    @Mapping(source = "assessmentEntry", target = "completedBy", qualifiedByName = "completedBy")
+    @Mapping(source = "assessmentEntry", target = "canceledBy", qualifiedByName = "canceledBy")
+    @Mapping(source = "forms", target = "forms")
+    @Mapping(source = "attachmentsAccessToken", target = "attachmentsAccessToken")
+    AssessmentWithFormsAndFiles assessmentWithFormsAndFiles(AssessmentViewEntry assessmentEntry,
+                                                            List<AssessmentFormEntry> forms,
+                                                            String attachmentsAccessToken);
 
 
     @Named("latestActivity")
@@ -57,6 +66,26 @@ public interface AssessmentMapper extends MapperBase {
     @Named("currentProject")
     default SimpleDictDto currentProject(EmployeeAssessmentEntry entry) {
         return simpleDto(entry.getEmployeeCurrentProjectId(), entry.getEmployeeCurrentProjectName());
+    }
+
+    @Named("displayName")
+    default String displayName(EmployeeAssessmentEntry entry) {
+        return entry == null ? null : Stream.of(
+                        entry.getEmployeeLastname(),
+                        entry.getEmployeeFirstname(),
+                        entry.getEmployeePatronymicName())
+                .filter(s -> StringUtils.isNotBlank(s))
+                .collect(Collectors.joining(" "));
+    }
+
+    @Named("assessmentEmployeeName")
+    default SimpleDictDto assessmentEmployeeName(AssessmentViewEntry entry) {
+        return entry == null ? null : simpleDto(entry.getCreatedBy(), Stream.of(
+                        entry.getEmployeeLastname(),
+                        entry.getEmployeeFirstname(),
+                        entry.getEmployeePatronymicName())
+                .filter(s -> StringUtils.isNotBlank(s))
+                .collect(Collectors.joining(" ")));
     }
 
     @Named("createdBy")
@@ -81,7 +110,7 @@ public interface AssessmentMapper extends MapperBase {
 
     @Named("canceledBy")
     default SimpleDictDto canceledBy(AssessmentViewEntry entry) {
-        return entry == null  ? null : simpleDto(entry.getCanceledBy(), Stream.of(
+        return entry == null ? null : simpleDto(entry.getCanceledBy(), Stream.of(
                         entry.getCanceledByLastname(),
                         entry.getCanceledByFirstname(),
                         entry.getCanceledByPatronymicName())

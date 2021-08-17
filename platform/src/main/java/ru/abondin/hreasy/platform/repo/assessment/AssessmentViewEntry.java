@@ -9,6 +9,11 @@ import java.time.OffsetDateTime;
 
 @Data
 public class AssessmentViewEntry extends AssessmentEntry{
+    private String employeeLastname;
+    private String employeeFirstname;
+    private String employeePatronymicName;
+
+
     private String createdByLastname;
     private String createdByFirstname;
     private String createdByPatronymicName;

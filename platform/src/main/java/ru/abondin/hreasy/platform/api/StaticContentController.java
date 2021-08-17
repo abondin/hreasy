@@ -19,6 +19,7 @@ import ru.abondin.hreasy.platform.service.article.ArticleService;
 @RequiredArgsConstructor
 @Slf4j
 public class StaticContentController {
+
     private final FileStorage fileStorage;
 
     @Operation(summary = "Get employee avatar")

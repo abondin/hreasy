@@ -1,4 +1,4 @@
-<!-- Employees own profile page-->
+<!-- All assessments for selected employee -->
 <template>
   <v-container v-if="employee">
     <v-card-title>
@@ -46,7 +46,7 @@
             disable-pagination>
           <template
               v-slot:item.plannedDate="{ item }">
-            {{ formatDate(item.plannedDate) }}
+            <router-link :to="`/assessments/${employeeId}/${item.id}`">{{ formatDate(item.plannedDate) }}</router-link>
           </template>
           <template
               v-slot:item.createdAt="{ item }">

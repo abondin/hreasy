@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 
+import java.util.List;
+
 /**
  * Validate security rules to  update employee current project
  */
@@ -23,5 +25,18 @@ public class AssessmentSecurityValidator {
             return Mono.error(new AccessDeniedException("Only user with permission create_assessment" +
                     " can view short assessment info or create new assessment"));
         });
+    }
+
+    public Mono<Boolean> validateOwnerOrCanViewAssessmentFull(AuthContext auth, List<Integer> assessmentOwners) {
+        return Mono.defer(() -> {
+            if (auth.getAuthorities().contains("view_assessment_full")) {
+                return Mono.just(true);
+            } else if (assessmentOwners.contains(auth.getEmployeeInfo().getEmployeeId())) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only user with permission view_assessment_full" +
+                    " or assessment owner can see detailed information and update assessment"));
+        });
+
     }
 }

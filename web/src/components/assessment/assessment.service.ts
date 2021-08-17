@@ -19,6 +19,7 @@ export interface AssessmentBase {
     id: number;
     plannedDate: Date | null;
     createdAt: Date | null;
+    employee: SimpleDict | null;
     createdBy: SimpleDict | null;
     completedAt: Date | null;
     completedBy: SimpleDict | null;
@@ -26,8 +27,26 @@ export interface AssessmentBase {
     canceledBy: SimpleDict | null;
 }
 
+
+export interface AssessmentWithFormsAndFiles extends AssessmentBase {
+    forms: AssessmentForm[];
+    attachmentsFilenames: string[];
+    attachmentsAccessToken: string;
+}
+
+export interface AssessmentForm {
+    id: number;
+    owner: number;
+    formType: number;
+    content: string | null;
+    completedAt: Date | null;
+    completedBy: number | null;
+}
+
 export interface AssessmentService {
     allNotFiredEmployeesWithLatestAssessment(): Promise<EmployeeAssessmentsSummary[]>;
+
+    assessmentWithFormsAndFiles(employeeId: number, assessmentId: number): Promise<AssessmentWithFormsAndFiles>;
 
     employeeAssessments(employeeId: number): Promise<AssessmentBase[]>;
 }
@@ -39,6 +58,12 @@ class RestAssessmentService implements AssessmentService {
     allNotFiredEmployeesWithLatestAssessment(): Promise<EmployeeAssessmentsSummary[]> {
         return httpService.get(`v1/assessment`).then(response => {
             return (response.data as EmployeeAssessmentsSummary[]);
+        });
+    }
+
+    assessmentWithFormsAndFiles(employeeId: number, assessmentId: number): Promise<AssessmentWithFormsAndFiles> {
+        return httpService.get(`v1/assessment/${employeeId}/${assessmentId}`).then(response => {
+            return (response.data as AssessmentWithFormsAndFiles);
         });
     }
 
