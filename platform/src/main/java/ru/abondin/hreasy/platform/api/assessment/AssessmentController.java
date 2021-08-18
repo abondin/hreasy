@@ -4,11 +4,13 @@ package ru.abondin.hreasy.platform.api.assessment;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
+import ru.abondin.hreasy.platform.service.article.ArticleService;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentService;
 import ru.abondin.hreasy.platform.service.assessment.dto.AssessmentDto;
 import ru.abondin.hreasy.platform.service.assessment.dto.AssessmentWithFormsAndFiles;
@@ -41,19 +43,20 @@ public class AssessmentController {
 
     @GetMapping("/{employeeId}/{assessmentId}")
     public Mono<AssessmentWithFormsAndFiles> getAssessmentWithFormsAndFiles(@PathVariable("employeeId") int employeeId,
-                                                                         @PathVariable("assessmentId") int assessmentId) {
+                                                                            @PathVariable("assessmentId") int assessmentId) {
         return AuthHandler.currentAuth().flatMap(auth ->
-                service.getAssessment(auth, assessmentId));
+                service.getAssessment(auth, employeeId, assessmentId));
     }
 
 
     @Operation(summary = "Upload assessment attachment")
-    @PostMapping(value = "{assessmentId}/attachment")
-    public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(@PathVariable int assessmentId,
+    @PostMapping(value = "/{employeeId}/{assessmentId}/attachment")
+    public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(@PathVariable("employeeId") int employeeId,
+                                                                     @PathVariable int assessmentId,
                                                                      @RequestPart("file") Mono<FilePart> multipartFile) {
         log.debug("Upload new attachment {} for assessment {}", assessmentId);
         return AuthHandler.currentAuth().flatMap(auth -> multipartFile
-                .flatMap(it -> service.uploadAttachment(auth, assessmentId, it)));
+                .flatMap(it -> service.uploadAttachment(auth, employeeId, assessmentId, it)));
     }
 
 

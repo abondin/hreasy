@@ -15,8 +15,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *  Assessment attachments can be downloaded via direct url without auth.
- *  In that case system generates short time life access token which must be appended to the URL
+ * Assessment attachments can be downloaded via direct url without auth.
+ * In that case system generates short time life access token which must be appended to the URL
  */
 @Service
 @Slf4j
@@ -29,6 +29,7 @@ public class AssessmentAccessTokenProvider {
 
     @Data
     private class TokenInfo {
+        private final int assessmentEmployeeId;
         private final int assessmentId;
         private final int accessorEmployeeId;
         private final OffsetDateTime expiresAt;
@@ -36,19 +37,19 @@ public class AssessmentAccessTokenProvider {
 
     private final Map<String, TokenInfo> tokens = new ConcurrentHashMap<>();
 
-    public String generateToken(int assessmentId, int accessorEmployeeId) {
+    public String generateToken(int assessmentEmployeeId, int assessmentId, int accessorEmployeeId) {
         var now = timeService.now();
         var token = UUID.randomUUID().toString();
-        tokens.put(token, new TokenInfo(assessmentId, accessorEmployeeId, now.plus(fileProps.getAssessmentAttachmentAccessTokenTtl())));
+        tokens.put(token, new TokenInfo(assessmentEmployeeId, assessmentId, accessorEmployeeId, now.plus(fileProps.getAssessmentAttachmentAccessTokenTtl())));
         return token;
     }
 
-    public Mono<Boolean> validateToken(int assessmentId, int accessorEmployeeId, String token) {
+    public Mono<Boolean> validateToken(int assessmentEmployeeId, int assessmentId, String token) {
         var tokenInfo = tokens.get(token);
         var now = timeService.now();
         if (tokenInfo == null
                 || tokenInfo.getAssessmentId() != assessmentId
-                || tokenInfo.getAccessorEmployeeId() != accessorEmployeeId
+                || tokenInfo.getAssessmentEmployeeId() != assessmentEmployeeId
                 || now.isAfter(tokenInfo.getExpiresAt())
         ) {
             return Mono.error(new BusinessError("errors.accesstoken.invalid"));

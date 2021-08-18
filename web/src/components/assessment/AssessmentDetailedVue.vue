@@ -2,8 +2,10 @@
 <template>
   <v-container>
     <v-card v-if="accessDenied">
-      <v-alert>{{ $t('Недостаточно прав для просмотра детальной информации по ассессменту') }}</v-alert>
-      <router-link :to="`/assessments/${employeeId}`">{{ $t('Вернуться к списку ассессментов') }}</router-link>
+      <v-card-text>
+        <v-alert class="error">{{ $t('Недостаточно прав для просмотра детальной информации по ассессменту') }}</v-alert>
+        <router-link :to="`/assessments/${employeeId}`">{{ $t('Вернуться к списку ассессментов') }}</router-link>
+      </v-card-text>
     </v-card>
     <v-card v-else-if="assessment">
       <v-card-title>
@@ -20,16 +22,35 @@
               {{ formatDate(assessment.plannedDate) }}
             </v-list-item-subtitle>
             <v-list-item-subtitle>{{ $t('Создано') }} :
-              {{assessment.createdBy ? `${formatDateTime(assessment.createdAt)} (${assessment.createdBy.name})`:'-'}}
+              {{
+                assessment.createdBy ? `${formatDateTime(assessment.createdAt)} (${assessment.createdBy.name})` : '-'
+              }}
             </v-list-item-subtitle>
             <v-list-item-subtitle>{{ $t('Завершено') }} :
-              {{assessment.completedBy ? `${formatDateTime(assessment.completedAt)} (${assessment.completedBy.name})`:'-'}}
+              {{
+                assessment.completedBy ? `${formatDateTime(assessment.completedAt)} (${assessment.completedBy.name})` : '-'
+              }}
             </v-list-item-subtitle>
             <v-list-item-subtitle>{{ $t('Отменено') }} :
-              {{assessment.canceledBy ? `${formatDateTime(assessment.canceledAt)} (${assessment.canceledBy.name})`:'-'}}
+              {{
+                assessment.canceledBy ? `${formatDateTime(assessment.canceledAt)} (${assessment.canceledBy.name})` : '-'
+              }}
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
+        <v-card-text>
+          <!-- Attachments -->
+          <span class="font-weight-bold">{{ $t('Вложения') }}:</span>
+          <v-chip outlined link class="ml-5"
+                  v-for="attachment in assessment.attachmentsFilenames" v-bind:key="attachment">
+            <a :href="getAttachmentPath(attachment)" :download="attachment">{{ attachment }}</a>
+          </v-chip>
+          <v-file-input label="$t{'Выбрать файл'}" show-size v-model="fileToAttach" >
+          </v-file-input>
+          <v-btn :disabled="!fileToAttach" @click="uploadAttachment()">
+            <v-icon>mdi-upload</v-icon>{{$t('Загрузить')}}
+          </v-btn>
+        </v-card-text>
       </v-card>
     </v-card>
   </v-container>
@@ -49,6 +70,7 @@ export default class AssessmentDetailedVue extends Vue {
   loading: boolean = false;
   accessDenied = false;
   assessment: AssessmentWithFormsAndFiles | null = null;
+  fileToAttach: File | null = null;
 
   @Prop({required: true})
   employeeId!: number;
@@ -67,6 +89,7 @@ export default class AssessmentDetailedVue extends Vue {
   private fetchData() {
     this.loading = true;
     this.accessDenied = false;
+    this.fileToAttach = null;
     return assessmentService.assessmentWithFormsAndFiles(this.employeeId, this.assessmentId)
         .then(data => {
               this.assessment = data;
@@ -82,6 +105,21 @@ export default class AssessmentDetailedVue extends Vue {
         .finally(() => {
           this.loading = false
         });
+  }
+
+  private uploadAttachment() {
+    if (this.fileToAttach) {
+      const formData = new FormData();
+      formData.append("file", this.fileToAttach);
+      assessmentService.uploadAttachment(this.employeeId, this.assessmentId, formData)
+          .then(result => {
+            this.fetchData();
+          });
+    }
+  }
+
+  private getAttachmentPath(fileName: string) {
+    return assessmentService.getAttachmentPath(this.employeeId, this.assessmentId, fileName, this.assessment!.attachmentsAccessToken)
   }
 
   private formatDate(date: string): string | undefined {

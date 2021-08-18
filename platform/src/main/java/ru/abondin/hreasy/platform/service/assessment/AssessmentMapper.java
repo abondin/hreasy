@@ -47,9 +47,11 @@ public interface AssessmentMapper extends MapperBase {
     @Mapping(source = "assessmentEntry", target = "completedBy", qualifiedByName = "completedBy")
     @Mapping(source = "assessmentEntry", target = "canceledBy", qualifiedByName = "canceledBy")
     @Mapping(source = "forms", target = "forms")
+    @Mapping(source = "attachmentsFilenames", target = "attachmentsFilenames")
     @Mapping(source = "attachmentsAccessToken", target = "attachmentsAccessToken")
     AssessmentWithFormsAndFiles assessmentWithFormsAndFiles(AssessmentViewEntry assessmentEntry,
                                                             List<AssessmentFormEntry> forms,
+                                                            List<String> attachmentsFilenames,
                                                             String attachmentsAccessToken);
 
 

@@ -1,5 +1,5 @@
 import httpService from "../http.service";
-import {AxiosInstance} from "axios";
+import {AxiosInstance, AxiosResponse} from "axios";
 import {SimpleDict} from "@/store/modules/dict";
 
 
@@ -43,12 +43,20 @@ export interface AssessmentForm {
     completedBy: number | null;
 }
 
+export interface UploadAssessmentAttachmentResponse {
+
+}
+
 export interface AssessmentService {
     allNotFiredEmployeesWithLatestAssessment(): Promise<EmployeeAssessmentsSummary[]>;
 
     assessmentWithFormsAndFiles(employeeId: number, assessmentId: number): Promise<AssessmentWithFormsAndFiles>;
 
     employeeAssessments(employeeId: number): Promise<AssessmentBase[]>;
+
+    uploadAttachment(employeeId: number, assessmentId: number, formData: FormData): Promise<UploadAssessmentAttachmentResponse>;
+
+    getAttachmentPath(employeeId: number, assessmentId: number, attachmentFilename: string, accessToken: string): string;
 }
 
 class RestAssessmentService implements AssessmentService {
@@ -71,6 +79,17 @@ class RestAssessmentService implements AssessmentService {
         return httpService.get(`v1/assessment/${employeeId}`).then(response => {
             return (response.data as AssessmentBase[]);
         });
+    }
+
+    uploadAttachment(employeeId: number, assessmentId: number, formData: FormData): any {
+        return httpService.post(`v1/assessment/${employeeId}/${assessmentId}/attachment`, formData)
+            .then((response: AxiosResponse<UploadAssessmentAttachmentResponse>) => {
+                return {};
+            });
+    }
+
+    getAttachmentPath(employeeId: number, assessmentId: number, attachmentFilename: string, accessToken: string): string {
+        return `${httpService.defaults.baseURL}v1/fs/assessment/${employeeId}/${assessmentId}/${attachmentFilename}/${accessToken}`;
     }
 }
 

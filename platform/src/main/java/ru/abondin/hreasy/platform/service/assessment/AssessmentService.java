@@ -30,8 +30,8 @@ public class AssessmentService {
 
     public static final String ASSESSMENT_BASE_DIR = "assessment";
 
-    public static String getAssessmentAttachmentFolder(int assessmentId) {
-        return ASSESSMENT_BASE_DIR + File.separator + assessmentId;
+    public static String getAssessmentAttachmentFolder(int employeeid, int assessmentId) {
+        return ASSESSMENT_BASE_DIR + File.separator + employeeid + File.separator + assessmentId;
     }
 
     private final AssessmentSecurityValidator securityValidator;
@@ -70,14 +70,12 @@ public class AssessmentService {
                 assessmentRepo.findByEmployeeId(employeeId).map(mapper::assessmentBaseFromEntry));
     }
 
-    public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(AuthContext auth, int assessmentId, FilePart file) {
+    public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(AuthContext auth, int employeeId, int assessmentId, FilePart file) {
         return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
                 .flatMap(v -> {
                     var filename = file.filename();
-                    return fileStorage.uploadFile(getAssessmentAttachmentFolder(assessmentId), filename, file)
-                            .then(Mono.just(new UploadAssessmentAttachmentResponse(fileProps.getAssessmentAttachmentRelativePattern()
-                                    .replace("{assessmentId}", Integer.toString(assessmentId))
-                                    .replace("{fileName}", filename))));
+                    return fileStorage.uploadFile(getAssessmentAttachmentFolder(employeeId, assessmentId), filename, file)
+                            .then(Mono.just(new UploadAssessmentAttachmentResponse()));
                 });
     }
 
@@ -89,13 +87,22 @@ public class AssessmentService {
      * @param assessmentId
      * @return
      */
-    public Mono<AssessmentWithFormsAndFiles> getAssessment(AuthContext auth, int assessmentId) {
+    public Mono<AssessmentWithFormsAndFiles> getAssessment(AuthContext auth, int employeeId, int assessmentId) {
         return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
+                // 1. Get assessment entry with base info
                 .flatMap(v -> assessmentRepo.findById(assessmentId))
                 .flatMap(assessmentEntry -> {
-                    var accessToken = tokenProvider.generateToken(assessmentId, auth.getEmployeeInfo().getEmployeeId());
-                    return formRepo.findByAssessmentId(assessmentId).collectList()
-                            .map(forms -> mapper.assessmentWithFormsAndFiles(assessmentEntry, forms, accessToken));
+                    // 2. Generate access token to download attachments
+                    var accessToken = tokenProvider.generateToken(employeeId, assessmentId, auth.getEmployeeInfo().getEmployeeId());
+                    // 3. List file storage to get all attachments filenames
+                    return fileStorage.listFiles(getAssessmentAttachmentFolder(employeeId, assessmentId), true)
+                            .collectList().flatMap(
+                                    //4. Get all assessment forms
+                                    files -> formRepo.findByAssessmentId(assessmentId).collectList()
+                                            // 5. Combine all together
+                                            .map(forms -> mapper.assessmentWithFormsAndFiles(assessmentEntry, forms, files, accessToken))
+                            );
+
                 });
     }
 

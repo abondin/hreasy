@@ -13,6 +13,8 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.sec.SecurityUtils;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.article.ArticleService;
+import ru.abondin.hreasy.platform.service.assessment.AssessmentAccessTokenProvider;
+import ru.abondin.hreasy.platform.service.assessment.AssessmentService;
 
 @RestController()
 @RequestMapping("/api/v1/fs")
@@ -21,6 +23,7 @@ import ru.abondin.hreasy.platform.service.article.ArticleService;
 public class StaticContentController {
 
     private final FileStorage fileStorage;
+    private final AssessmentAccessTokenProvider assessmentAccessTokenProvider;
 
     @Operation(summary = "Get employee avatar")
     @GetMapping(value = "avatar/{employeeId}", produces = MediaType.IMAGE_PNG_VALUE)
@@ -32,6 +35,16 @@ public class StaticContentController {
     @GetMapping(value = "article/{articleId}/{attachmentName}")
     public Mono<Resource> articleAttachment(@PathVariable int articleId, @PathVariable String attachmentName) {
         return fileStorage.streamFile(ArticleService.getArticleAttachmentFolder(articleId), attachmentName);
+    }
+
+    @Operation(summary = "Get assessment static attachment")
+    @GetMapping(value = "assessment/{employeeId}/{assessmentId}/{attachmentName}/{accessToken}")
+    public Mono<Resource> articleAttachment(@PathVariable int employeeId,
+                                            @PathVariable int assessmentId,
+                                            @PathVariable String attachmentName,
+                                            @PathVariable String accessToken) {
+        return assessmentAccessTokenProvider.validateToken(employeeId, assessmentId, accessToken).flatMap(v ->
+                fileStorage.streamFile(AssessmentService.getAssessmentAttachmentFolder(employeeId, assessmentId), attachmentName));
     }
 
     @Operation(summary = "Upload employee avatar")
