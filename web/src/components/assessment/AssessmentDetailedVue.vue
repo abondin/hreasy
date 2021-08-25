@@ -44,6 +44,7 @@
           <v-chip outlined link class="ml-5"
                   v-for="attachment in assessment.attachmentsFilenames" v-bind:key="attachment">
             <a :href="getAttachmentPath(attachment)" :download="attachment">{{ attachment }}</a>
+            <v-icon @click="deleteAttachment(attachment)">mdi-delete</v-icon>
           </v-chip>
           <v-chip outlined link class="ml-5" @click="uploadAttachmentDialog=true">
             <v-icon>mdi-plus</v-icon>
@@ -51,8 +52,8 @@
           </v-chip>
           <v-dialog v-model="uploadAttachmentDialog" persistent>
             <file-upload
-                :upload-action="uploadAttachment"
-                @cancel="uploadAttachmentDialog=false"></file-upload>
+                :post-action="getAttachmentUploadPath()"
+                @close="uploadComplete"></file-upload>
           </v-dialog>
         </v-card-text>
       </v-card>
@@ -67,7 +68,8 @@ import Component from 'vue-class-component';
 import {DateTimeUtils} from "@/components/datetimeutils";
 import assessmentService, {AssessmentWithFormsAndFiles} from "@/components/assessment/assessment.service";
 import {Prop} from "vue-property-decorator";
-import MyFileUploader from "@/components/shared/MyFileUploader.vue";
+import MyFileUploader, {UploadCompleteEvent} from "@/components/shared/MyFileUploader.vue";
+import logger from "@/logger";
 
 
 @Component({
@@ -113,17 +115,31 @@ export default class AssessmentDetailedVue extends Vue {
         });
   }
 
-  private uploadAttachment(file: File): Promise<any> {
-    const formData = new FormData();
-    formData.append("file", file);
-    return assessmentService.uploadAttachment(this.employeeId, this.assessmentId, formData)
-        .then(result => {
-          return this.fetchData();
-        });
+  private getAttachmentUploadPath() {
+    return assessmentService.getUploadAttachmentUrl(this.employeeId, this.assessmentId)
   }
 
   private getAttachmentPath(fileName: string) {
     return assessmentService.getAttachmentPath(this.employeeId, this.assessmentId, fileName, this.assessment!.attachmentsAccessToken)
+  }
+
+  private deleteAttachment(fileName: string) {
+    return assessmentService.deleteAttachment(this.employeeId, this.assessmentId, fileName)
+        .then(result => {
+          if (result.deleted) {
+            return this.fetchData();
+          } else {
+            logger.error(`Unable to delete file ${fileName}`);
+          }
+        });
+  }
+
+  private uploadComplete(event: UploadCompleteEvent) {
+    logger.log(`Upload complete ${event}`);
+    this.uploadAttachmentDialog = false;
+    if (event && event.uploaded) {
+      this.fetchData();
+    }
   }
 
   private formatDate(date: string): string | undefined {

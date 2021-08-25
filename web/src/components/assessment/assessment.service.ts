@@ -1,5 +1,5 @@
 import httpService from "../http.service";
-import {AxiosInstance, AxiosResponse} from "axios";
+import {AxiosInstance} from "axios";
 import {SimpleDict} from "@/store/modules/dict";
 
 
@@ -47,6 +47,10 @@ export interface UploadAssessmentAttachmentResponse {
 
 }
 
+export interface DeleteAssessmentAttachmentResponse {
+    deleted: boolean;
+}
+
 export interface AssessmentService {
     allNotFiredEmployeesWithLatestAssessment(): Promise<EmployeeAssessmentsSummary[]>;
 
@@ -54,9 +58,11 @@ export interface AssessmentService {
 
     employeeAssessments(employeeId: number): Promise<AssessmentBase[]>;
 
-    uploadAttachment(employeeId: number, assessmentId: number, formData: FormData): Promise<UploadAssessmentAttachmentResponse>;
+    getUploadAttachmentUrl(employeeId: number, assessmentId: number): string;
 
     getAttachmentPath(employeeId: number, assessmentId: number, attachmentFilename: string, accessToken: string): string;
+
+    deleteAttachment(employeeId: number, assessmentId: number, attachmentFilename: string): Promise<DeleteAssessmentAttachmentResponse>;
 }
 
 class RestAssessmentService implements AssessmentService {
@@ -81,12 +87,17 @@ class RestAssessmentService implements AssessmentService {
         });
     }
 
-    uploadAttachment(employeeId: number, assessmentId: number, formData: FormData): any {
-        return httpService.post(`v1/assessment/${employeeId}/${assessmentId}/attachment`, formData)
-            .then((response: AxiosResponse<UploadAssessmentAttachmentResponse>) => {
-                return {};
+    getUploadAttachmentUrl(employeeId: number, assessmentId: number): string {
+        return `${httpService.defaults.baseURL}v1/assessment/${employeeId}/${assessmentId}/attachment`;
+    }
+
+    deleteAttachment(employeeId: number, assessmentId: number, attachmentFilename: string): Promise<DeleteAssessmentAttachmentResponse> {
+        return httpService.delete(`v1/assessment/${employeeId}/${assessmentId}/attachment/${attachmentFilename}`)
+            .then(response => {
+                return (response.data as DeleteAssessmentAttachmentResponse);
             });
     }
+
 
     getAttachmentPath(employeeId: number, assessmentId: number, attachmentFilename: string, accessToken: string): string {
         return `${httpService.defaults.baseURL}v1/fs/assessment/${employeeId}/${assessmentId}/${attachmentFilename}/${accessToken}`;

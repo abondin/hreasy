@@ -4,18 +4,13 @@ package ru.abondin.hreasy.platform.api.assessment;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
-import ru.abondin.hreasy.platform.service.article.ArticleService;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentService;
-import ru.abondin.hreasy.platform.service.assessment.dto.AssessmentDto;
-import ru.abondin.hreasy.platform.service.assessment.dto.AssessmentWithFormsAndFiles;
-import ru.abondin.hreasy.platform.service.assessment.dto.EmployeeAssessmentsSummary;
-import ru.abondin.hreasy.platform.service.assessment.dto.UploadAssessmentAttachmentResponse;
+import ru.abondin.hreasy.platform.service.assessment.dto.*;
 
 /**
  * View last assessment for every employee.
@@ -54,10 +49,18 @@ public class AssessmentController {
     public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(@PathVariable("employeeId") int employeeId,
                                                                      @PathVariable int assessmentId,
                                                                      @RequestPart("file") Mono<FilePart> multipartFile) {
-        log.debug("Upload new attachment {} for assessment {}", assessmentId);
+        log.debug("Upload new attachment for assessment {}:{}", employeeId, assessmentId);
         return AuthHandler.currentAuth().flatMap(auth -> multipartFile
                 .flatMap(it -> service.uploadAttachment(auth, employeeId, assessmentId, it)));
     }
 
+    @Operation(summary = "Delete assessment attachment")
+    @DeleteMapping(value = "/{employeeId}/{assessmentId}/attachment/{filename}")
+    public Mono<DeleteAssessmentAttachmentResponse> deleteAttachment(@PathVariable("employeeId") int employeeId,
+                                                                     @PathVariable int assessmentId,
+                                                                     @PathVariable String filename) {
+        log.debug("Upload new attachment for assessment {}:{}", employeeId, assessmentId);
+        return AuthHandler.currentAuth().flatMap(auth -> service.deleteAttachment(auth, employeeId, assessmentId, filename));
+    }
 
 }

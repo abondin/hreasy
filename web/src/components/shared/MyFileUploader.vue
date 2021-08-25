@@ -4,21 +4,31 @@ example
 -->
 <template>
   <div class="upload-area">
-    <v-chip v-if="files && files.length>0">{{ files[0].name }}</v-chip>
+    <v-chip v-if="files && files.length>0">{{ files[0].name }}
+      <v-icon v-if="files.length>0 && files[0].error" @click="$refs.upload.clear()">mdi-close</v-icon>
+    </v-chip>
     <file-upload
         class="upload-btn"
         v-model="files"
         :drop="true"
         :multiple="false"
-        @input="fileSelected()"
+        :size="maximumSize"
+        :timeout="timeout"
+        :post-action="postAction"
+        @input="$refs.upload.active=true"
+        @close="close"
         ref="upload">
       <v-btn link class="primary" v-if="$refs.upload && !$refs.upload.dropActive && (!files || files.length==0)">
         {{ $t('Выберите файл на вашем компьюере или перетащите мышкой') }}
       </v-btn>
     </file-upload>
-    <v-alert class="success" v-if="files.length>0">{{files[0].progress}}</v-alert>
+    <v-alert v-if="files.length>0 && !files[0].error  && !files[0].success">{{ files[0].progress }} %</v-alert>
+    <v-alert class="success" v-if="files.length>0 && files[0].success">{{ $t('Файл успешно загружен') }}</v-alert>
+    <v-alert class="error" v-if="files.length>0 && files[0].error">
+      {{ $t('UPLOAD_ERROR_' + files[0].error, {timeout: timeout, maximumSize: maximumSize}) }}
+    </v-alert>
     <div v-if="$refs.upload && !$refs.upload.dropActive">
-      <v-btn @click="cancel()">{{ $t('Отмена') }}</v-btn>
+      <v-btn @click="close">{{ (files.length > 0 && files[0].success) ? $t('ОK') : $t('Отмена') }}</v-btn>
     </div>
 
     <div v-if="$refs.upload && $refs.upload.dropActive" class="drop-active"><h1>
@@ -41,20 +51,34 @@ export default class MyFileUploader extends Vue {
   files: VUFile[] = [];
 
   @Prop({required: true})
-  uploadAction!: (file: File) => Promise<any>;
+  postAction!: string
 
-  private fileSelected() {
-    if (this.files && this.files.length > 0) {
-      return this.uploadAction(this.files[0].file)
-          .finally(() => this.cancel());
-    }
+  /**
+   * 10 * 1024 * 1024 = 10МБ
+   * @private
+   */
+  @Prop({required: false, default: "10485760"})
+  maximumSize!: number;
+
+  /**
+   * 30 * 1000 = 30seconds
+   * @private
+   */
+  @Prop({required: false, default: "30000"})
+  timeout!: number;
+
+  private close() {
+    const event: UploadCompleteEvent = {
+      uploaded: (this.files.length > 0 && this.files[0].success) ? true : false
+    };
+    (this.$refs.upload as VueUploadComponent).clear();
+    this.$emit('close', event);
   }
 
-  private cancel() {
-    this.files.length = 0;
-    this.$emit('cancel');
-  }
+}
 
+export interface UploadCompleteEvent {
+  uploaded: boolean
 }
 
 </script>

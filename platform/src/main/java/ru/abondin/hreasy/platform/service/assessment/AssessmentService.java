@@ -14,10 +14,7 @@ import ru.abondin.hreasy.platform.repo.assessment.AssessmentRepo;
 import ru.abondin.hreasy.platform.repo.assessment.EmployeeAssessmentEntry;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
-import ru.abondin.hreasy.platform.service.assessment.dto.AssessmentDto;
-import ru.abondin.hreasy.platform.service.assessment.dto.AssessmentWithFormsAndFiles;
-import ru.abondin.hreasy.platform.service.assessment.dto.EmployeeAssessmentsSummary;
-import ru.abondin.hreasy.platform.service.assessment.dto.UploadAssessmentAttachmentResponse;
+import ru.abondin.hreasy.platform.service.assessment.dto.*;
 
 import java.io.File;
 import java.time.temporal.ChronoUnit;
@@ -111,6 +108,12 @@ public class AssessmentService {
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(assessmentId))))
                 .collectList()
                 .flatMap(assessmentOwners -> securityValidator.validateOwnerOrCanViewAssessmentFull(auth, assessmentOwners));
+    }
+
+    public Mono<? extends DeleteAssessmentAttachmentResponse> deleteAttachment(AuthContext auth, int employeeId, int assessmentId, String filename) {
+        return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
+                .flatMap(v -> fileStorage.toRecycleBin(getAssessmentAttachmentFolder(employeeId, assessmentId), filename))
+                .map(deleted -> new DeleteAssessmentAttachmentResponse(deleted));
     }
 }
 
