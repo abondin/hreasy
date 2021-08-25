@@ -45,11 +45,15 @@
                   v-for="attachment in assessment.attachmentsFilenames" v-bind:key="attachment">
             <a :href="getAttachmentPath(attachment)" :download="attachment">{{ attachment }}</a>
           </v-chip>
-          <v-file-input label="$t{'Выбрать файл'}" show-size v-model="fileToAttach" >
-          </v-file-input>
-          <v-btn :disabled="!fileToAttach" @click="uploadAttachment()">
-            <v-icon>mdi-upload</v-icon>{{$t('Загрузить')}}
-          </v-btn>
+          <v-chip outlined link class="ml-5" @click="uploadAttachmentDialog=true">
+            <v-icon>mdi-plus</v-icon>
+            {{ $t('Прикрепить файл') }}
+          </v-chip>
+          <v-dialog v-model="uploadAttachmentDialog" persistent>
+            <file-upload
+                :upload-action="uploadAttachment"
+                @cancel="uploadAttachmentDialog=false"></file-upload>
+          </v-dialog>
         </v-card-text>
       </v-card>
     </v-card>
@@ -63,14 +67,17 @@ import Component from 'vue-class-component';
 import {DateTimeUtils} from "@/components/datetimeutils";
 import assessmentService, {AssessmentWithFormsAndFiles} from "@/components/assessment/assessment.service";
 import {Prop} from "vue-property-decorator";
+import MyFileUploader from "@/components/shared/MyFileUploader.vue";
 
 
-@Component({})
+@Component({
+  components: {'file-upload': MyFileUploader}
+})
 export default class AssessmentDetailedVue extends Vue {
+  uploadAttachmentDialog = false;
   loading: boolean = false;
   accessDenied = false;
   assessment: AssessmentWithFormsAndFiles | null = null;
-  fileToAttach: File | null = null;
 
   @Prop({required: true})
   employeeId!: number;
@@ -89,7 +96,6 @@ export default class AssessmentDetailedVue extends Vue {
   private fetchData() {
     this.loading = true;
     this.accessDenied = false;
-    this.fileToAttach = null;
     return assessmentService.assessmentWithFormsAndFiles(this.employeeId, this.assessmentId)
         .then(data => {
               this.assessment = data;
@@ -107,15 +113,13 @@ export default class AssessmentDetailedVue extends Vue {
         });
   }
 
-  private uploadAttachment() {
-    if (this.fileToAttach) {
-      const formData = new FormData();
-      formData.append("file", this.fileToAttach);
-      assessmentService.uploadAttachment(this.employeeId, this.assessmentId, formData)
-          .then(result => {
-            this.fetchData();
-          });
-    }
+  private uploadAttachment(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append("file", file);
+    return assessmentService.uploadAttachment(this.employeeId, this.assessmentId, formData)
+        .then(result => {
+          return this.fetchData();
+        });
   }
 
   private getAttachmentPath(fileName: string) {
