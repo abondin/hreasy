@@ -4,17 +4,16 @@
     <v-card v-if="accessDenied">
       <v-card-text>
         <v-alert class="error">{{ $t('Недостаточно прав для просмотра детальной информации по ассессменту') }}</v-alert>
-        <router-link :to="`/assessments/${employeeId}`">{{ $t('Вернуться к списку ассессментов') }}</router-link>
+        <router-link :to="'/assessments/'+employeeId">
+          {{ $t('Вернуться к карточке сотрудника') }}</router-link>
       </v-card-text>
     </v-card>
     <v-card v-else-if="assessment">
       <v-card-title>
-        <router-link to="/assessments/${employeeId}">
-          <v-icon class="mr-5">mdi-arrow-left</v-icon>
-        </router-link>
-        {{ $t('Ассессмент сотрудника') }}
+        <router-link :to="'/assessments/'+employeeId">
+         {{ $t('Вернуться к карточке сотрудника') }}</router-link>
       </v-card-title>
-      <v-card>
+      <v-card-text>
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="title">{{ assessment.employee.name }}</v-list-item-title>
@@ -39,12 +38,14 @@
           </v-list-item-content>
         </v-list-item>
         <v-card-text>
+
+
           <!-- Attachments -->
           <span class="font-weight-bold">{{ $t('Вложения') }}:</span>
           <v-chip outlined link class="ml-5"
                   v-for="attachment in assessment.attachmentsFilenames" v-bind:key="attachment">
             <a :href="getAttachmentPath(attachment)" :download="attachment">{{ attachment }}</a>
-            <v-icon @click="deleteAttachment(attachment)">mdi-delete</v-icon>
+            <v-icon @click="openDeleteAttachmentDialog(attachment)" class="ml-3">mdi-delete</v-icon>
           </v-chip>
           <v-chip outlined link class="ml-5" @click="uploadAttachmentDialog=true">
             <v-icon>mdi-plus</v-icon>
@@ -56,7 +57,34 @@
                 @close="uploadComplete"></file-upload>
           </v-dialog>
         </v-card-text>
-      </v-card>
+      </v-card-text>
+
+      <!-- Delete attachment dialog-->
+      <v-dialog v-model="deleteAttachmentDialog" width="500">
+        <v-card>
+          <v-card-title primary-title>
+            {{ $t('Удаление') }}
+          </v-card-title>
+
+          <v-card-text>
+            <p>
+            {{ $t('Вы уверены что хотите удалить вложение?') }}
+            </p>
+            {{attachmentToDelete}}
+            <v-alert v-if="deleteAttachmentError" class="error">{{deleteAttachmentError}}</v-alert>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn class="primary" text @click="deleteAttachment">
+              {{ $t('Да') }}
+            </v-btn>
+            <v-btn text @click="attachmentToDelete=null;deleteAttachmentDialog=false">
+              {{ $t('Нет') }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
     </v-card>
   </v-container>
 </template>
@@ -77,6 +105,9 @@ import logger from "@/logger";
 })
 export default class AssessmentDetailedVue extends Vue {
   uploadAttachmentDialog = false;
+  deleteAttachmentDialog = false;
+  attachmentToDelete: string | null = null;
+  deleteAttachmentError = '';
   loading: boolean = false;
   accessDenied = false;
   assessment: AssessmentWithFormsAndFiles | null = null;
@@ -123,15 +154,26 @@ export default class AssessmentDetailedVue extends Vue {
     return assessmentService.getAttachmentPath(this.employeeId, this.assessmentId, fileName, this.assessment!.attachmentsAccessToken)
   }
 
-  private deleteAttachment(fileName: string) {
-    return assessmentService.deleteAttachment(this.employeeId, this.assessmentId, fileName)
-        .then(result => {
-          if (result.deleted) {
-            return this.fetchData();
-          } else {
-            logger.error(`Unable to delete file ${fileName}`);
-          }
-        });
+  private openDeleteAttachmentDialog(fileName: string) {
+    this.attachmentToDelete = fileName;
+    this.deleteAttachmentDialog = true;
+  }
+
+  private deleteAttachment() {
+    this.deleteAttachmentError='';
+    if (this.attachmentToDelete) {
+      return assessmentService.deleteAttachment(this.employeeId, this.assessmentId, this.attachmentToDelete)
+          .then(result => {
+            if (result.deleted) {
+              this.deleteAttachmentDialog = false;
+              return this.fetchData();
+            } else {
+              logger.error(`Unable to delete file ${this.attachmentToDelete}`);
+              //TODO Send reason from backend
+              this.deleteAttachmentError = 'Unable to delete file';
+            }
+          });
+    }
   }
 
   private uploadComplete(event: UploadCompleteEvent) {

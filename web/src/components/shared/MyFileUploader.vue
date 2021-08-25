@@ -7,6 +7,7 @@ example
     <v-chip v-if="files && files.length>0">{{ files[0].name }}
       <v-icon v-if="files.length>0 && files[0].error" @click="$refs.upload.clear()">mdi-close</v-icon>
     </v-chip>
+    <p v-else class="text-center text--darken-4">{{ $t('Выберите файл на вашем компьютере или перетащите мышкой') }}</p>
     <file-upload
         class="upload-btn"
         v-model="files"
@@ -18,8 +19,8 @@ example
         @input="$refs.upload.active=true"
         @close="close"
         ref="upload">
-      <v-btn link class="primary" v-if="$refs.upload && !$refs.upload.dropActive && (!files || files.length==0)">
-        {{ $t('Выберите файл на вашем компьюере или перетащите мышкой') }}
+      <v-btn class="primary" v-if="$refs.upload && !$refs.upload.dropActive && (!files || files.length==0)">
+        {{ $t('Выбрать')}}
       </v-btn>
     </file-upload>
     <v-alert v-if="files.length>0 && !files[0].error  && !files[0].success">{{ files[0].progress }} %</v-alert>
@@ -28,7 +29,7 @@ example
       {{ $t('UPLOAD_ERROR_' + files[0].error, {timeout: timeout, maximumSize: maximumSize}) }}
     </v-alert>
     <div v-if="$refs.upload && !$refs.upload.dropActive">
-      <v-btn @click="close">{{ (files.length > 0 && files[0].success) ? $t('ОK') : $t('Отмена') }}</v-btn>
+      <v-btn text @click="close">{{ (files.length > 0 && files[0].success) ? $t('ОK') : $t('Отмена') }}</v-btn>
     </div>
 
     <div v-if="$refs.upload && $refs.upload.dropActive" class="drop-active"><h1>
@@ -57,14 +58,14 @@ export default class MyFileUploader extends Vue {
    * 10 * 1024 * 1024 = 10МБ
    * @private
    */
-  @Prop({required: false, default: "10485760"})
+  @Prop({required: false, default: 10485760})
   maximumSize!: number;
 
   /**
    * 30 * 1000 = 30seconds
    * @private
    */
-  @Prop({required: false, default: "30000"})
+  @Prop({required: false, default: 30000})
   timeout!: number;
 
   private close() {
@@ -87,6 +88,7 @@ export interface UploadCompleteEvent {
 <style lang="css">
 
 .upload-area {
+  min-height: 220px;
   position: relative;
   border: grey 2px dashed;
   border-radius: 5px;
@@ -94,6 +96,7 @@ export interface UploadCompleteEvent {
   vertical-align: middle;
   padding-top: 50px;
   padding-bottom: 50px;
+  background-color: white;
 }
 
 .upload-btn {
@@ -112,7 +115,7 @@ export interface UploadCompleteEvent {
   left: 0;
   top: 0;
   padding-top: 50px;
-  background-color: rgba(0, 0, 0, 0.5);;
+  background-color: grey;
 }
 
 </style>

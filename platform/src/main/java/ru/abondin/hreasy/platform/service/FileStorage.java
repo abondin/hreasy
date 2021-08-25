@@ -97,10 +97,18 @@ public class FileStorage implements InitializingBean {
     public Mono<Boolean> toRecycleBin(String path, String filename) {
         var file = new File(new File(rootDir, path), filename);
         var recycledFolder = new File(recycleDir, path);
+        //1. Try to create folder for new recycled file
         validateAndCreateDir(recycledFolder, true);
         var recycledFile = new File(recycledFolder, filename);
         var success = false;
         if (file.isFile()) {
+            // 2. Delete old file from recycled if already exists (in case of add/delete/add/delete for one file)
+            if (recycledFile.isFile()) {
+                boolean deleted = recycledFile.delete();
+                if (!deleted){
+                    log.warn("Unable to delete old file in recycle", path, filename);
+                }
+            }
             var renamed = file.renameTo(recycledFile);
             if (renamed) {
                 success = true;

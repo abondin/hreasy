@@ -2,10 +2,7 @@
 <template>
   <v-container v-if="employee">
     <v-card-title>
-      <router-link to="/assessments">
-        <v-icon class="mr-5">mdi-arrow-left</v-icon>
-      </router-link>
-      {{ $t('Ассессменты сотрудника') }}
+      <router-link to="/assessments">{{ $t('Вернуться к списку сотрудников') }}</router-link>
     </v-card-title>
     <v-card class="d-flex flex-column flex-lg-row pa-5">
       <employee-avatar v-bind:employee="employee"></employee-avatar>
