@@ -73,6 +73,7 @@
                   :post-action="getAttachmentUploadPath()"
                   @close="uploadComplete"></file-upload>
             </v-dialog>
+
           </v-card-text>
         </v-card-text>
 
