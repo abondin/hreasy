@@ -27,6 +27,11 @@ export interface AssessmentBase {
     canceledBy: SimpleDict | null;
 }
 
+export interface NewAssessmentBody {
+    plannedDate: Date;
+    managers: number[];
+}
+
 
 export interface AssessmentWithFormsAndFiles extends AssessmentBase {
     forms: AssessmentForm[];
@@ -58,6 +63,16 @@ export interface AssessmentService {
 
     employeeAssessments(employeeId: number): Promise<AssessmentBase[]>;
 
+    /**
+     *
+     * @param employeeId
+     * @param body
+     * @return id of the created assessment
+     */
+    scheduleNewAssessment(employeeId: number, body: NewAssessmentBody): Promise<number>;
+
+    cancelAssessment(employeeId: number, assessmentId: number): Promise<any>;
+
     getUploadAttachmentUrl(employeeId: number, assessmentId: number): string;
 
     getAttachmentPath(employeeId: number, assessmentId: number, attachmentFilename: string, accessToken: string): string;
@@ -78,6 +93,18 @@ class RestAssessmentService implements AssessmentService {
     assessmentWithFormsAndFiles(employeeId: number, assessmentId: number): Promise<AssessmentWithFormsAndFiles> {
         return httpService.get(`v1/assessment/${employeeId}/${assessmentId}`).then(response => {
             return (response.data as AssessmentWithFormsAndFiles);
+        });
+    }
+
+    scheduleNewAssessment(employeeId: number, body: NewAssessmentBody): Promise<number> {
+        return httpService.post(`v1/assessment/${employeeId}`, body).then(response => {
+            return (response.data as number);
+        });
+    }
+
+    cancelAssessment(employeeId: number, assessmentId: number): Promise<any> {
+        return httpService.delete(`v1/assessment/${employeeId}/${assessmentId}`).then(response => {
+            return response.data;
         });
     }
 

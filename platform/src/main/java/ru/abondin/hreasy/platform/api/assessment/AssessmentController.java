@@ -43,6 +43,22 @@ public class AssessmentController {
                 service.getAssessment(auth, employeeId, assessmentId));
     }
 
+    @Operation(summary = "Schedule new assessment")
+    @PostMapping(value = "/{employeeId}")
+    public Mono<Integer> scheduleAssessment(@PathVariable("employeeId") int employeeId,
+                                            @RequestBody CreateAssessmentDto body) {
+        log.debug("Schedule new assessment for {}:{}", employeeId, body);
+        return AuthHandler.currentAuth().flatMap(auth -> service.scheduleAssessment(auth, employeeId, body));
+    }
+
+
+    @Operation(summary = "Cancel  assessment")
+    @DeleteMapping(value = "/{employeeId}/{assessmentId}")
+    public Mono<Integer> cancelAssessment(@PathVariable("employeeId") int employeeId,
+                                          @PathVariable("assessmentId") int assessmentId) {
+        log.debug("Cancel assessment {}:{}", employeeId, assessmentId);
+        return AuthHandler.currentAuth().flatMap(auth -> service.cancelAssessment(auth, employeeId, assessmentId));
+    }
 
     @Operation(summary = "Upload assessment attachment")
     @PostMapping(value = "/{employeeId}/{assessmentId}/attachment")

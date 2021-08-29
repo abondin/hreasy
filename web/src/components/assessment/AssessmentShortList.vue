@@ -3,26 +3,34 @@
   <v-container>
     <v-card>
       <v-card-title>
-        <div class="d-flex align-center justify-space-between">
-          <!-- Refresh button -->
-          <v-btn text icon @click="fetchData()">
-            <v-icon>refresh</v-icon>
-          </v-btn>
-          <v-divider vertical></v-divider>
-          <v-text-field
-              v-model="filter.search"
-              :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
-          <v-autocomplete
-              clearable
-              class="mr-5"
-              v-model="filter.selectedProjects"
-              :items="allProjects.filter(p=>p.active)"
-              item-value="id"
-              item-text="name"
-              :label="$t('Текущий проект')"
-              multiple
-          ></v-autocomplete>
-        </div>
+        <v-container>
+          <v-row no-gutters align="center" justify="start">
+            <!-- Refresh button -->
+            <v-col cols="1">
+              <v-btn text icon @click="fetchData()">
+                <v-icon>refresh</v-icon>
+              </v-btn>
+              <v-divider vertical></v-divider>
+            </v-col>
+            <v-col>
+              <v-text-field
+                  v-model="filter.search"
+                  :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
+            </v-col>
+            <v-col>
+              <v-autocomplete
+                  clearable
+                  class="mr-5"
+                  v-model="filter.selectedProjects"
+                  :items="allProjects.filter(p=>p.active)"
+                  item-value="id"
+                  item-text="name"
+                  :label="$t('Текущий проект')"
+                  multiple
+              ></v-autocomplete>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-card-title>
 
       <v-card-text>

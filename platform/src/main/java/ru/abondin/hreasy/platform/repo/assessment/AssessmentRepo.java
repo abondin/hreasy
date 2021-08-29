@@ -51,6 +51,7 @@ public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, 
 
     /**
      * Find assessments initiator with all forms owners
+     *
      * @param assessmentId
      * @return
      */
@@ -60,4 +61,8 @@ public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, 
             "select owner owner from assessment_form f where f.assessment_id =:assessmentId\n" +
             ") owners where owner is not null;")
     Flux<Integer> findAllAssessmentOwners(@Param("assessmentId") int assessmentId);
+
+    @Query("update assessment set canceled_by=:canceledBy, canceled_at=:canceledAt" +
+            " where id=:assessmentId")
+    Mono<? extends Integer> updateCanceledBy(int assessmentId, Integer canceledBy, OffsetDateTime canceledAt);
 }
