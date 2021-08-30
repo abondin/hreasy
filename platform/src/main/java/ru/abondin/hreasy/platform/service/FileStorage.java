@@ -27,6 +27,8 @@ public class FileStorage implements InitializingBean {
 
     private File rootDir;
 
+    private File recycleDir;
+
     public boolean fileExists(String resourceType, String filename) {
         var resourceHome = new File(rootDir, resourceType);
         var image = new File(resourceHome, filename);
@@ -85,6 +87,40 @@ public class FileStorage implements InitializingBean {
         return Flux.fromArray(resourceHome.listFiles((file) -> file.isFile())).map(File::getName).sort();
     }
 
+    /**
+     * Move file to .recycle folder in given path
+     *
+     * @param path
+     * @param filename
+     * @return
+     */
+    public Mono<Boolean> toRecycleBin(String path, String filename) {
+        var file = new File(new File(rootDir, path), filename);
+        var recycledFolder = new File(recycleDir, path);
+        //1. Try to create folder for new recycled file
+        validateAndCreateDir(recycledFolder, true);
+        var recycledFile = new File(recycledFolder, filename);
+        var success = false;
+        if (file.isFile()) {
+            // 2. Delete old file from recycled if already exists (in case of add/delete/add/delete for one file)
+            if (recycledFile.isFile()) {
+                boolean deleted = recycledFile.delete();
+                if (!deleted){
+                    log.warn("Unable to delete old file in recycle", path, filename);
+                }
+            }
+            var renamed = file.renameTo(recycledFile);
+            if (renamed) {
+                success = true;
+            } else {
+                log.warn("Rename operation failed for {}/{}", path, filename);
+            }
+        } else {
+            log.warn("Unable to find file {} in path {} to move to recycle bin", filename, path);
+        }
+        return Mono.just(success);
+    }
+
     public Mono<Void> uploadFile(String resourceType, String filename, FilePart filePart) {
         log.debug("Uploading '{}' file '{}' with original file name '{}'",
                 resourceType, filename, filePart.filename());
@@ -99,6 +135,8 @@ public class FileStorage implements InitializingBean {
         log.info("Initializing file storage in {}", props.getResourcePath());
         rootDir = props.getResourcePath().getFile();
         validateAndCreateDir(rootDir, props.isCreateResourceDirOnStart());
+        recycleDir = new File(rootDir, ".recycle");
+        validateAndCreateDir(recycleDir, props.isCreateResourceDirOnStart());
     }
 
 
@@ -116,6 +154,4 @@ public class FileStorage implements InitializingBean {
             throw new IllegalArgumentException("File Storage Dir " + dir + " is not a directory");
         }
     }
-
-
 }

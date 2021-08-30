@@ -52,7 +52,7 @@ sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hrea
 
 # Permissions and roles
 
-![Security Database](./.architecture/hr_sec.png "Security Database Scheme")
+![Security Database](./platform/.architecture/hr_sec.png "Security Database Scheme")
 
 Security model based on two main entities:
 
@@ -100,7 +100,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |edit_articles|N|N|Create, update and moderate articles and news|
 |edit_employee_full|N|N|Create/update employee|
 |view_employee_full|N|N|View employee all fields including personal|
-
+|view_assessment_full|N|N|View all assessment forms without restrictions|
+|create_assessment|N|N|View last assessment date for employee. Schedule new assessment and invite managers|
 
 **Default permissions and roles**
 
@@ -132,4 +133,43 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |edit_articles|global_admin,content_management|
 |edit_employee_full|global_admin,hr|
 |view_employee_full|global_admin,hr|
+|view_assessment_full|global_admin,hr|
+|create_assessment|pm,global_admin,hr|
+
+## Assessments
+
+Project Manager in UI able to select employee and schedule an assessment.
+The goal of this functionality 
+- help PMs and HR to keep in sync employees attitude to work 
+
+![Security Database](./platform/.architecture/assessment_use_cases.png "Assessment use case")
+
+**Assessments form template**
+
+Assessment form based on JSON template. System Administrator can update template for every form type
+in database table `assessment_form_template` (*//TODO Admin page to edit template*):
+* `form_type` - type of the form. Possible values:
+  * 1 - self assessment
+  * 2 - manager feedback
+  * 3 - meeting notes
+  * 4 - conclusion and decision
+* `content` - template in JSON format. JSON structure:
+  * `groups` [] - array of form fields groups
+    * `key` - system key (code) of the group
+    * `displayName` - Display Name of the group (for UI)
+    * `(?) description` - Text for UI details tooltip
+    * `fields` [] - array of the fields of the group
+        * `key` - system key (code) of the field
+        * `displayName` - Display Name of the field (for UI)
+        * `(?) description` - Text for UI details tooltip
+        * `type` - Helps UI to render field on the form. Possible values:
+            * `short_text_with_rate` - UI show two fields.
+              1 - single line text field for open comment
+              2 - rate from 1 to 10
+            * `text` - multiline text area   
+
+
+
+
+
 

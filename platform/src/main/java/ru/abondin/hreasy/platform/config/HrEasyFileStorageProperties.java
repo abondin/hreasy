@@ -8,6 +8,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.time.Duration;
 
 /**
  * Properties to support file storage
@@ -32,5 +33,10 @@ public class HrEasyFileStorageProperties {
      */
     private Resource failbackImage = new ClassPathResource("static/noimage.png");
 
-    private String articleAttachmentRelativePattern="v1/fs/article/{articleId}/{fileName}";
+    private String articleAttachmentRelativePattern = "v1/fs/article/{articleId}/{fileName}";
+
+    private String assessmentAttachmentRelativePattern = "v1/fs/assessment/{assessment}/{fileName}/{accessToken}";
+
+    private Duration assessmentAttachmentAccessTokenTtl = Duration.ofHours(12);
+
 }

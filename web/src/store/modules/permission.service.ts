@@ -87,7 +87,12 @@ export enum Permissions {
     /**
      * View employee all fields including personal
      */
-    AdminViewEmployeeFull = "view_employee_full"
+    AdminViewEmployeeFull = "view_employee_full",
+
+    /**
+     * View last assessment date for employee. Schedule new assessment and invite managers
+     */
+    CreateAssessments = "create_assessment"
 }
 
 interface PermissionService {
@@ -126,6 +131,8 @@ interface PermissionService {
     canViewAllOvertimes(): boolean;
 
     canViewAllVacations(): boolean;
+
+    canCreateAssessments(): boolean;
 
     canEditAllVacations(): boolean;
 
@@ -166,6 +173,10 @@ class VuexPermissionService implements PermissionService {
 
     canViewAllVacations(): boolean {
         return this.simplePermissionCheck(Permissions.ViewVacations);
+    }
+
+    canCreateAssessments(): boolean {
+        return this.simplePermissionCheck(Permissions.CreateAssessments);
     }
 
     canViewOvertimes(employeeId: number): boolean {

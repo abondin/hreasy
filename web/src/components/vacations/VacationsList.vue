@@ -195,6 +195,7 @@ export default class VacationsListComponent extends Vue {
     this.headers.push({text: this.$tc('Год'), value: 'year'});
     this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
     this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});
+    this.headers.push({text: this.$tc('Кол-во дней'), value: 'daysNumber'});
     this.headers.push({text: this.$tc('Статус'), value: 'status'});
     this.headers.push({text: this.$tc('Документ'), value: 'document'});
     this.headers.push({text: this.$tc('Примечание'), value: 'notes'});
