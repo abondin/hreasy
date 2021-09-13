@@ -4,6 +4,7 @@ package ru.abondin.hreasy.platform.service.assessment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
@@ -104,6 +105,7 @@ public class AssessmentService {
                 });
     }
 
+    @Transactional
     public Mono<Integer> scheduleAssessment(AuthContext auth, int employeeId, CreateAssessmentDto body) {
         var now = dateTimeService.now();
         return securityValidator.validateCanCreateAssessment(auth).flatMap(v -> {
@@ -117,6 +119,7 @@ public class AssessmentService {
         });
     }
 
+    @Transactional
     public Mono<Integer> cancelAssessment(AuthContext auth, int employeeId, int assessmentId) {
         var now = dateTimeService.now();
         return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)

@@ -59,6 +59,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
 
     //TODO Set phone datatype in database to string
     @Deprecated
+    @Named("phoneToString")
     default String phoneToString(BigDecimal phone) {
         return phone == null ? null : phone.toPlainString();
     }

@@ -2,7 +2,7 @@ package ru.abondin.hreasy.platform.repo.employee.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.r2dbc.core.DatabaseClient;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class SecAdminUserRolesRepoImpl implements SecAdminUserRolesRepo {
-    private final DatabaseClient dbClient;
+    private final R2dbcEntityTemplate dbTemplate;
 
     @Override
     public Mono<Integer> updateRoles(int userId, List<String> roles) {
@@ -35,9 +35,11 @@ public class SecAdminUserRolesRepoImpl implements SecAdminUserRolesRepo {
 
     @Override
     public Mono<Integer> addAccessibleProject(int employeeId, int projectId) {
-        return dbClient.insert().into("employee_accessible_projects")
-                .value("employee_id", employeeId)
-                .value("project_id", projectId)
+        return dbTemplate.getDatabaseClient().sql(
+                        "insert into employee_accessible_projects (employee_id, project_id)" +
+                                " values (:employee_id, :project_id)")
+                .bind("employee_id", employeeId)
+                .bind("project_id", projectId)
                 .fetch().rowsUpdated();
     }
 
@@ -48,13 +50,16 @@ public class SecAdminUserRolesRepoImpl implements SecAdminUserRolesRepo {
                                                 List<T> values) {
         var inserts = new ArrayList<Mono<Integer>>();
         for (var r : values) {
-            var i = dbClient.insert()
-                    .into(tableName)
-                    .value(idFieldName, id).value(valueFieldName, r).fetch().rowsUpdated();
+            var i = dbTemplate.getDatabaseClient().sql(
+                            "insert into " + tableName + " (" + idFieldName + ", " + valueFieldName + ")" +
+                                    " values (:id, :value)"
+                    )
+                    .bind("id", id)
+                    .bind("value", r).fetch().rowsUpdated();
             inserts.add(i);
         }
         // Delete all rows
-        return dbClient.execute("delete from " + tableName + " where " + idFieldName + "=:id")
+        return dbTemplate.getDatabaseClient().sql("delete from " + tableName + " where " + idFieldName + "=:id")
                 .bind("id", id)
                 .fetch().rowsUpdated()
                 // 2. Insert new roles

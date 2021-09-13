@@ -15,4 +15,6 @@ logging:
   level:
     org:
       springframework:
-        data: INFO
+        data: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG # for queries
+    io.r2dbc.postgresql.PARAM: DEBUG # for parameters
