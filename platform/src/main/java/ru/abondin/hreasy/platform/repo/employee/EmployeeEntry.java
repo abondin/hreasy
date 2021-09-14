@@ -28,6 +28,7 @@ public class EmployeeEntry {
     private Integer currentProjectId;
     @Column("office_location")
     private Integer officeLocationId;
+    @Column("date_of_dismissal")
     private LocalDate dateOfDismissal;
     private String email;
     //TODO Set phone datatype in database to string
