@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.admin.employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
@@ -41,6 +42,7 @@ public class AdminEmployeeService {
                 .flatMap(sec -> employeeRepo.findById(employeeId)).map(m -> mapper.fromEntry(m, dateTimeService.now()));
     }
 
+    @Transactional
     public Mono<Integer> create(AuthContext auth, CreateOrUpdateEmployeeBody body) {
         log.info("Create new employee {} by {}", body, auth.getUsername());
         var now = dateTimeService.now();
@@ -56,6 +58,7 @@ public class AdminEmployeeService {
                 });
     }
 
+    @Transactional
     public Mono<Integer> update(AuthContext auth, int employeeId, CreateOrUpdateEmployeeBody body) {
         log.info("Update new employee {} with {} by {}", employeeId, body, auth.getUsername());
         var now = dateTimeService.now();
