@@ -69,9 +69,10 @@
             :headers="headers"
             :items="filteredItems()"
             multi-sort
-            hide-default-footer
             :sort-by="['startDate', 'endDate']"
-            disable-pagination>
+            dense
+            :items-per-page="defaultItemsPerTablePage"
+            class="text-truncate">
           <template v-slot:item.employeeDisplayName="{ item }">
             <v-btn :disabled="!canEditVacations()" text @click="openVacationDialog(item)">{{ item.employeeDisplayName }}
             </v-btn>
@@ -124,12 +125,12 @@ import vacationService, {Vacation} from "@/components/vacations/vacation.service
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import {DataTableHeader} from "vuetify";
-import {OvertimeUtils} from "@/components/overtimes/overtime.service";
 import moment from 'moment';
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
 import employeeService from "@/components/empl/employee.service";
 import permissionService from "@/store/modules/permission.service";
 import {DateTimeUtils} from "@/components/datetimeutils";
+import {UiConstants} from "@/components/uiconstants";
 
 const namespace: string = 'dict';
 
@@ -161,6 +162,8 @@ export default class VacationsListComponent extends Vue {
 
   private vacationDialog = false;
   private selectedVacation: Vacation | null = null;
+
+  private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
   /**
    * Lifecycle hook
@@ -249,7 +252,7 @@ export default class VacationsListComponent extends Vue {
     return DateTimeUtils.formatFromIso(date);
   }
 
-  private canEditVacations() : boolean{
+  private canEditVacations(): boolean {
     return permissionService.canEditAllVacations();
   }
 

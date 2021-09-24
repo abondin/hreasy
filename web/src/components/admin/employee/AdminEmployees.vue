@@ -77,7 +77,7 @@
             :loading="loading"
             :loading-text="$t('Загрузка_данных')"
             :headers="headers"
-            :items-per-page="15"
+            :items-per-page="defaultItemsPerTablePage"
             :items="filteredData()"
             sort-by="displayName"
             class="text-truncate table-cursor"
@@ -148,6 +148,7 @@ import AdminEmployeeForm from "@/components/admin/employee/AdminEmployeeForm.vue
 import adminEmployeeService, {EmployeeWithAllDetails} from "@/components/admin/employee/admin.employee.service";
 import {errorUtils} from "@/components/errors";
 import permissionService from "@/store/modules/permission.service";
+import {UiConstants} from "@/components/uiconstants";
 
 const namespace_dict: string = 'dict';
 
@@ -165,6 +166,8 @@ export default class AdminEmployees extends Vue {
   loading: boolean = false;
 
   data: EmployeeWithAllDetails[] = [];
+
+  private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
   private filter = new Filter();
 
