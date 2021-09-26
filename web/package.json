@@ -28,7 +28,8 @@
     "vue2-editor": "^1.0.1",
     "vuetify": "^2.3.2",
     "vuex": "^3.4.0",
-    "vuex-class": "^0.3.2"
+    "vuex-class": "^0.3.2",
+    "xlsx": "^0.17.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.4.6",

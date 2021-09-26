@@ -48,6 +48,19 @@
           ></v-select>
 
           <v-divider vertical></v-divider>
+          <!-- Excel Export -->
+          <v-tooltip bottom v-if="canEditVacations">
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <div v-bind="tattrs" v-on="ton" class="col-auto">
+                <v-btn text :disabled="loading" @click="exportToExcel()" icon>
+                  <v-icon>mdi-file-excel</v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <span>{{ $t('Экспорт в excel') }}</span>
+          </v-tooltip>
+
+
           <!-- Add new project -->
           <v-tooltip bottom v-if="canEditVacations">
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
@@ -59,6 +72,7 @@
             </template>
             <span>{{ $t('Добавить отпуск') }}</span>
           </v-tooltip>
+
         </div>
       </v-card-title>
 
@@ -69,7 +83,7 @@
             :headers="headers"
             :items="filteredItems()"
             multi-sort
-            :sort-by="['startDate', 'endDate']"
+            :sort-by="['employeeDisplayName']"
             dense
             :items-per-page="defaultItemsPerTablePage"
             class="text-truncate">
@@ -131,6 +145,8 @@ import employeeService from "@/components/empl/employee.service";
 import permissionService from "@/store/modules/permission.service";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import {UiConstants} from "@/components/uiconstants";
+// https://github.com/SheetJS/sheetjs
+import XLSX from "xlsx";
 
 const namespace: string = 'dict';
 
@@ -140,6 +156,11 @@ class Filter {
   public selectedProjects: Array<number> = [];
   public selectedYears: Array<number> = [new Date().getFullYear()];
   public selectedMonths: Array<number> = [new Date().getMonth()];
+}
+
+interface Status{
+  value: string;
+  text: string;
 }
 
 @Component({
@@ -155,7 +176,7 @@ export default class VacationsListComponent extends Vue {
 
   private filter: Filter = new Filter();
 
-  public allStatuses: Array<any> = [];
+  public allStatuses: Array<Status> = [];
   public allYears: Array<number> = [];
   public allMonths: Array<any> = [];
   public allEmployees: Array<SimpleDict> = [];
@@ -170,7 +191,7 @@ export default class VacationsListComponent extends Vue {
    */
   created() {
     this.allStatuses = ['PLANNED', 'TAKEN', 'COMPENSATION', 'CANCELED', 'REJECTED'].map(status => {
-      return {value: status, text: this.$tc(`VACATION_STATUS_ENUM.${status}`)}
+      return {value: status, text: this.$tc(`VACATION_STATUS_ENUM.${status}`)} as Status;
     });
     const currentYear = new Date().getFullYear();
     this.allYears = [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];
@@ -200,7 +221,7 @@ export default class VacationsListComponent extends Vue {
     this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});
     this.headers.push({text: this.$tc('Кол-во дней'), value: 'daysNumber'});
     this.headers.push({text: this.$tc('Статус'), value: 'status'});
-    this.headers.push({text: this.$tc('Документ'), value: 'document'});
+    this.headers.push({text: this.$tc('Документ'), value: 'documents'});
     this.headers.push({text: this.$tc('Примечание'), value: 'notes'});
   }
 
@@ -254,6 +275,29 @@ export default class VacationsListComponent extends Vue {
 
   private canEditVacations(): boolean {
     return permissionService.canEditAllVacations();
+  }
+
+  private exportToExcel() {
+    const filename = `vacations-${DateTimeUtils.formatFromIso(new Date().toISOString())}.xlsx`;
+    // TODO Work with a Table?
+    // TODO Add sorting
+    const data: any[]= this.filteredItems().map(row => {
+      const excel:any = {};
+      excel[this.$tc('ФИО')] = row.employeeDisplayName;
+      excel[this.$tc('Текущий проект')] = row.employeeCurrentProject ? row.employeeCurrentProject.name : undefined;
+      excel[this.$tc('Год')] = row.year;
+      excel[this.$tc('Начало')] = this.formatDate(row.startDate);
+      excel[this.$tc('Окончание')] =  this.formatDate(row.endDate);
+      excel[this.$tc('Кол-во дней')] = row.daysNumber;
+      excel[this.$tc('Статус')] = row.status ? this.$tc(`VACATION_STATUS_ENUM.${status}`) : undefined;
+      excel[this.$tc('Документ')] = row.documents;
+      excel[this.$tc('Примечание')] = row.notes;
+      return excel;
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws);
+    XLSX.writeFile(wb, filename);
   }
 
 
