@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -20,7 +19,9 @@ import ru.abondin.hreasy.platform.service.vacation.dto.MyVacationDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 
-import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Service to deal with employees vacations
@@ -35,7 +36,7 @@ public class VacationService {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class VacationFilter {
-        private LocalDate endDateSince = LocalDate.of(2000, 1, 1);
+        private List<Integer> selectedYears = new ArrayList<>();
     }
 
     private final DateTimeService dateTimeService;
@@ -46,13 +47,13 @@ public class VacationService {
 
     public Flux<VacationDto> findAll(AuthContext auth, VacationFilter filter) {
         return validator.validateCanViewOvertimes(auth).flatMapMany((v) -> vacationRepo.findAll(
-                filter.endDateSince
+                yearsOrDefault(filter.getSelectedYears())
         ).map(e -> mapper.vacationToDto(e)));
     }
 
     public Flux<MyVacationDto> my(AuthContext auth) {
-        var now =dateTimeService.now();
-        return vacationRepo.findFuture(auth.getEmployeeInfo().getEmployeeId(), now).map(e->mapper.toMyDto(e));
+        var now = dateTimeService.now();
+        return vacationRepo.findFuture(auth.getEmployeeInfo().getEmployeeId(), now).map(e -> mapper.toMyDto(e));
     }
 
 
@@ -94,5 +95,17 @@ public class VacationService {
         });
     }
 
+    /**
+     * @param filteredYears
+     * @return filteredYears if not empty or last 3 years include current one
+     */
+    public List<Integer> yearsOrDefault(List<Integer> filteredYears) {
+        if (filteredYears.isEmpty()) {
+            var currentYear = dateTimeService.now().getYear();
+            return Arrays.asList(currentYear - 2, currentYear - 1, currentYear);
+        } else {
+            return filteredYears;
+        }
+    }
 
 }

@@ -59,6 +59,8 @@ export interface VacationService {
      * Update vacation entry
      */
     update(employeeId: number, vacationId: number, body: CreateOrUpdateVacation): Promise<number>;
+
+    export(selectedYears: Array<number>): Promise<any>;
 }
 
 class RestVacationService implements VacationService {
@@ -86,6 +88,19 @@ class RestVacationService implements VacationService {
     public update(employeeId: number, vacationId: number, body: CreateOrUpdateVacation): Promise<number> {
         return httpService.put(`v1/vacations/${employeeId}/${vacationId}`, body).then(response => {
             return response.data;
+        });
+    }
+
+    public export(selectedYears: Array<number>): Promise<any> {
+        return httpService.get(`v1/vacations/export`, {
+            params: {years: selectedYears},
+            responseType: 'arraybuffer',
+        }).then(response => {
+            let blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+            let link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = `Vacations.xlsx`;
+            link.click();
         });
     }
 }

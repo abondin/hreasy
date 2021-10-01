@@ -268,7 +268,7 @@ class RestOvertimeService implements OvertimeService {
             let blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
             let link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
-            link.download = `Overtimes-${reportPeriod}.xlsx`;
+            link.download = `Overtimes-${reportPeriod+1}.xlsx`;
             link.click();
         });
     }

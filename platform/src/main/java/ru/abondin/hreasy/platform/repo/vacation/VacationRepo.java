@@ -5,8 +5,8 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Repository
 public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Integer> {
@@ -17,9 +17,9 @@ public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Inte
             ", v.* from  vacation v " +
             " inner join employee e on e.id=v.employee" +
             " left join project p on e.current_project=p.id" +
-            " where v.end_date>=:endDateSince" +
+            " where v.year in (:years)" +
             " order by v.end_date asc")
-    Flux<VacationView> findAll(LocalDate endDateSince);
+    Flux<VacationView> findAll(List<Integer> years);
 
     /**
      * @param employeeId
