@@ -93,7 +93,7 @@ class RestVacationService implements VacationService {
 
     public export(selectedYears: Array<number>): Promise<any> {
         return httpService.get(`v1/vacations/export`, {
-            params: {years: selectedYears},
+            params: {years: selectedYears ? selectedYears.join(',') : undefined},
             responseType: 'arraybuffer',
         }).then(response => {
             let blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
