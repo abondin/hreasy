@@ -6,6 +6,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.Locale;
 
 @Service
@@ -14,10 +15,15 @@ import java.util.Locale;
 public class Default18Helper implements I18Helper {
     private final MessageSource messageSource;
 
+    @PostConstruct
+    protected void init() {
+        log.info("Initialize i18n with :{}", Locale.getDefault());
+    }
+
     @Override
     public String localize(String code, Object... args) {
         try {
-            return messageSource.getMessage(code, args, new Locale("RU"));
+            return messageSource.getMessage(code, args, Locale.getDefault());
         } catch (NoSuchMessageException ex) {
             log.error("Unsupported localization code {}", code);
             return code;
