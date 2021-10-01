@@ -47,6 +47,7 @@ public class OvertimeReportExcelExporter {
         private List<EmployeeDto> employees;
         private List<SimpleDictDto> projects;
         private OffsetDateTime exportTime;
+        private Locale locale;
     }
 
 
@@ -60,23 +61,23 @@ public class OvertimeReportExcelExporter {
 
 
     private XSSFSheet createMainSheet(XSSFWorkbook wb, Map<String, XSSFCellStyle> styles, OvertimeExportBundle bundle) {
-        var sheet = wb.createSheet(i18Helper.localize("overtimeexport.mainsheet"));
+        var sheet = wb.createSheet(i18Helper.localize(bundle.locale, "overtimeexport.mainsheet"));
         var firstRowIndex = createTitle(wb, sheet, styles, bundle);
         var rowIndex = firstRowIndex;
         XSSFRow row;
         XSSFCell cell;
         row = sheet.createRow(rowIndex++);
         cell = row.createCell(0);
-        cell.setCellValue(i18Helper.localize("overtimeexport.table.employee"));
+        cell.setCellValue(i18Helper.localize(bundle.locale, "overtimeexport.table.employee"));
         cell.setCellStyle(styles.get("generalStyle"));
         cell = row.createCell(1);
-        cell.setCellValue(i18Helper.localize("overtimeexport.table.currentproject"));
+        cell.setCellValue(i18Helper.localize(bundle.locale, "overtimeexport.table.currentproject"));
         cell.setCellStyle(styles.get("generalStyle"));
         cell = row.createCell(2);
-        cell.setCellValue(i18Helper.localize("overtimeexport.table.hours"));
+        cell.setCellValue(i18Helper.localize(bundle.locale, "overtimeexport.table.hours"));
         cell.setCellStyle(styles.get("generalStyle"));
         cell = row.createCell(3);
-        cell.setCellValue(i18Helper.localize("overtimeexport.table.approve"));
+        cell.setCellValue(i18Helper.localize(bundle.locale, "overtimeexport.table.approve"));
         cell.setCellStyle(styles.get("generalStyle"));
 
         for (var e : bundle.employees.stream().sorted(Comparator.comparing(EmployeeDto::getDisplayName)).collect(Collectors.toList())) {
@@ -87,7 +88,7 @@ public class OvertimeReportExcelExporter {
                 continue;
             }
             row = sheet.createRow(rowIndex++);
-            var currentProject = i18Helper.localize("overtimeexport.noproject");
+            var currentProject = i18Helper.localize(bundle.locale, "overtimeexport.noproject");
             if (e.getCurrentProject() != null) {
                 currentProject = bundle.projects.stream().filter(p -> p.getId() == e.getCurrentProject().getId())
                         .findFirst()
@@ -104,7 +105,7 @@ public class OvertimeReportExcelExporter {
             cell.setCellValue(report.getTotalHours());
             cell.setCellStyle(styles.get("generalStyle"));
             cell = row.createCell(3);
-            cell.setCellValue(i18Helper.localize("enum.OvertimeApprovalCommonStatus." + report.getCommonApprovalStatus().toString()));
+            cell.setCellValue(i18Helper.localize(bundle.locale, "enum.OvertimeApprovalCommonStatus." + report.getCommonApprovalStatus().toString()));
             cell.setCellStyle(styles.get("generalStyle"));
         }
         createTable(wb, sheet, firstRowIndex, rowIndex--);
@@ -118,12 +119,12 @@ public class OvertimeReportExcelExporter {
     private int createTitle(XSSFWorkbook wb, XSSFSheet sheet, Map<String, XSSFCellStyle> styles, OvertimeExportBundle bundle) {
         var row = sheet.createRow((short) 0);
         var cell = row.createCell((short) 0);
-        cell.setCellValue(new XSSFRichTextString(i18Helper.localize("overtimeexport.title")));
+        cell.setCellValue(new XSSFRichTextString(i18Helper.localize(bundle.locale, "overtimeexport.title")));
         cell.setCellStyle(styles.get("titleStyle"));
 
         row = sheet.createRow((short) 1);
         cell = row.createCell((short) 0);
-        cell.setCellValue(new XSSFRichTextString(i18Helper.localize("overtimeexport.period") + ":"));
+        cell.setCellValue(new XSSFRichTextString(i18Helper.localize(bundle.locale, "overtimeexport.period") + ":"));
         cell.setCellStyle(styles.get("generalStyle"));
         cell = row.createCell((short) 1);
         cell.setCellValue(new XSSFRichTextString(formatPeriod(bundle.period)));
@@ -131,7 +132,7 @@ public class OvertimeReportExcelExporter {
 
         row = sheet.createRow((short) 2);
         cell = row.createCell((short) 0);
-        cell.setCellValue(new XSSFRichTextString(i18Helper.localize("overtimeexport.exported.at") + ":"));
+        cell.setCellValue(new XSSFRichTextString(i18Helper.localize(bundle.locale, "overtimeexport.exported.at") + ":"));
         cell.setCellStyle(styles.get("generalStyle"));
         cell = row.createCell((short) 1);
         cell.setCellValue(bundle.getExportTime().toLocalDateTime());

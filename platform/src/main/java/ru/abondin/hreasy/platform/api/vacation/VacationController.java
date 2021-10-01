@@ -17,6 +17,7 @@ import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 @RestController()
 @RequestMapping("/api/v1/vacations")
@@ -76,9 +77,11 @@ public class VacationController {
      * @return
      */
     @GetMapping("/export")
-    public Mono<Resource> export(@RequestParam(required = false) List<Integer> years) {
+    public Mono<Resource> export(@RequestParam(required = false) List<Integer> years, Locale locale) {
         return AuthHandler.currentAuth().flatMap(auth -> vacationExportService
-                .export(auth, new VacationExportService.VacationExportFilter(years == null ? Arrays.asList() : years)));
+                .export(auth,
+                        new VacationExportService.VacationExportFilter(years == null ? Arrays.asList() : years)
+                , locale));
     }
 
 }

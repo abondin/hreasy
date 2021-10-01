@@ -14,6 +14,7 @@ import ru.abondin.hreasy.platform.service.EmployeeService;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -27,13 +28,14 @@ public class OvertimeExportService {
     private final OvertimeSecurityValidator securityValidator;
     private final OvertimeReportExcelExporter excelExporter;
 
-    public Mono<Resource> export(int periodId, AuthContext auth) {
+    public Mono<Resource> export(int periodId, AuthContext auth, Locale locale) {
         log.info("Export overtime summary for {} by {}", periodId, auth.getUsername());
         return securityValidator.validateExportOvertimes(auth).then(
                 overtimeService.getSummary(periodId, auth).collectList().flatMap(
                         overtimes -> employeeService.findAll(auth, true).collectList().flatMap(
                                 employees -> dictService.findProjects(auth).collectList().flatMap(projects -> export(
                                         OvertimeReportExcelExporter.OvertimeExportBundle.builder()
+                                                .locale(locale)
                                                 .overtimes(overtimes)
                                                 .period(periodId)
                                                 .employees(employees)

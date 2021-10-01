@@ -15,6 +15,7 @@ import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Locale;
 
 @RestController()
 @RequestMapping("/api/v1/overtimes")
@@ -93,8 +94,8 @@ public class OvertimeController {
     }
 
     @GetMapping("/summary/{period}/export")
-    public Mono<Resource> export(@PathVariable int period) {
-        return AuthHandler.currentAuth().flatMap(auth -> exportService.export(period, auth));
+    public Mono<Resource> export(@PathVariable int period, Locale locale) {
+        return AuthHandler.currentAuth().flatMap(auth -> exportService.export(period, auth, locale));
     }
 
     @Data

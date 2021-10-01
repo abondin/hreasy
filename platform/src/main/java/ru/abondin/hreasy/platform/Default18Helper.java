@@ -20,10 +20,16 @@ public class Default18Helper implements I18Helper {
         log.info("Initialize i18n with :{}", Locale.getDefault());
     }
 
+    @Deprecated
     @Override
     public String localize(String code, Object... args) {
+        return localize(null, code, args);
+    }
+
+    @Override
+    public String localize(Locale locale, String code, Object... args) {
         try {
-            return messageSource.getMessage(code, args, Locale.getDefault());
+            return messageSource.getMessage(code, args, locale == null ? Locale.getDefault() : locale);
         } catch (NoSuchMessageException ex) {
             log.error("Unsupported localization code {}", code);
             return code;

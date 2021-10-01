@@ -17,6 +17,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 @Slf4j
 public class OvertimeExportedTest {
@@ -71,12 +72,7 @@ public class OvertimeExportedTest {
                 .projects(projects)
                 .build();
 
-        exporter = new OvertimeReportExcelExporter(new I18Helper() {
-            @Override
-            public String localize(String code, Object... args) {
-                return code;
-            }
-        });
+        exporter = new OvertimeReportExcelExporter(new I18Helper.DummyI18Helper());
     }
 
     private static float roundToHalf(double d) {

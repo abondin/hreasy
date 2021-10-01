@@ -6,7 +6,8 @@ function createAxios(): AxiosInstance {
     const http = axios.create(
         {
             withCredentials: true,
-            baseURL: '/api/'
+            baseURL: '/api/',
+            headers:{"Accept-Language": "ru-RU,ru"}
         }
     )
 

@@ -5,6 +5,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.vacation.VacationExcelExporter;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
@@ -71,7 +72,7 @@ public class VacationsExportedTest {
                 .years(Arrays.asList(currentYear - 2, currentYear - 1, currentYear))
                 .build();
 
-        exporter = new VacationExcelExporter((code, args) -> code);
+        exporter = new VacationExcelExporter(new I18Helper.DummyI18Helper());
     }
 
     private static float roundToHalf(double d) {

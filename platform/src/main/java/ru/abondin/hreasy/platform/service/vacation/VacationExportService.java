@@ -14,6 +14,7 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Export vacations
@@ -35,7 +36,7 @@ public class VacationExportService {
     private final VacationSecurityValidator securityValidator;
 
 
-    public Mono<Resource> export(AuthContext auth, VacationExportFilter filter) {
+    public Mono<Resource> export(AuthContext auth, VacationExportFilter filter, Locale locale) {
         log.info("Export vacations for {} by {}", filter, auth.getUsername());
         var now = dateTimeService.now();
         var years = vacationService.yearsOrDefault(filter.getYears());
@@ -43,6 +44,7 @@ public class VacationExportService {
                 .then(
                         vacationService.findAll(auth, new VacationService.VacationFilter(years))
                                 .collectList().flatMap(vacations -> export(VacationExcelExporter.VacationsExportBundle.builder()
+                                        .locale(locale)
                                         .exportTime(now)
                                         .vacations(vacations)
                                         .years(years)

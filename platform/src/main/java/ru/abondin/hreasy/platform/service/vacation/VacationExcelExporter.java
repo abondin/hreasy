@@ -41,6 +41,7 @@ public class VacationExcelExporter {
         private String exportedBy;
         private List<VacationDto> vacations;
         private OffsetDateTime exportTime;
+        private Locale locale;
     }
 
 
@@ -54,7 +55,7 @@ public class VacationExcelExporter {
 
 
     private XSSFSheet createMainSheet(XSSFWorkbook wb, Map<String, XSSFCellStyle> styles, VacationsExportBundle bundle) {
-        var sheet = wb.createSheet(i18Helper.localize("vacationsexport.mainsheet"));
+        var sheet = wb.createSheet(i18Helper.localize(bundle.locale, "vacationsexport.mainsheet"));
         var firstRowIndex = createTitle(wb, sheet, styles, bundle);
         var rowIndex = firstRowIndex;
         XSSFRow row;
@@ -73,7 +74,7 @@ public class VacationExcelExporter {
                 , "notes"
         )) {
             cell = row.createCell(i);
-            cell.setCellValue(i18Helper.localize("vacationsexport.table." + field));
+            cell.setCellValue(i18Helper.localize(bundle.locale, "vacationsexport.table." + field));
             cell.setCellStyle(styles.get("generalStyle"));
             i++;
         }
@@ -101,7 +102,7 @@ public class VacationExcelExporter {
             cell.setCellValue(v.getDaysNumber());
             cell.setCellStyle(styles.get("generalStyle"));
             cell = row.createCell(6);
-            cell.setCellValue(i18Helper.localize("enum.VacationStatus." + v.getStatus().toString()));
+            cell.setCellValue(i18Helper.localize(bundle.locale, "enum.VacationStatus." + v.getStatus().toString()));
             cell.setCellStyle(styles.get("generalStyle"));
             cell = row.createCell(7);
             cell.setCellValue(v.getDocuments());
@@ -126,12 +127,12 @@ public class VacationExcelExporter {
     private int createTitle(XSSFWorkbook wb, XSSFSheet sheet, Map<String, XSSFCellStyle> styles, VacationsExportBundle bundle) {
         var row = sheet.createRow((short) 0);
         var cell = row.createCell((short) 0);
-        cell.setCellValue(new XSSFRichTextString(i18Helper.localize("vacationsexport.title")));
+        cell.setCellValue(new XSSFRichTextString(i18Helper.localize(bundle.locale, "vacationsexport.title")));
         cell.setCellStyle(styles.get("titleStyle"));
 
         row = sheet.createRow((short) 1);
         cell = row.createCell((short) 0);
-        cell.setCellValue(new XSSFRichTextString(i18Helper.localize("vacationsexport.years") + ":"));
+        cell.setCellValue(new XSSFRichTextString(i18Helper.localize(bundle.locale, "vacationsexport.years") + ":"));
         cell.setCellStyle(styles.get("generalStyle"));
         cell = row.createCell((short) 1);
         cell.setCellValue(new XSSFRichTextString(StringUtils.join(bundle.years, ',')));
@@ -139,7 +140,7 @@ public class VacationExcelExporter {
 
         row = sheet.createRow((short) 2);
         cell = row.createCell((short) 0);
-        cell.setCellValue(new XSSFRichTextString(i18Helper.localize("vacationsexport.exported.at") + ":"));
+        cell.setCellValue(new XSSFRichTextString(i18Helper.localize(bundle.locale, "vacationsexport.exported.at") + ":"));
         cell.setCellStyle(styles.get("generalStyle"));
         cell = row.createCell((short) 1);
         cell.setCellValue(bundle.getExportTime().toLocalDateTime());
