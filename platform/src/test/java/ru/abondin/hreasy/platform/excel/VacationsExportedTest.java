@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
-import ru.abondin.hreasy.platform.service.vacation.VacationsExcelExporter;
+import ru.abondin.hreasy.platform.service.vacation.VacationExcelExporter;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 
 import java.io.File;
@@ -37,10 +37,10 @@ public class VacationsExportedTest {
     );
 
 
-    private VacationsExcelExporter.VacationsExportBundle bundle;
+    private VacationExcelExporter.VacationsExportBundle bundle;
 
 
-    private VacationsExcelExporter exporter;
+    private VacationExcelExporter exporter;
 
     @BeforeEach
     public void before() {
@@ -60,18 +60,18 @@ public class VacationsExportedTest {
             vacation.setEmployeeCurrentProject(projects.get((int) (Math.random() * projects.size())));
             vacation.setDocuments(Math.random() > 0.5 ? "Документик" : null);
             vacation.setNotes(Math.random() > 0.5 ? "Примечание" : "");
-            vacation.setStartDate(LocalDate.of(vacation.getYear(), (int) (1+Math.random() * 11), (int) (1 + Math.random() * 20)));
+            vacation.setStartDate(LocalDate.of(vacation.getYear(), (int) (1 + Math.random() * 11), (int) (1 + Math.random() * 20)));
             vacation.setEndDate(vacation.getStartDate().plusDays(vacation.getDaysNumber()));
             vacation.setStatus(VacationDto.VacationStatus.values()[(int) (Math.random() * VacationDto.VacationStatus.values().length)]);
             vacations.add(vacation);
         }
-        this.bundle = VacationsExcelExporter.VacationsExportBundle.builder()
+        this.bundle = VacationExcelExporter.VacationsExportBundle.builder()
                 .exportTime(OffsetDateTime.now())
                 .vacations(vacations)
-                .years(new int[]{currentYear - 2, currentYear - 1, currentYear})
+                .years(Arrays.asList(currentYear - 2, currentYear - 1, currentYear))
                 .build();
 
-        exporter = new VacationsExcelExporter((code, args) -> code);
+        exporter = new VacationExcelExporter((code, args) -> code);
     }
 
     private static float roundToHalf(double d) {

@@ -59,6 +59,31 @@
             </template>
             <span>{{ $t('Добавить отпуск') }}</span>
           </v-tooltip>
+
+
+          <!-- Export -->
+          <v-tooltip bottom v-if="canExportVacations">
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <div v-bind="tattrs" v-on="ton" class="col-auto">
+                <v-btn text :disabled="loading" @click="exportToExcel()" icon>
+                  <v-icon>mdi-file-excel</v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <span>{{ $t('Экспорт в excel') }}</span>
+          </v-tooltip>
+          <v-snackbar
+              v-model="exportCompleted"
+              timeout="5000"
+          >
+            {{ $t('Экспорт успешно завершён. Файл скачен.') }}
+            <template v-slot:action="{ attrs }">
+              <v-btn color="blue" icon v-bind="attrs" @click="exportCompleted = false">
+                <v-icon>mdi-close-circle-outline</v-icon>
+              </v-btn>
+            </template>
+          </v-snackbar>
+
         </div>
       </v-card-title>
 
@@ -69,7 +94,7 @@
             :headers="headers"
             :items="filteredItems()"
             multi-sort
-            :sort-by="['startDate', 'endDate']"
+            :sort-by="['employeeDisplayName']"
             dense
             :items-per-page="defaultItemsPerTablePage"
             class="text-truncate">
@@ -165,6 +190,8 @@ export default class VacationsListComponent extends Vue {
 
   private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
+  private exportCompleted = false;
+
   /**
    * Lifecycle hook
    */
@@ -243,6 +270,15 @@ export default class VacationsListComponent extends Vue {
         });
   }
 
+  public exportToExcel() {
+    this.loading = true;
+    vacationService.export(this.filter.selectedYears).then(() => {
+      this.exportCompleted = true;
+    }).finally(() => {
+      this.loading = false;
+    })
+  }
+
   public openVacationDialog(vacationToUpdate: Vacation | null) {
     this.selectedVacation = vacationToUpdate;
     this.vacationDialog = true;
@@ -256,6 +292,9 @@ export default class VacationsListComponent extends Vue {
     return permissionService.canEditAllVacations();
   }
 
+  private canExportVacations(): boolean {
+    return permissionService.canExportAllVacations();
+  }
 
 }
 </script>

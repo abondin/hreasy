@@ -11,7 +11,6 @@ import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.stereotype.Component;
 import ru.abondin.hreasy.platform.I18Helper;
-import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 
 import java.io.IOException;
@@ -31,14 +30,14 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class VacationsExcelExporter {
+public class VacationExcelExporter {
 
     private final I18Helper i18Helper;
 
     @Data
     @Builder
     public static class VacationsExportBundle {
-        private final int[] years;
+        private final List<Integer> years;
         private String exportedBy;
         private List<VacationDto> vacations;
         private OffsetDateTime exportTime;
@@ -87,7 +86,7 @@ public class VacationsExcelExporter {
             cell.setCellValue(v.getEmployeeDisplayName());
             cell.setCellStyle(styles.get("generalStyle"));
             cell = row.createCell(1);
-            cell.setCellValue(v.getEmployeeCurrentProject()==null?"":v.getEmployeeCurrentProject().getName());
+            cell.setCellValue(v.getEmployeeCurrentProject() == null ? "" : v.getEmployeeCurrentProject().getName());
             cell.setCellStyle(styles.get("generalStyle"));
             cell = row.createCell(2);
             cell.setCellValue(v.getYear());
@@ -112,10 +111,10 @@ public class VacationsExcelExporter {
             cell.setCellStyle(styles.get("generalStyle"));
         }
         createTable(wb, sheet, firstRowIndex, rowIndex--);
-        for (int j = 0; j<9; j++){
-            if (j == 0){
+        for (int j = 0; j < 9; j++) {
+            if (j == 0 || j == 8) {
                 sheet.setColumnWidth(j, 256 * 60);
-            }else if (j==1 || j == 7 || j == 8) {
+            } else if (j == 1 || j == 7) {
                 sheet.setColumnWidth(j, 256 * 40);
             } else {
                 sheet.setColumnWidth(j, 256 * 15);

@@ -60,6 +60,11 @@ export enum Permissions {
     EditVacations = "vacation_edit",
 
     /**
+     * Export all vacations
+     */
+    ExportVacations = "vacation_edit",
+
+    /**
      * Access to see all projects and admin them
      */
     AdminProjects = "project_admin_area",
@@ -77,12 +82,12 @@ export enum Permissions {
     /**
      * Add/Update business account and create/update BA positions
      */
-    EditBusinessAccount="edit_business_account",
+    EditBusinessAccount = "edit_business_account",
 
     /**
      * Create/update and moderate articles and news
      */
-    EditArticles="edit_articles",
+    EditArticles = "edit_articles",
 
     /**
      * View employee all fields including personal
@@ -136,6 +141,8 @@ interface PermissionService {
 
     canEditAllVacations(): boolean;
 
+    canExportAllVacations(): boolean;
+
     canExportOvertimes(): boolean;
 
     canAdminOvertimes(): boolean;
@@ -187,6 +194,10 @@ class VuexPermissionService implements PermissionService {
         return this.simplePermissionCheck(Permissions.EditVacations);
     }
 
+    canExportAllVacations(): boolean {
+        return this.simplePermissionCheck(Permissions.ExportVacations);
+    }
+
     canEditOvertimes(employeeId: number): boolean {
         return this.simplePermissionCheckOrCurrentEmployee(Permissions.EditOvertimes, employeeId);
     }
@@ -212,8 +223,8 @@ class VuexPermissionService implements PermissionService {
     }
 
     canAdminEmployees(): boolean {
-    return this.simplePermissionCheck(Permissions.AdminViewEmployeeFull);
-}
+        return this.simplePermissionCheck(Permissions.AdminViewEmployeeFull);
+    }
 
     canEditSkills(employeeId: number): boolean {
         return this.simplePermissionCheckOrCurrentEmployee(Permissions.EditSkills, employeeId);

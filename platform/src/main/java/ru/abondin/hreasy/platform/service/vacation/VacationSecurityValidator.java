@@ -32,4 +32,13 @@ public class VacationSecurityValidator {
             return Mono.error(new AccessDeniedException("Only user with permission vacation_edit can update all vacations"));
         });
     }
+
+    public Mono<Boolean> validateCanExportOvertimes(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (auth.getAuthorities().contains("vacation_edit")) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only user with permission vacation_edit can export vacations"));
+        });
+    }
 }

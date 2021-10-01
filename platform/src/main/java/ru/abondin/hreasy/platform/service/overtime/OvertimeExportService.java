@@ -52,7 +52,7 @@ public class OvertimeExportService {
             return Mono.just(resource);
         } catch (IOException e) {
             log.error("Unable to generate overtime report document", e);
-            return Mono.error(new BusinessError("errors.overtime.export"));
+            return Mono.error(new BusinessError("errors.export"));
         }
     }
 
