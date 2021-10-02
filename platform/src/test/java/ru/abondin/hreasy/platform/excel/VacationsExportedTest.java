@@ -5,12 +5,11 @@ import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import ru.abondin.hreasy.platform.I18Helper;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import org.springframework.core.io.ClassPathResource;
 import ru.abondin.hreasy.platform.service.vacation.VacationExcelExporter;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
+import ru.abondin.hreasy.platform.service.vacation.dto.VacationExportDto;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -31,10 +30,10 @@ public class VacationsExportedTest {
             null, "Васильевич", "Витальевич", "Владимирович", "Сергеевич", "Александрович"
     );
 
-    private final List<SimpleDictDto> projects = Arrays.asList(
-            new SimpleDictDto(1, "Facebook"),
-            new SimpleDictDto(2, "VK"),
-            new SimpleDictDto(3, "Одноклассники")
+    private final List<String> projects = Arrays.asList(
+            "Facebook",
+            "VK",
+            "Одноклассники"
     );
 
 
@@ -45,7 +44,7 @@ public class VacationsExportedTest {
 
     @BeforeEach
     public void before() {
-        var vacations = new ArrayList<VacationDto>();
+        var vacations = new ArrayList<VacationExportDto>();
         int size = 100;
         var currentYear = LocalDate.now().getYear();
         for (int i = 1; i <= size; i++) {
@@ -54,7 +53,7 @@ public class VacationsExportedTest {
             var patronicname = patronicNames.get((int) (Math.random() * patronicNames.size()));
             var displayName = Strings.join(Arrays.asList(lastname, firstame, patronicname), ' ');
 
-            var vacation = new VacationDto();
+            var vacation = new VacationExportDto();
             vacation.setEmployeeDisplayName(displayName);
             vacation.setDaysNumber((int) (1 + Math.random() * 30));
             vacation.setYear(currentYear + (int) (-2 + Math.random() * 2));
@@ -63,7 +62,7 @@ public class VacationsExportedTest {
             vacation.setNotes(Math.random() > 0.5 ? "Примечание" : "");
             vacation.setStartDate(LocalDate.of(vacation.getYear(), (int) (1 + Math.random() * 11), (int) (1 + Math.random() * 20)));
             vacation.setEndDate(vacation.getStartDate().plusDays(vacation.getDaysNumber()));
-            vacation.setStatus(VacationDto.VacationStatus.values()[(int) (Math.random() * VacationDto.VacationStatus.values().length)]);
+            vacation.setStatus(VacationDto.VacationStatus.values()[(int) (Math.random() * VacationDto.VacationStatus.values().length)].name());
             vacations.add(vacation);
         }
         this.bundle = VacationExcelExporter.VacationsExportBundle.builder()
@@ -72,20 +71,15 @@ public class VacationsExportedTest {
                 .years(Arrays.asList(currentYear - 2, currentYear - 1, currentYear))
                 .build();
 
-        exporter = new VacationExcelExporter(new I18Helper.DummyI18Helper());
+        exporter = new VacationExcelExporter(new ClassPathResource("jxls/vacations_template.xlsx"));
     }
 
-    private static float roundToHalf(double d) {
-        return (float) (Math.round(d * 2) / 2.0);
-    }
 
     @Test
     @Disabled("Nothing to tests yet. It is only to play with apache poi")
     public void testVacationExcelGeneration() throws Exception {
-        var destination = File.createTempFile("simpletable", ".xlsx");
-        log.debug("Writing test file to {}", destination);
-        // Save
-        try (var fileOut = new FileOutputStream(destination)) {
+        log.info("Export test vacation set to target/vacations_out.xlsx");
+        try (var fileOut = new FileOutputStream("target/vacations_out.xlsx")) {
             exporter.exportVacations(bundle, fileOut);
         }
 
