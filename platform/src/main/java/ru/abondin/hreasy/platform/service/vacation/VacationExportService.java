@@ -8,8 +8,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.mapper.VacationDtoMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,6 +36,8 @@ public class VacationExportService {
     private final VacationService vacationService;
     private final DateTimeService dateTimeService;
     private final VacationSecurityValidator securityValidator;
+    private final VacationDtoMapper mapper;
+    private final I18Helper i18n;
 
 
     public Mono<Resource> export(AuthContext auth, VacationExportFilter filter, Locale locale) {
@@ -43,6 +47,7 @@ public class VacationExportService {
         return securityValidator.validateCanEditOvertimes(auth)
                 .then(
                         vacationService.findAll(auth, new VacationService.VacationFilter(years))
+                                .map(v -> mapper.toExportProjection(v, i18n, locale))
                                 .collectList().flatMap(vacations -> export(VacationExcelExporter.VacationsExportBundle.builder()
                                         .locale(locale)
                                         .exportTime(now)

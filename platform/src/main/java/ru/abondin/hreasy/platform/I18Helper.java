@@ -17,7 +17,7 @@ public interface I18Helper {
 
         @Override
         public String localize(Locale locale, String code, Object... args) {
-            return localize(null, code, args);
+            return localize( code, args);
         }
     }
 }

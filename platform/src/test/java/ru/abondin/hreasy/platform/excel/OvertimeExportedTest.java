@@ -5,19 +5,18 @@ import org.apache.logging.log4j.util.Strings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeReportExcelExporter;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 @Slf4j
 public class OvertimeExportedTest {
@@ -73,6 +72,7 @@ public class OvertimeExportedTest {
                 .build();
 
         exporter = new OvertimeReportExcelExporter(new I18Helper.DummyI18Helper());
+        exporter.setTemplate(new ClassPathResource("jxls/overtimes_summary_template.xlsx"));
     }
 
     private static float roundToHalf(double d) {
@@ -82,13 +82,10 @@ public class OvertimeExportedTest {
     @Test
     @Disabled("Nothing to tests yet. It is only to play with apache poi")
     public void testSummary() throws Exception {
-        var destination = File.createTempFile("simpletable", ".xlsx");
-        log.debug("Writing test file to {}", destination);
-        // Save
-        try (var fileOut = new FileOutputStream(destination)) {
+        log.info("Export test overtimes to target/overtimes_out.xlsx");
+        try (var fileOut = new FileOutputStream("target/overtimes_out.xlsx")) {
             exporter.exportReportForPeriod(bundle, fileOut);
         }
-
     }
 
 

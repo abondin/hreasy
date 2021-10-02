@@ -19,11 +19,11 @@
         <testcontainers.version>1.16.0</testcontainers.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <git-commit-plugin.version>4.0.2</git-commit-plugin.version>
-        <poi.version>4.1.2</poi.version>
         <springdoc-openapi-webflux-ui.version>1.5.10</springdoc-openapi-webflux-ui.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <asciidoctor-maven-plugin.version>1.5.8</asciidoctor-maven-plugin.version>
         <jib-maven-plugin.version>3.1.4</jib-maven-plugin.version>
+        <jxls.version>2.10.0</jxls.version>
     </properties>
 
     <dependencies>
@@ -63,9 +63,14 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>${poi.version}</version>
+            <groupId>org.jxls</groupId>
+            <artifactId>jxls</artifactId>
+            <version>${jxls.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jxls</groupId>
+            <artifactId>jxls-poi</artifactId>
+            <version>${jxls.version}</version>
         </dependency>
 
         <dependency>
