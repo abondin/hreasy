@@ -18,8 +18,9 @@ public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Inte
             " inner join employee e on e.id=v.employee" +
             " left join project p on e.current_project=p.id" +
             " where v.year in (:years)" +
+            " and e.date_of_dismissal is null or e.date_of_dismissal > :now" +
             " order by v.end_date asc")
-    Flux<VacationView> findAll(List<Integer> years);
+    Flux<VacationView> findAll(List<Integer> years, OffsetDateTime now);
 
     /**
      * @param employeeId

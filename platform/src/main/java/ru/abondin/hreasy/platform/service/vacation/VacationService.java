@@ -47,7 +47,7 @@ public class VacationService {
 
     public Flux<VacationDto> findAll(AuthContext auth, VacationFilter filter) {
         return validator.validateCanViewOvertimes(auth).flatMapMany((v) -> vacationRepo.findAll(
-                yearsOrDefault(filter.getSelectedYears())
+                yearsOrDefault(filter.getSelectedYears()), dateTimeService.now()
         ).map(e -> mapper.vacationToDto(e)));
     }
 
