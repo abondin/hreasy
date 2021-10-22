@@ -24,11 +24,10 @@
                   :label="$t('Модерированная')"></v-select>
 
 
-        <VueEditor
-            autofocus
-            useCustomImageHandler @image-added="handleImageAdded"
+        <vue-editor
+            id="article-editor"
             v-model="articleForm.content">
-        </VueEditor>
+        </vue-editor>
 
         <v-select class="mr-5"
                   v-model="articleForm.articleGroup"
@@ -87,6 +86,7 @@ class ArticleForm {
 )
 
 export default class ArticleEditForm extends Vue {
+
   loading: boolean = false;
 
   private articleForm = new ArticleForm();
