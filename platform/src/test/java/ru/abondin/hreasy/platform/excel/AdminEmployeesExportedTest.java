@@ -6,9 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
-import ru.abondin.hreasy.platform.service.vacation.VacationExcelExporter;
-import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
-import ru.abondin.hreasy.platform.service.vacation.dto.VacationExportDto;
+import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeExcelExporter;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeExportDto;
 
 import java.io.FileOutputStream;
 import java.time.LocalDate;
@@ -49,19 +48,25 @@ public class AdminEmployeesExportedTest {
     );
 
     private final List<String> departments = Arrays.asList(
-            "Комната 301",
-            "307",
-            "302 - Дубний"
+            "Отдел Разработки",
+            "Отдел Тестирования"
     );
 
-    private VacationExcelExporter.VacationsExportBundle bundle;
+    private final List<String> levels = Arrays.asList(
+            "Junior",
+            "Junior +",
+            "Middle",
+            "Senior"
+    );
+
+    private AdminEmployeeExcelExporter.AdminEmployeeExportBundle bundle;
 
 
-    private VacationExcelExporter exporter;
+    private AdminEmployeeExcelExporter exporter;
 
     @BeforeEach
     public void before() {
-        var vacations = new ArrayList<VacationExportDto>();
+        var employees = new ArrayList<EmployeeExportDto>();
         int size = 100;
         var currentYear = LocalDate.now().getYear();
         for (int i = 1; i <= size; i++) {
@@ -70,37 +75,57 @@ public class AdminEmployeesExportedTest {
             var patronicname = patronicNames.get((int) (Math.random() * patronicNames.size()));
             var displayName = Strings.join(Arrays.asList(lastname, firstame, patronicname), ' ');
 
-            var vacation = new VacationExportDto();
-            vacation.setEmployeeDisplayName(displayName);
-            vacation.setDaysNumber((int) (1 + Math.random() * 30));
-            vacation.setYear(currentYear + (int) (-2 + Math.random() * 2));
-            vacation.setEmployeeCurrentProject(projects.get((int) (Math.random() * projects.size())));
-            vacation.setDocuments(Math.random() > 0.5 ? "Документик" : null);
-            vacation.setNotes(Math.random() > 0.5 ? "Примечание" : "");
-            vacation.setStartDate(LocalDate.of(vacation.getYear(), (int) (1 + Math.random() * 11), (int) (1 + Math.random() * 20)));
-            vacation.setEndDate(vacation.getStartDate().plusDays(vacation.getDaysNumber()));
-            vacation.setStatus(VacationDto.VacationStatus.values()[(int) (Math.random() * VacationDto.VacationStatus.values().length)].name());
-            vacations.add(vacation);
+            var employee = new EmployeeExportDto();
+            employee.setDisplayName(displayName);
+            employee.setBirthday(LocalDate.of(randomInt(1970, 2000), randomInt(1, 12), randomInt(1, 30)));
+            employee.setChildren(Math.random() > 0.5 ? "Ребетёнок Маленький " + lastname : null);
+            employee.setDateOfEmployment(LocalDate.of(randomInt(2014, 2021), randomInt(1, 12), randomInt(1, 30)));
+            employee.setEmail(lastname + "." + firstame + "@company.ru");
+            employee.setCityOfResidence(Math.random() > 0.5 ? "Бор" : "");
+            employee.setCurrentProject(randomElement(projects));
+            employee.setDateOfDismissal(Math.random() > 0.5 ? LocalDate.of(randomInt(2015, 2021), randomInt(1, 12), randomInt(1, 30)) : null);
+            employee.setDepartment(randomElement(departments));
+            employee.setDocumentFull("99 88 776655 УВД города Звёздный");
+            employee.setEnglishLevel("Отличный");
+            employee.setForeignPassport(Math.random() > 0.5 ? "Паспорт заграничный" : null);
+            employee.setOfficeLocation(randomElement(locations));
+            employee.setLevel(randomElement(levels));
+            employee.setPhone("+79998885544");
+            employee.setPosition(randomElement(positions));
+            employee.setRegistrationAddress("Мой город не дом и не улица");
+            employee.setSex(Math.random() > 0.5 ? "Муж" : "Жен");
+            employee.setFamilyStatus(Math.random() > 0.5 ? "Женат" : "Замужем");
+            employee.setSkype("skype_" + lastname);
+            employee.setSpouseName("Супруга " + lastname);
+            employee.setWorkDay("Полный");
+            employee.setWorkType("Основной");
+            employees.add(employee);
         }
-        this.bundle = VacationExcelExporter.VacationsExportBundle.builder()
+        this.bundle = AdminEmployeeExcelExporter.AdminEmployeeExportBundle.builder()
                 .exportTime(OffsetDateTime.now())
-                .vacations(vacations)
-                .years(Arrays.asList(currentYear - 2, currentYear - 1, currentYear))
+                .employees(employees)
                 .build();
 
-        exporter = new VacationExcelExporter(new ClassPathResource("jxls/admin_employees_template.xlsx"));
+        exporter = new AdminEmployeeExcelExporter(new ClassPathResource("jxls/admin_employees_template.xlsx"));
     }
 
 
     @Test
     @Disabled("Nothing to tests yet. It is only to play with apache poi")
-    public void testVacationExcelGeneration() throws Exception {
-        log.info("Export test vacation set to target/vacations_out.xlsx");
-        try (var fileOut = new FileOutputStream("target/vacations_out.xlsx")) {
-            exporter.exportVacations(bundle, fileOut);
+    public void testEmployeesExcelGeneration() throws Exception {
+        log.info("Export test employees set to target/employees_out.xlsx");
+        try (var fileOut = new FileOutputStream("target/employees_out.xlsx")) {
+            exporter.exportEmployees(bundle, fileOut);
         }
 
     }
 
+    private int randomInt(int from, int to) {
+        return (int) (from + (to - from) * Math.random());
+    }
+
+    private String randomElement(List<String> elements) {
+        return elements.get((int) (Math.random() * elements.size()));
+    }
 
 }

@@ -36,11 +36,6 @@ public class AdminEmployeeExcelExporter {
     public static class AdminEmployeeExportBundle {
         private String exportedBy;
         private OffsetDateTime exportTime;
-        private List<SimpleDictDto> allProjects;
-        private List<SimpleDictDto> allDepartments;
-        private List<SimpleDictDto> allPositions;
-        private List<SimpleDictDto> allLevels;
-        private List<SimpleDictDto> allLocations;
         private List<EmployeeExportDto> employees;
         private Locale locale;
     }
