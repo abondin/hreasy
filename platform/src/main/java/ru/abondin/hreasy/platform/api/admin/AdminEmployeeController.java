@@ -2,15 +2,18 @@ package ru.abondin.hreasy.platform.api.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
+import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeExportService;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.CreateOrUpdateEmployeeBody;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeWithAllDetailsDto;
 
 import javax.validation.Valid;
+import java.util.Locale;
 
 /**
  * Add new employee record and update existing one
@@ -22,6 +25,7 @@ import javax.validation.Valid;
 public class AdminEmployeeController {
 
     private final AdminEmployeeService employeeService;
+    private final AdminEmployeeExportService exportService;
 
 
     @GetMapping
@@ -42,6 +46,11 @@ public class AdminEmployeeController {
     @PutMapping("/{employeeId}")
     public Mono<Integer> updateBA(@PathVariable int employeeId, @RequestBody @Valid CreateOrUpdateEmployeeBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> employeeService.update(auth, employeeId, body));
+    }
+
+    @GetMapping("/export")
+    public Mono<Resource> export(Locale locale) {
+        return AuthHandler.currentAuth().flatMap(auth -> exportService.export(auth, locale));
     }
 
 }
