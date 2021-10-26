@@ -17,6 +17,30 @@
           </template>
           <span>{{ $t('Добавить информацию о сотруднике') }}</span>
         </v-tooltip>
+
+        <!-- Export -->
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="col-auto">
+              <v-btn v-if="canExportEmployees()" link :disabled="loading" @click="exportToExcel()" icon>
+                <v-icon>mdi-file-excel</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{ $t('Экспорт то Excel') }} ({{ $t('Включая уволенных')}})</span>
+        </v-tooltip>
+        <v-snackbar
+            v-model="exportCompleted"
+            timeout="5000"
+        >
+          {{ $t('Экспорт успешно завершён. Файл скачен.') }}
+          <template v-slot:action="{ attrs }">
+            <v-btn color="blue" icon v-bind="attrs" @click="exportCompleted = false">
+              <v-icon>mdi-close-circle-outline</v-icon>
+            </v-btn>
+          </template>
+        </v-snackbar>
+
         <v-divider vertical class="mr-5"></v-divider>
         <v-row dense>
           <v-col lg="3" cols="12">
@@ -175,6 +199,8 @@ export default class AdminEmployees extends Vue {
 
   private selectedItem: EmployeeWithAllDetails | null = null;
 
+  private exportCompleted = false;
+
   @Getter("departments", {namespace: namespace_dict})
   private allDepartments!: Array<SimpleDict>;
 
@@ -223,6 +249,15 @@ export default class AdminEmployees extends Vue {
         });
   }
 
+
+  private exportToExcel() {
+    this.loading = true;
+    adminEmployeeService.export().then(() => {
+      this.exportCompleted = true;
+    }).finally(() => {
+      this.loading = false;
+    })
+  }
 
   private filteredData(): EmployeeWithAllDetails[] {
     return this.data.filter((item) => {
@@ -319,6 +354,10 @@ export default class AdminEmployees extends Vue {
   }
 
   private canEditEmployees() {
+    return permissionService.canAdminEmployees();
+  }
+
+  private canExportEmployees() {
     return permissionService.canAdminEmployees();
   }
 

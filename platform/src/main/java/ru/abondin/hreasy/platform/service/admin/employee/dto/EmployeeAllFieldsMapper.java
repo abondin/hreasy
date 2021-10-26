@@ -47,6 +47,14 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
     //TODO Set phone datatype in database to string
     EmployeeWithAllDetailsDto fromEntryPartially(EmployeeWithAllDetailsEntry entry);
 
+
+    @Mapping(target = "position", ignore = true)
+    @Mapping(target = "level", ignore = true)
+    @Mapping(target = "officeLocation", ignore = true)
+    @Mapping(target = "department", ignore = true)
+    @Mapping(target = "currentProject", ignore = true)
+    EmployeeExportDto toExportWithoutDictanories(EmployeeWithAllDetailsDto dto);
+
     default EmployeeWithAllDetailsDto fromEntry(EmployeeWithAllDetailsEntry entry, OffsetDateTime now) {
         var result = fromEntryPartially(entry);
         /**

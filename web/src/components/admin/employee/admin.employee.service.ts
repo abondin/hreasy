@@ -86,6 +86,12 @@ export interface AdminEmployeeService {
      * Update existing employee record
      */
     update(employeeId: number, body: CreateOrUpdateEmployeeBody): Promise<number>;
+
+
+    /**
+     * Export all employees to excel
+     */
+    export(): Promise<void>;
 }
 
 
@@ -111,6 +117,17 @@ class RestAdminEmployeeService implements AdminEmployeeService {
         });
     }
 
+    export(): Promise<void> {
+        return httpService.get(`v1/admin/employees/export`, {
+            responseType: 'arraybuffer',
+        }).then(response => {
+            let blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+            let link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = `AllEmployees.xlsx`;
+            link.click();
+        });
+    }
 }
 
 

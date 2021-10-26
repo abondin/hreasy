@@ -41,7 +41,7 @@ public class DictService {
                 });
     }
 
-    public Publisher<? extends SimpleDictDto> findDepartments(AuthContext auth) {
+    public Flux<SimpleDictDto> findDepartments(AuthContext auth) {
         return departmentRepo
                 .findAll(defaultSimpleDictSort)
                 .map(e -> {
@@ -53,7 +53,7 @@ public class DictService {
                 });
     }
 
-    public Publisher<? extends SimpleDictDto> findPositions(AuthContext auth) {
+    public Flux<SimpleDictDto> findPositions(AuthContext auth) {
         return positionRepo
                 .findAll(defaultSimpleDictSort)
                 .map(e -> {
@@ -65,7 +65,7 @@ public class DictService {
                 });
     }
 
-    public Publisher<? extends SimpleDictDto> findLevels(AuthContext auth) {
+    public Flux<SimpleDictDto> findLevels(AuthContext auth) {
         return levelRepo
                 .findAll(defaultSimpleDictSort)
                 .map(e -> {
@@ -77,7 +77,7 @@ public class DictService {
                 });
     }
 
-    public Publisher<? extends SimpleDictDto> findOfficeLocations(AuthContext auth) {
+    public Flux<SimpleDictDto> findOfficeLocations(AuthContext auth) {
         return officeLocationRepo
                 .findAll(defaultSimpleDictSort)
                 .map(e -> {
