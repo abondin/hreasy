@@ -91,7 +91,7 @@ export interface AdminEmployeeService {
     /**
      * Export all employees to excel
      */
-    export(): Promise<void>;
+    export(includeFired: boolean): Promise<void>;
 }
 
 
@@ -117,8 +117,8 @@ class RestAdminEmployeeService implements AdminEmployeeService {
         });
     }
 
-    export(): Promise<void> {
-        return httpService.get(`v1/admin/employees/export`, {
+    export(includeFired: boolean): Promise<void> {
+        return httpService.get(`v1/admin/employees/export?includeFired=${includeFired}`, {
             responseType: 'arraybuffer',
         }).then(response => {
             let blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})

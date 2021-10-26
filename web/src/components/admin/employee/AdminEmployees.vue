@@ -27,7 +27,8 @@
               </v-btn>
             </div>
           </template>
-          <span>{{ $t('Экспорт то Excel') }} ({{ $t('Включая уволенных')}})</span>
+          <p>{{ $t('Экспорт то Excel') }}<p>
+          {{ $t('Результат выгрузки зависит только от фильтра ') + $t('Скрыть уволенных')}}</p>
         </v-tooltip>
         <v-snackbar
             v-model="exportCompleted"
@@ -252,7 +253,7 @@ export default class AdminEmployees extends Vue {
 
   private exportToExcel() {
     this.loading = true;
-    adminEmployeeService.export().then(() => {
+    adminEmployeeService.export(!this.filter.hideDismissed).then(() => {
       this.exportCompleted = true;
     }).finally(() => {
       this.loading = false;

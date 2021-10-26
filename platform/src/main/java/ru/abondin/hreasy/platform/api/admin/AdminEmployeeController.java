@@ -10,6 +10,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeExportService;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.CreateOrUpdateEmployeeBody;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeExportFilter;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeWithAllDetailsDto;
 
 import javax.validation.Valid;
@@ -49,8 +50,12 @@ public class AdminEmployeeController {
     }
 
     @GetMapping("/export")
-    public Mono<Resource> export(Locale locale) {
-        return AuthHandler.currentAuth().flatMap(auth -> exportService.export(auth, locale));
+    public Mono<Resource> export(Locale locale, @RequestParam(defaultValue = "false") boolean includeFired) {
+        return AuthHandler.currentAuth().flatMap(auth -> exportService.export(auth,
+                EmployeeExportFilter.builder()
+                        .includeFired(includeFired)
+                        .build()
+                , locale));
     }
 
 }
