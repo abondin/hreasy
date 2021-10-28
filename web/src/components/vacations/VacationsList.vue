@@ -12,22 +12,12 @@
           <v-text-field
               v-model="filter.search"
               :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
-          <v-select
-              clearable
-              class="mr-5"
-              v-model="filter.selectedYears"
-              :items="allYears"
-              :label="$t('Год')"
-              multiple
-          ></v-select>
-          <v-select
-              clearable
-              class="mr-5"
-              v-model="filter.selectedMonths"
-              :items="allMonths"
-              :label="$t('Месяц')"
-              multiple
-          ></v-select>
+
+          <!-- Dates selection filter -->
+          <my-date-range-component ref="dateSelector" v-model="filter.selectedDates"
+                                   :label="$t('Дата начала отпуска')"></my-date-range-component>
+
+          <!-- Current Project Filter -->
           <v-select
               clearable
               class="mr-5"
@@ -150,12 +140,13 @@ import vacationService, {Vacation} from "@/components/vacations/vacation.service
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import {DataTableHeader} from "vuetify";
-import moment from 'moment';
+import moment, {Moment} from 'moment';
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
 import employeeService from "@/components/empl/employee.service";
 import permissionService from "@/store/modules/permission.service";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import {UiConstants} from "@/components/uiconstants";
+import MyDateRangeComponent from "@/components/shared/MyDateRangeComponent.vue";
 
 const namespace: string = 'dict';
 
@@ -163,12 +154,11 @@ class Filter {
   public selectedStatuses: Array<string> = ['PLANNED', 'TAKEN'];
   public search = '';
   public selectedProjects: Array<number> = [];
-  public selectedYears: Array<number> = [new Date().getFullYear()];
-  public selectedMonths: Array<number> = [new Date().getMonth()];
+  public selectedDates: Array<string> = [];
 }
 
 @Component({
-  components: {VacationEditForm}
+  components: {MyDateRangeComponent, VacationEditForm}
 })
 export default class VacationsListComponent extends Vue {
   headers: DataTableHeader[] = [];
@@ -181,9 +171,8 @@ export default class VacationsListComponent extends Vue {
   private filter: Filter = new Filter();
 
   public allStatuses: Array<any> = [];
-  public allYears: Array<number> = [];
-  public allMonths: Array<any> = [];
   public allEmployees: Array<SimpleDict> = [];
+  public allYears: Array<number> = [];
 
   private vacationDialog = false;
   private selectedVacation: Vacation | null = null;
@@ -201,12 +190,11 @@ export default class VacationsListComponent extends Vue {
     });
     const currentYear = new Date().getFullYear();
     this.allYears = [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];
-    this.allMonths = [...Array(12).keys()].map(m => {
-      return {
-        value: m,
-        text: moment(m + 1, 'MM').format("MMMM")
-      }
-    });
+
+    const today = moment();
+    this.resetSelectedDatesFilterToDefault();
+
+
     this.reloadHeaders();
     this.$store.dispatch('dict/reloadProjects')
         .then(() => employeeService.findAll().then(data => {
@@ -241,18 +229,13 @@ export default class VacationsListComponent extends Vue {
       if (this.filter.selectedStatuses.length > 0) {
         filtered = filtered && this.filter.selectedStatuses.indexOf(item.status) >= 0;
       }
-      if (this.filter.selectedYears.length > 0) {
-        filtered = filtered && this.filter.selectedYears.indexOf(item.year) >= 0;
-      }
       if (this.filter.selectedProjects.length > 0) {
         const project = item.employeeCurrentProject;
         filtered = filtered && project && this.filter.selectedProjects.indexOf(project.id) >= 0;
       }
-      if (this.filter.selectedMonths.length > 0) {
-        var dateInclude = !item.startDate || this.filter.selectedMonths.indexOf(new Date(item.startDate).getMonth()) >= 0;
-        dateInclude = dateInclude || (!item.endDate || this.filter.selectedMonths.indexOf(new Date(item.endDate).getMonth()) >= 0)
-        filtered = filtered && dateInclude;
-      }
+
+      filtered = filtered && this.inDateRange(item);
+
       return filtered;
     });
   }
@@ -272,7 +255,7 @@ export default class VacationsListComponent extends Vue {
 
   public exportToExcel() {
     this.loading = true;
-    vacationService.export(this.filter.selectedYears).then(() => {
+    vacationService.export(this.getSelectedYears()).then(() => {
       this.exportCompleted = true;
     }).finally(() => {
       this.loading = false;
@@ -294,6 +277,47 @@ export default class VacationsListComponent extends Vue {
 
   private canExportVacations(): boolean {
     return permissionService.canExportAllVacations();
+  }
+
+  private getSelectedYears(): Array<number> {
+    let years = [];
+    if (this.filter.selectedDates && this.filter.selectedDates.length > 0) {
+      const fromYear = moment(this.filter.selectedDates[1]);
+      if (fromYear) {
+        years.push(fromYear.year());
+      }
+      years.push(moment(this.filter.selectedDates[0]).year());
+      if (this.filter.selectedDates.length > 1) {
+        const toYear = moment(this.filter.selectedDates[1]);
+        if (toYear && years.indexOf(toYear.year()) < 0) {
+          years.push(toYear.year());
+        }
+      }
+    } else {
+      years.push(moment().year());
+    }
+    return years;
+  }
+
+  private inDateRange(item: Vacation): boolean {
+    if (!this.filter.selectedDates || this.filter.selectedDates.length == 0 || !item.startDate) {
+      return true;
+    }
+    const from = moment(this.filter.selectedDates[0]);
+    const to: Moment | null = this.filter.selectedDates.length > 0 ? moment(this.filter.selectedDates[1]) : null;
+    let result = true;
+    result = result && (!to || !from.isAfter(item.startDate));
+    result = result && (!to || !to.isBefore(item.startDate));
+    return result;
+  }
+
+  private resetSelectedDatesFilterToDefault() {
+    const start = moment().startOf('year');
+    const end = moment().endOf('year')
+    this.filter.selectedDates = [
+      start.format(moment.HTML5_FMT.DATE)
+      , end.format(moment.HTML5_FMT.DATE)
+    ];
   }
 
 }
