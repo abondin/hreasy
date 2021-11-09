@@ -10,8 +10,10 @@ public class SecurityUtils {
 
     public static Mono<Boolean> validateUploadAvatar(AuthContext auth, int employeeId) {
         return Mono.defer(() -> {
-            if (!auth.getAuthorities().contains("update_avatar") && employeeId != auth.getEmployeeInfo().getEmployeeId()) {
-                return Mono.error(new AccessDeniedException("Only avatar owner or user with permission update_avatar can update the avatar"));
+            // 2021/11/09 By request from HR department deprecate update own avatar...
+            //  && employeeId != auth.getEmployeeInfo().getEmployeeId()
+            if (!auth.getAuthorities().contains("update_avatar")) {
+                return Mono.error(new AccessDeniedException("Only user with permission update_avatar can update the avatar"));
             }
             return Mono.just(true);
         });

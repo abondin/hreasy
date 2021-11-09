@@ -171,7 +171,7 @@ class VuexPermissionService implements PermissionService {
     }
 
     public canUpdateAvatar(employeeId: number): boolean {
-        return this.simplePermissionCheckOrCurrentEmployee(Permissions.UpdateAvatar, employeeId);
+        return this.simplePermissionCheck(Permissions.UpdateAvatar);
     }
 
     canViewAllOvertimes(): boolean {

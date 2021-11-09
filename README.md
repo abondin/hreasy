@@ -57,7 +57,7 @@ sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hrea
 Security model based on two main entities:
 
 1) Employee - key entity of the whole project. Describe company employee
-2) User - employee projection in security scheme. Currently we consider that *User = Employee*. Also we have the
+2) User - employee projection in security scheme. Currently, we consider that *User = Employee*. Also we have the
    assumption that user and employee are always associated via email. (implicit dependency)
    Entity "User" designed for future features when we have portal user without employee projection. It might be system
    account or some kind of portal admin.
@@ -67,7 +67,7 @@ project. Or to the actions for employees, currently assigned to any project from
 on `employee_accessible_departments` and `employee_accessible_projects` tables respectively. Permissions depended
 on `employee_accessible_departments` and `employee_accessible_projects` marked in the table bellow.
 
-Many permissions are always allowed the the currently logged in employee. Also marked in the permission table.
+Many permissions are always allowed the currently logged in employee. Also marked in the permission table.
 
 *For example*: we have employee *John* with accessible project *Project1* and role with permission *overtime_view*. Also
 we have employee *Dave* without any role currently assigned to the *Project1*. In that case John can see his overtimes
@@ -76,7 +76,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 - List of permissions are code based. Database table must be always in sync with backend and frontend code.
 - Set of permissions combined to the role. List of roles is code independent and can be updated in database (and in
   admin UI in future releases). See `sec_role` and `sec_role_perm` tables.
-- Roles assigned to the user in `sec_user_role` table (and in admin UI in future releases).
+- Roles assigned to the user in `sec_user_role` in admin UI.
 
 **List of supported permissions**:
 
@@ -84,7 +84,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |----|------|------|------|
 |update_current_project_global|N|N|Change current employee project|
 |update_current_project|Y|N|Update current project for employee from my projects or my departments|
-|update_avatar|N|Y|Update employee avatar|
+|update_avatar|N|N|Update employee avatar|
 |overtime_view|N|Y|View overtimes of given employee|
 |overtime_edit|Y|Y|Edit and approve overtimes of given employee|
 |overtime_admin|N|N|Admin overtime configuration. Close overtime period and other stuff|
