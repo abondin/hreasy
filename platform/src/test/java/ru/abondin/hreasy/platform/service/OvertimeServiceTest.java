@@ -18,7 +18,7 @@ import ru.abondin.hreasy.platform.TestEmployees;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
-import ru.abondin.hreasy.platform.repo.SqlServerContextInitializer;
+import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeService;
 import ru.abondin.hreasy.platform.service.overtime.dto.NewOvertimeItemDto;
 
@@ -29,7 +29,7 @@ import java.util.UUID;
 @Disabled("Because of weird java.lang.IllegalStateException: No MssqlRowMetadata available")
 @ActiveProfiles({"test", "dev"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@ContextConfiguration(initializers = {SqlServerContextInitializer.class})
+@ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @Slf4j
 public class OvertimeServiceTest {
 

@@ -16,6 +16,20 @@ services:
       - ./dbbackup:/var/backups
       - hreasydata:/var/opt/mssql
     container_name: hreasydb
+
+  hreasypg:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: hr
+      POSTGRES_PASSWORD: HREasyPassword2019!
+      POSTGRES_DB: hr
+    ports:
+      - 5432:5432
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    container_name: hreasypg
+
   hreasyplatform:
     image: docker.k8s-usn.stm.local:80/hreasyplatform:latest
     restart: "no" #unless-stopped

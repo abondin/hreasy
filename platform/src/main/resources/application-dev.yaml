@@ -2,9 +2,9 @@ hreasy:
   # Hack to support both Flyway JDBC and Spring R2DBC urls to the database
   db:
     host: sql.hr
-    port: 1433
+    port: 5432
     database: hr
-    username: sa
+    username: hr
     password: HREasyPassword2019!
   web:
     sec:
