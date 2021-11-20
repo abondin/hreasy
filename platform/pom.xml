@@ -10,7 +10,7 @@
     </parent>
     <groupId>ru.abondin.hreasy</groupId>
     <artifactId>platform</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>hreasy-platform</name>
     <description>HREasy Platform</description>
 
