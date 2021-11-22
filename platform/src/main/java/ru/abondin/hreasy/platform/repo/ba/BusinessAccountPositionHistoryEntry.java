@@ -24,6 +24,6 @@ public class BusinessAccountPositionHistoryEntry {
      */
     private BigDecimal rate;
     private boolean archived;
-    private OffsetDateTime updatedAt;
-    private Integer updatedBy;
+    private OffsetDateTime createdAt;
+    private Integer createdBy;
 }

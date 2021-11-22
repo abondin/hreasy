@@ -22,6 +22,6 @@ public class AssessmentFormTemplateHistoryEntry {
      */
     private Integer formType;
     private String content;
-    private OffsetDateTime updatedAt;
-    private Integer updatedBy;
+    private OffsetDateTime createdAt;
+    private Integer createdBy;
 }

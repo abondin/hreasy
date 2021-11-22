@@ -46,7 +46,7 @@ spring:
     enabled: false
     baseline-version: 0
     baseline-on-migrate: true
-    schemas: public,empl,dict,proj,ba
+    schemas: public,empl,dict,proj,ba,article
 
 management:
   security:

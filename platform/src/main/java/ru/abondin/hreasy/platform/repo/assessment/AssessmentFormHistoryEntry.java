@@ -13,6 +13,6 @@ public class AssessmentFormHistoryEntry {
     private Integer id;
     private Integer assessmentFormId;
     private String content;
-    private OffsetDateTime updatedAt;
-    private Integer updatedBy;
+    private OffsetDateTime createdAt;
+    private Integer createdBy;
 }

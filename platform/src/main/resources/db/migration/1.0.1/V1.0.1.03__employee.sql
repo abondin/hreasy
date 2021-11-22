@@ -140,3 +140,86 @@ COMMENT ON COLUMN empl.employee_history.office_location IS 'Link to office locat
 COMMENT ON COLUMN empl.employee_history.ext_erp_id  IS 'Link to identity of the employee in external ERP system';
 COMMENT ON COLUMN empl.employee_history.created_at  IS 'History item created at';
 COMMENT ON COLUMN empl.employee_history.created_by  IS 'History item created by (link to employee)';
+
+
+---- Kids (//TODO Move to JSON or Array column of employee?)
+CREATE SEQUENCE IF NOT EXISTS empl.EMPLOYEE_KIDS_ID_SEQ;
+CREATE TABLE IF NOT EXISTS empl.kids (
+	id integer PRIMARY KEY NOT NULL DEFAULT nextval('empl.EMPLOYEE_KIDS_ID_SEQ'),
+	"name" varchar(255) NULL,
+	birthday date NULL,
+	parent integer NOT NULL REFERENCES empl.employee
+);
+
+COMMENT ON TABLE empl.kids IS 'Employee kids';
+COMMENT ON COLUMN empl.kids.id IS 'Primary key to link with other tables';
+COMMENT ON COLUMN empl.kids.name IS 'Full name';
+COMMENT ON COLUMN empl.kids.birthday IS 'Birthday';
+COMMENT ON COLUMN empl.kids.parent IS 'Link to employee';
+
+
+
+-- Skills
+CREATE SEQUENCE IF NOT EXISTS empl.SKILL_GROUP_SEQ;
+CREATE TABLE IF NOT EXISTS empl.skill_group (
+	id integer PRIMARY KEY NOT NULL DEFAULT nextval('empl.SKILL_GROUP_SEQ'),
+	"name" varchar(256) NULL,
+	description varchar(4000) NULL,
+	archived boolean NOT NULL default false
+);
+COMMENT ON TABLE empl.skill_group IS 'Employee skill group (like Backend, Frontend, Analytics)';
+COMMENT ON COLUMN empl.skill_group.id IS 'Primary key to link with other tables';
+COMMENT ON COLUMN empl.skill_group.name IS 'Name';
+COMMENT ON COLUMN empl.skill_group.description IS 'Description';
+COMMENT ON COLUMN empl.skill_group.archived IS 'If group archived';
+
+
+
+--//TODO Move to JSON or Array column of employee?
+CREATE SEQUENCE IF NOT EXISTS empl.SKILL_SEQ;
+CREATE TABLE IF NOT EXISTS empl.skill (
+	id integer PRIMARY KEY NOT NULL DEFAULT nextval('empl.SKILL_SEQ'),
+	employee_id integer NOT NULL REFERENCES empl.employee(id),
+	group_id integer NOT NULL REFERENCES empl.skill_group(id),
+	"name" varchar(256) NULL,
+	shared boolean NOT NULL,
+	created_at timestamp with time zone NULL,
+	created_by integer NULL REFERENCES empl.employee (id),
+	deleted_at timestamp with time zone NULL,
+	deleted_by integer NULL REFERENCES empl.employee (id)
+);
+
+COMMENT ON TABLE empl.skill IS 'Employee skill (Like Spring Framework)';
+COMMENT ON COLUMN empl.skill.id IS 'Primary key to link with other tables';
+COMMENT ON COLUMN empl.skill.employee_id IS 'Link to employee';
+COMMENT ON COLUMN empl.skill.group_id IS 'Link to skill group';
+COMMENT ON COLUMN empl.skill.name IS 'Name';
+COMMENT ON COLUMN empl.skill.shared IS 'Shared skill name can be suggested in autocomplete field during new skill creation.';
+COMMENT ON COLUMN empl.skill.created_at  IS 'Created at';
+COMMENT ON COLUMN empl.skill.created_by  IS 'Created by (link to employee)';
+COMMENT ON COLUMN empl.skill.deleted_at  IS 'Deleted at';
+COMMENT ON COLUMN empl.skill.deleted_by  IS 'Deleted by (link to employee)';
+
+
+CREATE SEQUENCE IF NOT EXISTS empl.SKILL_RATING_SEQ;
+CREATE TABLE IF NOT EXISTS empl.skill_rating (
+	id integer PRIMARY KEY NOT NULL DEFAULT nextval('empl.SKILL_RATING_SEQ'),
+	skill_id integer NOT NULL REFERENCES empl.skill (id),
+	rating float4 NOT NULL,
+	notes varchar(4000) NULL,
+	created_at timestamp with time zone NULL,
+	created_by integer NULL REFERENCES empl.employee (id),
+	updated_at timestamp with time zone NULL,
+	deleted_at timestamp with time zone NULL,
+	deleted_by integer NULL REFERENCES empl.employee (id)
+);
+COMMENT ON TABLE empl.skill_rating IS 'Rate the employee skill or own skill';
+COMMENT ON COLUMN empl.skill_rating.id IS 'Primary key to link with other tables';
+COMMENT ON COLUMN empl.skill_rating.skill_id IS 'Link to the skill';
+COMMENT ON COLUMN empl.skill_rating.rating IS 'The rate value from 0,5 to 5';
+COMMENT ON COLUMN empl.skill_rating.notes IS 'Any notes';
+COMMENT ON COLUMN empl.skill_rating.created_at  IS 'Created at';
+COMMENT ON COLUMN empl.skill_rating.created_by  IS 'Created by (link to employee)';
+COMMENT ON COLUMN empl.skill_rating.created_at  IS 'Last time updated at';
+COMMENT ON COLUMN empl.skill_rating.deleted_at  IS 'Deleted at';
+COMMENT ON COLUMN empl.skill_rating.deleted_by  IS 'Deleted by (link to employee)';

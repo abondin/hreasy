@@ -79,8 +79,8 @@ public class AdminBAPositionService {
         entry.setCreatedBy(currentEmployeeId);
         return positionRepo.save(entry).flatMap(persisted -> {
             var history = mapper.history(persisted);
-            history.setUpdatedAt(now);
-            history.setUpdatedBy(currentEmployeeId);
+            history.setCreatedAt(now);
+            history.setCreatedBy(currentEmployeeId);
             return positionHistoryRepo.save(history).map(e -> persisted.getId());
         });
     }
