@@ -16,8 +16,8 @@ public class SecAdminUserRolesRepoImpl implements SecAdminUserRolesRepo {
     private final R2dbcEntityTemplate dbTemplate;
 
     @Override
-    public Mono<Integer> updateRoles(int userId, List<String> roles) {
-        return doDeleteAndInsert("sec_user_role", "user_id", userId,
+    public Mono<Integer> updateRoles(int employeeId, List<String> roles) {
+        return doDeleteAndInsert("user_role", "employee_id", employeeId,
                 "role", roles);
     }
 

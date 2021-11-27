@@ -31,7 +31,6 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
             "deps.accessible_departments as accessible_departments,\n" +
             "r.roles\n" +
             "from employee e\n" +
-            "\tleft join sec_user u on e.id = u.employee_id \n" +
             "\tleft join\n" +
             "\t\t(select p.employee_id, STRING_AGG(p.project_id, ',') accessible_projects from employee_accessible_projects p group by p.employee_id) pr\n" +
             "\t\ton e.id=pr.employee_id\n" +
@@ -39,8 +38,8 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
             "\t\t(select d.employee_id, STRING_AGG(d.department_id, ',') accessible_departments from employee_accessible_departments d group by d.employee_id) deps\n" +
             "\t\ton e.id=deps.employee_id\n" +
             "\tleft join \n" +
-            "\t\t(select r.user_id, STRING_AGG(r.[role], ',') roles from sec_user_role r group by r.user_id) r\n" +
-            "\t\ton u.id=r.user_id")
+            "\t\t(select r.employee_id, STRING_AGG(r.[role], ',') roles from user_role r group by r.employee_id) r\n" +
+            "\t\ton e.id=r.employee_id")
     Flux<UserSecurityInfoEntry> findWithSecurityInfo();
 
 //    default <S extends EmployeeEntry> Mono<S> save(S entity) {

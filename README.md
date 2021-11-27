@@ -54,18 +54,16 @@ sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hrea
 
 ![Security Database](./platform/.architecture/hr_sec.png "Security Database Scheme")
 
-Security model based on two main entities:
+Security model based on main entity - Employee:
 
-1) Employee - key entity of the whole project. Describe company employee
-2) User - employee projection in security scheme. Currently, we consider that *User = Employee*. Also we have the
-   assumption that user and employee are always associated via email. (implicit dependency)
-   Entity "User" designed for future features when we have portal user without employee projection. It might be system
-   account or some kind of portal admin.
-
-User (more accurately employee) may have access to the actions for employees, currently assigned to the specific
-project. Or to the actions for employees, currently assigned to any project from specific department. Please take a look
-on `employee_accessible_departments` and `employee_accessible_projects` tables respectively. Permissions depended
-on `employee_accessible_departments` and `employee_accessible_projects` marked in the table bellow.
+Employee may have access to the actions for employees, currently assigned to the specific
+project. Or to the actions for employees,
+currently assigned to any project from specific business account,
+currently assigned to any project from specific department.
+Permissions depended on 
+`employee_accessible_departments`,
+`employee_accessible_bas`,
+and `employee_accessible_projects` marked in the table bellow.
 
 Many permissions are always allowed the currently logged in employee. Also marked in the permission table.
 

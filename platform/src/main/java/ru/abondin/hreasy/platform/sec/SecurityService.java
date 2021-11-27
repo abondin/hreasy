@@ -10,8 +10,6 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthInfoEntry;
 import ru.abondin.hreasy.platform.repo.sec.PermissionRepo;
-import ru.abondin.hreasy.platform.repo.sec.UserEntry;
-import ru.abondin.hreasy.platform.repo.sec.UserRepo;
 
 import java.util.Arrays;
 
@@ -19,7 +17,6 @@ import java.util.Arrays;
 @Slf4j
 @RequiredArgsConstructor
 public class SecurityService {
-    private final UserRepo userRepo;
     private final EmployeeAuthDomainService employeeAuthDomainService;
     private final PermissionRepo permissionRepo;
 
@@ -37,18 +34,8 @@ public class SecurityService {
      * @return userId if found
      */
     private Mono<Integer> getUserIdOrCreateUserFromEmployee(String email) {
-        return userRepo.findIdByEmail(email)
-                .switchIfEmpty(
-                        // Create security user from employee information
-                        employeeAuthDomainService.findIdByEmail(email).flatMap(
-                                employeeId -> createUser(email, employeeId))
-                                .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", Arrays.asList(email)))));
+        return employeeAuthDomainService.findIdByEmail(email).map(EmployeeAuthInfoEntry::getId)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", Arrays.asList(email))));
     }
 
-    private Mono<Integer> createUser(String email, EmployeeAuthInfoEntry employeeAuthInfoEntry) {
-        final var employeeId = employeeAuthInfoEntry.getId();
-        log.info("Creating new security user for employee " + employeeId + ":" + email);
-        var userEntry = new UserEntry(null, email, employeeId);
-        return userRepo.save(userEntry).map(u -> u.getId());
-    }
 }

@@ -15,12 +15,6 @@ import java.util.List;
 public class UserSecurityInfoDto {
     private SimpleDictDto employee;
 
-    /**
-     * Can be null if no user created yet
-     */
-    @Nullable
-    private Integer userId;
-
     private List<String> roles = new ArrayList<>();
 
     /**
