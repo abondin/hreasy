@@ -22,7 +22,8 @@
             <employee-overtime-component
                 change-period-allowed="false"
                 :employee-id="selectedEmployee.id"
-                :selected-period="selectedPeriod"></employee-overtime-component>
+                :selected-period="selectedPeriod"
+                :closed-periods="closedPeriods"></employee-overtime-component>
           </v-card-text>
         </v-card>
       </v-dialog>

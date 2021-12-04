@@ -10,6 +10,8 @@
             <v-icon>mdi-chevron-left</v-icon>
           </v-btn>
           <span class="ml-1 mr-2">{{ selectedPeriod }}</span>
+          <v-icon v-if="periodClosed()" color="primary"
+                  :title="$t('Период закрыт для внесения изменений')">mdi-lock</v-icon>
           <v-btn @click.stop="incrementPeriod()" text x-small>
             <v-icon>mdi-chevron-right</v-icon>
           </v-btn>
@@ -24,6 +26,7 @@
               v-bind:default-project="defaultProject"
               v-bind:period="selectedPeriod"
               v-bind:all-projects="allProjects"
+              v-bind:period-closed="periodClosed()"
               @submit="onItemSubmit"
               @close="onItemDialogClose"></add-overtime-item-dialog>
           <approve-overtime-report-dialog
@@ -31,6 +34,7 @@
               v-bind:employee-id="employeeId"
               v-bind:period="selectedPeriod"
               v-bind:previous-decision="myApproval"
+              v-bind:period-closed="periodClosed()"
               @submit="onItemSubmit"
               @close="onItemDialogClose"
           ></approve-overtime-report-dialog>
@@ -56,7 +60,7 @@
           hide-default-footer
           disable-pagination>
         <template v-slot:item.date="{ item }">
-          <v-btn @click.stop="openDeleteDialog(item)" icon color="secondary">
+          <v-btn :disabled="periodClosed()" @click.stop="openDeleteDialog(item)" icon color="secondary">
             <v-icon>mdi-delete</v-icon>
           </v-btn>
           <span>{{ formatDate(item.date) }}</span>
@@ -109,7 +113,7 @@ import Component from 'vue-class-component';
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import overtimeService, {
-  ApprovalDecision,
+  ApprovalDecision, ClosedOvertimePeriod,
   OvertimeItem,
   OvertimeReport,
   OvertimeUtils,
@@ -149,15 +153,17 @@ export default class EmployeeOvertimeComponent extends Vue {
   @Prop({required: true})
   employeeId!: number;
 
-  defaultProject: null | number = null;
-
-
   @Prop({required: false, default: true})
   changePeriodAllowed!: boolean;
 
-
   @Prop({required: true})
   selectedPeriod!: ReportPeriod;
+
+  @Prop({required: true})
+  readonly closedPeriods!: ClosedOvertimePeriod[];
+
+  defaultProject: null | number = null;
+
 
   private overtimes: OvertimeItem[] = [];
   private approvals: ApprovalDecision[] = [];
@@ -183,6 +189,11 @@ export default class EmployeeOvertimeComponent extends Vue {
     this.fetchData()
   }
 
+  public periodClosed(): boolean {
+    return this.selectedPeriod &&
+        this.closedPeriods
+        && this.closedPeriods.map(p => p.period).indexOf(this.selectedPeriod.periodId()) >= 0;
+  }
 
   private fetchData() {
     this.loading = true;

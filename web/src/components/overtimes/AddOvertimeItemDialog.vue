@@ -13,7 +13,7 @@ Emits:
       max-width="800"
       v-model="dialog">
     <template v-slot:activator="{on, attrs}">
-      <v-btn color="primary"
+      <v-btn :disabled="periodClosed" color="primary"
              v-bind="attrs"
              v-on="on">{{ $t('Добавить') }}
       </v-btn>
@@ -124,6 +124,9 @@ export default class AddOvertimeItemDialog extends Vue {
 
   @Prop({required: true})
   period!: ReportPeriod;
+
+  @Prop({required: true})
+  periodClosed!: boolean;
 
   @Prop({required: true})
   allProjects!: SimpleDict[];

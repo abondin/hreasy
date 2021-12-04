@@ -18,11 +18,12 @@ Emits:
           <div v-bind="tattrs" v-on="ton">
             <v-btn-toggle>
               <v-btn icon
-                     :disabled="previousDecision && previousDecision.decision=='APPROVED' && !previousDecision.outdated"
+                     :disabled="periodClosed || (previousDecision && previousDecision.decision=='APPROVED' && !previousDecision.outdated)"
                      @click="approveNoDialog()">
                 <v-icon color="success">mdi-checkbox-marked-circle-outline</v-icon>
               </v-btn>
-              <v-btn v-bind="attrs"
+              <v-btn :disabled="periodClosed || (previousDecision && previousDecision.decision=='APPROVED' && !previousDecision.outdated)"
+                      v-bind="attrs"
                      v-on="on" icon>
                 <v-icon>mdi-dots-horizontal</v-icon>
               </v-btn>
@@ -77,6 +78,10 @@ export default class ApproveOvertimeReportDialog extends Vue {
 
   @Prop({required: true})
   period!: ReportPeriod;
+
+  @Prop({required: true})
+  periodClosed!: boolean;
+
   /**
    * Id of previous approval decisions to overide
    */
