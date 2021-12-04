@@ -28,7 +28,7 @@ export interface AssessmentBase {
 }
 
 export interface NewAssessmentBody {
-    plannedDate: Date;
+    plannedDate: string;
     managers: number[];
 }
 

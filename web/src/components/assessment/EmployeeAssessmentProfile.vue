@@ -132,7 +132,7 @@ class Filter {
 }
 
 class NewAssessmentForm {
-  plannedDate: Date = new Date();
+  plannedDate: string|undefined= '';
 }
 
 @Component({
@@ -162,6 +162,7 @@ export default class EmployeeAssessmentProfile extends Vue {
    * Lifecycle hook
    */
   created() {
+    this.newAssessmentFormModel.plannedDate = this.formatDate(new Date().toISOString());
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Дата ассессмента'), value: 'plannedDate'});
     this.headers.push({text: this.$tc('Создано'), value: 'createdAt'});
