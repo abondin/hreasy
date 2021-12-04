@@ -40,9 +40,8 @@
             :loading-text="$t('Загрузка_данных')"
             :headers="headers"
             :items="filteredItems()"
-            multi-sort
             hide-default-footer
-            :sort-by="['daysWithoutAssessment']"
+            :sort-by="['lastAssessmentDate']"
             sort-desc
             disable-pagination>
           <template v-slot:item.displayName="{ item }">
