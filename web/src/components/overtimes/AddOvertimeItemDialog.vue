@@ -23,7 +23,7 @@ Emits:
       <v-card>
         <v-card-title>{{ $t('Учёт овертаймов за день') }}</v-card-title>
         <v-card-text>
-          <v-select
+          <v-autocomplete
               v-model="item.projectId"
               :items="allProjects.filter(p=>p.active)"
               item-value="id"
@@ -31,7 +31,7 @@ Emits:
               :rules="[v => !!v || $t('Проект обязателен')]"
               :label="$t('Проект')"
               required
-          ></v-select>
+          ></v-autocomplete>
 
 
           <v-menu

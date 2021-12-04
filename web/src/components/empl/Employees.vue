@@ -14,7 +14,7 @@
             ></v-text-field>
           </v-col>
           <v-col lg="6" cols="12">
-            <v-select
+            <v-autocomplete
                 clearable
                 class="mr-5"
                 v-model="filter.selectedProjects"
@@ -23,7 +23,7 @@
                 item-text="name"
                 :label="$t('Текущий проект')"
                 multiple
-            ></v-select>
+            ></v-autocomplete>
           </v-col>
         </v-row>
       </v-card-title>
