@@ -29,7 +29,8 @@
     <employee-overtime-component
         class="mt-5"
         :employee-id="employeeId"
-        :selected-period="currentOvertimePeriod"></employee-overtime-component>
+        :selected-period="currentOvertimePeriod"
+    :closed-periods="closedOvertimePeriods"></employee-overtime-component>
 
     <my-vacations class="mt-5"></my-vacations>
 
@@ -47,7 +48,7 @@ import Component from 'vue-class-component';
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import EmployeeAvatarUploader from "@/components/empl/EmployeeAvatarUploader.vue";
 import {Getter} from "vuex-class";
-import {ReportPeriod} from "@/components/overtimes/overtime.service";
+import overtimeService, {ClosedOvertimePeriod, ReportPeriod} from "@/components/overtimes/overtime.service";
 import EmployeeOvertimeComponent from "@/components/overtimes/EmployeeOvertimeComponent.vue";
 import MyVacations from "@/components/vacations/MyVacations.vue";
 import MySkills from "@/components/empl/skills/MySkills.vue";
@@ -66,6 +67,7 @@ export default class EmployeeProfile extends Vue {
 
   private employee: Employee | null = null;
   private currentOvertimePeriod = ReportPeriod.currentPeriod();
+  private closedOvertimePeriods: ClosedOvertimePeriod[] = [];
 
 
   @Getter("employeeId", {namespace})
@@ -85,7 +87,12 @@ export default class EmployeeProfile extends Vue {
               this.employee = data;
               return this.employee;
             }
-        ).finally(() => {
+        ).then(()=>{
+          return overtimeService.getClosedOvertimes().then((data) => {
+            this.closedOvertimePeriods = data;
+          });
+        })
+        .finally(() => {
           this.loading = false
         });
   }

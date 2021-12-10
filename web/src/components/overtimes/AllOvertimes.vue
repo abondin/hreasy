@@ -22,7 +22,8 @@
             <employee-overtime-component
                 change-period-allowed="false"
                 :employee-id="selectedEmployee.id"
-                :selected-period="selectedPeriod"></employee-overtime-component>
+                :selected-period="selectedPeriod"
+                :closed-periods="closedPeriods"></employee-overtime-component>
           </v-card-text>
         </v-card>
       </v-dialog>
@@ -50,7 +51,7 @@
             v-model="search"
             @input="applyFilters()"
             :label="$t('ФИО Сотрудника')" class="mr-5 ml-5"></v-text-field>
-        <v-select
+        <v-autocomplete
             @input="applyFilters()"
             class="mr-5"
             clearable
@@ -60,7 +61,7 @@
             item-text="name"
             :label="$t('Текущий прооект сотрудника')"
             multiple>
-        </v-select>
+        </v-autocomplete>
         <v-divider vertical></v-divider>
         <v-select
             @input="applyFilters()"

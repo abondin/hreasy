@@ -13,7 +13,7 @@ Emits:
       max-width="800"
       v-model="dialog">
     <template v-slot:activator="{on, attrs}">
-      <v-btn color="primary"
+      <v-btn :disabled="periodClosed" color="primary"
              v-bind="attrs"
              v-on="on">{{ $t('Добавить') }}
       </v-btn>
@@ -23,7 +23,7 @@ Emits:
       <v-card>
         <v-card-title>{{ $t('Учёт овертаймов за день') }}</v-card-title>
         <v-card-text>
-          <v-select
+          <v-autocomplete
               v-model="item.projectId"
               :items="allProjects.filter(p=>p.active)"
               item-value="id"
@@ -31,7 +31,7 @@ Emits:
               :rules="[v => !!v || $t('Проект обязателен')]"
               :label="$t('Проект')"
               required
-          ></v-select>
+          ></v-autocomplete>
 
 
           <v-menu
@@ -124,6 +124,9 @@ export default class AddOvertimeItemDialog extends Vue {
 
   @Prop({required: true})
   period!: ReportPeriod;
+
+  @Prop({required: true})
+  periodClosed!: boolean;
 
   @Prop({required: true})
   allProjects!: SimpleDict[];
