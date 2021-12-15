@@ -10,7 +10,7 @@ import ru.abondin.hreasy.platform.repo.dict.DepartmentEntry;
 @Repository
 public interface ArticleRepo extends ReactiveCrudRepository<ArticleEntry, Integer> {
 
-    @Query("select * from article where archived!=1 and moderated = 1 order by updated_at")
+    @Query("select * from article.article where archived!=true and moderated = true order by updated_at")
     Flux<ArticleEntry> moderatedNotArchived();
 
 }

@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 public interface OvertimeMapper {
 
     @Mapping(target = "items", ignore = true)
+    @Mapping(target = "employeeId", source = "employee")
     OvertimeReportDto reportToDto(OvertimeReportEntry entry);
 
     OvertimeItemDto itemToDto(OvertimeItemEntry entry);

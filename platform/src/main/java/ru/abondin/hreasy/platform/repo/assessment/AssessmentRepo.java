@@ -56,13 +56,13 @@ public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, 
      * @return
      */
     @Query("select DISTINCT owner from (\n" +
-            "select a.created_by owner from assessment a where a.id=:assessmentId\n" +
+            "select a.created_by owner from assmnt.assessment a where a.id=:assessmentId\n" +
             "union\n" +
-            "select owner owner from assessment_form f where f.assessment_id =:assessmentId\n" +
+            "select owner owner from assmnt.assessment_form f where f.assessment_id =:assessmentId\n" +
             ") owners where owner is not null;")
     Flux<Integer> findAllAssessmentOwners(@Param("assessmentId") int assessmentId);
 
-    @Query("update assessment set canceled_by=:canceledBy, canceled_at=:canceledAt" +
+    @Query("update assmnt.assessment set canceled_by=:canceledBy, canceled_at=:canceledAt" +
             " where id=:assessmentId")
     Mono<? extends Integer> updateCanceledBy(int assessmentId, Integer canceledBy, OffsetDateTime canceledAt);
 }

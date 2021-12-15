@@ -17,7 +17,7 @@ public class OvertimeReportEntry {
     @Id
     private Integer id;
 
-    private int employeeId;
+    private int employee;
 
     /**
      * Overtime report period in yyyymm format.

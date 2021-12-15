@@ -22,7 +22,7 @@ public class DictProjectEntry {
     private String customer;
 
     @Nullable
-    private Integer personOfContact;
+    private String personOfContact;
 
     @Nullable
     private LocalDate startDate;

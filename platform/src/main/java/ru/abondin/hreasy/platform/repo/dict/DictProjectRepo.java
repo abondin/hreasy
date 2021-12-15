@@ -12,21 +12,21 @@ import java.util.List;
 @Repository
 public interface DictProjectRepo extends ReactiveSortingRepository<DictProjectEntry, Integer> {
 
-    @Query("select * from project p order by name")
+    @Query("select * from proj.project p order by name")
     Flux<DictProjectEntry> findAll();
 
-    @Query("select * from project where id in (select current_project from employee where id=:employeeId)")
+    @Query("select * from proj.project where id in (select current_project from empl.employee where id=:employeeId)")
     Mono<DictProjectEntry> getEmployeeCurrentProject(int employeeId);
 
-    @Query("select * from project p where p.id in (:ids) order by name")
+    @Query("select * from proj.project p where p.id in (:ids) order by name")
     Flux<DictProjectEntry> findByIds(List<Integer> ids);
 
 
     @Query("select p.*, " +
             "  d.name as department_name" +
             "  ,ba.name as ba_name " +
-            "from project p" +
-            " left join department d on p.department_id=d.id"+
-            " left join business_account ba on p.ba_id=ba.id")
+            "from proj.project p" +
+            " left join dict.department d on p.department_id=d.id"+
+            " left join ba.business_account ba on p.ba_id=ba.id")
     Flux<DictProjectEntry.ProjectFullEntry> findFullInfo();
 }

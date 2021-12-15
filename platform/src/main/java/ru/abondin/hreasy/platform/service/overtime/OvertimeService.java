@@ -14,7 +14,6 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 
 @Service
@@ -66,7 +65,7 @@ public class OvertimeService {
                             var itemEntry = mapper.itemToEntry(newItem);
                             var now = dateTimeService.now();
                             itemEntry.setCreatedAt(now);
-                            itemEntry.setCreatedEmployeeId(auth.getEmployeeInfo().getEmployeeId());
+                            itemEntry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
                             itemEntry.setReportId(report.getId());
                             return itemRepo.save(itemEntry)
                                     .map(persistedItem -> mapper.itemToDto(persistedItem))
@@ -93,7 +92,7 @@ public class OvertimeService {
                         .flatMap(item -> {
                             var now = dateTimeService.now();
                             item.setDeletedAt(now);
-                            item.setDeletedEmployeeId(auth.getEmployeeInfo().getEmployeeId());
+                            item.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
                             return itemRepo.save(item);
                         })
                         .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(itemId))))
@@ -194,7 +193,7 @@ public class OvertimeService {
 
     private OvertimeReportEntry stubEntry(int employeeId, int periodId) {
         var stub = new OvertimeReportEntry();
-        stub.setEmployeeId(employeeId);
+        stub.setEmployee(employeeId);
         stub.setPeriod(periodId);
         return stub;
     }

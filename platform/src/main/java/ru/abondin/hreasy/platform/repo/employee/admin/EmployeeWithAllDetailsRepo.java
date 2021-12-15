@@ -8,6 +8,6 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface EmployeeWithAllDetailsRepo extends ReactiveCrudRepository<EmployeeWithAllDetailsEntry, Integer> {
 
-    @Query("select * from v_employee_detailed where email=:email")
+    @Query("select * from empl.v_employee_detailed where email=:email")
     Mono<EmployeeWithAllDetailsEntry> findByEmail(String email);
 }
