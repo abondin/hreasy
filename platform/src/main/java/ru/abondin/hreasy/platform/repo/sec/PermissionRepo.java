@@ -7,8 +7,8 @@ import reactor.core.publisher.Mono;
 
 public interface PermissionRepo extends ReactiveCrudRepository<PermissionEntry, Integer> {
 
-    @Query("select p.* from role_perm p" +
-            " join user_role r on p.role=r.role" +
+    @Query("select p.* from sec.role_perm p" +
+            " join sec.user_role r on p.role=r.role" +
             " where r.employee_id=:employeeId")
     Flux<PermissionEntry> findByUserId(int employeeId);
 }

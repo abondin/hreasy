@@ -17,26 +17,26 @@ public class SecAdminUserRolesRepoImpl implements SecAdminUserRolesRepo {
 
     @Override
     public Mono<Integer> updateRoles(int employeeId, List<String> roles) {
-        return doDeleteAndInsert("user_role", "employee_id", employeeId,
+        return doDeleteAndInsert("sec.user_role", "employee_id", employeeId,
                 "role", roles);
     }
 
     @Override
     public Mono<Integer> updateAccessibleDepartments(int employeeId, List<Integer> accessibleDepartments) {
-        return doDeleteAndInsert("employee_accessible_departments", "employee_id", employeeId,
+        return doDeleteAndInsert("sec.employee_accessible_departments", "employee_id", employeeId,
                 "department_id", accessibleDepartments);
     }
 
     @Override
     public Mono<Integer> updateAccessibleProjects(int employeeId, List<Integer> accessibleProjects) {
-        return doDeleteAndInsert("employee_accessible_projects", "employee_id", employeeId,
+        return doDeleteAndInsert("sec.employee_accessible_projects", "employee_id", employeeId,
                 "project_id", accessibleProjects);
     }
 
     @Override
     public Mono<Integer> addAccessibleProject(int employeeId, int projectId) {
         return dbTemplate.getDatabaseClient().sql(
-                        "insert into employee_accessible_projects (employee_id, project_id)" +
+                        "insert into sec.employee_accessible_projects (employee_id, project_id)" +
                                 " values (:employee_id, :project_id)")
                 .bind("employee_id", employeeId)
                 .bind("project_id", projectId)
