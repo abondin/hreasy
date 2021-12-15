@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
  * All employee table for HR to add or update employee information
  */
 @Data
-@Table("employee_history")
+@Table("empl.employee_history")
 public class EmployeeHistoryEntry extends EmployeeWithAllDetailsEntry {
     private int employee;
     private OffsetDateTime createdAt;

@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import ru.abondin.hreasy.platform.service.skills.dto.RatingsMapper;
 
 @Data
-@Table("v_employee_detailed")
+@Table("empl.v_employee_detailed")
 public class EmployeeDetailedEntry extends EmployeeEntry {
     private String departmentName;
     private String positionName;

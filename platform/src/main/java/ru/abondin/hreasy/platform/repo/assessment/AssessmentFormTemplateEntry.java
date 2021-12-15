@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.OffsetDateTime;
 
 @Data
-@Table("assessment_form_template")
+@Table("assmnt.assessment_form_template")
 public class AssessmentFormTemplateEntry {
     /**
      * Form Type

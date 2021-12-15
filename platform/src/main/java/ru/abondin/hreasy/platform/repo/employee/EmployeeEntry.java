@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
-@Table("employee")
+@Table("empl.employee")
 public class EmployeeEntry {
     @Id
     private Integer id;

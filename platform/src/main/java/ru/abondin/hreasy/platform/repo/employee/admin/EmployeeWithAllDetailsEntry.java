@@ -11,7 +11,7 @@ import java.time.LocalDate;
  * All employee table for HR to add or update employee information
  */
 @Data
-@Table("employee")
+@Table("empl.employee")
 public class EmployeeWithAllDetailsEntry extends EmployeeEntry {
     @Column("date_of_employment")
     private LocalDate dateOfEmployment;

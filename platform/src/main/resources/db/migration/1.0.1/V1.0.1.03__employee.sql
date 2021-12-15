@@ -8,7 +8,7 @@ CREATE TABLE empl.employee (
 	lastname varchar(255) NULL,
 	firstname varchar(255) NULL,
 	patronymic_name varchar(255) NULL,
-	birthday timestamp NULL,
+	birthday date NULL,
 	sex varchar(255) NULL,
 	date_of_employment date NULL,
 	department integer NULL REFERENCES dict.department (id),

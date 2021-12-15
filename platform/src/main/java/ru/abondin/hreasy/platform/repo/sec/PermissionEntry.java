@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("role_perm")
+@Table("sec.role_perm")
 @Data
 public class PermissionEntry {
     @Id

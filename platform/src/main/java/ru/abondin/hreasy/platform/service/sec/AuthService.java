@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.sec;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.WebSession;
@@ -46,7 +47,8 @@ public class AuthService {
                 })
                 .onErrorResume((ex) -> {
                     log.info("Logging attempt {} failed", logAttemtId, ex);
-                    loginHistory.setError(ex.getMessage());
+                    // Replace to avoid PostgresqlBadGrammarException: [22021] invalid byte sequence for encoding "UTF8": 0x00
+                    loginHistory.setError(ex.getMessage()==null? null : ex.getMessage().replaceAll("\u0000", ""));
                     return loginHistoryRepo.save(loginHistory).flatMap((r) -> Mono.error(ex));
                 });
     }

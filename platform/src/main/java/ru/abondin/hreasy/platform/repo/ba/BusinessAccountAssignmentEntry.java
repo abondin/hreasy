@@ -26,7 +26,7 @@ import java.time.OffsetDateTime;
  *
  */
 @Data
-@Table("ba_assignment")
+@Table("ba.ba_assignment")
 public class BusinessAccountAssignmentEntry {
     @Id
     private Integer id;

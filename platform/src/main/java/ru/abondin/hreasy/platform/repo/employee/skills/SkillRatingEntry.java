@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.OffsetDateTime;
 
 @Data
-@Table("skill_rating")
+@Table("empl.skill_rating")
 public class SkillRatingEntry {
     @Id
     private Integer id;

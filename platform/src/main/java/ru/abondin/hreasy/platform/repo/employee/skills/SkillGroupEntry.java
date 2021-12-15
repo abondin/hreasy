@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Data
-@Table("skill_group")
+@Table("empl.skill_group")
 public class SkillGroupEntry {
     @Id
     private Integer id;

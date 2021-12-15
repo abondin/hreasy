@@ -14,7 +14,7 @@ import java.time.OffsetDateTime;
  * Approval of overtime report of employee
  */
 @Data
-@Table("overtime_approval_decision")
+@Table("ovt.overtime_approval_decision")
 public class OvertimeApprovalDecisionEntry {
 
     @Id

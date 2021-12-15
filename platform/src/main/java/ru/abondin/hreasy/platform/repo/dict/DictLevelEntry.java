@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table("dict_level")
+@Table("dict.dict_level")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

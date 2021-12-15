@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
  * Business account position that generates profit
  */
 @Data
-@Table("ba_position")
+@Table("ba.ba_position")
 public class BusinessAccountPositionEntry {
     @Id
     private Integer id;

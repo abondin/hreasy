@@ -6,7 +6,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
 
-@Table("sec_login_history")
+@Table("sec.login_history")
 @Data
 public class SecLoginHistoryEntry {
     @Id

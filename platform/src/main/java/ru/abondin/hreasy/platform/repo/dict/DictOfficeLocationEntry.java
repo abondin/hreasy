@@ -6,10 +6,9 @@ import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
 
-@Table("office_location")
+
+@Table("dict.office_location")
 @Data
 public class DictOfficeLocationEntry {
     @Id

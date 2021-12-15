@@ -7,7 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.OffsetDateTime;
 
 @Data
-@Table("user_role_history")
+@Table("sec.user_role_history")
 public class UserRoleHistoryEntry {
     @Id
     private Integer id;

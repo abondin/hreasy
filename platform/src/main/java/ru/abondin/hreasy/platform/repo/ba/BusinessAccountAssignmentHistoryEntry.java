@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Data
-@Table("ba_assignment_history")
+@Table("ba.ba_assignment_history")
 public class BusinessAccountAssignmentHistoryEntry {
     @Id
     private Integer id;

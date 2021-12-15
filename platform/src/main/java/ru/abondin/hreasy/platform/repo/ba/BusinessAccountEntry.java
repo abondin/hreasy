@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
  * Business account that generate a profit
  */
 @Data
-@Table("business_account")
+@Table("ba.business_account")
 public class BusinessAccountEntry {
     @Id
     private Integer id;

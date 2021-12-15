@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 @Data
-@Table("overtime_report")
+@Table("ovt.overtime_report")
 public class OvertimeReportEntry {
     /**
      * Undefined for new report

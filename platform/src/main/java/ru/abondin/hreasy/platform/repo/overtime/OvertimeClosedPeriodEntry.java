@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
  * Closed period to report overtime
  */
 @Data
-@Table("overtime_closed_period")
+@Table("ovt.overtime_closed_period")
 public class OvertimeClosedPeriodEntry implements Persistable<Integer> {
     /**
      * Overtime report period in yyyymm format.
