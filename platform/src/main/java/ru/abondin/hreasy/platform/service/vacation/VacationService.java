@@ -102,7 +102,7 @@ public class VacationService {
     public List<Integer> yearsOrDefault(List<Integer> filteredYears) {
         if (filteredYears.isEmpty()) {
             var currentYear = dateTimeService.now().getYear();
-            return Arrays.asList(currentYear - 2, currentYear - 1, currentYear);
+            return Arrays.asList(currentYear - 1, currentYear, currentYear+1);
         } else {
             return filteredYears;
         }
