@@ -14,9 +14,9 @@ public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Inte
     @Query("select e.firstname as employee_firstname, e.lastname as employee_lastname, e.patronymic_name as employee_patronymic_name" +
             ", e.current_project as employee_current_project" +
             ", p.name as employee_current_project_name" +
-            ", v.* from  vacation v " +
-            " inner join employee e on e.id=v.employee" +
-            " left join project p on e.current_project=p.id" +
+            ", v.* from  vac.vacation v " +
+            " inner join empl.employee e on e.id=v.employee" +
+            " left join proj.project p on e.current_project=p.id" +
             " where v.year in (:years)" +
             " and e.date_of_dismissal is null or e.date_of_dismissal > :now" +
             " order by v.end_date asc")
