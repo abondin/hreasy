@@ -69,7 +69,7 @@ COMMENT ON COLUMN ovt.overtime_period_history.updated_by IS 'updated by (link to
 
 CREATE SEQUENCE IF NOT EXISTS ovt.OVERTIME_APPROVAL_DECISION_ID_SEQ;
 CREATE TABLE IF NOT EXISTS ovt.overtime_approval_decision (
-    id integer PRIMARY KEY NOT NULL DEFAULT nextval('ovt.OVERTIME_PERIOD_HISTORY_ID_SEQ'),
+    id integer PRIMARY KEY NOT NULL DEFAULT nextval('ovt.OVERTIME_APPROVAL_DECISION_ID_SEQ'),
 	report_id integer NOT NULL REFERENCES ovt.overtime_report (id),
 	approver integer NOT NULL REFERENCES empl.employee (id),
 	decision varchar(255) NULL,

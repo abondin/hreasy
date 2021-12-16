@@ -40,7 +40,7 @@ COMMENT ON COLUMN dict.position.category IS 'Simplified position name for public
 ---------------- office location -------------------------------
 CREATE SEQUENCE IF NOT EXISTS dict.OFFICE_LOCATION_ID_SEQ;
 CREATE TABLE IF NOT EXISTS dict.office_location (
-	id integer PRIMARY KEY NOT NULL DEFAULT nextval('dict.POSITION_ID_SEQ'),
+	id integer PRIMARY KEY NOT NULL DEFAULT nextval('dict.OFFICE_LOCATION_ID_SEQ'),
 	"name" varchar(255) NULL,
 	description varchar(1024) NULL,
 	office varchar(255) NULL

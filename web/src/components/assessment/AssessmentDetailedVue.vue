@@ -1,7 +1,12 @@
 <!-- Detailed information for assessment. Forms and attachments-->
 <template>
   <v-container>
-    <v-card v-if="accessDenied">
+    <v-card v-if="fetchError">
+      <v-card-text>
+        <v-alert class="error">{{ fetchError }}</v-alert>
+      </v-card-text>
+    </v-card>
+    <v-card v-else-if="accessDenied">
       <v-card-text>
         <v-alert class="error">{{ $t('Недостаточно прав для просмотра детальной информации по ассессменту') }}</v-alert>
         <router-link :to="'/assessments/'+employeeId">
@@ -144,6 +149,7 @@ import assessmentService, {AssessmentWithFormsAndFiles} from "@/components/asses
 import {Prop} from "vue-property-decorator";
 import MyFileUploader, {UploadCompleteEvent} from "@/components/shared/MyFileUploader.vue";
 import logger from "@/logger";
+import {errorUtils} from "@/components/errors";
 
 
 @Component({
@@ -163,6 +169,8 @@ export default class AssessmentDetailedVue extends Vue {
   accessDenied = false;
   assessment: AssessmentWithFormsAndFiles | null = null;
 
+  fetchError: string | null = null;
+
   @Prop({required: true})
   employeeId!: number;
 
@@ -180,16 +188,17 @@ export default class AssessmentDetailedVue extends Vue {
   private fetchData() {
     this.loading = true;
     this.accessDenied = false;
+    this.fetchError = null;
     return assessmentService.assessmentWithFormsAndFiles(this.employeeId, this.assessmentId)
         .then(data => {
               this.assessment = data;
               return this.assessment;
             }
         ).catch((error: any) => {
-          if (error) {
+          if (errorUtils.isAccessDenied(error)) {
             this.accessDenied = true;
           } else {
-            throw error;
+            this.fetchError = errorUtils.shortMessage(error);
           }
         })
         .finally(() => {

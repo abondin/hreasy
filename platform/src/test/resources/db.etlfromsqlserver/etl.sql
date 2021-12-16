@@ -128,9 +128,7 @@ update empl.employee e set current_project=d.current_project
 from dbo.employee d where d.id=e.id;
 
 -- Security
-INSERT INTO sec.perm
-("permission", description)
-select "permission", description from dbo.sec_perm;
+-- sec.perm - populates from flyway migrations
 
 INSERT INTO sec.role
 ("role", description)

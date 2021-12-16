@@ -12,7 +12,7 @@ public interface OvertimeItemViewRepo extends R2dbcRepository<OvertimeItemsGroup
             " from ovt.overtime_item where\n" +
             " deleted_at is null\n" +
             " and report_id = :reportId\n" +
-            " group by date, project_id, report_id;")
+            " group by date, project_id, report_id")
     Flux<OvertimeItemsGroupedByDateAndProjectView> gropedByProjectAndDate(@Param("reportId") int reportId);
 
 }

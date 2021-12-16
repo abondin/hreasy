@@ -49,7 +49,7 @@ public class TestDataContainer {
 
     private Mono<?> employees() {
         return db.getDatabaseClient().sql(
-                        "select CONCAT(firstname, '.', lastname) name, id from employee")
+                        "select CONCAT(firstname, '.', lastname) name, id from empl.employee")
                 .fetch()
                 .all()
                 .doOnNext(d -> employees.put((String) d.get("name"), (Integer) d.get("id"))).collectList();
