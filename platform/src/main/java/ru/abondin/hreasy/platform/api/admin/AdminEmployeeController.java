@@ -40,12 +40,12 @@ public class AdminEmployeeController {
     }
 
     @PostMapping
-    public Mono<Integer> createBA(@RequestBody @Valid CreateOrUpdateEmployeeBody body) {
+    public Mono<Integer> create(@RequestBody @Valid CreateOrUpdateEmployeeBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> employeeService.create(auth, body));
     }
 
     @PutMapping("/{employeeId}")
-    public Mono<Integer> updateBA(@PathVariable int employeeId, @RequestBody @Valid CreateOrUpdateEmployeeBody body) {
+    public Mono<Integer> update(@PathVariable int employeeId, @RequestBody @Valid CreateOrUpdateEmployeeBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> employeeService.update(auth, employeeId, body));
     }
 
