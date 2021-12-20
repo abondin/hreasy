@@ -14,5 +14,7 @@ public interface SecAdminUserRolesRepo {
 
     Mono<Integer> updateAccessibleProjects(int employeeId, List<Integer> accessibleProjects);
 
+    Mono<Integer> updateAccessibleBas(int employeeId, List<Integer> accessibleBas);
+
     Mono<Integer> addAccessibleProject(int employeeId, int projectId);
 }

@@ -38,6 +38,18 @@
             :label="$t('Доступные проекты')"
         ></v-select>
 
+        <!-- accessible business accounts -->
+        <v-select
+            multiple
+            chips
+            v-model="userRolesEditForm.accessibleBas"
+            :items="allBas"
+            item-text="name"
+            item-value="id"
+            :label="$t('Доступные бизнес аккаунты')"
+        ></v-select>
+
+
         <!-- Error block -->
         <v-alert v-if="error" type="error">
           {{ error }}
@@ -72,6 +84,7 @@ class UserRoleForm {
   public roles: string[] = [];
   public accessibleDepartments: number[] = [];
   public accessibleProjects: number[] = [];
+  public accessibleBas: number[] = [];
 }
 
 @Component(
@@ -89,6 +102,10 @@ export default class AdminUserRolesForm extends Vue {
 
   @Prop({required: true, type: Array})
   private allProjects!: Array<SimpleDict>
+
+  @Prop({required: true, type: Array})
+  private allBas!: Array<SimpleDict>
+
 
   @Prop({required: true, type: Array})
   private allRoles!: Array<RoleDict>
@@ -111,6 +128,7 @@ export default class AdminUserRolesForm extends Vue {
     this.userRolesEditForm.roles = this.input.roles;
     this.userRolesEditForm.accessibleDepartments = this.input.accessibleDepartments;
     this.userRolesEditForm.accessibleProjects = this.input.accessibleProjects;
+    this.userRolesEditForm.accessibleBas = this.input.accessibleBas;
   }
 
   private closeDialog() {
@@ -126,7 +144,8 @@ export default class AdminUserRolesForm extends Vue {
       const body = {
         roles: this.userRolesEditForm.roles,
         accessibleDepartments: this.userRolesEditForm.accessibleDepartments,
-        accessibleProjects: this.userRolesEditForm.accessibleProjects
+        accessibleProjects: this.userRolesEditForm.accessibleProjects,
+        accessibleBas: this.userRolesEditForm.accessibleBas
       } as UserRolesUpdateBody;
       logger.log(`Update user with emplId ${this.userRolesEditForm.employee!.id} with roles ${JSON.stringify(body)}`);
       return adminUserService.updateRolesAndAccessibleProjects(this.userRolesEditForm.employee!.id, body)

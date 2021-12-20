@@ -54,7 +54,7 @@ public class DictProjectEntry {
     @Data
     public static class ProjectHistoryEntry {
         @Id
-        private Integer historyId;
+        private Integer id;
 
         @NotNull
         private Integer projectId;

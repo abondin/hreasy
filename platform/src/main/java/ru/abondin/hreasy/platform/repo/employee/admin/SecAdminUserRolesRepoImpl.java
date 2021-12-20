@@ -34,6 +34,12 @@ public class SecAdminUserRolesRepoImpl implements SecAdminUserRolesRepo {
     }
 
     @Override
+    public Mono<Integer> updateAccessibleBas(int employeeId, List<Integer> accessibleBas) {
+        return doDeleteAndInsert("sec.employee_accessible_bas", "employee_id", employeeId,
+                "ba_id", accessibleBas);
+    }
+
+    @Override
     public Mono<Integer> addAccessibleProject(int employeeId, int projectId) {
         return dbTemplate.getDatabaseClient().sql(
                         "insert into sec.employee_accessible_projects (employee_id, project_id)" +

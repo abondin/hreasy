@@ -53,12 +53,13 @@ public class AdminUserRolesService {
     private Mono<Integer> doUpdate(int employeeId, int loggedInEmployeeId, AdminUserRolesController.UserRolesUpdateBody body) {
         var now = dateTimeService.now();
         var history = new UserRoleHistoryEntry();
-        history.setRoles(StringUtils.join(body.getRoles(), ','));
-        history.setAccessibleDepartments(StringUtils.join(body.getAccessibleDepartments(), ','));
-        history.setAccessibleProjects(StringUtils.join(body.getAccessibleProjects(), ','));
+        history.setRoles(body.getRoles());
+        history.setAccessibleDepartments(body.getAccessibleDepartments());
+        history.setAccessibleProjects(body.getAccessibleProjects());
+        history.setAccessibleBas(body.getAccessibleBas());
         history.setEmployeeId(employeeId);
-        history.setUpdatedAt(now);
-        history.setUpdatedBy(loggedInEmployeeId);
+        history.setCreatedAt(now);
+        history.setCreatedBy(loggedInEmployeeId);
         return
                 // 1. Save history
                 historyRepo.save(history)
@@ -68,6 +69,8 @@ public class AdminUserRolesService {
                         .then(adminUserRolesRepo.updateAccessibleDepartments(employeeId, body.getAccessibleDepartments()))
                         // 4. Update accessible projects
                         .then(adminUserRolesRepo.updateAccessibleProjects(employeeId, body.getAccessibleProjects()))
+                        // 5. Update accessible business accounts
+                        .then(adminUserRolesRepo.updateAccessibleBas(employeeId, body.getAccessibleBas()))
                         .then(Mono.just(employeeId));
     }
 

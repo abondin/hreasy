@@ -17,7 +17,7 @@ public interface BusinessAccountRepo extends ReactiveCrudRepository<BusinessAcco
     Flux<BusinessAccountEntryView> findDetailed();
 
     @Query(FIND_QUERY_PREFIX +
-            "  where ba.archived <> 1 order by responsible_employee_name")
+            "  where ba.archived != true order by responsible_employee_name")
     Flux<BusinessAccountEntryView> findActive();
 
 

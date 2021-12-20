@@ -11,13 +11,15 @@ export interface UserSecurityInfo {
     roles: string[],
     accessibleDepartments: number[],
     accessibleProjects: number[],
+    accessibleBas: number[],
     dateOfDismissal: string
 }
 
 export interface UserRolesUpdateBody{
     roles: string[],
     accessibleDepartments: number[],
-    accessibleProjects: number[]
+    accessibleProjects: number[],
+    accessibleBas: number[]
 }
 
 export interface RoleDict {
