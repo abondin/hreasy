@@ -215,6 +215,7 @@
             </v-col>
             <v-col>
               <v-text-field v-model="employeeForm.children"
+                            disabled
                             :counter="1024"
                             :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
                             :label="$t('Дети')">

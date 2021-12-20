@@ -61,7 +61,7 @@ public class EmployeeService {
     @Transactional
     public Mono<Boolean> updateCurrentProject(int newCurrentProjectId, AuthContext auth) {
         if (auth.getEmployeeInfo() == null) {
-            throw new BusinessError("errors.no.employee.for.auth", Arrays.asList(auth.getEmail()));
+            throw new BusinessError("errors.no.employee.for.auth", auth.getEmail());
         }
         log.info("Update own current project {} - {} ({})", newCurrentProjectId, auth.getEmail(), auth.getEmployeeInfo().getEmployeeId());
         return emplRepo.updateCurrentProject(auth.getEmployeeInfo().getEmployeeId(), newCurrentProjectId).map(updatedRowsCount -> updatedRowsCount > 0);

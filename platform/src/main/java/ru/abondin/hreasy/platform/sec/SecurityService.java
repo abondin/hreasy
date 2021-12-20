@@ -35,7 +35,7 @@ public class SecurityService {
      */
     private Mono<Integer> getUserIdOrCreateUserFromEmployee(String email) {
         return employeeAuthDomainService.findIdByEmail(email).map(EmployeeAuthInfoEntry::getId)
-                .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", Arrays.asList(email))));
+                .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", email)));
     }
 
 }
