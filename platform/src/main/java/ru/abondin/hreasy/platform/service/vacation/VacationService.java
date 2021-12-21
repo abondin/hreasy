@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationHistoryRepo;
@@ -65,6 +66,8 @@ public class VacationService {
             var entry = mapper.toEntry(body);
             entry.setCreatedAt(now);
             entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
+            entry.setUpdatedAt(entry.getCreatedAt());
+            entry.setUpdatedBy(entry.getCreatedBy());
             entry.setEmployee(employeeId);
             return vacationRepo.save(entry).flatMap(vacation -> {
                 var history = mapper.history(vacation);
@@ -79,20 +82,23 @@ public class VacationService {
     public Mono<Integer> update(AuthContext auth, int employeeId, int vacationId, VacationCreateOrUpdateDto body) {
         log.info("Update overtime item: auth={},empl={},vacationId={}, body={}", auth.getUsername(), employeeId, vacationId, body);
         var now = dateTimeService.now();
-        return validator.validateCanEditOvertimes(auth).flatMap((v) -> {
-            var entry = mapper.toEntry(body);
-            entry.setId(vacationId);
-            entry.setUpdatedAt(now);
-            entry.setUpdatedBy(auth.getEmployeeInfo().getEmployeeId());
-            entry.setEmployee(employeeId);
-            return vacationRepo.save(entry).flatMap(vacation -> {
-                var history = mapper.history(vacation);
-                history.setCreatedAt(now);
-                history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-                history.setVacationId(vacation.getId());
-                return historyRepo.save(history).map(VacationEntry.VacationHistoryEntry::getVacationId);
-            });
-        });
+        return validator.validateCanEditOvertimes(auth)
+                .flatMap(v -> vacationRepo.findById(vacationId))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(vacationId))))
+                .flatMap((entry) -> {
+                    mapper.copyToEntry(body, entry);
+                    entry.setId(vacationId);
+                    entry.setUpdatedAt(now);
+                    entry.setUpdatedBy(auth.getEmployeeInfo().getEmployeeId());
+                    entry.setEmployee(employeeId);
+                    return vacationRepo.save(entry).flatMap(vacation -> {
+                        var history = mapper.history(vacation);
+                        history.setCreatedAt(now);
+                        history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
+                        history.setVacationId(vacation.getId());
+                        return historyRepo.save(history).map(VacationEntry.VacationHistoryEntry::getVacationId);
+                    });
+                });
     }
 
     /**
@@ -102,7 +108,7 @@ public class VacationService {
     public List<Integer> yearsOrDefault(List<Integer> filteredYears) {
         if (filteredYears.isEmpty()) {
             var currentYear = dateTimeService.now().getYear();
-            return Arrays.asList(currentYear - 1, currentYear, currentYear+1);
+            return Arrays.asList(currentYear - 1, currentYear, currentYear + 1);
         } else {
             return filteredYears;
         }

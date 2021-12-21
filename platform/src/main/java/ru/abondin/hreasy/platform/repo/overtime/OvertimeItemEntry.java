@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
  * @see OvertimeReportEntry
  */
 @Data
-@Table("overtime_item")
+@Table("ovt.overtime_item")
 public class OvertimeItemEntry {
     @Id
     private Integer id;
@@ -29,8 +29,8 @@ public class OvertimeItemEntry {
     private String notes;
 
     private OffsetDateTime createdAt;
-    private Integer createdEmployeeId;
+    private Integer createdBy;
     private OffsetDateTime deletedAt;
-    private Integer deletedEmployeeId;
+    private Integer deletedBy;
 
 }

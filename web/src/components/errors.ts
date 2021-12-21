@@ -60,6 +60,10 @@ export class ErrorUtils {
         }
         return error.toString();
     }
+
+    public isAccessDenied(error: any): boolean {
+        return (error instanceof AccessDeniedError);
+    }
 }
 
 export const errorUtils = new ErrorUtils();

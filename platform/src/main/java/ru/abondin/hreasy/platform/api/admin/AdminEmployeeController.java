@@ -9,9 +9,7 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeExportService;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.CreateOrUpdateEmployeeBody;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeExportFilter;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeWithAllDetailsDto;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 
 import javax.validation.Valid;
 import java.util.Locale;
@@ -40,12 +38,12 @@ public class AdminEmployeeController {
     }
 
     @PostMapping
-    public Mono<Integer> createBA(@RequestBody @Valid CreateOrUpdateEmployeeBody body) {
+    public Mono<Integer> create(@RequestBody @Valid CreateOrUpdateEmployeeBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> employeeService.create(auth, body));
     }
 
     @PutMapping("/{employeeId}")
-    public Mono<Integer> updateBA(@PathVariable int employeeId, @RequestBody @Valid CreateOrUpdateEmployeeBody body) {
+    public Mono<Integer> update(@PathVariable int employeeId, @RequestBody @Valid CreateOrUpdateEmployeeBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> employeeService.update(auth, employeeId, body));
     }
 
@@ -56,6 +54,22 @@ public class AdminEmployeeController {
                         .includeFired(includeFired)
                         .build()
                 , locale));
+    }
+
+
+    @GetMapping("/kids")
+    public Flux<EmployeeKidDto> allKids() {
+        return AuthHandler.currentAuth().flatMapMany(auth -> employeeService.findAllKids(auth));
+    }
+
+    @PostMapping("/{employeeId}/kids")
+    public Mono<Integer> createKid(@PathVariable int employeeId, @RequestBody @Valid CreateOrUpdateEmployeeKidBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> employeeService.createNewKid(auth, employeeId, body));
+    }
+
+    @PutMapping("/{employeeId}/kids/{kidId}")
+    public Mono<Integer> createKid(@PathVariable int employeeId, @PathVariable int kidId, @RequestBody @Valid CreateOrUpdateEmployeeKidBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> employeeService.updateKid(auth, employeeId, kidId, body));
     }
 
 }

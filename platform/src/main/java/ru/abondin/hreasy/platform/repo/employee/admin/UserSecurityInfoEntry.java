@@ -3,21 +3,24 @@ package ru.abondin.hreasy.platform.repo.employee.admin;
 import lombok.Data;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
 
+import java.util.List;
+
 @Data
 public class UserSecurityInfoEntry extends EmployeeEntry {
-    private Integer userId;
-
-
     /**
-     * Comma separated list of projects
+     * List of accessible projects
      */
-    private String accessibleProjects;
+    private List<Integer> accessibleProjects;
     /**
-     * Comma separated list of departments
+     * List of accessible departments
      */
-    private String accessibleDepartments;
+    private List<Integer> accessibleDepartments;
     /**
-     * Comma separated list of roles
+     * List of accessible business accounts
      */
-    private String roles;
+    private List<Integer> accessibleBas;
+    /**
+     * List of roles
+     */
+    private List<String> roles;
 }

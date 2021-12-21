@@ -35,17 +35,18 @@ hreasy:
 spring:
   # Do not modify URL part. Override hreasy.db.* properties
   r2dbc:
-    url: r2dbc:mssql://${hreasy.db.host}:${hreasy.db.port}/${hreasy.db.database}
+    url: r2dbc:postgresql://${hreasy.db.host}:${hreasy.db.port}/${hreasy.db.database}
     username: ${hreasy.db.username}
     password: ${hreasy.db.password}
   # Do not modify URL part. Override hreasy.db.* properties
   flyway:
-    url: jdbc:sqlserver://${hreasy.db.host}:${hreasy.db.port};databasename=${hreasy.db.database}
+    url: jdbc:postgresql://${hreasy.db.host}:${hreasy.db.port}/${hreasy.db.database}
     user: ${hreasy.db.username}
     password: ${hreasy.db.password}
     enabled: false
     baseline-version: 0
     baseline-on-migrate: true
+    schemas: public,empl,dict,proj,ba,article
 
 management:
   security:

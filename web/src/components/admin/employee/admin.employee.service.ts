@@ -1,6 +1,7 @@
 import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
 import {Skill} from "@/components/empl/skills/skills.service";
+import {SimpleDict} from "@/store/modules/dict";
 
 
 /**
@@ -74,6 +75,25 @@ export interface CreateOrUpdateEmployeeBody {
     officeLocationId?: number|null
 }
 
+/**
+ * DTO for employee child
+ */
+export interface EmployeeKid {
+    id: number,
+    displayName: string,
+    birthday?: string,
+    age?: number,
+    parent: SimpleDict,
+}
+
+/**
+ * DTO to create or update employee child
+ */
+export interface CreateOrUpdateEmployeeKidBody {
+    displayName: string,
+    birthday?: string
+}
+
 export interface AdminEmployeeService {
     findAll(): Promise<EmployeeWithAllDetails[]>;
 
@@ -92,6 +112,18 @@ export interface AdminEmployeeService {
      * Export all employees to excel
      */
     export(includeFired: boolean): Promise<void>;
+
+    findAllKids(): Promise<EmployeeKid[]>;
+
+    /**
+     * Create new employee kid record
+     */
+    createKid(employeeId:number, body: CreateOrUpdateEmployeeKidBody): Promise<number>;
+
+    /**
+     * Update existing employee record
+     */
+    updateKid(employeeId: number, kidId:number,  body: CreateOrUpdateEmployeeKidBody): Promise<number>;
 }
 
 
@@ -126,6 +158,24 @@ class RestAdminEmployeeService implements AdminEmployeeService {
             link.href = window.URL.createObjectURL(blob);
             link.download = `AllEmployees.xlsx`;
             link.click();
+        });
+    }
+
+    findAllKids(): Promise<EmployeeKid[]> {
+        return httpService.get(`v1/admin/employees/kids`).then(response => {
+            return response.data;
+        });
+    }
+
+    createKid(employeeId:number, body: CreateOrUpdateEmployeeKidBody): Promise<number> {
+        return httpService.post(`v1/admin/employees/${employeeId}/kids`, body).then(response => {
+            return response.data;
+        });
+    }
+
+    updateKid(employeeId: number, kidId:number, body: CreateOrUpdateEmployeeKidBody): Promise<number> {
+        return httpService.put(`v1/admin/employees/${employeeId}/kids/${kidId}`, body).then(response => {
+            return response.data;
         });
     }
 }

@@ -7,9 +7,10 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeHistoryEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
+import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidView;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,7 +44,6 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
      */
     @Mapping(target = "displayName", source = ".", qualifiedByName = "displayName")
     @Mapping(target = "documentFull", source = ".", qualifiedByName = "documentFull")
-    @Mapping(target = "phone", source = "phone", qualifiedByName = "phoneToString")
     //TODO Set phone datatype in database to string
     EmployeeWithAllDetailsDto fromEntryPartially(EmployeeWithAllDetailsEntry entry);
 
@@ -65,31 +65,52 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
         return result;
     }
 
-    //TODO Set phone datatype in database to string
-    @Deprecated
-    @Named("phoneToString")
-    default String phoneToString(BigDecimal phone) {
-        return phone == null ? null : phone.toPlainString();
-    }
+    /**
+     * Do not forget to calculate age manually
+     * @param m
+     * @return
+     */
+    @Mapping(target = "parent", source = ".", qualifiedByName = "kidParent")
+    EmployeeKidDto fromEntry(EmployeeKidView m);
+
 
     @Named("displayName")
     default String displayName(EmployeeWithAllDetailsEntry entry) {
         return entry == null ? null : Stream.of(
-                entry.getLastname(),
-                entry.getFirstname(),
-                entry.getPatronymicName())
+                        entry.getLastname(),
+                        entry.getFirstname(),
+                        entry.getPatronymicName())
                 .filter(s -> StringUtils.isNotBlank(s))
                 .collect(Collectors.joining(" "));
+    }
+
+    @Named("kidParent")
+    default SimpleDictDto kidParent(EmployeeKidView entry) {
+        if (entry == null || entry.getParent() == null) {
+            return null;
+        }
+        var result = new SimpleDictDto();
+        result.setId(entry.getParent());
+        result.setActive(entry.isParentNotDismissed());
+        result.setName(Stream.of(
+                        entry.getParentLastname(),
+                        entry.getParentFirstname(),
+                        entry.getParentPatronymicName())
+                .filter(s -> StringUtils.isNotBlank(s))
+                .collect(Collectors.joining(" ")));
+        return result;
     }
 
     @Named("documentFull")
     default String documentFull(EmployeeWithAllDetailsEntry entry) {
         return entry == null ? null : Stream.of(
-                entry.getDocumentSeries(),
-                entry.getDocumentNumber(),
-                entry.getDocumentIssuedBy(),
-                Optional.ofNullable(entry.getDocumentIssuedDate()).map(d -> d.format(DATE_FORMATTER)).orElse(null))
+                        entry.getDocumentSeries(),
+                        entry.getDocumentNumber(),
+                        entry.getDocumentIssuedBy(),
+                        Optional.ofNullable(entry.getDocumentIssuedDate()).map(d -> d.format(DATE_FORMATTER)).orElse(null))
                 .filter(s -> StringUtils.isNotBlank(s))
                 .collect(Collectors.joining(" "));
     }
+
+
 }

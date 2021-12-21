@@ -1,10 +1,7 @@
 package ru.abondin.hreasy.platform.service.mapper;
 
 import org.apache.commons.lang3.StringUtils;
-import org.mapstruct.Context;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationView;
@@ -33,8 +30,13 @@ public interface VacationDtoMapper extends MapperBase {
     MyVacationDto toMyDto(VacationEntry e);
 
     @Mapping(target = "status", qualifiedByName = "vacationStatusToId", source = "status")
-    VacationEntry toEntry(VacationCreateOrUpdateDto body);
+    VacationEntry copyToEntry(VacationCreateOrUpdateDto body, @MappingTarget VacationEntry entry);
 
+    default VacationEntry toEntry(VacationCreateOrUpdateDto body) {
+        var entry = new VacationEntry();
+        copyToEntry(body, entry);
+        return entry;
+    }
 
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)

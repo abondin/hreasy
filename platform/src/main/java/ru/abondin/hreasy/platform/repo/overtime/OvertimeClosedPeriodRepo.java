@@ -5,6 +5,6 @@ import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 
 public interface OvertimeClosedPeriodRepo extends R2dbcRepository<OvertimeClosedPeriodEntry, Integer> {
-    @Query("select * from overtime_closed_period")
+    @Query("select * from ovt.overtime_closed_period")
     Flux<OvertimeClosedPeriodEntry> allClosed();
 }

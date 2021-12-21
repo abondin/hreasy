@@ -15,6 +15,7 @@
       </v-card-title>
       <v-card-text>
         <v-data-table
+            dense
             :loading="loading"
             :loading-text="$t('Загрузка_данных')"
             :headers="headers"
@@ -46,6 +47,14 @@
             </v-chip>
           </template>
 
+          <!-- Business Accounts -->
+          <template v-slot:item.accessibleBas="{ item }">
+            <v-chip small
+                    v-for="baId in item.accessibleBas" v-bind:key="baId">
+              {{ getById(allBas, baId) }}
+            </v-chip>
+          </template>
+
           <!-- Projects -->
           <template v-slot:item.accessibleProjects="{ item }">
             <v-chip small
@@ -62,6 +71,7 @@
               :all-projects="allProjects.filter(p=>p.active)"
               :all-departments="allDepartments.filter(p=>p.active)"
               :all-roles="allRoles"
+              :all-bas="allBas"
               @close="editDialog=false;fetchData()"></admin-user-roles-form>
         </v-dialog>
 
@@ -107,6 +117,9 @@ export default class AdminUsers extends Vue {
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<SimpleDict>;
 
+  @Getter("businessAccounts", {namespace: namespace_dict})
+  private allBas!: Array<SimpleDict>;
+
   private allRoles: Array<RoleDict> = [];
 
   /**
@@ -118,6 +131,7 @@ export default class AdminUsers extends Vue {
     this.allRoles = this.getAllRoles();
     return this.$store.dispatch('dict/reloadProjects')
         .then(() => this.$store.dispatch('dict/reloadDepartments'))
+        .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
         .then(() => this.fetchData());
   }
 
@@ -140,12 +154,14 @@ export default class AdminUsers extends Vue {
         const search = this.filter.search.trim().toLowerCase();
         const projectIds = this.allProjects.filter(p => p.name.toLowerCase().indexOf(search) >= 0).map(p => p.id);
         const departmentIds = this.allDepartments.filter(p => p.name.toLowerCase().indexOf(search) >= 0).map(p => p.id);
+        const basIds = this.allBas.filter(p => p.name.toLowerCase().indexOf(search) >= 0).map(p => p.id);
         const roleIds = this.allRoles.filter(p => p.name.toLowerCase().indexOf(search) >= 0).map(p => p.id);
         filtered = filtered &&
             (
                 (item.employee.name.toLowerCase().indexOf(search) >= 0) ||
                 (projectIds && item.accessibleProjects && item.accessibleProjects.some(i => projectIds.includes(i))) ||
                 (departmentIds && item.accessibleDepartments && item.accessibleDepartments.some(i => departmentIds.includes(i))) ||
+                (basIds && item.accessibleBas && item.accessibleBas.some(i => basIds.includes(i))) ||
                 (roleIds && item.roles && item.roles.some(i => roleIds.includes(i)))
             ) as boolean
       }
@@ -159,6 +175,7 @@ export default class AdminUsers extends Vue {
     this.headers.push({text: this.$tc('ФИО'), value: 'employee.name'});
     this.headers.push({text: this.$tc('Роли'), value: 'roles'});
     this.headers.push({text: this.$tc('Доступные отделы'), value: 'accessibleDepartments'});
+    this.headers.push({text: this.$tc('Доступные бизнес акаунты'), value: 'accessibleBas'});
     this.headers.push({text: this.$tc('Доступные проекты'), value: 'accessibleProjects'});
   }
 
@@ -183,11 +200,11 @@ export default class AdminUsers extends Vue {
   //TODO Get from server/database
   private getAllRoles(): Array<RoleDict> {
     return [
-      {id: "global_admin", name: this.$tc('role.global_admin'), disabled:true},
-      {id: "hr", name: this.$tc('role.hr'), disabled:false},
-      {id: "pm", name: this.$tc('role.pm'), disabled:false},
-      {id: "finance", name: this.$tc('role.finance'), disabled:false},
-      {id: "content_management", name: this.$tc('role.content_management'), disabled:false}
+      {id: "global_admin", name: this.$tc('role.global_admin'), disabled: true},
+      {id: "hr", name: this.$tc('role.hr'), disabled: false},
+      {id: "pm", name: this.$tc('role.pm'), disabled: false},
+      {id: "finance", name: this.$tc('role.finance'), disabled: false},
+      {id: "content_management", name: this.$tc('role.content_management'), disabled: false}
     ] as Array<RoleDict>
   }
 }

@@ -17,26 +17,9 @@ public interface UserSecurityInfoMapper extends MapperBase {
 
 
     @Mapping(target = "employee", source = ".", qualifiedByName = "employeeDict")
-    @Mapping(target = "accessibleDepartments", source = ".", qualifiedByName = "accessibleDepartments")
-    @Mapping(target = "accessibleProjects", source = ".", qualifiedByName = "accessibleProjects")
-    @Mapping(target = "roles", source = ".", qualifiedByName = "roles")
     UserSecurityInfoDto fromEntry(UserSecurityInfoEntry entry);
 
 
-    @Named("accessibleDepartments")
-    default List<Integer> accessibleDepartments(UserSecurityInfoEntry entry) {
-        return splitIds(entry.getAccessibleDepartments());
-    }
-
-    @Named("accessibleProjects")
-    default List<Integer> accessibleProjects(UserSecurityInfoEntry entry) {
-        return splitIds(entry.getAccessibleProjects());
-    }
-
-    @Named("roles")
-    default List<String> roles(UserSecurityInfoEntry entry) {
-        return splitStrings(entry.getRoles());
-    }
 
     @Named("employeeDict")
     default SimpleDictDto employee(UserSecurityInfoEntry entry) {

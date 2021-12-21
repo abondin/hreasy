@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
-@Table("project")
+@Table("proj.project")
 @Data
 public class DictProjectEntry {
     @Id
@@ -22,7 +22,7 @@ public class DictProjectEntry {
     private String customer;
 
     @Nullable
-    private Integer personOfContact;
+    private String personOfContact;
 
     @Nullable
     private LocalDate startDate;
@@ -50,11 +50,11 @@ public class DictProjectEntry {
     }
 
 
-    @Table("project_history")
+    @Table("proj.project_history")
     @Data
     public static class ProjectHistoryEntry {
         @Id
-        private Integer historyId;
+        private Integer id;
 
         @NotNull
         private Integer projectId;

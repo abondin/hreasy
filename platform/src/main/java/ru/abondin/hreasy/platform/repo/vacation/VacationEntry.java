@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Data
-@Table("vacation")
+@Table("vac.vacation")
 public class VacationEntry {
     @Id
     private Integer id;
@@ -47,7 +47,7 @@ public class VacationEntry {
     private OffsetDateTime updatedAt;
 
     @Data
-    @Table("vacation_history")
+    @Table("vac.vacation_history")
     public static class VacationHistoryEntry {
         @Id
         private Integer id;

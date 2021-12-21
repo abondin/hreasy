@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 @Data
-@Table("overtime_report")
+@Table("ovt.overtime_report")
 public class OvertimeReportEntry {
     /**
      * Undefined for new report
@@ -17,7 +17,7 @@ public class OvertimeReportEntry {
     @Id
     private Integer id;
 
-    private int employeeId;
+    private int employee;
 
     /**
      * Overtime report period in yyyymm format.

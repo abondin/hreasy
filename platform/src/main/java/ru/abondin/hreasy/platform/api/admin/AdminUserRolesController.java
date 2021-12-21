@@ -13,6 +13,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.admin.AdminUserRolesService;
 import ru.abondin.hreasy.platform.service.admin.dto.UserSecurityInfoDto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController()
@@ -38,9 +39,10 @@ public class AdminUserRolesController {
     @Data
     @ToString
     public static class UserRolesUpdateBody {
-        private List<String> roles;
+        private List<String> roles = new ArrayList<>();
         private List<Integer> accessibleDepartments;
         private List<Integer> accessibleProjects;
+        private List<Integer> accessibleBas;
     }
 
     @Data

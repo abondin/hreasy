@@ -11,13 +11,14 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeHistoryRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
+import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidEntry;
+import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.CreateOrUpdateEmployeeBody;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeAllFieldsMapper;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeWithAllDetailsDto;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 
 import java.time.OffsetDateTime;
+import java.time.Period;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class AdminEmployeeService {
     private final EmployeeHistoryRepo historyRepo;
     private final AdminSecurityValidator securityValidator;
     private final EmployeeAllFieldsMapper mapper;
+    private final EmployeeKidRepo kidsRepo;
 
 
     private final static EmployeeWithAllDetailsEntry EMPTY_INSTANCE = new EmployeeWithAllDetailsEntry();
@@ -35,6 +37,17 @@ public class AdminEmployeeService {
     public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth) {
         return securityValidator.validateViewEmployeeFull(auth)
                 .flatMapMany(sec -> employeeRepo.findAll()).map(m -> mapper.fromEntry(m, dateTimeService.now()));
+    }
+
+    public Flux<EmployeeKidDto> findAllKids(AuthContext auth) {
+        return securityValidator.validateViewEmployeeFull(auth)
+                .flatMapMany(sec -> kidsRepo.findAllKidsWithParentInfo(dateTimeService.now())).map(m -> {
+                    var result = mapper.fromEntry(m);
+                    result.setAge(m.getBirthday() == null ? null :
+                            Period.between(m.getBirthday(), dateTimeService.now().toLocalDate()).getYears()
+                    );
+                    return result;
+                });
     }
 
     public Mono<EmployeeWithAllDetailsDto> get(AuthContext auth, int employeeId) {
@@ -55,6 +68,43 @@ public class AdminEmployeeService {
                     } else {
                         return Mono.error(new BusinessError("errors.employeewithemail.exists", body.getEmail()));
                     }
+                });
+    }
+
+
+    @Transactional
+    public Mono<Integer> createNewKid(AuthContext auth, int employeeId, CreateOrUpdateEmployeeKidBody body) {
+        log.info("Create new employee {} kid {} by {}", employeeId, body, auth.getUsername());
+        var now = dateTimeService.now();
+        return securityValidator.validateEditEmployee(auth)
+                .flatMap(s -> employeeRepo.findById(employeeId))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
+                .flatMap(employee -> {
+                    var kid = new EmployeeKidEntry();
+                    kid.setBirthday(body.getBirthday());
+                    kid.setDisplayName(body.getDisplayName());
+                    kid.setParent(employeeId);
+                    return kidsRepo.save(kid).map(EmployeeKidEntry::getId);
+                });
+    }
+
+    @Transactional
+    public Mono<Integer> updateKid(AuthContext auth, int employeeId, int kidId, CreateOrUpdateEmployeeKidBody body) {
+        log.info("Update employee {} kid {}: {} by {}", employeeId, kidId, body, auth.getUsername());
+        var now = dateTimeService.now();
+        return securityValidator.validateEditEmployee(auth)
+                .flatMap(s -> employeeRepo.findById(employeeId))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
+                .flatMap(s -> kidsRepo.findById(kidId))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(kidId))))
+                .flatMap(kidEntry -> {
+                    if (employeeId != kidEntry.getParent()) {
+                        return Mono.error(new BusinessError("errors.entity.invalid.parent", Integer.toString(kidId),
+                                Integer.toString(employeeId)));
+                    }
+                    kidEntry.setBirthday(body.getBirthday());
+                    kidEntry.setDisplayName(body.getDisplayName());
+                    return kidsRepo.save(kidEntry).map(EmployeeKidEntry::getId);
                 });
     }
 

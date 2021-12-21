@@ -16,27 +16,33 @@ public class SecAdminUserRolesRepoImpl implements SecAdminUserRolesRepo {
     private final R2dbcEntityTemplate dbTemplate;
 
     @Override
-    public Mono<Integer> updateRoles(int userId, List<String> roles) {
-        return doDeleteAndInsert("sec_user_role", "user_id", userId,
+    public Mono<Integer> updateRoles(int employeeId, List<String> roles) {
+        return doDeleteAndInsert("sec.user_role", "employee_id", employeeId,
                 "role", roles);
     }
 
     @Override
     public Mono<Integer> updateAccessibleDepartments(int employeeId, List<Integer> accessibleDepartments) {
-        return doDeleteAndInsert("employee_accessible_departments", "employee_id", employeeId,
+        return doDeleteAndInsert("sec.employee_accessible_departments", "employee_id", employeeId,
                 "department_id", accessibleDepartments);
     }
 
     @Override
     public Mono<Integer> updateAccessibleProjects(int employeeId, List<Integer> accessibleProjects) {
-        return doDeleteAndInsert("employee_accessible_projects", "employee_id", employeeId,
+        return doDeleteAndInsert("sec.employee_accessible_projects", "employee_id", employeeId,
                 "project_id", accessibleProjects);
+    }
+
+    @Override
+    public Mono<Integer> updateAccessibleBas(int employeeId, List<Integer> accessibleBas) {
+        return doDeleteAndInsert("sec.employee_accessible_bas", "employee_id", employeeId,
+                "ba_id", accessibleBas);
     }
 
     @Override
     public Mono<Integer> addAccessibleProject(int employeeId, int projectId) {
         return dbTemplate.getDatabaseClient().sql(
-                        "insert into employee_accessible_projects (employee_id, project_id)" +
+                        "insert into sec.employee_accessible_projects (employee_id, project_id)" +
                                 " values (:employee_id, :project_id)")
                 .bind("employee_id", employeeId)
                 .bind("project_id", projectId)

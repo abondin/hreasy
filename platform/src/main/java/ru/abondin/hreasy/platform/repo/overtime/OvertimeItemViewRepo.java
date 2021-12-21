@@ -8,11 +8,11 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface OvertimeItemViewRepo extends R2dbcRepository<OvertimeItemsGroupedByDateAndProjectView, Integer> {
-    @Query(" select date, project_id, report_id, sum(hours) as hours\n" +
-            " from overtime_item where\n" +
+    @Query("select date, project_id, report_id, sum(hours) as hours\n" +
+            " from ovt.overtime_item where\n" +
             " deleted_at is null\n" +
             " and report_id = :reportId\n" +
-            " group by date, project_id, report_id;")
+            " group by date, project_id, report_id")
     Flux<OvertimeItemsGroupedByDateAndProjectView> gropedByProjectAndDate(@Param("reportId") int reportId);
 
 }

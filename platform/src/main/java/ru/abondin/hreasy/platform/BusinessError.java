@@ -3,9 +3,6 @@ package ru.abondin.hreasy.platform;
 
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,13 +13,9 @@ import java.util.Map;
 public class BusinessError extends RuntimeException {
 
 
-    public BusinessError(String code, List<String> localizationArgs) {
+    public BusinessError(String code, String... localizationArgs) {
         this.code = code;
         this.localizationArgs = localizationArgs;
-    }
-
-    public BusinessError(String code, String... localizationArgs) {
-        this(code, localizationArgs == null ? new ArrayList<>() : Arrays.asList(localizationArgs));
     }
 
     /**
@@ -34,7 +27,7 @@ public class BusinessError extends RuntimeException {
     /**
      * Arguments to resolve full message from the localization template
      */
-    List<String> localizationArgs;
+    String[] localizationArgs;
     /**
      * Additional attributes to send to the client
      */

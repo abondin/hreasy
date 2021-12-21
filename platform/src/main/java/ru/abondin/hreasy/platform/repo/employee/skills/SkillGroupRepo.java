@@ -8,6 +8,6 @@ import reactor.core.publisher.Flux;
 @Repository
 public interface SkillGroupRepo extends ReactiveCrudRepository<SkillGroupEntry, Integer> {
 
-    @Query("select * from skill_group where archived != 1 order by name asc")
+    @Query("select * from empl.skill_group where archived != true order by name asc")
     Flux<SkillGroupEntry> findNotArchived();
 }

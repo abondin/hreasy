@@ -12,7 +12,7 @@ import java.time.OffsetDateTime;
  * Closed period to report overtime
  */
 @Data
-@Table("overtime_period_history")
+@Table("ovt.overtime_period_history")
 public class OvertimePeriodHistoryEntry {
 
     public static short ACTION_CLOSE = 1;

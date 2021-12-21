@@ -9,6 +9,6 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface DepartmentRepo extends ReactiveSortingRepository<DepartmentEntry, Integer> {
 
-    @Query("select * from department where name=:name")
+    @Query("select * from dict.department where name=:name")
     Mono<DepartmentEntry> findByName(String name);
 }

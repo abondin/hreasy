@@ -16,6 +16,7 @@ import AdminEmployees from "@/components/admin/employee/AdminEmployees.vue";
 import AssessmentShortList from "@/components/assessment/AssessmentShortList.vue";
 import EmployeeAssessmentProfile from "@/components/assessment/EmployeeAssessmentProfile.vue";
 import AssessmentDetailedVue from "@/components/assessment/AssessmentDetailedVue.vue";
+import AdminEmployeeKids from "@/components/admin/employee/AdminEmployeeKids.vue";
 
 Vue.use(VueRouter)
 
@@ -35,6 +36,7 @@ const routes = [
     {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true},
     {path: "/admin/articles", component: AdminArticlesList},
     {path: "/admin/employees", component: AdminEmployees},
+    {path: "/admin/employees/kids", component: AdminEmployeeKids},
 ]
 const router = new VueRouter({
     mode: 'history',

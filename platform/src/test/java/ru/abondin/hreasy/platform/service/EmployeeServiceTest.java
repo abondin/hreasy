@@ -15,14 +15,14 @@ import ru.abondin.hreasy.platform.TestEmployees;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
-import ru.abondin.hreasy.platform.repo.SqlServerContextInitializer;
+import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 
 import java.time.Duration;
 
 @Disabled("Because of weird java.lang.IllegalStateException: No MssqlRowMetadata available")
 @ActiveProfiles({"test", "dev"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@ContextConfiguration(initializers = {SqlServerContextInitializer.class})
+@ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @Slf4j
 public class EmployeeServiceTest {
 

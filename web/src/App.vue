@@ -44,7 +44,7 @@
             <v-icon>mdi-calendar-text</v-icon>
           </v-list-item-action>
           <v-list-item-title>
-            {{ $tc('Отпуска')}}
+            {{ $tc('Отпуска') }}
           </v-list-item-title>
         </v-list-item>
 
@@ -53,7 +53,7 @@
             <v-icon>mdi-book-check-outline</v-icon>
           </v-list-item-action>
           <v-list-item-title>
-            {{ $tc('Ассессметны')}}
+            {{ $tc('Ассессметны') }}
           </v-list-item-title>
         </v-list-item>
 
@@ -74,6 +74,11 @@
           <v-list-item to="/admin/employees" v-if="canAdminEmployees()">
             <v-list-item-title>
               {{ $t('Админка сотрудников') }}
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item to="/admin/employees/kids" v-if="canAdminEmployees()">
+            <v-list-item-title>
+              {{ $t('Дети сотрудников') }}
             </v-list-item-title>
           </v-list-item>
           <v-list-item to="/admin/projects" v-if="canAdminProjects()">
@@ -99,8 +104,6 @@
           </v-list-item>
 
         </v-list-group>
-
-
 
 
         <v-divider></v-divider>
@@ -215,7 +218,7 @@ export default class App extends Vue {
     return permissionService.canAdminProjects();
   }
 
-  private canAdminEmployees(){
+  private canAdminEmployees() {
     return permissionService.canAdminEmployees();
   }
 

@@ -12,7 +12,7 @@ import java.time.OffsetDateTime;
  * Exported to disk excel document for overtimes for the period
  */
 @Data
-@Table("overtime_export_document")
+@Table("ovt.overtime_export_document")
 public class OvertimeExportedDocumentEntry {
 
     @Id

@@ -34,6 +34,10 @@
       </v-card-title>
 
       <v-card-text>
+        <!-- Error block -->
+        <v-alert v-if="error" type="error">
+          {{ error }}
+        </v-alert>
         <v-data-table
             dense
             :loading="loading"
@@ -74,6 +78,7 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import assessmentService, {EmployeeAssessmentsSummary} from "@/components/assessment/assessment.service";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
+import {errorUtils} from "@/components/errors";
 
 const namespace_dict: string = 'dict';
 
@@ -86,6 +91,7 @@ class Filter {
 export default class AssessmentShortList extends Vue {
   headers: DataTableHeader[] = [];
   loading: boolean = false;
+  error: string | null = null;
   assessments: EmployeeAssessmentsSummary[] = [];
 
   @Getter("projects", {namespace: namespace_dict})
@@ -129,12 +135,16 @@ export default class AssessmentShortList extends Vue {
 
   private fetchData() {
     this.loading = true;
+    this.error = null;
     return assessmentService.allNotFiredEmployeesWithLatestAssessment()
         .then(data => {
               this.assessments = data;
               return this.assessments;
             }
-        ).finally(() => {
+        ).catch((ex: any) => {
+          this.error = errorUtils.shortMessage(ex);
+        })
+        .finally(() => {
           this.loading = false
         });
   }

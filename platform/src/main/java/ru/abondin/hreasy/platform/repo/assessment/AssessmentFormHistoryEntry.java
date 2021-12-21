@@ -7,12 +7,12 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.OffsetDateTime;
 
 @Data
-@Table("assessment_form_history")
+@Table("assmnt.assessment_form_history")
 public class AssessmentFormHistoryEntry {
     @Id
     private Integer id;
     private Integer assessmentFormId;
     private String content;
-    private OffsetDateTime updatedAt;
-    private Integer updatedBy;
+    private OffsetDateTime createdAt;
+    private Integer createdBy;
 }

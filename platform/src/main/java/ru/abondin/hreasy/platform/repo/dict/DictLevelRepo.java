@@ -9,6 +9,6 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface DictLevelRepo extends ReactiveSortingRepository<DictLevelEntry, Integer> {
     
-    @Query("select * from dict_level where name=:name")
+    @Query("select * from dict.level where name=:name")
     Mono<DictLevelEntry> findByName(String name);
 }

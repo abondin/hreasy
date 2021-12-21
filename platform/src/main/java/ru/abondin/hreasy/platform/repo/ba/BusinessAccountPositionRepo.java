@@ -8,6 +8,6 @@ import reactor.core.publisher.Flux;
 @Repository
 public interface BusinessAccountPositionRepo extends ReactiveCrudRepository<BusinessAccountPositionEntry, Integer> {
 
-    @Query("select * from ba_position where business_account=:baId order by name")
+    @Query("select * from ba.ba_position where business_account=:baId order by name")
     Flux<BusinessAccountPositionEntry> findAll(int baId);
 }
