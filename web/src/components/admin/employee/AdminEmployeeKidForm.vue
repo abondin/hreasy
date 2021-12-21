@@ -19,7 +19,7 @@
                               item-value="id"
                               item-text="displayName"
                               :label="$t('Сотрудник')"
-                              :rules="[v=>(v ? true:false || $t('Обязательное поле'))]"
+                              :rules="[v=>(v ? true:$t('Обязательное поле'))]"
                               :disabled="!employeeKidForm.isNew"
               ></v-autocomplete>
             </v-col>
@@ -124,7 +124,7 @@ export default class AdminEmployeeForm extends Vue {
       this.employeeKidForm.isNew = false;
       this.employeeKidForm.id = this.input.id;
       this.employeeKidForm.displayName = this.input.displayName;
-      this.employeeKidForm.birthday = this.input.birthday;
+      this.employeeKidForm.birthday = this.input.birthday|null;
       this.employeeKidForm.parent = this.input.parent.id;
     }
   }
