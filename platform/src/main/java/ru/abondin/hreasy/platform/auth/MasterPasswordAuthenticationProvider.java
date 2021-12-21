@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 import ru.abondin.hreasy.platform.sec.UserDetailsWithEmployeeInfo;
@@ -28,7 +29,7 @@ public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticat
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         var inputAuth = (UsernamePasswordAuthenticationToken) authentication;
-        var username = inputAuth.getName();
+        var username = StringUtils.trimToEmpty(inputAuth.getName());
         var password = inputAuth.getCredentials();
         if (StringUtils.isBlank(securityProps.getMasterPassword()) || !securityProps.getMasterPassword().equals(password)) {
             // throw BadCredentialsException("Master password is invalid");
@@ -36,6 +37,7 @@ public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticat
             return Mono.empty();
         }
         return employeeAuthDomainService.findIdByEmail(username)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", username)))
                 .flatMap(
                         employeeAuthInfoEntry ->
                                 authoritiesPopulator.getGrantedAuthorities(username).collectList()
@@ -49,6 +51,7 @@ public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticat
                                                             employeeAuthInfoEntry.getDepartmentId(),
                                                             employeeAuthInfoEntry.getCurrentProjectId(),
                                                             employeeAuthInfoEntry.getAccessibleDepartments(),
+                                                            employeeAuthInfoEntry.getAccessibleBas(),
                                                             employeeAuthInfoEntry.getAccessibleProjects());
                                                     var result = new UsernamePasswordAuthenticationToken(user, password, authorities);
                                                     result.setDetails(inputAuth.getDetails());

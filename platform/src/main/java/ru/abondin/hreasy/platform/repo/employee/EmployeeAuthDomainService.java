@@ -21,11 +21,13 @@ public class EmployeeAuthDomainService {
             entry.setCurrentProjectId(empl.getCurrentProjectId());
             return employeeRepo.findAccessibleDepartments(empl.getId()).collectList()
                     .flatMap(deps -> employeeRepo.findAccessibleProjects(empl.getId()).collectList()
-                            .map(projects -> {
+                            .flatMap(projects -> employeeRepo.findAccessibleBas(empl.getId()).collectList()
+                            .map(bas -> {
                                 entry.setAccessibleDepartments(deps);
                                 entry.setAccessibleProjects(projects);
+                                entry.setAccessibleBas(bas);
                                 return entry;
-                            }));
+                            })));
         });
     }
 }

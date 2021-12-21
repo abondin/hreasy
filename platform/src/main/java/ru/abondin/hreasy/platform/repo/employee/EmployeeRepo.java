@@ -12,7 +12,7 @@ import ru.abondin.hreasy.platform.repo.employee.admin.UserSecurityInfoEntry;
 
 @Repository
 public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Integer>, EmployeeDetailedRepo {
-    @Query("select id from empl.employee where email=:email")
+    @Query("select id from empl.employee where trim(email)=:email")
     Mono<EmployeeShortInfoEntry> findIdByEmail(String email);
 
     @Query("select email from empl.employee where id=:employeeId")
@@ -20,6 +20,9 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
 
     @Query("select department_id from sec.employee_accessible_departments where employee_id=:employeeId")
     Flux<Integer> findAccessibleDepartments(int employeeId);
+
+    @Query("select ba_id from sec.employee_accessible_bas where employee_id=:employeeId")
+    Flux<Integer> findAccessibleBas(int employeeId);
 
     @Query("select project_id from sec.employee_accessible_projects where employee_id=:employeeId")
     Flux<Integer> findAccessibleProjects(int employeeId);

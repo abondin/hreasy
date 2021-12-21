@@ -32,7 +32,9 @@ public class ProjectHierarchyAccessor {
         return projectRepo.getEmployeeCurrentProject(employeeId)
                 .map(
                         currentProject -> managerAuth.getEmployeeInfo().getAccessibleProjects().contains(currentProject.getId())
-                                || (currentProject.getDepartmentId() != null && managerAuth.getEmployeeInfo().getAccessibleDepartments().contains(currentProject.getDepartmentId())))
+                                || (currentProject.getDepartmentId() != null && managerAuth.getEmployeeInfo().getAccessibleDepartments().contains(currentProject.getDepartmentId()))
+                                || (currentProject.getBaId() != null && managerAuth.getEmployeeInfo().getAccessibleBas().contains(currentProject.getBaId()))
+                )
                 .defaultIfEmpty(true);
     }
 
@@ -44,13 +46,16 @@ public class ProjectHierarchyAccessor {
      * <ul>
      *     <li>Manager of current project of employee</li>
      *     <li>Manager of department of current project of employee</li>
+     *     <li>Manager of business account of current project of employee</li>
      * </ul>
      */
     public Mono<Boolean> isManagerOfAllProject(AuthContext managerAuth, List<Integer> projectIds) {
         return projectRepo.findByIds(projectIds).reduce(true,
                 (result, project) -> result &&
                         (managerAuth.getEmployeeInfo().getAccessibleProjects().contains(project.getId())
-                                || (project.getDepartmentId() != null && managerAuth.getEmployeeInfo().getAccessibleDepartments().contains(project.getDepartmentId()))))
+                                || (project.getDepartmentId() != null && managerAuth.getEmployeeInfo().getAccessibleDepartments().contains(project.getDepartmentId()))
+                                || (project.getBaId() != null && managerAuth.getEmployeeInfo().getAccessibleBas().contains(project.getBaId()))
+                        ))
                 .defaultIfEmpty(true);
     }
 }

@@ -35,6 +35,13 @@ public class UserDetailsWithEmployeeInfo implements UserDetails {
     private List<Integer> accessibleDepartments = new ArrayList<>();
 
     /**
+     * List of ids of business accounts accessible to the employee.
+     * Works for roles like overtime_view, overtime_edit, vacation_view, vacation_edit.
+     * For example employee with role overtime_edit can edit overtimes only for employees with current project from department from given list
+     */
+    private List<Integer> accessibleBas = new ArrayList<>();
+
+    /**
      * Works for roles like overtime_view, overtime_edit, vacation_view, vacation_edit.
      * For example employee with role overtime_edit can edit overtimes only for employees with current project from given list
      * Means nothing if employee has access to the whole department

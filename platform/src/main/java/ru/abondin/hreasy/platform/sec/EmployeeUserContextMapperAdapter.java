@@ -35,6 +35,7 @@ public class EmployeeUserContextMapperAdapter implements UserDetailsContextMappe
                 employeeAuthInfoEntry.getDepartmentId(),
                 employeeAuthInfoEntry.getCurrentProjectId(),
                 employeeAuthInfoEntry.getAccessibleDepartments(),
+                employeeAuthInfoEntry.getAccessibleBas(),
                 employeeAuthInfoEntry.getAccessibleProjects());
     }
 }
