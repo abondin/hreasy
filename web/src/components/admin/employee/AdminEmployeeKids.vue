@@ -178,14 +178,6 @@ export default class AdminEmployeeKids extends Vue {
     this.headers.push({text: this.$tc('Родитель уволен'), value: 'parent.active', width: 100});
   }
 
-  private getById(array: Employee[], id?: number): string {
-    if (id) {
-      const find = array.find(e => e.id == id);
-      return find ? find.name : this.$tc("Не найден: ") + id;
-    } else {
-      return '-';
-    }
-  }
 
   private formatDate(date: string | undefined): string | undefined {
     return DateTimeUtils.formatFromIso(date);
