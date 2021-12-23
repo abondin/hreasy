@@ -2,6 +2,13 @@ import httpService from "../http.service";
 import {AxiosInstance} from "axios";
 import {SimpleDict} from "@/store/modules/dict";
 
+export interface EmployeeVacationShort {
+    id: number,
+    year: number,
+    startDate: string,
+    endDate: string,
+    current: boolean
+}
 
 export interface Vacation {
     id: number,
@@ -33,6 +40,7 @@ export interface MyVacation {
     daysNumber: number
 }
 
+
 export interface CreateOrUpdateVacation {
     year: number,
     startDate: string,
@@ -49,6 +57,8 @@ export interface VacationService {
     findAll(): Promise<Vacation[]>;
 
     myFutureVacations(): Promise<MyVacation[]>;
+
+    currentOrFutureVacations(employeeId: number): Promise<EmployeeVacationShort[]>;
 
     /**
      * Create new vacation entry
@@ -75,6 +85,12 @@ class RestVacationService implements VacationService {
 
     myFutureVacations(): Promise<Vacation[]> {
         return httpService.get("v1/vacations/my").then(response => {
+            return response.data;
+        });
+    }
+
+    currentOrFutureVacations(employeeId: number): Promise<EmployeeVacationShort[]> {
+        return httpService.get(`v1/vacations/${employeeId}/currentOrFuture`).then(response => {
             return response.data;
         });
     }

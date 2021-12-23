@@ -16,6 +16,7 @@ import ru.abondin.hreasy.platform.repo.vacation.VacationHistoryRepo;
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.mapper.VacationDtoMapper;
+import ru.abondin.hreasy.platform.service.vacation.dto.EmployeeVacationShort;
 import ru.abondin.hreasy.platform.service.vacation.dto.MyVacationDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
@@ -52,11 +53,27 @@ public class VacationService {
         ).map(e -> mapper.vacationToDto(e)));
     }
 
+    public Flux<EmployeeVacationShort> currentOrFutureVacations(int employeeId, AuthContext auth) {
+        var now = dateTimeService.now();
+        var today = now.toLocalDate();
+        return vacationRepo.findFuture(employeeId, now)
+                .filter(e -> VacationDto.VacationStatus.isActive(e.getStatus()))
+                .map(e -> {
+                    var dto = mapper.toEmployeeVacationShortDto(e);
+                    dto.setCurrent(
+                            // Check if start date is today or early
+                            (dto.getStartDate() == null || !e.getStartDate().isAfter(today))
+                                    && // Check if endDate date is today or later
+                                    (dto.getEndDate() == null || !e.getEndDate().isBefore(today))
+                    );
+                    return dto;
+                });
+    }
+
     public Flux<MyVacationDto> my(AuthContext auth) {
         var now = dateTimeService.now();
         return vacationRepo.findFuture(auth.getEmployeeInfo().getEmployeeId(), now).map(e -> mapper.toMyDto(e));
     }
-
 
     @Transactional
     public Mono<Integer> create(AuthContext auth, int employeeId, VacationCreateOrUpdateDto body) {

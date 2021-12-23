@@ -60,9 +60,11 @@ public class VacationEntry {
         private LocalDate endDate;
         private String notes;
         /**
-         * 0 - planning
+         * 0 - planned
          * 1 - taken
-         * 2 - canceled
+         * 2 - compensation
+         * 3 - canceled (canceled by employee)
+         * 4 - rejected (created by mistake)
          */
         @Column("stat")
         private int status;

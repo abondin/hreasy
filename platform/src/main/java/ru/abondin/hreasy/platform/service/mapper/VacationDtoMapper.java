@@ -6,10 +6,7 @@ import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationView;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
-import ru.abondin.hreasy.platform.service.vacation.dto.MyVacationDto;
-import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
-import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
-import ru.abondin.hreasy.platform.service.vacation.dto.VacationExportDto;
+import ru.abondin.hreasy.platform.service.vacation.dto.*;
 
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -28,6 +25,8 @@ public interface VacationDtoMapper extends MapperBase {
 
     @Mapping(target = "status", source = "status", qualifiedByName = "vacationStatusFromId")
     MyVacationDto toMyDto(VacationEntry e);
+
+    EmployeeVacationShort toEmployeeVacationShortDto(VacationEntry e);
 
     @Mapping(target = "status", qualifiedByName = "vacationStatusToId", source = "status")
     VacationEntry copyToEntry(VacationCreateOrUpdateDto body, @MappingTarget VacationEntry entry);

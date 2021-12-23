@@ -10,6 +10,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.vacation.VacationExportService;
 import ru.abondin.hreasy.platform.service.vacation.VacationService;
+import ru.abondin.hreasy.platform.service.vacation.dto.EmployeeVacationShort;
 import ru.abondin.hreasy.platform.service.vacation.dto.MyVacationDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
@@ -47,6 +48,18 @@ public class VacationController {
                 AuthHandler.currentAuth().flatMapMany(auth -> vacationService.my(auth));
     }
 
+    /**
+     * Future or current vacations for any user
+     *
+     * @return
+     */
+    @GetMapping("/{employeeId}/currentOrFuture")
+    @ResponseBody
+    public Flux<EmployeeVacationShort> currentOrFutureVacations(@PathVariable int employeeId) {
+        return
+                AuthHandler.currentAuth().flatMapMany(auth -> vacationService.currentOrFutureVacations(employeeId, auth));
+    }
+
 
     /**
      * @param employeeId
@@ -81,7 +94,7 @@ public class VacationController {
         return AuthHandler.currentAuth().flatMap(auth -> vacationExportService
                 .export(auth,
                         new VacationExportService.VacationExportFilter(years == null ? Arrays.asList() : years)
-                , locale));
+                        , locale));
     }
 
 }
