@@ -4,14 +4,15 @@
         <v-card-title>{{$t('Обновление текущего проекта')}}</v-card-title>
         <v-card-subtitle>{{employee.displayName}}</v-card-subtitle>
         <v-card-text>
-            <v-select
+            <v-autocomplete
+                    autofocus
                     clearable
                     v-model="selectedProject"
                     item-text="name"
                     item-value="id"
                     :items="allProjects.filter(p=>p.active)"
                     :label="$tc('Проекты')"
-            ></v-select>
+            ></v-autocomplete>
             <div class="error" v-if="error">{{error}}</div>
         </v-card-text>
         <v-card-actions>

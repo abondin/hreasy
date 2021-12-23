@@ -35,7 +35,7 @@ public class EmployeeDetailedRepoImpl implements EmployeeDetailedRepo {
     @Override
     public Mono<Integer> updateCurrentProject(int employeeId, @Nullable Integer currentProjectId) {
         var sql = dbTemplate
-                .getDatabaseClient().sql("update employee set current_project=:currentProjectId where id=:employeeId")
+                .getDatabaseClient().sql("update empl.employee set current_project=:currentProjectId where id=:employeeId")
                 .bind("employeeId", employeeId);
         if (currentProjectId == null) {
             sql = sql.bindNull("currentProjectId", Integer.class);
