@@ -12,7 +12,7 @@ import ru.abondin.hreasy.platform.repo.employee.admin.UserSecurityInfoEntry;
 
 @Repository
 public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Integer>, EmployeeDetailedRepo {
-    @Query("select id from empl.employee where trim(email)=:email")
+    @Query("select id from empl.employee where trim(email) ilike (:email)")
     Mono<EmployeeShortInfoEntry> findIdByEmail(String email);
 
     @Query("select email from empl.employee where id=:employeeId")

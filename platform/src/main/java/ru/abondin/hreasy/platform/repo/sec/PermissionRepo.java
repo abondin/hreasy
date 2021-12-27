@@ -10,6 +10,6 @@ public interface PermissionRepo extends ReactiveCrudRepository<PermissionEntry, 
     @Query("select p.* from sec.role_perm p" +
             " join sec.user_role r on p.role=r.role" +
             " join empl.employee e on r.employee_id=e.id" +
-            " where e.email=:email")
+            " where trim(e.email) ilike (:email)")
     Flux<PermissionEntry> findByEmployeeEmail(String email);
 }

@@ -2,21 +2,6 @@
 version: '3.7'
 
 services:
-  hreasydb:
-    image: mcr.microsoft.com/mssql/server:2019-latest
-    restart: "no" #unless-stopped
-    environment:
-      SA_PASSWORD: HREasyPassword2019!
-      ACCEPT_EULA: Y
-      MSSQL_COLLATION: Cyrillic_General_100_CI_AS
-      MSSQL_PID: Express
-    ports:
-      - 1433:1433
-    volumes:
-      - ./dbbackup:/var/backups
-      - hreasydata:/var/opt/mssql
-    container_name: hreasydb
-
   hreasypg:
     image: postgres
     restart: always

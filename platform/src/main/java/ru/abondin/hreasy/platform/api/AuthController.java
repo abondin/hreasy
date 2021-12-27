@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,8 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.auth.AuthHandler.CurrentUserDto;
 import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
 import ru.abondin.hreasy.platform.service.sec.AuthService;
+
+import java.util.Locale;
 
 @RestController()
 @RequestMapping("/api/v1")
@@ -59,16 +62,19 @@ public class AuthController {
     /**
      * We allow user to populate username without email suffix (@company.org)
      * In that case we append email suffix automatically
+     * <p>
+     * Username always converts to lowercase
      *
      * @param username
      * @return
      */
     private String emailFromUserName(String username) {
+        var result = username;
         if (Strings.isNotBlank(props.getDefaultEmailSuffix())
                 && Strings.isNotBlank(username) && !username.contains("@")) {
-            return username + props.getDefaultEmailSuffix();
+            result = username + props.getDefaultEmailSuffix();
         }
-        return username;
+        return StringUtils.trimToEmpty(result).toLowerCase(Locale.ROOT);
     }
 
 }

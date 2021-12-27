@@ -14,6 +14,8 @@ import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 import ru.abondin.hreasy.platform.sec.UserDetailsWithEmployeeInfo;
 
+import java.util.Locale;
+
 /**
  * For development purposes only.
  * Allow any user with valid employee email with fixed master password

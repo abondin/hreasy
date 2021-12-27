@@ -16,7 +16,9 @@ public class PostgreSQLTestContainerContextInitializer implements ApplicationCon
     /**
      * Single container shared between test methods
      */
-    private final static PostgreSQLContainer sqlServer = new PostgreSQLContainer<>("postgres");
+    private final static PostgreSQLContainer dbContainer = new PostgreSQLContainer<>("postgres")
+            .withDatabaseName("hr")
+            .withUsername("hr");
 
     @Override
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
@@ -26,14 +28,14 @@ public class PostgreSQLTestContainerContextInitializer implements ApplicationCon
         if (existingSqlDocker != null && existingSqlDocker) {
             log.info("Use existing docker container for SQL Server");
         } else {
-            log.info("Starting SQL Server Docker Container. If you want to use existing one, please set hreasy.test.existing-database-docker to true");
-            sqlServer.start();
-            var port = sqlServer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);
+            log.info("Starting PostgreSQL Docker Container. If you want to use existing one, please set hreasy.test.existing-database-docker to true");
+            dbContainer.start();
+            var port = dbContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);
             TestPropertyValues.of(
-                    "hreasy.db.host=" + sqlServer.getContainerIpAddress(),
+                    "hreasy.db.host=" + dbContainer.getContainerIpAddress(),
                     "hreasy.db.port=" + port,
-                    "hreasy.db.username=" + sqlServer.getUsername(),
-                    "hreasy.db.password=" + sqlServer.getPassword()
+                    "hreasy.db.username=" + dbContainer.getUsername(),
+                    "hreasy.db.password=" + dbContainer.getPassword()
             ).applyTo(configurableApplicationContext.getEnvironment());
         }
     }
