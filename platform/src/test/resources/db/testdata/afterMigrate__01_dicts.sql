@@ -1,71 +1,55 @@
 -- Safe scripts with dicts test data
 
 -- Departments
-IF NOT EXISTS (SELECT id from dict.department where name='Development')
-begin
-    insert into department (name) values ('Development')
-end
+insert into dict.department (name) 
+ select  ('Development')
+ where NOT EXISTS (SELECT id from dict.department where name='Development');
 
-IF NOT EXISTS (SELECT id from dict.department where name='Integration')
-begin
-    insert into department (name) values ('Integration')
-end
+insert into dict.department (name) 
+ select  ('Integration')
+ where NOT EXISTS (SELECT id from dict.department where name='Integration');
 
 -- Level
-IF NOT EXISTS (SELECT id from dict.level where name='Senior')
-begin
-    insert into dict.level (name) values ('Senior')
-end
-IF NOT EXISTS (SELECT id from dict.level where name='Junior')
-begin
-    insert into dict.level (name) values ('Junior')
-end
+insert into dict.level (name) 
+ select  ('Senior')
+ where NOT EXISTS (SELECT id from dict.level where name='Senior');
+insert into dict.level (name) 
+ select  ('Junior')
+ where NOT EXISTS (SELECT id from dict.level where name='Junior');
 
 -- Position
-IF NOT EXISTS (SELECT id from dict.position where name='Java Developer')
-begin
-    insert into dict.position (name) values ('Java Developer')
-end
+insert into dict.position (name) 
+ select  ('Java Developer')
+ where NOT EXISTS (SELECT id from dict.position where name='Java Developer');
 
-IF NOT EXISTS (SELECT id from dict.position where name='Project Manager')
-begin
-    insert into dict.position (name) values ('Project Manager')
-end
+insert into dict.position (name) 
+ select  ('Project Manager')
+ where NOT EXISTS (SELECT id from dict.position where name='Project Manager');
 
-IF NOT EXISTS (SELECT id from dict.position where name='Head of Department')
-begin
-    insert into dict.position (name) values ('Head of Department')
-end
+insert into dict.position (name) 
+ select  ('Head of Department')
+ where NOT EXISTS (SELECT id from dict.position where name='Head of Department');
 
 
-IF NOT EXISTS (SELECT id from dict.position where name='Automation QA')
-begin
-    insert into dict.position (name) values ('Automation QA')
-end
+insert into dict.position (name) 
+ select  ('Automation QA')
+ where NOT EXISTS (SELECT id from dict.position where name='Automation QA');
 
 
 -- Projects
-IF NOT EXISTS (SELECT id from dict.project where name='M1 Billing')
-begin
-    insert into dict.project (name, start_date, customer, department_id) values
-      ('M1 Billing', GETDATE(), 'Mobile Operator N1', (SELECT id from dict.department where name='Development'))
-end
+insert into proj.project (name, start_date, customer, department_id) 
+ select 'M1 Billing', now()::date, 'Mobile Operator N1', (SELECT id from dict.department where name='Development')
+ where NOT EXISTS (SELECT id from proj.project where name='M1 Billing');
 
-IF NOT EXISTS (SELECT id from dict.project where name='M1 FMS')
-begin
-    insert into dict.project (name, start_date, customer, department_id) values
-      ('M1 FMS', GETDATE(), 'Mobile Operator N1', (SELECT id from dict.department where name='Development'))
-end
+insert into proj.project (name, start_date, customer, department_id) 
+ select 'M1 FMS', now()::date, 'Mobile Operator N1', (SELECT id from dict.department where name='Development')
+ where NOT EXISTS (SELECT id from proj.project where name='M1 FMS');
 
-IF NOT EXISTS (SELECT id from dict.project where name='M1 Policy Manager')
-begin
-    insert into dict.project (name, start_date, customer, department_id) values
-      ('M1 Policy Manager', GETDATE(), 'Mobile Operator N1', (SELECT id from dict.department where name='Development'))
-end
+insert into proj.project (name, start_date, customer, department_id) 
+ select 'M1 Policy Manager', now()::date, 'Mobile Operator N1', (SELECT id from dict.department where name='Development')
+ where NOT EXISTS (SELECT id from proj.project where name='M1 Policy Manager');
 
 
-IF NOT EXISTS (SELECT id from dict.project where name='M1 ERP Integration')
-begin
-    insert into dict.project (name, start_date, customer, department_id) values
-      ('M1 ERP Integration', GETDATE(), 'Mobile Operator N1', (SELECT id from dict.department where name='Integration'))
-end
+insert into proj.project (name, start_date, customer, department_id) 
+ select 'M1 ERP Integration', now()::date, 'Mobile Operator N1', (SELECT id from dict.department where name='Integration')
+ where NOT EXISTS (SELECT id from proj.project where name='M1 ERP Integration');

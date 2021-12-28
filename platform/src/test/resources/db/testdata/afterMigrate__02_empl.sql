@@ -1,369 +1,387 @@
 -- Safe scripts with empl test data
 
 -- Java Developer from M1 Billing
-IF NOT EXISTS (SELECT id from empl.employee where email='Haiden.Spooner@stm-labs.ru')
-begin
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
-(
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Haiden.Spooner@stm-labs.ru',
   'Spooner', 'Haiden',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Java Developer'),
-  (SELECT top 1 id from dict_level where name='Senior'),
-  (SELECT top 1 id from project where name='M1 Billing'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Java Developer' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 Billing' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-end
+  null where NOT EXISTS (SELECT id from empl.employee where email ilike 'Haiden.Spooner@stm-labs.ru');
 
 -- Java Developer from M1 Billing
-IF NOT EXISTS (SELECT id from empl.employee where email='Asiyah.Bob@stm-labs.ru')
-begin
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
-(
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Asiyah.Bob@stm-labs.ru',
   'Bob', 'Asiyah',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Java Developer'),
-  (SELECT top 1 id from dict_level where name='Senior'),
-  (SELECT top 1 id from project where name='M1 Billing'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Java Developer' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 Billing' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-end
+  null where NOT EXISTS (SELECT id from empl.employee where email ilike 'Asiyah.Bob@stm-labs.ru');
 
 -- Fired Java Developer from M1 Billing
-IF NOT EXISTS (SELECT id from empl.employee where email='Dev.Fired@stm-labs.ru')
-begin
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment,
-  office_location,ext_erp_id, date_of_dismissal) VALUES
-(
+  department,position,level,current_project, phone, birthday,sex,date_of_employment,
+  office_location,ext_erp_id, date_of_dismissal) select
   'Dev.Fired@stm-labs.ru',
   'Fired', 'Dev',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Java Developer'),
-  (SELECT top 1 id from dict_level where name='Senior'),
-  (SELECT top 1 id from project where name='M1 Billing'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Java Developer' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 Billing' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',
   '2011-10-01 00:00:00.000',
   null,
   null,
-  '2000-06-12 00:00:00.000')
-end
+  '2000-06-12 00:00:00.000' where NOT EXISTS (SELECT id from empl.employee where email ilike 'Dev.Fired@stm-labs.ru');
 
 -- M1 Billing Project Lead
-IF NOT EXISTS (SELECT id from empl.employee where email='Maxwell.May@stm-labs.ru')
-begin
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Maxwell.May@stm-labs.ru') then
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Maxwell.May@stm-labs.ru',
   'May', 'Maxwell',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Project Manager'),
-  (SELECT top 1 id from dict_level where name='Senior'),
-  (SELECT top 1 id from project where name='M1 Billing'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Project Manager' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 Billing' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-INSERT INTO empl.employee_accessible_projects (employee_id, project_id) values (
-(SELECT top 1 id from empl.employee where email='Maxwell.May@stm-labs.ru'),
-(SELECT top 1 id from project where name='M1 Billing')
-)
-
+  null);
+INSERT INTO sec.employee_accessible_projects (employee_id, project_id) values (
+(select id from empl.employee  where email ilike 'Maxwell.May@stm-labs.ru' limit 1),
+(select id from proj.project  where name='M1 Billing' limit 1)
+);
 INSERT INTO sec.user_role (employee_id, role) values (
-(SELECT top 1 id from empl.employee where email='Maxwell.May@stm-labs.ru'),
+(select id from empl.employee  where email ilike 'Maxwell.May@stm-labs.ru' limit 1),
 'pm'
-)
+);
 
-end
+end if;
+END
+$do$;
 
 -- Development Department Lead
-IF NOT EXISTS (SELECT id from empl.employee where email='Percy.Gough@stm-labs.ru')
-begin
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Percy.Gough@stm-labs.ru') then
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Percy.Gough@stm-labs.ru',
   'Gough', 'Percy',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Head of Department'),
-  (SELECT top 1 id from dict_level where name='Senior'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Head of Department' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
   null,
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-INSERT INTO empl.employee_accessible_departments (employee_id, department_id) values (
-(SELECT top 1 id from empl.employee where email='Percy.Gough@stm-labs.ru'),
-(SELECT top 1 id from department where name='Development')
-)
+  null);
+INSERT into sec.employee_accessible_departments (employee_id, department_id) values (
+(select id from empl.employee  where email ilike 'Percy.Gough@stm-labs.ru' limit 1),
+(select id from dict.department  where name='Development' limit 1)
+);
 INSERT INTO sec.user_role (employee_id, role) values (
-(SELECT top 1 id from empl.employee where email='Percy.Gough@stm-labs.ru'),
+(select id from empl.employee  where email ilike 'Percy.Gough@stm-labs.ru' limit 1),
 'pm'
-)
-end
-
+);
+end if;
+END
+$do$;
 
 -- Java Developer from M1 FMS
-IF NOT EXISTS (SELECT id from empl.employee where email='Ammara.Knott@stm-labs.ru')
-begin
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Ammara.Knott@stm-labs.ru') then
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Ammara.Knott@stm-labs.ru',
   'Knott', 'Ammara',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Java Developer'),
-  (SELECT top 1 id from dict_level where name='Senior'),
-  (SELECT top 1 id from project where name='M1 FMS'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Java Developer' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 FMS' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'female',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-end
+  null);
+end if;
+END
+$do$;
 
 -- QA from M1 FMS
-IF NOT EXISTS (SELECT id from empl.employee where email='Jenson.Curtis@stm-labs.ru')
-begin
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
-(
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Jenson.Curtis@stm-labs.ru',
   'Curtis', 'Jenson',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Automation QA'),
-  (SELECT top 1 id from dict_level where name='Junior'),
-  (SELECT top 1 id from project where name='M1 FMS'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Automation QA' limit 1),
+  (select id from dict.level  where name='Junior' limit 1),
+  (select id from proj.project  where name='M1 FMS' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-end
+  null where NOT EXISTS (SELECT id from empl.employee where email ilike 'Jenson.Curtis@stm-labs.ru');
 
 -- Lead of M1 Fms
-IF NOT EXISTS (SELECT id from empl.employee where email='Jawad.Mcghee@stm-labs.ru')
-begin
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Jawad.Mcghee@stm-labs.ru') then
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Jawad.Mcghee@stm-labs.ru',
   'Mcghee', 'Jawad',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Project Manager'),
-  (SELECT top 1 id from dict_level where name='Senior'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Project Manager' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
   null,
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-INSERT INTO empl.employee_accessible_projects (employee_id, project_id) values (
-(SELECT top 1 id from empl.employee where email='Jawad.Mcghee@stm-labs.ru'),
-(SELECT top 1 id from project where name='M1 FMS')
-)
+  null);
+INSERT INTO sec.employee_accessible_projects (employee_id, project_id) values (
+(select id from empl.employee  where email ilike 'Jawad.Mcghee@stm-labs.ru' limit 1),
+(select id from proj.project  where name='M1 FMS' limit 1)
+);
 
 INSERT INTO sec.user_role (employee_id, role) values (
-(SELECT top 1 id from empl.employee where email='Jawad.Mcghee@stm-labs.ru'),
+(select id from empl.employee  where email ilike 'Jawad.Mcghee@stm-labs.ru' limit 1),
 'pm'
-)
-
-end
+);
+end if;
+END
+$do$;
 
 -- Java Developer from M1 Policy Manager
-IF NOT EXISTS (SELECT id from empl.employee where email='Amy.Beck@stm-labs.ru')
-begin
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
-(
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Amy.Beck@stm-labs.ru',
   'Beck', 'Amy',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Java Developer'),
-  (SELECT top 1 id from dict_level where name='Junior'),
-  (SELECT top 1 id from project where name='M1 Policy Manager'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Java Developer' limit 1),
+  (select id from dict.level  where name='Junior' limit 1),
+  (select id from proj.project  where name='M1 Policy Manager' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'female',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-end
+  null where NOT EXISTS (SELECT id from empl.employee where email ilike 'Amy.Beck@stm-labs.ru');
 
 -- Lead of projects pack
-IF NOT EXISTS (SELECT id from empl.employee where email='Kyran.Neville@stm-labs.ru')
-begin
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Kyran.Neville@stm-labs.ru') then
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Kyran.Neville@stm-labs.ru',
   'Neville', 'Kyran',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Java Developer'),
-  (SELECT top 1 id from dict_level where name='Senior'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Java Developer' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
   null,
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-INSERT INTO empl.employee_accessible_projects (employee_id, project_id) values (
-(SELECT top 1 id from empl.employee where email='Kyran.Neville@stm-labs.ru'),
-(SELECT top 1 id from project where name='M1 Billing')
-)
-INSERT INTO empl.employee_accessible_projects (employee_id, project_id) values (
-(SELECT top 1 id from empl.employee where email='Kyran.Neville@stm-labs.ru'),
-(SELECT top 1 id from project where name='M1 FMS')
-)
-INSERT INTO empl.employee_accessible_projects (employee_id, project_id) values (
-(SELECT top 1 id from empl.employee where email='Kyran.Neville@stm-labs.ru'),
-(SELECT top 1 id from project where name='M1 Policy Manager')
-)
+  null);
+INSERT INTO sec.employee_accessible_projects
+
+ (employee_id, project_id) values (
+(select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
+(select id from proj.project  where name='M1 Billing' limit 1)
+);
+INSERT INTO sec.employee_accessible_projects
+
+ (employee_id, project_id) values (
+(select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
+(select id from proj.project  where name='M1 FMS' limit 1)
+);
+INSERT INTO sec.employee_accessible_projects
+
+ (employee_id, project_id) values (
+(select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
+(select id from proj.project  where name='M1 Policy Manager' limit 1)
+);
 
 INSERT INTO sec.user_role (employee_id, role) values (
-(SELECT top 1 id from empl.employee where email='Kyran.Neville@stm-labs.ru'),
+(select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
 'pm'
-)
+);
 
-end
+end if;
+END
+$do$;
 
 -- QA from M1 ERP Integration
-IF NOT EXISTS (SELECT id from empl.employee where email='Jonas.Martin@stm-labs.ru')
-begin
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
-(
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Jonas.Martin@stm-labs.ru',
   'Martin', 'Jonas',null,
-  (select top 1 id from department where name='Integration'),
-  (select top 1 id from dict_position where name='Automation QA'),
-  (SELECT top 1 id from dict_level where name='Senior'),
-  (SELECT top 1 id from project where name='M1 ERP Integration'),
+  (select id from dict.department  where name='Integration' limit 1),
+  (select id from dict.position  where name='Automation QA' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 ERP Integration' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-end
+  null where NOT EXISTS (SELECT id from empl.employee where email ilike 'Jonas.Martin@stm-labs.ru');
 
 -- Technical Lead of the whole company
-IF NOT EXISTS (SELECT id from empl.employee where email='Toby.Barrow@stm-labs.ru')
-begin
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Toby.Barrow@stm-labs.ru') then
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Toby.Barrow@stm-labs.ru',
   'Barrow', 'Toby',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Java Developer'),
-  (SELECT top 1 id from dict_level where name='Senior'),
-  (SELECT top 1 id from project where name='M1 Billing'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Java Developer' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 Billing' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-INSERT INTO empl.employee_accessible_departments (employee_id, department_id) values (
-(SELECT top 1 id from empl.employee where email='Toby.Barrow@stm-labs.ru'),
-(SELECT top 1 id from department where name='Development')
-)
-INSERT INTO empl.employee_accessible_departments (employee_id, department_id) values (
-(SELECT top 1 id from empl.employee where email='Toby.Barrow@stm-labs.ru'),
-(SELECT top 1 id from department where name='Integration')
-)
+  null);
+INSERT INTO sec.employee_accessible_departments
+
+ (employee_id, department_id) values (
+(select id from empl.employee  where email ilike 'Toby.Barrow@stm-labs.ru' limit 1),
+(select id from dict.department  where name='Development' limit 1)
+);
+INSERT INTO sec.employee_accessible_departments
+
+ (employee_id, department_id) values (
+(select id from empl.employee  where email ilike 'Toby.Barrow@stm-labs.ru' limit 1),
+(select id from dict.department  where name='Integration' limit 1)
+);
 INSERT INTO sec.user_role (employee_id, role) values (
-(SELECT top 1 id from empl.employee where email='Toby.Barrow@stm-labs.ru'),
+(select id from empl.employee  where email ilike 'Toby.Barrow@stm-labs.ru' limit 1),
 'pm'
-)
-end
+);
+end if;
+END
+$do$;
 
 -- HR
-IF NOT EXISTS (SELECT id from empl.employee where email='Maysa.Sheppard@stm-labs.ru')
-begin
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Maysa.Sheppard@stm-labs.ru') then
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Maysa.Sheppard@stm-labs.ru',
   'Sheppard', 'Maysa',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Java Developer'),
-  (SELECT top 1 id from dict_level where name='Senior'),
-  (SELECT top 1 id from project where name='M1 Billing'),
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Java Developer' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 Billing' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'female',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-INSERT INTO empl.employee_accessible_departments (employee_id, department_id) values (
-(SELECT top 1 id from empl.employee where email='Maysa.Sheppard@stm-labs.ru'),
-(SELECT top 1 id from department where name='Development')
-)
-INSERT INTO empl.employee_accessible_departments (employee_id, department_id) values (
-(SELECT top 1 id from empl.employee where email='Maysa.Sheppard@stm-labs.ru'),
-(SELECT top 1 id from department where name='Integration')
-)
+  null);
+INSERT INTO sec.employee_accessible_departments
+ (employee_id, department_id) values (
+(select id from empl.employee  where email ilike 'Maysa.Sheppard@stm-labs.ru' limit 1),
+(select id from dict.department  where name='Development' limit 1)
+);
+INSERT INTO sec.employee_accessible_departments
+ (employee_id, department_id) values (
+(select id from empl.employee  where email ilike 'Maysa.Sheppard@stm-labs.ru' limit 1),
+(select id from dict.department  where name='Integration' limit 1)
+);
 INSERT INTO sec.user_role (employee_id, role) values (
-(SELECT top 1 id from empl.employee where email='Maysa.Sheppard@stm-labs.ru'),
+(select id from empl.employee  where email ilike 'Maysa.Sheppard@stm-labs.ru' limit 1),
 'hr'
-)
+);
 
-end
+end if;
+END
+$do$;
 
 -- Global Admin
-IF NOT EXISTS (SELECT id from empl.employee where email='Shaan.Pitts@stm-labs.ru')
-begin
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Shaan.Pitts@stm-labs.ru') then
 INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
-  department,[position],[level],current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Shaan.Pitts@stm-labs.ru',
   'Pitts', 'Shaan',null,
-  (select top 1 id from department where name='Development'),
-  (select top 1 id from dict_position where name='Java Developer'),
-  (SELECT top 1 id from dict_level where name='Senior'),
-  (SELECT top 1 id from project where name='M1 Billing'),
+  (select id from dict.department where name='Development' limit 1),
+  (select id from dict.position  where name='Java Developer' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 Billing' limit 1),
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'female',
   '2011-10-01 00:00:00.000',
   null,
-  null)
-INSERT INTO empl.employee_accessible_departments (employee_id, department_id) values (
-(SELECT top 1 id from empl.employee where email='Shaan.Pitts@stm-labs.ru'),
-(SELECT top 1 id from department where name='Development')
-)
-INSERT INTO empl.employee_accessible_departments (employee_id, department_id) values (
-(SELECT top 1 id from empl.employee where email='Shaan.Pitts@stm-labs.ru'),
-(SELECT top 1 id from department where name='Integration')
-)
+  null);
+INSERT INTO sec.employee_accessible_departments
+ (employee_id, department_id) values (
+(select id from empl.employee  where email ilike 'Shaan.Pitts@stm-labs.ru' limit 1),
+(select id from dict.department  where name='Development' limit 1)
+);
+INSERT INTO sec.employee_accessible_departments
+ (employee_id, department_id) values (
+(select id from empl.employee  where email ilike 'Shaan.Pitts@stm-labs.ru' limit 1),
+(select id from dict.department  where name='Integration' limit 1)
+);
 INSERT INTO sec.user_role (employee_id, role) values (
-(SELECT top 1 id from empl.employee where email='Shaan.Pitts@stm-labs.ru'),
+(select id from empl.employee  where email ilike 'Shaan.Pitts@stm-labs.ru' limit 1),
 'global_admin'
-)
-
-end
+);
+end if;
+END
+$do$;
 

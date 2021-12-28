@@ -109,10 +109,10 @@ public class OvertimeServiceTest {
         StepVerifier
                 .create(
                         overtimeService.addItem(
-                                jensonId,
-                                202008,
-                                new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 7, uuidComment),
-                                ctx)
+                                        jensonId,
+                                        202008,
+                                        new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 7, uuidComment),
+                                        ctx)
                                 .flatMap(r -> {
                                     var itemId = r.getItems().stream().filter(i -> uuidComment.equals(i.getNotes())).findFirst().get().getId();
                                     return overtimeService.deleteItem(jensonId, 202008, itemId, ctx);
@@ -149,6 +149,9 @@ public class OvertimeServiceTest {
 
 
     private Mono<AuthContext> auth(String username) {
-        return authHandler.login(new UsernamePasswordAuthenticationToken(username, securityProps.getMasterPassword()));
+        return authHandler.login(new UsernamePasswordAuthenticationToken(
+                TestDataContainer.emailFromUserName(username),
+                securityProps.getMasterPassword())
+        );
     }
 }
