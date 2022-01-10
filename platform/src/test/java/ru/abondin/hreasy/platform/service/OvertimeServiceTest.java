@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
@@ -26,7 +27,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Disabled("Because of weird java.lang.IllegalStateException: No MssqlRowMetadata available")
 @ActiveProfiles({"test", "dev"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
@@ -48,12 +48,16 @@ public class OvertimeServiceTest {
     @Autowired
     private HrEasySecurityProps securityProps;
 
+    @Autowired
+    private DatabaseClient db;
+
     @BeforeEach
     protected void validateTestConfiguration() {
         if (securityProps.getMasterPassword().isBlank()) {
             Assertions.fail("No master password found");
         }
         testData.initAsync().block(MONO_DEFAULT_TIMEOUT);
+        cleanOvertimesTables().block(MONO_DEFAULT_TIMEOUT);
     }
 
     @Test
@@ -68,12 +72,14 @@ public class OvertimeServiceTest {
     @Test
     public void testGetOvertimeSummary() {
         var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        // Generate unique notes to filter new created item
+        var uniqueNotes = "testGetOvertimeSummary" + UUID.randomUUID().toString();
         StepVerifier
                 .create(
                         overtimeService.addItem(
                                 ctx.getEmployeeInfo().getEmployeeId(),
                                 202008,
-                                new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 1, "testGetOvertimeSummary"),
+                                new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 1, uniqueNotes),
                                 ctx).thenMany(overtimeService.getSummary(202008, ctx)))
                 //TODO Validate the actual result
                 .expectNextMatches(o -> true).verifyComplete();
@@ -153,5 +159,19 @@ public class OvertimeServiceTest {
                 TestDataContainer.emailFromUserName(username),
                 securityProps.getMasterPassword())
         );
+    }
+
+    /**
+     * Do not clean all database, but delete only overtimes tables
+     *
+     * @return
+     */
+    private Mono<Void> cleanOvertimesTables() {
+        return db.sql("delete from ovt.overtime_item").then()
+                .then(db.sql("delete from ovt.overtime_item").then())
+                .then(db.sql("delete from ovt.overtime_approval_decision").then())
+                .then(db.sql("delete from ovt.overtime_period_history").then())
+                .then(db.sql("delete from ovt.overtime_closed_period").then())
+                .then(db.sql("delete from ovt.overtime_report").then());
     }
 }
