@@ -40,7 +40,7 @@ jobs:
     # Generate unit test report
     - name: Publish Test Report
       if: ${{ always() }}
-      uses: scacap/action-surefire-report@v1
+      uses: ScaCap/action-surefire-report@v1.0.5
     # Build Docker
     - name: Build and push docker
       env:
@@ -54,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build and push Docker images
-        uses: docker/build-push-action@v1
+        uses: docker/build-push-action@v2
         with:
           path:  web
           username: ${{ secrets.GITHUBNAME }}
