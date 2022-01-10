@@ -19,7 +19,6 @@ import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer
 
 import java.time.Duration;
 
-@Disabled("Because of weird java.lang.IllegalStateException: No MssqlRowMetadata available")
 @ActiveProfiles({"test", "dev"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
@@ -96,6 +95,9 @@ public class EmployeeServiceTest {
 
 
     private Mono<AuthContext> auth(String username) {
-        return authHandler.login(new UsernamePasswordAuthenticationToken(username, securityProps.getMasterPassword()));
+        return authHandler.login(new UsernamePasswordAuthenticationToken(
+                TestDataContainer.emailFromUserName(username),
+                securityProps.getMasterPassword())
+        );
     }
 }
