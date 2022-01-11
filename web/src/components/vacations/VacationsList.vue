@@ -191,7 +191,6 @@ export default class VacationsListComponent extends Vue {
     const currentYear = new Date().getFullYear();
     this.allYears = [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];
 
-    const today = moment();
     this.resetSelectedDatesFilterToDefault();
 
 
