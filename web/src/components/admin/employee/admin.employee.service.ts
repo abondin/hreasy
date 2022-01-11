@@ -153,8 +153,8 @@ class RestAdminEmployeeService implements AdminEmployeeService {
         return httpService.get(`v1/admin/employees/export?includeFired=${includeFired}`, {
             responseType: 'arraybuffer',
         }).then(response => {
-            let blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
-            let link = document.createElement('a');
+            const blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+            const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
             link.download = `AllEmployees.xlsx`;
             link.click();

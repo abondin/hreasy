@@ -37,10 +37,14 @@ jobs:
     # Build with Maven
     - name: Build with Maven
       run: mvn -B package --file platform/pom.xml
+
     # Generate unit test report
     - name: Publish Test Report
       if: ${{ always() }}
-      uses: ScaCap/action-surefire-report@v1.0.5
+      uses: mikepenz/action-junit-report@v2
+      with:
+        report_paths: '**/target/surefire-reports/TEST-*.xml'
+
     # Build Docker
     - name: Build and push docker
       env:
@@ -52,13 +56,33 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: |
+            docker.io/abondin/hreasyweb
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=sha
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.GITHUBNAME }}
+          password: ${{ secrets.GITHUBTOKEN }}
+
       - name: Build and push Docker images
         uses: docker/build-push-action@v2
         with:
-          path:  web
-          username: ${{ secrets.GITHUBNAME }}
-          password: ${{ secrets.GITHUBTOKEN }}
-          repository: docker.io/abondin/hreasyweb
-          tag_with_ref: true
-          tags: latest
+          context:  web
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

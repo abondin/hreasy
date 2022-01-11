@@ -125,8 +125,6 @@ import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 
-const namespace: string = 'auth';
-
 class Filter {
   public includeCanceled = false;
 }

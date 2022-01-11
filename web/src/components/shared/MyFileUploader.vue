@@ -49,6 +49,8 @@ import {Prop} from "vue-property-decorator";
   components: {'file-upload': VueUploadComponent}
 })
 export default class MyFileUploader extends Vue {
+  // TODO Fix the issue
+  // eslint-disable-next-line no-undef
   files: VUFile[] = [];
 
   @Prop({required: true})

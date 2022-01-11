@@ -69,7 +69,6 @@ import {errorUtils} from "@/components/errors";
 import skillsService, {AddSkillBody} from "@/components/empl/skills/skills.service";
 import {SimpleDict} from "@/store/modules/dict";
 import {SharedSkillName} from "@/store/modules/dict.service";
-import logger from "@/logger";
 
 
 class SkillForm {

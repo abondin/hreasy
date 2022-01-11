@@ -10,7 +10,6 @@ import Vue from 'vue'
 import Component from 'vue-class-component';
 import SharedArticlesWindow from "@/components/article/SharedArticlesWindow.vue";
 
-const namespace: string = 'auth';
 
 @Component({
   components: {SharedArticlesWindow}

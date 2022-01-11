@@ -112,8 +112,8 @@ class RestVacationService implements VacationService {
             params: {years: selectedYears ? selectedYears.join(',') : undefined},
             responseType: 'arraybuffer',
         }).then(response => {
-            let blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
-            let link = document.createElement('a');
+            const blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+            const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
             link.download = `Vacations.xlsx`;
             link.click();
