@@ -38,12 +38,10 @@ import Vue from 'vue'
 import Component from 'vue-class-component';
 import vacationService, {MyVacation} from "@/components/vacations/vacation.service";
 import {DataTableHeader} from "vuetify";
-import {OvertimeUtils} from "@/components/overtimes/overtime.service";
 import moment from 'moment';
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
-const namespace: string = 'dict';
 
 @Component({
   components: {VacationEditForm}

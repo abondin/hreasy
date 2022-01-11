@@ -265,10 +265,10 @@ class RestOvertimeService implements OvertimeService {
         return httpService.get(`v1/overtimes/summary/${reportPeriod}/export`, {
             responseType: 'arraybuffer',
         }).then(response => {
-            let blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
-            let link = document.createElement('a');
+            const blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+            const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
-            link.download = `Overtimes-${reportPeriod+1}.xlsx`;
+            link.download = `Overtimes-${reportPeriod + 1}.xlsx`;
             link.click();
         });
     }
@@ -307,11 +307,10 @@ export class OvertimeSummaryContainer {
     }
 
     private filterDay(day: OvertimeDaySummary): boolean {
-        let passed = true;
         if (this.filter.selectedProjects && this.filter.selectedProjects.length > 0) {
             return this.filter.selectedProjects.indexOf(day.projectId) >= 0;
         }
-        return passed;
+        return true;
     }
 
 }
@@ -347,7 +346,7 @@ export class OvertimeUtils {
      * @deprecated use DateTimeService
      * @param date
      */
-    static formatDate(date: Date|null): string | undefined {
+    static formatDate(date: Date | null): string | undefined {
         if (date) {
             return moment(date).format('LL');
         } else {

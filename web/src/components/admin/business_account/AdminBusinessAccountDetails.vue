@@ -54,8 +54,7 @@ import Component from "vue-class-component";
 import logger from "@/logger";
 import AdminBAForm from "@/components/admin/business_account/AdminBAForm.vue";
 import adminBaService, {
-  BusinessAccount,
-  BusinessAccountPosition
+  BusinessAccount
 } from "@/components/admin/business_account/admin.ba.service";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import {Prop} from "vue-property-decorator";

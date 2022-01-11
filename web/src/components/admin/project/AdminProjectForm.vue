@@ -59,7 +59,6 @@
         ></my-date-form-component>
 
 
-
         <!-- Error block -->
         <v-alert v-if="error" type="error">
           {{ error }}
@@ -77,14 +76,16 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import adminBaService, {CreateOrUpdateProject, ProjectFullInfo} from "@/components/admin/project/admin.project.service";
+import adminProjectService, {
+  CreateOrUpdateProject,
+  ProjectFullInfo
+} from "@/components/admin/project/admin.project.service";
 import Component from "vue-class-component";
 import {Prop, Watch} from "vue-property-decorator";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 import {SimpleDict} from "@/store/modules/dict";
-import adminProjectService from "@/components/admin/project/admin.project.service";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
 
@@ -96,7 +97,7 @@ class ProjectForm {
   public endDate = '';
   public customer = '';
   public departmentId?: number;
-  public baId: number|null = null;
+  public baId: number | null = null;
 }
 
 @Component(
@@ -138,7 +139,7 @@ export default class AdminProjectForm extends Vue {
 
   private reset() {
     this.basWithCurrent = [...this.allBusinessAccounts];
-    if (this.input && this.input.businessAccount){
+    if (this.input && this.input.businessAccount) {
       this.basWithCurrent.push(this.input.businessAccount);
     }
     this.projectForm.isNew = true;
@@ -148,7 +149,7 @@ export default class AdminProjectForm extends Vue {
     this.projectForm.departmentId = undefined;
     this.projectForm.startDate = '';
     this.projectForm.endDate = '';
-    this.projectForm.baId=null;
+    this.projectForm.baId = null;
 
     if (this.input) {
       this.projectForm.isNew = false;
@@ -158,7 +159,7 @@ export default class AdminProjectForm extends Vue {
       this.projectForm.departmentId = this.input.department ? this.input.department.id : undefined;
       this.projectForm.startDate = this.input.startDate ? this.input.startDate : '';
       this.projectForm.endDate = this.input.endDate ? this.input.endDate : '';
-      this.projectForm.baId = this.input.businessAccount? this.input.businessAccount.id : null;
+      this.projectForm.baId = this.input.businessAccount ? this.input.businessAccount.id : null;
     }
   }
 
@@ -170,7 +171,7 @@ export default class AdminProjectForm extends Vue {
   }
 
   private submit() {
-    const form :any = this.$refs.projectEditForm;
+    const form: any = this.$refs.projectEditForm;
     if (form.validate()) {
       const body = {
         name: this.projectForm.name,
@@ -178,7 +179,7 @@ export default class AdminProjectForm extends Vue {
         customer: this.projectForm.customer,
         endDate: this.projectForm.endDate,
         departmentId: this.projectForm.departmentId,
-        baId : this.projectForm.baId
+        baId: this.projectForm.baId
       } as CreateOrUpdateProject;
       var serverRequest;
       if (this.projectForm.isNew) {

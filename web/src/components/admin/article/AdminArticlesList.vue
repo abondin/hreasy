@@ -104,8 +104,6 @@ import articleAdminService, {ArticleFull} from "@/components/admin/article/admin
 import {ALL_ARTICLES_GROUPS} from "@/components/article/article.service";
 import ArticleUpdateForm from "@/components/admin/article/ArticleEditForm.vue";
 
-const namespace: string = 'dict';
-
 class Filter {
   public search = '';
   public articleGroup: string[] = [];
@@ -147,7 +145,7 @@ export default class AdminArticlesList extends Vue {
 
   private filteredItems() {
     return this.articles.filter(item => {
-      var filtered = true;
+      let filtered = true;
       if (this.filter.search) {
         filtered = filtered && item.name.toLowerCase().indexOf(this.filter.search.toLowerCase()) >= 0;
       }

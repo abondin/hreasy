@@ -106,7 +106,7 @@ export default class ApproveOvertimeReportDialog extends Vue {
     if (form.validate()) {
       return overtimeService.approve(this.employeeId, this.period.periodId(), this.comment,
           this.previousDecision ? this.previousDecision.id : null)
-          .then((result) => {
+          .then(() => {
             this.$emit('submit', 'APPROVED');
             this.closeDialog();
           }).catch(error => {
@@ -124,7 +124,7 @@ export default class ApproveOvertimeReportDialog extends Vue {
       }
       return overtimeService.decline(this.employeeId, this.period.periodId(), this.comment!,
           this.previousDecision ? this.previousDecision.id : null)
-          .then((result) => {
+          .then(() => {
             this.$emit('submit', 'DECLINED');
             this.closeDialog();
           }).catch(error => {
@@ -136,7 +136,7 @@ export default class ApproveOvertimeReportDialog extends Vue {
   private approveNoDialog() {
     return overtimeService.approve(this.employeeId, this.period.periodId(), null,
         this.previousDecision ? this.previousDecision.id : null)
-        .then((result) => {
+        .then(() => {
           this.$emit('submit', 'APPROVED');
           this.closeDialog();
         }).catch(error => {

@@ -25,7 +25,6 @@ import skillsService, {Skill} from "@/components/empl/skills/skills.service";
 import {Getter} from "vuex-class";
 import SkillsChips from "@/components/empl/skills/SkillsChips.vue";
 
-const namespace: string = 'dict';
 const namespace_auth: string = 'auth';
 
 

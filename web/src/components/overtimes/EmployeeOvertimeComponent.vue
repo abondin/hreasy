@@ -11,7 +11,8 @@
           </v-btn>
           <span class="ml-1 mr-2">{{ selectedPeriod }}</span>
           <v-icon v-if="periodClosed()" color="primary"
-                  :title="$t('Период закрыт для внесения изменений')">mdi-lock</v-icon>
+                  :title="$t('Период закрыт для внесения изменений')">mdi-lock
+          </v-icon>
           <v-btn @click.stop="incrementPeriod()" text x-small>
             <v-icon>mdi-chevron-right</v-icon>
           </v-btn>
@@ -113,7 +114,8 @@ import Component from 'vue-class-component';
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import overtimeService, {
-  ApprovalDecision, ClosedOvertimePeriod,
+  ApprovalDecision,
+  ClosedOvertimePeriod,
   OvertimeItem,
   OvertimeReport,
   OvertimeUtils,
@@ -126,7 +128,6 @@ import employeeService from "@/components/empl/employee.service";
 import OvertimeApprovalChip from "@/components/overtimes/OvertimeApprovalChip.vue";
 import ApproveOvertimeReportDialog from "@/components/overtimes/ApproveOvertimeReportDialog.vue";
 import permissionService from "@/store/modules/permission.service";
-import auth from "@/store/modules/auth";
 
 const namespace_dict: string = 'dict';
 const namespace_auth: string = 'auth';
@@ -259,7 +260,7 @@ export default class EmployeeOvertimeComponent extends Vue {
     return this.$tc(`Неизвестный проект ${projectId}`);
   }
 
-  private onItemSubmit(event: any) {
+  private onItemSubmit() {
     this.fetchReport();
   }
 

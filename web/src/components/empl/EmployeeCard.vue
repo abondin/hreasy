@@ -72,8 +72,6 @@ import SkillsChips from "@/components/empl/skills/SkillsChips.vue";
 import vacationService, {EmployeeVacationShort} from "@/components/vacations/vacation.service";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
-const namespace: string = 'auth';
-
 @Component({
   components: {SkillsChips, EmployeeAvatarUploader, EmployeeUpdateCurrentProject}
 })

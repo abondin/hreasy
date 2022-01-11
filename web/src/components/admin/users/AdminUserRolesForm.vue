@@ -149,7 +149,7 @@ export default class AdminUserRolesForm extends Vue {
       } as UserRolesUpdateBody;
       logger.log(`Update user with emplId ${this.userRolesEditForm.employee!.id} with roles ${JSON.stringify(body)}`);
       return adminUserService.updateRolesAndAccessibleProjects(this.userRolesEditForm.employee!.id, body)
-          .then((result) => {
+          .then(() => {
             this.$emit('close');
           })
           .catch(error => {
