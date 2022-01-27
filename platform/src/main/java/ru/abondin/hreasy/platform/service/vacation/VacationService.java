@@ -36,9 +36,8 @@ public class VacationService {
 
     @Data
     @AllArgsConstructor
-    @NoArgsConstructor
     public static class VacationFilter {
-        private List<Integer> selectedYears = new ArrayList<>();
+        private final List<Integer> selectedYears;
     }
 
     private final DateTimeService dateTimeService;

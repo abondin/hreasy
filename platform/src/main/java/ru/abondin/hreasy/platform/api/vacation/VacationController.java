@@ -31,9 +31,9 @@ public class VacationController {
 
     @GetMapping("")
     @ResponseBody
-    public Flux<VacationDto> findAll() {
+    public Flux<VacationDto> findAll(@RequestParam(name = "years[]") List<Integer> years) {
         return
-                AuthHandler.currentAuth().flatMapMany(auth -> vacationService.findAll(auth, new VacationService.VacationFilter()));
+                AuthHandler.currentAuth().flatMapMany(auth -> vacationService.findAll(auth, new VacationService.VacationFilter(years)));
     }
 
     /**

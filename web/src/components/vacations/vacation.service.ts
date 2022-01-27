@@ -54,7 +54,7 @@ export interface CreateOrUpdateVacation {
 }
 
 export interface VacationService {
-    findAll(): Promise<Vacation[]>;
+    findAll(years: number[]): Promise<Vacation[]>;
 
     myFutureVacations(): Promise<MyVacation[]>;
 
@@ -77,8 +77,8 @@ class RestVacationService implements VacationService {
     constructor(private httpService: AxiosInstance) {
     }
 
-    public findAll(): Promise<Vacation[]> {
-        return httpService.get("v1/vacations").then(response => {
+    public findAll(years: number[]): Promise<Vacation[]> {
+        return httpService.get("v1/vacations", {params: {"years": years}}).then(response => {
             return response.data;
         });
     }

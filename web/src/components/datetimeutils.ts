@@ -5,6 +5,7 @@ export class DateTimeUtils {
     public static DEFAULT_DATE_PATTERN = "DD.MM.YYYY";
     public static DEFAULT_DATE_TIME_PATTERN = "DD.MM.YYYY HH:mm";
 
+
     public static dateFromIsoString(isoDate: string): Moment {
         return moment(isoDate, moment.HTML5_FMT.DATE, true);
     }
@@ -62,6 +63,10 @@ export class DateTimeUtils {
         const d2 = DateTimeUtils.dateFromIsoString(b);
         return d1 == d2 ?
             0 : (d1 < d2 ? 1 : -1);
+    }
+
+    public static now(): Moment {
+        return moment();
     }
 }
 
