@@ -85,10 +85,12 @@
       </v-card-title>
 
       <v-card-text>
-        <v-tabs>
+        <v-tabs v-model="selectedTab">
           <v-tab>{{ $t('Все отпуска') }}</v-tab>
           <v-tab>{{ $t('Сводная по сотрудникам') }}</v-tab>
+        </v-tabs>
 
+        <v-tabs-items v-model="selectedTab">
           <!-- ALl vacations -->
           <v-tab-item>
             <v-data-table
@@ -102,7 +104,7 @@
                 :items-per-page="defaultItemsPerTablePage"
                 class="text-truncate">
               <template v-slot:item.employeeDisplayName="{ item }">
-                <v-btn :disabled="!canEditVacations()" text @click="openVacationDialog(item)">
+                <v-btn small :disabled="!canEditVacations()" text @click="openVacationDialog(item)">
                   {{ item.employeeDisplayName }}
                 </v-btn>
               </template>
@@ -145,6 +147,13 @@
                 dense
                 :items-per-page="defaultItemsPerTablePage"
                 class="text-truncate">
+
+              <template
+                  v-slot:item.employeeDisplayName="{ item }">
+                <v-btn small text @click="selectEmployee(item)">
+                  {{ item.employeeDisplayName }}
+                </v-btn>
+              </template>
               <template
                   v-slot:item.employeeCurrentProject="{ item }">
                 {{ item.employeeCurrentProject ? item.employeeCurrentProject.name : '' }}
@@ -156,7 +165,7 @@
               </template>
             </v-data-table>
           </v-tab-item>
-        </v-tabs>
+        </v-tabs-items>
 
         <v-dialog v-model="vacationDialog">
           <vacation-edit-form
@@ -210,6 +219,7 @@ export default class VacationsListComponent extends Vue {
   summaryHeaders: DataTableHeader[] = [];
   loading: boolean = false;
   vacations: Vacation[] = [];
+  selectedTab: number = 0;
 
   @Getter("projects", {namespace})
   private allProjects!: Array<SimpleDict>;
@@ -269,7 +279,7 @@ export default class VacationsListComponent extends Vue {
     this.summaryHeaders.push({text: this.$tc('Текущий проект'), value: 'employeeCurrentProject'});
     this.summaryHeaders.push({text: this.$tc('Год'), value: 'year'});
     this.summaryHeaders.push({
-      text: this.$tc('Количество запланированных или отгулянных отпусков'),
+      text: this.$tc('Количество отпусков'),
       value: 'vacationsNumber'
     });
     this.summaryHeaders.push({text: this.$tc('Общее количество дней'), value: 'vacationsTotalDays'});
@@ -321,7 +331,7 @@ export default class VacationsListComponent extends Vue {
             }
         ).finally(() => {
           this.loading = false
-        }).then(()=>{
+        }).then(() => {
           this.resetSelectedDatesFilterToDefault();
         });
   }
@@ -371,6 +381,16 @@ export default class VacationsListComponent extends Vue {
       start.format(moment.HTML5_FMT.DATE)
       , end.format(moment.HTML5_FMT.DATE)
     ];
+  }
+
+  /**
+   * Update search filter with selected employee display name and choose the first tab
+   * @param item
+   * @private
+   */
+  private selectEmployee(item: EmployeeVacationSummary) {
+    this.filter.search = item.employeeDisplayName;
+    this.selectedTab = 0;
   }
 
 }
