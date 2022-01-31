@@ -66,6 +66,7 @@ jobs:
           images: |
             docker.io/abondin/hreasyweb
           tags: |
+            type=raw,value=latest
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
