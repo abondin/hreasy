@@ -2,86 +2,108 @@
 <template>
   <v-container>
     <v-card>
-      <v-card-title>
-        <div class="d-flex align-center justify-space-between">
-          <!-- Selected Year and Refresh button -->
-          <v-btn text icon @click="fetchData()">
-            <v-icon>refresh</v-icon>
-          </v-btn>
-          <v-select
-              v-model="selectedYear"
-              :items="allYears"
-              :label="$t('Год')"
-              class="mr-5 ml-5"
-          ></v-select>
-          <v-divider vertical></v-divider>
-          <v-text-field
-              v-model="filter.search"
-              :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
+      <v-card-title class="pb-0">
+        <v-container fluid class="pb-0">
+          <v-row>
+            <v-col lg="2" sm="6" xs="6" class="pb-0">
+              <!-- Selected year -->
+              <v-select
+                  v-model="selectedYear"
+                  :items="allYears"
+                  :label="$t('Год')"></v-select>
+            </v-col>
+
+            <v-col lg="4" sm="6" xs="6" class="pb-0">
+              <!-- Dates selection filter -->
+              <my-date-range-component ref="dateSelector" v-model="filter.selectedDates"
+                                       :label="$t('Дата начала отпуска')"></my-date-range-component>
+            </v-col>
+
+            <!-- Current Project Filter -->
+            <v-col lg="3" sm="6" xs="6" class="pb-0">
+              <v-select
+                  clearable
+                  v-model="filter.selectedProjects"
+                  :items="allProjects.filter(p=>p.active)"
+                  item-value="id"
+                  item-text="name"
+                  :label="$t('Текущий проект')"
+                  multiple
+              ></v-select>
+            </v-col>
+            <!-- Vacation Status -->
+            <v-col lg="3" sm="6" xs="6" class="pb-0">
+              <v-select
+                  clearable
+                  v-model="filter.selectedStatuses"
+                  :items="allStatuses"
+                  :label="$t('Статус')"
+                  multiple
+              ></v-select>
+            </v-col>
 
 
-          <!-- Dates selection filter -->
-          <my-date-range-component ref="dateSelector" v-model="filter.selectedDates"
-                                   :label="$t('Дата начала отпуска')"></my-date-range-component>
+          </v-row>
 
-          <!-- Current Project Filter -->
-          <v-select
-              clearable
-              class="mr-5"
-              v-model="filter.selectedProjects"
-              :items="allProjects.filter(p=>p.active)"
-              item-value="id"
-              item-text="name"
-              :label="$t('Текущий проект')"
-              multiple
-          ></v-select>
-          <v-select
-              clearable
-              class="mr-5"
-              v-model="filter.selectedStatuses"
-              :items="allStatuses"
-              :label="$t('Статус')"
-              multiple
-          ></v-select>
+          <v-row>
+            <v-col  class="pt-0 pb-0">
+              <!-- Main search -->
+              <v-text-field
+                  class="mt-0 pt-0"
+                  v-model="filter.search"
+                  :label="$t('Поиск')" clearable></v-text-field>
+            </v-col>
 
-          <v-divider vertical></v-divider>
-          <!-- Add new project -->
-          <v-tooltip bottom v-if="canEditVacations">
-            <template v-slot:activator="{ on: ton, attrs: tattrs}">
-              <div v-bind="tattrs" v-on="ton" class="col-auto">
-                <v-btn text color="primary" :disabled="loading" @click="openVacationDialog(undefined)" icon>
-                  <v-icon>mdi-plus</v-icon>
-                </v-btn>
-              </div>
-            </template>
-            <span>{{ $t('Добавить отпуск') }}</span>
-          </v-tooltip>
+            <v-spacer></v-spacer>
+            <v-col class="row pt-0 pb-0" align-self="center" cols="auto">
+              <!-- Refresh button -->
+              <v-tooltip bottom v-if="canEditVacations">
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0" >
+                    <v-btn text icon @click="fetchData()">
+                      <v-icon>refresh</v-icon>
+                    </v-btn>
+                  </div>
+                </template>
+                <span>{{ $t('Обновить данные') }}</span>
+              </v-tooltip>
+              <!-- Add new project -->
+              <v-tooltip bottom v-if="canEditVacations">
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0" >
+                    <v-btn text color="primary" :disabled="loading" @click="openVacationDialog(undefined)" icon>
+                      <v-icon>mdi-plus</v-icon>
+                    </v-btn>
+                  </div>
+                </template>
+                <span>{{ $t('Добавить отпуск') }}</span>
+              </v-tooltip>
 
+              <!-- Export -->
+              <v-tooltip bottom v-if="canExportVacations">
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
+                    <v-btn text :disabled="loading" @click="exportToExcel()" icon>
+                      <v-icon>mdi-file-excel</v-icon>
+                    </v-btn>
+                  </div>
+                </template>
+                <span>{{ $t('Экспорт в excel') }}</span>
+              </v-tooltip>
 
-          <!-- Export -->
-          <v-tooltip bottom v-if="canExportVacations">
-            <template v-slot:activator="{ on: ton, attrs: tattrs}">
-              <div v-bind="tattrs" v-on="ton" class="col-auto">
-                <v-btn text :disabled="loading" @click="exportToExcel()" icon>
-                  <v-icon>mdi-file-excel</v-icon>
-                </v-btn>
-              </div>
-            </template>
-            <span>{{ $t('Экспорт в excel') }}</span>
-          </v-tooltip>
-          <v-snackbar
-              v-model="exportCompleted"
-              timeout="5000"
-          >
-            {{ $t('Экспорт успешно завершён. Файл скачен.') }}
-            <template v-slot:action="{ attrs }">
-              <v-btn color="blue" icon v-bind="attrs" @click="exportCompleted = false">
-                <v-icon>mdi-close-circle-outline</v-icon>
-              </v-btn>
-            </template>
-          </v-snackbar>
-
-        </div>
+              <v-snackbar
+                  v-model="exportCompleted"
+                  timeout="5000">
+                {{ $t('Экспорт успешно завершён. Файл скачен.') }}
+                <template v-slot:action="{ attrs }">
+                  <v-btn color="blue" icon v-bind="attrs" @click="exportCompleted = false" class="mt-0 pt-0">
+                    <v-icon>mdi-close-circle-outline</v-icon>
+                  </v-btn>
+                </template>
+              </v-snackbar>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-card-title>
 
       <v-card-text>
