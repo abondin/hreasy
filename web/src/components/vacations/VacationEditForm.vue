@@ -142,25 +142,27 @@ export default class VacationEditForm extends Vue {
   @Prop({required: true})
   public allEmployees!: Array<SimpleDict>;
 
+  @Prop({required: false})
+  public defaultYear?: number;
+
   public defaultNumberOrDays = 14;
-
-  @Watch("input")
-  private watch() {
-    this.reset();
-  }
-
 
   private created() {
     this.reset();
   }
 
-  private reset() {
+  /**
+   * Resets only on first creation. To reset data after creation call this method from parent component
+   */
+  public reset() {
+    const defaultStartDate = (this.defaultYear && this.defaultYear != new Date().getFullYear()) ?
+        moment({year: this.defaultYear, month: 1, day: 1}) : undefined;
     this.error = null;
     this.vacationForm.isNew = true;
     this.vacationForm.id = undefined;
-    this.vacationForm.year = new Date().getFullYear();
+    this.vacationForm.year = this.defaultYear ? this.defaultYear : new Date().getFullYear();
     this.vacationForm.employeeId = undefined;
-    this.vacationForm.startDate = '';
+    this.vacationForm.startDate = defaultStartDate ? DateTimeUtils.formatToIsoDate(defaultStartDate)! : '';
     this.vacationForm.endDate = '';
     this.vacationForm.plannedStartDate = '';
     this.vacationForm.plannedEndDate = '';

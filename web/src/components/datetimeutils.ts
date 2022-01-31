@@ -18,6 +18,10 @@ export class DateTimeUtils {
         return moment(formatedDate, this.DEFAULT_DATE_PATTERN, true);
     }
 
+    public static formatToIsoDate(date?: Moment): string | undefined{
+        return date ? date.format(moment.HTML5_FMT.DATE) : undefined;
+    }
+
     public static validateFormattedDate(formattedDate: string, allowEmpty = true) {
         if (!formattedDate) {
             return allowEmpty;
