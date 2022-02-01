@@ -84,8 +84,5 @@ public class DictProjectEntry {
 
         @NotNull
         private Integer updatedBy;
-
-        @Nullable
-        private String comment;
     }
 }

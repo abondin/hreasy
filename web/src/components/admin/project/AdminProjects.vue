@@ -53,6 +53,7 @@
 
         <v-dialog v-model="projectDialog">
           <admin-project-form
+              ref="adminProjectForm"
               v-bind:input="selectedProject"
               :all-departments="allDepartments"
               :all-business-accounts="allBusinessAccounts"
@@ -113,7 +114,7 @@ export default class AdminProjects extends Vue {
     this.reloadHeaders();
     // Reload projects dict to Vuex
     return this.$store.dispatch('dict/reloadDepartments')
-        .then(()=>this.$store.dispatch("dict/reloadBusinessAccounts"))
+        .then(() => this.$store.dispatch("dict/reloadBusinessAccounts"))
         .then(() => this.fetchData());
   }
 
@@ -163,9 +164,13 @@ export default class AdminProjects extends Vue {
   public openProjectDialog(projectToUpdate: ProjectFullInfo | null) {
     this.selectedProject = projectToUpdate;
     this.projectDialog = true;
+    // Wait dialog appears and reset all old valued
+    this.$nextTick(() => {
+      (this.$refs.adminProjectForm as AdminProjectForm).reset();
+    });
   }
 
-  private formatDate(date: string|undefined): string | undefined {
+  private formatDate(date: string | undefined): string | undefined {
     return DateTimeUtils.formatFromIso(date);
   }
 

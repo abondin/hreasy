@@ -66,6 +66,10 @@ export default class MyDateFormComponent extends Vue {
 
   @Watch("value")
   watchValue() {
+    this.reset();
+  }
+
+  public reset(){
     this.date = this.value ? this.value : '';
     this.updateFormattedValue(this.date);
   }

@@ -46,6 +46,7 @@
 
         <!-- start date -->
         <my-date-form-component
+            ref="startDateRef"
             v-model="projectForm.startDate"
             :label="$t('Начало')"
             :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
@@ -53,6 +54,7 @@
 
         <!-- end date -->
         <my-date-form-component
+            ref="endDateRef"
             v-model="projectForm.endDate"
             :label="$t('Окончание')"
             :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
@@ -81,7 +83,7 @@ import adminProjectService, {
   ProjectFullInfo
 } from "@/components/admin/project/admin.project.service";
 import Component from "vue-class-component";
-import {Prop, Watch} from "vue-property-decorator";
+import {Prop} from "vue-property-decorator";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
@@ -127,17 +129,11 @@ export default class AdminProjectForm extends Vue {
 
   private error: String | null = null;
 
-
-  @Watch("input")
-  private watch() {
-    this.reset();
-  }
-
   private created() {
     this.reset();
   }
 
-  private reset() {
+  public reset() {
     this.basWithCurrent = [...this.allBusinessAccounts];
     if (this.input && this.input.businessAccount) {
       this.basWithCurrent.push(this.input.businessAccount);
@@ -161,10 +157,13 @@ export default class AdminProjectForm extends Vue {
       this.projectForm.endDate = this.input.endDate ? this.input.endDate : '';
       this.projectForm.baId = this.input.businessAccount ? this.input.businessAccount.id : null;
     }
+    if (this.$refs.startDateRef && this.$refs.endDateRef) {
+      (this.$refs.startDateRef as MyDateFormComponent).reset();
+      (this.$refs.endDateRef as MyDateFormComponent).reset();
+    }
   }
 
   private closeDialog() {
-    this.reset();
     this.$nextTick(function () {
       this.$emit('close');
     })

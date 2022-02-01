@@ -32,6 +32,7 @@
 
         <!-- start date -->
         <my-date-form-component
+            ref="startDateRef"
             v-model="vacationForm.startDate"
             :label="$t('Начало')+`*`"
             :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
@@ -39,6 +40,7 @@
 
         <!-- end date -->
         <my-date-form-component
+            ref="endDateRef"
             v-model="vacationForm.endDate"
             :label="$t('Окончание')+`*`"
             :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
@@ -184,6 +186,10 @@ export default class VacationEditForm extends Vue {
       this.vacationForm.notes = this.input.notes;
       this.vacationForm.documents = this.input.documents;
       this.vacationForm.daysNumber = this.input.daysNumber;
+    }
+    if (this.$refs.startDateRef && this.$refs.endDateRef) {
+      (this.$refs.startDateRef as MyDateFormComponent).reset();
+      (this.$refs.endDateRef as MyDateFormComponent).reset();
     }
   }
 

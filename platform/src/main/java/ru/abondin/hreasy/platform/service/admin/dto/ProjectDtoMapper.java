@@ -27,6 +27,7 @@ public interface ProjectDtoMapper extends MapperBase {
     }
 
     @Mapping(source = "id", target = "projectId")
+    @Mapping(target = "id", ignore = true)
     DictProjectEntry.ProjectHistoryEntry partialCopyHistory(DictProjectEntry projectEntry);
 
 
