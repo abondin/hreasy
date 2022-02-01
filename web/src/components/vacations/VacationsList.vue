@@ -407,7 +407,7 @@ export default class VacationsListComponent extends Vue {
     if (!vacation) {
       return;
     }
-    window.navigator.clipboard.writeText(
+    this.$copyText(
         `${vacation.employeeDisplayName}
         ${vacation.employeeCurrentProject ? vacation.employeeCurrentProject.name : ''}
      ${this.formatDate(vacation.startDate)}-${this.formatDate(vacation.endDate)} ${vacation.daysNumber}
