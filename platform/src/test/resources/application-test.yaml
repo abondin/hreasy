@@ -18,3 +18,5 @@ hreasy:
     user-password:
     search-base: "dc=springframework,dc=org"
     search-filter: "uid={0},ou=people"
+  db:
+    database: hr-unit

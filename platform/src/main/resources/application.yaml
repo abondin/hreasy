@@ -6,7 +6,7 @@ info:
   app:
     name: 'HR Easy'
     description: 'HR platform for small IT companies'
-    version: '1.0.0'
+    version: '1.0.1'
     site: https://github.com/abondin/hreasy
   author:
     name: Alexander Bondin
