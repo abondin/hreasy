@@ -18,7 +18,6 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
-import ru.abondin.hreasy.platform.service.notification.NotificationService;
 import ru.abondin.hreasy.platform.service.notification.channels.NotificationChannelHandler;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 import ru.abondin.hreasy.platform.service.notification.sender.NotificationSender;
@@ -29,7 +28,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static ru.abondin.hreasy.platform.TestEmployees.Admin_Shaan_Pitts;
-import static ru.abondin.hreasy.platform.TestEmployees.FMS_Empl_Ammara_Knott;
 
 @ActiveProfiles({"test", "dev"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -38,7 +36,6 @@ import static ru.abondin.hreasy.platform.TestEmployees.FMS_Empl_Ammara_Knott;
 public class NotificationIntegrationTest {
 
     private final static Duration MONO_DEFAULT_TIMEOUT = Duration.ofSeconds(15);
-
 
     @Autowired
     private NotificationSender sender;
@@ -86,12 +83,12 @@ public class NotificationIntegrationTest {
         ).expectNextCount(1).verifyComplete();
 
         StepVerifier.create(notificationService.myNotifications(this.auth)
-                .filter(n->uuid.equals(n.getClientUuid()))
-        ).expectNextMatches(n->{
-           var match = true;
-           match &= n.getClientUuid().equals(uuid);
-           match &= n.getContext() != null;
-           return match;
+                .filter(n -> uuid.equals(n.getClientUuid()))
+        ).expectNextMatches(n -> {
+            var match = true;
+            match &= n.getClientUuid().equals(uuid);
+            match &= n.getContext() != null;
+            return match;
         }).verifyComplete();
     }
 
@@ -116,8 +113,8 @@ public class NotificationIntegrationTest {
         ).expectNextCount(2).verifyComplete();
 
         StepVerifier.create(notificationService.myNotifications(this.auth)
-                .filter(n->uuid.equals(n.getClientUuid()))
-        ).expectNextMatches(n->{
+                .filter(n -> uuid.equals(n.getClientUuid()))
+        ).expectNextMatches(n -> {
             var match = true;
             match &= n.getClientUuid().equals(uuid);
             match &= n.getContext() != null;

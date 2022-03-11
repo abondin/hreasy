@@ -31,4 +31,7 @@ public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Inte
             "where v.employee=:employeeId and (v.start_date>=:now or v.end_date>=:now)" +
             " order by v.end_date asc")
     Flux<VacationEntry> findFuture(Integer employeeId, OffsetDateTime now);
+
+    @Query("select v.* from vac.vacation where v.start_date>=:startFrom")
+    Flux<VacationEntry> findStartedSince(OffsetDateTime startFrom);
 }
