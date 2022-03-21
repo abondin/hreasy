@@ -13,6 +13,7 @@ import java.util.List;
 @Data
 @ToString(of = {"clientUuid", "title", "deliveryChannels"})
 public class NewNotificationDto {
+
     /**
      * Unique id of the notification for given employee
      */

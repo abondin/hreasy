@@ -12,7 +12,6 @@ import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.notification.channels.NotificationChannelHandler;
-import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 import ru.abondin.hreasy.platform.service.notification.sender.NotificationSender;
 
 import java.time.OffsetDateTime;
@@ -32,14 +31,16 @@ public class UpcomingVacationNotificationService {
     private final VacationRepo vacationRepo;
     private final BackgroundTasksProps props;
     private final NotificationSender notificationSender;
+    private final UpcomingNotificationTemplate template;
 
     @Transactional
     public Flux<NotificationChannelHandler.NotificationHandleResult> notifyUpcomingVacations() {
         var now = dateTimeService.now();
+        var nowDate = now.toLocalDate();
         log.info("Notify Upcoming Vacations");
         // 1. Load batch of vacations
-        return vacationRepo.findStartedSince(now.minus(props.getUpcomingVacation().getStartTimeThreshold()))
-                .buffer(1000)
+        return vacationRepo.findActiveStartedBeetwen(nowDate, nowDate.plusDays(props.getUpcomingVacation().getStartTimeThresholdDays()))
+                .buffer(props.getDefaultBufferSize())
                 // 2. Filter all already sent notifications for the event
                 .flatMap(vacations -> logRepo.vacationsIn(vacations.stream().map(VacationEntry::getId).collect(Collectors.toList())).collectList()
                         .map(alreadySent -> vacations.stream().filter(v -> !alreadySent.contains(v.getId())).collect(Collectors.toList())))
@@ -63,7 +64,7 @@ public class UpcomingVacationNotificationService {
     private Flux<NotificationChannelHandler.NotificationHandleResult> sendNotifications(List<VacationEntry> vacations, OffsetDateTime now) {
         return Flux.fromStream(vacations.stream())
                 .flatMap(v -> {
-                            var notification = new NewNotificationDto();
+                            var notification = template.create(v);
                             return notificationSender.send(notification,
                                     NotificationChannelHandler.Route.fromSystem(Arrays.asList(v.getEmployee())));
                         }

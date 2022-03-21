@@ -5,6 +5,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -32,6 +33,7 @@ public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Inte
             " order by v.end_date asc")
     Flux<VacationEntry> findFuture(Integer employeeId, OffsetDateTime now);
 
-    @Query("select v.* from vac.vacation where v.start_date>=:startFrom")
-    Flux<VacationEntry> findStartedSince(OffsetDateTime startFrom);
+
+    @Query("select v.* from vac.vacation v where v.start_date>=:from and v.start_date<=:to and v.stat in (0,1,2)")
+    Flux<VacationEntry> findActiveStartedBeetwen(LocalDate from, LocalDate to);
 }

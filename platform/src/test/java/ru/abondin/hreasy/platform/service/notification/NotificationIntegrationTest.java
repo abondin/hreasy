@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static ru.abondin.hreasy.platform.TestEmployees.Admin_Shaan_Pitts;
+import static ru.abondin.hreasy.platform.service.notification.sender.NotificationSender.NOTIFICATION_DELIVERY_CHANNEL_EMAIL;
+import static ru.abondin.hreasy.platform.service.notification.sender.NotificationSender.NOTIFICATION_DELIVERY_CHANNEL_PERSIST;
 
 @ActiveProfiles({"test", "dev"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -70,7 +72,7 @@ public class NotificationIntegrationTest {
         var uuid = UUID.randomUUID().toString();
         notification.setCategory("test");
         notification.setClientUuid(uuid);
-        notification.setDeliveryChannels(Arrays.asList(0));
+        notification.setDeliveryChannels(Arrays.asList(NOTIFICATION_DELIVERY_CHANNEL_PERSIST));
         notification.setMarkdownText("**Test**");
         notification.setTitle("Test message");
         notification.setContext(new JSONObject(Map.of("testKey", "testValue")).toString());
@@ -100,7 +102,7 @@ public class NotificationIntegrationTest {
         var uuid = UUID.randomUUID().toString();
         notification.setCategory("test");
         notification.setClientUuid(uuid);
-        notification.setDeliveryChannels(Arrays.asList(0, 1));
+        notification.setDeliveryChannels(Arrays.asList(NOTIFICATION_DELIVERY_CHANNEL_PERSIST, NOTIFICATION_DELIVERY_CHANNEL_EMAIL));
         notification.setMarkdownText("**Test**");
         notification.setTitle("Test message");
         notification.setContext(new JSONObject(Map.of("testKey", "testValue")).toString());

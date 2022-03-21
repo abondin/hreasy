@@ -15,13 +15,18 @@ public class BackgroundTasksProps {
 
     private UpcomingVacationProps upcomingVacation = new UpcomingVacationProps();
 
+    /**
+     * Buffer size to scan all vacations to notify
+     * Technical property
+     */
+    private int defaultBufferSize = 1000;
 
     @Data
     public static class UpcomingVacationProps {
         /**
          * Notify employee if his vacation starts in 21 days or early
          */
-        private Duration startTimeThreshold = Duration.ofDays(21);
+        private int startTimeThresholdDays= 21;
 
         /**
          * Addresses in email copy

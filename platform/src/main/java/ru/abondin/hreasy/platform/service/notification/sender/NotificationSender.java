@@ -15,6 +15,9 @@ import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
  */
 public interface NotificationSender {
 
+    int NOTIFICATION_DELIVERY_CHANNEL_PERSIST=0;
+    int NOTIFICATION_DELIVERY_CHANNEL_EMAIL=1;
+
     /**
      * @param newNotificationDto
      * @param route
