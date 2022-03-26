@@ -11,7 +11,8 @@ import ru.abondin.hreasy.platform.repo.notification.UpcomingVacationNotification
 import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
-import ru.abondin.hreasy.platform.service.notification.channels.NotificationChannelHandler;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationHandleResult;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationRoute;
 import ru.abondin.hreasy.platform.service.notification.sender.NotificationSender;
 
 import java.time.OffsetDateTime;
@@ -34,7 +35,7 @@ public class UpcomingVacationNotificationService {
     private final UpcomingNotificationTemplate template;
 
     @Transactional
-    public Flux<NotificationChannelHandler.NotificationHandleResult> notifyUpcomingVacations() {
+    public Flux<NotificationHandleResult> notifyUpcomingVacations() {
         var now = dateTimeService.now();
         var nowDate = now.toLocalDate();
         log.info("Notify Upcoming Vacations");
@@ -61,12 +62,12 @@ public class UpcomingVacationNotificationService {
         }).collect(Collectors.toList()));
     }
 
-    private Flux<NotificationChannelHandler.NotificationHandleResult> sendNotifications(List<VacationEntry> vacations, OffsetDateTime now) {
+    private Flux<NotificationHandleResult> sendNotifications(List<VacationEntry> vacations, OffsetDateTime now) {
         return Flux.fromStream(vacations.stream())
                 .flatMap(v -> {
                             var notification = template.create(v);
                             return notificationSender.send(notification,
-                                    NotificationChannelHandler.Route.fromSystem(Arrays.asList(v.getEmployee())));
+                                    NotificationRoute.fromSystem(Arrays.asList(v.getEmployee())));
                         }
                 );
     }

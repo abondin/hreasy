@@ -18,21 +18,19 @@ import java.util.ArrayList;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class DefaultNotificationPersistChannelHandler implements NotificationChannelHandler.NotificationPersistChannelHandler {
-
-    public static final int DEFAULT_PERSIST_PARTITION_SIZE = 1000;
+public class DefaultNotificationPersistChannelHandler implements NotificationPersistChannelHandler {
 
     private final NotificationRepo repo;
     private final DateTimeService dateTimeService;
 
     @Override
-    public Flux<NotificationChannelHandler.NotificationPersistHandleResult> handleNotification(NewNotificationDto newNotificationDto, Route context) {
-        log.info("Persist notification {} to the database by {}", newNotificationDto, context);
+    public Flux<NotificationPersistChannelHandler.NotificationPersistHandleResult> handleNotification(NewNotificationDto newNotificationDto, NotificationRoute route) {
+        log.info("Persist notification {} to the database for {}", newNotificationDto, route);
         var entries = new ArrayList<NotificationEntry>();
-        for (var employeeId : context.getDestinationEmployeeIds()) {
+        for (var employeeId : route.getDestinationEmployeeIds()) {
             var entry = new NotificationEntry();
             entry.setCreatedAt(dateTimeService.now());
-            entry.setCreatedBy(context.getSourceEmployeeId());
+            entry.setCreatedBy(route.getSourceEmployeeId());
             entry.setClientUuid(newNotificationDto.getClientUuid());
             entry.setCategory(newNotificationDto.getCategory());
             entry.setContext(Json.of(newNotificationDto.getContext()));

@@ -2,18 +2,17 @@ package ru.abondin.hreasy.platform.service.notification.sender;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-import ru.abondin.hreasy.platform.service.notification.channels.NotificationChannelHandler;
+import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
+import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationEmailChannelHandler;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationHandleResult;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationPersistChannelHandler;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationRoute;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
-
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Send notification one by one to channels.
@@ -23,36 +22,33 @@ import java.util.stream.Stream;
 @Slf4j
 public class SynchronousNotificationSender implements NotificationSender {
 
-    @Autowired(required = false)
-    private NotificationChannelHandler.NotificationPersistChannelHandler persistChannelHandler;
+    private final NotificationPersistChannelHandler persistChannelHandler;
 
-    @Autowired(required = false)
-    private NotificationChannelHandler.NotificationEmailChannelHandler emailChannelHandler;
+    private final NotificationEmailChannelHandler emailChannelHandler;
 
-    private final List<NotificationChannelHandler> handlers = new ArrayList<>();
-
-    @PostConstruct
-    private void postConstruct() {
-        this.handlers.addAll(Stream.of(persistChannelHandler, emailChannelHandler)
-                .filter(h -> h != null).collect(Collectors.toList()));
-    }
+    private final EmployeeRepo employeeRepo;
 
     @Override
-    public Flux<NotificationChannelHandler.NotificationHandleResult> send(NewNotificationDto newNotificationDto, NotificationChannelHandler.Route route) {
-        Flux<NotificationChannelHandler.NotificationHandleResult> job = null;
-        for (var h : handlers.stream().sorted(Comparator.comparing(NotificationChannelHandler::channelId)).collect(Collectors.toList())) {
-            if (!newNotificationDto.getDeliveryChannels().contains(h.channelId())) {
-                continue;
-            }
-            var j = h.handleNotification(newNotificationDto, route);
-            if (job == null) {
-                job = j;
-            } else {
-                job = job.concatWith(j);
-            }
+    public Flux<NotificationHandleResult> send(NewNotificationDto newNotificationDto, NotificationRoute route) {
+        Flux<NotificationHandleResult> job = Flux.empty();
+        if (newNotificationDto.getDeliveryChannels().contains(NOTIFICATION_DELIVERY_CHANNEL_PERSIST)) {
+            job = job.concatWith(persistChannelHandler.handleNotification(newNotificationDto, route));
+        }
+        if (newNotificationDto.getDeliveryChannels().contains(NOTIFICATION_DELIVERY_CHANNEL_EMAIL)) {
+            job = job.concatWith(handleEmail(newNotificationDto, route));
         }
         return job.doOnNext(result -> {
             log.info("Notification handled {}", result);
         });
     }
+
+    private Flux<NotificationEmailChannelHandler.NotificationEmailHandleResult> handleEmail(NewNotificationDto newNotificationDto, NotificationRoute route) {
+        return employeeRepo.findAllById(route.getDestinationEmployeeIds())
+                .filter(e -> Strings.isNotBlank(e.getEmail()))
+                .map(EmployeeEntry::getEmail)
+                .collectList()
+                .flatMapMany(emails -> emailChannelHandler.handleNotification(newNotificationDto, emails));
+    }
+
+
 }

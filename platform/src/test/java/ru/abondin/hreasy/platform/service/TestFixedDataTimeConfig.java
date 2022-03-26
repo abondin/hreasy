@@ -1,12 +1,12 @@
 package ru.abondin.hreasy.platform.service;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import java.time.OffsetDateTime;
 
-@Configuration
+// Configuration should be imported manually in test
+// @Configuration
 public class TestFixedDataTimeConfig {
 
     @Primary

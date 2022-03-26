@@ -18,7 +18,7 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
-import ru.abondin.hreasy.platform.service.notification.channels.NotificationChannelHandler;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationRoute;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 import ru.abondin.hreasy.platform.service.notification.sender.NotificationSender;
 
@@ -31,7 +31,7 @@ import static ru.abondin.hreasy.platform.TestEmployees.Admin_Shaan_Pitts;
 import static ru.abondin.hreasy.platform.service.notification.sender.NotificationSender.NOTIFICATION_DELIVERY_CHANNEL_EMAIL;
 import static ru.abondin.hreasy.platform.service.notification.sender.NotificationSender.NOTIFICATION_DELIVERY_CHANNEL_PERSIST;
 
-@ActiveProfiles({"test", "dev"})
+@ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @Slf4j
@@ -77,7 +77,7 @@ public class NotificationIntegrationTest {
         notification.setTitle("Test message");
         notification.setContext(new JSONObject(Map.of("testKey", "testValue")).toString());
 
-        var route = NotificationChannelHandler.Route.fromSystem(
+        var route = NotificationRoute.fromSystem(
                 Arrays.asList(testData.employees.get(Admin_Shaan_Pitts)));
 
         StepVerifier.create(
@@ -107,7 +107,7 @@ public class NotificationIntegrationTest {
         notification.setTitle("Test message");
         notification.setContext(new JSONObject(Map.of("testKey", "testValue")).toString());
 
-        var route = NotificationChannelHandler.Route.fromSystem(
+        var route = NotificationRoute.fromSystem(
                 Arrays.asList(testData.employees.get(Admin_Shaan_Pitts)));
 
         StepVerifier.create(

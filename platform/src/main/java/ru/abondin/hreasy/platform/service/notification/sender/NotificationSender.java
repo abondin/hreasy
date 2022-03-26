@@ -1,7 +1,8 @@
 package ru.abondin.hreasy.platform.service.notification.sender;
 
 import reactor.core.publisher.Flux;
-import ru.abondin.hreasy.platform.service.notification.channels.NotificationChannelHandler;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationHandleResult;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationRoute;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 
 /**
@@ -23,6 +24,6 @@ public interface NotificationSender {
      * @param route
      * @return
      */
-    Flux<NotificationChannelHandler.NotificationHandleResult> send(NewNotificationDto newNotificationDto, NotificationChannelHandler.Route route);
+    Flux<NotificationHandleResult> send(NewNotificationDto newNotificationDto, NotificationRoute route);
 
 }

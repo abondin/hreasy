@@ -26,7 +26,7 @@ import ru.abondin.hreasy.platform.repo.notification.UpcomingVacationNotification
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.TestFixedDataTimeConfig;
-import ru.abondin.hreasy.platform.service.notification.channels.NotificationChannelHandler;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationEmailChannelHandler;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 import ru.abondin.hreasy.platform.service.vacation.VacationService;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
@@ -36,12 +36,13 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static ru.abondin.hreasy.platform.TestEmployees.Admin_Shaan_Pitts;
 
-@ActiveProfiles({"test", "dev"})
+@ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @TestPropertySource(properties = {"hreasy.background.default_buffer_size=2"})
@@ -76,7 +77,7 @@ public class UpcomingVacationNotificationServiceTest {
     private VacationRepo vacationRepo;
 
     @SpyBean
-    private NotificationChannelHandler.NotificationEmailChannelHandler emailChannelHandler;
+    private NotificationEmailChannelHandler emailChannelHandler;
 
 
     private AuthContext auth;
@@ -110,7 +111,7 @@ public class UpcomingVacationNotificationServiceTest {
                 sender.notifyUpcomingVacations().thenMany(logRepo.vacationsIn(createdVacationIds))
         ).expectNextCount(3).verifyComplete();
         Mockito.verify(emailChannelHandler, times(3))
-                .handleNotification(any(NewNotificationDto.class), any(NotificationChannelHandler.Route.class));
+                .handleNotification(any(NewNotificationDto.class), any(List.class));
 
         // Check that no vacations notified after first notifications
         Mockito.reset(emailChannelHandler);
@@ -118,7 +119,7 @@ public class UpcomingVacationNotificationServiceTest {
         sender.notifyUpcomingVacations().thenMany(logRepo.vacationsIn(createdVacationIds)).blockLast(MONO_DEFAULT_TIMEOUT);
 
         Mockito.verify(emailChannelHandler, times(0))
-                .handleNotification(any(NewNotificationDto.class), any(NotificationChannelHandler.Route.class));
+                .handleNotification(any(NewNotificationDto.class), any(List.class));
     }
 
 

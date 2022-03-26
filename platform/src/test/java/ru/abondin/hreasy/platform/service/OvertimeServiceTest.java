@@ -27,7 +27,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@ActiveProfiles({"test", "dev"})
+@ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @Slf4j

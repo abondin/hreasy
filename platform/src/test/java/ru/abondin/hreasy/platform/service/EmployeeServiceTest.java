@@ -19,7 +19,7 @@ import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer
 
 import java.time.Duration;
 
-@ActiveProfiles({"test", "dev"})
+@ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @Slf4j

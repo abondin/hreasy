@@ -22,3 +22,12 @@ hreasy:
     search-filter: "uid={0},ou=people"
   db:
     database: hr-unit
+    # Will be overridden in PostgreSQLTestContainerContextInitializer for hreasy.test.existing-database-docker=false
+    host: sql.hr
+    port: 5432
+    username: hr
+    password: HREasyPassword2019!
+  web:
+    sec:
+      cors-allowed-origins: http://localhost:8080
+      master-password: qwe123
