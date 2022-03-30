@@ -1,16 +1,18 @@
-package ru.abondin.hreasy.platform.service.notification.channels;
+package ru.abondin.hreasy.platform.service.notification.channels.email;
 
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 import reactor.core.publisher.Flux;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationHandleResult;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationRoute;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 public interface NotificationEmailChannelHandler {
 
+    String MAIL_CATEGORY_UPCOMING_VACATION="upcoming_vacation";
 
     @Getter
     @ToString
@@ -27,5 +29,5 @@ public interface NotificationEmailChannelHandler {
     /**
      * @param newNotificationDto
      */
-    Flux<NotificationEmailHandleResult> handleNotification(NewNotificationDto newNotificationDto, List<String> emails);
+    Flux<NotificationEmailHandleResult> handleNotification(NewNotificationDto newNotificationDto, NotificationRoute route);
 }

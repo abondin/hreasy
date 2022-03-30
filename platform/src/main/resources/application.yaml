@@ -30,6 +30,10 @@ hreasy:
     search-base: "OU=Internal,OU=Enterprise,DC=stm,DC=local"
   common:
     default-email-suffix: "@stm-labs.ru"
+    default-email-from: "hreasy@stm-labs.ru"
+  background:
+    upcoming-vacation:
+      additional-email-addresses: abondin@gmail.com
 
 
 spring:

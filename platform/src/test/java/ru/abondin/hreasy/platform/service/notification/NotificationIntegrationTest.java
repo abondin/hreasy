@@ -18,6 +18,7 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
+import ru.abondin.hreasy.platform.service.BaseServiceTest;
 import ru.abondin.hreasy.platform.service.notification.channels.NotificationRoute;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 import ru.abondin.hreasy.platform.service.notification.sender.NotificationSender;
@@ -35,9 +36,7 @@ import static ru.abondin.hreasy.platform.service.notification.sender.Notificatio
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @Slf4j
-public class NotificationIntegrationTest {
-
-    private final static Duration MONO_DEFAULT_TIMEOUT = Duration.ofSeconds(15);
+public class NotificationIntegrationTest extends BaseServiceTest {
 
     @Autowired
     private NotificationSender sender;
@@ -45,24 +44,9 @@ public class NotificationIntegrationTest {
     @Autowired
     private NotificationService notificationService;
 
-    @Autowired
-    private AuthHandler authHandler;
-
-    @Autowired
-    private TestDataContainer testData;
-
-    @Autowired
-    private HrEasySecurityProps securityProps;
-
-    private AuthContext auth;
-
     @BeforeEach
     protected void validateTestConfiguration() {
-        if (securityProps.getMasterPassword().isBlank()) {
-            Assertions.fail("No master password found");
-        }
-        this.auth = auth(Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
-        testData.initAsync().block(MONO_DEFAULT_TIMEOUT);
+        initEmployeesDataAndLogin();
     }
 
     @Test
@@ -122,13 +106,5 @@ public class NotificationIntegrationTest {
             match &= n.getContext() != null;
             return match;
         }).verifyComplete();
-    }
-
-
-    private Mono<AuthContext> auth(String username) {
-        return authHandler.login(new UsernamePasswordAuthenticationToken(
-                TestDataContainer.emailFromUserName(username),
-                securityProps.getMasterPassword())
-        );
     }
 }

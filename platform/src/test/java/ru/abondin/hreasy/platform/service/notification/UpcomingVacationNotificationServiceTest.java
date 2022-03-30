@@ -1,7 +1,6 @@
 package ru.abondin.hreasy.platform.service.notification;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,33 +9,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import ru.abondin.hreasy.platform.TestDataContainer;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.auth.AuthHandler;
-import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 import ru.abondin.hreasy.platform.repo.notification.UpcomingVacationNotificationLogRepo;
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
+import ru.abondin.hreasy.platform.service.BaseServiceTest;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.TestFixedDataTimeConfig;
-import ru.abondin.hreasy.platform.service.notification.channels.NotificationEmailChannelHandler;
+import ru.abondin.hreasy.platform.service.notification.channels.email.NotificationEmailChannelHandler;
+import ru.abondin.hreasy.platform.service.notification.channels.NotificationRoute;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 import ru.abondin.hreasy.platform.service.vacation.VacationService;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -48,24 +43,13 @@ import static ru.abondin.hreasy.platform.TestEmployees.Admin_Shaan_Pitts;
 @TestPropertySource(properties = {"hreasy.background.default_buffer_size=2"})
 @Import(TestFixedDataTimeConfig.class)
 @Slf4j
-public class UpcomingVacationNotificationServiceTest {
-
-    private final static Duration MONO_DEFAULT_TIMEOUT = Duration.ofSeconds(15);
+public class UpcomingVacationNotificationServiceTest extends BaseServiceTest {
 
     @Autowired
     private UpcomingVacationNotificationService sender;
 
     @Autowired
     private VacationService vacationService;
-
-    @Autowired
-    private AuthHandler authHandler;
-
-    @Autowired
-    private TestDataContainer testData;
-
-    @Autowired
-    private HrEasySecurityProps securityProps;
 
     @Autowired
     private DateTimeService dateTimeService;
@@ -83,14 +67,7 @@ public class UpcomingVacationNotificationServiceTest {
     private AuthContext auth;
 
     @BeforeEach
-    protected void before() {
-        if (securityProps.getMasterPassword().isBlank()) {
-            Assertions.fail("No master password found");
-        }
-        this.auth = auth(Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
-        testData.initAsync().block(MONO_DEFAULT_TIMEOUT);
-
-        testData.initAsync().block(MONO_DEFAULT_TIMEOUT);
+    protected void beforeEach() {
         var now = OffsetDateTime.now();
         ((TestFixedDataTimeConfig.TestFixedDataTimeService) dateTimeService).init(now);
 
@@ -111,7 +88,7 @@ public class UpcomingVacationNotificationServiceTest {
                 sender.notifyUpcomingVacations().thenMany(logRepo.vacationsIn(createdVacationIds))
         ).expectNextCount(3).verifyComplete();
         Mockito.verify(emailChannelHandler, times(3))
-                .handleNotification(any(NewNotificationDto.class), any(List.class));
+                .handleNotification(any(NewNotificationDto.class), any(NotificationRoute.class));
 
         // Check that no vacations notified after first notifications
         Mockito.reset(emailChannelHandler);
@@ -119,7 +96,7 @@ public class UpcomingVacationNotificationServiceTest {
         sender.notifyUpcomingVacations().thenMany(logRepo.vacationsIn(createdVacationIds)).blockLast(MONO_DEFAULT_TIMEOUT);
 
         Mockito.verify(emailChannelHandler, times(0))
-                .handleNotification(any(NewNotificationDto.class), any(List.class));
+                .handleNotification(any(NewNotificationDto.class), any(NotificationRoute.class));
     }
 
 
@@ -176,13 +153,6 @@ public class UpcomingVacationNotificationServiceTest {
         vacation.setYear(dateTimeService.now().getYear());
         vacation.setDaysNumber(14);
         return vacation;
-    }
-
-    private Mono<AuthContext> auth(String username) {
-        return authHandler.login(new UsernamePasswordAuthenticationToken(
-                TestDataContainer.emailFromUserName(username),
-                securityProps.getMasterPassword())
-        );
     }
 
 

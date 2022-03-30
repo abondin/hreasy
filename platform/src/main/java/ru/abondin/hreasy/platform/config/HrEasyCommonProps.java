@@ -25,4 +25,9 @@ public class HrEasyCommonProps {
      * <code>ivan.ivanov@company.org</code>.
      */
    private String defaultEmailSuffix;
+
+    /**
+     * Default system account to send information via email
+     */
+    private String defaultEmailFrom;
 }

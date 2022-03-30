@@ -3,7 +3,7 @@
     <module name="platform" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="ru.abondin.hreasy.platform.service.notification.channels.*" />
+        <option name="PATTERN" value="ru.abondin.hreasy.platform.service.notification.channels.email.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
