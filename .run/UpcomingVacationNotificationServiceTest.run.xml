@@ -11,7 +11,7 @@
     <option name="MAIN_CLASS_NAME" value="ru.abondin.hreasy.platform.service.notification.UpcomingVacationNotificationServiceTest" />
     <option name="METHOD_NAME" value="" />
     <option name="TEST_OBJECT" value="class" />
-    <option name="VM_PARAMETERS" value="-ea -Dhreasy.test.existing-database-docker=true" />
+    <option name="VM_PARAMETERS" value="-ea -Dhreasy.test.existing-database-docker=true -Duser.country=RU -Duser.language=ru" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

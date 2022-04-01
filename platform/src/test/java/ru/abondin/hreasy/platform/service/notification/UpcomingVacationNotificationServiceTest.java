@@ -22,9 +22,9 @@ import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
 import ru.abondin.hreasy.platform.service.BaseServiceTest;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.TestFixedDataTimeConfig;
-import ru.abondin.hreasy.platform.service.notification.channels.email.NotificationEmailChannelHandler;
-import ru.abondin.hreasy.platform.service.notification.channels.NotificationRoute;
-import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
+import ru.abondin.hreasy.platform.service.message.DummyEmailMessageSender;
+import ru.abondin.hreasy.platform.service.message.dto.HrEasyEmailMessage;
+import ru.abondin.hreasy.platform.service.notification.upcomingvacations.UpcomingVacationNotificationService;
 import ru.abondin.hreasy.platform.service.vacation.VacationService;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
@@ -40,7 +40,6 @@ import static ru.abondin.hreasy.platform.TestEmployees.Admin_Shaan_Pitts;
 @ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
-@TestPropertySource(properties = {"hreasy.background.default_buffer_size=2"})
 @Import(TestFixedDataTimeConfig.class)
 @Slf4j
 public class UpcomingVacationNotificationServiceTest extends BaseServiceTest {
@@ -61,16 +60,15 @@ public class UpcomingVacationNotificationServiceTest extends BaseServiceTest {
     private VacationRepo vacationRepo;
 
     @SpyBean
-    private NotificationEmailChannelHandler emailChannelHandler;
+    private DummyEmailMessageSender emailMessageSender;
 
-
-    private AuthContext auth;
 
     @BeforeEach
     protected void beforeEach() {
         var now = OffsetDateTime.now();
         ((TestFixedDataTimeConfig.TestFixedDataTimeService) dateTimeService).init(now);
 
+        initEmployeesDataAndLogin();
         clearAllVacations();
     }
 
@@ -85,18 +83,19 @@ public class UpcomingVacationNotificationServiceTest extends BaseServiceTest {
         // Check that only last vacation notified
         log.info("-------- Check that only last vacation notified");
         StepVerifier.create(
-                sender.notifyUpcomingVacations().thenMany(logRepo.vacationsIn(createdVacationIds))
+                sender.notifyUpcomingVacations().thenMany(
+                        logRepo.vacationsIn(createdVacationIds))
         ).expectNextCount(3).verifyComplete();
-        Mockito.verify(emailChannelHandler, times(3))
-                .handleNotification(any(NewNotificationDto.class), any(NotificationRoute.class));
+        Mockito.verify(emailMessageSender, times(3))
+                .sendMessage(any(HrEasyEmailMessage.class));
 
         // Check that no vacations notified after first notifications
-        Mockito.reset(emailChannelHandler);
+        Mockito.reset(emailMessageSender);
         log.info("-------- Check that no vacations notified after first notifications");
         sender.notifyUpcomingVacations().thenMany(logRepo.vacationsIn(createdVacationIds)).blockLast(MONO_DEFAULT_TIMEOUT);
 
-        Mockito.verify(emailChannelHandler, times(0))
-                .handleNotification(any(NewNotificationDto.class), any(NotificationRoute.class));
+        Mockito.verify(emailMessageSender, times(0))
+                .sendMessage(any(HrEasyEmailMessage.class));
     }
 
 

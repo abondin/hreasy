@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS notify.notification (
 	title varchar(1024) NOT NULL,
 	markdown_text text NOT NULL,
 	context jsonb NULL,
-	delivery_channels integer [],
 	created_at timestamp with time zone NOT NULL,
     created_by integer NULL REFERENCES empl.employee (id),
 	acknowledged_at timestamp with time zone NULL,
@@ -27,7 +26,6 @@ COMMENT ON COLUMN notify.notification.category IS 'Notification category';
 COMMENT ON COLUMN notify.notification.title IS 'Link to employee';
 COMMENT ON COLUMN notify.notification.markdown_text IS 'Text to show in markdown format';
 COMMENT ON COLUMN notify.notification.context IS 'JSON with key-value (like {employeeId:1}) context to help UI functionality (like navigate to some page)';
-COMMENT ON COLUMN notify.notification.delivery_channels IS 'Delivery channels (0 - persist to database and show on UI, 1 send via email)';
 COMMENT ON COLUMN notify.notification.created_at IS 'Created at';
 COMMENT ON COLUMN notify.notification.created_by IS 'Created by (link to employee). Null if created automatically by system';
 COMMENT ON COLUMN notify.notification.acknowledged_at IS 'Acknowledged at';

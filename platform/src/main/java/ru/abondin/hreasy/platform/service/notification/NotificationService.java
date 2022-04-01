@@ -15,6 +15,9 @@ import ru.abondin.hreasy.platform.service.notification.dto.NotificationMapper;
 
 import java.util.function.Consumer;
 
+/**
+ * Show notification in UI and action on them
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

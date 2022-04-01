@@ -32,7 +32,7 @@ public class BackgroundTasksProps {
          */
         private List<String> additionalEmailAddresses = new ArrayList<>();
 
-        private boolean upcomingVacationJobEnabled = false;
+        private boolean jobEnabled = false;
 
     }
 }

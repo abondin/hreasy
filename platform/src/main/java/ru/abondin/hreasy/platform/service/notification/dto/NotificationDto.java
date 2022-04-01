@@ -1,12 +1,13 @@
 package ru.abondin.hreasy.platform.service.notification.dto;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
 
 /**
- * Show notification to employee
+ * Show notification to employee in UI
+ *
+ *
  */
 @Data
 public class NotificationDto {

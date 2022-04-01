@@ -31,3 +31,15 @@ hreasy:
     sec:
       cors-allowed-origins: http://localhost:8080
       master-password: qwe123
+  background:
+    default_buffer_size: 100
+    upcoming-vacation:
+      additional-email-addresses: abondin@gmail.com
+
+logging:
+  level:
+    org:
+      springframework:
+        data: INFO
+    io.r2dbc.postgresql.QUERY: DEBUG # for queries
+    io.r2dbc.postgresql.PARAM: DEBUG # for parameters

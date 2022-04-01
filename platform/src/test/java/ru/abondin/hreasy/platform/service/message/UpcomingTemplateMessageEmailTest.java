@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.platform.service.notification;
+package ru.abondin.hreasy.platform.service.message;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,13 +11,10 @@ import org.springframework.test.context.ContextConfiguration;
 import reactor.test.StepVerifier;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 import ru.abondin.hreasy.platform.service.BaseServiceTest;
-import ru.abondin.hreasy.platform.service.notification.channels.email.NotificationEmailChannelHandler;
-import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
+import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.notification.upcomingvacations.UpcomingVacationNotificationTemplate;
 
-import java.util.Arrays;
 import java.util.UUID;
-
-import static ru.abondin.hreasy.platform.service.notification.sender.NotificationSender.NOTIFICATION_DELIVERY_CHANNEL_EMAIL;
 
 /**
  * Only of manual run.
@@ -35,10 +32,16 @@ import static ru.abondin.hreasy.platform.service.notification.sender.Notificatio
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @Slf4j
-public class NotificationEmailChannelHandlerTest extends BaseServiceTest {
+public class UpcomingTemplateMessageEmailTest extends BaseServiceTest {
 
     @Autowired
-    private NotificationEmailChannelHandler emailChannelHandler;
+    private EmailMessageSender sender;
+
+    @Autowired
+    private UpcomingVacationNotificationTemplate template;
+
+    @Autowired
+    private DateTimeService dateTimeService;
 
     @BeforeEach
     private void before() {
@@ -47,13 +50,17 @@ public class NotificationEmailChannelHandlerTest extends BaseServiceTest {
 
     @Test
     public void testSimpleEmail() {
-        var notif = new NewNotificationDto();
-        notif.setClientUuid(UUID.randomUUID().toString());
-        notif.setCategory("upcoming-email");
-        notif.setDeliveryChannels(Arrays.asList(NOTIFICATION_DELIVERY_CHANNEL_EMAIL));
-        notif.setTitle("Test upcoming");
-        notif.setMarkdownText("Test upcoming message");
-        StepVerifier.create(emailChannelHandler.handleNotification(notif
-                , Arrays.asList("abondin@gmail.com"))).expectNextCount(1).verifyComplete();
+        var context = new UpcomingVacationNotificationTemplate.UpcomingVacationContext();
+        context.setDaysNumber(14);
+        context.setStartDate(dateTimeService.now().toLocalDate().plusDays(10));
+        context.setEndDate(dateTimeService.now().toLocalDate().plusDays(24));
+        context.setEmployeeEmail("Haiden.Spooner@stm-labs.ru");
+        context.setEmployeeFirstname("Haiden");
+        context.setClientUuid(UUID.randomUUID().toString());
+
+        var message = template.create(context);
+
+        StepVerifier.create(sender.sendMessage(message))
+                .expectNextCount(1).verifyComplete();
     }
 }

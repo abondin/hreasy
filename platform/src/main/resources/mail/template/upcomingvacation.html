@@ -1,0 +1,18 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+
+<p><span th:text="${employeeFirstname}">Employee</span>, добрый день! </p>
+<p>
+    У вас запланирован отпуск с <span th:text="${#temporals.format(startDate)}">Start Date</span> по <span
+        th:text="${#temporals.format(endDate)}">End Date</span> продолжительностью <span th:text="${daysNumber}">n days</span>
+    календарных дней.
+</p>
+<p>
+    Просьба определиться пойдете ли ты в него, написать заявление на отпуск или сообщить о переносе.
+    Образец заявления во вложении. Заявление на отпуск пишется за 2 недели до начала отпуска!
+</p>
+</body>
+</html>

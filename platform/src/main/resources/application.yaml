@@ -31,9 +31,10 @@ hreasy:
   common:
     default-email-suffix: "@stm-labs.ru"
     default-email-from: "hreasy@stm-labs.ru"
-  background:
-    upcoming-vacation:
-      additional-email-addresses: abondin@gmail.com
+#  background:
+#    upcoming-vacation:
+#      job-enabled: false
+#      additional-email-addresses: abondin@gmail.com
 
 
 spring:

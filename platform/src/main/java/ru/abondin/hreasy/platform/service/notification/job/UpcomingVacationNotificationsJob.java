@@ -24,7 +24,7 @@ public class UpcomingVacationNotificationsJob {
 
     @Scheduled(fixedDelay = 10000)
     public void sendEmailForUpcomingVacations() {
-        if (!props.getUpcomingVacation().isUpcomingVacationJobEnabled()) {
+        if (!props.getUpcomingVacation().isJobEnabled()) {
             log.info("Upcoming Vacation Notifications Job is disabled. Please use hreasy.background.upcomingVacation.upcomingVacationJobEnabled=true");
         }
         var startTime = dateTimeService.now();

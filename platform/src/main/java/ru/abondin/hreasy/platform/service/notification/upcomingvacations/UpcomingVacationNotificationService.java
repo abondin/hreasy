@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.platform.service.notification;
+package ru.abondin.hreasy.platform.service.notification.upcomingvacations;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,13 +10,11 @@ import ru.abondin.hreasy.platform.repo.notification.UpcomingVacationNotification
 import ru.abondin.hreasy.platform.repo.notification.UpcomingVacationNotificationLogRepo;
 import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
+import ru.abondin.hreasy.platform.repo.vacation.VacationView;
 import ru.abondin.hreasy.platform.service.DateTimeService;
-import ru.abondin.hreasy.platform.service.notification.channels.NotificationHandleResult;
-import ru.abondin.hreasy.platform.service.notification.channels.NotificationRoute;
-import ru.abondin.hreasy.platform.service.notification.sender.NotificationSender;
+import ru.abondin.hreasy.platform.service.message.EmailMessageSender;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,16 +29,19 @@ public class UpcomingVacationNotificationService {
     private final UpcomingVacationNotificationLogRepo logRepo;
     private final VacationRepo vacationRepo;
     private final BackgroundTasksProps props;
-    private final NotificationSender notificationSender;
-    private final UpcomingNotificationTemplate template;
+    private final EmailMessageSender emailSender;
+    private final UpcomingVacationNotificationTemplate template;
+    private final UpcomingVacationMapper mapper;
 
     @Transactional
-    public Flux<NotificationHandleResult> notifyUpcomingVacations() {
+    public Flux<String> notifyUpcomingVacations() {
         var now = dateTimeService.now();
         var nowDate = now.toLocalDate();
         log.info("Notify Upcoming Vacations");
         // 1. Load batch of vacations
-        return vacationRepo.findActiveStartedBeetwen(nowDate, nowDate.plusDays(props.getUpcomingVacation().getStartTimeThresholdDays()))
+        return vacationRepo.findActiveStartedBetween(now
+                        , now.getYear(), nowDate
+                        , nowDate.plusDays(props.getUpcomingVacation().getStartTimeThresholdDays()))
                 .buffer(props.getDefaultBufferSize())
                 // 2. Filter all already sent notifications for the event
                 .flatMap(vacations -> logRepo.vacationsIn(vacations.stream().map(VacationEntry::getId).collect(Collectors.toList())).collectList()
@@ -48,11 +49,11 @@ public class UpcomingVacationNotificationService {
                 // 3. Mark vacations as sent in database
                 .flatMap(vacations -> markVacationsAsPersisted(vacations, now)
                         // 4. Send notification
-                        .thenMany(sendNotifications(vacations, now))
+                        .thenMany(sendNotifications(vacations))
                 );
     }
 
-    private Flux<UpcomingVacationNotificationLogEntry> markVacationsAsPersisted(List<VacationEntry> vacations, OffsetDateTime now) {
+    private Flux<UpcomingVacationNotificationLogEntry> markVacationsAsPersisted(List<VacationView> vacations, OffsetDateTime now) {
         return logRepo.saveAll(vacations.stream().map(v -> {
             var logEntry = new UpcomingVacationNotificationLogEntry();
             logEntry.setVacation(v.getId());
@@ -62,12 +63,11 @@ public class UpcomingVacationNotificationService {
         }).collect(Collectors.toList()));
     }
 
-    private Flux<NotificationHandleResult> sendNotifications(List<VacationEntry> vacations, OffsetDateTime now) {
+    private Flux<String> sendNotifications(List<VacationView> vacations) {
         return Flux.fromStream(vacations.stream())
                 .flatMap(v -> {
-                            var notification = template.create(v);
-                            return notificationSender.send(notification,
-                                    NotificationRoute.fromSystem(Arrays.asList(v.getEmployee())));
+                            var message = template.create(mapper.toEmailContext(v));
+                            return emailSender.sendMessage(message);
                         }
                 );
     }

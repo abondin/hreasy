@@ -6,8 +6,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Employee notification
@@ -19,7 +17,7 @@ public class NotificationEntry {
     private int id;
 
     private int employee;
-    
+
     private String clientUuid;
 
     private String category;
@@ -33,12 +31,6 @@ public class NotificationEntry {
     private OffsetDateTime createdAt;
 
     private Integer createdBy;
-
-    /**
-     * 0 - database / web ui (show notification to the employee in ui)
-     * 1 - email - send notification as an email
-     */
-    private List<Integer> deliveryChannels = new ArrayList<>();
 
     private OffsetDateTime acknowledgedAt;
 
