@@ -152,7 +152,7 @@ public class UpcomingVacationNotificationServiceTest extends BaseServiceTest {
         var vacation4 = defaultNewVacationBody();
         vacation4.setStartDate(dateTimeService.now().plus(1, ChronoUnit.DAYS).toLocalDate());
         vacation4.setEndDate(dateTimeService.now().plus(8, ChronoUnit.DAYS).toLocalDate());
-        vacation4.setStatus(VacationDto.VacationStatus.COMPENSATION);
+        vacation3.setStatus(VacationDto.VacationStatus.PLANNED);
         createdVacationIds.add(vacationService.create(auth, testData.employees.get(Admin_Shaan_Pitts), vacation4));
 
         // 5. Planned vacation started today (should be notified)

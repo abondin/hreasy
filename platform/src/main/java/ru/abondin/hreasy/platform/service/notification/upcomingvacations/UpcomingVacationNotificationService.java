@@ -39,7 +39,7 @@ public class UpcomingVacationNotificationService {
         var nowDate = now.toLocalDate();
         log.info("Notify Upcoming Vacations");
         // 1. Load batch of vacations
-        return vacationRepo.findActiveStartedBetween(now
+        return vacationRepo.findPlannedStartedBetween(now
                         , now.getYear(), nowDate
                         , nowDate.plusDays(props.getUpcomingVacation().getStartTimeThresholdDays()))
                 .buffer(props.getDefaultBufferSize())

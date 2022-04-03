@@ -13,6 +13,7 @@ import ru.abondin.hreasy.platform.config.BackgroundTasksProps;
 import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
 import ru.abondin.hreasy.platform.service.message.dto.HrEasyEmailMessage;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Map;
@@ -45,6 +46,14 @@ public class UpcomingVacationNotificationTemplate {
     @Value("classpath:mail/attachments/upcomingvacation_application.docx")
     private Resource upcomingDocument;
 
+
+    @PostConstruct
+    protected void postConstruct() {
+        log.info("Initializing UpcomingVacationNotificationTemplate with." +
+                        " Additional emails to send: {}. Default email from: {}"
+                , backgroundTasksProps.getUpcomingVacation().getAdditionalEmailAddresses()
+                , commonProps.getDefaultEmailFrom());
+    }
 
     public HrEasyEmailMessage create(UpcomingVacationContext context) {
         log.info("Creating email message from {}", context);

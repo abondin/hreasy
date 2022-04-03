@@ -44,7 +44,7 @@ public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Inte
             " left join proj.project p on e.current_project=p.id" +
             " where v.year = :year" +
             " and (e.date_of_dismissal is null or e.date_of_dismissal > :now)" +
-            " and v.start_date>=:from and v.start_date<=:to and v.stat in (0,1,2)" +
+            " and v.start_date>=:from and v.start_date<=:to and v.stat in (0)" +
             " order by v.end_date asc")
-    Flux<VacationView> findActiveStartedBetween(OffsetDateTime now, int year, LocalDate from, LocalDate to);
+    Flux<VacationView> findPlannedStartedBetween(OffsetDateTime now, int year, LocalDate from, LocalDate to);
 }
