@@ -52,6 +52,22 @@ sudo docker pull docker.io/abondin/hreasyweb:latest
 sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hreasyplatform hreasyweb
 ``` 
 
+## Notifications
+
+Notifications can be sent from admin web UI (not implemented)
+
+or by system event (not implemented).
+HR Easy supports several notification delivery channels:
+- 0 - Web UI - show notification in UI (with ack and archive functionality)
+- 1 - Email - send notification to mail
+
+### Email messages background jobs:
+
+|Job|Schedule|Actions|
+|----|------|-----|
+|upcoming_vacations|fixedDelay 1 hour|Sends email to employee with up to 3 weeks upcoming vacations|
+
+
 # Permissions and roles
 
 ![Security Database](./platform/.architecture/hr_sec.png "Security Database Scheme")
@@ -169,15 +185,5 @@ in database table `assessment_form_template` (*//TODO Admin page to edit templat
               2 - rate from 1 to 10
             * `text` - multiline text area   
 
-
-
-## Notifications
-
-Notifications can be sent from admin web UI (not implemented)
-
-or by system event (not implemented).
-HR Easy supports several notification delivery channels:
- - 0 - Web UI - show notification in UI (with ack and archive functionality)
- - 1 - Email - send notification to mail
 
 
