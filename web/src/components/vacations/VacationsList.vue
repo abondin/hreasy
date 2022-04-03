@@ -1,5 +1,4 @@
 <!-- All vacations table-->
-<script src="../../../../../../../../backup/download-all.js"></script>
 <template>
   <v-container>
     <v-card>
