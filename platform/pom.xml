@@ -18,7 +18,7 @@
         <java.version>17</java.version>
         <testcontainers.version>1.16.2</testcontainers.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
-        <git-commit-plugin.version>4.0.2</git-commit-plugin.version>
+        <git-commit-plugin.version>4.9.10</git-commit-plugin.version>
         <springdoc-openapi-webflux-ui.version>1.5.10</springdoc-openapi-webflux-ui.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <asciidoctor-maven-plugin.version>1.5.8</asciidoctor-maven-plugin.version>
