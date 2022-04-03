@@ -1,0 +1,33 @@
+package ru.abondin.hreasy.platform.config;
+
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Description;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.templatemode.TemplateMode;
+
+@org.springframework.context.annotation.Configuration
+public class HrEasyEmailConfig {
+
+    @Bean
+    @Description("Thymeleaf Template Resolver")
+    public SpringResourceTemplateResolver templateResolver() {
+        var templateResolver = new SpringResourceTemplateResolver();
+        templateResolver.setPrefix("/mail/template/");
+        templateResolver.setTemplateMode(TemplateMode.HTML);
+        return templateResolver;
+    }
+
+    @Bean
+    @Description("Thymeleaf Template Engine")
+    public TemplateEngine templateEngine(MessageSource messageSource) {
+        var templateEngine = new SpringTemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver());
+        templateEngine.addDialect(new Java8TimeDialect());
+        templateEngine.setTemplateEngineMessageSource(messageSource);
+        return templateEngine;
+    }
+}

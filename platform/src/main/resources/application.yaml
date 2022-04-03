@@ -6,7 +6,7 @@ info:
   app:
     name: 'HR Easy'
     description: 'HR platform for small IT companies'
-    version: '1.0.0'
+    version: '1.0.1'
     site: https://github.com/abondin/hreasy
   author:
     name: Alexander Bondin
@@ -30,6 +30,11 @@ hreasy:
     search-base: "OU=Internal,OU=Enterprise,DC=stm,DC=local"
   common:
     default-email-suffix: "@stm-labs.ru"
+    default-email-from: "hreasy@stm-labs.ru"
+#  background:
+#    upcoming-vacation:
+#      job-enabled: false
+#      additional-email-addresses: abondin@gmail.com
 
 
 spring:

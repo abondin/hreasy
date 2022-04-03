@@ -15,7 +15,7 @@
     <description>HREasy Platform</description>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <testcontainers.version>1.16.2</testcontainers.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <git-commit-plugin.version>4.0.2</git-commit-plugin.version>
@@ -25,6 +25,8 @@
         <jib-maven-plugin.version>3.2.0</jib-maven-plugin.version>
         <jxls.version>2.10.0</jxls.version>
         <pg-classicjdbc.version>42.3.1</pg-classicjdbc.version>
+
+        <git-plugin.skip>false</git-plugin.skip>
     </properties>
 
     <dependencies>
@@ -56,7 +58,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -90,6 +95,7 @@
             <artifactId>springdoc-openapi-webflux-ui</artifactId>
             <version>${springdoc-openapi-webflux-ui.version}</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -151,6 +157,19 @@
             <artifactId>mapstruct-processor</artifactId>
             <version>${mapstruct.version}</version>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf-spring5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-java8time</artifactId>
         </dependency>
 
         <dependency>
@@ -218,6 +237,17 @@
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
                 <version>${git-commit-plugin.version}</version>
+                <configuration>
+                    <skip>${git-plugin.skip}</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>
