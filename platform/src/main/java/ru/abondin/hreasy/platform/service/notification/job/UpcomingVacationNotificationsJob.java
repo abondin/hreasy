@@ -30,6 +30,7 @@ public class UpcomingVacationNotificationsJob {
     public void sendEmailForUpcomingVacations() {
         if (!props.getUpcomingVacation().isJobEnabled()) {
             log.info("Upcoming Vacation Notifications Job is disabled. Please use hreasy.background.upcomingVacation.upcomingVacationJobEnabled=true");
+            return;
         }
         var startTime = dateTimeService.now();
         var jobId = UUID.randomUUID().toString();
