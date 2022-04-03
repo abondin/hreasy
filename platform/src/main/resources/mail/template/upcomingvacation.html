@@ -4,15 +4,24 @@
 </head>
 <body>
 
-<p><span th:text="${employeeFirstname}">Employee</span>, добрый день! </p>
+<p><span th:text="${employeeFirstname}">FirstName</span> <span th:text="${employeeLastname}">LastName</span>, добрый
+    день! </p>
 <p>
     У вас запланирован отпуск с <span th:text="${#temporals.format(startDate)}">Start Date</span> по <span
-        th:text="${#temporals.format(endDate)}">End Date</span> продолжительностью <span th:text="${daysNumber}">n days</span>
+        th:text="${#temporals.format(endDate)}">End Date</span> продолжительностью <span
+        th:text="${daysNumber}">n days</span>
     календарных дней.
 </p>
 <p>
-    Просьба определиться пойдете ли ты в него, написать заявление на отпуск или сообщить о переносе.
+    Просьба определиться пойдете ли вы в него, написать заявление на отпуск или сообщить о переносе.
     Образец заявления во вложении. Заявление на отпуск пишется за 2 недели до начала отпуска!
+</p>
+<p>
+    <b>Ответ необходимо отправить в отдел HR - anna.gulynina@stm-labs.ru</b>
+</p>
+<hr>
+<p>
+    Данное письмо сформировано автоматически системой HR Easy. Пожалуйста, не отвечайте на него.
 </p>
 </body>
 </html>

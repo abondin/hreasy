@@ -30,6 +30,7 @@ public class UpcomingVacationNotificationTemplate {
     public static class UpcomingVacationContext {
         private String clientUuid;
         private String employeeFirstname;
+        private String employeeLastname;
         private String employeeEmail;
         private LocalDate startDate;
         private LocalDate endDate;
@@ -69,6 +70,7 @@ public class UpcomingVacationNotificationTemplate {
         context.setVariable("daysNumber", modelContext.getDaysNumber());
         context.setVariable("employeeEmail", modelContext.getEmployeeEmail());
         context.setVariable("employeeFirstname", modelContext.getEmployeeFirstname());
+        context.setVariable("employeeLastname", modelContext.getEmployeeLastname());
         context.setVariable("endDate", modelContext.getEndDate());
         context.setVariable("startDate", modelContext.getStartDate());
         return templateEngine.process("upcomingvacation.html", context);

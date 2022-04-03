@@ -33,7 +33,7 @@ public class UpcomingVacationNotificationService {
     private final UpcomingVacationNotificationTemplate template;
     private final UpcomingVacationMapper mapper;
 
-    @Transactional
+    @Transactional()
     public Flux<String> notifyUpcomingVacations() {
         var now = dateTimeService.now();
         var nowDate = now.toLocalDate();
@@ -45,12 +45,22 @@ public class UpcomingVacationNotificationService {
                 .buffer(props.getDefaultBufferSize())
                 // 2. Filter all already sent notifications for the event
                 .flatMap(vacations -> logRepo.vacationsIn(vacations.stream().map(VacationEntry::getId).collect(Collectors.toList())).collectList()
-                        .map(alreadySent -> vacations.stream().filter(v -> !alreadySent.contains(v.getId())).collect(Collectors.toList())))
+                        .map(alreadySent
+                                -> vacations.stream().filter(v -> filter(v, alreadySent))
+                                .collect(Collectors.toList())))
                 // 3. Mark vacations as sent in database
                 .flatMap(vacations -> markVacationsAsPersisted(vacations, now)
                         // 4. Send notification
                         .thenMany(sendNotifications(vacations))
                 );
+    }
+
+    private boolean filter(VacationEntry v, List<UpcomingVacationNotificationLogEntry> alreadySent) {
+        var found = alreadySent.stream().filter(
+                s -> v.getId().equals(s.getVacation())
+                        && !s.getVacationStartDate().isBefore(v.getStartDate())
+        ).findFirst();
+        return !found.isPresent();
     }
 
     private Flux<UpcomingVacationNotificationLogEntry> markVacationsAsPersisted(List<VacationView> vacations, OffsetDateTime now) {
@@ -59,6 +69,7 @@ public class UpcomingVacationNotificationService {
             logEntry.setVacation(v.getId());
             logEntry.setCreatedAt(now);
             logEntry.setEmployee(v.getEmployee());
+            logEntry.setVacationStartDate(v.getStartDate());
             return logEntry;
         }).collect(Collectors.toList()));
     }

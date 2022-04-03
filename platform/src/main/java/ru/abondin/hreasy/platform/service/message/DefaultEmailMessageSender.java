@@ -43,7 +43,7 @@ public class DefaultEmailMessageSender implements EmailMessageSender {
         if (StringUtils.isBlank(message.getFrom())) {
             error = new BusinessError("errors.validation.failed.null", "from");
         }
-        if (message.getTo() == null || message.getTo().stream().filter(m -> !StringUtils.isBlank(m)).findFirst().isPresent()) {
+        if (message.getTo() == null || !message.getTo().stream().filter(m -> !StringUtils.isBlank(m)).findFirst().isPresent()) {
             error = new BusinessError("errors.validation.failed.null", "to");
         }
         if (StringUtils.isBlank(message.getTitle())) {
@@ -51,6 +51,10 @@ public class DefaultEmailMessageSender implements EmailMessageSender {
         }
         if (StringUtils.isBlank(message.getBody())) {
             error = new BusinessError("errors.validation.failed.null", "body");
+        }
+        if (error != null) {
+            log.error("Email message validate fail {}, {}", error.getCode(), error.getLocalizationArgs());
+            return Mono.error(error);
         }
         return Mono.just(true);
     }

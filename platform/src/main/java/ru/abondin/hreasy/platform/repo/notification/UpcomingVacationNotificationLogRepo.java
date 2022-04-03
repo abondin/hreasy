@@ -13,7 +13,7 @@ public interface UpcomingVacationNotificationLogRepo extends ReactiveCrudReposit
      * @param vacationIds
      * @return
      */
-    @Query("select l.vacation from notify.upcoming_vacation_notification_log l where l.vacation in (:vacationIds)")
-    Flux<Integer> vacationsIn(List<Integer> vacationIds);
+    @Query("select l.* from notify.upcoming_vacation_notification_log l where l.vacation in (:vacationIds)")
+    Flux<UpcomingVacationNotificationLogEntry> vacationsIn(List<Integer> vacationIds);
 }
 

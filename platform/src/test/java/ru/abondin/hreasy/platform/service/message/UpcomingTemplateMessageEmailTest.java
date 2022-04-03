@@ -56,6 +56,7 @@ public class UpcomingTemplateMessageEmailTest extends BaseServiceTest {
         context.setEndDate(dateTimeService.now().toLocalDate().plusDays(24));
         context.setEmployeeEmail("Haiden.Spooner@stm-labs.ru");
         context.setEmployeeFirstname("Haiden");
+        context.setEmployeeLastname("Spooner");
         context.setClientUuid(UUID.randomUUID().toString());
 
         var message = template.create(context);

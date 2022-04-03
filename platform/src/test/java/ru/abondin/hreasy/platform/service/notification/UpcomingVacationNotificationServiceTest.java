@@ -11,11 +11,9 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 import ru.abondin.hreasy.platform.repo.notification.UpcomingVacationNotificationLogRepo;
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
@@ -93,16 +91,43 @@ public class UpcomingVacationNotificationServiceTest extends BaseServiceTest {
         Mockito.reset(emailMessageSender);
         log.info("-------- Check that no vacations notified after first notifications");
         sender.notifyUpcomingVacations().thenMany(logRepo.vacationsIn(createdVacationIds)).blockLast(MONO_DEFAULT_TIMEOUT);
-
         Mockito.verify(emailMessageSender, times(0))
                 .sendMessage(any(HrEasyEmailMessage.class));
+
+        // Shift vacation to the future to notify it second time
+        Mockito.reset(emailMessageSender);
+        log.info("-------- Check that vacations notified after start date shifts to the future");
+        vacationRepo.findById(createdVacationIds.get(2))
+                .flatMap(v -> {
+                    v.setStartDate(v.getStartDate().plusDays(1));
+                    v.setEndDate(v.getEndDate().plusDays(1));
+                    return vacationRepo.save(v);
+                })
+                // vacation shift back not notified
+                .then(vacationRepo.findById(createdVacationIds.get(3))
+                        .flatMap(v -> {
+                            v.setStartDate(v.getStartDate().plusDays(-1));
+                            v.setEndDate(v.getEndDate().plusDays(-1));
+                            return vacationRepo.save(v);
+                        }))
+                .thenMany(sender.notifyUpcomingVacations()).blockLast(MONO_DEFAULT_TIMEOUT);
+        Mockito.verify(emailMessageSender, times(1))
+                .sendMessage(any(HrEasyEmailMessage.class));
+
+        // Check that no vacations notified after notifications
+        Mockito.reset(emailMessageSender);
+        log.info("-------- Check that no vacations notified after notifications");
+        sender.notifyUpcomingVacations().thenMany(logRepo.vacationsIn(createdVacationIds)).blockLast(MONO_DEFAULT_TIMEOUT);
+        Mockito.verify(emailMessageSender, times(0))
+                .sendMessage(any(HrEasyEmailMessage.class));
+
     }
 
 
     private Flux<Integer> generateVacations() {
         var createdVacationIds = new ArrayList<Mono<Integer>>();
 
-        // 1. Planned vacation starts in 30 days (should not be notified)
+        // 0. Planned vacation starts in 30 days (should not be notified)
         var vacation1 = defaultNewVacationBody();
         vacation1.setStartDate(dateTimeService.now().plus(30, ChronoUnit.DAYS).toLocalDate());
         vacation1.setEndDate(dateTimeService.now().plus(44, ChronoUnit.DAYS).toLocalDate());

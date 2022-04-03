@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import ru.abondin.hreasy.platform.config.BackgroundTasksProps;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.notification.upcomingvacations.UpcomingVacationNotificationService;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -21,8 +22,11 @@ public class UpcomingVacationNotificationsJob {
 
     private final BackgroundTasksProps props;
     private final DateTimeService dateTimeService;
+    private final UpcomingVacationNotificationService service;
 
-    @Scheduled(fixedDelay = 10000)
+    private final Duration MAX_WAIT = Duration.ofMinutes(5);
+
+    @Scheduled(fixedDelay = 3600000)
     public void sendEmailForUpcomingVacations() {
         if (!props.getUpcomingVacation().isJobEnabled()) {
             log.info("Upcoming Vacation Notifications Job is disabled. Please use hreasy.background.upcomingVacation.upcomingVacationJobEnabled=true");
@@ -31,13 +35,21 @@ public class UpcomingVacationNotificationsJob {
         var jobId = UUID.randomUUID().toString();
         log.info("Start upcoming vacation notifications job {}: {}", jobId, startTime);
         try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            service.notifyUpcomingVacations()
+                    .doOnError(e -> {
+                        var endTime = dateTimeService.now();
+                        log.error("Upcoming vacation notifications job failed {}: {}. Duration={}", jobId,
+                                endTime, Duration.between(startTime, endTime));
+                    })
+                    .count().map(cnt -> {
+                        var endTime = dateTimeService.now();
+                        log.info("Complete upcoming vacation notifications job {}. Sent notifications: {}. Duration={}", jobId,
+                                cnt, Duration.between(startTime, endTime));
+                        return cnt;
+                    }).block(MAX_WAIT);
+        } catch (Exception ex) {
+            log.error("Unexpected exception during upcoming vacation notifications job {}", jobId, ex);
         }
-        var endTime = dateTimeService.now();
-        log.info("Complete upcoming vacation notifications job {}: {}. Duration={}", jobId,
-                endTime, Duration.between(startTime, endTime));
     }
 
 }
