@@ -6,7 +6,7 @@ name: CI
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches: [ master, feature/ms ]
   pull_request:
     branches: [ master ]
 
@@ -46,11 +46,11 @@ jobs:
         report_paths: '**/target/surefire-reports/TEST-*.xml'
 
     # Build Docker
-    - name: Build and push docker
+    - name: Build and push docker core-ms
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
         GITHUB_NAME: ${{ secrets.GITHUBNAME }}
-      run: mvn -B jib:build -Dimage='docker.io/abondin/hreasyplatform' -Djib.to.auth.username=${GITHUB_NAME} -Djib.to.auth.password=${GITHUB_TOKEN} --file platform/pom.xml
+      run: mvn -B jib:build -Dimage='docker.io/abondin/hreasy-core-ms' -Djib.to.auth.username=${GITHUB_NAME} -Djib.to.auth.password=${GITHUB_TOKEN} --file platform/ms/core/pom.xml
       
   build-web:
     # The type of runner that the job will run on
