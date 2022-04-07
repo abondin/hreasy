@@ -15,33 +15,45 @@ services:
       - ./pgdata:/var/lib/postgresql/data
     container_name: hreasypg
 
-  hreasyplatform:
-    image: docker.k8s-usn.stm.local:80/hreasyplatform:latest
+  hreasy-api-facade:
+    image: docker.io/abondin/hreasy-api-facade:latest
+    restart: "no" #unless-stopped
+    ports:
+      - 80:80
+    container_name: hreasy-core-ms
+
+  hreasy-core-ms:
+    image: docker.io/abondin/hreasy-core-ms:latest
     restart: "no" #unless-stopped
     volumes:
       - ./store:/opt/hreasy/store
     environment:
       SERVER_PORT: 80
       HREASY_FS_RESOURCE_PATH: file:/opt/hreasy/store
-      HREASY_DB_HOST: hreasydb
-      HREASY_DB_USERNAME: sa
+      HREASY_DB_HOST: hreasypg
+      HREASY_DB_PORT: 5432
+      HREASY_DB_USERNAME: hr
       HREASY_DB_PASSWORD: HREasyPassword2019!
       HREASY_DB_DATABASE: hr
       HREASY_LDAP_SERVER-URL: ldap://dc.stm.local
       HREASY_LDAP_USER-DN: CN=ldapquery,CN=Users,DC=stm,DC=local
       HREASY_LDAP_USER-PASSWORD:
+      SPRING_MAIL_HOST: 
+      HREASY_COMMON_DEFAULT-EMAIL-FROM: hreasy@stm-labs.ru
+      HREASY_BACKGROUND_UPCOMING-VACATION_ADDITIONAL-EMAIL-ADDRESSES: 
+      HREASY_BACKGROUND_UPCOMING-VACATION_JOB-ENABLED: 'false'
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+      JAVA_TOOL_OPTIONS: -Duser.country=RU -Duser.language=ru -Duser.timezone=Europe/Moscow
     depends_on:
-      - hreasydb
-    ports:
-      - 80:80
-    container_name: hreasyplatform
+      - hreasypg
+    container_name: hreasy-core-ms
   hreasyweb:
     image: docker.k8s-usn.stm.local:80/hreasyweb:latest
     restart: "no" #unless-stopped
     ports:
-      - 80:80
+      - 8080:80
     depends_on:
-      - hreasyplatform
+      - hreasy-core-ms
     container_name: hreasyweb
 volumes:
   hreasydata:

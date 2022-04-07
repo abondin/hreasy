@@ -17,6 +17,7 @@
         <module>bom</module>
         <module>lib/hreasy-common</module>
         <module>ms/parent</module>
+        <module>ms/apifacade</module>
         <module>ms/core</module>
     </modules>
 </project>
