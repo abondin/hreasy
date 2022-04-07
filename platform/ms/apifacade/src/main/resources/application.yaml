@@ -1,0 +1,55 @@
+server:
+  port: 8081
+
+## Configuring info endpoint
+info:
+  app:
+    name: 'HR Easy API Facade'
+    description: 'HR platform for small IT companies'
+    version: '1.0.1'
+    site: https://github.com/abondin/hreasy
+  author:
+    name: Alexander Bondin
+    email: abondin@gmail.com
+    site: https://github.com/abondin
+
+
+management:
+  security:
+    enabled: "false"
+  add-application-context-header: "false"
+  endpoint:
+    prometheus:
+      enabled: "true"
+    metrics:
+      enabled: "true"
+    loggers:
+      enabled: "true"
+  metrics:
+    export:
+      prometheus:
+        enabled: "true"
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info,prometheus,loggers
+    jmx:
+      enabled: "false"
+
+endpoints:
+  jmx:
+    enabled: "false"
+  trace:
+    enabled: "false"
+  metrics:
+    enabled: "true"
+  prometheus:
+    enabled: "true"
+
+logging:
+  level:
+    ru:
+      abondin: INFO
+
+user:
+  timezone: Europe/Moscow

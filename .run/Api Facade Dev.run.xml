@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Api Facade Dev" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="ru.abondin.hreasy.apifacade.HreasyApiFacadeApplication" />
+    <module name="api-facade" />
+    <option name="VM_PARAMETERS" value="-Dspring.profiles.active=dev -Duser.country=RU -Duser.language=ru" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="ru.abondin.hreasy.apifacade.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

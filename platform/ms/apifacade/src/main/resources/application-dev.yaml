@@ -1,0 +1,20 @@
+logging:
+  level:
+    ru:
+      abondin: DEBUG
+    org:
+      springframework:
+        cloud:
+          gateway: INFO
+spring:
+  cloud:
+    gateway:
+      httpclient:
+        wiretap: true
+      httpserver:
+        wiretap: true
+
+hreasy:
+  api:
+    discovery:
+      corems: http://localhost:8091

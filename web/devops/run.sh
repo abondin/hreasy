@@ -6,7 +6,7 @@ echo "----";
 
 if [ -z "$HREASY_API_HOST" ]
 then
-  UPSTREAM_HOST=hreasyplatform
+  UPSTREAM_HOST=hreasy-api-facade
 else
   UPSTREAM_HOST=$HREASY_API_HOST
 fi

@@ -20,7 +20,7 @@ services:
     restart: "no" #unless-stopped
     ports:
       - 80:80
-    container_name: hreasy-core-ms
+    container_name: hreasy-api-facade
 
   hreasy-core-ms:
     image: docker.io/abondin/hreasy-core-ms:latest

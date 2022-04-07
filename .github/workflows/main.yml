@@ -51,7 +51,12 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
         GITHUB_NAME: ${{ secrets.GITHUBNAME }}
       run: mvn -B jib:build -Dimage='docker.io/abondin/hreasy-core-ms' -Djib.to.auth.username=${GITHUB_NAME} -Djib.to.auth.password=${GITHUB_TOKEN} --file platform/ms/core/pom.xml
-      
+    - name: Build and push docker core-ms
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+        GITHUB_NAME: ${{ secrets.GITHUBNAME }}
+      run: mvn -B jib:build -Dimage='docker.io/abondin/hreasy-core-ms' -Djib.to.auth.username=${GITHUB_NAME} -Djib.to.auth.password=${GITHUB_TOKEN} --file platform/ms/apifacade/pom.xml
+
   build-web:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
