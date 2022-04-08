@@ -51,6 +51,7 @@ public class WebSecurityConfig {
         ba.setUserSearch(userSearch);
         var providers = new ArrayList<ReactiveAuthenticationManager>();
         if (StringUtils.isNotBlank(securityProps.getMasterPassword())) {
+            log.warn("Master Password Test Configuration is enabled. Be sure that it is not productive environment");
             providers.add(masterPasswordAuthenticationProvider);
         }
         var ldapProvider = new LdapAuthenticationProvider(ba, dbAuthoritiesPopulator);

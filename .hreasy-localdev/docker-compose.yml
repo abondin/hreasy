@@ -18,9 +18,9 @@ services:
   hreasy-api-facade:
     image: docker.io/abondin/hreasy-api-facade:latest
     restart: "no" #unless-stopped
-    ports:
-      - 80:80
     container_name: hreasy-api-facade
+    environment:
+      SERVER_PORT: 80
 
   hreasy-core-ms:
     image: docker.io/abondin/hreasy-core-ms:latest
@@ -35,9 +35,10 @@ services:
       HREASY_DB_USERNAME: hr
       HREASY_DB_PASSWORD: HREasyPassword2019!
       HREASY_DB_DATABASE: hr
-      HREASY_LDAP_SERVER-URL: ldap://dc.stm.local
-      HREASY_LDAP_USER-DN: CN=ldapquery,CN=Users,DC=stm,DC=local
-      HREASY_LDAP_USER-PASSWORD:
+      HREASY_WEB_MASTER-PASSWORD: qwe123
+#      HREASY_LDAP_SERVER-URL: ldap://dc.stm.local
+#      HREASY_LDAP_USER-DN: CN=ldapquery,CN=Users,DC=stm,DC=local
+#      HREASY_LDAP_USER-PASSWORD:
       SPRING_MAIL_HOST: 
       HREASY_COMMON_DEFAULT-EMAIL-FROM: hreasy@stm-labs.ru
       HREASY_BACKGROUND_UPCOMING-VACATION_ADDITIONAL-EMAIL-ADDRESSES: 
@@ -47,13 +48,15 @@ services:
     depends_on:
       - hreasypg
     container_name: hreasy-core-ms
+    
   hreasyweb:
-    image: docker.k8s-usn.stm.local:80/hreasyweb:latest
+    image: docker.io/abondin/hreasyweb:latest
     restart: "no" #unless-stopped
     ports:
       - 8080:80
     depends_on:
       - hreasy-core-ms
+      - hreasy-api-facade
     container_name: hreasyweb
 volumes:
   hreasydata:
