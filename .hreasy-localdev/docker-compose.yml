@@ -35,7 +35,7 @@ services:
       HREASY_DB_USERNAME: hr
       HREASY_DB_PASSWORD: HREasyPassword2019!
       HREASY_DB_DATABASE: hr
-      HREASY_WEB_MASTER-PASSWORD: qwe123
+      HREASY_WEB_SEC_MASTER-PASSWORD: qwe123
 #      HREASY_LDAP_SERVER-URL: ldap://dc.stm.local
 #      HREASY_LDAP_USER-DN: CN=ldapquery,CN=Users,DC=stm,DC=local
 #      HREASY_LDAP_USER-PASSWORD:
