@@ -66,7 +66,7 @@
             <v-tooltip bottom v-if="canEditVacations">
               <template v-slot:activator="{ on: ton, attrs: tattrs}">
                 <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-                  <v-btn text icon @click="fetchData()">
+                  <v-btn text icon @click="fetchData(false)">
                     <v-icon>refresh</v-icon>
                   </v-btn>
                 </div>
@@ -216,7 +216,7 @@
                             v-bind:allYears="allYears"
                             v-bind:input="selectedVacation"
                             v-bind:default-year="selectedYear"
-                            @close="vacationDialog=false;fetchData()"></vacation-edit-form>
+                            @close="vacationDialog=false;fetchData(false)"></vacation-edit-form>
       </v-dialog>
 
     </v-card>
@@ -302,7 +302,7 @@ export default class VacationsListComponent extends Vue {
           });
           return this.allEmployees;
         }))
-        .then(() => this.fetchData());
+        .then(() => this.fetchData(true));
   }
 
   private reloadHeaders() {
@@ -362,10 +362,10 @@ export default class VacationsListComponent extends Vue {
 
   @Watch('selectedYear')
   private watchSelectedYear() {
-    this.fetchData();
+    this.fetchData(true);
   }
 
-  private fetchData() {
+  private fetchData(resetFilter: boolean) {
     this.loading = true;
     return vacationService.findAll([this.selectedYear])
         .then(data => {
@@ -375,7 +375,9 @@ export default class VacationsListComponent extends Vue {
         ).finally(() => {
           this.loading = false
         }).then(() => {
-          this.resetSelectedDatesFilterToDefault();
+          if (resetFilter) {
+            this.resetSelectedDatesFilterToDefault();
+          }
         });
   }
 
