@@ -28,12 +28,10 @@ Uses in Employees Table (Employees.vue)
 
 
         <!-- Additional Information (loaded on mount) -->
-        <v-list-item-subtitle v-if="additionalDataLoading">
-          <v-progress-circular indeterminate></v-progress-circular>
-        </v-list-item-subtitle>
         <!-- Vacations -->
         <v-list-item-subtitle>
           {{ $t('Текущие и планируемые отпуска') }}:
+          <v-progress-circular indeterminate v-if="vacationsLoading"></v-progress-circular>
           <span v-if="employeeVacations && employeeVacations.length > 0">
             <v-chip v-for="v in employeeVacations"
                     v-bind:key="v.id" class="mr-1" :color="v.current?'primary':''">{{
@@ -104,7 +102,7 @@ export default class EmployeeCard extends Vue {
 
   openUpdateCurrentProjectDialog = false;
 
-  additionalDataLoading = false;
+  vacationsLoading = false;
 
   employeeVacations: EmployeeVacationShort[] = [];
 
@@ -113,21 +111,18 @@ export default class EmployeeCard extends Vue {
   }
 
   private loadAdditionalData() {
-    this.additionalDataLoading = true;
-
     this.loadVacations()
-        .then(this.loadTechProfiles())
-        .finally(() => {
-          this.additionalDataLoading = false;
-        });
-
+        .then(this.loadTechProfiles());
   }
 
   private loadVacations(): any {
     this.employeeVacations.length = 0;
+    this.vacationsLoading = true;
     return vacationService.currentOrFutureVacations(this.employee.id).then(vacations => {
       this.employeeVacations = vacations;
       return vacations;
+    }).finally(()=>{
+      this.vacationsLoading = false;
     });
   }
 

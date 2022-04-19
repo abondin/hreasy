@@ -12,6 +12,8 @@ export interface TechProfileService {
     getTechProfileDownloadUrl(employeeId: number, filename: string, accessToken: string): string;
 
     getTechProfileUploadUrl(employeeId: number): string;
+
+    delete(employeeId: number, filename: string): Promise<void>;
 }
 
 class RestTechProfileService implements TechProfileService {
@@ -29,6 +31,11 @@ class RestTechProfileService implements TechProfileService {
             return response.data;
         });
     }
+
+    delete(employeeId: number, filename: string) : Promise<void>{
+        return httpService.delete(`v1/techprofile/${employeeId}/file/${filename}`);
+    }
+
     getTechProfileDownloadUrl(employeeId: number, filename: string, accessToken: string): string {
         return `${httpService.defaults.baseURL}v1/fs/techprofile/${employeeId}/${filename}/${accessToken}`;
     }
