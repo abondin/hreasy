@@ -97,7 +97,17 @@ export enum Permissions {
     /**
      * View last assessment date for employee. Schedule new assessment and invite managers
      */
-    CreateAssessments = "create_assessment"
+    CreateAssessments = "create_assessment",
+
+    /**
+     * Only logged in user or user with permission techprofile_download can download tech profile
+     */
+    DownloadTechProfiles = "techprofile_download",
+
+    /**
+     * Only logged in user or user with permission techprofile_upload can upload or delete tech profile
+     */
+    UploadTechProfiles = "techprofile_upload"
 }
 
 interface PermissionService {
@@ -158,6 +168,18 @@ interface PermissionService {
     canAdminBusinessAccounts(): boolean;
 
     canAdminArticles(): boolean;
+
+    /**
+     * Check if given user can download employee's tech profiles
+     * @param employeeId
+     */
+    canDownloadTechProfiles(employeeId: number): boolean
+
+    /**
+     * Check if given user can upload employee's tech profiles
+     * @param employeeId
+     */
+    canUploadTechProfiles(employeeId: number): boolean
 }
 
 const namespace: string = 'auth';
@@ -238,6 +260,13 @@ class VuexPermissionService implements PermissionService {
         return this.simplePermissionCheck(Permissions.EditArticles);
     }
 
+    canUploadTechProfiles(employeeId: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.UploadTechProfiles, employeeId);
+    }
+
+    canDownloadTechProfiles(employeeId: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.DownloadTechProfiles, employeeId);
+    }
 
     private simplePermissionCheck(permission: Permissions) {
         const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];

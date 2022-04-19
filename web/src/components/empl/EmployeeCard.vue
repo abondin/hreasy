@@ -15,19 +15,8 @@ Uses in Employees Table (Employees.vue)
         <v-list-item-subtitle v-if="employee.position">{{ employee.position.name }}</v-list-item-subtitle>
         <v-list-item-subtitle v-if="employee.officeLocation">{{ employee.officeLocation.name }}
         </v-list-item-subtitle>
-        <!-- vacations -->
-        <v-list-item-subtitle>
-          {{ $t('Текущие и планируемые отпуска') }}:
-          <span v-if="employeeVacations && employeeVacations.length > 0">
-            <v-chip v-for="v in employeeVacations"
-                    v-bind:key="v.id" class="mr-1" :color="v.current?'primary':''">{{ formatDate(v.startDate) }} - {{ formatDate(v.endDate) }}</v-chip>
-          </span>
-          <v-btn v-else @click="loadVacations()" :disabled="employeeVacationsLoading"
-                 x-small icon text color="primary">
-            <v-icon>refresh</v-icon>
-          </v-btn>
-        </v-list-item-subtitle>
 
+        <!-- Current Project -->
         <v-list-item-subtitle>{{
             employee.currentProject ? employee.currentProject.name : $tc('Проект не задан')
           }}
@@ -36,6 +25,30 @@ Uses in Employees Table (Employees.vue)
             <v-icon small>edit</v-icon>
           </v-btn>
         </v-list-item-subtitle>
+
+
+        <!-- Additional Information (loaded on mount) -->
+        <v-list-item-subtitle v-if="additionalDataLoading">
+          <v-progress-circular indeterminate></v-progress-circular>
+        </v-list-item-subtitle>
+        <!-- Vacations -->
+        <v-list-item-subtitle>
+          {{ $t('Текущие и планируемые отпуска') }}:
+          <span v-if="employeeVacations && employeeVacations.length > 0">
+            <v-chip v-for="v in employeeVacations"
+                    v-bind:key="v.id" class="mr-1" :color="v.current?'primary':''">{{
+                formatDate(v.startDate)
+              }} - {{ formatDate(v.endDate) }}</v-chip>
+          </span>
+        </v-list-item-subtitle>
+
+        <!-- tech profiles -->
+        <v-list-item-subtitle v-if="canDownloadTechProfiles()">
+          {{ $t('Квалификационные карточки') }}:
+          <tech-profiles-chips ref="techProfileChips" :employee-id="employee.id"/>
+        </v-list-item-subtitle>
+
+        <!-- Skills -->
         <v-list-item-subtitle v-if="employee">
           {{ $t('Навыки') }}:
           <skills-chips
@@ -43,6 +56,9 @@ Uses in Employees Table (Employees.vue)
               :employee-id="employee.id"
           ></skills-chips>
         </v-list-item-subtitle>
+
+
+
       </v-list-item-content>
     </v-list-item>
 
@@ -70,10 +86,16 @@ import EmployeeUpdateCurrentProject from "@/components/empl/EmployeeUpdateCurren
 import permissionService from "@/store/modules/permission.service";
 import SkillsChips from "@/components/empl/skills/SkillsChips.vue";
 import vacationService, {EmployeeVacationShort} from "@/components/vacations/vacation.service";
+import TechProfilesChips from "@/components/empl/TechProfilesChips.vue";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
 @Component({
-  components: {SkillsChips, EmployeeAvatarUploader, EmployeeUpdateCurrentProject}
+  components: {
+    SkillsChips,
+    TechProfilesChips,
+    EmployeeAvatarUploader,
+    EmployeeUpdateCurrentProject
+  }
 })
 export default class EmployeeCard extends Vue {
 
@@ -82,29 +104,54 @@ export default class EmployeeCard extends Vue {
 
   openUpdateCurrentProjectDialog = false;
 
+  additionalDataLoading = false;
+
   employeeVacations: EmployeeVacationShort[] = [];
-  employeeVacationsLoading = false;
+
+  private mounted() {
+    this.loadAdditionalData();
+  }
+
+  private loadAdditionalData() {
+    this.additionalDataLoading = true;
+
+    this.loadVacations()
+        .then(this.loadTechProfiles())
+        .finally(() => {
+          this.additionalDataLoading = false;
+        });
+
+  }
+
+  private loadVacations(): any {
+    this.employeeVacations.length = 0;
+    return vacationService.currentOrFutureVacations(this.employee.id).then(vacations => {
+      this.employeeVacations = vacations;
+      return vacations;
+    });
+  }
+
+  private loadTechProfiles(): any {
+    if (this.canDownloadTechProfiles()) {
+      return (this.$refs.techProfileChips as TechProfilesChips).loadTechProfiles();
+    }
+  }
+
+  private canDownloadTechProfiles(): boolean {
+    return permissionService.canDownloadTechProfiles(this.employee.id);
+  }
+
+  private formatDate(date: string): string | undefined {
+    return DateTimeUtils.formatFromIso(date);
+  }
 
   private getAvatarUrl(employeeId: number) {
     return employeeService.getAvatarUrl(employeeId);
   }
 
+
   private canUpdateCurrentProject(): boolean {
     return permissionService.canUpdateCurrentProject(this.employee.id);
-  }
-
-  private loadVacations() {
-    this.employeeVacationsLoading = true;
-    this.employeeVacations.length = 0;
-    vacationService.currentOrFutureVacations(this.employee.id).then(vacations => {
-      this.employeeVacations = vacations;
-    }).finally(() => {
-      this.employeeVacationsLoading = false;
-    });
-  }
-
-  private formatDate(date: string): string | undefined {
-    return DateTimeUtils.formatFromIso(date);
   }
 }
 </script>

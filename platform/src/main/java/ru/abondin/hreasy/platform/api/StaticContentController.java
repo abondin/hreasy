@@ -15,6 +15,8 @@ import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.article.ArticleService;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentAccessTokenProvider;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentService;
+import ru.abondin.hreasy.platform.service.techprofile.TechProfileAccessTokenProvider;
+import ru.abondin.hreasy.platform.service.techprofile.TechProfileService;
 
 @RestController()
 @RequestMapping("/api/v1/fs")
@@ -24,6 +26,7 @@ public class StaticContentController {
 
     private final FileStorage fileStorage;
     private final AssessmentAccessTokenProvider assessmentAccessTokenProvider;
+    private final TechProfileAccessTokenProvider techProfileAccessTokenProvider;
 
     @Operation(summary = "Get employee avatar")
     @GetMapping(value = "avatar/{employeeId}", produces = MediaType.IMAGE_PNG_VALUE)
@@ -39,13 +42,17 @@ public class StaticContentController {
 
     @Operation(summary = "Get assessment static attachment")
     @GetMapping(value = "assessment/{employeeId}/{assessmentId}/{attachmentName}/{accessToken}")
-    public Mono<Resource> articleAttachment(@PathVariable int employeeId,
-                                            @PathVariable int assessmentId,
-                                            @PathVariable String attachmentName,
-                                            @PathVariable String accessToken) {
-        return assessmentAccessTokenProvider.validateToken(employeeId, assessmentId, accessToken).flatMap(v ->
+    public Mono<Resource> assessmentAttachment(@PathVariable int employeeId,
+                                               @PathVariable int assessmentId,
+                                               @PathVariable String attachmentName,
+                                               @PathVariable String accessToken) {
+        return assessmentAccessTokenProvider.validateToken(AssessmentAccessTokenProvider.AssessmentAccessTokenContent.builder()
+                .assessmentEmployeeId(employeeId)
+                .assessmentId(assessmentId).build(), accessToken).flatMap(v ->
                 fileStorage.streamFile(AssessmentService.getAssessmentAttachmentFolder(employeeId, assessmentId), attachmentName));
     }
+
+
 
     @Operation(summary = "Upload employee avatar")
     @PostMapping(value = "avatar/{employeeId}/upload")
@@ -57,6 +64,17 @@ public class StaticContentController {
                     .flatMap(it -> fileStorage.uploadFile("avatars", employeeId + ".png", it))
                     .then(Mono.just("OK"));
         });
+    }
+
+    @Operation(summary = "Get tech profile file")
+    @GetMapping(value = "techprofile/{employeeId}/{accessToken}/{filename}")
+    public Mono<Resource> techProfile(@PathVariable int employeeId,
+                                      @PathVariable String accessToken,
+                                      @PathVariable String filename) {
+        return techProfileAccessTokenProvider.validateToken(TechProfileAccessTokenProvider.TechProfileTokenContent.builder()
+                .techProfileEmployeeId(employeeId)
+                .build(), accessToken).flatMap(v ->
+                fileStorage.streamFile(TechProfileService.getTechProfileFolder(employeeId), filename));
     }
 
 }

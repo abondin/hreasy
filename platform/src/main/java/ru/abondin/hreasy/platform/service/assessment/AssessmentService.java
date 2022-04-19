@@ -39,7 +39,6 @@ public class AssessmentService {
     private final DateTimeService dateTimeService;
     private final AssessmentMapper mapper;
     private final FileStorage fileStorage;
-    private final HrEasyFileStorageProperties fileProps;
     private final AssessmentAccessTokenProvider tokenProvider;
 
     public Flux<EmployeeAssessmentsSummary> allNotFiredEmployeesWithLatestAssessment(AuthContext auth) {
@@ -92,7 +91,11 @@ public class AssessmentService {
                 .flatMap(v -> assessmentRepo.findById(assessmentId))
                 .flatMap(assessmentEntry -> {
                     // 2. Generate access token to download attachments
-                    var accessToken = tokenProvider.generateToken(employeeId, assessmentId, auth.getEmployeeInfo().getEmployeeId());
+                    var accessToken = tokenProvider.generateToken(
+                            AssessmentAccessTokenProvider.AssessmentAccessTokenContent.builder()
+                                    .assessmentEmployeeId(employeeId)
+                                    .assessmentId(assessmentId)
+                                    .build(), auth.getEmployeeInfo().getEmployeeId());
                     // 3. List file storage to get all attachments filenames
                     return fileStorage.listFiles(getAssessmentAttachmentFolder(employeeId, assessmentId), true)
                             .collectList().flatMap(

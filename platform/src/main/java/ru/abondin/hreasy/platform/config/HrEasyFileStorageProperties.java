@@ -37,6 +37,9 @@ public class HrEasyFileStorageProperties {
 
     private String assessmentAttachmentRelativePattern = "v1/fs/assessment/{assessment}/{fileName}/{accessToken}";
 
-    private Duration assessmentAttachmentAccessTokenTtl = Duration.ofHours(12);
+    /**
+     * Default time period when document can be downloaded by URL with access token
+     */
+    private Duration defaultDownloadAccessTokenTtl = Duration.ofHours(12);
 
 }
