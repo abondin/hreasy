@@ -5,9 +5,15 @@
       <!-- All profiles -->
       <v-col class="mr-5" cols="auto" v-if="techProfiles && techProfiles.length>0">
         <div v-for="p in techProfiles" v-bind:key="p.filename">
-          <v-chip class="mr-2" :close="canUploadTechProfiles() && !loading" @click:close="openDeleteTechProfileDialog(p)">
-            <a :href="getTechProfileDownloadUrl(p)" download>{{ p.filename }}</a>
-          </v-chip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <v-chip v-bind="tattrs" v-on="ton" class="mr-2" :close="canUploadTechProfiles() && !loading"
+                      @click:close="openDeleteTechProfileDialog(p)">
+                <a :href="getTechProfileDownloadUrl(p)" download class="tech-profile-filename-link">{{ p.filename }}</a>
+              </v-chip>
+            </template>
+            <span>{{ $t('Скачать документ') }}  '{{ p.filename }}'</span>
+          </v-tooltip>
         </div>
       </v-col>
 
@@ -53,6 +59,15 @@
 
   </v-container>
 </template>
+
+<style lang="css">
+.tech-profile-filename-link {
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 200px;
+  text-overflow: ellipsis;
+}
+</style>
 
 <script lang="ts">
 import Component from "vue-class-component";
@@ -115,7 +130,7 @@ export default class TechProfilesChips extends Vue {
     this.deleteTechprofileDialog = true;
   }
 
-  private techProfileUploaded(){
+  private techProfileUploaded() {
     this.uploadTechprofileDialog = false;
     this.loadTechProfiles();
   }
