@@ -68,11 +68,12 @@ public class AssessmentService {
                 assessmentRepo.findByEmployeeId(employeeId).map(mapper::assessmentBaseFromEntry));
     }
 
-    public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(AuthContext auth, int employeeId, int assessmentId, FilePart file) {
+    public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(AuthContext auth, int employeeId, int assessmentId
+            , FilePart file, long contentLength) {
         return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
                 .flatMap(v -> {
                     var filename = file.filename();
-                    return fileStorage.uploadFile(getAssessmentAttachmentFolder(employeeId, assessmentId), filename, file)
+                    return fileStorage.uploadFile(getAssessmentAttachmentFolder(employeeId, assessmentId), filename, file, contentLength)
                             .then(Mono.just(new UploadAssessmentAttachmentResponse()));
                 });
     }

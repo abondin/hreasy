@@ -42,4 +42,14 @@ public class HrEasyFileStorageProperties {
      */
     private Duration defaultDownloadAccessTokenTtl = Duration.ofHours(12);
 
+    /**
+     * Default upload content size limit in bytes
+     */
+    private long defaultUploadContentSizeLimitBytes = 10 * 1024 * 1024;
+
+    /**
+     * Default maximum number of files in one directory
+     */
+    private long defaultMaxFilesInDirectory = 100;
+
 }

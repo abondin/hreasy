@@ -14,7 +14,7 @@
       <v-col cols="auto" v-if="canUploadTechProfiles()">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <v-btn v-bind="tattrs" v-on="ton" class="mr-2" color="primary" outlined rounded icon
+            <v-btn v-bind="tattrs" v-on="ton" color="primary" outlined rounded icon
                    @click="uploadTechprofileDialog=true" :disabled="loading">
               <v-icon>mdi-plus</v-icon>
             </v-btn>
@@ -41,7 +41,7 @@
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="profileToDelete = null;deleteDialog=false">
+          <v-btn text @click="profileToDelete = null;deleteTechprofileDialog=false">
             {{ $t('Нет') }}
           </v-btn>
           <v-btn color="primary" @click="deleteTechProfile()">

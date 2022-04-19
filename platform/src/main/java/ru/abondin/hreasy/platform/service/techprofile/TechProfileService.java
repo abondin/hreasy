@@ -58,7 +58,7 @@ public class TechProfileService {
         logEntry.setFilename(filename);
         logEntry.setEmployee(employeeId);
         return securityValidator.validateUploadOrDeleteTechProfile(auth, employeeId)
-                .then(fileStorage.uploadFile(getTechProfileFolder(employeeId), filename, file))
+                .then(fileStorage.uploadFile(getTechProfileFolder(employeeId), filename, file, contentLength))
                 .then(repo.save(logEntry))
                 .then(Mono.just(new UploadTechprofileResponse()));
     }

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
@@ -53,15 +54,16 @@ public class StaticContentController {
     }
 
 
-
     @Operation(summary = "Upload employee avatar")
     @PostMapping(value = "avatar/{employeeId}/upload")
-    public Mono<String> uploadAvatar(@PathVariable int employeeId, @RequestPart("file") Flux<FilePart> multipartFile) {
+    public Mono<String> uploadAvatar(@PathVariable int employeeId,
+                                     @RequestPart("file") Flux<FilePart> multipartFile
+            , @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength) {
         log.debug("Upload new avatar for " + employeeId);
         return AuthHandler.currentAuth().flatMap(auth -> {
             SecurityUtils.validateUploadAvatar(auth, employeeId);
             return multipartFile
-                    .flatMap(it -> fileStorage.uploadFile("avatars", employeeId + ".png", it))
+                    .flatMap(it -> fileStorage.uploadFile("avatars", employeeId + ".png", it, contentLength))
                     .then(Mono.just("OK"));
         });
     }
