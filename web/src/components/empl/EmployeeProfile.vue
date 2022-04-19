@@ -30,11 +30,21 @@
         class="mt-5"
         :employee-id="employeeId"
         :selected-period="currentOvertimePeriod"
-    :closed-periods="closedOvertimePeriods"></employee-overtime-component>
+        :closed-periods="closedOvertimePeriods"></employee-overtime-component>
 
     <my-vacations class="mt-5"></my-vacations>
 
     <my-skills class="mt-5"></my-skills>
+
+    <v-card class="mt-5">
+      <v-card-title>
+        <div>{{ $t('Классификационные карточки') }}</div>
+      </v-card-title>
+      <v-card-text>
+        <tech-profiles-chips ref="techProfileChips" :employee-id="employeeId"></tech-profiles-chips>
+      </v-card-text>
+    </v-card>
+
 
     <my-shared-articles class="mt-5"></my-shared-articles>
 
@@ -53,11 +63,13 @@ import EmployeeOvertimeComponent from "@/components/overtimes/EmployeeOvertimeCo
 import MyVacations from "@/components/vacations/MyVacations.vue";
 import MySkills from "@/components/empl/skills/MySkills.vue";
 import MySharedArticles from "@/components/article/MySharedArticles.vue";
+import TechProfilesChips from "@/components/empl/TechProfilesChips.vue";
 
 const namespace: string = 'auth';
 
 @Component({
   components: {
+    TechProfilesChips,
     MySharedArticles,
     MySkills, "employee-avatar": EmployeeAvatarUploader, EmployeeOvertimeComponent, MyVacations
   }
@@ -87,10 +99,12 @@ export default class EmployeeProfile extends Vue {
               this.employee = data;
               return this.employee;
             }
-        ).then(()=>{
+        ).then(() => {
           return overtimeService.getClosedOvertimes().then((data) => {
             this.closedOvertimePeriods = data;
           });
+        }).then(() => {
+          return (this.$refs.techProfileChips as TechProfilesChips).loadTechProfiles();
         })
         .finally(() => {
           this.loading = false

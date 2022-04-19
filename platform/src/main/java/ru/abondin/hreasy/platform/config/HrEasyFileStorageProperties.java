@@ -37,6 +37,19 @@ public class HrEasyFileStorageProperties {
 
     private String assessmentAttachmentRelativePattern = "v1/fs/assessment/{assessment}/{fileName}/{accessToken}";
 
-    private Duration assessmentAttachmentAccessTokenTtl = Duration.ofHours(12);
+    /**
+     * Default time period when document can be downloaded by URL with access token
+     */
+    private Duration defaultDownloadAccessTokenTtl = Duration.ofHours(12);
+
+    /**
+     * Default upload content size limit in bytes
+     */
+    private long defaultUploadContentSizeLimitBytes = 10 * 1024 * 1024;
+
+    /**
+     * Default maximum number of files in one directory
+     */
+    private long defaultMaxFilesInDirectory = 100;
 
 }

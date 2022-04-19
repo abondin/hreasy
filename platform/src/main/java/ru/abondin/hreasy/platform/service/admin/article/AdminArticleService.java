@@ -90,14 +90,14 @@ public class AdminArticleService {
      * @param file
      * @return
      */
-    public Mono<UploadArticleAttachmentResponse> uploadArticleAttachment(AuthContext auth, int articleId, FilePart file) {
+    public Mono<UploadArticleAttachmentResponse> uploadArticleAttachment(AuthContext auth, int articleId, FilePart file, long contentLength) {
         return securityValidator.validateEditArticle(auth)
                 .flatMap(sec -> {
                     var filename = file.filename();
-                    return fileStorage.uploadFile(ArticleService.getArticleAttachmentFolder(articleId), filename, file)
+                    return fileStorage.uploadFile(ArticleService.getArticleAttachmentFolder(articleId), filename, file, contentLength)
                             .then(Mono.just(new UploadArticleAttachmentResponse(properties.getArticleAttachmentRelativePattern()
-                            .replace("{articleId}", Integer.toString(articleId))
-                            .replace("{fileName}", filename))));
+                                    .replace("{articleId}", Integer.toString(articleId))
+                                    .replace("{fileName}", filename))));
                 });
     }
 

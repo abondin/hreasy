@@ -105,7 +105,7 @@ public class FileStorage implements InitializingBean {
             // 2. Delete old file from recycled if already exists (in case of add/delete/add/delete for one file)
             if (recycledFile.isFile()) {
                 boolean deleted = recycledFile.delete();
-                if (!deleted){
+                if (!deleted) {
                     log.warn("Unable to delete old file in recycle", path, filename);
                 }
             }
@@ -121,11 +121,20 @@ public class FileStorage implements InitializingBean {
         return Mono.just(success);
     }
 
-    public Mono<Void> uploadFile(String resourceType, String filename, FilePart filePart) {
-        log.debug("Uploading '{}' file '{}' with original file name '{}'",
-                resourceType, filename, filePart.filename());
+    public Mono<Void> uploadFile(String resourceType, String filename, FilePart filePart, long contentLength) {
+        log.debug("Uploading '{}' file '{}' with original file name '{}'. Content length = {}",
+                resourceType, filename, filePart.filename(), contentLength);
+        if (contentLength > props.getDefaultUploadContentSizeLimitBytes()) {
+            return Mono.error(new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Content length can not be more than " +
+                    props.getDefaultUploadContentSizeLimitBytes() + " bytes"));
+        }
         var resourceHome = new File(rootDir, resourceType);
-        validateAndCreateDir(resourceHome, true);
+        var dir = validateAndCreateDir(resourceHome, true);
+        // check file number limit
+        if (dir.listFiles((file -> file.isFile())).length > props.getDefaultMaxFilesInDirectory()) {
+            return Mono.error(new ResponseStatusException(HttpStatus.INSUFFICIENT_STORAGE, "Maximum number of files in one folder"));
+        }
+
         return filePart.transferTo(new File(resourceHome, filename));
     }
 
@@ -140,7 +149,7 @@ public class FileStorage implements InitializingBean {
     }
 
 
-    private void validateAndCreateDir(File dir, boolean autocreate) {
+    private File validateAndCreateDir(File dir, boolean autocreate) {
         if (!dir.exists()) {
             log.info("File storage {} does not exist", dir);
             if (autocreate) {
@@ -153,5 +162,6 @@ public class FileStorage implements InitializingBean {
         if (!dir.isDirectory()) {
             throw new IllegalArgumentException("File Storage Dir " + dir + " is not a directory");
         }
+        return dir;
     }
 }

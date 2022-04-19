@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="HR Easy Local" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="ru.abondin.hreasy.platform.HreasyPlatformApplication" />
+    <module name="platform" />
+    <option name="VM_PARAMETERS" value="-Dspring.profiles.active=dev -Duser.country=RU -Duser.language=ru" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.api.admin;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -44,9 +45,10 @@ public class AdminArticleController {
     @Operation(summary = "Upload article attachment")
     @PostMapping(value = "{articleId}/attachment")
     public Mono<UploadArticleAttachmentResponse> uploadAttachment(@PathVariable int articleId,
-                                                              @RequestPart("file") Mono<FilePart> multipartFile) {
-        log.debug("Upload new attachment {} for article {}", articleId);
+                                                                  @RequestPart("file") Mono<FilePart> multipartFile,
+                                                                  @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength) {
+        log.debug("Upload new attachment {} for article {}. Content length={}", articleId, contentLength);
         return AuthHandler.currentAuth().flatMap(auth -> multipartFile
-                .flatMap(it -> service.uploadArticleAttachment(auth, articleId, it)));
+                .flatMap(it -> service.uploadArticleAttachment(auth, articleId, it, contentLength)));
     }
 }

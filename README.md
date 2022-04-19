@@ -14,6 +14,7 @@
  - Articles (news and shared information).
  - Assessments
  - Notifications
+ - Download and upload Technical Profiles
 
 # Projects
 
@@ -119,6 +120,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |view_assessment_full|N|N|View all assessment forms without restrictions|
 |create_assessment|N|N|View last assessment date for employee. Schedule new assessment and invite managers|
 |admin_notifications|N|N|Create notifications for the employees|
+|techprofile_download|Y|Y|Download employee's tech profile|
+|techprofile_upload|Y|Y|Upload or delete employee's tech profile|
 
 **Default permissions and roles**
 
@@ -152,6 +155,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |view_employee_full|global_admin,hr|
 |view_assessment_full|global_admin,hr|
 |create_assessment|pm,global_admin,hr|
+|techprofile_download|pm,global_admin,hr|
+|techprofile_upload|pm,global_admin,hr|
 
 ## Assessments
 
@@ -187,3 +192,6 @@ in database table `assessment_form_template` (*//TODO Admin page to edit templat
 
 
 
+## Technical Profiles
+
+Employee (or HR/PM/Admin) can upload a technical profile documents.  

@@ -4,6 +4,7 @@ package ru.abondin.hreasy.platform.api.assessment;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -64,18 +65,20 @@ public class AssessmentController {
     @PostMapping(value = "/{employeeId}/{assessmentId}/attachment")
     public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(@PathVariable("employeeId") int employeeId,
                                                                      @PathVariable int assessmentId,
-                                                                     @RequestPart("file") Mono<FilePart> multipartFile) {
+                                                                     @RequestPart("file") Mono<FilePart> multipartFile,
+                                                                     @RequestHeader(value=HttpHeaders.CONTENT_LENGTH, required = true) long contentLength) {
         log.debug("Upload new attachment for assessment {}:{}", employeeId, assessmentId);
         return AuthHandler.currentAuth().flatMap(auth -> multipartFile
-                .flatMap(it -> service.uploadAttachment(auth, employeeId, assessmentId, it)));
+                .flatMap(it -> service.uploadAttachment(auth, employeeId, assessmentId, it, contentLength)));
     }
 
     @Operation(summary = "Delete assessment attachment")
     @DeleteMapping(value = "/{employeeId}/{assessmentId}/attachment/{filename}")
     public Mono<DeleteAssessmentAttachmentResponse> deleteAttachment(@PathVariable("employeeId") int employeeId,
                                                                      @PathVariable int assessmentId,
-                                                                     @PathVariable String filename) {
-        log.debug("Upload new attachment for assessment {}:{}", employeeId, assessmentId);
+                                                                     @PathVariable String filename,
+                                                                     @RequestHeader(value=HttpHeaders.CONTENT_LENGTH, required = true) long contentLength) {
+        log.debug("Upload new attachment for assessment {}:{}. Content length={}", employeeId, assessmentId, contentLength);
         return AuthHandler.currentAuth().flatMap(auth -> service.deleteAttachment(auth, employeeId, assessmentId, filename));
     }
 

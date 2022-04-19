@@ -36,7 +36,7 @@
       </v-col>
 
       <!-- New skill -->
-      <v-col cols="auto" class="mt-5" v-if="skillsChipsEditable(employeeId)">
+      <v-col cols="auto" v-if="skillsChipsEditable(employeeId)" align-self="center">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
             <v-btn v-bind="tattrs" v-on="ton" class="mr-2" color="primary" outlined rounded icon
