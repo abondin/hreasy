@@ -1,6 +1,8 @@
 <!-- Chips to download and upload tech profiles documents -->
 <template>
-  <v-container>
+  <span>
+    <span v-if="downloadPermissionDenied"><v-icon>mdi-lock-alert</v-icon> {{ $t('Не достаточно прав') }}</span>
+  <v-container v-else>
     <v-row no-gutters>
       <!-- All profiles -->
       <v-col class="mr-5" cols="auto" v-if="techProfiles && techProfiles.length>0">
@@ -58,6 +60,7 @@
     </v-dialog>
 
   </v-container>
+    </span>
 </template>
 
 <style lang="css">
@@ -94,6 +97,14 @@ export default class TechProfilesChips extends Vue {
   profileToDelete: TechProfile | null = null;
   deleteError: string | null = null;
 
+  /**
+   * UI code provide only basic security validation based on user permissions without employee organization hierarchy.
+   * UI can allow current user to download profile, but backend restrict it for example because current user has
+   * PM permission, but not for project of the employee
+   */
+  downloadPermissionDenied = false;
+
+
   loading = false;
 
   private getTechProfileUploadUrl() {
@@ -104,10 +115,6 @@ export default class TechProfilesChips extends Vue {
     return techprofileService.getTechProfileDownloadUrl(this.employeeId, profile.accessToken, profile.filename,);
   }
 
-  private canDownloadTechProfiles(): boolean {
-    return permissionService.canDownloadTechProfiles(this.employeeId);
-  }
-
   private canUploadTechProfiles(): boolean {
     return permissionService.canUploadTechProfiles(this.employeeId);
   }
@@ -116,9 +123,18 @@ export default class TechProfilesChips extends Vue {
   public loadTechProfiles(): any {
     this.techProfiles.length = 0;
     this.loading = true;
+    this.downloadPermissionDenied = false;
     return techprofileService.find(this.employeeId).then(techProfiles => {
       this.techProfiles = techProfiles;
       return techProfiles;
+    }).catch(error => {
+      if (errorUtils.isAccessDenied(error)) {
+        // it is normal situation if user with permission, based on project/department tries to see profiles
+        // of employee from another project/department
+        this.downloadPermissionDenied = true;
+      } else {
+        throw error;
+      }
     }).finally(() => {
       this.loading = false;
     });
