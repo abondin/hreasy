@@ -41,12 +41,10 @@ Uses in Employees Table (Employees.vue)
         </v-list-item-subtitle>
 
         <!-- tech profiles -->
-        <!-- Does not work
         <v-list-item-subtitle v-if="canDownloadTechProfiles()">
           {{ $t('Квалификационные карточки') }}:
           <tech-profiles-chips ref="techProfileChips" :employee-id="employee.id"/>
         </v-list-item-subtitle>
-        -->
 
         <!-- Skills -->
         <v-list-item-subtitle v-if="employee">
@@ -56,7 +54,6 @@ Uses in Employees Table (Employees.vue)
               :employee-id="employee.id"
           ></skills-chips>
         </v-list-item-subtitle>
-
 
 
       </v-list-item-content>
@@ -123,7 +120,7 @@ export default class EmployeeCard extends Vue {
     return vacationService.currentOrFutureVacations(this.employee.id).then(vacations => {
       this.employeeVacations = vacations;
       return vacations;
-    }).finally(()=>{
+    }).finally(() => {
       this.vacationsLoading = false;
     });
   }

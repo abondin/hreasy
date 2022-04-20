@@ -75,6 +75,7 @@
             </v-chip>
             <v-dialog v-model="uploadAttachmentDialog" persistent>
               <file-upload
+                  :file-id="'assessment-'+assessmentId"
                   :post-action="getAttachmentUploadPath()"
                   @close="uploadComplete"></file-upload>
             </v-dialog>

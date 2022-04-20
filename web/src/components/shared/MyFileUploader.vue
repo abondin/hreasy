@@ -16,6 +16,7 @@ example
         :size="maximumSize"
         :timeout="timeout"
         :post-action="postAction"
+        :input-id="'file-'+fileId"
         @input="$refs.upload.active=true"
         @close="close"
         ref="upload">
@@ -55,6 +56,13 @@ export default class MyFileUploader extends Vue {
 
   @Prop({required: true})
   postAction!: string
+
+  /**
+   * Unique ID to identify input element for file uploader
+   */
+  @Prop({required: true})
+  fileId!: string
+
 
   /**
    * 10 * 1024 * 1024 = 10МБ
