@@ -41,10 +41,12 @@ Uses in Employees Table (Employees.vue)
         </v-list-item-subtitle>
 
         <!-- tech profiles -->
+        <!-- Does not work
         <v-list-item-subtitle v-if="canDownloadTechProfiles()">
           {{ $t('Квалификационные карточки') }}:
           <tech-profiles-chips ref="techProfileChips" :employee-id="employee.id"/>
         </v-list-item-subtitle>
+        -->
 
         <!-- Skills -->
         <v-list-item-subtitle v-if="employee">
@@ -127,7 +129,7 @@ export default class EmployeeCard extends Vue {
   }
 
   private loadTechProfiles(): any {
-    if (this.canDownloadTechProfiles()) {
+    if (this.canDownloadTechProfiles() && this.$refs.techProfileChips) {
       return (this.$refs.techProfileChips as TechProfilesChips).loadTechProfiles();
     }
   }
