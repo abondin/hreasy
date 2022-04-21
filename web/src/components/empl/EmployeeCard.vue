@@ -111,7 +111,7 @@ export default class EmployeeCard extends Vue {
 
   @Watch("employee")
   private watchEmployee() {
-    this.loadAdditionalData();
+    this.$nextTick(()=>this.loadAdditionalData());
   }
 
   private loadAdditionalData() {

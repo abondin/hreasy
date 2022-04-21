@@ -36,8 +36,7 @@
 
 
     <v-dialog v-model="uploadTechprofileDialog" max-width="600">
-      <my-file-uploader :file-id="'techprofile-'+employeeId"
-                        :post-action="getTechProfileUploadUrl()" @close="techProfileUploaded()"></my-file-uploader>
+      <my-file-uploader :file-id="'techprofile-'+{employeeId}" :post-action="getTechProfileUploadUrl()" @close="techProfileUploaded()"></my-file-uploader>
     </v-dialog>
 
     <v-dialog v-model="deleteTechprofileDialog" max-width="600">

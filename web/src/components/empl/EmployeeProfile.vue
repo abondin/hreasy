@@ -41,7 +41,7 @@
         <div>{{ $t('Классификационные карточки') }}</div>
       </v-card-title>
       <v-card-text>
-        <tech-profiles-chips ref="techProfileChips" :employee-id="employeeId"></tech-profiles-chips>
+        <tech-profiles-chips ref="techProfileChips" :employee-id="employee.id"></tech-profiles-chips>
       </v-card-text>
     </v-card>
 
