@@ -45,7 +45,7 @@ import Component from "vue-class-component";
 import AvatarCropper from "vue-avatar-cropper";
 import Vue from "vue";
 import employeeService, {Employee} from "./employee.service";
-import {Prop} from "vue-property-decorator";
+import {Prop, Watch} from "vue-property-decorator";
 import permissionService from "@/store/modules/permission.service";
 
 @Component({
@@ -67,6 +67,15 @@ export default class EmployeeAvatarUploader extends Vue {
   created() {
     if (this.employee.hasAvatar) {
       this.emplAvatar = employeeService.getAvatarUrl(this.employee.id);
+    }
+  }
+
+  @Watch("employee")
+  private watchEmployee(){
+    if (this.employee && this.employee.hasAvatar) {
+      this.emplAvatar = employeeService.getAvatarUrl(this.employee.id);
+    } else {
+      this.emplAvatar = null;
     }
   }
 

@@ -35,6 +35,7 @@
           sort-by="displayName"
           :show-expand="$vuetify.breakpoint.mdAndUp"
           disable-pagination
+          single-expand
           hide-default-footer
       >
         <template v-slot:expanded-item="{ headers, item }">

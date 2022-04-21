@@ -77,7 +77,7 @@ Uses in Employees Table (Employees.vue)
 import Vue from 'vue'
 import Component from 'vue-class-component';
 import employeeService, {Employee} from "@/components/empl/employee.service";
-import {Prop} from "vue-property-decorator";
+import {Prop, Watch} from "vue-property-decorator";
 import EmployeeAvatarUploader from "@/components/empl/EmployeeAvatarUploader.vue";
 import EmployeeUpdateCurrentProject from "@/components/empl/EmployeeUpdateCurrentProject.vue";
 import permissionService from "@/store/modules/permission.service";
@@ -106,6 +106,11 @@ export default class EmployeeCard extends Vue {
   employeeVacations: EmployeeVacationShort[] = [];
 
   private mounted() {
+    this.loadAdditionalData();
+  }
+
+  @Watch("employee")
+  private watchEmployee() {
     this.loadAdditionalData();
   }
 
