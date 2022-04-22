@@ -50,6 +50,6 @@ public class HrEasyFileStorageProperties {
     /**
      * Default maximum number of files in one directory
      */
-    private long defaultMaxFilesInDirectory = 100;
+    private long defaultMaxFilesInDirectory = 10000;
 
 }

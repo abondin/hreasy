@@ -38,7 +38,7 @@
 
     <v-card class="mt-5">
       <v-card-title>
-        <div>{{ $t('Классификационные карточки') }}</div>
+        <div>{{ $t('Квалификационные карточки') }}</div>
       </v-card-title>
       <v-card-text>
         <tech-profiles-chips ref="techProfileChips" :employee-id="employee.id"></tech-profiles-chips>

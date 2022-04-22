@@ -36,7 +36,8 @@
 
 
     <v-dialog v-model="uploadTechprofileDialog" max-width="600">
-      <my-file-uploader :file-id="'techprofile-'+{employeeId}" :post-action="getTechProfileUploadUrl()" @close="techProfileUploaded()"></my-file-uploader>
+      <my-file-uploader :file-id="'techprofile-'+{employeeId}" :post-action="getTechProfileUploadUrl()"
+                        @close="techProfileUploaded()"></my-file-uploader>
     </v-dialog>
 
     <v-dialog v-model="deleteTechprofileDialog" max-width="600">
@@ -156,12 +157,13 @@ export default class TechProfilesChips extends Vue {
     this.loading = true;
     if (this.profileToDelete) {
       return techprofileService.delete(this.employeeId, this.profileToDelete.filename)
-          .catch(error => {
-            this.deleteError = errorUtils.shortMessage(error);
-          }).then(() => {
-            this.deleteTechprofileDialog = false;
-            this.loadTechProfiles();
-          }).finally(() => {
+          .then(() => {
+                this.deleteTechprofileDialog = false;
+                this.loadTechProfiles();
+              },
+              error => {
+                this.deleteError = errorUtils.shortMessage(error);
+              }).finally(() => {
             this.loading = false;
           });
     }

@@ -50,7 +50,7 @@ public class TechProfileService {
 
     public Mono<UploadTechprofileResponse> upload(AuthContext auth, int employeeId, FilePart file, long contentLength) {
         var filename = file.filename();
-        log.info("Upload new tech profile {} for: {}, by: {}. Content Length=", filename, employeeId, auth.getUsername(), contentLength);
+        log.info("Upload new tech profile {} for: {}, by: {}. Content Length={}", filename, employeeId, auth.getUsername(), contentLength);
         var logEntry = new TechprofileLogEntry();
         logEntry.setContentLength(contentLength);
         logEntry.setCreatedAt(dateTimeService.now());
