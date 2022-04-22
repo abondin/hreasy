@@ -17,8 +17,8 @@ public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, 
             ", e.date_of_employment employee_date_of_employment,  a.*, p.id employee_current_project_id, p.name employee_current_project_name  " +
             " from empl.employee e left join assmnt.assessment a on e.id=a.employee" +
             " left join proj.project p on e.current_project=p.id " +
-            " where e.date_of_dismissal is null or e.date_of_dismissal > :now" +
-            " and a.canceled_at is null or a.canceled_at > :now" +
+            " where (e.date_of_dismissal is null or e.date_of_dismissal > :now)" +
+            " and (a.canceled_at is null or a.canceled_at > :now)" +
             " order by a.created_at desc, e.date_of_employment desc")
     Flux<EmployeeAssessmentEntry> findNotCanceledAssessmentForNotFired(@Param("now") OffsetDateTime now);
 
