@@ -9,11 +9,13 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 
-@Table("dict.office_location")
+@Table("dict.office_location_log")
 @Data
-public class DictOfficeLocationEntry {
+public class DictOfficeLocationLogEntry {
     @Id
     private Integer id;
+
+    private Integer officeLocationId;
 
     @NotNull
     private String name;
@@ -25,9 +27,11 @@ public class DictOfficeLocationEntry {
     private String office;
 
     @Nullable
-    private OffsetDateTime updatedAt;
+    private OffsetDateTime createdAt;
 
     @Nullable
-    private Integer updatedBy;
+    private Integer createdBy;
+
+    private boolean deleted;
 
 }

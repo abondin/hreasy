@@ -9,19 +9,22 @@ import org.springframework.lang.Nullable;
 
 import java.time.OffsetDateTime;
 
-@Table("dict.level")
+@Table("dict.level_log")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DictLevelEntry {
+public class DictLevelLogEntry {
     @Id
     private Integer id;
+    private Integer levelId;
     private String name;
     private Integer weight;
     @Nullable
-    private OffsetDateTime updatedAt;
+    private OffsetDateTime createdAt;
 
     @Nullable
-    private Integer updatedBy;
+    private Integer createdBy;
+
+    private boolean deleted;
 
 }

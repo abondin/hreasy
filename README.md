@@ -122,13 +122,17 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |admin_notifications|N|N|Create notifications for the employees|
 |techprofile_download|Y|Y|Download employee's tech profile|
 |techprofile_upload|Y|Y|Upload or delete employee's tech profile|
+|admin_department|N|N|Create/update/delete department|
+|admin_level|N|N|Create/update/delete employee overall skills level|
+|admin_position|N|N|Create/update/delete employee position|
+|admin_office_location|N|N|Create/update/delete office location|
 
 **Default permissions and roles**
 
 |role|description|
 |----|------|
 |global_admin|Full access|
-|hr|Add/Update/Fire all employees|
+|hr|Add/Update/Fire all employees. Admin dictionary|
 |pm|Overtime and vacation review and update, reasign employee between managed projects|
 |finance|Work with business account positions and expenses|
 |content_management|Create, update and moderate articles and news|
@@ -157,7 +161,10 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |create_assessment|pm,global_admin,hr|
 |techprofile_download|pm,global_admin,hr|
 |techprofile_upload|pm,global_admin,hr|
-
+|admin_department|global_admin,hr|
+|admin_level|global_admin,hr|
+|admin_position|global_admin,hr|
+|admin_office_location|global_admin,hr|
 ## Assessments
 
 Project Manager in UI able to select employee and schedule an assessment.

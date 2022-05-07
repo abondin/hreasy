@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.lang.Nullable;
+
+import java.time.OffsetDateTime;
 
 @Table("dict.position")
 @Data
@@ -15,4 +18,10 @@ public class DictPositionEntry {
     @Id
     private Integer id;
     private String name;
+    @Nullable
+    private OffsetDateTime updatedAt;
+
+    @Nullable
+    private Integer updatedBy;
+
 }
