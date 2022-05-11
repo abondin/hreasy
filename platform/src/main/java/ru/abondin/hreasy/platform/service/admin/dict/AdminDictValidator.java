@@ -30,7 +30,7 @@ public class AdminDictValidator {
     public Mono<Boolean> validateAdminLevel(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("admin_level")) {
-                return Mono.error(new AccessDeniedException("Only user with permission admin_department can admin level"));
+                return Mono.error(new AccessDeniedException("Only user with permission admin_level can admin level"));
             }
             return Mono.just(true);
         });

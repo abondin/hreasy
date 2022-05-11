@@ -17,6 +17,11 @@ import AssessmentShortList from "@/components/assessment/AssessmentShortList.vue
 import EmployeeAssessmentProfile from "@/components/assessment/EmployeeAssessmentProfile.vue";
 import AssessmentDetailedVue from "@/components/assessment/AssessmentDetailedVue.vue";
 import AdminEmployeeKids from "@/components/admin/employee/AdminEmployeeKids.vue";
+import DictAdminMain from "@/components/admin/dict/DictAdminMain.vue";
+import DictAdminLevels from "@/components/admin/dict/DictAdminLevels.vue";
+import DictAdminDepartments from "@/components/admin/dict/DictAdminDepartments.vue";
+import DictAdminPositions from "@/components/admin/dict/DictAdminPositions.vue";
+import DictAdminOfficeLocations from "@/components/admin/dict/DictAdminOfficeLocations.vue";
 
 Vue.use(VueRouter)
 
@@ -37,6 +42,17 @@ const routes = [
     {path: "/admin/articles", component: AdminArticlesList},
     {path: "/admin/employees", component: AdminEmployees},
     {path: "/admin/employees/kids", component: AdminEmployeeKids},
+    {
+        path: "/admin/dicts",
+        component: DictAdminMain,
+        children: [
+            {path: '', redirect:{name:"admin_dict_departments"}},
+            {name: "admin_dict_departments", path: "departments", component: DictAdminDepartments},
+            {path: "positions", component: DictAdminPositions},
+            {path: "office_locations", component: DictAdminOfficeLocations},
+            {path: "levels", component: DictAdminLevels}
+        ]
+    }
 ]
 const router = new VueRouter({
     mode: 'history',

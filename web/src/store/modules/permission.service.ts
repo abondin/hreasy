@@ -107,7 +107,28 @@ export enum Permissions {
     /**
      * Only logged in user or user with permission techprofile_upload can upload or delete tech profile
      */
-    UploadTechProfiles = "techprofile_upload"
+    UploadTechProfiles = "techprofile_upload",
+
+    /**
+     * Only user with permission admin_department can admin department
+     */
+    AdminDictDepartments = "admin_department",
+
+    /**
+     * Only user with permission admin_level can admin level
+     */
+    AdminDictLevels = "admin_level",
+
+    /**
+     * Only user with permission admin_department can admin position
+     */
+    AdminDictPositions = "admin_position",
+
+    /**
+     * Only user with permission admin_department can admin office location
+     */
+    AdminDictOfficeLocations = "admin_office_location",
+
 }
 
 interface PermissionService {
@@ -180,6 +201,26 @@ interface PermissionService {
      * @param employeeId
      */
     canUploadTechProfiles(employeeId: number): boolean
+
+    /**
+     * Check if given user has grants to CRUD operations on employees departments
+     */
+    canAdminDictDepartments(): boolean;
+
+    /**
+     * Check if given user has grants to CRUD operations on employees levels
+     */
+    canAdminDictLevels(): boolean;
+
+    /**
+     * Check if given user has grants to CRUD operations on employees positions
+     */
+    canAdminDictPositions(): boolean;
+
+    /**
+     * Check if given user has grants to CRUD operations on office locations
+     */
+    canAdminDictOfficeLocations(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -266,6 +307,22 @@ class VuexPermissionService implements PermissionService {
 
     canDownloadTechProfiles(employeeId: number): boolean {
         return this.simplePermissionCheckOrCurrentEmployee(Permissions.DownloadTechProfiles, employeeId);
+    }
+
+    canAdminDictDepartments(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminDictDepartments);
+    }
+
+    canAdminDictLevels(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminDictLevels);
+    }
+
+    canAdminDictPositions(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminDictPositions);
+    }
+
+    canAdminDictOfficeLocations(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminDictOfficeLocations);
     }
 
     private simplePermissionCheck(permission: Permissions) {

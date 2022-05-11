@@ -81,6 +81,11 @@
               {{ $t('Дети сотрудников') }}
             </v-list-item-title>
           </v-list-item>
+          <v-list-item :to="'/admin/dicts/'+firstAvialableDict()" v-if="firstAvialableDict()">
+            <v-list-item-title>
+              {{ $t('Справочники') }}
+            </v-list-item-title>
+          </v-list-item>
           <v-list-item to="/admin/projects" v-if="canAdminProjects()">
             <v-list-item-title>
               {{ $t('Все проекты') }}
@@ -233,6 +238,23 @@ export default class App extends Vue {
   private canAdminArticles() {
     return permissionService.canAdminArticles();
   }
+
+  private firstAvialableDict(): String | undefined {
+    if (permissionService.canAdminDictDepartments()) {
+      return "departments";
+    }
+    if (permissionService.canAdminDictLevels()) {
+      return "levels";
+    }
+    if (permissionService.canAdminDictPositions()) {
+      return "positions";
+    }
+    if (permissionService.canAdminDictOfficeLocations()) {
+      return "office_locations";
+    }
+    return undefined;
+  }
+
 }
 </script>
 
