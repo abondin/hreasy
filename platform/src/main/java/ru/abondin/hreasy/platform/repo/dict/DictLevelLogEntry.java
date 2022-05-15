@@ -19,12 +19,11 @@ public class DictLevelLogEntry {
     private Integer levelId;
     private String name;
     private Integer weight;
+    private boolean archived = false;
     @Nullable
     private OffsetDateTime createdAt;
 
     @Nullable
     private Integer createdBy;
-
-    private boolean deleted;
 
 }

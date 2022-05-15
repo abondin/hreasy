@@ -3,46 +3,54 @@ import httpService from "@/components/http.service";
 
 export interface DictDepartment {
     id: number,
-    name: string
+    name: string,
+    archived : boolean
 }
 
 export interface DictDepartmentUpdateBody {
-    name: string
+    name: string,
+    archived : boolean
 }
 
 export interface DictLevel {
     id: number,
     name: string,
-    weight: number | undefined
+    weight: number | undefined,
+    archived : boolean
 }
 
 export interface DictLevelUpdateBody {
     name: string,
-    weight: number | undefined
+    weight: number | undefined,
+    archived : boolean
 }
 
 export interface DictPosition {
     id: number,
     name: string,
-    category: string | undefined
+    category: string | undefined,
+    archived : boolean
 }
 
 export interface DictPositionUpdateBody {
     name: string,
-    category: string | undefined
+    category: string | undefined,
+    archived : boolean
 }
 
 export interface DictOfficeLocation {
     id: number,
     name: string,
     description: string | undefined,
-    office: string | undefined
+    office: string | undefined,
+    archived : boolean
 }
 
 export interface DictOfficeLocationUpdateBody {
     name: string,
     description: string | undefined,
-    office: string | undefined
+    office: string | undefined,
+    archived : boolean
 }
 
 export interface DictAdminService {
@@ -52,15 +60,11 @@ export interface DictAdminService {
 
     updateDepartment(id: number, body: DictDepartmentUpdateBody): Promise<DictDepartment>;
 
-    deleteDepartment(id: number): Promise<Number>;
-
     loadLevels(): Promise<Array<DictLevel>>;
 
     createLevel(body: DictLevelUpdateBody): Promise<DictLevel>;
 
     updateLevel(id: number, body: DictLevelUpdateBody): Promise<DictLevel>;
-
-    deleteLevel(id: number): Promise<Number>;
 
     loadPositions(): Promise<Array<DictPosition>>;
 
@@ -68,15 +72,12 @@ export interface DictAdminService {
 
     updatePosition(id: number, body: DictPositionUpdateBody): Promise<Position>;
 
-    deletePosition(id: number): Promise<Number>;
 
     loadOfficeLocations(): Promise<Array<DictOfficeLocation>>;
 
     createOfficeLocation(body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation>;
 
     updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation>;
-
-    deleteOfficeLocation(id: number): Promise<Number>;
 }
 
 class RestDictAdminService implements DictAdminService {
@@ -97,22 +98,6 @@ class RestDictAdminService implements DictAdminService {
 
     createPosition(body: DictPositionUpdateBody): Promise<DictPosition> {
         return httpService.post("v1/admin/dict/positions", body);
-    }
-
-    deleteDepartment(id: number): Promise<Number> {
-        return httpService.delete(`v1/admin/dict/departments/${id}`);
-    }
-
-    deleteLevel(id: number): Promise<Number> {
-        return httpService.delete(`v1/admin/dict/levels/${id}`);
-    }
-
-    deleteOfficeLocation(id: number): Promise<Number> {
-        return httpService.delete(`v1/admin/dict/office_locations/${id}`);
-    }
-
-    deletePosition(id: number): Promise<Number> {
-        return httpService.delete(`v1/admin/dict/positions/${id}`);
     }
 
     loadDepartments(): Promise<Array<DictDepartment>> {

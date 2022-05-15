@@ -2,8 +2,6 @@ package ru.abondin.hreasy.platform.service.dict;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.reactivestreams.Publisher;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import ru.abondin.hreasy.platform.auth.AuthContext;
@@ -29,7 +27,6 @@ public class DictService {
 
     private final DictDtoMapper mapper;
 
-    private final Sort defaultSimpleDictSort = Sort.by("name").ascending();
 
     public Flux<SimpleDictDto> findProjects(AuthContext auth) {
         var now = dateTimeService.now().toLocalDate();
@@ -44,43 +41,43 @@ public class DictService {
 
     public Flux<SimpleDictDto> findDepartments(AuthContext auth) {
         return departmentRepo
-                .findAll(defaultSimpleDictSort)
+                .findNotArchived()
                 .map(e -> {
                     var dto = new SimpleDictDto();
                     dto.setId(e.getId());
                     dto.setName(e.getName());
-                    dto.setActive(true);
+                    dto.setActive(!e.isArchived());
                     return dto;
                 });
     }
 
     public Flux<SimpleDictDto> findPositions(AuthContext auth) {
         return positionRepo
-                .findAll(defaultSimpleDictSort)
+                .findNotArchived()
                 .map(e -> {
                     var dto = new SimpleDictDto();
                     dto.setId(e.getId());
                     dto.setName(e.getName());
-                    dto.setActive(true);
+                    dto.setActive(!e.isArchived());
                     return dto;
                 });
     }
 
     public Flux<SimpleDictDto> findLevels(AuthContext auth) {
         return levelRepo
-                .findAll(defaultSimpleDictSort)
+                .findNotArchived()
                 .map(e -> {
                     var dto = new SimpleDictDto();
                     dto.setId(e.getId());
                     dto.setName(e.getName());
-                    dto.setActive(true);
+                    dto.setActive(!e.isArchived());
                     return dto;
                 });
     }
 
     public Flux<SimpleDictDto> findOfficeLocations(AuthContext auth) {
         return officeLocationRepo
-                .findAll(defaultSimpleDictSort)
+                .findNotArchived()
                 .map(e -> {
                     var dto = new SimpleDictDto();
                     dto.setId(e.getId());
@@ -88,7 +85,7 @@ public class DictService {
                             Stream.of(e.getName(), e.getDescription())
                                     .filter(i -> i != null)
                                     .collect(Collectors.joining(", ")));
-                    dto.setActive(true);
+                    dto.setActive(!e.isArchived());
                     return dto;
                 });
     }

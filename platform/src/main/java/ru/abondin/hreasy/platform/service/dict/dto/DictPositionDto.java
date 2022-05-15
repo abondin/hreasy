@@ -7,4 +7,6 @@ public class DictPositionDto {
     private int id;
     private String name;
     private String category;
+    private boolean archived = false;
+
 }

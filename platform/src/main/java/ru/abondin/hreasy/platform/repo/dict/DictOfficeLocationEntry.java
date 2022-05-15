@@ -24,6 +24,8 @@ public class DictOfficeLocationEntry {
     @Nullable
     private String office;
 
+    private boolean archived = false;
+
     @Nullable
     private OffsetDateTime updatedAt;
 

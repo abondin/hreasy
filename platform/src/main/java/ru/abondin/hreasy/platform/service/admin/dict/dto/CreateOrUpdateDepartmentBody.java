@@ -10,4 +10,5 @@ import lombok.ToString;
 @ToString
 public class CreateOrUpdateDepartmentBody {
     private String name;
+    private boolean archived = false;
 }

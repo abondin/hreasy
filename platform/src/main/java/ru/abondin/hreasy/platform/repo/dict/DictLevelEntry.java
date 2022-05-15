@@ -18,6 +18,7 @@ public class DictLevelEntry {
     private Integer id;
     private String name;
     private Integer weight;
+    private boolean archived = false;
     @Nullable
     private OffsetDateTime updatedAt;
 

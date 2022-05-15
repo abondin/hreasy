@@ -1,20 +1,31 @@
 import {UiConstants} from "@/components/uiconstants";
 import {DataTableHeader} from "vuetify";
 import {errorUtils} from "@/components/errors";
+import logger from "@/logger";
 
+export interface WithId {
+    id?: number;
+}
+
+/**
+ * Edit on form
+ */
+export interface UpdateBody {
+
+}
 
 /**
  * Data container for table component
  */
-export default class TableComponentDataContainer<T> {
+export default class TableComponentDataContainer<T extends WithId, M extends UpdateBody> {
     private _loading = false;
     private _error: string | null = null;
-    private _deleteDialog = false;
     private _editDialog = false;
+    private _editError: string | null = null;
 
     private _items: T[] = [];
-    private _itemToEdit: T | null = null;
-    private _itemToDelete: T | null = null;
+    private _updateBody: M | null = null;
+    private _updateItemId: number | null | undefined = null;
 
     private _headers: DataTableHeader[] = [];
 
@@ -22,7 +33,9 @@ export default class TableComponentDataContainer<T> {
 
 
     constructor(private dataLoader: () => Promise<Array<T>>,
-                private headerLoader: () => DataTableHeader[]) {
+                private headerLoader: () => DataTableHeader[],
+                private updateItemRequest: (id: number | null | undefined, body: M) => Promise<T>,
+                private itemToUpdateBody: (item: T) => M) {
     }
 
     get defaultItemsPerTablePage(): number {
@@ -30,21 +43,54 @@ export default class TableComponentDataContainer<T> {
     }
 
     public init() {
-        this.reloadHeaders();
-        this.reloadData();
+        this.initHeaders();
+        return this.reloadData();
     }
 
-    public openEditDialog(item: T) {
-        this._itemToEdit = item;
+    public openEditDialog(item: T | null) {
+        this._updateBody = item == null ? null : this.itemToUpdateBody(item);
+        this._updateItemId = (item == null ? null : item.id);
         this._editDialog = true;
     }
 
-    public openDeleteDialog(item: T) {
-        this._itemToDelete = item;
-        this._deleteDialog = true;
+    public closeEditDialog() {
+        this._updateBody = null;
+        this._editDialog = false;
     }
 
-    public reloadHeaders() {
+    public isEditItemNew(): boolean {
+        return !this._updateItemId;
+    }
+
+    get loading(): boolean {
+        return this._loading;
+    }
+
+    get error(): string | null {
+        return this._error;
+    }
+
+    get editError(): string | null {
+        return this._editError;
+    }
+
+    get editDialog(): boolean {
+        return this._editDialog;
+    }
+
+    get items(): T[] {
+        return this._items;
+    }
+
+    get updateBody(): M | null {
+        return this._updateBody;
+    }
+
+    get headers(): DataTableHeader[] {
+        return this._headers;
+    }
+
+    public initHeaders() {
         this._headers.length = 0;
         this._headers = this.headerLoader();
     }
@@ -53,7 +99,7 @@ export default class TableComponentDataContainer<T> {
         this._error = null;
         this._loading = true;
         this._items.length = 0;
-        this.dataLoader()
+        return this.dataLoader()
             .then(data => {
                 this._items = data;
             })
@@ -65,36 +111,25 @@ export default class TableComponentDataContainer<T> {
             });
     }
 
-    get loading(): boolean {
-        return this._loading;
+    public submitEditForm() {
+        if (this._updateBody) {
+            this._loading = true;
+            this._editError = null;
+            this.updateItemRequest(this._updateItemId, this._updateBody)
+                .then(() => {
+                    this._editDialog = false;
+                    return this.reloadData();
+                })
+                .catch(error => {
+                    this._editError = errorUtils.shortMessage(error);
+                })
+                .finally(() => {
+                    this._loading = false;
+                });
+        } else {
+            logger.error("Unable to submit edit form without selected item to edit");
+        }
     }
 
-    get error(): string | null {
-        return this._error;
-    }
-
-    get deleteDialog(): boolean {
-        return this._deleteDialog;
-    }
-
-    get editDialog(): boolean {
-        return this._editDialog;
-    }
-
-    get items(): T[] {
-        return this._items;
-    }
-
-    get itemToEdit(): T | null {
-        return this._itemToEdit;
-    }
-
-    get itemToDelete(): T | null {
-        return this._itemToDelete;
-    }
-
-    get headers(): DataTableHeader[] {
-        return this._headers;
-    }
 
 }

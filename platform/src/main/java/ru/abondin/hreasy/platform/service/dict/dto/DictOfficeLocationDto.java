@@ -8,4 +8,6 @@ public class DictOfficeLocationDto {
     private String name;
     private String description;
     private String office;
+    private boolean archived = false;
+
 }

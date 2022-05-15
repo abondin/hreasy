@@ -3,10 +3,12 @@ package ru.abondin.hreasy.platform.service.admin.dict;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.dict.DictLevelEntry;
 import ru.abondin.hreasy.platform.repo.dict.DictOfficeLocationLogRepo;
 import ru.abondin.hreasy.platform.repo.dict.DictOfficeLocationRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
@@ -33,14 +35,25 @@ public class AdminDictOfficeLocationService {
                 .map(mapper::fromEntry);
     }
 
+    @Transactional
     public Mono<DictOfficeLocationDto> create(AuthContext auth, CreateOrUpdateOfficeLocationBody body) {
         return doUpdate(auth, null, body);
     }
 
+    @Transactional
     public Mono<DictOfficeLocationDto> update(AuthContext auth, int id, CreateOrUpdateOfficeLocationBody body) {
         return doUpdate(auth, id, body);
     }
 
+    /**
+     * @param auth
+     * @param id
+     * @return
+     * @deprecated Remove delete from DB functionality from API.
+     * {@link ru.abondin.hreasy.platform.repo.dict.DictOfficeLocationEntry#setArchived(boolean)} and update method should be used instead
+     */
+    @Deprecated
+    @Transactional
     public Mono<Integer> delete(AuthContext auth, int id) {
         log.info("Office Location level. Employee = {}. Id={}", auth.getUsername(), id);
         var now = dateTimeService.now();
@@ -51,7 +64,6 @@ public class AdminDictOfficeLocationService {
                     var history = mapper.toHistory(entry);
                     history.setCreatedAt(now);
                     history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-                    history.setDeleted(true);
                     return logRepo.save(history).map(h -> id);
                 });
     }
@@ -71,10 +83,9 @@ public class AdminDictOfficeLocationService {
                         .save(entry)
                 )
                 .flatMap(persisted -> {
-                    var history = mapper.toHistory(entry);
+                    var history = mapper.toHistory(persisted);
                     history.setCreatedAt(now);
                     history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-                    history.setDeleted(false);
                     return logRepo.save(history).map((h) -> persisted);
                 })
                 .map(mapper::fromEntry);

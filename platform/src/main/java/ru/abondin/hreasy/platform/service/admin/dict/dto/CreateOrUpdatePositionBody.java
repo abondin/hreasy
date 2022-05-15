@@ -15,4 +15,7 @@ public class CreateOrUpdatePositionBody {
      * Simple name like Developer or analyst
      */
     private String category;
+
+    private boolean archived = false;
+
 }

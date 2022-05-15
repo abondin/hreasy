@@ -7,4 +7,6 @@ public class DictLevelDto {
     private int id;
     private String name;
     private Integer weight;
+    private boolean archived = false;
+
 }

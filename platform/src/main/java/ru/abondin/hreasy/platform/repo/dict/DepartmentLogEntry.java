@@ -24,5 +24,5 @@ public class DepartmentLogEntry {
     @Nullable
     private Integer createdBy;
 
-    private boolean deleted;
+    private boolean archived = false;
 }

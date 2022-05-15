@@ -19,6 +19,18 @@
           <span>{{ $t('Обновить данные') }}</span>
         </v-tooltip>
       </v-col>
+      <!-- Add new item -->
+      <v-tooltip bottom v-if="canEdit">
+        <template v-slot:activator="{ on: ton, attrs: tattrs}">
+          <div v-bind="tattrs" v-on="ton" class="col-auto">
+            <v-btn text color="primary" :disabled="data.loading" @click="()=>data.openEditDialog(null)" icon>
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
+          </div>
+        </template>
+        <span>{{ $t('Добавить новую запись') }}</span>
+      </v-tooltip>
+
     </v-row>
     <v-row>
       <v-col>
@@ -30,32 +42,15 @@
             :sort-by="['name']"
             dense
             :items-per-page="data.defaultItemsPerTablePage"
-            class="text-truncate">
-
-          <template v-slot:item.name="{ item }">
-            <v-menu>
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn small text v-bind="attrs" v-on="on">
-                  {{ item.name }}
-                </v-btn>
-              </template>
-              <v-list dense>
-                <v-list-item>
-                  <v-btn x-small text :disabled="!canEdit()" @click="data.openEditDialog(item)">
-                    <v-icon>mdi-pencil</v-icon>
-                    {{ $t('Редактировать') }}
-                  </v-btn>
-                </v-list-item>
-                <v-list-item>
-                  <v-btn x-small text @click="data.openDeleteDialog(item)">
-                    <v-icon>mdi-recycle</v-icon>
-                    {{ $t('Архив') }}
-                  </v-btn>
-                </v-list-item>
-              </v-list>
-            </v-menu>
+            class="text-truncate table-cursor"
+            @click:row="(v)=>data.openEditDialog(v)"
+        >
+          <template
+              v-slot:item.archived="{ item }">
+            {{ item.archived ? $t('Да') : $t('Нет') }}
           </template>
         </v-data-table>
+        <dict-admin-department-form :data="data"></dict-admin-department-form>
       </v-col>
     </v-row>
   </v-container>
@@ -65,18 +60,25 @@
 import Component from "vue-class-component";
 import TableComponentDataContainer from "@/components/admin/dict/TableComponentDataContainer";
 import permissionService from "@/store/modules/permission.service";
-import dictAdminService, {DictDepartment} from "@/components/admin/dict/dict.admin.service";
+import dictAdminService, {DictDepartment, DictDepartmentUpdateBody} from "@/components/admin/dict/dict.admin.service";
 import Vue from "vue";
+import DictAdminDepartmentForm from "@/components/admin/dict/DictAdminDepartmentForm.vue";
 
-@Component
+@Component({
+  components: {DictAdminDepartmentForm}
+})
 export default class DictAdminDepartments extends Vue {
 
-  private data = new TableComponentDataContainer<DictDepartment>(
+  private data = new TableComponentDataContainer<DictDepartment, DictDepartmentUpdateBody>(
       () => dictAdminService.loadDepartments(),
       () =>
           [
-            {text: this.$tc('Наименования'), value: 'name'}
-          ]
+            {text: this.$tc('Наименования'), value: 'name'},
+            {text: this.$tc('Архив'), value: 'archived'}
+          ],
+      (id, body) => (id ? dictAdminService.updateDepartment(id, body)
+          : dictAdminService.createDepartment(body)),
+      item => ({name: item.name, archived: item.archived} as DictDepartmentUpdateBody)
   );
 
   /**
@@ -90,7 +92,7 @@ export default class DictAdminDepartments extends Vue {
     return permissionService.canAdminDictDepartments();
   }
 
-  protected reloadData(): DictDepartment[] {
+  protected reloadData() {
     return this.data.reloadData();
   }
 

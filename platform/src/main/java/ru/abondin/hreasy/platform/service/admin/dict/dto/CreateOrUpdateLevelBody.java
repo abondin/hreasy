@@ -9,4 +9,5 @@ import lombok.Data;
 public class CreateOrUpdateLevelBody {
     private String name;
     private Integer weight;
+    private boolean archived = false;
 }

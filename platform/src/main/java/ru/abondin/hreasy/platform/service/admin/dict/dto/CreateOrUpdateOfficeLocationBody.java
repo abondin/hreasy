@@ -9,5 +9,6 @@ import lombok.Data;
 public class CreateOrUpdateOfficeLocationBody {
     private String name;
     private String description;
-    private String office;
+    private boolean archived = false;
+
 }

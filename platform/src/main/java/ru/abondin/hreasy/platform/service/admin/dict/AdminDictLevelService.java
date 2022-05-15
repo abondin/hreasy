@@ -3,10 +3,12 @@ package ru.abondin.hreasy.platform.service.admin.dict;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.dict.DictLevelEntry;
 import ru.abondin.hreasy.platform.repo.dict.DictLevelLogRepo;
 import ru.abondin.hreasy.platform.repo.dict.DictLevelRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
@@ -34,14 +36,25 @@ public class AdminDictLevelService {
     }
 
 
+    @Transactional
     public Mono<DictLevelDto> create(AuthContext auth, CreateOrUpdateLevelBody body) {
         return doUpdate(auth, null, body);
     }
 
+    @Transactional
     public Mono<DictLevelDto> update(AuthContext auth, int id, CreateOrUpdateLevelBody body) {
         return doUpdate(auth, id, body);
     }
 
+    /**
+     * @param auth
+     * @param id
+     * @return
+     * @deprecated Remove delete from DB functionality from API.
+     * {@link DictLevelEntry#setArchived(boolean)} and update method should be used instead
+     */
+    @Deprecated
+    @Transactional
     public Mono<Integer> delete(AuthContext auth, int id) {
         log.info("Delete level. Employee = {}. Id={}", auth.getUsername(), id);
         var now = dateTimeService.now();
@@ -52,7 +65,6 @@ public class AdminDictLevelService {
                     var history = mapper.toHistory(entry);
                     history.setCreatedAt(now);
                     history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-                    history.setDeleted(true);
                     return logRepo.save(history).map(h -> id);
                 });
     }
@@ -71,10 +83,9 @@ public class AdminDictLevelService {
                         .save(entry)
                 )
                 .flatMap(persisted -> {
-                    var history = mapper.toHistory(entry);
+                    var history = mapper.toHistory(persisted);
                     history.setCreatedAt(now);
                     history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-                    history.setDeleted(false);
                     return logRepo.save(history).map((h) -> persisted);
                 })
                 .map(mapper::fromEntry);

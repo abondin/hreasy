@@ -43,7 +43,7 @@ public class AdminDictController {
     @Operation(summary = "Create department")
     @PostMapping("/departments")
     @ResponseBody
-    public Mono<DepartmentDto> createDepartment(CreateOrUpdateDepartmentBody body) {
+    public Mono<DepartmentDto> createDepartment(@RequestBody CreateOrUpdateDepartmentBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> departments.create(auth, body));
     }
@@ -51,17 +51,9 @@ public class AdminDictController {
     @Operation(summary = "Update department")
     @PutMapping("/departments/{id}")
     @ResponseBody
-    public Mono<DepartmentDto> updateDepartment(@PathVariable int id, CreateOrUpdateDepartmentBody body) {
+    public Mono<DepartmentDto> updateDepartment(@PathVariable int id, @RequestBody CreateOrUpdateDepartmentBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> departments.update(auth, id, body));
-    }
-
-    @Operation(summary = "Delete department")
-    @DeleteMapping("/departments/{id}")
-    @ResponseBody
-    public Mono<Integer> deleteDepartment(@PathVariable int id) {
-        return AuthHandler.currentAuth().flatMap(
-                auth -> departments.delete(auth, id));
     }
 
     // ------------ Position CRUD
@@ -76,7 +68,7 @@ public class AdminDictController {
     @Operation(summary = "Create position")
     @PostMapping("/positions")
     @ResponseBody
-    public Mono<DictPositionDto> createPosition(CreateOrUpdatePositionBody body) {
+    public Mono<DictPositionDto> createPosition(@RequestBody CreateOrUpdatePositionBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> positions.create(auth, body));
     }
@@ -84,17 +76,9 @@ public class AdminDictController {
     @Operation(summary = "Update position")
     @PutMapping("/positions/{id}")
     @ResponseBody
-    public Mono<DictPositionDto> updatePosition(@PathVariable int id, CreateOrUpdatePositionBody body) {
+    public Mono<DictPositionDto> updatePosition(@PathVariable int id, @RequestBody CreateOrUpdatePositionBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> positions.update(auth, id, body));
-    }
-
-    @Operation(summary = "Delete position")
-    @DeleteMapping("/positions/{id}")
-    @ResponseBody
-    public Mono<Integer> deletePosition(@PathVariable int id) {
-        return AuthHandler.currentAuth().flatMap(
-                auth -> positions.delete(auth, id));
     }
 
     // ------------ Level CRUD
@@ -109,7 +93,7 @@ public class AdminDictController {
     @Operation(summary = "Create level")
     @PostMapping("/levels")
     @ResponseBody
-    public Mono<DictLevelDto> createLevel(CreateOrUpdateLevelBody body) {
+    public Mono<DictLevelDto> createLevel(@RequestBody CreateOrUpdateLevelBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> levels.create(auth, body));
     }
@@ -117,17 +101,9 @@ public class AdminDictController {
     @Operation(summary = "Update level")
     @PutMapping("/levels/{id}")
     @ResponseBody
-    public Mono<DictLevelDto> updateLevel(@PathVariable int id, CreateOrUpdateLevelBody body) {
+    public Mono<DictLevelDto> updateLevel(@PathVariable int id, @RequestBody CreateOrUpdateLevelBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> levels.update(auth, id, body));
-    }
-
-    @Operation(summary = "Delete level")
-    @DeleteMapping("/levels/{id}")
-    @ResponseBody
-    public Mono<Integer> deleteLevel(@PathVariable int id) {
-        return AuthHandler.currentAuth().flatMap(
-                auth -> levels.delete(auth, id));
     }
 
     // ------------ Office Location CRUD
@@ -142,7 +118,7 @@ public class AdminDictController {
     @Operation(summary = "Create level")
     @PostMapping("/office_locations")
     @ResponseBody
-    public Mono<DictOfficeLocationDto> createOfficeLocation(CreateOrUpdateOfficeLocationBody body) {
+    public Mono<DictOfficeLocationDto> createOfficeLocation(@RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.create(auth, body));
     }
@@ -150,16 +126,8 @@ public class AdminDictController {
     @Operation(summary = "Update level")
     @PutMapping("/office_locations/{id}")
     @ResponseBody
-    public Mono<DictOfficeLocationDto> updateOfficeLocation(@PathVariable int id, CreateOrUpdateOfficeLocationBody body) {
+    public Mono<DictOfficeLocationDto> updateOfficeLocation(@PathVariable int id, @RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.update(auth, id, body));
-    }
-
-    @Operation(summary = "Delete level")
-    @DeleteMapping("/office_locations/{id}")
-    @ResponseBody
-    public Mono<Integer> deleteOfficeLocation(@PathVariable int id) {
-        return AuthHandler.currentAuth().flatMap(
-                auth -> officeLocations.delete(auth, id));
     }
 }

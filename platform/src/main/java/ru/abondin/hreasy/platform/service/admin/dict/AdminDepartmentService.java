@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.admin.dict;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
@@ -32,10 +33,12 @@ public class AdminDepartmentService {
                 .map(mapper::fromEntry);
     }
 
+    @Transactional
     public Mono<DepartmentDto> create(AuthContext auth, CreateOrUpdateDepartmentBody body) {
         return doUpdate(auth, null, body);
     }
 
+    @Transactional
     public Mono<DepartmentDto> update(AuthContext auth, int id, CreateOrUpdateDepartmentBody body) {
         return doUpdate(auth, id, body);
     }
@@ -54,15 +57,23 @@ public class AdminDepartmentService {
                         .save(entry)
                 )
                 .flatMap(persisted -> {
-                    var history = mapper.toHistory(entry);
+                    var history = mapper.toHistory(persisted);
                     history.setCreatedAt(now);
                     history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-                    history.setDeleted(false);
                     return logRepo.save(history).map((h) -> persisted);
                 })
                 .map(mapper::fromEntry);
     }
 
+    /**
+     * @param auth
+     * @param id
+     * @return
+     * @deprecated Remove delete from DB functionality from API.
+     * {@link ru.abondin.hreasy.platform.repo.dict.DepartmentEntry#setArchived(boolean)} and update method should be used instead
+     */
+    @Deprecated
+    @Transactional
     public Mono<Integer> delete(AuthContext auth, int id) {
         log.info("Delete department. Employee = {}. Id={}", auth.getUsername(), id);
         var now = dateTimeService.now();
@@ -73,7 +84,6 @@ public class AdminDepartmentService {
                     var history = mapper.toHistory(entry);
                     history.setCreatedAt(now);
                     history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-                    history.setDeleted(true);
                     return logRepo.save(history).map(h -> id);
                 });
     }

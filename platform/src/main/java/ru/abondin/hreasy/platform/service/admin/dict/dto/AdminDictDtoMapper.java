@@ -20,15 +20,19 @@ public interface AdminDictDtoMapper  {
     DictPositionEntry toEntry(CreateOrUpdatePositionBody dto);
 
     @Mapping(source = "id", target = "officeLocationId")
+    @Mapping(target = "id", ignore = true)
     DictOfficeLocationLogEntry toHistory(DictOfficeLocationEntry entry);
 
     @Mapping(source = "id", target = "departmentId")
+    @Mapping(target = "id", ignore = true)
     DepartmentLogEntry toHistory(DepartmentEntry entry);
 
     @Mapping(source = "id", target = "levelId")
+    @Mapping(target = "id", ignore = true)
     DictLevelLogEntry toHistory(DictLevelEntry entry);
 
     @Mapping(source = "id", target = "positionId")
+    @Mapping(target = "id", ignore = true)
     DictPositionLogEntry toHistory(DictPositionEntry entry);
 
     DictOfficeLocationDto fromEntry(DictOfficeLocationEntry entry);

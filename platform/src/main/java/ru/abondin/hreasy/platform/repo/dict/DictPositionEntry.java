@@ -18,6 +18,8 @@ public class DictPositionEntry {
     @Id
     private Integer id;
     private String name;
+
+    private boolean archived = false;
     @Nullable
     private OffsetDateTime updatedAt;
 

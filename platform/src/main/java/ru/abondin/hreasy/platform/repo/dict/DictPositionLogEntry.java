@@ -26,6 +26,6 @@ public class DictPositionLogEntry {
     @Nullable
     private Integer createdBy;
 
-    private boolean deleted;
+    private boolean archived = false;
 
 }

@@ -6,4 +6,6 @@ import lombok.Data;
 public class DepartmentDto {
     private int id;
     private String name;
+    private boolean archived = false;
+
 }
