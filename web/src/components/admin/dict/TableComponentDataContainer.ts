@@ -35,7 +35,8 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     constructor(private dataLoader: () => Promise<Array<T>>,
                 private headerLoader: () => DataTableHeader[],
                 private updateItemRequest: (id: number | null | undefined, body: M) => Promise<T>,
-                private itemToUpdateBody: (item: T) => M) {
+                private itemToUpdateBody: (item: T) => M,
+                private newUpdateBody: ()=>M) {
     }
 
     get defaultItemsPerTablePage(): number {
@@ -48,7 +49,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     }
 
     public openEditDialog(item: T | null) {
-        this._updateBody = item == null ? null : this.itemToUpdateBody(item);
+        this._updateBody = item == null ? this.newUpdateBody() : this.itemToUpdateBody(item);
         this._updateItemId = (item == null ? null : item.id);
         this._editDialog = true;
     }
