@@ -22,11 +22,14 @@ import DictAdminLevels from "@/components/admin/dict/DictAdminLevels.vue";
 import DictAdminDepartments from "@/components/admin/dict/DictAdminDepartments.vue";
 import DictAdminPositions from "@/components/admin/dict/DictAdminPositions.vue";
 import DictAdminOfficeLocations from "@/components/admin/dict/DictAdminOfficeLocations.vue";
+import PageNotFoundComponent from "@/components/PageNotFoundComponent.vue";
 
 Vue.use(VueRouter)
 
 const routes = [
     {path: "/", redirect: '/profile/main'},
+    {path: "/404", component: PageNotFoundComponent},
+    {path: "*", redirect: "/404"},
     {path: "/login", component: Login},
     {name: "employees", path: "/employees", component: Employees},
     {name: 'employeeProfile', path: "/profile/main", component: EmployeeProfile, props: true},
@@ -71,8 +74,12 @@ const authGuard: NavigationGuard = (to, from, next) => {
             logger.debug("authGuard: Current user ", currentUser);
             next();
         } else {
-            logger.debug("authGuard: Not logged in. Redirect to login page ");
-            next('/login')
+            logger.debug("authGuard: Not logged in. Redirect to login page");
+            if (to && from.path) {
+                next({path: '/login', query: {'returnPath': to.path}});
+            } else {
+                next({path: 'login'});
+            }
         }
         return Promise.resolve();
     })
