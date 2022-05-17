@@ -7,6 +7,11 @@ export interface WithId {
     id?: number;
 }
 
+export interface BasicDict extends WithId {
+    name: string,
+    archived: boolean
+}
+
 /**
  * Edit on form
  */
@@ -14,10 +19,32 @@ export interface UpdateBody {
 
 }
 
+export abstract class Filter<T extends WithId> {
+    public abstract applyFilter(items: T[]): T[];
+}
+
+export class BasicDictFilter<T extends BasicDict> extends Filter<T> {
+    private search: string = '';
+    private onlyNotArchived = true;
+
+    applyFilter(items: T[]): T[] {
+        return items.filter((item) => {
+            let result = true
+            if (this.onlyNotArchived) {
+                result = result && !item.archived;
+            }
+            if (this.search && this.search.trim().length > 0) {
+                result = (!item.name) || (item.name.toLocaleLowerCase().indexOf(this.search.toLocaleLowerCase().trim()) >= 0);
+            }
+            return result;
+        });
+    }
+}
+
 /**
  * Data container for table component
  */
-export default class TableComponentDataContainer<T extends WithId, M extends UpdateBody> {
+export default class TableComponentDataContainer<T extends WithId, M extends UpdateBody, F extends Filter<T>> {
     private _loading = false;
     private _error: string | null = null;
     private _editDialog = false;
@@ -31,27 +58,40 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
     private _defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
+    private _initialized = false;
 
     constructor(private dataLoader: () => Promise<Array<T>>,
                 private headerLoader: () => DataTableHeader[],
                 private updateItemRequest: (id: number | null | undefined, body: M) => Promise<T>,
                 private itemToUpdateBody: (item: T) => M,
-                private newUpdateBody: ()=>M) {
+                private newUpdateBody: () => M,
+                private _filter: F) {
+    }
+
+    public init() {
+        this.initHeaders();
+        this._initialized= true;
+        return this.reloadData();
+    }
+
+
+    get initialized(): boolean {
+        return this._initialized;
     }
 
     get defaultItemsPerTablePage(): number {
         return this._defaultItemsPerTablePage;
     }
 
-    public init() {
-        this.initHeaders();
-        return this.reloadData();
+    get filter() {
+        return this._filter;
     }
 
     public openEditDialog(item: T | null) {
         this._updateBody = item == null ? this.newUpdateBody() : this.itemToUpdateBody(item);
         this._updateItemId = (item == null ? null : item.id);
         this._editDialog = true;
+        this._editError = null;
     }
 
     public closeEditDialog() {
@@ -132,5 +172,8 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         }
     }
 
+    public filteredItems(): T[] {
+        return this._filter.applyFilter(this._items);
+    }
 
 }

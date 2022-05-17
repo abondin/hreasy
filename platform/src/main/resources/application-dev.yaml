@@ -16,8 +16,8 @@ logging:
     org:
       springframework:
         data: INFO
-    io.r2dbc.postgresql.QUERY: DEBUG # for queries
-    io.r2dbc.postgresql.PARAM: DEBUG # for parameters
+#    io.r2dbc.postgresql.QUERY: DEBUG # for queries
+#    io.r2dbc.postgresql.PARAM: DEBUG # for parameters
 
 spring:
   mail:

@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="data.editDialog" :disabled="data.loading">
+  <v-dialog v-bind:value="data.editDialog" :disabled="data.loading">
     <v-form ref="depAdminForm" v-if="data.updateBody">
       <v-card>
         <v-card-title v-if="data.isEditItemNew()">{{ $t('Создание отдела') }}</v-card-title>
@@ -44,14 +44,14 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
-import TableComponentDataContainer from "@/components/admin/dict/TableComponentDataContainer";
+import TableComponentDataContainer, {BasicDictFilter} from "@/components/admin/dict/TableComponentDataContainer";
 import {DictDepartment, DictDepartmentUpdateBody} from "@/components/admin/dict/dict.admin.service";
 
 @Component
 export default class DictAdminDepartmentForm extends Vue {
 
   @Prop({required: true})
-  private data!: TableComponentDataContainer<DictDepartment, DictDepartmentUpdateBody>;
+  private data!: TableComponentDataContainer<DictDepartment, DictDepartmentUpdateBody, BasicDictFilter<DictDepartment>>;
 
 }
 </script>

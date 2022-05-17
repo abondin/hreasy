@@ -7,6 +7,7 @@ COMMENT ON COLUMN dict.department.updated_by is 'Updated by (link to employee)';
 COMMENT ON COLUMN dict.department.archived is 'Do not show entry in UI';
 update dict.department set archived = false;
 ALTER TABLE dict.department ALTER COLUMN archived SET NOT NULL;
+ALTER TABLE dict.department  ADD CONSTRAINT department_unique_name UNIQUE (name);
 
 ALTER TABLE dict.level
 ADD COLUMN updated_at timestamp with time zone,
@@ -17,6 +18,7 @@ COMMENT ON COLUMN dict.level.updated_by is 'Updated by (link to employee)';
 COMMENT ON COLUMN dict.level.archived is 'Do not show entry in UI';
 update dict.level set archived = false;
 ALTER TABLE dict.level ALTER COLUMN archived SET NOT NULL;
+ALTER TABLE dict.level  ADD CONSTRAINT level_unique_name UNIQUE (name);
 
 ALTER TABLE dict.position
 ADD COLUMN updated_at timestamp with time zone,
@@ -27,6 +29,7 @@ COMMENT ON COLUMN dict.position.updated_by is 'Updated by (link to employee)';
 COMMENT ON COLUMN dict.position.archived is 'Do not show entry in UI';
 update dict.position set archived = false;
 ALTER TABLE dict.position ALTER COLUMN archived SET NOT NULL;
+ALTER TABLE dict.position  ADD CONSTRAINT position_unique_name UNIQUE (name);
 
 ALTER TABLE dict.office_location
 ADD COLUMN updated_at timestamp with time zone,
@@ -37,6 +40,7 @@ COMMENT ON COLUMN dict.office_location.updated_by is 'Updated by (link to employ
 COMMENT ON COLUMN dict.office_location.archived is 'Do not show entry in UI';
 update dict.office_location set archived = false;
 ALTER TABLE dict.office_location ALTER COLUMN archived SET NOT NULL;
+ALTER TABLE dict.office_location  ADD CONSTRAINT office_location_unique_name UNIQUE (name);
 
 ----------------- Logs tables -------------------
 ----------------- department --------------------

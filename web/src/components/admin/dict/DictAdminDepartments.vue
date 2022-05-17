@@ -20,25 +20,45 @@
         </v-tooltip>
       </v-col>
       <!-- Add new item -->
-      <v-tooltip bottom v-if="canEdit">
-        <template v-slot:activator="{ on: ton, attrs: tattrs}">
-          <div v-bind="tattrs" v-on="ton" class="col-auto">
-            <v-btn text color="primary" :disabled="data.loading" @click="()=>data.openEditDialog(null)" icon>
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
-          </div>
-        </template>
-        <span>{{ $t('Добавить новую запись') }}</span>
-      </v-tooltip>
+      <v-col align-self="center" cols="auto">
+        <v-tooltip bottom v-if="canEdit">
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="col-auto">
+              <v-btn text color="primary" :disabled="data.loading" @click="()=>data.openEditDialog(null)" icon>
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{ $t('Добавить новую запись') }}</span>
+        </v-tooltip>
+      </v-col>
 
+      <!-- Filters -->
+      <v-divider vertical class="mr-5"></v-divider>
+      <v-col>
+        <v-text-field v-if="data.filter"
+                      v-model="data.filter.search"
+                      append-icon="mdi-magnify"
+                      :label="$t('Поиск')"
+                      single-line
+                      hide-details
+        ></v-text-field>
+      </v-col>
+      <v-col cols="auto">
+        <v-select
+            v-model="data.filter.onlyNotArchived"
+            :label="$t('Скрыть архивные')"
+            :items="[{value:false, text:'Нет'}, {value:true, text:'Да'}]">
+        </v-select>
+      </v-col>
     </v-row>
-    <v-row>
+    <v-row v-if="data.initialized">
       <v-col>
         <v-data-table
             :loading="data.loading"
             :loading-text="$t('Загрузка_данных')"
             :headers="data.headers"
-            :items="filteredItems()"
+            :items="data.filteredItems()"
             :sort-by="['name']"
             dense
             :items-per-page="data.defaultItemsPerTablePage"
@@ -58,18 +78,19 @@
 
 <script lang="ts">
 import Component from "vue-class-component";
-import TableComponentDataContainer from "@/components/admin/dict/TableComponentDataContainer";
+import TableComponentDataContainer, {BasicDictFilter} from "@/components/admin/dict/TableComponentDataContainer";
 import permissionService from "@/store/modules/permission.service";
 import dictAdminService, {DictDepartment, DictDepartmentUpdateBody} from "@/components/admin/dict/dict.admin.service";
 import Vue from "vue";
 import DictAdminDepartmentForm from "@/components/admin/dict/DictAdminDepartmentForm.vue";
+
 
 @Component({
   components: {DictAdminDepartmentForm}
 })
 export default class DictAdminDepartments extends Vue {
 
-  private data = new TableComponentDataContainer<DictDepartment, DictDepartmentUpdateBody>(
+  private data = new TableComponentDataContainer<DictDepartment, DictDepartmentUpdateBody, BasicDictFilter<DictDepartment>>(
       () => dictAdminService.loadDepartments(),
       () =>
           [
@@ -78,8 +99,9 @@ export default class DictAdminDepartments extends Vue {
           ],
       (id, body) => (id ? dictAdminService.updateDepartment(id, body)
           : dictAdminService.createDepartment(body)),
-      item => ({name: item.name, archived: item.archived} as DictDepartmentUpdateBody),
-      () => ({name: '', archived: false} as DictDepartmentUpdateBody)
+      (item: DictDepartment) => ({name: item.name, archived: item.archived} as DictDepartmentUpdateBody),
+      () => ({name: '', archived: false} as DictDepartmentUpdateBody),
+      new BasicDictFilter()
   );
 
   /**
@@ -97,13 +119,12 @@ export default class DictAdminDepartments extends Vue {
     return this.data.reloadData();
   }
 
-  protected filteredItems(): DictDepartment[] {
-    return this.data.items;
-  }
 
 }
 </script>
 
-<style scoped>
-
+<style scoped lang="css">
+.table-cursor >>> tbody tr :hover {
+  cursor: pointer;
+}
 </style>
