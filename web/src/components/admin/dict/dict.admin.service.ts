@@ -4,38 +4,38 @@ import httpService from "@/components/http.service";
 export interface DictDepartment {
     id: number,
     name: string,
-    archived : boolean
+    archived: boolean
 }
 
 export interface DictDepartmentUpdateBody {
     name: string,
-    archived : boolean
+    archived: boolean
 }
 
 export interface DictLevel {
     id: number,
     name: string,
     weight: number | undefined,
-    archived : boolean
+    archived: boolean
 }
 
 export interface DictLevelUpdateBody {
     name: string,
     weight: number | undefined,
-    archived : boolean
+    archived: boolean
 }
 
 export interface DictPosition {
     id: number,
     name: string,
     category: string | undefined,
-    archived : boolean
+    archived: boolean
 }
 
 export interface DictPositionUpdateBody {
     name: string,
     category: string | undefined,
-    archived : boolean
+    archived: boolean
 }
 
 export interface DictOfficeLocation {
@@ -43,14 +43,14 @@ export interface DictOfficeLocation {
     name: string,
     description: string | undefined,
     office: string | undefined,
-    archived : boolean
+    archived: boolean
 }
 
 export interface DictOfficeLocationUpdateBody {
     name: string,
     description: string | undefined,
     office: string | undefined,
-    archived : boolean
+    archived: boolean
 }
 
 export interface DictAdminService {
@@ -70,7 +70,7 @@ export interface DictAdminService {
 
     createPosition(body: DictPositionUpdateBody): Promise<DictPosition>;
 
-    updatePosition(id: number, body: DictPositionUpdateBody): Promise<Position>;
+    updatePosition(id: number, body: DictPositionUpdateBody): Promise<DictPosition>;
 
 
     loadOfficeLocations(): Promise<Array<DictOfficeLocation>>;
@@ -128,7 +128,7 @@ class RestDictAdminService implements DictAdminService {
         return httpService.put(`v1/admin/dict/office_locations/${id}`, body);
     }
 
-    updatePosition(id: number, body: DictPositionUpdateBody): Promise<Position> {
+    updatePosition(id: number, body: DictPositionUpdateBody): Promise<DictPosition> {
         return httpService.put(`v1/admin/dict/positions/${id}`, body);
     }
 }

@@ -42,7 +42,7 @@ export class BasicDictFilter<T extends BasicDict> extends Filter<T> {
 }
 
 /**
- * Data container for table component
+ * Data container for table component. Encapsulate business logic
  */
 export default class TableComponentDataContainer<T extends WithId, M extends UpdateBody, F extends Filter<T>> {
     private _loading = false;
@@ -65,15 +65,19 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
                 private updateItemRequest: (id: number | null | undefined, body: M) => Promise<T>,
                 private itemToUpdateBody: (item: T) => M,
                 private newUpdateBody: () => M,
-                private _filter: F) {
+                private _filter: F,
+                private _editable: boolean = false) {
     }
 
     public init() {
         this.initHeaders();
-        this._initialized= true;
+        this._initialized = true;
         return this.reloadData();
     }
 
+    public editable(): boolean {
+        return this._editable;
+    }
 
     get initialized(): boolean {
         return this._initialized;
@@ -85,18 +89,6 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
     get filter() {
         return this._filter;
-    }
-
-    public openEditDialog(item: T | null) {
-        this._updateBody = item == null ? this.newUpdateBody() : this.itemToUpdateBody(item);
-        this._updateItemId = (item == null ? null : item.id);
-        this._editDialog = true;
-        this._editError = null;
-    }
-
-    public closeEditDialog() {
-        this._updateBody = null;
-        this._editDialog = false;
     }
 
     public isEditItemNew(): boolean {
@@ -130,6 +122,19 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     get headers(): DataTableHeader[] {
         return this._headers;
     }
+
+    public openEditDialog(item: T | null) {
+        this._updateBody = item == null ? this.newUpdateBody() : this.itemToUpdateBody(item);
+        this._updateItemId = (item == null ? null : item.id);
+        this._editDialog = true;
+        this._editError = null;
+    }
+
+    public closeEditDialog() {
+        this._updateBody = null;
+        this._editDialog = false;
+    }
+
 
     public initHeaders() {
         this._headers.length = 0;
