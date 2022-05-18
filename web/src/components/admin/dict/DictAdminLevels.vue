@@ -1,7 +1,12 @@
 <template>
   <dict-admin-table v-bind:data="data">
-    <template v-slot:editForm>
-      Форма редактирования не готова
+    <template v-slot:additionalFields>
+      <v-text-field
+          v-model="data.updateBody.weight"
+          type="number"
+          :rules="[v=>(!v || (v <= 100 && v >=0) || $t('Число от до', {min:0,max:100}))]"
+          :label="$t('Вес')">
+      </v-text-field>
     </template>
   </dict-admin-table>
 </template>

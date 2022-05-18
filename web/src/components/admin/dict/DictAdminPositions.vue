@@ -1,7 +1,11 @@
 <template>
   <dict-admin-table v-bind:data="data">
     <template v-slot:editForm>
-      Форма редактирования не готова
+      <v-text-field
+          v-model="data.updateBody.category"
+          :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+          :label="$t('Категория')">
+      </v-text-field>
     </template>
   </dict-admin-table>
 </template>

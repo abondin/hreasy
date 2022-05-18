@@ -1,7 +1,16 @@
 <template>
   <dict-admin-table v-bind:data="data">
-    <template v-slot:editForm>
-      Форма редактирования не готова
+    <template v-slot:additionalFields>
+      <v-text-field
+          v-model="data.updateBody.office"
+          :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+          :label="$t('Офис')">
+      </v-text-field>
+      <v-textarea
+          v-model="data.updateBody.description"
+          :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
+          :label="$t('Описание')">
+      </v-textarea>
     </template>
   </dict-admin-table>
 </template>

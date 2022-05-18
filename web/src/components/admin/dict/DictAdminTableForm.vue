@@ -1,9 +1,9 @@
 <template>
   <v-dialog v-bind:value="data.editDialog" :disabled="data.loading">
-    <v-form ref="depAdminForm" v-if="data.updateBody">
+    <v-form ref="dictAdminForm" v-if="data.updateBody">
       <v-card>
-        <v-card-title v-if="data.isEditItemNew()">{{ $t('Создание отдела') }}</v-card-title>
-        <v-card-title v-else>{{ $t('Изменение отдела') }}</v-card-title>
+        <v-card-title v-if="data.isEditItemNew()">{{ $t('Создание') }}</v-card-title>
+        <v-card-title v-else>{{ $t('Изменение') }}</v-card-title>
         <v-card-text>
           <!-- name -->
           <v-text-field
@@ -14,6 +14,9 @@
               required>
             >
           </v-text-field>
+
+          <!-- Additional fields -->
+          <slot name="additionalFields"></slot>
 
           <v-select
               v-model="data.updateBody.archived"
@@ -44,14 +47,17 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
-import TableComponentDataContainer, {BasicDictFilter} from "@/components/admin/dict/TableComponentDataContainer";
-import {DictDepartment, DictDepartmentUpdateBody} from "@/components/admin/dict/dict.admin.service";
+import TableComponentDataContainer, {
+  Filter,
+  UpdateBody,
+  WithId
+} from "@/components/admin/dict/TableComponentDataContainer";
 
 @Component
-export default class DictAdminDepartmentForm extends Vue {
+export default class DictAdminTableForm<T extends WithId, M extends UpdateBody, F extends Filter<T>> extends Vue {
 
   @Prop({required: true})
-  private data!: TableComponentDataContainer<DictDepartment, DictDepartmentUpdateBody, BasicDictFilter<DictDepartment>>;
+  private data!: TableComponentDataContainer<T, M, F>;
 
 }
 </script>

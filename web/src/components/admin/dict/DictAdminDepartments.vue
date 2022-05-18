@@ -1,8 +1,5 @@
 <template>
   <dict-admin-table v-bind:data="data">
-    <template v-slot:editForm>
-      <dict-admin-department-form :data="data"></dict-admin-department-form>
-    </template>
   </dict-admin-table>
 </template>
 
@@ -12,12 +9,11 @@ import TableComponentDataContainer, {BasicDictFilter} from "@/components/admin/d
 import permissionService from "@/store/modules/permission.service";
 import dictAdminService, {DictDepartment, DictDepartmentUpdateBody} from "@/components/admin/dict/dict.admin.service";
 import Vue from "vue";
-import DictAdminDepartmentForm from "@/components/admin/dict/DictAdminDepartmentForm.vue";
 import DictAdminTable from "@/components/admin/dict/DictAdminTable.vue";
 
 
 @Component({
-  components: {DictAdminTable, DictAdminDepartmentForm}
+  components: {DictAdminTable}
 })
 export default class DictAdminDepartments extends Vue {
 

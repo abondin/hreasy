@@ -71,7 +71,12 @@
             {{ item.archived ? $t('Да') : $t('Нет') }}
           </template>
         </v-data-table>
-        <slot name="editForm"></slot>
+        <dict-admin-table-form v-bind:data="data">
+          <template v-slot:additionalFields>
+            <slot name="additionalFields">
+            </slot>
+          </template>
+        </dict-admin-table-form>
       </v-col>
     </v-row>
   </v-container>
@@ -86,9 +91,11 @@ import TableComponentDataContainer, {
 } from "@/components/admin/dict/TableComponentDataContainer";
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
+import DictAdminTableForm from "@/components/admin/dict/DictAdminTableForm.vue";
 
-
-@Component
+@Component({
+  components: {DictAdminTableForm}
+})
 export default class DictAdminTable<T extends WithId, M extends UpdateBody, F extends Filter<T>> extends Vue {
 
   @Prop({required: true})
