@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-bind:value="data.editDialog" :disabled="data.loading">
+  <v-dialog v-bind:value="data.editDialog" :disabled="data.loading" persistent>
     <v-form ref="dictAdminForm" v-if="data.updateBody">
       <v-card>
         <v-card-title v-if="data.isEditItemNew()">{{ $t('Создание') }}</v-card-title>
@@ -33,7 +33,7 @@
           <v-spacer></v-spacer>
           <v-progress-circular class="mr-2" v-if="data.loading" indeterminate></v-progress-circular>
           <v-btn @click="data.closeEditDialog()">{{ $t('Закрыть') }}</v-btn>
-          <v-btn @click="()=>data.submitEditForm()" color="primary">{{
+          <v-btn @click="()=>data.submitEditForm()" color="primary" :disabled="data.loading">{{
               data.isEditItemNew() ? $t('Создать') : $t('Изменить')
             }}
           </v-btn>
