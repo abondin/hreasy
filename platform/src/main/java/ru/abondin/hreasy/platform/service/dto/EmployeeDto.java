@@ -27,6 +27,7 @@ public class EmployeeDto {
     private SimpleDictDto currentProject;
     private SimpleDictDto position;
     private SimpleDictDto officeLocation;
+    private SimpleDictDto ba;
     private String email;
     private String phone;
     private String skype;

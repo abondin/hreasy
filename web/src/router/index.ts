@@ -23,6 +23,7 @@ import DictAdminDepartments from "@/components/admin/dict/DictAdminDepartments.v
 import DictAdminPositions from "@/components/admin/dict/DictAdminPositions.vue";
 import DictAdminOfficeLocations from "@/components/admin/dict/DictAdminOfficeLocations.vue";
 import PageNotFoundComponent from "@/components/PageNotFoundComponent.vue";
+import AdminEmployeeAndKidsTabs from "@/components/admin/employee/AdminEmployeeAndKidsTabs.vue";
 
 Vue.use(VueRouter)
 
@@ -43,13 +44,20 @@ const routes = [
     {path: "/admin/ba", component: AdminBusinessAccounts},
     {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true},
     {path: "/admin/articles", component: AdminArticlesList},
-    {path: "/admin/employees", component: AdminEmployees},
-    {path: "/admin/employees/kids", component: AdminEmployeeKids},
+    {
+        path: "/admin/employees",
+        component: AdminEmployeeAndKidsTabs,
+        children: [
+            {path: '', redirect: {name: "admin_employees_main"}},
+            {name: 'admin_employees_main', path: 'main', component: AdminEmployees},
+            {path: 'kids', component: AdminEmployeeKids}
+        ]
+    },
     {
         path: "/admin/dicts",
         component: DictAdminMain,
         children: [
-            {path: '', redirect:{name:"admin_dict_departments"}},
+            {path: '', redirect: {name: "admin_dict_departments"}},
             {name: "admin_dict_departments", path: "departments", component: DictAdminDepartments},
             {path: "positions", component: DictAdminPositions},
             {path: "office_locations", component: DictAdminOfficeLocations},

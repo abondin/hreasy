@@ -23,6 +23,7 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
     @Mapping(target = "currentProject", source = ".", qualifiedByName = "currentProject")
     @Mapping(target = "position", source = ".", qualifiedByName = "position")
     @Mapping(target = "officeLocation", source = ".", qualifiedByName = "officeLocation")
+    @Mapping(target = "ba", source = ".", qualifiedByName = "ba")
     @Mapping(target = "skills", ignore = true)
     @Mapping(target = "hasAvatar", ignore = true)
     EmployeeDto employeeNoSkills(EmployeeDetailedEntry entry);
@@ -60,6 +61,10 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
         return simpleDto(entry.getOfficeLocationId(), entry.getOfficeLocationName());
     }
 
+    @Named("ba")
+    default SimpleDictDto ba(EmployeeDetailedEntry entry) {
+        return simpleDto(entry.getBaId(), entry.getBaName());
+    }
     @Named("currentProject")
     default SimpleDictDto currentProject(EmployeeDetailedEntry entry) {
         return simpleDto(entry.getCurrentProjectId(), entry.getCurrentProjectName());

@@ -76,11 +76,6 @@
               {{ $t('Админка сотрудников') }}
             </v-list-item-title>
           </v-list-item>
-          <v-list-item to="/admin/employees/kids" v-if="canAdminEmployees()">
-            <v-list-item-title>
-              {{ $t('Дети сотрудников') }}
-            </v-list-item-title>
-          </v-list-item>
           <v-list-item :to="'/admin/dicts/'+firstAvialableDict()" v-if="firstAvialableDict()">
             <v-list-item-title>
               {{ $t('Справочники') }}
