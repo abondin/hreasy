@@ -12,6 +12,9 @@
           <v-list-item-subtitle>{{ $t('Текущий проект') }} :
             {{ employee.currentProject ? employee.currentProject.name : $t("Не задан") }}
           </v-list-item-subtitle>
+          <v-list-item-subtitle>{{ $t('Бизнес аккаунт') }} :
+            {{ employee.ba ? employee.ba.name : $t("Не задан") }}
+          </v-list-item-subtitle>
           <v-list-item-subtitle>
             {{ $t('Почтовый адрес') }} : {{ employee.email ? employee.email : $t("Не задан") }}
           </v-list-item-subtitle>
