@@ -48,8 +48,7 @@ const routes = [
         path: "/admin/employees",
         component: AdminEmployeeAndKidsTabs,
         children: [
-            {path: '', redirect: {name: "admin_employees_main"}},
-            {name: 'admin_employees_main', path: 'main', component: AdminEmployees},
+            {path: '', component: AdminEmployees},
             {path: 'kids', component: AdminEmployeeKids}
         ]
     },
