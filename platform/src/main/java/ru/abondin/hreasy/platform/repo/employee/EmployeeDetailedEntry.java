@@ -13,6 +13,8 @@ public class EmployeeDetailedEntry extends EmployeeEntry {
     private String levelName;
     private String currentProjectName;
     private String officeLocationName;
+    private Integer baId;
+    private String baName;
 
     /**
      * All employee skills with ratings assembled to string

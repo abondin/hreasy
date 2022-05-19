@@ -17,11 +17,20 @@ import AssessmentShortList from "@/components/assessment/AssessmentShortList.vue
 import EmployeeAssessmentProfile from "@/components/assessment/EmployeeAssessmentProfile.vue";
 import AssessmentDetailedVue from "@/components/assessment/AssessmentDetailedVue.vue";
 import AdminEmployeeKids from "@/components/admin/employee/AdminEmployeeKids.vue";
+import DictAdminMain from "@/components/admin/dict/DictAdminMain.vue";
+import DictAdminLevels from "@/components/admin/dict/DictAdminLevels.vue";
+import DictAdminDepartments from "@/components/admin/dict/DictAdminDepartments.vue";
+import DictAdminPositions from "@/components/admin/dict/DictAdminPositions.vue";
+import DictAdminOfficeLocations from "@/components/admin/dict/DictAdminOfficeLocations.vue";
+import PageNotFoundComponent from "@/components/PageNotFoundComponent.vue";
+import AdminEmployeeAndKidsTabs from "@/components/admin/employee/AdminEmployeeAndKidsTabs.vue";
 
 Vue.use(VueRouter)
 
 const routes = [
     {path: "/", redirect: '/profile/main'},
+    {path: "/404", component: PageNotFoundComponent},
+    {path: "*", redirect: "/404"},
     {path: "/login", component: Login},
     {name: "employees", path: "/employees", component: Employees},
     {name: 'employeeProfile', path: "/profile/main", component: EmployeeProfile, props: true},
@@ -35,8 +44,25 @@ const routes = [
     {path: "/admin/ba", component: AdminBusinessAccounts},
     {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true},
     {path: "/admin/articles", component: AdminArticlesList},
-    {path: "/admin/employees", component: AdminEmployees},
-    {path: "/admin/employees/kids", component: AdminEmployeeKids},
+    {
+        path: "/admin/employees",
+        component: AdminEmployeeAndKidsTabs,
+        children: [
+            {path: '', component: AdminEmployees},
+            {path: 'kids', component: AdminEmployeeKids}
+        ]
+    },
+    {
+        path: "/admin/dicts",
+        component: DictAdminMain,
+        children: [
+            {path: '', redirect: {name: "admin_dict_departments"}},
+            {name: "admin_dict_departments", path: "departments", component: DictAdminDepartments},
+            {path: "positions", component: DictAdminPositions},
+            {path: "office_locations", component: DictAdminOfficeLocations},
+            {path: "levels", component: DictAdminLevels}
+        ]
+    }
 ]
 const router = new VueRouter({
     mode: 'history',
@@ -55,8 +81,12 @@ const authGuard: NavigationGuard = (to, from, next) => {
             logger.debug("authGuard: Current user ", currentUser);
             next();
         } else {
-            logger.debug("authGuard: Not logged in. Redirect to login page ");
-            next('/login')
+            logger.debug("authGuard: Not logged in. Redirect to login page");
+            if (to && from.path) {
+                next({path: '/login', query: {'returnPath': to.path}});
+            } else {
+                next({path: 'login'});
+            }
         }
         return Promise.resolve();
     })

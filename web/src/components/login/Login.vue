@@ -92,7 +92,7 @@ export default class LoginComponent extends Vue {
     this.loading = true;
     return this.loginAction(new LoginRequest(this.loginField, this.passwordField))
         .then(() => {
-          return this.$router.push("/");
+          return this.$router.push(this.$route.query.returnPath ? this.$route.query.returnPath as string : '/');
         })
         .catch((error: any) => {
               this.responseError = errorUtils.shortMessage(error);

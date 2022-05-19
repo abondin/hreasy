@@ -12,6 +12,7 @@ public class EmployeeWithAllDetailsDto extends EmployeeAllFields {
     private Integer currentProjectId;
     private Integer positionId;
     private Integer officeLocationId;
+    private Integer baId;
 
     /**
      * If employee is not dismissed

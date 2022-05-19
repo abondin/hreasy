@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.service.DateTimeService;
-import ru.abondin.hreasy.platform.service.DictService;
+import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeAllFieldsMapper;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeExportFilter;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeWithAllDetailsDto;

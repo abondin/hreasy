@@ -11,6 +11,7 @@ export interface Employee {
     id: number,
     displayName: string,
     currentProject?: Dict,
+    ba?: Dict,
     lastname: string,
     firstname: string,
     patronymicName: string,

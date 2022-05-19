@@ -6,6 +6,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
 
 
 @Table("dict.office_location")
@@ -22,4 +23,13 @@ public class DictOfficeLocationEntry {
 
     @Nullable
     private String office;
+
+    private boolean archived = false;
+
+    @Nullable
+    private OffsetDateTime updatedAt;
+
+    @Nullable
+    private Integer updatedBy;
+
 }

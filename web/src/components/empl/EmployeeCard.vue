@@ -18,7 +18,9 @@ Uses in Employees Table (Employees.vue)
 
         <!-- Current Project -->
         <v-list-item-subtitle>{{
-            employee.currentProject ? employee.currentProject.name : $tc('Проект не задан')
+            employee.currentProject ?
+                (employee.ba ? (`${employee.currentProject.name} (${employee.ba.name})`): employee.currentProject.name)
+                : $tc('Проект не задан')
           }}
           <v-btn v-if="canUpdateCurrentProject()"
                  @click.stop="openUpdateCurrentProjectDialog=true" icon x-small>
@@ -111,7 +113,7 @@ export default class EmployeeCard extends Vue {
 
   @Watch("employee")
   private watchEmployee() {
-    this.$nextTick(()=>this.loadAdditionalData());
+    this.$nextTick(() => this.loadAdditionalData());
   }
 
   private loadAdditionalData() {
