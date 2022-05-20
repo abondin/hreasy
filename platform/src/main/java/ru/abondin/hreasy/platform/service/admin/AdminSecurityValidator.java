@@ -9,6 +9,8 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
 import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 
+import java.util.Arrays;
+
 /**
  * Validate security rules to work in admin area
  */
@@ -31,14 +33,30 @@ public class AdminSecurityValidator {
 
     public Mono<Boolean> validateUpdateProject(AuthContext auth, DictProjectEntry entry) {
         return Mono.defer(() -> {
+            // 1. Allow update project if I created project
             if (auth.getEmployeeInfo().getEmployeeId().equals(entry.getCreatedBy())) {
                 return Mono.just(true);
             }
-            if (!auth.getAuthorities().contains("update_project")) {
-                return Mono.error(new AccessDeniedException("Only user with permission update_project or project creator" +
-                        " can update new project"));
+
+            // 2. Allow update project if I have update_project_globally permissions
+            if (auth.getAuthorities().contains("update_project_globally")) {
+                return Mono.just(true);
             }
-            return Mono.just(true);
+
+            // 2. Allow update project if I have update_project permissions and I manager of the project/ba/department
+            if (auth.getAuthorities().contains("update_project")) {
+                return projectHierarchyService.isManagerOfAllProject(auth, Arrays.asList(entry.getId()))
+                        .filter(manager -> manager)
+                        .switchIfEmpty(
+                                Mono.error(new AccessDeniedException("User with update_project" +
+                                        " should be manager of the project or ba or department"))
+                        );
+
+            } else {
+                return Mono.error(new AccessDeniedException("Only user with permission update_project, update_project_globally or project creator" +
+                        " can update new project"));
+
+            }
         });
     }
 
@@ -108,6 +126,7 @@ public class AdminSecurityValidator {
             return Mono.just(true);
         });
     }
+
     public Mono<Boolean> validateViewEmployeeFull(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("view_employee_full")) {

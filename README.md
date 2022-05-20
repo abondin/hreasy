@@ -108,7 +108,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |vacation_view|Y|Y|View vacations of given employee|
 |vacation_edit|Y|Y|View vacations of given employee|
 |project_admin_area|N|N|Access to project admin area in UI|
-|update_project|N|N|Admin permission to update information of any project. Without this permission user can update only projects created by himself|
+|update_project_globally|N|N|Admin permission to update information of any project. Without this permission user can update only projects created by himself or with update_project permission|
+|update_project|Y|Y|Admin project if employee is project/ba/department manager|
 |create_project|N|N|Admin permission to create new project|
 |admin_users|N|N|Admin user. Assign roles. Assign accessible projects and departments|
 |edit_skills|Y|Y|Add/Delete employee skills of managed project/department|
@@ -148,7 +149,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |vacation_view|global_admin, hr, pm|
 |vacation_edit|global_admin, hr, pm|
 |project_admin_area|global_admin,pm|
-|update_project|global_admin|
+|update_project_globally|global_admin|
+|update_project|pm|
 |create_project|global_admin, pm|
 |admin_users|global_admin|
 |edit_skills|global_admin,pm,hr|
