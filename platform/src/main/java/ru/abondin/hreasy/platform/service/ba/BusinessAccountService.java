@@ -8,6 +8,7 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.repo.ba.BusinessAccountRepo;
 import ru.abondin.hreasy.platform.service.ba.dto.BusinessAccountDto;
 import ru.abondin.hreasy.platform.service.ba.dto.BusinessAccountMapper;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 @Service
 @RequiredArgsConstructor
@@ -30,5 +31,9 @@ public class BusinessAccountService {
         return baRepo.findDetailedById(baId)
                 .map(mapper::fromEntry)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(baId))));
+    }
+
+    public Flux<SimpleDictDto> findAllAsSimpleDict(boolean includeArchived) {
+        return findAll(includeArchived).map(ba -> new SimpleDictDto(ba.getId(), ba.getName(), !ba.isArchived()));
     }
 }

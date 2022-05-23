@@ -22,6 +22,7 @@ export interface EmployeeWithAllDetails {
     active: boolean,
     displayName: string,
     currentProjectId?: number,
+    baId?: number,
     departmentId: number,
     dateOfEmployment?: string,
     levelId?: number,

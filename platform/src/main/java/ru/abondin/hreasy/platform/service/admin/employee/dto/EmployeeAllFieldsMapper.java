@@ -53,6 +53,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
     @Mapping(target = "officeLocation", ignore = true)
     @Mapping(target = "department", ignore = true)
     @Mapping(target = "currentProject", ignore = true)
+    @Mapping(target = "ba", ignore = true)
     EmployeeExportDto toExportWithoutDictanories(EmployeeWithAllDetailsDto dto);
 
     default EmployeeWithAllDetailsDto fromEntry(EmployeeWithAllDetailsEntry entry, OffsetDateTime now) {

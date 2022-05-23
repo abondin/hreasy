@@ -22,8 +22,7 @@ public class BusinessAccountController {
 
     @GetMapping
     public Flux<SimpleDictDto> allActive() {
-        return baService.findAll(false)
-                .map(ba -> new SimpleDictDto(ba.getId(), ba.getName(), !ba.isArchived()));
+        return baService.findAllAsSimpleDict(false);
     }
 
 }

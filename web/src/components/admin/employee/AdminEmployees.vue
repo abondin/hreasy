@@ -121,6 +121,10 @@
             {{ getById(allProjects, item.currentProjectId) }}
           </template>
 
+          <template v-slot:item.baId="{ item }">
+            {{ getById(allBas, item.baId) }}
+          </template>
+
           <template v-slot:item.levelId="{ item }">
             {{ getById(allLevels, item.levelId) }}
           </template>
@@ -208,6 +212,9 @@ export default class AdminEmployees extends Vue {
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<SimpleDict>;
 
+  @Getter("businessAccounts", {namespace: namespace_dict})
+  private allBas!: Array<SimpleDict>;
+
   @Getter("positions", {namespace: namespace_dict})
   private allPositions!: Array<SimpleDict>;
 
@@ -227,6 +234,7 @@ export default class AdminEmployees extends Vue {
     this.reloadHeaders();
     return this.$nextTick()
         .then(() => this.$store.dispatch('dict/reloadProjects'))
+        .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
         .then(() => this.$store.dispatch('dict/reloadDepartments'))
         .then(() => this.$store.dispatch('dict/reloadPositions'))
         .then(() => this.$store.dispatch('dict/reloadLevels'))
@@ -299,6 +307,7 @@ export default class AdminEmployees extends Vue {
     this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 280});
     this.headers.push({text: this.$tc('Email'), value: 'email', width: 280});
     this.headers.push({text: this.$tc('Текущий проект'), value: 'currentProjectId', width: 280});
+    this.headers.push({text: this.$tc('Бизнес Аккаунт'), value: 'baId', width: 280});
     this.headers.push({text: this.$tc('Телефон'), value: 'phone', width: 150});
     this.headers.push({text: this.$tc('Skype'), value: 'skype', width: 150});
     this.headers.push({

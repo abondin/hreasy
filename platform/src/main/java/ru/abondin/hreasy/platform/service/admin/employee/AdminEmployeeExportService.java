@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.ba.BusinessAccountService;
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeAllFieldsMapper;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeExportFilter;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 public class AdminEmployeeExportService {
     private final AdminEmployeeService employeeService;
     private final DictService dictService;
+    private final BusinessAccountService baService;
     private final AdminEmployeeExcelExporter exporter;
     private final EmployeeAllFieldsMapper mapper;
     private final DateTimeService dateTimeService;
@@ -40,16 +42,18 @@ public class AdminEmployeeExportService {
         // 1. Load all dictionaries
         return Mono.zip(
                 dictService.findProjects(auth).collectList()
+                ,baService.findAllAsSimpleDict(false).collectList()
                 , dictService.findDepartments(auth).collectList()
                 , dictService.findLevels(auth).collectList()
                 , dictService.findOfficeLocations(auth).collectList()
                 , dictService.findPositions(auth).collectList()
         ).flatMap(tupple -> {
             var projects = fromDicts(tupple.getT1());
-            var departments = fromDicts(tupple.getT2());
-            var levels = fromDicts(tupple.getT3());
-            var officeLocations = fromDicts(tupple.getT4());
-            var positions = fromDicts(tupple.getT5());
+            var bas = fromDicts(tupple.getT2());
+            var departments = fromDicts(tupple.getT3());
+            var levels = fromDicts(tupple.getT4());
+            var officeLocations = fromDicts(tupple.getT5());
+            var positions = fromDicts(tupple.getT6());
             // 2. Load all employees (include fired)
             return employeeService.findAll(auth)
                     // 3. Filter employees. //TODO Move to database?
@@ -58,6 +62,7 @@ public class AdminEmployeeExportService {
                         var emplExp = mapper.toExportWithoutDictanories(e);
                         emplExp.setCurrentProject(projects.get(e.getCurrentProjectId()));
                         emplExp.setDepartment(departments.get(e.getDepartmentId()));
+                        emplExp.setBa(bas.get(e.getBaId()));
                         emplExp.setPosition(positions.get(e.getPositionId()));
                         emplExp.setLevel(levels.get(e.getLevelId()));
                         emplExp.setOfficeLocation(officeLocations.get(e.getOfficeLocationId()));

@@ -17,6 +17,8 @@ public class EmployeeWithAllDetailsEntry extends EmployeeEntry {
     private LocalDate dateOfEmployment;
     @Column("level")
     private Integer levelId;
+    @Column("ba_id")
+    private Integer baId;
     @Column("work_type")
     private String workType;
     @Column("work_day")
