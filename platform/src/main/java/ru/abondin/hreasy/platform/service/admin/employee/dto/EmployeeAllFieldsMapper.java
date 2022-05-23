@@ -7,6 +7,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeHistoryEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
+import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsWithBaView;
 import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidView;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
@@ -36,6 +37,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
     @Mapping(target = "createdBy", ignore = true)
     EmployeeHistoryEntry historyBase(EmployeeWithAllDetailsEntry persisted);
 
+
     /**
      * Do not maps active field. Please use fromEntry method
      *
@@ -54,7 +56,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
     @Mapping(target = "department", ignore = true)
     @Mapping(target = "currentProject", ignore = true)
     @Mapping(target = "ba", ignore = true)
-    EmployeeExportDto toExportWithoutDictanories(EmployeeWithAllDetailsDto dto);
+    EmployeeExportDto toExportWithoutDictionaries(EmployeeWithAllDetailsDto dto);
 
     default EmployeeWithAllDetailsDto fromEntry(EmployeeWithAllDetailsEntry entry, OffsetDateTime now) {
         var result = fromEntryPartially(entry);
@@ -66,8 +68,15 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
         return result;
     }
 
+    default EmployeeWithAllDetailsDto fromView(EmployeeWithAllDetailsWithBaView entry, OffsetDateTime now) {
+        var result = fromEntry(entry, now);
+        result.setBaId(entry.getBaId());
+        return result;
+    }
+
     /**
      * Do not forget to calculate age manually
+     *
      * @param m
      * @return
      */

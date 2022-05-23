@@ -36,7 +36,7 @@ public class AdminEmployeeService {
 
     public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth) {
         return securityValidator.validateViewEmployeeFull(auth)
-                .flatMapMany(sec -> employeeRepo.findAll()).map(m -> mapper.fromEntry(m, dateTimeService.now()));
+                .flatMapMany(sec -> employeeRepo.findAllDetailed()).map(m -> mapper.fromView(m, dateTimeService.now()));
     }
 
     public Flux<EmployeeKidDto> findAllKids(AuthContext auth) {
@@ -52,7 +52,7 @@ public class AdminEmployeeService {
 
     public Mono<EmployeeWithAllDetailsDto> get(AuthContext auth, int employeeId) {
         return securityValidator.validateViewEmployeeFull(auth)
-                .flatMap(sec -> employeeRepo.findById(employeeId)).map(m -> mapper.fromEntry(m, dateTimeService.now()));
+                .flatMap(sec -> employeeRepo.findDetailedById(employeeId)).map(m -> mapper.fromView(m, dateTimeService.now()));
     }
 
     @Transactional

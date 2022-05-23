@@ -5,7 +5,7 @@ import {SimpleDict} from "@/store/modules/dict";
 
 
 /**
- * 32 fields
+ * 33 fields (1 is read only, should not be attached to the AdminEmployeeForm#EmployeeFrom)
  * If new fields added please don't forgot to update AdminEmployeeForm#EmployeeFrom
  */
 export interface EmployeeWithAllDetails {
@@ -22,6 +22,9 @@ export interface EmployeeWithAllDetails {
     active: boolean,
     displayName: string,
     currentProjectId?: number,
+    /**
+     * Business account - readonly field (depends on current project)
+     */
     baId?: number,
     departmentId: number,
     dateOfEmployment?: string,

@@ -59,7 +59,7 @@ public class AdminEmployeeExportService {
                     // 3. Filter employees. //TODO Move to database?
                     .filter(e -> filter(e, filter, now))
                     .map(e -> {
-                        var emplExp = mapper.toExportWithoutDictanories(e);
+                        var emplExp = mapper.toExportWithoutDictionaries(e);
                         emplExp.setCurrentProject(projects.get(e.getCurrentProjectId()));
                         emplExp.setDepartment(departments.get(e.getDepartmentId()));
                         emplExp.setBa(bas.get(e.getBaId()));

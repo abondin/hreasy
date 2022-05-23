@@ -13,6 +13,9 @@ public interface EmployeeWithAllDetailsRepo extends ReactiveCrudRepository<Emplo
     Mono<EmployeeWithAllDetailsEntry> findByEmail(String email);
 
     @Query("select * from empl.v_employee_detailed order by lastname, firstname")
-    Flux<EmployeeWithAllDetailsEntry> findAll();
+    Flux<EmployeeWithAllDetailsWithBaView> findAllDetailed();
+
+    @Query("select * from empl.v_employee_detailed order by lastname, firstname where id=:id")
+    Mono<EmployeeWithAllDetailsWithBaView> findDetailedById(int id);
 
 }
