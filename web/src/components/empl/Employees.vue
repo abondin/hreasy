@@ -4,7 +4,7 @@
     <v-card>
       <v-card-title>
         <v-row dense>
-          <v-col>
+          <v-col cols="6">
             <v-text-field
                 v-model="filter.search"
                 append-icon="mdi-magnify"
@@ -13,7 +13,17 @@
                 hide-details
             ></v-text-field>
           </v-col>
-          <v-col cols="auto">
+          <v-col>
+            <v-autocomplete
+                clearable
+                class="mr-5"
+                v-model="filter.selectedProjects"
+                :items="allProjects"
+                :label="$t('Текущий проект')"
+                multiple
+            ></v-autocomplete>
+          </v-col>
+          <v-col>
             <v-autocomplete
                 clearable
                 class="mr-5"
@@ -22,18 +32,6 @@
                 item-value="id"
                 item-text="name"
                 :label="$t('Бизнес аккаунт')"
-                multiple
-            ></v-autocomplete>
-          </v-col>
-          <v-col cols="auto">
-            <v-autocomplete
-                clearable
-                class="mr-5"
-                v-model="filter.selectedProjects"
-                :items="allProjects.filter(p=>p.active)"
-                item-value="id"
-                item-text="name"
-                :label="$t('Текущий проект')"
                 multiple
             ></v-autocomplete>
           </v-col>
@@ -74,7 +72,7 @@ import {SimpleDict} from "@/store/modules/dict";
 const namespace_dict: string = 'dict';
 
 class Filter {
-  public selectedProjects: number[] = [];
+  public selectedProjects: Array<number | null> = [];
   public selectedBas: number[] = [];
   public search: string = "";
 }
@@ -90,7 +88,9 @@ export default class EmployeesComponent extends Vue {
   private allBas!: Array<SimpleDict>;
 
   @Getter("projects", {namespace: namespace_dict})
-  private allProjects!: Array<SimpleDict>;
+  private projects!: Array<SimpleDict>;
+
+  private allProjects: object[] = [];
 
   employees: Employee[] = [];
   private filter = new Filter();
@@ -109,7 +109,18 @@ export default class EmployeesComponent extends Vue {
         .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
         .then(() => this.$store.dispatch('dict/reloadProjects'))
         .then(() => this.$store.dispatch('dict/reloadSkillGroups'))
-        .then(() => this.$store.dispatch('dict/reloadSharedSkills'));
+        .then(() => this.$store.dispatch('dict/reloadSharedSkills'))
+        .then(() => {
+          this.allProjects.length = 0;
+          this.allProjects.push({value: null, text: this.$tc('Без проекта')});
+          this.allProjects.push({divider: true});
+          this.allProjects = this.allProjects.concat(this.projects.filter(p => p.active).map(p => {
+            return {
+              value: p.id,
+              text: p.name
+            }
+          }));
+        });
   }
 
   private fetchData() {
@@ -127,7 +138,10 @@ export default class EmployeesComponent extends Vue {
     return this.employees.filter(e => {
       let filtered = true;
       if (this.filter.selectedProjects && this.filter.selectedProjects.length > 0) {
-        filtered = filtered && (e.currentProject != undefined && this.filter.selectedProjects.indexOf(e.currentProject!.id) >= 0);
+        filtered = filtered && (
+            (!e.currentProject && this.filter.selectedProjects.indexOf(null) >= 0) ||
+            (e.currentProject != undefined && this.filter.selectedProjects.indexOf(e.currentProject!.id) >= 0)
+        );
       }
       if (this.filter.selectedBas && this.filter.selectedBas.length > 0) {
         filtered = filtered && (e.ba != undefined && this.filter.selectedBas.indexOf(e.ba!.id) >= 0);
