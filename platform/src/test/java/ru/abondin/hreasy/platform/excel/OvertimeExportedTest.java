@@ -54,7 +54,7 @@ public class OvertimeExportedTest {
             var patronicname = patronicNames.get((int) (Math.random() * patronicNames.size()));
             var displayName = Strings.join(Arrays.asList(lastname, firstame, patronicname), ' ');
             var employee = new EmployeeDto(i, lastname, firstame, patronicname, displayName, null, "мужской", null,
-                    projects.get((int) (Math.random() * projects.size())), null, null, null, null, null, null, false, new ArrayList<>());
+                    projects.get((int) (Math.random() * projects.size())), null, null, null, lastname + "." + firstame + "@company.org", null, null, null, false, new ArrayList<>());
             employees.add(employee);
 
             var report = new OvertimeEmployeeSummary();

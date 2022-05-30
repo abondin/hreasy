@@ -47,11 +47,6 @@
                 >
               </v-text-field>
             </v-col>
-          </v-row>
-          <!--</editor-fold>-->
-
-          <!--<editor-fold desc="Second row (currentProjectId, phone, skype, dateOfEmployment)">-->
-          <v-row>
             <v-col>
               <v-autocomplete v-model="employeeForm.currentProjectId"
                               :items="allProjectsWithCurrent"
@@ -60,6 +55,12 @@
                               :label="$t('Текущий проект')"
               ></v-autocomplete>
             </v-col>
+          </v-row>
+          <!--</editor-fold>-->
+
+          <!--<editor-fold desc="Second row (currentProjectId, phone, skype, dateOfEmployment)">-->
+          <v-row>
+
 
             <v-col>
               <v-text-field v-model="employeeForm.phone"
@@ -75,6 +76,14 @@
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', 255))]"
                             :label="$t('Skype')">
+                >
+              </v-text-field>
+            </v-col>
+            <v-col>
+              <v-text-field v-model="employeeForm.telegram"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', 255))]"
+                            :label="$t('Telegram')">
                 >
               </v-text-field>
             </v-col>
@@ -289,7 +298,7 @@ import {SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
 /**
- * 32 fields from EmployeeWithAllDetails
+ * 33 fields from EmployeeWithAllDetails
  *  + isNew
  *  - displayName
  *  - documentFull
@@ -311,6 +320,7 @@ class employeeForm {
   email: string | null = null;
   phone: string | null = null;
   skype: string | null = null;
+  telegram: string | null = null;
   dateOfEmployment: string | null = null;
   levelId: number | null = null;
   workType: string | null = null;
@@ -384,6 +394,7 @@ export default class AdminEmployeeForm extends Vue {
     this.employeeForm.email = null;
     this.employeeForm.currentProjectId = null;
     this.employeeForm.skype = null;
+    this.employeeForm.telegram = null;
     this.employeeForm.birthday = null;
     this.employeeForm.dateOfEmployment = null;
     this.employeeForm.children = null;
@@ -420,6 +431,7 @@ export default class AdminEmployeeForm extends Vue {
       this.employeeForm.patronymicName = this.input.patronymicName;
       this.employeeForm.currentProjectId = this.input.currentProjectId || null;
       this.employeeForm.skype = this.input.skype;
+      this.employeeForm.telegram = this.input.telegram;
       this.employeeForm.birthday = this.input.birthday;
       this.employeeForm.dateOfEmployment = this.input.dateOfEmployment || null;
       this.employeeForm.children = this.input.children || null;

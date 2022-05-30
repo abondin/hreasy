@@ -17,6 +17,7 @@ public class EmployeeExportDto {
     private String email;
     private String phone;
     private String skype;
+    private String telegram;
     private LocalDate dateOfEmployment;
     private String level;
     private String department;

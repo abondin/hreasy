@@ -20,6 +20,7 @@ public class EmployeeAllFields {
     private String email;
     private String phone;
     private String skype;
+    private String telegram;
     private LocalDate dateOfEmployment;
     private Integer levelId;
     private String workType;

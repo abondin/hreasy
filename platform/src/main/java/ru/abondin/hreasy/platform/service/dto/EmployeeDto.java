@@ -31,6 +31,7 @@ public class EmployeeDto {
     private String email;
     private String phone;
     private String skype;
+    private String telegram;
     private boolean hasAvatar;
     private List<SkillDto> skills = new ArrayList<>();
 }

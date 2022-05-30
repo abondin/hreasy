@@ -34,4 +34,5 @@ public class EmployeeEntry {
     //TODO Set phone datatype in database to string
     private BigDecimal phone;
     private String skype;
+    private String telegram;
 }
