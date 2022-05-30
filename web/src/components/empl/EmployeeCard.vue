@@ -15,11 +15,17 @@ Uses in Employees Table (Employees.vue)
         <v-list-item-subtitle v-if="employee.position">{{ employee.position.name }}</v-list-item-subtitle>
         <v-list-item-subtitle v-if="employee.officeLocation">{{ employee.officeLocation.name }}
         </v-list-item-subtitle>
+        <v-list-item-subtitle v-if="employee.telegram">
+          <a :href="$t('telegram_url', {account:employee.telegram})" target="_blank">
+            <v-icon>telegram</v-icon>
+            {{ employee.telegram }}
+          </a>
+        </v-list-item-subtitle>
 
         <!-- Current Project -->
         <v-list-item-subtitle>{{
             employee.currentProject ?
-                (employee.ba ? (`${employee.currentProject.name} (${employee.ba.name})`): employee.currentProject.name)
+                (employee.ba ? (`${employee.currentProject.name} (${employee.ba.name})`) : employee.currentProject.name)
                 : $tc('Проект не задан')
           }}
           <v-btn v-if="canUpdateCurrentProject()"

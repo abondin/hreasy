@@ -175,7 +175,7 @@ export default class AdminUsers extends Vue {
     this.headers.push({text: this.$tc('ФИО'), value: 'employee.name'});
     this.headers.push({text: this.$tc('Роли'), value: 'roles'});
     this.headers.push({text: this.$tc('Доступные отделы'), value: 'accessibleDepartments'});
-    this.headers.push({text: this.$tc('Доступные бизнес акаунты'), value: 'accessibleBas'});
+    this.headers.push({text: this.$tc('Доступные бизнес аккаунты'), value: 'accessibleBas'});
     this.headers.push({text: this.$tc('Доступные проекты'), value: 'accessibleProjects'});
   }
 

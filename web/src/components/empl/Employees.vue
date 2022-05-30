@@ -31,7 +31,7 @@
                 :items="allBas.filter(p=>p.active)"
                 item-value="id"
                 item-text="name"
-                :label="$t('Бизнес аккаунт')"
+                :label="$t('Бизнес Аккаунт')"
                 multiple
             ></v-autocomplete>
           </v-col>
@@ -103,7 +103,7 @@ export default class EmployeesComponent extends Vue {
     this.headers.push({text: this.$tc('Отдел'), value: 'department.name'});
     this.headers.push({text: this.$tc('E-mail'), value: 'email'});
     this.headers.push({text: this.$tc('Текущий проект'), value: 'currentProject.name'});
-    this.headers.push({text: this.$tc('Бизнес аккаунт'), value: 'ba.name'});
+    this.headers.push({text: this.$tc('Бизнес Аккаунт'), value: 'ba.name'});
     // Reload projects dict to Vuex
     return this.fetchData()
         .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
@@ -150,6 +150,7 @@ export default class EmployeesComponent extends Vue {
         const str = this.filter.search.trim().toLocaleLowerCase();
         let searchFilter: boolean = false;
         searchFilter = searchFilter || e.displayName.toLocaleLowerCase().indexOf(str) >= 0;
+        searchFilter = searchFilter || (Boolean(e.telegram) && e.telegram.toLocaleLowerCase().indexOf(str) >= 0);
         searchFilter = searchFilter || (Boolean(e.email) && e.email.toLocaleLowerCase().indexOf(str) >= 0);
         searchFilter = searchFilter || e.skills.filter(s => s.name.toLocaleLowerCase().indexOf(str) >= 0).length > 0;
         filtered = filtered && searchFilter;

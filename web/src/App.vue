@@ -88,7 +88,7 @@
           </v-list-item>
           <v-list-item to="/admin/ba" v-if="canAdminBusinessAccounts()">
             <v-list-item-title>
-              {{ $t('Бизнес аккаунты') }}
+              {{ $t('Бизнес Аккаунты') }}
             </v-list-item-title>
           </v-list-item>
           <v-list-item to="/admin/users" v-if="canAdminUsers()">

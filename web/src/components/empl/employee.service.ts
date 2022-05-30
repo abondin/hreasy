@@ -23,6 +23,7 @@ export interface Employee {
     email: string,
     phone: string,
     skype: string,
+    telegram: string,
     hasAvatar: boolean,
     skills: Skill[]
 }
