@@ -16,6 +16,7 @@ import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
+import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
 
 import java.time.OffsetDateTime;
 import java.time.Period;
@@ -123,14 +124,31 @@ public class AdminEmployeeService {
                 });
     }
 
+    @Transactional
+    public Mono<Integer> updateTelegram(AuthContext auth, int employeeId, EmployeeUpdateTelegramBody body) {
+        log.info("Update telegram account {} with {} by {}", employeeId, body, auth.getUsername());
+        var now = dateTimeService.now();
+        return securityValidator.validateUpdateTelegram(auth, employeeId)
+                .flatMap(s -> employeeRepo.findById(employeeId))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
+                .flatMap(entry -> {
+                    entry.setTelegram(body.getTelegram());
+                    return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry);
+                });
+    }
 
     private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry, CreateOrUpdateEmployeeBody body) {
         mapper.populateFromBody(entry, body);
+        return doUpdate(currentEmployeeId, now, entry);
+    }
+
+    private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry) {
         return employeeRepo.save(entry).flatMap(persisted -> {
             var history = mapper.history(persisted, currentEmployeeId, now);
             return historyRepo.save(history).map(e -> persisted.getId());
         });
     }
+
 
 
 }

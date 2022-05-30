@@ -12,4 +12,5 @@ public interface EmployeeDetailedRepo {
     Mono<EmployeeDetailedEntry> findDetailed(int id);
 
     Mono<Integer> updateCurrentProject(int employeeId, @Nullable Integer currentProjectId);
+
 }
