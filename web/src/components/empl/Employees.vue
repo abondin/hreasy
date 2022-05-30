@@ -150,7 +150,7 @@ export default class EmployeesComponent extends Vue {
         const str = this.filter.search.trim().toLocaleLowerCase();
         let searchFilter: boolean = false;
         searchFilter = searchFilter || e.displayName.toLocaleLowerCase().indexOf(str) >= 0;
-        searchFilter = searchFilter || (Boolean(e.telegram) && e.telegram.toLocaleLowerCase().indexOf(str) >= 0);
+        searchFilter = searchFilter || Boolean(e.telegram && e.telegram.toLocaleLowerCase().indexOf(str) >= 0);
         searchFilter = searchFilter || (Boolean(e.email) && e.email.toLocaleLowerCase().indexOf(str) >= 0);
         searchFilter = searchFilter || e.skills.filter(s => s.name.toLocaleLowerCase().indexOf(str) >= 0).length > 0;
         filtered = filtered && searchFilter;
