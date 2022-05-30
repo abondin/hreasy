@@ -136,4 +136,14 @@ public class AdminSecurityValidator {
             return Mono.just(true);
         });
     }
+
+    public Mono<Boolean> validateUpdateTelegram(AuthContext auth, int employeeId) {
+        // Now only current employee can update own telegram.
+        // Also telegram can be updated by admin when all employee information updates (see AdminEmployeeService)
+        if (employeeId == auth.getEmployeeInfo().getEmployeeId()) {
+            return Mono.just(true);
+        } else {
+            return Mono.error(new AccessDeniedException("Employee can update only own telegram account"));
+        }
+    }
 }

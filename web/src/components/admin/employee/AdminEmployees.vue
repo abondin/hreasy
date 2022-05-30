@@ -310,6 +310,7 @@ export default class AdminEmployees extends Vue {
     this.headers.push({text: this.$tc('Бизнес Аккаунт'), value: 'baId', width: 280});
     this.headers.push({text: this.$tc('Телефон'), value: 'phone', width: 150});
     this.headers.push({text: this.$tc('Skype'), value: 'skype', width: 150});
+    this.headers.push({text: this.$tc('Telegram'), value: 'telegram', width: 150});
     this.headers.push({
       text: this.$tc('Дата трудоустройства'),
       value: 'dateOfEmployment',

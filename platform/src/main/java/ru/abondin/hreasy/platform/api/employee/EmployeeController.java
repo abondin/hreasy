@@ -9,7 +9,11 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.EmployeeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
+import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
+import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
+
+import javax.validation.constraints.NotNull;
 
 
 @RestController()
@@ -19,6 +23,7 @@ import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 public class EmployeeController {
 
     private final EmployeeService emplService;
+    private final AdminEmployeeService adminEmployeeService;
 
     private final FileStorage fileStorage;
 
@@ -56,6 +61,20 @@ public class EmployeeController {
                                               @PathVariable int newCurrentProjectId) {
         return AuthHandler.currentAuth().flatMap(auth -> emplService.updateCurrentProject(employeeId, newCurrentProjectId, auth));
     }
+
+    /**
+     *
+     * @param employeeId
+     * @param body
+     * @return employeeId
+     */
+    @Operation(summary = "Update telegram account for employee")
+    @PutMapping("/{employeeId}/telegram")
+    @ResponseBody
+    public Mono<Integer> updateTelegram(@PathVariable int employeeId, @NotNull @RequestBody EmployeeUpdateTelegramBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> adminEmployeeService.updateTelegram(auth, employeeId, body));
+    }
+
 
     @Operation(summary = "Reset current project for employee")
     @PutMapping("/{employeeId}/currentProject/reset")

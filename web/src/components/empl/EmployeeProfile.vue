@@ -12,7 +12,7 @@
           <v-list-item-subtitle>{{ $t('Текущий проект') }} :
             {{ employee.currentProject ? employee.currentProject.name : $t("Не задан") }}
           </v-list-item-subtitle>
-          <v-list-item-subtitle>{{ $t('Бизнес аккаунт') }} :
+          <v-list-item-subtitle>{{ $t('Бизнес Аккаунт') }} :
             {{ employee.ba ? employee.ba.name : $t("Не задан") }}
           </v-list-item-subtitle>
           <v-list-item-subtitle>
@@ -23,6 +23,14 @@
           </v-list-item-subtitle>
           <v-list-item-subtitle>
             {{ $t('Кабинет') }} : {{ employee.officeLocation ? employee.officeLocation.name : $t("Не задан") }}
+          </v-list-item-subtitle>
+          <!-- Telegram -->
+          <v-list-item-subtitle>
+            {{ $t('Телеграм') }} : {{ employee.telegram ? employee.telegram : $t("Не задан") }}
+            <v-btn v-if="canUpdateTelegram()"
+                   @click.stop="openUpdateTelegramDialog=true" icon x-small>
+              <v-icon small>edit</v-icon>
+            </v-btn>
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -51,6 +59,13 @@
 
     <my-shared-articles class="mt-5"></my-shared-articles>
 
+    <v-dialog
+        v-model="openUpdateTelegramDialog"
+        max-width="500">
+      <employee-update-telegram v-bind:employee="employee"
+                                       v-on:close="openUpdateTelegramDialog=false"/>
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -67,11 +82,13 @@ import MyVacations from "@/components/vacations/MyVacations.vue";
 import MySkills from "@/components/empl/skills/MySkills.vue";
 import MySharedArticles from "@/components/article/MySharedArticles.vue";
 import TechProfilesChips from "@/components/empl/TechProfilesChips.vue";
+import EmployeeUpdateTelegram from "@/components/empl/EmployeeUpdateTelegram.vue";
 
 const namespace: string = 'auth';
 
 @Component({
   components: {
+    EmployeeUpdateTelegram,
     TechProfilesChips,
     MySharedArticles,
     MySkills, "employee-avatar": EmployeeAvatarUploader, EmployeeOvertimeComponent, MyVacations
@@ -83,6 +100,7 @@ export default class EmployeeProfile extends Vue {
   private employee: Employee | null = null;
   private currentOvertimePeriod = ReportPeriod.currentPeriod();
   private closedOvertimePeriods: ClosedOvertimePeriod[] = [];
+  private openUpdateTelegramDialog = false;
 
 
   @Getter("employeeId", {namespace})
@@ -112,6 +130,14 @@ export default class EmployeeProfile extends Vue {
         .finally(() => {
           this.loading = false
         });
+  }
+
+  /**
+   *
+   * @private
+   */
+  private canUpdateTelegram(){
+    return true;
   }
 
 }

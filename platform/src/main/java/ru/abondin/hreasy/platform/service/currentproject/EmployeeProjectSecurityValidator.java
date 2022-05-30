@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
 import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
-import ru.abondin.hreasy.platform.service.skills.dto.SkillDto;
 
 import java.util.ArrayList;
 
@@ -80,4 +79,5 @@ public class EmployeeProjectSecurityValidator {
         // Anyone add or update rating for skill
         return Mono.just(true);
     }
+
 }

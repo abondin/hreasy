@@ -5,7 +5,7 @@ import {SimpleDict} from "@/store/modules/dict";
 
 
 /**
- * 33 fields (1 is read only, should not be attached to the AdminEmployeeForm#EmployeeFrom)
+ * 34 fields (1 is read only, should not be attached to the AdminEmployeeForm#EmployeeFrom)
  * If new fields added please don't forgot to update AdminEmployeeForm#EmployeeFrom
  */
 export interface EmployeeWithAllDetails {
@@ -18,6 +18,7 @@ export interface EmployeeWithAllDetails {
     email: string,
     phone: string,
     skype: string,
+    telegram: string,
     skills: Skill[],
     active: boolean,
     displayName: string,
@@ -59,6 +60,7 @@ export interface CreateOrUpdateEmployeeBody {
     email?: string,
     phone?: string,
     skype?: string,
+    telegram: string,
     dateOfEmployment?: string,
     levelId?: number|null,
     workType?: string,

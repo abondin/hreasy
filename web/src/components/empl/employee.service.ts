@@ -23,8 +23,13 @@ export interface Employee {
     email: string,
     phone: string,
     skype: string,
+    telegram?: string,
     hasAvatar: boolean,
     skills: Skill[]
+}
+
+export interface UpdateTelegramBody {
+    telegram: string | null;
 }
 
 
@@ -38,6 +43,8 @@ export interface EmployeeService {
     getAvatarUploadUrl(employeeId: number): any;
 
     updateCurrentProject(employeeId: number, projectId: number | null): Promise<number>;
+
+    updateTelegram(employeeId: number, telegramAccount: UpdateTelegramBody): Promise<number>;
 }
 
 class RestEmployeeService implements EmployeeService {
@@ -67,6 +74,12 @@ class RestEmployeeService implements EmployeeService {
 
     updateCurrentProject(employeeId: number, projectId: number | null): Promise<number> {
         return httpService.put(`v1/employee/${employeeId}/currentProject/${projectId ? projectId : 'reset'}`).then(response => {
+            return response.data;
+        });
+    }
+
+    updateTelegram(employeeId: number, updateTelegramBody: UpdateTelegramBody): Promise<number> {
+        return httpService.put(`v1/employee/${employeeId}/telegram/`, updateTelegramBody).then(response => {
             return response.data;
         });
 
