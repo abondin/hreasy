@@ -3,7 +3,7 @@
   <v-card>
     <v-card-title>{{ $t('Телеграм аккаунт') }}</v-card-title>
     <v-card-subtitle>{{ employee.displayName }}</v-card-subtitle>
-    <v-form v-model="formValid" @submit="update">
+    <v-form v-model="formValid" @submit.prevent="update">
       <v-card-text>
         <!--
         //TODO Extract telegram account using UiConstants.extractTelegramAccount
@@ -42,7 +42,6 @@ import employeeService, {Employee} from "./employee.service";
 import Component from "vue-class-component";
 import {errorUtils} from "@/components/errors";
 import {TelegramUtils} from "@/telegram-utils";
-import logger from "@/logger";
 
 
 @Component({})
@@ -75,7 +74,7 @@ export default class EmployeeUpdateTelegram extends Vue {
     })
         .then(() => {
           this.employee.telegram = this.telegram ? this.telegram : undefined;
-          this.$emit('close');
+          return this.$emit('close');
         })
         .catch((e: any) => this.error = errorUtils.shortMessage(e))
         .finally(() => {
@@ -91,9 +90,7 @@ export default class EmployeeUpdateTelegram extends Vue {
   }
 
   private validTelegramAccount(input: string) {
-    const valid = TelegramUtils.isShortTelegramUsernameOrPhoneValid(input);
-    logger.log(`Valid ${input}: ${valid}`);
-    return valid;
+    return TelegramUtils.isShortTelegramUsernameOrPhoneValid(input);
   }
 
 }
