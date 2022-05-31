@@ -3,8 +3,8 @@
   <v-card>
     <v-card-title>{{ $t('Телеграм аккаунт') }}</v-card-title>
     <v-card-subtitle>{{ employee.displayName }}</v-card-subtitle>
-    <v-card-text>
-      <v-form v-model="formValid">
+    <v-form v-model="formValid" @submit="update">
+      <v-card-text>
         <!--
         //TODO Extract telegram account using UiConstants.extractTelegramAccount
         -->
@@ -18,20 +18,20 @@
                       v-model="telegram"
                       :label="$tc('Аккаунт')"
         ></v-text-field>
-      </v-form>
-      <div class="error" v-if="error">{{ error }}</div>
-    </v-card-text>
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <v-btn
-          color="primary"
-          text
-          @click="update"
-          :disabled="isDisabled()"
-      >
-        {{ $t('Применить') }}
-      </v-btn>
-    </v-card-actions>
+        <div class="error" v-if="error">{{ error }}</div>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn
+            type="submit"
+            color="primary"
+            text
+            :disabled="isDisabled()"
+        >
+          {{ $t('Применить') }}
+        </v-btn>
+      </v-card-actions>
+    </v-form>
   </v-card>
 </template>
 
@@ -82,6 +82,7 @@ export default class EmployeeUpdateTelegram extends Vue {
           this.loading = false;
         });
   }
+
 
   private isDisabled() {
     return this.loading ||
