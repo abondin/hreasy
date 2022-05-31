@@ -5,13 +5,19 @@
     <v-card-subtitle>{{ employee.displayName }}</v-card-subtitle>
     <v-card-text>
       <v-form v-model="formValid">
+        <!--
+        //TODO Extract telegram account using UiConstants.extractTelegramAccount
+        -->
         <v-text-field ref="telegramField"
                       autofocus
                       :counter="255"
-                      :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', 255))]"
+                      :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                       v-model="telegram"
                       :label="$tc('Аккаунт')"
         ></v-text-field>
+        <v-alert type="info">
+          {{ $t('Username без @ и без https://t.me/ или номер телефона без пробелов с +7') }}
+        </v-alert>
       </v-form>
       <div class="error" v-if="error">{{ error }}</div>
     </v-card-text>
