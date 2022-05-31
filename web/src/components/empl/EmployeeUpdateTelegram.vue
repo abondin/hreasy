@@ -11,13 +11,13 @@
         <v-text-field ref="telegramField"
                       autofocus
                       :counter="255"
-                      :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                      :rules="[
+                          v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255})),
+                          v=>validTelegramAccount(v) || $t('Username без @ и без https://t.me/ или номер телефона с +7 без пробелов')
+                      ]"
                       v-model="telegram"
                       :label="$tc('Аккаунт')"
         ></v-text-field>
-        <v-alert type="info">
-          {{ $t('Username без @ и без https://t.me/ или номер телефона без пробелов с +7') }}
-        </v-alert>
       </v-form>
       <div class="error" v-if="error">{{ error }}</div>
     </v-card-text>
@@ -41,6 +41,8 @@ import {Prop} from "vue-property-decorator";
 import employeeService, {Employee} from "./employee.service";
 import Component from "vue-class-component";
 import {errorUtils} from "@/components/errors";
+import {TelegramUtils} from "@/telegram-utils";
+import logger from "@/logger";
 
 
 @Component({})
@@ -85,6 +87,12 @@ export default class EmployeeUpdateTelegram extends Vue {
     return this.loading ||
         !this.formValid ||
         this.telegram == this.employee.telegram;
+  }
+
+  private validTelegramAccount(input: string) {
+    const valid = TelegramUtils.isShortTelegramUsernameOrPhoneValid(input);
+    logger.log(`Valid ${input}: ${valid}`);
+    return valid;
   }
 
 }
