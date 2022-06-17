@@ -7,20 +7,16 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 import ru.abondin.hreasy.platform.sec.UserDetailsWithEmployeeInfo;
 
-import java.util.Locale;
-
 /**
  * For development purposes only.
  * Allow any user with valid employee email with fixed master password
  */
-@Component
 @RequiredArgsConstructor
 @Slf4j
 public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticationManager {
@@ -54,7 +50,8 @@ public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticat
                                                             employeeAuthInfoEntry.getCurrentProjectId(),
                                                             employeeAuthInfoEntry.getAccessibleDepartments(),
                                                             employeeAuthInfoEntry.getAccessibleBas(),
-                                                            employeeAuthInfoEntry.getAccessibleProjects());
+                                                            employeeAuthInfoEntry.getAccessibleProjects(),
+                                                            AuthContext.LoginType.MASTER_PASSWORD.getValue());
                                                     var result = new UsernamePasswordAuthenticationToken(user, password, authorities);
                                                     result.setDetails(inputAuth.getDetails());
                                                     result.eraseCredentials();

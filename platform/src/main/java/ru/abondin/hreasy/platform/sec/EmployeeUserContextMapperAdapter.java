@@ -9,10 +9,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 import org.springframework.stereotype.Component;
+import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 
 import java.util.Collection;
 
+/**
+ * Map LDAP record to employee information
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -36,6 +40,7 @@ public class EmployeeUserContextMapperAdapter implements UserDetailsContextMappe
                 employeeAuthInfoEntry.getCurrentProjectId(),
                 employeeAuthInfoEntry.getAccessibleDepartments(),
                 employeeAuthInfoEntry.getAccessibleBas(),
-                employeeAuthInfoEntry.getAccessibleProjects());
+                employeeAuthInfoEntry.getAccessibleProjects(),
+                AuthContext.LoginType.LDAP.getValue());
     }
 }

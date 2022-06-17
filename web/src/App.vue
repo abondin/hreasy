@@ -53,7 +53,7 @@
             <v-icon>mdi-book-check-outline</v-icon>
           </v-list-item-action>
           <v-list-item-title>
-            {{ $tc('Ассессметны') }}
+            {{ $tc('Ассессменты') }}
           </v-list-item-title>
         </v-list-item>
 

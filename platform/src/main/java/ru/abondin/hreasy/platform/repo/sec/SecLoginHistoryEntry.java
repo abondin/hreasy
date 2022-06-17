@@ -12,6 +12,7 @@ public class SecLoginHistoryEntry {
     @Id
     private Integer id;
     private String login;
+    private Short loginType;
     private Integer loggedEmployeeId;
     private String error;
     private OffsetDateTime loginTime;

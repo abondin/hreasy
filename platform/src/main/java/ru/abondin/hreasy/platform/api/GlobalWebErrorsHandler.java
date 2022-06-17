@@ -50,26 +50,28 @@ public class GlobalWebErrorsHandler implements ErrorWebExceptionHandler, ServerA
     @SneakyThrows(JsonProcessingException.class)
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
-        log.error("Handle error", ex);
         var response = exchange.getResponse();
         final Object errorDto;
-        if (ex instanceof BusinessError) {
+        if (ex instanceof BusinessError be) {
             response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
-            errorDto = new BusinessErrorDto(((BusinessError) ex).getCode(),
-                    i18Helper.localize(((BusinessError) ex).getCode(), ((BusinessError) ex).getLocalizationArgs()), ((BusinessError) ex).getAttrs());
-        } else if (ex instanceof BadCredentialsException) {
+            errorDto = new BusinessErrorDto(be.getCode(),
+                    i18Helper.localize(be.getCode(), be.getLocalizationArgs()), be.getAttrs());
+        } else if (ex instanceof BadCredentialsException be) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             errorDto = new BusinessErrorDto("errors.bad.credentials", i18Helper.localize("errors.bad.credentials"), new HashMap<>());
-        } else if (ex instanceof AuthenticationException) {
+        } else if (ex instanceof AuthenticationException be) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             errorDto = new BusinessErrorDto("errors.not.authenticated", i18Helper.localize("errors.not.authenticated"), new HashMap<>());
-        } else if (ex instanceof AccessDeniedException) {
+        } else if (ex instanceof AccessDeniedException be) {
+            log.warn("Access Denied error: {}", be.getLocalizedMessage());
             response.setStatusCode(HttpStatus.FORBIDDEN);
             errorDto = new BusinessErrorDto("errors.access.denied", i18Helper.localize("errors.access.denied"), new HashMap<>());
-        } else if (ex instanceof ResponseStatusException) {
-            response.setStatusCode(((ResponseStatusException) ex).getStatus());
+        } else if (ex instanceof ResponseStatusException be) {
+            log.warn("Response status error: {} - {}", be.getStatus(), be.getReason());
+            response.setStatusCode(be.getStatus());
             errorDto = new BusinessErrorDto("errors.response.not.found", i18Helper.localize("errors.response.not.found"), new HashMap<>());
         } else {
+            log.error("Unknown error", ex);
             response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
             errorDto = new AnyExceptionDto(ex);
         }

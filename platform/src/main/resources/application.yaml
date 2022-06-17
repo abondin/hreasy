@@ -6,7 +6,7 @@ info:
   app:
     name: 'HR Easy'
     description: 'HR platform for small IT companies'
-    version: '1.0.1'
+    version: '1.2.0'
     site: https://github.com/abondin/hreasy
   author:
     name: Alexander Bondin
@@ -24,10 +24,10 @@ hreasy:
     # migrate, clean, repair, undo
     flyway-commands: migrate
   ldap:
-    server-url: "ldap://dc.stm.local"
-    user-dn: "CN=<USER NAME>,CN=Users,DC=stm,DC=local"
+    server-url:
+    user-dn:
     user-password: "Specify Password"
-    search-base: "OU=Internal,OU=Enterprise,DC=stm,DC=local"
+    search-base:
   common:
     default-email-suffix: "@stm-labs.ru"
     default-email-from: "hreasy@stm-labs.ru"
@@ -52,6 +52,10 @@ spring:
     baseline-version: 0
     baseline-on-migrate: true
     schemas: public,empl,dict,proj,ba,article
+  data:
+    ldap:
+      repositories:
+        enabled: false
 
 management:
   security:
@@ -73,6 +77,9 @@ management:
       exposure:
         include: health,metrics,info,prometheus,loggers
     jmx:
+      enabled: "false"
+  health:
+    ldap:
       enabled: "false"
 
 endpoints:

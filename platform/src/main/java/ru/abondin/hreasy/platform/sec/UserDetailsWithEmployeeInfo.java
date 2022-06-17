@@ -48,6 +48,14 @@ public class UserDetailsWithEmployeeInfo implements UserDetails {
      */
     private List<Integer> accessibleProjects = new ArrayList<>();
 
+    /**
+     * Which authentication provider was used to logging user
+     * 1 - LDAP,
+     * 2 - INTERNAL,
+     * 3 - Master password (only in developer environment)
+     */
+    private Short loggedInType;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return delegate.getAuthorities();
