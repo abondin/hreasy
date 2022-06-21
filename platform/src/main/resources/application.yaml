@@ -28,6 +28,9 @@ hreasy:
     user-dn:
     user-password: "Specify Password"
     search-base:
+  web:
+    sec:
+      internal-password-enabled: true
   common:
     default-email-suffix: "@stm-labs.ru"
     default-email-from: "hreasy@stm-labs.ru"

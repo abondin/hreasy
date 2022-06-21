@@ -16,7 +16,7 @@ import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 @Configuration
 @ConditionalOnExpression("!T(org.springframework.util.StringUtils).isEmpty('${hreasy.web.sec.master-password:}')")
 @Slf4j
-public class AuthMasterTokenConf {
+public class AuthMasterPasswordConf {
     @Bean("masterPasswordAuthenticationManager")
     ReactiveAuthenticationManager masterPasswordAuthenticationManager(
             final HrEasySecurityProps securityProps,

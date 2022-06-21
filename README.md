@@ -4,11 +4,12 @@
 
 # Key features
 
- - Auth with LDAP
+ - Auth with internal DB password and LDAP
  - Show all employees
  - View/Add/Approve Overtimes
  - View/Add/Update Vacations
- - Admin projects dictionary
+ - Admin all dictionaries
+ - Admin projects
  - Business Accounts administration  
  - Admin user roles
  - Articles (news and shared information).
@@ -23,8 +24,8 @@
 
 # Technologies Stack
 
- - ~~Kotlin~~ Java on backend
- - SQL Server as database
+ - Java on backend
+ - PostgreSQL as database
  - Spring Reactive
  - Vue + vuetifyjs + ts on frontend
  
@@ -175,7 +176,7 @@ The goal of this functionality
 
 ![Security Database](./platform/.architecture/assessment_use_cases.png "Assessment use case")
 
-**Assessments form template**
+**Assessments form template (WIP)**
 
 Assessment form based on JSON template. System Administrator can update template for every form type
 in database table `assessment_form_template` (*//TODO Admin page to edit template*):
