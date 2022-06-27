@@ -50,9 +50,16 @@
       >
         <template v-slot:expanded-item="{ headers, item }">
           <td :colspan="headers.length">
-            <employee-card v-bind:employee="item">
+            <employee-card v-bind:employee="item" @employeeUpdated="fetchData()">
             </employee-card>
           </td>
+        </template>
+        <template v-slot:item.currentProject="{ item }">
+          <span v-if="item.currentProject">
+            {{ item.currentProject.name }}
+            <span v-if="item.currentProject.role"> ({{ item.currentProject.role }})
+            </span>
+          </span>
         </template>
       </v-data-table>
     </v-card>
@@ -87,6 +94,9 @@ export default class EmployeesComponent extends Vue {
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;
 
+  @Getter("positions", {namespace: namespace_dict})
+  private allPositions!: Array<SimpleDict>;
+
   @Getter("projects", {namespace: namespace_dict})
   private projects!: Array<SimpleDict>;
 
@@ -104,12 +114,16 @@ export default class EmployeesComponent extends Vue {
     this.headers.push({text: this.$tc('E-mail'), value: 'email'});
     this.headers.push({text: this.$tc('Текущий проект'), value: 'currentProject.name'});
     this.headers.push({text: this.$tc('Бизнес Аккаунт'), value: 'ba.name'});
+    // TODO Uncomment me after information about positions in STM actualized
+    //this.headers.push({text: this.$tc('Позиция'), value: 'position.name'});
+
     // Reload projects dict to Vuex
     return this.fetchData()
         .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
         .then(() => this.$store.dispatch('dict/reloadProjects'))
         .then(() => this.$store.dispatch('dict/reloadSkillGroups'))
         .then(() => this.$store.dispatch('dict/reloadSharedSkills'))
+        .then(() => this.$store.dispatch('dict/reloadPositions'))
         .then(() => {
           this.allProjects.length = 0;
           this.allProjects.push({value: null, text: this.$tc('Без проекта')});
@@ -149,9 +163,17 @@ export default class EmployeesComponent extends Vue {
       if (this.filter.search) {
         const str = this.filter.search.trim().toLocaleLowerCase();
         let searchFilter: boolean = false;
+        // Display Name
         searchFilter = searchFilter || e.displayName.toLocaleLowerCase().indexOf(str) >= 0;
+        // Position
+        searchFilter = searchFilter || e.position && e.position.name.toLocaleLowerCase().indexOf(str) >= 0;
+        // Role on current project
+        searchFilter = searchFilter || Boolean(e.currentProject && e.currentProject.role && e.currentProject.role.toLocaleLowerCase().indexOf(str) >= 0);
+        // Telegram
         searchFilter = searchFilter || Boolean(e.telegram && e.telegram.toLocaleLowerCase().indexOf(str) >= 0);
+        // Email
         searchFilter = searchFilter || (Boolean(e.email) && e.email.toLocaleLowerCase().indexOf(str) >= 0);
+        // Skills
         searchFilter = searchFilter || e.skills.filter(s => s.name.toLocaleLowerCase().indexOf(str) >= 0).length > 0;
         filtered = filtered && searchFilter;
       }

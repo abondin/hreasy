@@ -26,6 +26,8 @@ public class EmployeeEntry {
     private Integer positionId;
     @Column("current_project")
     private Integer currentProjectId;
+    @Column("current_project_role")
+    private String currentProjectRole;
     @Column("office_location")
     private Integer officeLocationId;
     @Column("date_of_dismissal")

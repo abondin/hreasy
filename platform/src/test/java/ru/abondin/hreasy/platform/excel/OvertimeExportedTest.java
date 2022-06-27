@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import ru.abondin.hreasy.platform.I18Helper;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeReportExcelExporter;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
 
@@ -31,10 +31,10 @@ public class OvertimeExportedTest {
             null, "Васильевич", "Витальевич", "Владимирович", "Сергеевич", "Александрович"
     );
 
-    private final List<SimpleDictDto> projects = Arrays.asList(
-            new SimpleDictDto(1, "Facebook"),
-            new SimpleDictDto(2, "VK"),
-            new SimpleDictDto(3, "Одноклассники")
+    private final List<CurrentProjectDictDto> projects = Arrays.asList(
+            new CurrentProjectDictDto(1, "Facebook", "Developer"),
+            new CurrentProjectDictDto(2, "VK", "QA Lead"),
+            new CurrentProjectDictDto(3, "Одноклассники", "PM")
     );
 
 
@@ -54,7 +54,10 @@ public class OvertimeExportedTest {
             var patronicname = patronicNames.get((int) (Math.random() * patronicNames.size()));
             var displayName = Strings.join(Arrays.asList(lastname, firstame, patronicname), ' ');
             var employee = new EmployeeDto(i, lastname, firstame, patronicname, displayName, null, "мужской", null,
-                    projects.get((int) (Math.random() * projects.size())), null, null, null, lastname + "." + firstame + "@company.org", null, null, null, false, new ArrayList<>());
+                    projects.get((int) (Math.random() * projects.size()))
+                    , null, null, null
+                    , lastname + "." + firstame + "@company.org"
+                    , null, null, null, false, new ArrayList<>());
             employees.add(employee);
 
             var report = new OvertimeEmployeeSummary();

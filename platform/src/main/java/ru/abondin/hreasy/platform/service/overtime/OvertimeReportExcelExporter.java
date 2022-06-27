@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import ru.abondin.hreasy.platform.I18Helper;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
@@ -46,7 +47,7 @@ public class OvertimeReportExcelExporter {
         private final int period;
         private List<OvertimeEmployeeSummary> overtimes;
         private List<EmployeeDto> employees;
-        private List<SimpleDictDto> projects;
+        private List<? extends SimpleDictDto> projects;
         private OffsetDateTime exportTime;
         private Locale locale;
     }

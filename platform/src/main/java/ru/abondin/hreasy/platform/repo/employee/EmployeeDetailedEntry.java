@@ -12,6 +12,7 @@ public class EmployeeDetailedEntry extends EmployeeEntry {
     private String positionCategory;
     private String levelName;
     private String currentProjectName;
+    private String currentProjectRole;
     private String officeLocationName;
     private Integer baId;
     private String baName;

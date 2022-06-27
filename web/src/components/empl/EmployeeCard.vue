@@ -23,11 +23,14 @@ Uses in Employees Table (Employees.vue)
         </v-list-item-subtitle>
 
         <!-- Current Project -->
-        <v-list-item-subtitle>{{
-            employee.currentProject ?
-                (employee.ba ? (`${employee.currentProject.name} (${employee.ba.name})`) : employee.currentProject.name)
-                : $tc('Проект не задан')
-          }}
+        <v-list-item-subtitle>
+          <span v-if="employee.currentProject">
+            {{employee.currentProject.name}}
+            <v-span v-if="employee.ba">({{employee.ba.name}})</v-span>
+            <v-span v-if="employee.currentProject.role"> - {{employee.currentProject.role}}</v-span>
+          </span>
+          <span v-else>{{$tc('Проект не задан')}}</span>
+
           <v-btn v-if="canUpdateCurrentProject()"
                  @click.stop="openUpdateCurrentProjectDialog=true" icon x-small>
             <v-icon small>edit</v-icon>
@@ -73,7 +76,7 @@ Uses in Employees Table (Employees.vue)
         v-model="openUpdateCurrentProjectDialog"
         max-width="500">
       <employee-update-current-project v-bind:employee="employee"
-                                       v-on:close="openUpdateCurrentProjectDialog=false"/>
+                                       v-on:submit="emitEmployeeUpdated();openUpdateCurrentProjectDialog=false"/>
     </v-dialog>
   </v-card>
 
@@ -159,6 +162,10 @@ export default class EmployeeCard extends Vue {
 
   private canUpdateCurrentProject(): boolean {
     return permissionService.canUpdateCurrentProject(this.employee.id);
+  }
+
+  private emitEmployeeUpdated(){
+    return this.$emit("employeeUpdated");
   }
 }
 </script>

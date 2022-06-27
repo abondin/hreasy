@@ -55,15 +55,14 @@ public class EmployeeController {
     }
 
     @Operation(summary = "Update current project for employee")
-    @PutMapping("/{employeeId}/currentProject/{newCurrentProjectId}")
+    @PutMapping("/{employeeId}/currentProject")
     @ResponseBody
-    public Mono<Boolean> updateCurrentProject(@PathVariable int employeeId,
-                                              @PathVariable int newCurrentProjectId) {
-        return AuthHandler.currentAuth().flatMap(auth -> emplService.updateCurrentProject(employeeId, newCurrentProjectId, auth));
+    public Mono<Integer> updateCurrentProject(@PathVariable int employeeId,
+                                              @RequestBody(required = false) UpdateCurrentProjectBody newCurrentProject) {
+        return AuthHandler.currentAuth().flatMap(auth -> adminEmployeeService.updateCurrentProject(employeeId, newCurrentProject, auth));
     }
 
     /**
-     *
      * @param employeeId
      * @param body
      * @return employeeId
@@ -75,12 +74,4 @@ public class EmployeeController {
         return AuthHandler.currentAuth().flatMap(auth -> adminEmployeeService.updateTelegram(auth, employeeId, body));
     }
 
-
-    @Operation(summary = "Reset current project for employee")
-    @PutMapping("/{employeeId}/currentProject/reset")
-    @ResponseBody
-    public Mono<Boolean> resetCurrentProject(@PathVariable int employeeId) {
-        return AuthHandler.currentAuth().flatMap(auth ->
-                emplService.updateCurrentProject(employeeId, null, auth));
-    }
 }

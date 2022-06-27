@@ -2,11 +2,13 @@ package ru.abondin.hreasy.platform.service.admin.employee;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.api.employee.UpdateCurrentProjectBody;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeHistoryRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
@@ -136,6 +138,29 @@ public class AdminEmployeeService {
                     return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry);
                 });
     }
+
+    /**
+     *
+     * @param employeeId
+     * @param newCurrentProject - link to new project. null to unlnk current project
+     * @param auth
+     * @return
+     */
+    @Transactional
+    public Mono<Integer> updateCurrentProject(int employeeId, @Nullable UpdateCurrentProjectBody newCurrentProject, AuthContext auth) {
+        var now = dateTimeService.now();
+        log.info("Update current project {} for employee {} " +
+                "by {}", newCurrentProject == null ? "<RESET>" : newCurrentProject, employeeId, auth.getEmail());
+        return securityValidator.validateUpdateCurrentProject(auth, employeeId, newCurrentProject == null ? null : newCurrentProject.getId())
+                .flatMap(s -> employeeRepo.findById(employeeId))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
+                .flatMap(entry -> {
+                    entry.setCurrentProjectId(newCurrentProject == null? null : newCurrentProject.getId());
+                    entry.setCurrentProjectRole(newCurrentProject == null? null : newCurrentProject.getRole());
+                    return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry);
+                });
+    }
+
 
     private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry, CreateOrUpdateEmployeeBody body) {
         mapper.populateFromBody(entry, body);

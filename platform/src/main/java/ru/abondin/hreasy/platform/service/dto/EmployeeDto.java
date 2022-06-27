@@ -24,7 +24,7 @@ public class EmployeeDto {
     private LocalDate birthday;
     private String sex;
     private SimpleDictDto department;
-    private SimpleDictDto currentProject;
+    private CurrentProjectDictDto currentProject;
     private SimpleDictDto position;
     private SimpleDictDto officeLocation;
     private SimpleDictDto ba;
