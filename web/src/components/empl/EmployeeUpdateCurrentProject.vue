@@ -14,8 +14,8 @@
           :label="$tc('Проекты')"
       ></v-autocomplete>
       <v-text-field v-model="roleOnProject"
-                    :counter="255"
-                    :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                    :counter="64"
+                    :rules="[v=>(!v || v.length <= 64 || $t('Не более N символов', {n:64}))]"
                     :label="$t('Позиция на проекте')">
 
 
