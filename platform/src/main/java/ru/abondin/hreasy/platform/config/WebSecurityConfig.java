@@ -47,6 +47,10 @@ public class WebSecurityConfig {
     ReactiveAuthenticationManager authenticationManager() {
         var authenticationManagers = new ArrayList<ReactiveAuthenticationManager>();
         log.info("Collecting authentication managers...");
+        Assert.isTrue(!(internalPasswordAuthenticationManager != null && ldapAuthenticationManager != null),
+                "Internal Password cannot be enabled with LDAP at the same time." +
+                        " Set HREASY_WEB_SEC_INTERNAL-PASSWORD-ENABLED to false" +
+                        " or HREASY_LDAP_SERVER-URL to empty");
         addManager(authenticationManagers, "Master Password", masterPasswordAuthenticationManager);
         addManager(authenticationManagers, "Internal Password", internalPasswordAuthenticationManager);
         addManager(authenticationManagers, "LDAP", ldapAuthenticationManager);

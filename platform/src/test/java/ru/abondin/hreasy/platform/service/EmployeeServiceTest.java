@@ -52,7 +52,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
     }
 
     @Test
-    @DisplayName("Move FMS_Empl_Ammara_Knott from FMS to M1 Billing by herself")
+    @DisplayName("Update my current project")
     public void testUpdateMyProject() {
         StepVerifier
                 .create(auth(FMS_Empl_Ammara_Knott)
@@ -64,12 +64,12 @@ public class EmployeeServiceTest extends BaseServiceTest {
                             log.error("-------- Unexpected error", error);
                         })
                 )
-                .expectNext(1)
+                .expectNextCount(1)
                 .verifyComplete();
     }
 
     @Test
-    @DisplayName("Move FMS_Empl_Jenson_Curtis from FMS to Policy Manager by FMS_Empl_Ammara_Knott")
+    @DisplayName("Test update project for another employee")
     public void testUpdateProjectForAnotherEmployee() {
         var jensonId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
         var ctx = auth(FMS_Empl_Ammara_Knott).block(MONO_DEFAULT_TIMEOUT);

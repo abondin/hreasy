@@ -30,7 +30,7 @@ hreasy:
     search-base:
   web:
     sec:
-      internal-password-enabled: true
+      internal-password-enabled: false
   common:
     default-email-suffix: "@stm-labs.ru"
     default-email-from: "hreasy@stm-labs.ru"
