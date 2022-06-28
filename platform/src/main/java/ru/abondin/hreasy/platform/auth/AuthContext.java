@@ -2,10 +2,12 @@ package ru.abondin.hreasy.platform.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -60,6 +62,14 @@ public class AuthContext {
          */
         private List<Integer> accessibleProjects = new ArrayList<>();
 
+        /**
+         * 1 - LDAP,
+         * 2 - INTERNAL,
+         * 3 - Master password (only in developer environment)
+         */
+        @Nullable
+        private Short loggedInType;
+
 
         public EmployeeInfo(EmployeeInfo employeeInfo) {
             this(employeeInfo.getEmployeeId(),
@@ -67,7 +77,22 @@ public class AuthContext {
                     employeeInfo.getCurrentProjectId(),
                     employeeInfo.getAccessibleDepartments(),
                     employeeInfo.getAccessibleBas(),
-                    employeeInfo.getAccessibleProjects());
+                    employeeInfo.getAccessibleProjects(),
+                    employeeInfo.getLoggedInType());
+        }
+    }
+
+
+    @AllArgsConstructor
+    public enum LoginType {
+        LDAP((short) 1), INTERNAL((short) 2), MASTER_PASSWORD((short) 3);
+        @Getter
+        private final short value;
+
+        public static String prettyPrint(Short value) {
+            return value == null ? "NOT SPECIFIED" : Arrays.stream(LoginType.values()).filter(s -> s.value == value).findFirst()
+                    .map(Enum::toString)
+                    .orElse("Unknown Login Type " + value);
         }
     }
 }

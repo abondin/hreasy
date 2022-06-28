@@ -32,19 +32,4 @@ public class EmployeeDetailedRepoImpl implements EmployeeDetailedRepo {
                         EmployeeDetailedEntry.class);
     }
 
-    @Override
-    public Mono<Integer> updateCurrentProject(int employeeId, @Nullable Integer currentProjectId) {
-        //TODO Update history
-        var sql = dbTemplate
-                .getDatabaseClient().sql("update empl.employee set current_project=:currentProjectId where id=:employeeId")
-                .bind("employeeId", employeeId);
-        if (currentProjectId == null) {
-            sql = sql.bindNull("currentProjectId", Integer.class);
-        } else {
-            sql = sql.bind("currentProjectId", currentProjectId);
-        }
-        return sql.fetch().rowsUpdated();
-    }
-
-
 }

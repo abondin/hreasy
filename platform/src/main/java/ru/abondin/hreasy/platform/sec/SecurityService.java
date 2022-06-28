@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
-import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 import ru.abondin.hreasy.platform.repo.sec.PermissionRepo;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class SecurityService {
-    private final EmployeeAuthDomainService employeeAuthDomainService;
     private final PermissionRepo permissionRepo;
 
     @Transactional

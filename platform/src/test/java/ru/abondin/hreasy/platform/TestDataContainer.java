@@ -7,6 +7,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.api.employee.UpdateCurrentProjectBody;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -74,5 +75,10 @@ public class TestDataContainer {
             result = username + "@stm-labs.ru";
         }
         return StringUtils.trimToEmpty(result).toLowerCase(Locale.ROOT);
+    }
+
+    public UpdateCurrentProjectBody updateCurrentProjectBody(String projectName) {
+        var id = projects.get(projectName);
+        return id == null ? null : new UpdateCurrentProjectBody(id, "Tester");
     }
 }

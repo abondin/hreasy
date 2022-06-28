@@ -75,7 +75,8 @@ public class AuthHandler {
                     withEmployeeInfo.getCurrentProjectId(),
                     withEmployeeInfo.getAccessibleDepartments(),
                     withEmployeeInfo.getAccessibleBas(),
-                    withEmployeeInfo.getAccessibleProjects());
+                    withEmployeeInfo.getAccessibleProjects(),
+                    withEmployeeInfo.getLoggedInType());
         } else {
             employee = null;
         }

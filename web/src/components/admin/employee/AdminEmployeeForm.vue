@@ -12,9 +12,35 @@
       </v-card-title>
       <v-card-text>
         <v-container>
-          <!--<editor-fold desc="First row (email, lastname, firstname, patronymicName)">-->
           <v-row>
-            <v-col>
+            <!--<editor-fold desc="1 row (lastname, firstname, patronymicName)">-->
+            <v-col cols=4>
+              <v-text-field v-model="employeeForm.lastname"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Фамилия')">
+                >
+              </v-text-field>
+            </v-col>
+            <v-col cols=4>
+              <v-text-field v-model="employeeForm.firstname"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Имя')">
+                >
+              </v-text-field>
+            </v-col>
+            <v-col cols=4>
+              <v-text-field v-model="employeeForm.patronymicName"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Отчество')">
+                >
+              </v-text-field>
+            </v-col>
+            <!--</editor-fold>-->
+            <!--<editor-fold desc="2 row (email, phone, skype,telegram)">-->
+            <v-col cols=4>
               <v-text-field v-model="employeeForm.email"
                             :counter="255"
                             :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
@@ -23,46 +49,7 @@
                 >
               </v-text-field>
             </v-col>
-            <v-col>
-              <v-text-field v-model="employeeForm.lastname"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Фамилия')">
-                >
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <v-text-field v-model="employeeForm.firstname"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Имя')">
-                >
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <v-text-field v-model="employeeForm.patronymicName"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Отчество')">
-                >
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <v-autocomplete v-model="employeeForm.currentProjectId"
-                              :items="allProjectsWithCurrent"
-                              item-value="id"
-                              item-text="name"
-                              :label="$t('Текущий проект')"
-              ></v-autocomplete>
-            </v-col>
-          </v-row>
-          <!--</editor-fold>-->
-
-          <!--<editor-fold desc="Second row (currentProjectId, phone, skype, dateOfEmployment)">-->
-          <v-row>
-
-
-            <v-col>
+            <v-col cols=4>
               <v-text-field v-model="employeeForm.phone"
                             :counter="11"
                             :rules="[v=>(!v || /^\d{11}$/.test(v) || $t('Число 11 символов'))]"
@@ -71,7 +58,7 @@
                 >
               </v-text-field>
             </v-col>
-            <v-col>
+            <v-col cols=2>
               <v-text-field v-model="employeeForm.skype"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', 255))]"
@@ -79,7 +66,7 @@
                 >
               </v-text-field>
             </v-col>
-            <v-col>
+            <v-col cols=2>
               <v-text-field v-model="employeeForm.telegram"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', 255))]"
@@ -87,127 +74,9 @@
                 >
               </v-text-field>
             </v-col>
-            <v-col>
-              <my-date-form-component v-model="employeeForm.dateOfEmployment"
-                                      :label="$t('Дата трудоустройства')"
-                                      :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
-              ></my-date-form-component>
-            </v-col>
-          </v-row>
-          <!--</editor-fold>-->
-
-          <!--<editor-fold desc="Third row (birthday, positionId, levelId, officeLocationId)">-->
-          <v-row>
-            <v-col>
-              <my-date-form-component v-model="employeeForm.birthday"
-                                      :label="$t('День рождения')"
-                                      :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
-              ></my-date-form-component>
-            </v-col>
-
-            <v-col>
-              <v-autocomplete v-model="employeeForm.positionId"
-                              :items="allPositionsWithCurrent"
-                              item-value="id"
-                              item-text="name"
-                              :label="$t('Позиция')"
-              ></v-autocomplete>
-            </v-col>
-            <v-col>
-              <v-autocomplete v-model="employeeForm.levelId"
-                              :items="allLevelsWithCurrent"
-                              item-value="id"
-                              item-text="name"
-                              :label="$t('Уровень экспертизы')"
-              ></v-autocomplete>
-            </v-col>
-            <v-col>
-              <v-autocomplete v-model="employeeForm.officeLocationId"
-                              :items="allOfficeLocationsWithCurrent"
-                              item-value="id"
-                              item-text="name"
-                              :label="$t('Рабочее место')"
-              ></v-autocomplete>
-            </v-col>
-          </v-row>
-          <!--</editor-fold>-->
-
-          <!--<editor-fold desc="fourth row (documentSeries, documentNumber, documentIssuedDate, documentIssuedBy)">-->
-          <v-row>
-            <v-col>
-              <v-text-field v-model="employeeForm.documentSeries"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Серия документа')">
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <v-text-field v-model="employeeForm.documentNumber"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Номер документа')">
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <my-date-form-component v-model="employeeForm.documentIssuedDate"
-                                      :label="$t('Документ выдан (когда)')"
-                                      :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
-              ></my-date-form-component>
-            </v-col>
-            <v-col>
-              <v-text-field v-model="employeeForm.documentIssuedBy"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Документ выдан (кем)')">
-                >
-              </v-text-field>
-            </v-col>
-          </v-row>
-          <!--</editor-fold>-->
-
-          <!--<editor-fold desc="fifth row (registrationAddress, sex, spouseName, workDay)">-->
-          <v-row>
-            <v-col>
-              <v-text-field v-model="employeeForm.registrationAddress"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Адрес по регистрации')">
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <v-text-field v-model="employeeForm.sex"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Пол')">
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <v-text-field v-model="employeeForm.spouseName"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('ФИО супруга/супруги')">
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <v-text-field v-model="employeeForm.workDay"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Рабочий день (Полный/Неполный)')">
-              </v-text-field>
-            </v-col>
-          </v-row>
-          <!--</editor-fold>-->
-
-          <!--<editor-fold desc="sixth row (workType, departmentId, cityOfResidence, children)">-->
-          <v-row>
-            <v-col>
-              <v-text-field v-model="employeeForm.workType"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Место работы')">
-              </v-text-field>
-            </v-col>
-            <v-col>
+            <!--</editor-fold>-->
+            <!--<editor-fold desc="3 row (departmentId, currentProjectId, currentProjectRole)">-->
+            <v-col cols=4>
               <v-autocomplete v-model="employeeForm.departmentId"
                               :items="allDepartmentsWithCurrent"
                               item-value="id"
@@ -215,14 +84,168 @@
                               :label="$t('Подразделение')"
               ></v-autocomplete>
             </v-col>
-            <v-col>
+
+            <v-col cols=4>
+              <v-autocomplete v-model="employeeForm.currentProjectId"
+                              :items="allProjectsWithCurrent"
+                              item-value="id"
+                              item-text="name"
+                              :label="$t('Текущий проект')"
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols=4>
+              <v-text-field v-model="employeeForm.currentProjectRole"
+                            :counter="64"
+                            :rules="[v=>(!v || v.length <= 64 || $t('Не более N символов', 64))]"
+                            :label="$t('Роль на проекте')">
+                >
+              </v-text-field>
+            </v-col>
+            <!--</editor-fold>-->
+            <!--<editor-fold desc="4 row (levelId, positionId, officeLocationId)">-->
+            <v-col cols=4>
+              <v-autocomplete v-model="employeeForm.levelId"
+                              :items="allLevelsWithCurrent"
+                              item-value="id"
+                              item-text="name"
+                              :label="$t('Уровень экспертизы')"
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols=4>
+              <v-autocomplete v-model="employeeForm.positionId"
+                              :items="allPositionsWithCurrent"
+                              item-value="id"
+                              item-text="name"
+                              :label="$t('Позиция')"
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols=4>
+              <v-autocomplete v-model="employeeForm.officeLocationId"
+                              :items="allOfficeLocationsWithCurrent"
+                              item-value="id"
+                              item-text="name"
+                              :label="$t('Рабочее место')"
+              ></v-autocomplete>
+            </v-col>
+            <!-- </editor-fold> -->
+            <!-- <editor-fold desc="5 row (dateOfEmployment, dateOfDismissal, workType, workDay, birthday, sex)"-->
+            <v-col cols=2>
+              <my-date-form-component v-model="employeeForm.dateOfEmployment"
+                                      :label="$t('Дата трудоустройства')"
+                                      :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
+              ></my-date-form-component>
+            </v-col>
+            <v-col cols=2>
+              <my-date-form-component v-model="employeeForm.dateOfDismissal"
+                                      :label="$t('Дата увольнения')"
+                                      :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
+              ></my-date-form-component>
+            </v-col>
+            <v-col cols=2>
+              <v-text-field v-model="employeeForm.workType"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Место работы')">
+              </v-text-field>
+            </v-col>
+            <v-col cols=2>
+              <v-text-field v-model="employeeForm.workDay"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Рабочий день (Полный/Неполный)')">
+              </v-text-field>
+            </v-col>
+
+            <v-col cols=2>
+              <my-date-form-component v-model="employeeForm.birthday"
+                                      :label="$t('День рождения')"
+                                      :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
+              ></my-date-form-component>
+            </v-col>
+            <v-col cols=2>
+              <v-text-field v-model="employeeForm.sex"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Пол')">
+              </v-text-field>
+            </v-col>
+            <!--</editor-fold>-->
+            <!--<editor-fold desc="6 row (documentSeries, documentNumber, documentIssuedDate, documentIssuedBy)">-->
+            <v-col cols="2">
+              <v-text-field v-model="employeeForm.documentSeries"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Серия документа')">
+              </v-text-field>
+            </v-col>
+            <v-col cols="2">
+              <v-text-field v-model="employeeForm.documentNumber"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Номер документа')">
+              </v-text-field>
+            </v-col>
+            <v-col cols="2">
+              <my-date-form-component v-model="employeeForm.documentIssuedDate"
+                                      :label="$t('Документ выдан (когда)')"
+                                      :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
+              ></my-date-form-component>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field v-model="employeeForm.documentIssuedBy"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Документ выдан (кем)')">
+                >
+              </v-text-field>
+            </v-col>
+            <!--</editor-fold>-->
+            <!--<editor-fold desc="7 row (registrationAddress, cityOfResidence, foreignPassport, englishLevel)">-->
+            <v-col cols="6">
+              <v-text-field v-model="employeeForm.registrationAddress"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Адрес по регистрации')">
+              </v-text-field>
+            </v-col>
+            <v-col cols=2>
               <v-text-field v-model="employeeForm.cityOfResidence"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Город проживания')">
               </v-text-field>
             </v-col>
-            <v-col>
+            <v-col cols=2>
+              <v-text-field v-model="employeeForm.foreignPassport"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Загранпаспорт')">
+              </v-text-field>
+            </v-col>
+            <v-col cols=2>
+              <v-text-field v-model="employeeForm.englishLevel"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Уровень английского')">
+              </v-text-field>
+            </v-col>
+            <!-- </editor-fold> -->
+            <!--<editor-fold desc="8 row (familyStatus, spouseName, children)">-->
+            <v-col cols=2>
+              <v-text-field v-model="employeeForm.familyStatus"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('Семейный статус')">
+              </v-text-field>
+            </v-col>
+            <v-col cols=4>
+              <v-text-field v-model="employeeForm.spouseName"
+                            :counter="255"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
+                            :label="$t('ФИО супруга/супруги')">
+              </v-text-field>
+            </v-col>
+            <v-col cols=6>
               <v-text-field v-model="employeeForm.children"
                             disabled
                             :counter="1024"
@@ -230,41 +253,8 @@
                             :label="$t('Дети')">
               </v-text-field>
             </v-col>
+            <!--</editor-fold>-->
           </v-row>
-          <!--</editor-fold>-->
-
-          <!--<editor-fold desc="seventh row (familyStatus, departmentId, englishLevel, dateOfEmployment)">-->
-          <v-row>
-            <v-col>
-              <v-text-field v-model="employeeForm.familyStatus"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Семейный статус')">
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <v-text-field v-model="employeeForm.foreignPassport"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Загранпаспорт')">
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <v-text-field v-model="employeeForm.englishLevel"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Уровень английского')">
-              </v-text-field>
-            </v-col>
-            <v-col>
-              <my-date-form-component v-model="employeeForm.dateOfDismissal"
-                                      :label="$t('Дата увольнения')"
-                                      :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
-              ></my-date-form-component>
-
-            </v-col>
-          </v-row>
-          <!--</editor-fold>-->
 
 
         </v-container>
@@ -311,6 +301,7 @@ class employeeForm {
   public isNew = true;
   public id: number | null = null;
   currentProjectId: number | null = null;
+  currentProjectRole: string | null = null;
   lastname: string | null = null;
   firstname: string | null = null;
   patronymicName: string | null = null;
@@ -347,29 +338,30 @@ class employeeForm {
 
 export default class AdminEmployeeForm extends Vue {
   loading: boolean = false;
+  4 = 4;
 
   @Prop({required: false})
   private input: EmployeeWithAllDetails | undefined;
 
   @Prop({required: true})
   private allDepartments!: Array<SimpleDict>;
-  private allDepartmentsWithCurrent: Array<SimpleDict>=[];
+  private allDepartmentsWithCurrent: Array<SimpleDict> = [];
 
   @Prop({required: true})
   private allProjects!: Array<SimpleDict>;
-  private allProjectsWithCurrent: Array<SimpleDict>=[];
+  private allProjectsWithCurrent: Array<SimpleDict> = [];
 
   @Prop({required: true})
   private allPositions!: Array<SimpleDict>;
-  private allPositionsWithCurrent: Array<SimpleDict>=[];
+  private allPositionsWithCurrent: Array<SimpleDict> = [];
 
   @Prop({required: true})
   private allLevels!: Array<SimpleDict>;
-  private allLevelsWithCurrent: Array<SimpleDict>=[];
+  private allLevelsWithCurrent: Array<SimpleDict> = [];
 
   @Prop({required: true})
   private allOfficeLocations!: Array<SimpleDict>;
-  private allOfficeLocationsWithCurrent: Array<SimpleDict>=[];
+  private allOfficeLocationsWithCurrent: Array<SimpleDict> = [];
 
   private employeeForm = new employeeForm();
 
@@ -393,6 +385,7 @@ export default class AdminEmployeeForm extends Vue {
     this.employeeForm.id = null;
     this.employeeForm.email = null;
     this.employeeForm.currentProjectId = null;
+    this.employeeForm.currentProjectRole = null;
     this.employeeForm.skype = null;
     this.employeeForm.telegram = null;
     this.employeeForm.birthday = null;
@@ -430,6 +423,7 @@ export default class AdminEmployeeForm extends Vue {
       this.employeeForm.firstname = this.input.firstname;
       this.employeeForm.patronymicName = this.input.patronymicName;
       this.employeeForm.currentProjectId = this.input.currentProjectId || null;
+      this.employeeForm.currentProjectRole = this.input.currentProjectRole || null;
       this.employeeForm.skype = this.input.skype;
       this.employeeForm.telegram = this.input.telegram;
       this.employeeForm.birthday = this.input.birthday;
@@ -497,7 +491,7 @@ export default class AdminEmployeeForm extends Vue {
     return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
   }
 
-  private withCurrent(items: Array<SimpleDict>, currentValueId: number|null) {
+  private withCurrent(items: Array<SimpleDict>, currentValueId: number | null) {
     return items ? (items.filter(i => i.active || i.id == currentValueId)) : [];
   }
 

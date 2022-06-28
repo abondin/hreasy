@@ -12,6 +12,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.api.employee.UpdateCurrentProjectBody;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
 import ru.abondin.hreasy.platform.service.currentproject.EmployeeProjectSecurityValidator;
@@ -50,22 +51,6 @@ public class EmployeeService {
                         "Employee with ID=" + employeeId + " not found")));
     }
 
-    @Transactional
-    public Mono<Boolean> updateCurrentProject(int employeeId, @Nullable Integer newCurrentProjectId, AuthContext auth) {
-        log.info("Update current project {} for employee {}" +
-                "by {}", newCurrentProjectId == null ? "<RESET>" : newCurrentProjectId, employeeId, auth.getEmail());
-        return employeeProjectSecurityValidator.validateUpdateCurrentProject(auth, employeeId, newCurrentProjectId)
-                .flatMap(valid -> emplRepo.updateCurrentProject(employeeId, newCurrentProjectId).map(updatedRowsCount -> updatedRowsCount > 0));
-    }
-
-    @Transactional
-    public Mono<Boolean> updateCurrentProject(int newCurrentProjectId, AuthContext auth) {
-        if (auth.getEmployeeInfo() == null) {
-            throw new BusinessError("errors.no.employee.for.auth", auth.getEmail());
-        }
-        log.info("Update own current project {} - {} ({})", newCurrentProjectId, auth.getEmail(), auth.getEmployeeInfo().getEmployeeId());
-        return emplRepo.updateCurrentProject(auth.getEmployeeInfo().getEmployeeId(), newCurrentProjectId).map(updatedRowsCount -> updatedRowsCount > 0);
-    }
 
 
     private Criteria addNotFiredCriteria(Criteria criteria) {

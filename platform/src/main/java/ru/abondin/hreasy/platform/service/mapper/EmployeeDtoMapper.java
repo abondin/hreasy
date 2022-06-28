@@ -5,6 +5,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedEntry;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.skills.dto.RatingsMapper;
@@ -39,9 +40,9 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
     @Named("displayName")
     default String displayName(EmployeeDetailedEntry entry) {
         return entry == null ? null : Stream.of(
-                entry.getLastname(),
-                entry.getFirstname(),
-                entry.getPatronymicName())
+                        entry.getLastname(),
+                        entry.getFirstname(),
+                        entry.getPatronymicName())
                 .filter(s -> StringUtils.isNotBlank(s))
                 .collect(Collectors.joining(" "));
     }
@@ -65,9 +66,15 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
     default SimpleDictDto ba(EmployeeDetailedEntry entry) {
         return simpleDto(entry.getBaId(), entry.getBaName());
     }
+
     @Named("currentProject")
-    default SimpleDictDto currentProject(EmployeeDetailedEntry entry) {
-        return simpleDto(entry.getCurrentProjectId(), entry.getCurrentProjectName());
+    default CurrentProjectDictDto currentProject(EmployeeDetailedEntry entry) {
+        CurrentProjectDictDto currentProject = null;
+        if (entry != null && entry.getCurrentProjectId() != null) {
+            currentProject = new CurrentProjectDictDto(entry.getCurrentProjectId(),
+                    entry.getCurrentProjectName(), entry.getCurrentProjectRole());
+        }
+        return currentProject;
     }
 
 

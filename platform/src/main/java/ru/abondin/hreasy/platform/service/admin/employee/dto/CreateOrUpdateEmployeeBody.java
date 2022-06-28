@@ -9,6 +9,7 @@ import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 public class CreateOrUpdateEmployeeBody extends EmployeeAllFields {
     private Integer departmentId;
     private Integer currentProjectId;
+    private String currentProjectRole;
     private Integer positionId;
     private Integer officeLocationId;
 

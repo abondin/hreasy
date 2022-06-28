@@ -2,62 +2,69 @@ package ru.abondin.hreasy.platform.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.Formatter;
 import org.springframework.format.FormatterRegistry;
-import org.springframework.ldap.core.support.BaseLdapPathContextSource;
-import org.springframework.ldap.core.support.LdapContextSource;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.DelegatingReactiveAuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.ldap.authentication.BindAuthenticator;
-import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
-import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
-import org.springframework.security.ldap.search.LdapUserSearch;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
-import ru.abondin.hreasy.platform.auth.DbAuthoritiesPopulator;
-import ru.abondin.hreasy.platform.auth.MasterPasswordAuthenticationProvider;
-import ru.abondin.hreasy.platform.sec.EmployeeUserContextMapperAdapter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
 public class WebSecurityConfig {
-    private final LdapConfigurationProperties prop;
+
+    @Autowired(required = false)
+    @Qualifier("ldapAuthenticationManager")
+    private ReactiveAuthenticationManager ldapAuthenticationManager;
+
+    @Autowired(required = false)
+    @Qualifier("masterPasswordAuthenticationManager")
+    private ReactiveAuthenticationManager masterPasswordAuthenticationManager;
+
+    @Autowired(required = false)
+    @Qualifier("internalPasswordAuthenticationManager")
+    private ReactiveAuthenticationManager internalPasswordAuthenticationManager;
 
     @Bean
-    ReactiveAuthenticationManager authenticationManager(BaseLdapPathContextSource contextSource,
-                                                        LdapUserSearch userSearch,
-                                                        DbAuthoritiesPopulator dbAuthoritiesPopulator,
-                                                        HrEasySecurityProps securityProps,
-                                                        MasterPasswordAuthenticationProvider masterPasswordAuthenticationProvider,
-                                                        EmployeeUserContextMapperAdapter employeeUserContextMapperAdapter) {
-        var ba = new BindAuthenticator(contextSource);
-        ba.setUserSearch(userSearch);
-        var providers = new ArrayList<ReactiveAuthenticationManager>();
-        if (StringUtils.isNotBlank(securityProps.getMasterPassword())) {
-            providers.add(masterPasswordAuthenticationProvider);
+    ReactiveAuthenticationManager authenticationManager() {
+        var authenticationManagers = new ArrayList<ReactiveAuthenticationManager>();
+        log.info("Collecting authentication managers...");
+        Assert.isTrue(!(internalPasswordAuthenticationManager != null && ldapAuthenticationManager != null),
+                "Internal Password cannot be enabled with LDAP at the same time." +
+                        " Set HREASY_WEB_SEC_INTERNAL-PASSWORD-ENABLED to false" +
+                        " or HREASY_LDAP_SERVER-URL to empty");
+        addManager(authenticationManagers, "Master Password", masterPasswordAuthenticationManager);
+        addManager(authenticationManagers, "Internal Password", internalPasswordAuthenticationManager);
+        addManager(authenticationManagers, "LDAP", ldapAuthenticationManager);
+        Assert.notEmpty(authenticationManagers, "There are no authentication managers found");
+        return new DelegatingReactiveAuthenticationManager(authenticationManagers);
+    }
+
+    private void addManager(List<ReactiveAuthenticationManager> managers, String name, @Nullable ReactiveAuthenticationManager manager) {
+        if (manager == null) {
+            log.info("Collecting authentication managers: {} NOT found", name);
+        } else {
+            log.info("Collecting authentication managers: {} found", name);
+            managers.add(manager);
         }
-        var ldapProvider = new LdapAuthenticationProvider(ba, dbAuthoritiesPopulator);
-        ldapProvider.setUserDetailsContextMapper(employeeUserContextMapperAdapter);
-        providers.add(new ReactiveAuthenticationManagerAdapter(
-                new ProviderManager(Arrays.asList(ldapProvider))));
-        return new DelegatingReactiveAuthenticationManager(providers);
     }
 
     @Bean
@@ -84,22 +91,6 @@ public class WebSecurityConfig {
                 .securityContextRepository(securityContextRepository)
                 .exceptionHandling().accessDeniedHandler(errorHandler).authenticationEntryPoint(errorHandler)
                 .and().build();
-    }
-
-    @Bean
-    BaseLdapPathContextSource contextSource() {
-        var ctx = new LdapContextSource();
-        ctx.setUrl(prop.getServerUrl());
-        if (StringUtils.isNotBlank(prop.getUserDn())) {
-            ctx.setUserDn(prop.getUserDn());
-            ctx.setPassword(prop.getUserPassword());
-        }
-        return ctx;
-    }
-
-    @Bean
-    LdapUserSearch searchFilter(BaseLdapPathContextSource contextSource) {
-        return new FilterBasedLdapUserSearch(prop.getSearchBase(), prop.getSearchFilter(), contextSource);
     }
 
 

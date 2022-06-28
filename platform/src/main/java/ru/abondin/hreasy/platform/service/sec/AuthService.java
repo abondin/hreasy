@@ -3,7 +3,6 @@ package ru.abondin.hreasy.platform.service.sec;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.WebSession;
@@ -37,18 +36,21 @@ public class AuthService {
         loginHistory.setLoginTime(dateTimeService.now());
         return authHandler.login(authenticationToken, webSession)
                 .flatMap(loginResponse -> {
-                    var employeeId = Optional.ofNullable(loginResponse.getCurrentUser())
+                    var employee = Optional.ofNullable(loginResponse.getCurrentUser())
                             .map(AuthHandler.CurrentUserDto::getEmployee)
-                            .map(AuthContext.EmployeeInfo::getEmployeeId)
                             .orElse(null);
-                    log.info("Logging attempt {} successfully completed. Logged employeeId={}", logAttemtId, employeeId);
+                    var employeeId = employee == null ? null : employee.getEmployeeId();
+                    var loggedType = employee == null ? null : employee.getLoggedInType();
+                    log.info("Logging attempt {} successfully completed. Logged employeeId={}. Type={}"
+                            , logAttemtId, employeeId, AuthContext.LoginType.prettyPrint(loggedType));
                     loginHistory.setLoggedEmployeeId(employeeId);
+                    loginHistory.setLoginType(loggedType);
                     return loginHistoryRepo.save(loginHistory).map((r) -> loginResponse);
                 })
                 .onErrorResume((ex) -> {
-                    log.info("Logging attempt {} failed", logAttemtId, ex);
+                    log.info("Logging attempt {} failed. Error={}", logAttemtId, ex.getLocalizedMessage());
                     // Replace to avoid PostgresqlBadGrammarException: [22021] invalid byte sequence for encoding "UTF8": 0x00
-                    loginHistory.setError(ex.getMessage()==null? null : ex.getMessage().replaceAll("\u0000", ""));
+                    loginHistory.setError(ex.getMessage() == null ? null : ex.getMessage().replaceAll("\u0000", ""));
                     return loginHistoryRepo.save(loginHistory).flatMap((r) -> Mono.error(ex));
                 });
     }

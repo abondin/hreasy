@@ -10,11 +10,11 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.service.DateTimeService;
-import ru.abondin.hreasy.platform.service.ba.BusinessAccountService;
-import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeAllFieldsMapper;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeExportFilter;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeWithAllDetailsDto;
+import ru.abondin.hreasy.platform.service.ba.BusinessAccountService;
+import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.io.ByteArrayOutputStream;
@@ -42,7 +42,7 @@ public class AdminEmployeeExportService {
         // 1. Load all dictionaries
         return Mono.zip(
                 dictService.findProjects(auth).collectList()
-                ,baService.findAllAsSimpleDict(false).collectList()
+                , baService.findAllAsSimpleDict(false).collectList()
                 , dictService.findDepartments(auth).collectList()
                 , dictService.findLevels(auth).collectList()
                 , dictService.findOfficeLocations(auth).collectList()
@@ -60,7 +60,7 @@ public class AdminEmployeeExportService {
                     .filter(e -> filter(e, filter, now))
                     .map(e -> {
                         var emplExp = mapper.toExportWithoutDictionaries(e);
-                        emplExp.setCurrentProject(projects.get(e.getCurrentProjectId()));
+                        emplExp.setCurrentProject(prettyPrintCurrentProjectWithRole(e, projects));
                         emplExp.setDepartment(departments.get(e.getDepartmentId()));
                         emplExp.setBa(bas.get(e.getBaId()));
                         emplExp.setPosition(positions.get(e.getPositionId()));
@@ -80,6 +80,15 @@ public class AdminEmployeeExportService {
                     .flatMap(bundle -> export(bundle));
         });
     }
+
+    private String prettyPrintCurrentProjectWithRole(EmployeeWithAllDetailsDto e, Map<Integer, String> projects) {
+        var result = projects.get(e.getCurrentProjectId());
+        if (result != null && StringUtils.isNotBlank(e.getCurrentProjectRole())) {
+            result += "(" + e.getCurrentProjectRole() + ")";
+        }
+        return result;
+    }
+
 
     private boolean filter(EmployeeWithAllDetailsDto e, EmployeeExportFilter filter, OffsetDateTime now) {
         return filter.isIncludeFired() ||

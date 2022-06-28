@@ -14,12 +14,12 @@ public class LdapConfigurationProperties {
     /**
      * Server URL
      */
-    private String serverUrl = "ldap://dc.stm.local";
+    private String serverUrl;
     /**
      * User DN to authorize
      */
-    private String userDn = "CN=<admin_user>,CN=Users,DC=stm,DC=local";
+    private String userDn;
     private String userPassword = "<PASSWORD>";
-    private String searchBase = "OU=Internal,OU=Enterprise,DC=stm,DC=local";
+    private String searchBase;
     private String searchFilter = "userPrincipalName={0}";
 }

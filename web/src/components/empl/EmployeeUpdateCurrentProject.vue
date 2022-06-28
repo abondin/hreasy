@@ -13,6 +13,13 @@
           :items="allProjects.filter(p=>p.active)"
           :label="$tc('Проекты')"
       ></v-autocomplete>
+      <v-text-field v-model="roleOnProject"
+                    :counter="64"
+                    :rules="[v=>(!v || v.length <= 64 || $t('Не более N символов', {n:64}))]"
+                    :label="$t('Позиция на проекте')">
+
+
+      </v-text-field>
       <div class="error" v-if="error">{{ error }}</div>
     </v-card-text>
     <v-card-actions>
@@ -31,7 +38,7 @@
 <script lang="ts">
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
-import employeeService, {Dict, Employee} from "./employee.service";
+import employeeService, {Employee} from "./employee.service";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import Component from "vue-class-component";
@@ -48,6 +55,8 @@ export default class EmployeeUpdateCurrentProject extends Vue {
 
   private selectedProject: number | null = null;
 
+  private roleOnProject: string | null = null;
+
   error: string | null = null;
 
   /**
@@ -57,23 +66,20 @@ export default class EmployeeUpdateCurrentProject extends Vue {
     if (this.employee && this.employee.currentProject) {
       const currentProject = this.employee.currentProject
       this.selectedProject = currentProject.id;
+      this.roleOnProject = currentProject.role;
     } else {
       this.selectedProject = null;
+      this.roleOnProject = null;
     }
   }
 
   update() {
-    employeeService.updateCurrentProject(this.employee.id, this.selectedProject)
+    if (!this.selectedProject){
+      this.roleOnProject = null;
+    }
+    employeeService.updateCurrentProject(this.employee.id, this.selectedProject, this.roleOnProject)
         .then(() => {
-          if (this.selectedProject) {
-            const filtered = this.allProjects.filter(p => p.id == this.selectedProject);
-            if (filtered) {
-              this.employee.currentProject = new Dict(this.selectedProject, filtered[0].name);
-            }
-          } else {
-            this.employee.currentProject = undefined;
-          }
-          this.$emit('close');
+          this.$emit('submit');
         })
         .catch(e => this.error = e);
   }

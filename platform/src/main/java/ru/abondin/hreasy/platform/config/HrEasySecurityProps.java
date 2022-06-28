@@ -13,6 +13,10 @@ import java.util.List;
 @Data
 public class HrEasySecurityProps {
     /**
+     * Allow to login employee using internal password stored in local DB
+     */
+    private Boolean internalPasswordEnabled = true;
+    /**
      * Web session max inactive interval
      */
     private Duration maxInactiveInterval = Duration.ofDays(7);

@@ -1,7 +1,9 @@
 package ru.abondin.hreasy.platform.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.AccessDeniedException;
@@ -10,16 +12,20 @@ import org.springframework.test.context.ContextConfiguration;
 import reactor.test.StepVerifier;
 import ru.abondin.hreasy.platform.TestEmployees;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
+import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
+
+import static ru.abondin.hreasy.platform.TestEmployees.FMS_Empl_Ammara_Knott;
 
 @ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @Slf4j
-public class EmployeeServiceTest extends BaseServiceTest{
+public class EmployeeServiceTest extends BaseServiceTest {
 
     @Autowired
     private EmployeeService employeeService;
-
+    @Autowired
+    private AdminEmployeeService adminEmployeeService;
 
 
     @BeforeEach
@@ -46,26 +52,32 @@ public class EmployeeServiceTest extends BaseServiceTest{
     }
 
     @Test
-    @DisplayName("Move FMS_Empl_Ammara_Knott from FMS to M1 Billing by herself")
+    @DisplayName("Update my current project")
     public void testUpdateMyProject() {
         StepVerifier
-                .create(auth(TestEmployees.FMS_Empl_Ammara_Knott)
-                        .flatMap(ctx -> employeeService.updateCurrentProject(testData.projects.get("M1 Billing"), ctx))
+                .create(auth(FMS_Empl_Ammara_Knott)
+                        .flatMap(ctx -> adminEmployeeService.updateCurrentProject(
+                                testData.employees.get(FMS_Empl_Ammara_Knott)
+                                , testData.updateCurrentProjectBody("M1 Billing")
+                                , ctx))
                         .doOnError(error -> {
                             log.error("-------- Unexpected error", error);
                         })
                 )
-                .expectNext(true)
+                .expectNextCount(1)
                 .verifyComplete();
     }
 
     @Test
-    @DisplayName("Move FMS_Empl_Jenson_Curtis from FMS to Policy Manager by FMS_Empl_Ammara_Knott")
+    @DisplayName("Test update project for another employee")
     public void testUpdateProjectForAnotherEmployee() {
         var jensonId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
-        var ctx = auth(TestEmployees.FMS_Empl_Ammara_Knott).block(MONO_DEFAULT_TIMEOUT);
+        var ctx = auth(FMS_Empl_Ammara_Knott).block(MONO_DEFAULT_TIMEOUT);
         StepVerifier
-                .create(employeeService.updateCurrentProject(jensonId, testData.projects.get("M1 Policy Manager"), ctx))
+                .create(adminEmployeeService.updateCurrentProject(
+                        jensonId
+                        , testData.updateCurrentProjectBody("M1 Policy Manager")
+                        , ctx))
                 .expectError(AccessDeniedException.class).verify(MONO_DEFAULT_TIMEOUT);
     }
 

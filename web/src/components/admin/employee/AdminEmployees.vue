@@ -119,6 +119,9 @@
 
           <template v-slot:item.currentProjectId="{ item }">
             {{ getById(allProjects, item.currentProjectId) }}
+            <span v-if="item.currentProjectRole">
+              ({{item.currentProjectRole}})
+            </span>
           </template>
 
           <template v-slot:item.baId="{ item }">
