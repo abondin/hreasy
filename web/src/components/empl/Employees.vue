@@ -113,6 +113,7 @@ export default class EmployeesComponent extends Vue {
     this.headers.push({text: this.$tc('Отдел'), value: 'department.name'});
     this.headers.push({text: this.$tc('E-mail'), value: 'email'});
     this.headers.push({text: this.$tc('Текущий проект'), value: 'currentProject.name'});
+    this.headers.push({text: this.$tc('Роль на проекте'), value: 'currentProject.role'});
     this.headers.push({text: this.$tc('Бизнес Аккаунт'), value: 'ba.name'});
     // TODO Uncomment me after information about positions in STM actualized
     //this.headers.push({text: this.$tc('Позиция'), value: 'position.name'});
@@ -124,6 +125,7 @@ export default class EmployeesComponent extends Vue {
         .then(() => this.$store.dispatch('dict/reloadSkillGroups'))
         .then(() => this.$store.dispatch('dict/reloadSharedSkills'))
         .then(() => this.$store.dispatch('dict/reloadPositions'))
+        .then(() => this.$store.dispatch('dict/reloadCurrentProjectRoles'))
         .then(() => {
           this.allProjects.length = 0;
           this.allProjects.push({value: null, text: this.$tc('Без проекта')});

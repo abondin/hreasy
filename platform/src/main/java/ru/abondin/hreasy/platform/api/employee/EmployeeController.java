@@ -10,6 +10,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.EmployeeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectRole;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
 
@@ -52,6 +53,13 @@ public class EmployeeController {
                         }
                 )
         );
+    }
+
+    @Operation(summary = "Get unique set of current project roles for all employees")
+    @GetMapping("/current_project_roles")
+    @ResponseBody
+    public Flux<CurrentProjectRole> currentUserRoles() {
+        return AuthHandler.currentAuth().flatMapMany(auth -> emplService.currentUserRoles(auth));
     }
 
     @Operation(summary = "Update current project for employee")

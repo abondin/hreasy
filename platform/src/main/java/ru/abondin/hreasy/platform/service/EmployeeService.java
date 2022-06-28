@@ -16,6 +16,7 @@ import ru.abondin.hreasy.platform.api.employee.UpdateCurrentProjectBody;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
 import ru.abondin.hreasy.platform.service.currentproject.EmployeeProjectSecurityValidator;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectRole;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.mapper.EmployeeDtoMapper;
 
@@ -58,5 +59,10 @@ public class EmployeeService {
                 : criteria.and("date_of_dismissal");
         return notFiredCriteria.isNull().or("date_of_dismissal").greaterThan(dateTimeService.now());
 
+    }
+
+    public Flux<CurrentProjectRole> currentUserRoles(AuthContext auth) {
+        log.debug("Find all current user roles");
+        return emplRepo.uniqueCurrentProjectRoles(dateTimeService.now()).map(r->new CurrentProjectRole(r));
     }
 }

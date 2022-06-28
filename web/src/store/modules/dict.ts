@@ -11,8 +11,12 @@ export interface SimpleDict {
     active: boolean;
 }
 
+export interface CurrentProjectRole {
+    value: string;
+}
+
 export interface DictLoadedState {
-    projects : Array<SimpleDict>;
+    projects: Array<SimpleDict>;
     businessAccounts: Array<SimpleDict>;
     departments: Array<SimpleDict>;
     positions: Array<SimpleDict>;
@@ -20,6 +24,7 @@ export interface DictLoadedState {
     officeLocations: Array<SimpleDict>;
     skillGroups: Array<SimpleDict>;
     sharedSkillsNames: Array<SharedSkillName>;
+    currentProjectRoles: Array<CurrentProjectRole>;
 }
 
 export const dictState: DictLoadedState = {
@@ -30,7 +35,8 @@ export const dictState: DictLoadedState = {
     levels: [],
     officeLocations: [],
     skillGroups: [],
-    sharedSkillsNames: []
+    sharedSkillsNames: [],
+    currentProjectRoles: []
 }
 
 
@@ -74,7 +80,12 @@ export const dictActions: ActionTree<DictLoadedState, RootState> = {
         return dictService.loadSharedSkills().then(skills => {
             commit('sharedSkillsLoaded', skills);
         });
-    }
+    },
+    reloadCurrentProjectRoles({commit}): any {
+        return dictService.loadAllCurrentProjectRoles().then(roles => {
+            commit('currentProjectRolesLoaded', roles);
+        });
+    },
 }
 
 export const dictMutations: MutationTree<DictLoadedState> = {
@@ -101,6 +112,9 @@ export const dictMutations: MutationTree<DictLoadedState> = {
     },
     sharedSkillsLoaded(state, names: Array<SharedSkillName>) {
         state.sharedSkillsNames = names;
+    },
+    currentProjectRolesLoaded(state, roles: Array<CurrentProjectRole>) {
+        state.currentProjectRoles = roles;
     }
 }
 
@@ -129,6 +143,9 @@ export const dictGetters: GetterTree<DictLoadedState, RootState> = {
     },
     sharedSkills(state): Array<SharedSkillName> {
         return state.sharedSkillsNames;
+    },
+    currentProjectRoles(state): Array<CurrentProjectRole> {
+        return state.currentProjectRoles;
     }
 };
 

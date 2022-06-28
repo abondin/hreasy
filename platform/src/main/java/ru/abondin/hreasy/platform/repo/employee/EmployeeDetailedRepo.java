@@ -6,9 +6,12 @@ import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.OffsetDateTime;
+
 public interface EmployeeDetailedRepo {
     Flux<EmployeeDetailedEntry> findDetailed(Criteria criteria, @Nullable Sort sort);
 
     Mono<EmployeeDetailedEntry> findDetailed(int id);
 
+    Flux<String> uniqueCurrentProjectRoles(OffsetDateTime now);
 }

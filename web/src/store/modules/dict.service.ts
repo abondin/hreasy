@@ -1,6 +1,6 @@
 import httpService from "../../components/http.service";
 import {AxiosInstance} from "axios";
-import {SimpleDict} from "@/store/modules/dict";
+import {CurrentProjectRole, SimpleDict} from "@/store/modules/dict";
 
 export interface SharedSkillName {
     groupId: number,
@@ -9,15 +9,22 @@ export interface SharedSkillName {
 
 export interface DictService {
     loadAllProjects(): Promise<Array<SimpleDict>>;
+
+    loadAllCurrentProjectRoles(): Promise<Array<CurrentProjectRole>>;
+
     loadAllBusinessAccounts(): Promise<Array<SimpleDict>>;
+
     loadAllDepartments(): Promise<Array<SimpleDict>>;
+
     loadAllPositions(): Promise<Array<SimpleDict>>;
+
     loadAllLevels(): Promise<Array<SimpleDict>>;
+
     loadAllOfficeLocations(): Promise<Array<SimpleDict>>;
 
-    loadAllSkillGroups():  Promise<Array<SimpleDict>>;
+    loadAllSkillGroups(): Promise<Array<SimpleDict>>;
 
-    loadSharedSkills():  Promise<Array<SharedSkillName>>;
+    loadSharedSkills(): Promise<Array<SharedSkillName>>;
 }
 
 class RestDictService implements DictService {
@@ -27,6 +34,7 @@ class RestDictService implements DictService {
     public loadAllProjects(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/dict/projects").then(response => response.data);
     }
+
 
     public loadAllDepartments(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/dict/departments").then(response => response.data);
@@ -53,11 +61,14 @@ class RestDictService implements DictService {
         return httpService.get("/v1/employee/skills/shared/names").then(response => response.data);
     }
 
+    public loadAllCurrentProjectRoles(): Promise<Array<CurrentProjectRole>> {
+        return httpService.get("v1/employee/current_project_roles").then(response => response.data);
+    }
+
     public loadAllBusinessAccounts(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/business_account").then(response => response.data);
     }
 }
-
 
 
 const dictService: DictService = new RestDictService(httpService);

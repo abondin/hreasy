@@ -6,9 +6,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
-import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.OffsetDateTime;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -32,4 +33,13 @@ public class EmployeeDetailedRepoImpl implements EmployeeDetailedRepo {
                         EmployeeDetailedEntry.class);
     }
 
+    @Override
+    public Flux<String> uniqueCurrentProjectRoles(OffsetDateTime now) {
+        return dbTemplate.getDatabaseClient().sql("select distinct e.current_project_role from empl.employee e" +
+                        " where e.current_project_role is not null" +
+                        " and (e.date_of_dismissal is null or e.date_of_dismissal > :now)" +
+                        " order by e.current_project_role")
+                .bind("now", now)
+                .map(r -> r.get(0, String.class)).all();
+    }
 }
