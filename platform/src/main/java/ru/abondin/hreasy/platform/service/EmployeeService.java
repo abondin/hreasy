@@ -40,7 +40,8 @@ public class EmployeeService {
         }
         return emplRepo.findDetailed(criteria,
                 Sort.by("lastname", "firstname", "patronymicName")
-        ).map(e -> mapper.employeeWithSkills(e, auth.getEmployeeInfo().getEmployeeId()));
+        ).map(e -> mapper.employeeWithSkills(e, auth.getEmployeeInfo().getEmployeeId()))
+                .doOnNext(empl->employeeProjectSecurityValidator.setToNullUngrantedFields(empl, auth));
     }
 
 
@@ -49,7 +50,8 @@ public class EmployeeService {
         return emplRepo.findDetailed(employeeId)
                 .map(e -> mapper.employeeWithSkills(e, auth.getEmployeeInfo().getEmployeeId()))
                 .switchIfEmpty(Mono.error(new HttpClientErrorException(HttpStatus.NOT_FOUND,
-                        "Employee with ID=" + employeeId + " not found")));
+                        "Employee with ID=" + employeeId + " not found")))
+                .doOnNext(empl->employeeProjectSecurityValidator.setToNullUngrantedFields(empl, auth));
     }
 
 

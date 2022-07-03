@@ -60,7 +60,8 @@ public class AdminEmployeeExportService {
                     .filter(e -> filter(e, filter, now))
                     .map(e -> {
                         var emplExp = mapper.toExportWithoutDictionaries(e);
-                        emplExp.setCurrentProject(prettyPrintCurrentProjectWithRole(e, projects));
+                        emplExp.setCurrentProject(e.getCurrentProjectId() == null ? null : projects.get(e.getCurrentProjectId()));
+                        emplExp.setCurrentProjectRole(e.getCurrentProjectRole());
                         emplExp.setDepartment(departments.get(e.getDepartmentId()));
                         emplExp.setBa(bas.get(e.getBaId()));
                         emplExp.setPosition(positions.get(e.getPositionId()));
@@ -79,14 +80,6 @@ public class AdminEmployeeExportService {
                     // 5. Write exported document to resource. //TODO Another place to migrate to pipes
                     .flatMap(bundle -> export(bundle));
         });
-    }
-
-    private String prettyPrintCurrentProjectWithRole(EmployeeWithAllDetailsDto e, Map<Integer, String> projects) {
-        var result = projects.get(e.getCurrentProjectId());
-        if (result != null && StringUtils.isNotBlank(e.getCurrentProjectRole())) {
-            result += "(" + e.getCurrentProjectRole() + ")";
-        }
-        return result;
     }
 
 
