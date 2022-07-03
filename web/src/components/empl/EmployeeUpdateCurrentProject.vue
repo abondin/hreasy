@@ -18,6 +18,8 @@
           :label="$t('Позиция на проекте')"
           :items="currentProjectsRoles()"
           clearable
+          :multiple="false"
+          :menu-props="{closeOnClick: true, closeOnContentClick:true}"
           :rules="[v=>(!v || v.length <= 64 || $t('Не более N символов', {n:64}))]"
           v-model="roleOnProject">
       </v-combobox>
@@ -25,6 +27,12 @@
     </v-card-text>
     <v-card-actions>
       <v-spacer></v-spacer>
+      <v-btn
+          text
+          @click="cancel"
+      >
+        {{ $t('Отменить') }}
+      </v-btn>
       <v-btn
           color="primary"
           text
@@ -38,7 +46,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import {Prop} from "vue-property-decorator";
+import {Prop, Watch} from "vue-property-decorator";
 import employeeService, {Employee} from "./employee.service";
 import {Getter} from "vuex-class";
 import {CurrentProjectRole, SimpleDict} from "@/store/modules/dict";
@@ -67,6 +75,15 @@ export default class EmployeeUpdateCurrentProject extends Vue {
    * Lifecycle hook
    */
   created() {
+    this.reset();
+  }
+
+  @Watch("employee")
+  watchEmployee() {
+    this.reset();
+  }
+
+  private reset() {
     if (this.employee && this.employee.currentProject) {
       const currentProject = this.employee.currentProject
       this.selectedProject = currentProject.id;
@@ -83,9 +100,20 @@ export default class EmployeeUpdateCurrentProject extends Vue {
     }
     employeeService.updateCurrentProject(this.employee.id, this.selectedProject, this.roleOnProject)
         .then(() => {
+          // Update current project roles dictionary if new value added
+          if (this.roleOnProject && this.currentProjectsRoles().indexOf(this.roleOnProject) < 0) {
+            this.$nextTick(() => {
+              this.$store.dispatch('dict/reloadCurrentProjectRoles');
+            });
+          }
           this.$emit('submit');
         })
         .catch(e => this.error = e);
+  }
+
+  cancel() {
+    this.reset();
+    this.$emit("cancel");
   }
 
   private currentProjectsRoles() {

@@ -26,8 +26,8 @@ Uses in Employees Table (Employees.vue)
         <v-list-item-subtitle>
           <span v-if="employee.currentProject">
             {{ employee.currentProject.name }}
-            <v-span v-if="employee.ba">({{ employee.ba.name }})</v-span>
-            <v-span v-if="employee.currentProject.role"> - {{ employee.currentProject.role }}</v-span>
+            <span v-if="employee.ba">({{ employee.ba.name }})</span>
+            <span v-if="employee.currentProject.role"> - {{ employee.currentProject.role }}</span>
           </span>
           <span v-else>{{ $tc('Проект не задан') }}</span>
 
@@ -74,9 +74,11 @@ Uses in Employees Table (Employees.vue)
     <!-- Update current project dialog -->
     <v-dialog
         v-model="openUpdateCurrentProjectDialog"
+        persistent
         max-width="500">
       <employee-update-current-project v-bind:employee="employee"
-                                       v-on:submit="emitEmployeeUpdated();openUpdateCurrentProjectDialog=false"/>
+                                       v-on:submit="emitEmployeeUpdated();openUpdateCurrentProjectDialog=false"
+                                      v-on:cancel="openUpdateCurrentProjectDialog=false"/>
     </v-dialog>
   </v-card>
 
