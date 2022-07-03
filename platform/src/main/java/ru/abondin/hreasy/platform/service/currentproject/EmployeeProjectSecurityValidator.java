@@ -6,10 +6,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
 import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
+import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Validate security rules to  update employee current project
@@ -44,4 +45,34 @@ public class EmployeeProjectSecurityValidator {
         return Mono.just(true);
     }
 
+    public void setToNullUngrantedFields(EmployeeDto empl, AuthContext auth) {
+        // Do nothing for my attributes
+        if (empl == null || Objects.equals(empl.getId(), auth.getEmployeeInfo().getEmployeeId())) {
+            return;
+        }
+        // Do nothing is has admin access to view employee
+        if (auth.getAuthorities().contains("view_employee_full")) {
+            return;
+        }
+
+        var hasViewCurrentProjectRolePerm = auth.getAuthorities().contains("view_empl_current_project_role");
+        var hasViewSkillsPerm = auth.getAuthorities().contains("view_empl_skills");
+        boolean isManager = projectHierarchyService.isManager(auth,
+                empl.getCurrentProject() == null ? null
+                        :
+                        new ProjectHierarchyAccessor.ProjectInfo(empl.getCurrentProject().getId(),
+                                empl.getDepartment() == null ? null : empl.getDepartment().getId(),
+                                empl.getBa() == null ? null : empl.getBa().getId()
+                        ));
+        // Remove current project role
+        if ((!hasViewCurrentProjectRolePerm || !isManager) && empl.getCurrentProject() != null) {
+            empl.getCurrentProject().setRole(null);
+        }
+
+        // Remove skill
+        if ((!hasViewSkillsPerm || !isManager)) {
+            empl.setSkills(Arrays.asList());
+        }
+
+    }
 }

@@ -1,5 +1,7 @@
 package ru.abondin.hreasy.platform.sec;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,15 @@ import java.util.List;
 @Slf4j
 @Component
 public class ProjectHierarchyAccessor {
+
+    @Data
+    @AllArgsConstructor
+    public static class ProjectInfo {
+        private Integer id;
+        private Integer departmentId;
+        private Integer baId;
+    }
+
     private final DictProjectRepo projectRepo;
 
 
@@ -30,12 +41,24 @@ public class ProjectHierarchyAccessor {
      */
     public Mono<Boolean> isManager(AuthContext managerAuth, int employeeId) {
         return projectRepo.getEmployeeCurrentProject(employeeId)
-                .map(
-                        currentProject -> managerAuth.getEmployeeInfo().getAccessibleProjects().contains(currentProject.getId())
-                                || (currentProject.getDepartmentId() != null && managerAuth.getEmployeeInfo().getAccessibleDepartments().contains(currentProject.getDepartmentId()))
-                                || (currentProject.getBaId() != null && managerAuth.getEmployeeInfo().getAccessibleBas().contains(currentProject.getBaId()))
-                )
+                .map(entry -> isManager(managerAuth, new ProjectInfo(entry.getId(), entry.getDepartmentId(), entry.getBaId())))
                 .defaultIfEmpty(true);
+    }
+
+    /**
+     * Check if manager without additional access to database
+     *
+     * @param auth
+     * @param currentProject
+     * @return
+     */
+    public Boolean isManager(AuthContext auth, ProjectInfo currentProject) {
+        return currentProject == null ||
+                (
+                        auth.getEmployeeInfo().getAccessibleProjects().contains(currentProject.getId())
+                                || (currentProject.getDepartmentId() != null && auth.getEmployeeInfo().getAccessibleDepartments().contains(currentProject.getDepartmentId()))
+                                || (currentProject.getBaId() != null && auth.getEmployeeInfo().getAccessibleBas().contains(currentProject.getBaId()))
+                );
     }
 
 
@@ -51,11 +74,11 @@ public class ProjectHierarchyAccessor {
      */
     public Mono<Boolean> isManagerOfAllProject(AuthContext managerAuth, List<Integer> projectIds) {
         return projectRepo.findByIds(projectIds).reduce(true,
-                (result, project) -> result &&
-                        (managerAuth.getEmployeeInfo().getAccessibleProjects().contains(project.getId())
-                                || (project.getDepartmentId() != null && managerAuth.getEmployeeInfo().getAccessibleDepartments().contains(project.getDepartmentId()))
-                                || (project.getBaId() != null && managerAuth.getEmployeeInfo().getAccessibleBas().contains(project.getBaId()))
-                        ))
+                        (result, project) -> result &&
+                                (managerAuth.getEmployeeInfo().getAccessibleProjects().contains(project.getId())
+                                        || (project.getDepartmentId() != null && managerAuth.getEmployeeInfo().getAccessibleDepartments().contains(project.getDepartmentId()))
+                                        || (project.getBaId() != null && managerAuth.getEmployeeInfo().getAccessibleBas().contains(project.getBaId()))
+                                ))
                 .defaultIfEmpty(true);
     }
 }

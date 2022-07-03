@@ -129,6 +129,16 @@ export enum Permissions {
      */
     AdminDictOfficeLocations = "admin_office_location",
 
+    /**
+     * View current project role
+     */
+    ViewEmplCurrentProjectRole = "view_empl_current_project_role",
+
+    /**
+     * View employee skills
+     */
+    ViewEmplSkills = "view_empl_skills"
+
 }
 
 interface PermissionService {
@@ -221,6 +231,17 @@ interface PermissionService {
      * Check if given user has grants to CRUD operations on office locations
      */
     canAdminDictOfficeLocations(): boolean;
+
+    /**
+     * Has access to view employee's skills
+     */
+    canViewEmplSkills(employeeId?: number): boolean;
+
+    /**
+     * Has access to view employee's current project role
+     * @param employeeId
+     */
+    canViewEmplCurrentProjectRole(employeeId?: number): boolean;
 }
 
 const namespace: string = 'auth';
@@ -323,6 +344,22 @@ class VuexPermissionService implements PermissionService {
 
     canAdminDictOfficeLocations(): boolean {
         return this.simplePermissionCheck(Permissions.AdminDictOfficeLocations);
+    }
+
+    canViewEmplCurrentProjectRole(employeeId?: number): boolean {
+        if (this.canAdminEmployees()){
+            return true;
+        }
+        if (employeeId){
+            return this.simplePermissionCheckOrCurrentEmployee(Permissions.ViewEmplCurrentProjectRole, employeeId);
+        } else {
+            return this.simplePermissionCheck(Permissions.ViewEmplCurrentProjectRole);
+        }
+    }
+
+    canViewEmplSkills(employeeId: number): boolean {
+        return this.canAdminEmployees()
+            || this.simplePermissionCheckOrCurrentEmployee(Permissions.ViewEmplSkills, employeeId);
     }
 
     private simplePermissionCheck(permission: Permissions) {

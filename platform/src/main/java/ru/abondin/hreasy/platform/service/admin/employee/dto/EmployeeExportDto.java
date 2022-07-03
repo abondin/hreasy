@@ -22,6 +22,7 @@ public class EmployeeExportDto {
     private String level;
     private String department;
     private String currentProject;
+    private String currentProjectRole;
     private String ba;
     private String position;
     private String officeLocation;

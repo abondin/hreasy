@@ -25,11 +25,11 @@ Uses in Employees Table (Employees.vue)
         <!-- Current Project -->
         <v-list-item-subtitle>
           <span v-if="employee.currentProject">
-            {{employee.currentProject.name}}
-            <v-span v-if="employee.ba">({{employee.ba.name}})</v-span>
-            <v-span v-if="employee.currentProject.role"> - {{employee.currentProject.role}}</v-span>
+            {{ employee.currentProject.name }}
+            <v-span v-if="employee.ba">({{ employee.ba.name }})</v-span>
+            <v-span v-if="employee.currentProject.role"> - {{ employee.currentProject.role }}</v-span>
           </span>
-          <span v-else>{{$tc('Проект не задан')}}</span>
+          <span v-else>{{ $tc('Проект не задан') }}</span>
 
           <v-btn v-if="canUpdateCurrentProject()"
                  @click.stop="openUpdateCurrentProjectDialog=true" icon x-small>
@@ -58,7 +58,7 @@ Uses in Employees Table (Employees.vue)
         </v-list-item-subtitle>
 
         <!-- Skills -->
-        <v-list-item-subtitle v-if="employee">
+        <v-list-item-subtitle v-if="employee && canViewSkills()">
           {{ $t('Навыки') }}:
           <skills-chips
               :skills="employee.skills"
@@ -164,9 +164,14 @@ export default class EmployeeCard extends Vue {
     return permissionService.canUpdateCurrentProject(this.employee.id);
   }
 
-  private emitEmployeeUpdated(){
+  private emitEmployeeUpdated() {
     return this.$emit("employeeUpdated");
   }
+
+  private canViewSkills() {
+    return permissionService.canViewEmplSkills(this.employee.id);
+  }
+
 }
 </script>
 

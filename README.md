@@ -128,6 +128,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |admin_level|N|N|Create/update/delete employee overall skills level|
 |admin_position|N|N|Create/update/delete employee position|
 |admin_office_location|N|N|Create/update/delete office location|
+|view_empl_current_project_role|Y|Y|View current project role|
+|view_empl_skills|Y|Y|View employee skills|
 
 **Default permissions and roles**
 
