@@ -130,6 +130,13 @@ public class AssessmentService {
                 .flatMap(v -> assessmentRepo.updateCanceledBy(assessmentId, auth.getEmployeeInfo().getEmployeeId(), now));
     }
 
+    @Transactional
+    public Mono<Integer> completeAssessment(AuthContext auth, int employeeId, int assessmentId) {
+        var now = dateTimeService.now();
+        return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
+                .flatMap(v -> assessmentRepo.updateCompletedBy(assessmentId, auth.getEmployeeInfo().getEmployeeId(), now));
+    }
+
     public Mono<? extends DeleteAssessmentAttachmentResponse> deleteAttachment(AuthContext auth, int employeeId, int assessmentId, String filename) {
         return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
                 .flatMap(v -> fileStorage.toRecycleBin(getAssessmentAttachmentFolder(employeeId, assessmentId), filename))

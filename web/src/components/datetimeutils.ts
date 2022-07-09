@@ -18,7 +18,7 @@ export class DateTimeUtils {
         return moment(formatedDate, this.DEFAULT_DATE_PATTERN, true);
     }
 
-    public static formatToIsoDate(date?: Moment): string | undefined{
+    public static formatToIsoDate(date?: Moment): string | undefined {
         return date ? date.format(moment.HTML5_FMT.DATE) : undefined;
     }
 
@@ -71,6 +71,10 @@ export class DateTimeUtils {
 
     public static now(): Moment {
         return moment();
+    }
+
+    public static nowDateIso(): string|undefined {
+        return this.formatToIsoDate(this.now());
     }
 }
 

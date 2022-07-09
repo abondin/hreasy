@@ -26,11 +26,24 @@
               <v-list-item-title class="title d-flex">
                 <span>{{ assessment.employee.name }}</span>
                 <v-spacer></v-spacer>
+                <!-- Complete Assessment -->
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                    <v-btn @click="completeAssessmentDialog=true"
+                           v-bind="tattrs" v-on="ton" class="col-auto" color="success"
+                           :disabled="Boolean(loading || assessment.completedBy)" icon>
+                      <v-icon>mdi-checkbox-marked-circle</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>{{ $t('Отметить ассессмент как завершенный') }}</span>
+                </v-tooltip>
+
+                <!-- Cancel Assessment -->
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on: ton, attrs: tattrs}">
                     <v-btn @click="cancelAssessmentDialog=true"
-                           v-bind="tattrs" v-on="ton" class="col-auto" color="primary"
-                           :disabled="loading || assessment.canceledBy" icon>
+                           v-bind="tattrs" v-on="ton" class="col-auto" color="error"
+                           :disabled="Boolean(loading || assessment.canceledBy)" icon>
                       <v-icon>mdi-delete</v-icon>
                     </v-btn>
                   </template>
@@ -121,14 +134,42 @@
               <p>
                 {{ $t('Вы уверены что хотите отменить ассессмент?') }}
               </p>
-              <v-alert v-if="cancelAttachmentError" class="error">{{ cancelAttachmentError }}</v-alert>
+              <v-alert v-if="cancelAssessmentError" class="error">{{ cancelAssessmentError }}</v-alert>
             </v-card-text>
             <v-card-actions>
+              <v-progress-circular class="mr-2" v-if="loading" indeterminate></v-progress-circular>
               <v-spacer></v-spacer>
               <v-btn class="primary" text @click="cancelAssessment">
                 {{ $t('Да') }}
               </v-btn>
               <v-btn text @click="cancelAssessmentDialog=false">
+                {{ $t('Нет') }}
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
+
+        <!-- Complete assessment dialog-->
+        <v-dialog v-model="completeAssessmentDialog" width="500">
+          <v-card>
+            <v-card-title primary-title>
+              {{ $t('Отметить как завершенный') }}
+            </v-card-title>
+
+            <v-card-text>
+              <p>
+                {{ $t('Отметить ассессмент как завершенный?') }}
+              </p>
+              <v-alert v-if="completeAssessmentError" class="error">{{ completeAssessmentError }}</v-alert>
+            </v-card-text>
+            <v-card-actions>
+              <v-progress-circular class="mr-2" v-if="loading" indeterminate></v-progress-circular>
+              <v-spacer></v-spacer>
+              <v-btn class="primary" text @click="completeAssessment">
+                {{ $t('Да') }}
+              </v-btn>
+              <v-btn text @click="completeAssessmentDialog=false">
                 {{ $t('Нет') }}
               </v-btn>
             </v-card-actions>
@@ -164,7 +205,10 @@ export default class AssessmentDetailedVue extends Vue {
   deleteAttachmentError = '';
 
   cancelAssessmentDialog = false;
-  cancelAttachmentError = '';
+  cancelAssessmentError : string|null = null;
+
+  completeAssessmentDialog = false;
+  completeAssessmentError : string|null = null;
 
   loading: boolean = false;
   accessDenied = false;
@@ -247,10 +291,35 @@ export default class AssessmentDetailedVue extends Vue {
 
   private cancelAssessment() {
     logger.log(`Cancel assessment ${this.employeeId}:${this.assessmentId}`);
+    this.cancelAssessmentError=null;
+    this.loading = true;
     assessmentService.cancelAssessment(this.employeeId, this.assessmentId)
         .then(() => {
           this.cancelAssessmentDialog = false;
           this.fetchData();
+        })
+        .catch((error: any)=>{
+          this.cancelAssessmentError = errorUtils.shortMessage(error);
+        })
+        .finally(()=>{
+          this.loading = false;
+    });
+  }
+
+  private completeAssessment() {
+    logger.log(`Mark assessment as completed ${this.employeeId}:${this.assessmentId}`);
+    this.completeAssessmentError=null;
+    this.loading = true;
+    assessmentService.completeAssessment(this.employeeId, this.assessmentId)
+        .then(() => {
+          this.completeAssessmentDialog = false;
+          this.fetchData();
+        })
+        .catch((error: any)=>{
+          this.completeAssessmentError = errorUtils.shortMessage(error);
+        })
+        .finally(()=>{
+          this.loading = false;
         });
   }
 

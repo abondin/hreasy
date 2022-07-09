@@ -16,7 +16,9 @@
               {{ employee.currentProject ? employee.currentProject.name : $t("Не задан") }}
             </v-list-item-subtitle>
             <v-list-item-subtitle>{{ $t('Роль на текущем проекте') }} :
-              {{ (employee.currentProject && employee.currentProject.role) ? employee.currentProject.role : $t("Не задана") }}
+              {{
+                (employee.currentProject && employee.currentProject.role) ? employee.currentProject.role : $t("Не задана")
+              }}
             </v-list-item-subtitle>
             <v-list-item-subtitle>{{ $t('Бизнес Аккаунт') }} :
               {{ employee.ba ? employee.ba.name : $t("Не задан") }}
@@ -91,7 +93,7 @@
           <v-card-title>
             {{ $t('Планирование нового ассессмента') }}
             <v-spacer></v-spacer>
-            <v-btn icon @click="openNewAssessmentDialog()">
+            <v-btn icon @click="newAssessmentDialog=false">
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-card-title>
@@ -102,7 +104,7 @@
                 :label="$t('Дата проведения')+`*`"
                 :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"></my-date-form-component>
 
-            <v-alert v-if="newAssessmentFormError" class="error">{{newAssessmentFormError}}</v-alert>
+            <v-alert v-if="newAssessmentFormError" class="error">{{ newAssessmentFormError }}</v-alert>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -136,7 +138,7 @@ class Filter {
 }
 
 class NewAssessmentForm {
-  plannedDate: string|undefined= '';
+  plannedDate: string | undefined = '';
 }
 
 @Component({
@@ -166,12 +168,12 @@ export default class EmployeeAssessmentProfile extends Vue {
    * Lifecycle hook
    */
   created() {
-    this.newAssessmentFormModel.plannedDate = this.formatDate(new Date().toISOString());
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Дата ассессмента'), value: 'plannedDate'});
     this.headers.push({text: this.$tc('Создано'), value: 'createdAt'});
     this.headers.push({text: this.$tc('Завершено'), value: 'completedAt'});
     this.headers.push({text: this.$tc('Отменено'), value: 'canceledAt'});
+    this.resetNewAssessmentForm();
     this.fetchData(this.employeeId);
   }
 
@@ -203,7 +205,11 @@ export default class EmployeeAssessmentProfile extends Vue {
 
   private openNewAssessmentDialog() {
     this.newAssessmentDialog = true;
-    (this.$refs.assessmentForm as HTMLFormElement).reset();
+    this.resetNewAssessmentForm();
+  }
+
+  private resetNewAssessmentForm() {
+    this.newAssessmentFormModel.plannedDate = DateTimeUtils.nowDateIso();
   }
 
   private createNewAssessment() {

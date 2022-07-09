@@ -61,6 +61,14 @@ public class AssessmentController {
         return AuthHandler.currentAuth().flatMap(auth -> service.cancelAssessment(auth, employeeId, assessmentId));
     }
 
+    @Operation(summary = "Complete  assessment")
+    @PostMapping(value = "/{employeeId}/{assessmentId}/complete")
+    public Mono<Integer> completeAssessment(@PathVariable("employeeId") int employeeId,
+                                          @PathVariable("assessmentId") int assessmentId) {
+        log.debug("Mark assessment as completed {}:{}", employeeId, assessmentId);
+        return AuthHandler.currentAuth().flatMap(auth -> service.completeAssessment(auth, employeeId, assessmentId));
+    }
+
     @Operation(summary = "Upload assessment attachment")
     @PostMapping(value = "/{employeeId}/{assessmentId}/attachment")
     public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(@PathVariable("employeeId") int employeeId,

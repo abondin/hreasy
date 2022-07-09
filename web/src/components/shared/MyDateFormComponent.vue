@@ -37,7 +37,6 @@ import Component from "vue-class-component";
 import Vue from 'vue'
 import {Prop, Watch} from "vue-property-decorator";
 import moment, {Moment} from "moment";
-import logger from "@/logger";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
 
@@ -69,7 +68,7 @@ export default class MyDateFormComponent extends Vue {
     this.reset();
   }
 
-  public reset(){
+  public reset() {
     this.date = this.value ? this.value : '';
     this.updateFormattedValue(this.date);
   }
@@ -98,7 +97,6 @@ export default class MyDateFormComponent extends Vue {
     if (d.isValid()) {
       this.menu = false;
       this.date = d.format(moment.HTML5_FMT.DATE);
-      logger.log(`emit new value ${this.date}`);
       this.$emit('input', this.date);
     }
 

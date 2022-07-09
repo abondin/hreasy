@@ -73,6 +73,8 @@ export interface AssessmentService {
 
     cancelAssessment(employeeId: number, assessmentId: number): Promise<any>;
 
+    completeAssessment(employeeId: number, assessmentId: number): Promise<any>;
+
     getUploadAttachmentUrl(employeeId: number, assessmentId: number): string;
 
     getAttachmentPath(employeeId: number, assessmentId: number, attachmentFilename: string, accessToken: string): string;
@@ -104,6 +106,12 @@ class RestAssessmentService implements AssessmentService {
 
     cancelAssessment(employeeId: number, assessmentId: number): Promise<any> {
         return httpService.delete(`v1/assessment/${employeeId}/${assessmentId}`).then(response => {
+            return response.data;
+        });
+    }
+
+    completeAssessment(employeeId: number, assessmentId: number): Promise<any> {
+        return httpService.post(`v1/assessment/${employeeId}/${assessmentId}/complete`).then(response => {
             return response.data;
         });
     }

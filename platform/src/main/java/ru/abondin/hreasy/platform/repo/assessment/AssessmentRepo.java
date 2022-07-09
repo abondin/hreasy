@@ -65,4 +65,8 @@ public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, 
     @Query("update assmnt.assessment set canceled_by=:canceledBy, canceled_at=:canceledAt" +
             " where id=:assessmentId")
     Mono<? extends Integer> updateCanceledBy(int assessmentId, Integer canceledBy, OffsetDateTime canceledAt);
+
+    @Query("update assmnt.assessment set completed_by=:canceledBy, completed_at=:canceledAt" +
+            " where id=:assessmentId")
+    Mono<? extends Integer> updateCompletedBy(int assessmentId, Integer canceledBy, OffsetDateTime canceledAt);
 }
