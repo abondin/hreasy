@@ -56,10 +56,11 @@ jobs:
     # If this step fails, then you should remove it and run the build manually (see below)
     
     # 2022-07-21 Alexander Bondin - disabled (some issue with jdk 17)
+    - uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        
     - name: Autobuild
-      uses: actions/setup-java@v3
-        with:
-          java-version: '17'
       uses: github/codeql-action/autobuild@v2
 
     # ℹ️ Command-line programs to run using the OS shell.
