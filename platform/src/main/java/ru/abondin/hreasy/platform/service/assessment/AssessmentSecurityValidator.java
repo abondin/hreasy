@@ -39,4 +39,8 @@ public class AssessmentSecurityValidator {
         });
 
     }
+
+    public Mono<Boolean> validateExportAssessments(AuthContext auth) {
+        return validateCanCreateAssessment(auth);
+    }
 }

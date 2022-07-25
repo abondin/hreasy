@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.mapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.mapstruct.Named;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.format.DateTimeFormatter;
@@ -19,6 +20,10 @@ public interface MapperBase {
 
     default SimpleDictDto simpleDto(Integer id, String name) {
         return id == null ? null : new SimpleDictDto(id, name);
+    }
+
+    default CurrentProjectDictDto currentProjectDto(Integer id, String name, String role) {
+        return id == null ? null : new CurrentProjectDictDto(id, name, role);
     }
 
     default List<Integer> splitIds(String commaSeparatedIds) {

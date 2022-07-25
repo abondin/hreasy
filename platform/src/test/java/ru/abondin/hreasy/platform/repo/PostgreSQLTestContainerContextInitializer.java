@@ -19,7 +19,6 @@ public class PostgreSQLTestContainerContextInitializer implements ApplicationCon
     private final static PostgreSQLContainer dbContainer = new PostgreSQLContainer<>("postgres")
             .withDatabaseName("hr-unit")
             .withUsername("hr");
-
     @Override
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
         var existingSqlDocker = configurableApplicationContext

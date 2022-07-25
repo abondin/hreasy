@@ -242,6 +242,11 @@ interface PermissionService {
      * @param employeeId
      */
     canViewEmplCurrentProjectRole(employeeId?: number): boolean;
+
+    /**
+     * Has access to export all assessments summaries
+     */
+    canExportAssessments(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -268,6 +273,10 @@ class VuexPermissionService implements PermissionService {
 
     canCreateAssessments(): boolean {
         return this.simplePermissionCheck(Permissions.CreateAssessments);
+    }
+
+    canExportAssessments(): boolean {
+        return this.canCreateAssessments();
     }
 
     canViewOvertimes(employeeId: number): boolean {
@@ -347,10 +356,10 @@ class VuexPermissionService implements PermissionService {
     }
 
     canViewEmplCurrentProjectRole(employeeId?: number): boolean {
-        if (this.canAdminEmployees()){
+        if (this.canAdminEmployees()) {
             return true;
         }
-        if (employeeId){
+        if (employeeId) {
             return this.simplePermissionCheckOrCurrentEmployee(Permissions.ViewEmplCurrentProjectRole, employeeId);
         } else {
             return this.simplePermissionCheck(Permissions.ViewEmplCurrentProjectRole);

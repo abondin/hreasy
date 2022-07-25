@@ -10,10 +10,12 @@ import ru.abondin.hreasy.platform.repo.assessment.EmployeeAssessmentEntry;
 import ru.abondin.hreasy.platform.service.assessment.dto.AssessmentDto;
 import ru.abondin.hreasy.platform.service.assessment.dto.AssessmentWithFormsAndFiles;
 import ru.abondin.hreasy.platform.service.assessment.dto.EmployeeAssessmentsSummary;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,10 +27,11 @@ public interface AssessmentMapper extends MapperBase {
     @Mapping(source = ".", target = "displayName", qualifiedByName = "displayName")
     @Mapping(source = "id", target = "lastAssessmentId")
     @Mapping(source = "plannedDate", target = "lastAssessmentDate")
-    @Mapping(source = "completedAt", target = "lastAssessmentCompletedDate")
+    @Mapping(target = "lastAssessmentCompletedDate", source = "completedAt", qualifiedByName = "toLocalDate")
     @Mapping(source = "employeeDateOfEmployment", target = "employeeDateOfEmployment")
     @Mapping(source = ".", target = "latestActivity", qualifiedByName = "latestActivity")
     @Mapping(source = ".", target = "currentProject", qualifiedByName = "currentProject")
+    @Mapping(source = ".", target = "ba", qualifiedByName = "ba")
     EmployeeAssessmentsSummary shortInfo(EmployeeAssessmentEntry entry);
 
     @Mapping(source = ".", target = "createdBy", qualifiedByName = "createdBy")
@@ -66,8 +69,13 @@ public interface AssessmentMapper extends MapperBase {
     }
 
     @Named("currentProject")
-    default SimpleDictDto currentProject(EmployeeAssessmentEntry entry) {
-        return simpleDto(entry.getEmployeeCurrentProjectId(), entry.getEmployeeCurrentProjectName());
+    default CurrentProjectDictDto currentProject(EmployeeAssessmentEntry entry) {
+        return currentProjectDto(entry.getEmployeeCurrentProjectId(), entry.getEmployeeCurrentProjectName(), entry.getEmployeeCurrentProjectRole());
+    }
+
+    @Named("ba")
+    default SimpleDictDto ba(EmployeeAssessmentEntry entry) {
+        return simpleDto(entry.getBaId(), entry.getBaName());
     }
 
     @Named("displayName")
@@ -118,6 +126,11 @@ public interface AssessmentMapper extends MapperBase {
                         entry.getCanceledByPatronymicName())
                 .filter(s -> StringUtils.isNotBlank(s))
                 .collect(Collectors.joining(" ")));
+    }
+
+    @Named("toLocalDate")
+    default LocalDate toLocalDate(OffsetDateTime dateTime) {
+        return dateTime == null ? null : dateTime.toLocalDate();
     }
 
 
