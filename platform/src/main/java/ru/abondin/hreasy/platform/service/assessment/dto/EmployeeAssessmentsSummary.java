@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.assessment.dto;
 
 import lombok.Data;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.LocalDate;
 
@@ -22,5 +23,6 @@ public class EmployeeAssessmentsSummary {
      */
     private LocalDate latestActivity;
     private Long daysWithoutAssessment;
+    private SimpleDictDto ba;
     private CurrentProjectDictDto currentProject;
 }

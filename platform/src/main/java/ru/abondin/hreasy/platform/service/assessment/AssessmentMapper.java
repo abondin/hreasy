@@ -31,6 +31,7 @@ public interface AssessmentMapper extends MapperBase {
     @Mapping(source = "employeeDateOfEmployment", target = "employeeDateOfEmployment")
     @Mapping(source = ".", target = "latestActivity", qualifiedByName = "latestActivity")
     @Mapping(source = ".", target = "currentProject", qualifiedByName = "currentProject")
+    @Mapping(source = ".", target = "ba", qualifiedByName = "ba")
     EmployeeAssessmentsSummary shortInfo(EmployeeAssessmentEntry entry);
 
     @Mapping(source = ".", target = "createdBy", qualifiedByName = "createdBy")
@@ -70,6 +71,11 @@ public interface AssessmentMapper extends MapperBase {
     @Named("currentProject")
     default CurrentProjectDictDto currentProject(EmployeeAssessmentEntry entry) {
         return currentProjectDto(entry.getEmployeeCurrentProjectId(), entry.getEmployeeCurrentProjectName(), entry.getEmployeeCurrentProjectRole());
+    }
+
+    @Named("ba")
+    default SimpleDictDto ba(EmployeeAssessmentEntry entry) {
+        return simpleDto(entry.getBaId(), entry.getBaName());
     }
 
     @Named("displayName")

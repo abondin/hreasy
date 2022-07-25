@@ -13,6 +13,7 @@ export interface EmployeeAssessmentsSummary {
     employeeDateOfEmployment: Date | null;
     latestActivity: Date | null;
     currentProject: CurrentProjectDict | null;
+    ba : SimpleDict | null;
     daysWithoutAssessment: number | null;
 }
 

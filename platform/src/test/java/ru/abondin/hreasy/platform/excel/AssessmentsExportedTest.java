@@ -9,6 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentsSummaryExcelExporter;
 import ru.abondin.hreasy.platform.service.assessment.dto.EmployeeAssessmentsSummary;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.io.FileOutputStream;
 import java.time.LocalDate;
@@ -33,9 +34,13 @@ public class AssessmentsExportedTest {
     private final List<CurrentProjectDictDto> projects = Arrays.asList(
             new CurrentProjectDictDto(1, "Facebook", "Developer"),
             new CurrentProjectDictDto(2, "VK", "QA Lead"),
-            new CurrentProjectDictDto(3, "Одноклассники", "PM")
+            new CurrentProjectDictDto(3, "Одноклассники", null)
     );
 
+    private final List<SimpleDictDto> bas = Arrays.asList(
+            new SimpleDictDto(1, "Clouds"),
+            new SimpleDictDto(2, "RnD")
+    );
 
     private AssessmentsSummaryExcelExporter.AssessmentsSummaryExportBundle bundle;
 
@@ -54,6 +59,7 @@ public class AssessmentsExportedTest {
 
             var summary = new EmployeeAssessmentsSummary();
             summary.setCurrentProject(i % 5 == 0 ? null : projects.get((int) (Math.random() * projects.size())));
+            summary.setBa(i % 4 == 0 ? null : bas.get((int) (Math.random() * bas.size())));
             summary.setDaysWithoutAssessment((long) (Math.random() * 500));
             summary.setDisplayName(displayName);
             summary.setEmployeeId(i);

@@ -47,6 +47,18 @@
               <v-autocomplete
                   clearable
                   class="mr-5"
+                  v-model="filter.selectedBas"
+                  :items="allBas.filter(p=>p.active)"
+                  item-value="id"
+                  item-text="name"
+                  :label="$t('Бизнес акаунт')"
+                  multiple
+              ></v-autocomplete>
+            </v-col>
+            <v-col>
+              <v-autocomplete
+                  clearable
+                  class="mr-5"
                   v-model="filter.selectedProjects"
                   :items="allProjects.filter(p=>p.active)"
                   item-value="id"
@@ -119,6 +131,7 @@ const namespace_dict: string = 'dict';
 class Filter {
   public search = '';
   public selectedProjects: number[] = [];
+  public selectedBas: number[] = [];
 }
 
 @Component({})
@@ -134,6 +147,9 @@ export default class AssessmentShortList extends Vue {
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<SimpleDict>;
 
+  @Getter("businessAccounts", {namespace: namespace_dict})
+  private allBas!: Array<SimpleDict>;
+
   private filter: Filter = new Filter();
 
   /**
@@ -141,12 +157,15 @@ export default class AssessmentShortList extends Vue {
    */
   created() {
     this.reloadHeaders();
-    return this.$store.dispatch('dict/reloadProjects').then(() => this.fetchData());
+    return this.$store.dispatch('dict/reloadProjects')
+        .then(()=>this.$store.dispatch('dict/reloadBusinessAccounts'))
+        .then(() => this.fetchData());
   }
 
   private reloadHeaders() {
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Сотрудник'), value: 'displayName'});
+    this.headers.push({text: this.$tc('Бизнес акаунт'), value: 'ba.name'});
     this.headers.push({text: this.$tc('Проект'), value: 'currentProject'});
     this.headers.push({text: this.$tc('Дата устройства'), value: 'employeeDateOfEmployment'});
     this.headers.push({text: this.$tc('Послений ассессмент запланирован'), value: 'lastAssessmentDate'});
@@ -160,6 +179,10 @@ export default class AssessmentShortList extends Vue {
       let filtered = true;
       if (this.filter.search) {
         filtered = filtered && item.displayName.toLowerCase().indexOf(this.filter.search.toLowerCase()) >= 0;
+      }
+      // Business Account
+      if (filtered && this.filter.selectedBas && this.filter.selectedBas.length > 0) {
+        filtered = (item.ba && this.filter.selectedBas.indexOf(item.ba.id) >= 0) as boolean;
       }
       // Project
       if (filtered && this.filter.selectedProjects && this.filter.selectedProjects.length > 0) {
