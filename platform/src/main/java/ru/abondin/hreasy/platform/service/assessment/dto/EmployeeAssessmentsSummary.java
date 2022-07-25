@@ -1,10 +1,9 @@
 package ru.abondin.hreasy.platform.service.assessment.dto;
 
 import lombok.Data;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 
 /**
  * Short info about employee and his last assessment
@@ -15,12 +14,13 @@ public class EmployeeAssessmentsSummary {
     private String displayName;
     private Integer lastAssessmentId;
     private LocalDate lastAssessmentDate;
-    private OffsetDateTime lastAssessmentCompletedDate;
+    // In summary table we need only date when assessment completed. Do not forget to convert from OffsetDateTime
+    private LocalDate lastAssessmentCompletedDate;
     private LocalDate employeeDateOfEmployment;
     /**
      * Latest planned assessment or date of employment
      */
     private LocalDate latestActivity;
     private Long daysWithoutAssessment;
-    private SimpleDictDto currentProject;
+    private CurrentProjectDictDto currentProject;
 }

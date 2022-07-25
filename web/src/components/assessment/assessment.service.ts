@@ -1,6 +1,7 @@
 import httpService from "../http.service";
 import {AxiosInstance} from "axios";
 import {SimpleDict} from "@/store/modules/dict";
+import {CurrentProjectDict} from "@/components/empl/employee.service";
 
 
 export interface EmployeeAssessmentsSummary {
@@ -11,7 +12,7 @@ export interface EmployeeAssessmentsSummary {
     lastAssessmentCompletedDate: Date | null;
     employeeDateOfEmployment: Date | null;
     latestActivity: Date | null;
-    currentProject: SimpleDict | null;
+    currentProject: CurrentProjectDict | null;
     daysWithoutAssessment: number | null;
 }
 
@@ -80,6 +81,8 @@ export interface AssessmentService {
     getAttachmentPath(employeeId: number, assessmentId: number, attachmentFilename: string, accessToken: string): string;
 
     deleteAttachment(employeeId: number, assessmentId: number, attachmentFilename: string): Promise<DeleteAssessmentAttachmentResponse>;
+
+    export(): Promise<void>;
 }
 
 class RestAssessmentService implements AssessmentService {
@@ -136,6 +139,18 @@ class RestAssessmentService implements AssessmentService {
 
     getAttachmentPath(employeeId: number, assessmentId: number, attachmentFilename: string, accessToken: string): string {
         return `${httpService.defaults.baseURL}v1/fs/assessment/${employeeId}/${assessmentId}/${attachmentFilename}/${accessToken}`;
+    }
+
+    export(): Promise<void> {
+        return httpService.get('v1/assessment/export', {
+            responseType: 'arraybuffer',
+        }).then(response => {
+            const blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = `AssessmentsSummary.xlsx`;
+            link.click();
+        });
     }
 }
 

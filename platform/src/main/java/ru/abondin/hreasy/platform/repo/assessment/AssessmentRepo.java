@@ -14,7 +14,8 @@ public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, 
 
     @Query("select e.id employee_id," +
             " e.lastname employee_lastname, e.firstname employee_firstname, e.patronymic_name employee_patronymic_name" +
-            ", e.date_of_employment employee_date_of_employment,  a.*, p.id employee_current_project_id, p.name employee_current_project_name  " +
+            ", e.date_of_employment employee_date_of_employment,  a.*" +
+            ", p.id employee_current_project_id, p.name employee_current_project_name, e.current_project_role employee_current_project_role  " +
             " from empl.employee e left join assmnt.assessment a on e.id=a.employee" +
             " left join proj.project p on e.current_project=p.id " +
             " where (e.date_of_dismissal is null or e.date_of_dismissal > :now)" +

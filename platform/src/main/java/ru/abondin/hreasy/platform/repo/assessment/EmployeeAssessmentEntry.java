@@ -12,5 +12,6 @@ public class EmployeeAssessmentEntry extends AssessmentEntry {
     private String employeePatronymicName;
     private int employeeCurrentProjectId;
     private String employeeCurrentProjectName;
+    private String employeeCurrentProjectRole;
     private LocalDate employeeDateOfEmployment;
 }

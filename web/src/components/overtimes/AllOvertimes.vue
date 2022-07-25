@@ -91,7 +91,7 @@
                 </v-btn>
               </div>
             </template>
-            <span>{{ $t('Экспорт то Excel') }}</span>
+            <span>{{ $t('Экспорт в Excel') }}</span>
           </v-tooltip>
           <v-snackbar
               v-model="exportCompleted"

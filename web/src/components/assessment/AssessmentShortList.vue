@@ -6,12 +6,38 @@
         <v-container>
           <v-row no-gutters align="center" justify="start">
             <!-- Refresh button -->
-            <v-col cols="1">
+            <v-col cols="auto">
               <v-btn text icon @click="fetchData()">
                 <v-icon>refresh</v-icon>
               </v-btn>
               <v-divider vertical></v-divider>
             </v-col>
+
+            <v-col cols="auto">
+              <!-- Export -->
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <div v-bind="tattrs" v-on="ton" class="col-auto">
+                    <v-btn v-if="canExport()" link :disabled="loading" @click="exportToExcel()" icon>
+                      <v-icon>mdi-file-excel</v-icon>
+                    </v-btn>
+                  </div>
+                </template>
+                <p>{{ $t('Экспорт в Excel') }}</p>
+              </v-tooltip>
+              <v-snackbar
+                  v-model="exportCompleted"
+                  timeout="5000"
+              >
+                {{ $t('Экспорт успешно завершён. Файл скачен.') }}
+                <template v-slot:action="{ attrs }">
+                  <v-btn color="blue" icon v-bind="attrs" @click="exportCompleted = false">
+                    <v-icon>mdi-close-circle-outline</v-icon>
+                  </v-btn>
+                </template>
+              </v-snackbar>
+            </v-col>
+
             <v-col>
               <v-text-field
                   v-model="filter.search"
@@ -52,6 +78,13 @@
             <router-link :to="'/assessments/'+item.employeeId">{{ item.displayName }}</router-link>
           </template>
           <template
+              v-slot:item.currentProject="{ item }">
+            <span v-if="item.currentProject">
+            {{ item.currentProject.name }}
+            <span v-if="item.currentProject.role"> ({{ item.currentProject.role }})</span>
+            </span>
+          </template>
+          <template
               v-slot:item.employeeDateOfEmployment="{ item }">
             {{ formatDate(item.employeeDateOfEmployment) }}
           </template>
@@ -79,6 +112,7 @@ import assessmentService, {EmployeeAssessmentsSummary} from "@/components/assess
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import {errorUtils} from "@/components/errors";
+import permissionService from "@/store/modules/permission.service";
 
 const namespace_dict: string = 'dict';
 
@@ -93,6 +127,9 @@ export default class AssessmentShortList extends Vue {
   loading: boolean = false;
   error: string | null = null;
   assessments: EmployeeAssessmentsSummary[] = [];
+
+  exportCompleted = false;
+
 
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<SimpleDict>;
@@ -110,10 +147,10 @@ export default class AssessmentShortList extends Vue {
   private reloadHeaders() {
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Сотрудник'), value: 'displayName'});
-    this.headers.push({text: this.$tc('Проект'), value: 'currentProject.name'});
+    this.headers.push({text: this.$tc('Проект'), value: 'currentProject'});
     this.headers.push({text: this.$tc('Дата устройства'), value: 'employeeDateOfEmployment'});
-    this.headers.push({text: this.$tc('Крайний ассессмент запланирован'), value: 'lastAssessmentDate'});
-    this.headers.push({text: this.$tc('Крайний ассессмент завершен'), value: 'lastAssessmentCompletedDate'});
+    this.headers.push({text: this.$tc('Послений ассессмент запланирован'), value: 'lastAssessmentDate'});
+    this.headers.push({text: this.$tc('Последний ассессмент завершен'), value: 'lastAssessmentCompletedDate'});
     this.headers.push({text: this.$tc('Дней без ассессмента'), value: 'daysWithoutAssessment'});
   }
 
@@ -150,9 +187,21 @@ export default class AssessmentShortList extends Vue {
   }
 
   private formatDate(date: string): string | undefined {
-    return DateTimeUtils.formatDateTimeFromIso(date);
+    return DateTimeUtils.formatFromIso(date);
   }
 
+  private canExport() {
+    return permissionService.canExportAssessments();
+  }
+
+  private exportToExcel() {
+    this.loading = true;
+    assessmentService.export().then(() => {
+      this.exportCompleted = true;
+    }).finally(() => {
+      this.loading = false;
+    })
+  }
 }
 </script>
 
