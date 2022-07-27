@@ -35,7 +35,7 @@ jobs:
   
     # Initialize code analysis
     - name: Initialize CodeQL
-    - uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v2
       with:
         languages: java
       
@@ -45,7 +45,7 @@ jobs:
       
     # Analize code quality  
     - name: Perform CodeQL Analysis
-    - uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v2
 
     # Generate unit test report
     - name: Publish Test Report
