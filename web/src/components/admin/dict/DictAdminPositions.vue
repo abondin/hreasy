@@ -1,7 +1,7 @@
 <template>
   <dict-admin-table v-bind:data="data">
     <template v-slot:additionalFields>
-      <v-text-field
+      <v-text-field id="dict-form-position-category"
           v-model="data.updateBody.category"
           :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
           :label="$t('Категория')">

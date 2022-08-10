@@ -6,7 +6,7 @@
         <v-card-title v-else>{{ $t('Изменение') }}</v-card-title>
         <v-card-text>
           <!-- name -->
-          <v-text-field
+          <v-text-field id="dict-form-name"
               v-model="data.updateBody.name"
               :counter="255"
               :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
