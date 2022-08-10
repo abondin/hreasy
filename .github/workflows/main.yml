@@ -38,6 +38,7 @@ jobs:
       uses: github/codeql-action/init@v2
       with:
         languages: java
+        debug: true
       
     # Build with Maven
     - name: Build with Maven
