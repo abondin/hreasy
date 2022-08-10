@@ -12,7 +12,7 @@ export interface CreateOrUpdateBusinessAccount {
 export interface BusinessAccount {
     id: number,
     name: string;
-    responsibleEmployee?: SimpleDict,
+    responsibleEmployees: Array<BusinessAccountResponsibleEmployee>,
     description?: string,
     createdBy?: number,
     createdAt?: Date,
@@ -25,6 +25,11 @@ export interface BusinessAccountPosition {
     description?: string,
     archived: boolean
     rate: number
+}
+
+export interface BusinessAccountResponsibleEmployee {
+    employee: SimpleDict,
+    types: Array<string>
 }
 
 export interface CreateOrUpdateBAPosition {

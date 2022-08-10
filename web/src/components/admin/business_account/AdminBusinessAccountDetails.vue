@@ -12,8 +12,7 @@
           <v-icon>refresh</v-icon>
         </v-btn>
         <v-divider vertical class="mr-5 ml-5"></v-divider>
-        <div v-if="businessAccount" :class="{archived: businessAccount.archived}">{{ businessAccount.name }} <span
-            v-if="businessAccount.description">({{ businessAccount.description }})</span></div>
+        <div v-if="businessAccount" :class="{archived: businessAccount.archived}">{{ businessAccount.name }}</div>
         <v-spacer></v-spacer>
         <v-divider vertical class="mr-5 ml-5"></v-divider>
 
@@ -30,6 +29,10 @@
         </v-tooltip>
 
       </v-card-title>
+      <v-card-text v-if="businessAccount">
+        <p>{{businessAccount.description}}</p>
+        <responsible-employees-chips :value="businessAccount.responsibleEmployees"/>
+      </v-card-text>
     </v-card>
 
     <v-dialog v-model="baDialog">
@@ -40,6 +43,7 @@
     </v-dialog>
 
     <admin-b-a-positions
+        class="mt-5"
         ref="baPositions"
         :load-on-create=false
         v-bind:business-account-id="businessAccountId"></admin-b-a-positions>
@@ -59,10 +63,11 @@ import adminBaService, {
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import {Prop} from "vue-property-decorator";
 import AdminBAPositions from "@/components/admin/business_account/AdminBAPositions.vue";
+import ResponsibleEmployeesChips from "@/components/shared/ResponsibleEmployeesChips.vue";
 
 
 @Component({
-      components: {AdminBAPositions, AdminBAForm}
+      components: {ResponsibleEmployeesChips, AdminBAPositions, AdminBAForm}
     }
 )
 export default class AdminBusinessAccountDetails extends Vue {

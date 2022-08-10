@@ -15,23 +15,14 @@
           >
         </v-text-field>
 
-        <v-autocomplete
-            v-model="baForm.responsibleEmployee"
-            :items="allEmployees"
-            item-value="id"
-            item-text="displayName"
-            :label="$t('Ответственный сотрудник')"
-        ></v-autocomplete>
+        <responsible-employees-edit-form-component
+          :input="baForm.responsibleEmployees"
+          :all-employees="allEmployees"/>
 
         <!-- description -->
-        <v-textarea
-            v-model="baForm.description"
-            :counter="1024"
-            :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
-            :label="$t('Описание')"
-            required>
-          >
-        </v-textarea>
+        <vue-editor
+            v-model="baForm.description">
+        </vue-editor>
 
         <v-select
             v-model="baForm.archived"
@@ -62,10 +53,12 @@ import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 import adminBaService, {
-  BusinessAccount,
+  BusinessAccount, BusinessAccountResponsibleEmployee,
   CreateOrUpdateBusinessAccount
 } from "@/components/admin/business_account/admin.ba.service";
 import {Employee} from "@/components/empl/employee.service";
+import ResponsibleEmployeesEditFormComponent from "@/components/shared/ResponsibleEmployeesEditFormComponent.vue";
+import {VueEditor} from "vue2-editor";
 
 
 class BaForm {
@@ -73,12 +66,12 @@ class BaForm {
   public id?: number;
   public name = '';
   public description = '';
-  public responsibleEmployee: number|null = null;
+  public responsibleEmployees: Array<BusinessAccountResponsibleEmployee> = [];
   public archived=false;
 }
 
 @Component(
-    {components: {MyDateFormComponent}}
+    {components: {ResponsibleEmployeesEditFormComponent, MyDateFormComponent, VueEditor}}
 )
 
 export default class AdminBAForm extends Vue {
@@ -109,7 +102,7 @@ export default class AdminBAForm extends Vue {
     this.baForm.id = undefined;
     this.baForm.name = '';
     this.baForm.description = '';
-    this.baForm.responsibleEmployee = null;
+    this.baForm.responsibleEmployees.length=0;
     this.baForm.archived = false;
 
     if (this.input) {
@@ -117,7 +110,7 @@ export default class AdminBAForm extends Vue {
       this.baForm.id = this.input.id;
       this.baForm.name = this.input.name ? this.input.name : '';
       this.baForm.description = this.input.description ? this.input.description : '';
-      this.baForm.responsibleEmployee = this.input.responsibleEmployee ? this.input.responsibleEmployee.id : null;
+      this.baForm.responsibleEmployees = this.input.responsibleEmployees;
       this.baForm.archived = this.input.archived;
     }
   }
@@ -135,7 +128,7 @@ export default class AdminBAForm extends Vue {
       const body = {
         name: this.baForm.name,
         description: this.baForm.description,
-        responsibleEmployee: this.baForm.responsibleEmployee,
+        responsibleEmployees: this.baForm.responsibleEmployees,
         archived: this.baForm.archived
       } as CreateOrUpdateBusinessAccount;
       let serverRequest;

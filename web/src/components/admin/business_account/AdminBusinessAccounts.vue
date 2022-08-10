@@ -42,6 +42,9 @@
               {{ item.name }}
             </v-btn>
           </template>
+          <template v-slot:item.responsibleEmployees="{ item }">
+            <responsible-employees-chips :value="item.responsibleEmployees"/>
+          </template>
         </v-data-table>
 
         <v-dialog v-model="baDialog">
@@ -65,6 +68,7 @@ import logger from "@/logger";
 import AdminBAForm from "@/components/admin/business_account/AdminBAForm.vue";
 import adminBaService, {BusinessAccount} from "@/components/admin/business_account/admin.ba.service";
 import employeeService, {Employee} from "@/components/empl/employee.service";
+import ResponsibleEmployeesChips from "@/components/shared/ResponsibleEmployeesChips.vue";
 
 class Filter {
   public showArchived = false;
@@ -72,7 +76,7 @@ class Filter {
 }
 
 @Component({
-      components: {AdminBAForm}
+      components: {ResponsibleEmployeesChips, AdminBAForm}
     }
 )
 export default class AdminBusinessAccounts extends Vue {
@@ -115,7 +119,7 @@ export default class AdminBusinessAccounts extends Vue {
 
   private filteredBA() {
     return this.bas.filter((p) => {
-      var filtered = true;
+      let filtered = true;
       if (!this.filter.showArchived) {
         filtered = filtered && (!p.archived);
       }
@@ -125,7 +129,7 @@ export default class AdminBusinessAccounts extends Vue {
             (
                 (p.name.toLowerCase().indexOf(search) >= 0) ||
                 (p.description && p.description.toLowerCase().indexOf(search) >= 0) ||
-                (p.responsibleEmployee && p.responsibleEmployee.name && p.responsibleEmployee.name.toLowerCase().indexOf(search) >= 0)
+                (p.responsibleEmployees && p.responsibleEmployees.find(r => (r.employee && r.employee.name.toLowerCase().indexOf(search) >= 0)))
             ) as boolean
       }
       return filtered;
@@ -137,7 +141,7 @@ export default class AdminBusinessAccounts extends Vue {
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Наименование'), value: 'name'});
     this.headers.push({text: this.$tc('Описание'), value: 'description'});
-    this.headers.push({text: this.$tc('Ответственный сотрудник'), value: 'responsibleEmployee.name'});
+    this.headers.push({text: this.$tc('Ответственные сотрудники'), value: 'responsibleEmployees'});
   }
 
   public openBADialog(baToUpdate: BusinessAccount | null) {
@@ -149,7 +153,7 @@ export default class AdminBusinessAccounts extends Vue {
 </script>
 
 <style>
-.archived{
+.archived {
   text-decoration: line-through;
 }
 </style>
