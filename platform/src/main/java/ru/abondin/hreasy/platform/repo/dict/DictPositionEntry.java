@@ -18,6 +18,7 @@ public class DictPositionEntry {
     @Id
     private Integer id;
     private String name;
+    private String category;
 
     private boolean archived = false;
     @Nullable

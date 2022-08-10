@@ -18,6 +18,7 @@ public class DictPositionLogEntry {
     @Id
     private Integer id;
     private Integer positionId;
+    private String category;
 
     private String name;
     @Nullable
