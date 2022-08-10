@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.service.admin.ba;
 
+import io.r2dbc.postgresql.codec.Json;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import ru.abondin.hreasy.platform.service.admin.ba.dto.CreateOrUpdateBABody;
 import ru.abondin.hreasy.platform.service.ba.dto.BusinessAccountMapper;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -61,7 +63,7 @@ public class AdminBusinessAccountService {
     private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, BusinessAccountEntry entry, CreateOrUpdateBABody body) {
         entry.setName(body.getName());
         entry.setDescription(body.getDescription());
-        entry.setResponsibleEmployee(body.getResponsibleEmployee());
+        entry.setResponsibleEmployees(Json.of("IMPLEMENT ME"));
         entry.setArchived(body.isArchived());
         entry.setCreatedBy(currentEmployeeId);
         entry.setCreatedAt(now);
