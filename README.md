@@ -79,7 +79,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |admin_office_location|N|N|Create/update/delete office location|
 |view_empl_current_project_role|Y|Y|View current project role|
 |view_empl_skills|Y|Y|View employee skills|
-|admin_responsible_employees|N|N|Update responsible for department,ba,project employees|
+|admin_managers|N|N|Admin managers for department,ba,project employees|
 
 **Default permissions and roles**
 
@@ -120,7 +120,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |admin_level|global_admin,hr|
 |admin_position|global_admin,hr|
 |admin_office_location|global_admin,hr|
-|update_responsible_employees|global_admin,hr|
+|admin_managers|global_admin,hr|
 
 ## Assessments
 
@@ -160,6 +160,23 @@ in database table `assessment_form_template` (*//TODO Admin page to edit templat
 
 Employee (or HR/PM/Admin) can upload a technical profile documents.
 
+
+## Managers
+
+* In 1.2.0 new functionality to deal with Department, Business Account and project
+  responsible employees added.
+* Manager can be technical, organization or HR lead on project/ba/department (**object** in terms of responsibility feature).
+* Business account, department or project may have several managers
+* Before 1.2.0 we had only one responsible employee on Business Account. No managers for project. No manager for department.
+
+### Goals
+
+* Show every employee on project his managers' matrix (project leads, ba leads, head of the department)
+* Notify managers on events (see [notifications](#notifications))
+
+### Architecture flaws
+
+* Some kind of functionality overlap with
 # Development
 
 ## Projects
@@ -214,15 +231,3 @@ HR Easy supports several notification delivery channels:
 |----|------|-----|
 |upcoming_vacations|fixedDelay 1 hour|Sends email to employee with up to 3 weeks upcoming vacations|
 
-## Responsible employees
-
-* In 1.2.0 new functionality to deal with Department, Business Account and project
-responsible employees added.
-* Employee can be technical, organization or HR lead on project/ba/department (**object** in terms of responsibility feature).
-* Object may have several responsible employees
-* Before 1.2.0 we had only one responsible employee on Business Account.
-
-### Goals
-
-* Show every employee on project his managers' matrix (project leads, ba leads, head of the department)
-* Notify managers on events (see [notifications](#notifications))

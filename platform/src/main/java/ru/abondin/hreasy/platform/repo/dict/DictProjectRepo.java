@@ -1,8 +1,6 @@
 package ru.abondin.hreasy.platform.repo.dict;
 
-import io.micrometer.core.instrument.config.MeterFilter;
 import org.springframework.data.r2dbc.repository.Query;
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -27,7 +25,7 @@ public interface DictProjectRepo extends ReactiveSortingRepository<DictProjectEn
             "  d.name as department_name" +
             "  ,ba.name as ba_name " +
             "from proj.project p" +
-            " left join dict.department d on p.department_id=d.id"+
+            " left join dict.department d on p.department_id=d.id" +
             " left join ba.business_account ba on p.ba_id=ba.id" +
             " order by p.name")
     Flux<DictProjectEntry.ProjectFullEntry> findFullInfo();

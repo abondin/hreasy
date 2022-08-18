@@ -137,7 +137,11 @@ export enum Permissions {
     /**
      * View employee skills
      */
-    ViewEmplSkills = "view_empl_skills"
+    ViewEmplSkills = "view_empl_skills",
+    /**
+     * Admin managers of departments, business accounts and projects
+     */
+    AdminManagers = "admin_managers",
 
 }
 
@@ -247,6 +251,11 @@ interface PermissionService {
      * Has access to export all assessments summaries
      */
     canExportAssessments(): boolean;
+
+    /**
+     * Has access to manager admin page
+     */
+    canAdminManagers(): boolean;
 }
 
 const namespace: string = 'auth';
@@ -369,6 +378,10 @@ class VuexPermissionService implements PermissionService {
     canViewEmplSkills(employeeId: number): boolean {
         return this.canAdminEmployees()
             || this.simplePermissionCheckOrCurrentEmployee(Permissions.ViewEmplSkills, employeeId);
+    }
+
+    canAdminManagers(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminManagers);
     }
 
     private simplePermissionCheck(permission: Permissions) {

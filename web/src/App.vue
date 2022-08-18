@@ -76,6 +76,11 @@
               {{ $t('Админка сотрудников') }}
             </v-list-item-title>
           </v-list-item>
+          <v-list-item to="/admin/managers" v-if="canAdminManagers()">
+            <v-list-item-title>
+              {{ $t('Менеджеры') }}
+            </v-list-item-title>
+          </v-list-item>
           <v-list-item :to="'/admin/dicts/'+firstAvialableDict()" v-if="firstAvialableDict()">
             <v-list-item-title>
               {{ $t('Справочники') }}
@@ -220,6 +225,10 @@ export default class App extends Vue {
 
   private canAdminEmployees() {
     return permissionService.canAdminEmployees();
+  }
+
+  private canAdminManagers() {
+    return permissionService.canAdminManagers();
   }
 
   private canAdminBusinessAccounts() {
