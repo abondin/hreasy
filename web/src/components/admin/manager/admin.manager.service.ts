@@ -1,16 +1,18 @@
 import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
+import {SimpleDict} from "@/store/modules/dict";
 
 export type ManagerResponsibilityType = 'technical' | 'organization' | 'hr';
 
 export interface ManagerResponsibilityObject {
     id: number,
     type: 'project' | 'business_account' | 'department';
+    name: string;
 }
 
 export interface Manager {
     id: number,
-    employee: number,
+    employee: SimpleDict,
     responsibilityObject: ManagerResponsibilityObject,
     responsibilityType: ManagerResponsibilityType,
     comment?: string,

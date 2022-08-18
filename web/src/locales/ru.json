@@ -323,7 +323,7 @@
   },
   "MANAGER_RESPONSIBILITY_TYPE": {
     "hr": "HR",
-    "organization": "Организационный",
-    "technical": "Технический"
+    "organization": "Организационное",
+    "technical": "Техническое"
   }
 }

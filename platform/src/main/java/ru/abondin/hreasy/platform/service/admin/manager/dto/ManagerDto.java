@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.admin.manager.dto;
 
 import lombok.Data;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.OffsetDateTime;
 
@@ -21,14 +22,16 @@ public class ManagerDto {
          * project, ba or department id
          */
         private int id;
+
+        /**
+         * project, ba or department name
+         */
+        private String name;
     }
 
     private int id;
 
-    /**
-     * Link to the employee
-     */
-    private int employee;
+    private SimpleDictDto employee;
 
 
     /**

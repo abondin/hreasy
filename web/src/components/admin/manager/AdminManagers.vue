@@ -32,17 +32,11 @@
             :items-per-page="defaultItemsPerTablePage"
             :items="filteredData()"
             class="text-truncate table-cursor">
-          <template v-slot:item.employee="{ item }">
-            {{ getEmployeeName(item.employee) }}
-          </template>
           <template v-slot:item.responsibilityType="{ item }">
             {{ $t(`MANAGER_RESPONSIBILITY_TYPE.${item.responsibilityType}`) }}
           </template>
           <template v-slot:item.responsibilityObject.type="{ item }">
             {{ $t(`MANAGER_RESPONSIBILITY_OBJECT.${item.responsibilityObject.type}`) }}
-          </template>
-          <template v-slot:item.responsibilityObject.id="{ item }">
-            {{ getResponsibilityObject(item.responsibilityObject) }}
           </template>
         </v-data-table>
       </v-card-text>
@@ -138,8 +132,14 @@ export default class AdminManagers extends Vue {
 
   private filteredData(): Manager[] {
     return this.data.filter((item) => {
-      // TODO
-      let filtered = true && item;
+      let filtered = true;
+      const search = this.filter.search.toLowerCase().trim();
+      if (search.length>0) {
+        let searchFilter: boolean = false;
+        searchFilter = searchFilter || Boolean(item.employee && item.employee.name && item.employee.name.toLowerCase().indexOf(search) >= 0)
+        searchFilter = searchFilter || Boolean(item.responsibilityObject && item.responsibilityObject.name && item.responsibilityObject.name.toLowerCase().indexOf(search) >= 0)
+        filtered = filtered && searchFilter;
+      }
       return filtered;
     });
   }
@@ -147,9 +147,9 @@ export default class AdminManagers extends Vue {
 
   private reloadHeaders() {
     this.headers.length = 0;
-    this.headers.push({text: this.$tc('Менеджер'), value: 'employee'});
+    this.headers.push({text: this.$tc('Менеджер'), value: 'employee.name'});
     this.headers.push({text: this.$tc('Тип объекта'), value: 'responsibilityObject.type'});
-    this.headers.push({text: this.$tc('Объект'), value: 'responsibilityObject.id'});
+    this.headers.push({text: this.$tc('Объект'), value: 'responsibilityObject.name'});
     this.headers.push({text: this.$tc('Основное направление'), value: 'responsibilityType'});
     this.headers.push({text: this.$tc('Примечание'), value: 'comment'});
   }

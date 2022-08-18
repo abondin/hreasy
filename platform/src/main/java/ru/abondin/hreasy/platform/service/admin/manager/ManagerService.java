@@ -24,8 +24,9 @@ public class ManagerService {
     private final DateTimeService dateTimeService;
 
     public Flux<ManagerDto> all(AuthContext auth) {
+        var now = dateTimeService.now();
         return securityValidator.validateAdminManagers(auth)
-                .flatMapMany(valid -> repo.findAll())
+                .flatMapMany(valid -> repo.findDetailed(now))
                 .map(mapper::fromEntry);
     }
 }
