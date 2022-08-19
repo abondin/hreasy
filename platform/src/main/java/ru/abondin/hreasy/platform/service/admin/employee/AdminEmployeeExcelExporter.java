@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeExportDto;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.io.IOException;
 import java.io.OutputStream;

@@ -2,7 +2,6 @@ package ru.abondin.hreasy.platform.service.admin.manager.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.abondin.hreasy.platform.repo.manager.ManagerEntry;
 import ru.abondin.hreasy.platform.repo.manager.ManagerView;
 
 @Mapper(componentModel = "spring")

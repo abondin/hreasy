@@ -6,8 +6,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
-import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 
 /**
  * Validate security rules to work in admin area

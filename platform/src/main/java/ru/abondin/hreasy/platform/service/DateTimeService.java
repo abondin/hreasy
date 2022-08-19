@@ -2,7 +2,6 @@ package ru.abondin.hreasy.platform.service;
 
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 /**

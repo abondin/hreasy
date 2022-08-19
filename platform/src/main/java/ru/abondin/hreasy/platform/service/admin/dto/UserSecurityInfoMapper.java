@@ -8,7 +8,6 @@ import ru.abondin.hreasy.platform.repo.employee.admin.UserSecurityInfoEntry;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

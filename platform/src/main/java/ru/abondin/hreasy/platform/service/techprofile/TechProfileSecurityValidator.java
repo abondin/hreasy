@@ -8,8 +8,6 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 
-import java.util.List;
-
 /**
  * Validate security rules to  update employee current project
  */

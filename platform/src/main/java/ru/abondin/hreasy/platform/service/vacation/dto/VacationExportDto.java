@@ -1,7 +1,6 @@
 package ru.abondin.hreasy.platform.service.vacation.dto;
 
 import lombok.Data;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.LocalDate;
 
