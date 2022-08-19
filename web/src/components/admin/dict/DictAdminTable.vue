@@ -24,7 +24,7 @@
         <v-tooltip bottom v-if="data.editable()">
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
             <div v-bind="tattrs" v-on="ton" class="col-auto">
-              <v-btn text color="primary" :disabled="data.loading" @click="()=>data.openEditDialog(null)" icon>
+              <v-btn text color="primary" :disabled="data.loading" @click="()=>data.openCreateDialog()" icon>
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
             </div>
@@ -64,19 +64,19 @@
             dense
             :items-per-page="data.defaultItemsPerTablePage"
             class="text-truncate table-cursor"
-            @click:row="(v)=>data.openEditDialog(v)"
+            @click:row="(v)=>data.openUpdateDialog(v)"
         >
           <template
               v-slot:item.archived="{ item }">
             {{ item.archived ? $t('Да') : $t('Нет') }}
           </template>
         </v-data-table>
-        <dict-admin-table-form v-bind:data="data">
+        <dict-admin-table-update-form v-bind:data="data">
           <template v-slot:additionalFields>
             <slot name="additionalFields">
             </slot>
           </template>
-        </dict-admin-table-form>
+        </dict-admin-table-update-form>
       </v-col>
     </v-row>
   </v-container>
@@ -85,21 +85,23 @@
 <script lang="ts">
 import Component from "vue-class-component";
 import TableComponentDataContainer, {
+  CreateBody,
   Filter,
   UpdateBody,
   WithId
 } from "@/components/admin/dict/TableComponentDataContainer";
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
-import DictAdminTableForm from "@/components/admin/dict/DictAdminTableForm.vue";
+import DictAdminTableForm from "@/components/admin/dict/DictAdminTableUpdateForm.vue";
+import DictAdminTableUpdateForm from "@/components/admin/dict/DictAdminTableUpdateForm.vue";
 
 @Component({
-  components: {DictAdminTableForm}
+  components: {DictAdminTableUpdateForm, DictAdminTableForm}
 })
-export default class DictAdminTable<T extends WithId, M extends UpdateBody, F extends Filter<T>> extends Vue {
+export default class DictAdminTable<T extends WithId, M extends UpdateBody, C extends CreateBody, F extends Filter<T>> extends Vue {
 
   @Prop({required: true})
-  private data!: TableComponentDataContainer<T, M, F>;
+  private data!: TableComponentDataContainer<T, M, C, F>;
 
 
   /**
