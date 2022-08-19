@@ -13,21 +13,20 @@
 <script lang="ts">
 import Component from "vue-class-component";
 import Vue from "vue";
-import TableComponentDataContainer, {
-  BasicDictFilter,
-  CreateAction,
-  UpdateAction
-} from "@/components/admin/dict/TableComponentDataContainer";
 import dictAdminService, {DictPosition, DictPositionUpdateBody} from "@/components/admin/dict/dict.admin.service";
 import permissionService from "@/store/modules/permission.service";
 import DictAdminTable from "@/components/admin/dict/DictAdminTable.vue";
+import DictTableComponentDataContainer, {
+  BasicDictFilter,
+  CreateOrUpdateAction
+} from "@/components/admin/dict/DictTableComponentDataContainer";
 
 @Component({
   components: {DictAdminTable}
 })
 export default class DictAdminPositions extends Vue {
 
-  private data = new TableComponentDataContainer<DictPosition, DictPositionUpdateBody, DictPositionUpdateBody, BasicDictFilter<DictPosition>>(
+  private data = new DictTableComponentDataContainer<DictPosition, DictPositionUpdateBody, BasicDictFilter<DictPosition>>(
       () => dictAdminService.loadPositions(),
       () =>
           [
@@ -38,13 +37,10 @@ export default class DictAdminPositions extends Vue {
       {
         updateItemRequest: (id, body) => dictAdminService.updatePosition(id, body),
         itemToUpdateBody: item =>
-            ({name: item.name, archived: item.archived, category: item.category} as DictPositionUpdateBody)
-      } as UpdateAction<DictPosition, DictPositionUpdateBody>,
-      {
+            ({name: item.name, archived: item.archived, category: item.category} as DictPositionUpdateBody),
         createItemRequest: (body) => dictAdminService.createPosition(body),
         defaultBody: () => ({name: '', archived: false} as DictPositionUpdateBody)
-      } as CreateAction<DictPosition, DictPositionUpdateBody>,
-      null,
+      } as CreateOrUpdateAction<DictPosition, DictPositionUpdateBody>,
       new BasicDictFilter(),
       permissionService.canAdminDictPositions()
   );

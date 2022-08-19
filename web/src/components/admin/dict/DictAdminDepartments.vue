@@ -5,15 +5,14 @@
 
 <script lang="ts">
 import Component from "vue-class-component";
-import TableComponentDataContainer, {
-  BasicDictFilter,
-  CreateAction,
-  UpdateAction
-} from "@/components/admin/dict/TableComponentDataContainer";
 import permissionService from "@/store/modules/permission.service";
 import dictAdminService, {DictDepartment, DictDepartmentUpdateBody} from "@/components/admin/dict/dict.admin.service";
 import Vue from "vue";
 import DictAdminTable from "@/components/admin/dict/DictAdminTable.vue";
+import DictTableComponentDataContainer, {
+  BasicDictFilter,
+  CreateOrUpdateAction
+} from "@/components/admin/dict/DictTableComponentDataContainer";
 
 
 @Component({
@@ -21,7 +20,7 @@ import DictAdminTable from "@/components/admin/dict/DictAdminTable.vue";
 })
 export default class DictAdminDepartments extends Vue {
 
-  private data = new TableComponentDataContainer<DictDepartment, DictDepartmentUpdateBody,DictDepartmentUpdateBody, BasicDictFilter<DictDepartment>>(
+  private data = new DictTableComponentDataContainer<DictDepartment, DictDepartmentUpdateBody, BasicDictFilter<DictDepartment>>(
       () => dictAdminService.loadDepartments(),
       () =>
           [
@@ -31,13 +30,10 @@ export default class DictAdminDepartments extends Vue {
       {
         updateItemRequest: (id, body) => dictAdminService.updateDepartment(id, body),
         itemToUpdateBody: item =>
-            ({name: item.name, archived: item.archived} as DictDepartmentUpdateBody)
-      } as UpdateAction<DictDepartment, DictDepartmentUpdateBody>,
-      {
+            ({name: item.name, archived: item.archived} as DictDepartmentUpdateBody),
         createItemRequest: (body) => dictAdminService.createDepartment(body),
         defaultBody: () => ({name: '', archived: false} as DictDepartmentUpdateBody)
-      } as CreateAction<DictDepartment, DictDepartmentUpdateBody>,
-      null,
+      } as CreateOrUpdateAction<DictDepartment, DictDepartmentUpdateBody>,
       new BasicDictFilter(),
       permissionService.canAdminDictDepartments()
   );

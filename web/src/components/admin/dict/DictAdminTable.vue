@@ -1,40 +1,6 @@
 <template>
-  <v-container>
-    <v-row v-if="data.error">
-      <v-col>
-        <v-alert type="error">{{ data.error }}</v-alert>
-      </v-col>
-    </v-row>
-    <v-row dense>
-      <v-col align-self="center" cols="auto">
-        <!-- Refresh button -->
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-              <v-btn text icon @click="reloadData()">
-                <v-icon>refresh</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <span>{{ $t('Обновить данные') }}</span>
-        </v-tooltip>
-      </v-col>
-      <!-- Add new item -->
-      <v-col align-self="center" cols="auto">
-        <v-tooltip bottom v-if="data.editable()">
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="col-auto">
-              <v-btn text color="primary" :disabled="data.loading" @click="()=>data.openCreateDialog()" icon>
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <span>{{ $t('Добавить новую запись') }}</span>
-        </v-tooltip>
-      </v-col>
-
-      <!-- Filters -->
-      <v-divider vertical class="mr-5"></v-divider>
+  <hreasy-table :data="data">
+    <template v-slot:filters>
       <v-col>
         <v-text-field v-if="data.filter"
                       v-model="data.filter.search"
@@ -44,7 +10,7 @@
                       hide-details
         ></v-text-field>
       </v-col>
-      <slot name="additionalFilters"></slot>
+
       <v-col cols="auto">
         <v-select
             v-model="data.filter.onlyNotArchived"
@@ -52,76 +18,73 @@
             :items="[{value:false, text:'Нет'}, {value:true, text:'Да'}]">
         </v-select>
       </v-col>
-    </v-row>
-    <v-row v-if="data.initialized">
-      <v-col>
-        <v-data-table
-            :loading="data.loading"
-            :loading-text="$t('Загрузка_данных')"
-            :headers="data.headers"
-            :items="data.filteredItems()"
-            :sort-by="['name']"
-            dense
-            :items-per-page="data.defaultItemsPerTablePage"
-            class="text-truncate table-cursor"
-            @click:row="(v)=>data.openUpdateDialog(v)"
-        >
+    </template>
+
+    <!--
+        <template v-slot:columnTemplates>
           <template
               v-slot:item.archived="{ item }">
             {{ item.archived ? $t('Да') : $t('Нет') }}
           </template>
-        </v-data-table>
-        <dict-admin-table-update-form v-bind:data="data">
-          <template v-slot:additionalFields>
-            <slot name="additionalFields">
-            </slot>
-          </template>
-        </dict-admin-table-update-form>
-      </v-col>
-    </v-row>
-  </v-container>
+        </template>
+    -->
+    <template v-slot:updateFormFields>
+      <!-- name -->
+      <v-text-field id="dict-form-name"
+                    v-model="data.updateBody.name"
+                    :counter="255"
+                    :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
+                    :label="$t('Наименование')"
+                    required>
+        >
+      </v-text-field>
+
+      <!-- Additional fields -->
+      <slot name="additionalFields"></slot>
+
+      <v-select
+          v-model="data.updateBody.archived"
+          :label="$t('Архив')"
+          :items="[{value:false, text:'Нет'}, {value:true, text:'Да'}]">
+      </v-select>
+    </template>
+
+    <template v-slot:createFormFields>
+      <!-- name -->
+      <v-text-field id="dict-form-name"
+                    v-model="data.createBody.name"
+                    :counter="255"
+                    :rules="[v=>(v && v.length <= 255 || $t('Обязательное поле. Не более N символов', {n:255}))]"
+                    :label="$t('Наименование')"
+                    required>
+        >
+      </v-text-field>
+
+      <!-- Additional fields -->
+      <slot name="additionalFields"></slot>
+
+      <v-select
+          v-model="data.createBody.archived"
+          :label="$t('Архив')"
+          :items="[{value:false, text:'Нет'}, {value:true, text:'Да'}]">
+      </v-select>
+    </template>
+
+  </hreasy-table>
 </template>
 
 <script lang="ts">
 import Component from "vue-class-component";
-import TableComponentDataContainer, {
-  CreateBody,
-  Filter,
-  UpdateBody,
-  WithId
-} from "@/components/admin/dict/TableComponentDataContainer";
-import Vue from "vue";
-import {Prop} from "vue-property-decorator";
-import DictAdminTableForm from "@/components/admin/dict/DictAdminTableUpdateForm.vue";
-import DictAdminTableUpdateForm from "@/components/admin/dict/DictAdminTableUpdateForm.vue";
+import {CreateBody, UpdateBody} from "@/components/shared/table/TableComponentDataContainer";
+import HreasyTable from "@/components/shared/table/HreasyTable.vue";
+import {BasicDict, BasicDictFilter} from "@/components/admin/dict/DictTableComponentDataContainer";
+
 
 @Component({
-  components: {DictAdminTableUpdateForm, DictAdminTableForm}
+  components: {HreasyTable}
 })
-export default class DictAdminTable<T extends WithId, M extends UpdateBody, C extends CreateBody, F extends Filter<T>> extends Vue {
-
-  @Prop({required: true})
-  private data!: TableComponentDataContainer<T, M, C, F>;
-
-
-  /**
-   * Lifecycle hook
-   */
-  protected created() {
-    this.data.init();
-  }
-
-
-  protected reloadData() {
-    return this.data.reloadData();
-  }
-
+export default class DictAdminTable<T extends BasicDict, M extends UpdateBody, C extends CreateBody, F extends BasicDictFilter<T>> extends HreasyTable<T, M, C, F> {
 
 }
 </script>
 
-<style scoped lang="css">
-.table-cursor >>> tbody tr :hover {
-  cursor: pointer;
-}
-</style>

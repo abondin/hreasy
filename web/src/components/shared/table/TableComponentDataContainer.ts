@@ -7,10 +7,6 @@ export interface WithId {
     id?: number;
 }
 
-export interface BasicDict extends WithId {
-    name: string,
-    archived: boolean
-}
 
 /**
  * Edit on form
@@ -45,46 +41,26 @@ export abstract class Filter<T extends WithId> {
     public abstract applyFilter(items: T[]): T[];
 }
 
-export class BasicDictFilter<T extends BasicDict> extends Filter<T> {
-    private search: string = '';
-    private onlyNotArchived = true;
-
-    applyFilter(items: T[]): T[] {
-        return items.filter((item) => {
-            let result = true
-            if (this.onlyNotArchived) {
-                result = result && !item.archived;
-            }
-            if (this.search && this.search.trim().length > 0) {
-                result = (!item.name) || (item.name.toLocaleLowerCase().indexOf(this.search.toLocaleLowerCase().trim()) >= 0);
-            }
-            return result;
-        });
-    }
-}
-
 /**
  * Data container for table component. Encapsulate business logic
  */
 export default class TableComponentDataContainer<T extends WithId, M extends UpdateBody, C extends CreateBody, F extends Filter<T>> {
-    private _loading = false;
+    protected _loading = false;
     private _error: string | null = null;
+    private _actionError: string | null = null;
+
     private _updateDialog = false;
-    private _updateError: string | null = null;
 
     private _createDialog = false;
-    private _createError: string | null = null;
 
     private _deleteDialog = false;
-    private _deleteError: string | null = null;
 
     private _items: T[] = [];
-    private _updateItemId: number | null | undefined = null;
+    private _selectedItemId: number | null | undefined = null;
+
     private _updateBody: M | null = null;
 
     private _createBody: C | null = null;
-
-    private _deleteItemId: number | null | undefined = null;
 
     private _headers: DataTableHeader[] = [];
 
@@ -94,13 +70,13 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
     /**
      *
-     * @param dataLoader - load data from backend
-     * @param headerLoader - table header
-     * @param updateItemRequest - Promise to update item
-     * @param itemToUpdateBody - converted from item to update form content
-     * @param newCreateBody - default create form
-     * @param _filter - table filter
-     * @param _editable - is create/update/delete functionality enabled
+     * @param dataLoader - load data using REST API
+     * @param headerLoader - table headers
+     * @param updateAction - update item using rest api (null in case of operation is not designed)
+     * @param createAction - create item using rest api (null in case of operation is not designed)
+     * @param deleteAction - delete item using rest api (null in case of operation is not designed)
+     * @param _filter - store filtration information and provide filter action
+     * @param _editable - if update/create/delete operations allowed
      */
     constructor(private dataLoader: () => Promise<Array<T>>,
                 private headerLoader: () => DataTableHeader[],
@@ -115,18 +91,6 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         this.initHeaders();
         this._initialized = true;
         return this.reloadData();
-    }
-
-    public updateAllowed(): boolean {
-        return this.updateAction ? true : false;
-    }
-
-    public createAllowed(): boolean {
-        return this.createAction ? true : false;
-    }
-
-    public deleteAllowed(): boolean {
-        return this.deleteAction ? true : false;
     }
 
     public editable(): boolean {
@@ -162,9 +126,17 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this._headers;
     }
 
+    get actionError(): string | null {
+        return this._actionError;
+    }
+
+    get selectedItemId(): number | null | undefined {
+        return this._selectedItemId;
+    }
+
 //<editor-fold desc="Update Actions">
-    get updateError(): string | null {
-        return this._updateError;
+    public updateAllowed(): boolean {
+        return this.updateAction ? true : false;
     }
 
     get updateDialog(): boolean {
@@ -175,32 +147,36 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this._updateBody;
     }
 
+    set updateBody(body: M | null) {
+        this._updateBody = body;
+    }
+
     public openUpdateDialog(item: T) {
         if (this.updateAction) {
-            this._updateBody = this.updateAction.itemToUpdateBody(item);
-            this._updateItemId = item.id;
+            this.updateBody = this.updateAction.itemToUpdateBody(item);
+            this._selectedItemId = item.id;
             this._updateDialog = true;
-            this._updateError = null;
+            this._actionError = null;
         }
     }
 
     public closeUpdateDialog() {
-        this._updateBody = null;
+        this.updateBody = null;
         this._updateDialog = false;
-        this._updateItemId = null;
+        this._selectedItemId = null;
     }
 
     public submitUpdateForm() {
-        if (this._updateBody && this.updateAction && this._updateItemId) {
+        if (this.updateBody && this.updateAction && this._selectedItemId) {
             this._loading = true;
-            this._updateError = null;
-            this.updateAction.updateItemRequest(this._updateItemId, this._updateBody)
+            this._actionError = null;
+            this.updateAction.updateItemRequest(this._selectedItemId, this.updateBody)
                 .then(() => {
                     this._updateDialog = false;
                     return this.reloadData();
                 })
                 .catch(error => {
-                    this._updateError = errorUtils.shortMessage(error);
+                    this._actionError = errorUtils.shortMessage(error);
                 })
                 .finally(() => {
                     this._loading = false;
@@ -213,8 +189,8 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 //</editor-fold>
 
 // <editor-fold desc="Create Actions">
-    get createError(): string | null {
-        return this._createError;
+    public createAllowed(): boolean {
+        return this.createAction ? true : false;
     }
 
     get createDialog(): boolean {
@@ -225,30 +201,36 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this._createBody;
     }
 
+
+    set createBody(body: C | null) {
+        this._createBody = body;
+    }
+
     public openCreateDialog() {
         if (this.createAction) {
-            this._createBody = this.createAction.defaultBody();
+            this._selectedItemId = null;
+            this.createBody = this.createAction.defaultBody();
             this._createDialog = true;
-            this._createError = null;
+            this._actionError = null;
         }
     }
 
     public closeCreateDialog() {
-        this._createBody = null;
+        this.createBody = null;
         this._createDialog = false;
     }
 
     public submitCreateForm() {
-        if (this._createBody && this.createAction) {
+        if (this.createBody && this.createAction) {
             this._loading = true;
-            this._createError = null;
-            this.createAction.createItemRequest(this._createBody)
+            this._actionError = null;
+            this.createAction.createItemRequest(this.createBody)
                 .then(() => {
                     this._createDialog = false;
                     return this.reloadData();
                 })
                 .catch(error => {
-                    this._createError = errorUtils.shortMessage(error);
+                    this._actionError = errorUtils.shortMessage(error);
                 })
                 .finally(() => {
                     this._loading = false;
@@ -261,8 +243,8 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 //</editor-fold>
 
 //<editor-fold desc="Delete Actions">
-    get deleteError(): string | null {
-        return this._deleteError;
+    public deleteAllowed(): boolean {
+        return this.deleteAction ? true : false;
     }
 
     get deleteDialog(): boolean {
@@ -271,28 +253,28 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
     public openDeleteDialog(item: T) {
         if (this.deleteAction) {
-            this._deleteItemId = item.id;
+            this._selectedItemId = item.id;
             this._deleteDialog = true;
-            this._deleteError = null;
+            this._actionError = null;
         }
     }
 
     public closeDeleteDialog() {
-        this._deleteItemId = null;
+        this._selectedItemId = null;
         this._deleteDialog = false;
     }
 
     public submitDeleteForm() {
-        if (this.deleteAction && this._deleteItemId) {
+        if (this.deleteAction && this._selectedItemId) {
             this._loading = true;
-            this._deleteError = null;
-            this.deleteAction.deleteItemRequest(this._deleteItemId)
+            this._actionError = null;
+            this.deleteAction.deleteItemRequest(this._selectedItemId)
                 .then(() => {
                     this._deleteDialog = false;
                     return this.reloadData();
                 })
                 .catch(error => {
-                    this._deleteError = errorUtils.shortMessage(error);
+                    this._actionError = errorUtils.shortMessage(error);
                 })
                 .finally(() => {
                     this._loading = false;

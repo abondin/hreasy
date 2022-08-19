@@ -14,21 +14,20 @@
 <script lang="ts">
 import Component from "vue-class-component";
 import Vue from "vue";
-import TableComponentDataContainer, {
-  BasicDictFilter,
-  CreateAction,
-  UpdateAction
-} from "@/components/admin/dict/TableComponentDataContainer";
 import dictAdminService, {DictLevel, DictLevelUpdateBody} from "@/components/admin/dict/dict.admin.service";
 import permissionService from "@/store/modules/permission.service";
 import DictAdminTable from "@/components/admin/dict/DictAdminTable.vue";
+import DictTableComponentDataContainer, {
+  BasicDictFilter,
+  CreateOrUpdateAction
+} from "@/components/admin/dict/DictTableComponentDataContainer";
 
 @Component({
   components: {DictAdminTable}
 })
 export default class DictAdminLevels extends Vue {
 
-  private data = new TableComponentDataContainer<DictLevel, DictLevelUpdateBody, DictLevelUpdateBody, BasicDictFilter<DictLevel>>(
+  private data = new DictTableComponentDataContainer<DictLevel, DictLevelUpdateBody, BasicDictFilter<DictLevel>>(
       () => dictAdminService.loadLevels(),
       () =>
           [
@@ -39,13 +38,10 @@ export default class DictAdminLevels extends Vue {
       {
         updateItemRequest: (id, body) => dictAdminService.updateLevel(id, body),
         itemToUpdateBody: item =>
-            ({name: item.name, archived: item.archived, weight: item.weight} as DictLevelUpdateBody)
-      } as UpdateAction<DictLevel, DictLevelUpdateBody>,
-      {
+            ({name: item.name, archived: item.archived, weight: item.weight} as DictLevelUpdateBody),
         createItemRequest: (body) => dictAdminService.createLevel(body),
         defaultBody: () => ({name: '', archived: false} as DictLevelUpdateBody)
-      } as CreateAction<DictLevel, DictLevelUpdateBody>,
-      null,
+      } as CreateOrUpdateAction<DictLevel, DictLevelUpdateBody>,
       new BasicDictFilter(),
       permissionService.canAdminDictLevels()
   );
