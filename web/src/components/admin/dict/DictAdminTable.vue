@@ -20,14 +20,12 @@
       </v-col>
     </template>
 
-    <!--
-        <template v-slot:columnTemplates>
-          <template
-              v-slot:item.archived="{ item }">
-            {{ item.archived ? $t('Да') : $t('Нет') }}
-          </template>
-        </template>
-    -->
+
+    <template
+        v-slot:item.archived="{ item }">
+      {{ item.archived ? $t('Да') : $t('Нет') }}
+    </template>
+
     <template v-slot:updateFormFields>
       <!-- name -->
       <v-text-field id="dict-form-name"

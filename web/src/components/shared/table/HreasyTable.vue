@@ -40,6 +40,7 @@
     </v-row>
     <v-row v-if="data.initialized">
       <v-col>
+
         <v-data-table
             :loading="data.loading"
             :loading-text="$t('Загрузка_данных')"
@@ -51,8 +52,12 @@
             class="text-truncate table-cursor"
             @click:row="(v)=>data.openUpdateDialog(v)"
         >
-          <slot name="columnTemplates"></slot>
+          <template v-for="(_, slot) in $scopedSlots" v-slot:[slot]="props">
+            <slot :name="slot" v-bind="props" />
+          </template>
+
         </v-data-table>
+
         <hreasy-table-update-form v-bind:data="data">
           <template v-slot:fields>
             <slot name="updateFormFields">
