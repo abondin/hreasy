@@ -1,81 +1,149 @@
 <!-- Managers of departments, business accounts and projects-->
 <template>
-  <v-container>
-    <v-card>
-      <v-card-title>
-        <v-btn text icon @click="fetchData()">
-          <v-icon>refresh</v-icon>
-        </v-btn>
-        <!-- Add manager record -->
-
-        <v-divider vertical class="mr-5"></v-divider>
-        <v-row dense>
-          <v-col>
-            <v-text-field
-                v-model="filter.search"
-                append-icon="mdi-magnify"
-                :label="$t('Поиск')"
-                single-line
-                hide-details
-            ></v-text-field>
-          </v-col>
-          <v-spacer></v-spacer>
-        </v-row>
-      </v-card-title>
-      <v-card-text>
-        <v-alert type="error" v-if="error">{{ error }}</v-alert>
-        <v-data-table
-            dense
-            :loading="loading"
-            :loading-text="$t('Загрузка_данных')"
-            :headers="headers"
-            :items-per-page="defaultItemsPerTablePage"
-            :items="filteredData()"
-            class="text-truncate table-cursor">
-          <template v-slot:item.responsibilityType="{ item }">
-            {{ $t(`MANAGER_RESPONSIBILITY_TYPE.${item.responsibilityType}`) }}
-          </template>
-          <template v-slot:item.responsibilityObject.type="{ item }">
-            {{ $t(`MANAGER_RESPONSIBILITY_OBJECT.${item.responsibilityObject.type}`) }}
-          </template>
-        </v-data-table>
-      </v-card-text>
-    </v-card>
-  </v-container>
+  <hreasy-table :data="data">
+    <template v-slot:filters>
+      <v-col>
+        <v-text-field v-model="data.filter.search"
+                      append-icon="mdi-magnify"
+                      :label="$t('Поиск')"
+                      single-line
+                      hide-details
+        ></v-text-field>
+      </v-col>
+      <v-col>
+        <v-autocomplete
+            clearable
+            class="mr-5"
+            v-model="data.filter.responsibilityObjectTypes"
+            :items="allResponsibilityObjectTypes"
+            :label="$t('Тип объекта')"
+            multiple
+        ></v-autocomplete>
+      </v-col>
+      <v-col>
+        <v-autocomplete
+            clearable
+            class="mr-5"
+            v-model="data.filter.bas"
+            :items="allBas"
+            item-text="name"
+            item-value="id"
+            :label="$t('Бизнес аккаунт')"
+            multiple
+        ></v-autocomplete>
+      </v-col>
+      <v-col>
+        <v-autocomplete
+            clearable
+            class="mr-5"
+            v-model="data.filter.departments"
+            :items="allDepartments"
+            item-text="name"
+            item-value="id"
+            :label="$t('Отдел')"
+            multiple
+        ></v-autocomplete>
+      </v-col>
+    </template>
+    <template v-slot:item.responsibilityType="{ item }">
+      {{ $t(`MANAGER_RESPONSIBILITY_TYPE.${item.responsibilityType}`) }}
+    </template>
+    <template v-slot:item.responsibilityObject.type="{ item }">
+      {{ $t(`MANAGER_RESPONSIBILITY_OBJECT.${item.responsibilityObject.type}`) }}
+    </template>
+  </hreasy-table>
 </template>
 
 
 <script lang="ts">
 import Vue from 'vue'
-import {DataTableHeader} from "vuetify";
 import Component from "vue-class-component";
 import logger from "@/logger";
 import {DateTimeUtils} from "@/components/datetimeutils";
-import {errorUtils} from "@/components/errors";
 import permissionService from "@/store/modules/permission.service";
-import {UiConstants} from "@/components/uiconstants";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import adminManagerService, {
+  CreateOrManagerBody,
   Manager,
-  ManagerResponsibilityObject
+  ManagerResponsibilityObjectType
 } from "@/components/admin/manager/admin.manager.service";
 import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
+import HreasyTable from "@/components/shared/table/HreasyTable.vue";
+import EditTableComponentDataContainer, {CreateOrUpdateAction} from "@/components/shared/table/EditTableComponentDataContainer";
+import {Filter} from "@/components/shared/table/TableComponentDataContainer";
+import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTableDeleteConfimration.vue";
 
 
-class Filter {
+class ManagerFilter extends Filter<Manager> {
   public search = '';
+  public bas: number[] = [];
+  public departments: number[] = [];
+  public responsibilityObjectTypes: ManagerResponsibilityObjectType[]=[];
+
+  applyFilter(items: Manager[]): Manager[] {
+    return items.filter((item) => {
+      let filtered: boolean = true;
+      const search = this.search.toLowerCase().trim();
+      if (search.length > 0) {
+        let searchFilter: boolean = false;
+        searchFilter = searchFilter || Boolean(item.employee && item.employee.name && item.employee.name.toLowerCase().indexOf(search) >= 0)
+        searchFilter = searchFilter || Boolean(item.responsibilityObject && item.responsibilityObject.name && item.responsibilityObject.name.toLowerCase().indexOf(search) >= 0)
+        filtered = filtered && searchFilter;
+      }
+      if (this.bas && this.bas.length > 0) {
+        filtered = filtered && Boolean(
+            item.responsibilityObject && item.responsibilityObject.baId && this.bas.indexOf(item.responsibilityObject.baId) >= 0);
+      }
+      if (this.departments && this.departments.length > 0) {
+        filtered = filtered && Boolean(
+            item.responsibilityObject && item.responsibilityObject.departmentId && this.departments.indexOf(item.responsibilityObject.departmentId) >= 0);
+      }
+      if (this.responsibilityObjectTypes) {
+        filtered = filtered && Boolean(
+            item.responsibilityObject && this.responsibilityObjectTypes.indexOf(item.responsibilityObject.type) >= 0);
+      }
+      return filtered;
+    });
+  }
 }
 
 const namespace_dict: string = 'dict';
 
-@Component({components: {}})
+@Component({components: {HreasyTableDeleteConfimration, HreasyTable}})
 export default class AdminManagers extends Vue {
-  headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  newManagerBody(): CreateOrManagerBody {
+    throw new Error("Method not implemented.");
+  }
 
-  data: Manager[] = [];
-
+  private data = new EditTableComponentDataContainer<Manager, CreateOrManagerBody, ManagerFilter>(
+      () => adminManagerService.findAll(),
+      () =>
+          [
+            {text: this.$tc('Менеджер'), value: 'employee.name'},
+            {text: this.$tc('Тип объекта'), value: 'responsibilityObject.type'},
+            {text: this.$tc('Объект'), value: 'responsibilityObject.name'},
+            {text: this.$tc('Основное направление'), value: 'responsibilityType'},
+            {text: this.$tc('Примечание'), value: 'comment'}
+          ],
+      {
+        updateItemRequest: (id, body) => (adminManagerService.update(id, body)),
+        itemToUpdateBody: item =>
+            ({
+              comment: item.comment,
+              employee: item.employee.id,
+              responsibilityObject: item.responsibilityObject,
+              responsibilityType: item.responsibilityType
+            } as CreateOrManagerBody),
+        createItemRequest: (body) => (adminManagerService.create(body)),
+        defaultBody: () => this.newManagerBody()
+      } as CreateOrUpdateAction<Manager, CreateOrManagerBody>,
+      {
+        deleteItemRequest: itemsToDelete => adminManagerService.delete(itemsToDelete)
+      },
+      new ManagerFilter(),
+      permissionService.canAdminManagers()
+  );
   private allEmployees: Employee[] = [];
 
   @Getter("projects", {namespace: namespace_dict})
@@ -87,19 +155,17 @@ export default class AdminManagers extends Vue {
   @Getter("departments", {namespace: namespace_dict})
   private allDepartments!: Array<SimpleDict>;
 
-  private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
-
-  private filter = new Filter();
-
-  private error: string | null = null;
-
+  private allResponsibilityObjectTypes: Array<any> = [];
   /**
    * Lifecycle hook
    */
   created() {
     logger.log('Managers component created');
-    this.reloadHeaders();
-    this.loading = true;
+    this.allResponsibilityObjectTypes = ['project','business_account','department']
+        .map(i=>{
+          return {value:i, text: this.$t(`MANAGER_RESPONSIBILITY_OBJECT.${i}`)};
+        });
+    this.data.filter.responsibilityObjectTypes = this.allResponsibilityObjectTypes.map(a=>a.value);
     return this.$nextTick()
         .then(() => this.$store.dispatch('dict/reloadProjects'))
         .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
@@ -109,49 +175,7 @@ export default class AdminManagers extends Vue {
                   this.allEmployees = employees;
                 }
             )
-        )
-        .then(() => this.fetchData()).finally(() => this.loading = false);
-  }
-
-
-  private fetchData() {
-    this.loading = true;
-    this.data = [];
-    this.error = null;
-    return adminManagerService.findAll()
-        .then(d => {
-          this.data = d;
-        }).catch(error => {
-          this.error = errorUtils.shortMessage(error);
-        })
-        .finally(() => {
-          this.loading = false
-        });
-  }
-
-
-  private filteredData(): Manager[] {
-    return this.data.filter((item) => {
-      let filtered = true;
-      const search = this.filter.search.toLowerCase().trim();
-      if (search.length>0) {
-        let searchFilter: boolean = false;
-        searchFilter = searchFilter || Boolean(item.employee && item.employee.name && item.employee.name.toLowerCase().indexOf(search) >= 0)
-        searchFilter = searchFilter || Boolean(item.responsibilityObject && item.responsibilityObject.name && item.responsibilityObject.name.toLowerCase().indexOf(search) >= 0)
-        filtered = filtered && searchFilter;
-      }
-      return filtered;
-    });
-  }
-
-
-  private reloadHeaders() {
-    this.headers.length = 0;
-    this.headers.push({text: this.$tc('Менеджер'), value: 'employee.name'});
-    this.headers.push({text: this.$tc('Тип объекта'), value: 'responsibilityObject.type'});
-    this.headers.push({text: this.$tc('Объект'), value: 'responsibilityObject.name'});
-    this.headers.push({text: this.$tc('Основное направление'), value: 'responsibilityType'});
-    this.headers.push({text: this.$tc('Примечание'), value: 'comment'});
+        );
   }
 
 
@@ -159,46 +183,6 @@ export default class AdminManagers extends Vue {
     return DateTimeUtils.formatFromIso(date);
   }
 
-
-  private canEdit() {
-    return permissionService.canAdminManagers();
-  }
-
-  private getEmployeeName(id?: number): string {
-    if (id) {
-      const find = this.allEmployees.find(e => e.id == id);
-      return find ? find.displayName : this.$tc("Не найден: ") + id;
-    } else {
-      return '-';
-    }
-  }
-
-  private getResponsibilityObject(responsibilityObject?: ManagerResponsibilityObject): string | undefined {
-    let result: string | undefined;
-    if (responsibilityObject) {
-      switch (responsibilityObject.type) {
-        case "business_account":
-          result = this.getDictById(this.allBas, responsibilityObject.id);
-          break;
-        case "department":
-          result = this.getDictById(this.allDepartments, responsibilityObject.id);
-          break;
-        case "project":
-          result = this.getDictById(this.allProjects, responsibilityObject.id);
-          break;
-      }
-    }
-    return result;
-  }
-
-  private getDictById(array: SimpleDict[], id?: number): string {
-    if (id) {
-      const find = array.find(e => e.id == id);
-      return find ? find.name : this.$tc("Не найден: ") + id;
-    } else {
-      return '-';
-    }
-  }
 
 }
 </script>

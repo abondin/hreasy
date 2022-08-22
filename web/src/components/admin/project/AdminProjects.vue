@@ -154,7 +154,7 @@ export default class AdminProjects extends Vue {
   private reloadHeaders() {
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Наименование'), value: 'name'});
-    this.headers.push({text: this.$tc('Бизнес акаунт'), value: 'businessAccount.name'});
+    this.headers.push({text: this.$tc('Бизнес аккаунт'), value: 'businessAccount.name'});
     this.headers.push({text: this.$tc('Заказчик'), value: 'customer'});
     this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
     this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});

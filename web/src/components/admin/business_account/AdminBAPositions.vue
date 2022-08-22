@@ -2,7 +2,7 @@
 <template>
   <v-card>
     <v-card-title>
-      <div class="mr-2">{{ $t('Позиции бизнес акаунта') }}</div>
+      <div class="mr-2">{{ $t('Позиции бизнес аккаунта') }}</div>
       <!-- Refresh button -->
       <v-text-field
           v-model="filter.search"

@@ -3,11 +3,20 @@ import {AxiosInstance} from "axios";
 import {SimpleDict} from "@/store/modules/dict";
 
 export type ManagerResponsibilityType = 'technical' | 'organization' | 'hr';
+export type ManagerResponsibilityObjectType = 'project' | 'business_account' | 'department';
 
 export interface ManagerResponsibilityObject {
     id: number,
-    type: 'project' | 'business_account' | 'department';
+    type: ManagerResponsibilityObjectType;
     name: string;
+    /**
+     * relevant to project and business_account
+     */
+    baId?: number,
+    /**
+     * relevant to project and department
+     */
+    departmentId?: number|null;
 }
 
 export interface Manager {
@@ -23,18 +32,13 @@ export interface Manager {
 /**
  * DTO to create or update employee child
  */
-export interface CreateManagerBody {
+export interface CreateOrManagerBody {
     employee: number,
     responsibilityObject: ManagerResponsibilityObject,
     responsibilityType: ManagerResponsibilityType,
     comment?: string,
 }
 
-export interface UpdateManagerBody {
-    responsibilityObject: ManagerResponsibilityObject,
-    responsibilityType: ManagerResponsibilityType,
-    comment?: string,
-}
 
 export interface AdminManagerService {
     findAll(): Promise<Manager[]>;
@@ -42,14 +46,14 @@ export interface AdminManagerService {
     /**
      * Create new record
      */
-    create(body: CreateManagerBody): Promise<number>;
+    create(body: CreateOrManagerBody): Promise<Manager>;
 
     /**
      * Update existing record
      */
-    update(managerId: number, body: UpdateManagerBody): Promise<number>;
+    update(managerId: number, body: CreateOrManagerBody): Promise<Manager>;
 
-    delete(managerId: number): Promise<void>;
+    delete(managerId: number[]): Promise<Array<any>>;
 }
 
 
@@ -63,20 +67,22 @@ class RestAdminManagerService implements AdminManagerService {
         });
     }
 
-    create(body: CreateManagerBody): Promise<number> {
+    create(body: CreateOrManagerBody): Promise<Manager> {
         return httpService.post(`v1/admin/managers`, body).then(response => {
             return response.data;
         });
     }
 
-    update(managerId: number, body: UpdateManagerBody): Promise<number> {
+    update(managerId: number, body: CreateOrManagerBody): Promise<Manager> {
         return httpService.put(`v1/admin/managers/${managerId}`, body).then(response => {
             return response.data;
         });
     }
 
-    delete(managerId: number): Promise<void> {
-        return httpService.delete(`v1/admin/managers/${managerId}`);
+    delete(managerIds: number[]): Promise<Array<any>> {
+        return Promise.all(
+            managerIds.map(managerId => httpService.delete(`v1/admin/managers/${managerId}`))
+        );
     }
 
 }

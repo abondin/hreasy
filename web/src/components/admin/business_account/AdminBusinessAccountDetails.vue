@@ -26,7 +26,7 @@
               </v-btn>
             </div>
           </template>
-          <span>{{ $t('Редактировать бизнес акаунт') }}</span>
+          <span>{{ $t('Редактировать бизнес аккаунт') }}</span>
         </v-tooltip>
 
       </v-card-title>

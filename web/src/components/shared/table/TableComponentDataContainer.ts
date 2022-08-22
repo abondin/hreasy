@@ -33,7 +33,7 @@ export interface CreateAction<T extends WithId, C extends CreateBody> {
 }
 
 export interface DeleteAction<T extends WithId> {
-    deleteItemRequest: (id: number) => Promise<void>,
+    deleteItemRequest: (ids: number[]) => Promise<Array<any>>,
 }
 
 
@@ -56,7 +56,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     private _deleteDialog = false;
 
     private _items: T[] = [];
-    private _selectedItemId: number | null | undefined = null;
+    private _selectedItems: T[] = [];
 
     private _updateBody: M | null = null;
 
@@ -77,6 +77,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
      * @param deleteAction - delete item using rest api (null in case of operation is not designed)
      * @param _filter - store filtration information and provide filter action
      * @param _editable - if update/create/delete operations allowed
+     * @param _singleSelect - true by default. False if your table supports bulk update
      */
     constructor(private dataLoader: () => Promise<Array<T>>,
                 private headerLoader: () => DataTableHeader[],
@@ -84,7 +85,8 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
                 private createAction: CreateAction<T, C> | null,
                 private deleteAction: DeleteAction<T> | null,
                 private _filter: F,
-                private _editable: boolean = false) {
+                private _editable: boolean = false,
+                private _singleSelect: boolean = true) {
     }
 
     public init() {
@@ -97,6 +99,10 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this._editable;
     }
 
+    get singleSelect(): boolean {
+        return this._singleSelect;
+    }
+
     get initialized(): boolean {
         return this._initialized;
     }
@@ -105,7 +111,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this._defaultItemsPerTablePage;
     }
 
-    get filter() {
+    get filter() : F {
         return this._filter;
     }
 
@@ -122,6 +128,14 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this._items;
     }
 
+    get selectedItems(): T[] {
+        return this._selectedItems;
+    }
+
+    set selectedItems(values: T[]) {
+        this._selectedItems = values;
+    }
+
     get headers(): DataTableHeader[] {
         return this._headers;
     }
@@ -131,7 +145,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     }
 
     get selectedItemId(): number | null | undefined {
-        return this._selectedItemId;
+        return this._selectedItems.length > 0 ? this._selectedItems[0].id : null;
     }
 
 //<editor-fold desc="Update Actions">
@@ -154,7 +168,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     public openUpdateDialog(item: T) {
         if (this.updateAction) {
             this.updateBody = this.updateAction.itemToUpdateBody(item);
-            this._selectedItemId = item.id;
+            this.selectedItems = [item];
             this._updateDialog = true;
             this._actionError = null;
         }
@@ -163,14 +177,13 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     public closeUpdateDialog() {
         this.updateBody = null;
         this._updateDialog = false;
-        this._selectedItemId = null;
     }
 
     public submitUpdateForm() {
-        if (this.updateBody && this.updateAction && this._selectedItemId) {
+        if (this.updateBody && this.updateAction && this.selectedItemId) {
             this._loading = true;
             this._actionError = null;
-            this.updateAction.updateItemRequest(this._selectedItemId, this.updateBody)
+            this.updateAction.updateItemRequest(this.selectedItemId, this.updateBody)
                 .then(() => {
                     this._updateDialog = false;
                     return this.reloadData();
@@ -208,7 +221,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
     public openCreateDialog() {
         if (this.createAction) {
-            this._selectedItemId = null;
+            this.selectedItems.length = 0;
             this.createBody = this.createAction.defaultBody();
             this._createDialog = true;
             this._actionError = null;
@@ -251,29 +264,27 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this._deleteDialog;
     }
 
-    public openDeleteDialog(item: T) {
+    public openDeleteDialog() {
         if (this.deleteAction) {
-            this._selectedItemId = item.id;
             this._deleteDialog = true;
             this._actionError = null;
         }
     }
 
     public closeDeleteDialog() {
-        this._selectedItemId = null;
         this._deleteDialog = false;
     }
 
     public submitDeleteForm() {
-        if (this.deleteAction && this._selectedItemId) {
+        if (this.deleteAction && this._selectedItems.length > 0) {
             this._loading = true;
             this._actionError = null;
-            this.deleteAction.deleteItemRequest(this._selectedItemId)
+            this.deleteAction.deleteItemRequest(this.selectedItems.map(i => i.id!))
                 .then(() => {
                     this._deleteDialog = false;
                     return this.reloadData();
                 })
-                .catch(error => {
+                .catch((error: any) => {
                     this._actionError = errorUtils.shortMessage(error);
                 })
                 .finally(() => {
@@ -295,6 +306,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         this._error = null;
         this._loading = true;
         this._items.length = 0;
+        this._selectedItems.length = 0;
         return this.dataLoader()
             .then(data => {
                 this._items = data;

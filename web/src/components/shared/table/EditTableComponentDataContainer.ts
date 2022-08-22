@@ -32,7 +32,6 @@ export default class EditTableComponentDataContainer<T extends WithId, UC extend
      * @param editDataLoader - load data using REST API
      * @param editHeaderLoader - table headers
      * @param createOrUpdateAction - update item using rest api (null in case of operation is not designed)
-     * @param createAction - create item using rest api (null in case of operation is not designed)
      * @param editDeleteAction - delete item using rest api (null in case of operation is not designed)
      * @param _editFilter - store filtration information and provide filter action
      * @param _editEditable - if update/create/delete operations allowed

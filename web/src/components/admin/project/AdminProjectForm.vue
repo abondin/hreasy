@@ -20,7 +20,7 @@
             :items="basWithCurrent"
             item-text="name"
             item-value="id"
-            :label="$t('Бизнес акаунт')"
+            :label="$t('Бизнес аккаунт')"
         ></v-select>
 
 

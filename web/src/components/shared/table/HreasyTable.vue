@@ -22,15 +22,30 @@
       </v-col>
       <!-- Add new item -->
       <v-col align-self="center" cols="auto">
-        <v-tooltip bottom v-if="data.createAllowed()" :disabled="!data.editable()">
+        <v-tooltip bottom v-if="data.createAllowed()">
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="col-auto">
-              <v-btn text color="primary" :disabled="data.loading" @click="()=>data.openCreateDialog()" icon>
+            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
+              <v-btn text color="primary" :disabled="data.loading || !data.editable()"
+                     @click="()=>data.openCreateDialog()" icon>
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
             </div>
           </template>
           <span>{{ $t('Добавить новую запись') }}</span>
+        </v-tooltip>
+      </v-col>
+      <!-- Delete item -->
+      <v-col align-self="center" cols="auto">
+        <v-tooltip bottom v-if="data.deleteAllowed()">
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton"  class="mt-0 pt-0">
+              <v-btn text :disabled="data.loading || !data.editable() || data.selectedItems.length==0"
+                     @click="()=>data.openDeleteDialog()" icon>
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{ $t('Удалить выбранные записи') }}</span>
         </v-tooltip>
       </v-col>
 
@@ -45,11 +60,14 @@
             :loading="data.loading"
             :loading-text="$t('Загрузка_данных')"
             :headers="data.headers"
+            v-model="data.selectedItems"
             :items="data.filteredItems()"
             :sort-by="['name']"
             dense
             :items-per-page="data.defaultItemsPerTablePage"
             class="text-truncate table-cursor"
+            :show-select="data.deleteAllowed()"
+            :single-select="data.singleSelect"
             @click:row="(v)=>data.openUpdateDialog(v)"
         >
           <!-- Some magic from stackoverflow to allow override item-* slots for custom column rendering -->
@@ -71,6 +89,8 @@
             </slot>
           </template>
         </hreasy-table-create-form>
+        <hreasy-table-delete-confimration :data="data">
+        </hreasy-table-delete-confimration>
       </v-col>
     </v-row>
   </v-container>
@@ -88,9 +108,10 @@ import Vue from "vue";
 import {Prop} from "vue-property-decorator";
 import HreasyTableUpdateForm from "@/components/shared/table/HreasyTableUpdateForm.vue";
 import HreasyTableCreateForm from "@/components/shared/table/HreasyTableCreateForm.vue";
+import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTableDeleteConfimration.vue";
 
 @Component({
-  components: {HreasyTableCreateForm, HreasyTableUpdateForm}
+  components: {HreasyTableCreateForm, HreasyTableUpdateForm, HreasyTableDeleteConfimration}
 })
 export default class HreasyTable<T extends WithId, M extends UpdateBody, C extends CreateBody, F extends Filter<T>> extends Vue {
 
