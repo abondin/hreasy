@@ -52,8 +52,9 @@
             class="text-truncate table-cursor"
             @click:row="(v)=>data.openUpdateDialog(v)"
         >
+          <!-- Some magic from stackoverflow to allow override item-* slots for custom column rendering -->
           <template v-for="(_, slot) in $scopedSlots" v-slot:[slot]="props">
-            <slot :name="slot" v-bind="props" />
+            <slot :name="slot" v-bind="props"/>
           </template>
 
         </v-data-table>

@@ -11,8 +11,8 @@ import Vue from "vue";
 import DictAdminTable from "@/components/admin/dict/DictAdminTable.vue";
 import DictTableComponentDataContainer, {
   BasicDictFilter,
-  CreateOrUpdateAction
 } from "@/components/admin/dict/DictTableComponentDataContainer";
+import {CreateOrUpdateAction} from "@/components/shared/table/EditTableComponentDataContainer";
 
 
 @Component({

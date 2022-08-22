@@ -17,10 +17,8 @@ import Vue from "vue";
 import dictAdminService, {DictLevel, DictLevelUpdateBody} from "@/components/admin/dict/dict.admin.service";
 import permissionService from "@/store/modules/permission.service";
 import DictAdminTable from "@/components/admin/dict/DictAdminTable.vue";
-import DictTableComponentDataContainer, {
-  BasicDictFilter,
-  CreateOrUpdateAction
-} from "@/components/admin/dict/DictTableComponentDataContainer";
+import DictTableComponentDataContainer, {BasicDictFilter} from "@/components/admin/dict/DictTableComponentDataContainer";
+import {CreateOrUpdateAction} from "@/components/shared/table/EditTableComponentDataContainer";
 
 @Component({
   components: {DictAdminTable}
