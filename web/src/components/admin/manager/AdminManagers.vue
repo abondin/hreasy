@@ -1,7 +1,9 @@
 <!-- Managers of departments, business accounts and projects-->
 <template>
   <hreasy-table :data="data"
-                :update-title="()=>data.selectedItems.length == 0 ? null : data.selectedItems[0].employee.name">
+                :update-title="()=>data.selectedItems.length == 0 ? null : data.selectedItems[0].employee.name"
+                :sort-by="['responsibilityObject.type', 'employee.displayName']"
+  >
 
     <!--<editor-fold desc="Filters">-->
     <template v-slot:filters>

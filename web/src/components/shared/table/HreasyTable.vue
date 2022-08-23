@@ -55,14 +55,13 @@
     </v-row>
     <v-row v-if="data.initialized">
       <v-col>
-
         <v-data-table
             :loading="data.loading"
             :loading-text="$t('Загрузка_данных')"
             :headers="data.headers"
             v-model="data.selectedItems"
             :items="data.filteredItems()"
-            :sort-by="['name']"
+            :sort-by="sortBy"
             dense
             :items-per-page="data.defaultItemsPerTablePage"
             class="text-truncate table-cursor"
@@ -121,6 +120,9 @@ export default class HreasyTable<T extends WithId, M extends UpdateBody, C exten
 
   @Prop({required:false})
   private updateTitle: Function | string | undefined;
+
+  @Prop({required:false, default:()=>['name']})
+  private sortBy! : string|string[];
 
   /**
    * Lifecycle hook
