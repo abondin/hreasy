@@ -1,6 +1,9 @@
 <!-- Managers of departments, business accounts and projects-->
 <template>
-  <hreasy-table :data="data">
+  <hreasy-table :data="data"
+                :update-title="()=>data.selectedItems.length == 0 ? null : data.selectedItems[0].employee.name">
+
+    <!--<editor-fold desc="Filters">-->
     <template v-slot:filters>
       <v-col>
         <v-text-field v-model="data.filter.search"
@@ -45,12 +48,139 @@
         ></v-autocomplete>
       </v-col>
     </template>
+    <!-- </editor-fold> -->
+
+    <!--<editor-fold desc="Columns">-->
     <template v-slot:item.responsibilityType="{ item }">
       {{ $t(`MANAGER_RESPONSIBILITY_TYPE.${item.responsibilityType}`) }}
     </template>
     <template v-slot:item.responsibilityObject.type="{ item }">
       {{ $t(`MANAGER_RESPONSIBILITY_OBJECT.${item.responsibilityObject.type}`) }}
     </template>
+    <!-- </editor-fold> -->
+
+
+    <!--<editor-fold desc="Update form">-->
+    <template v-slot:updateFormFields>
+      <v-autocomplete
+          v-model="data.updateBody.responsibilityObjectType"
+          :items="allResponsibilityObjectTypes"
+          :label="$t('Тип объекта')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+          @change="data.updateBody.responsibilityObjectId=null"
+      ></v-autocomplete>
+
+      <!--<editor-fold desc="Responsibility Object">-->
+      <v-autocomplete
+          v-if="data.updateBody.responsibilityObjectType==='project'"
+          v-model="data.updateBody.responsibilityObjectId"
+          item-value="id" item-text="name"
+          :items="allProjects"
+          :label="$t('Проект')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+      ></v-autocomplete>
+      <v-autocomplete
+          v-if="data.updateBody.responsibilityObjectType==='business_account'"
+          v-model="data.updateBody.responsibilityObjectId"
+          item-value="id" item-text="name"
+          :items="allBas"
+          :label="$t('Бизнес аккаунт')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+      ></v-autocomplete>
+      <v-autocomplete
+          v-if="data.updateBody.responsibilityObjectType==='department'"
+          v-model="data.updateBody.responsibilityObjectId"
+          item-value="id" item-text="name"
+          :items="allDepartments"
+          :label="$t('Отдел')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+      ></v-autocomplete>
+      <!-- </editor-fold> -->
+
+      <v-autocomplete
+          v-model="data.updateBody.responsibilityType"
+          :items="allResponsibilityTypes"
+          :label="$t('Основное направление')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+      ></v-autocomplete>
+
+      <v-textarea
+          v-model="data.updateBody.comment"
+          :counter="256"
+          :rules="[v=>(!v || v.length <= 256 || $t('Не более N символов', {n:256}))]"
+          :label="$t('Примечание')"
+          required>
+        >
+      </v-textarea>
+
+    </template>
+    <!-- </editor-fold> -->
+
+    <!--<editor-fold desc="Create form">-->
+    <template v-slot:createFormFields>
+
+      <v-autocomplete
+          v-model="data.createBody.employee"
+          :items="allEmployees"
+          item-value="id" item-text="displayName"
+          :label="$t('Сотрудник')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+      ></v-autocomplete>
+
+      <v-autocomplete
+          v-model="data.createBody.responsibilityObjectType"
+          :items="allResponsibilityObjectTypes"
+          :label="$t('Тип объекта')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+          @change="data.createBody.responsibilityObjectId=null"
+      ></v-autocomplete>
+
+      <!--<editor-fold desc="Responsibility Object">-->
+      <v-autocomplete
+          v-if="data.createBody.responsibilityObjectType==='project'"
+          v-model="data.createBody.responsibilityObjectId"
+          item-value="id" item-text="name"
+          :items="allProjects"
+          :label="$t('Проект')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+      ></v-autocomplete>
+      <v-autocomplete
+          v-if="data.createBody.responsibilityObjectType==='business_account'"
+          v-model="data.createBody.responsibilityObjectId"
+          item-value="id" item-text="name"
+          :items="allBas"
+          :label="$t('Бизнес аккаунт')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+      ></v-autocomplete>
+      <v-autocomplete
+          v-if="data.createBody.responsibilityObjectType==='department'"
+          v-model="data.createBody.responsibilityObjectId"
+          item-value="id" item-text="name"
+          :items="allDepartments"
+          :label="$t('Отдел')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+      ></v-autocomplete>
+      <!-- </editor-fold> -->
+
+      <v-autocomplete
+          v-model="data.createBody.responsibilityType"
+          :items="allResponsibilityTypes"
+          :label="$t('Основное направление')"
+          :rules="[v => !!v || $t('Обязательное поле')]"
+      ></v-autocomplete>
+
+      <v-textarea
+          v-model="data.createBody.comment"
+          :counter="256"
+          :rules="[v=>(!v || v.length <= 256 || $t('Не более N символов', {n:256}))]"
+          :label="$t('Примечание')"
+          required>
+        >
+      </v-textarea>
+
+    </template>
+    <!-- </editor-fold> -->
+
   </hreasy-table>
 </template>
 
@@ -59,19 +189,21 @@
 import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
-import {DateTimeUtils} from "@/components/datetimeutils";
 import permissionService from "@/store/modules/permission.service";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import adminManagerService, {
-  CreateOrManagerBody,
+  CreateManagerBody,
   Manager,
-  ManagerResponsibilityObjectType
+  ManagerResponsibilityObjectType,
+  managerResponsibilityObjectTypes,
+  managerResponsibilityTypes,
+  UpdateManagerBody
 } from "@/components/admin/manager/admin.manager.service";
 import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
-import EditTableComponentDataContainer, {CreateOrUpdateAction} from "@/components/shared/table/EditTableComponentDataContainer";
-import {Filter} from "@/components/shared/table/TableComponentDataContainer";
+import {CreateOrUpdateAction} from "@/components/shared/table/EditTableComponentDataContainer";
+import TableComponentDataContainer, {Filter} from "@/components/shared/table/TableComponentDataContainer";
 import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTableDeleteConfimration.vue";
 
 
@@ -79,7 +211,8 @@ class ManagerFilter extends Filter<Manager> {
   public search = '';
   public bas: number[] = [];
   public departments: number[] = [];
-  public responsibilityObjectTypes: ManagerResponsibilityObjectType[]=[];
+  public responsibilityObjectTypes: ManagerResponsibilityObjectType[] =
+      managerResponsibilityObjectTypes;
 
   applyFilter(items: Manager[]): Manager[] {
     return items.filter((item) => {
@@ -112,11 +245,8 @@ const namespace_dict: string = 'dict';
 
 @Component({components: {HreasyTableDeleteConfimration, HreasyTable}})
 export default class AdminManagers extends Vue {
-  newManagerBody(): CreateOrManagerBody {
-    throw new Error("Method not implemented.");
-  }
 
-  private data = new EditTableComponentDataContainer<Manager, CreateOrManagerBody, ManagerFilter>(
+  private data = new TableComponentDataContainer<Manager, UpdateManagerBody, CreateManagerBody, ManagerFilter>(
       () => adminManagerService.findAll(),
       () =>
           [
@@ -130,14 +260,16 @@ export default class AdminManagers extends Vue {
         updateItemRequest: (id, body) => (adminManagerService.update(id, body)),
         itemToUpdateBody: item =>
             ({
-              comment: item.comment,
-              employee: item.employee.id,
-              responsibilityObject: item.responsibilityObject,
-              responsibilityType: item.responsibilityType
-            } as CreateOrManagerBody),
+              responsibilityObjectType: item.responsibilityObject.type,
+              responsibilityObjectId: item.responsibilityObject.id,
+              responsibilityType: item.responsibilityType,
+              comment: item.comment
+            } as UpdateManagerBody)
+      },
+      {
         createItemRequest: (body) => (adminManagerService.create(body)),
         defaultBody: () => this.newManagerBody()
-      } as CreateOrUpdateAction<Manager, CreateOrManagerBody>,
+      } as CreateOrUpdateAction<Manager, CreateManagerBody>,
       {
         deleteItemRequest: itemsToDelete => adminManagerService.delete(itemsToDelete)
       },
@@ -156,16 +288,21 @@ export default class AdminManagers extends Vue {
   private allDepartments!: Array<SimpleDict>;
 
   private allResponsibilityObjectTypes: Array<any> = [];
+  private allResponsibilityTypes: Array<any> = [];
+
   /**
    * Lifecycle hook
    */
   created() {
     logger.log('Managers component created');
-    this.allResponsibilityObjectTypes = ['project','business_account','department']
-        .map(i=>{
-          return {value:i, text: this.$t(`MANAGER_RESPONSIBILITY_OBJECT.${i}`)};
+    this.allResponsibilityObjectTypes = managerResponsibilityObjectTypes
+        .map(i => {
+          return {value: i, text: this.$t(`MANAGER_RESPONSIBILITY_OBJECT.${i}`)};
         });
-    this.data.filter.responsibilityObjectTypes = this.allResponsibilityObjectTypes.map(a=>a.value);
+    this.allResponsibilityTypes = managerResponsibilityTypes
+        .map(i => {
+          return {value: i, text: this.$t(`MANAGER_RESPONSIBILITY_TYPE.${i}`)};
+        });
     return this.$nextTick()
         .then(() => this.$store.dispatch('dict/reloadProjects'))
         .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
@@ -178,9 +315,14 @@ export default class AdminManagers extends Vue {
         );
   }
 
-
-  private formatDate(date: string | undefined): string | undefined {
-    return DateTimeUtils.formatFromIso(date);
+  private newManagerBody(): CreateManagerBody {
+    const body = {
+      employee: null,
+      responsibilityObjectType: 'project',
+      responsibilityObjectId: null,
+      responsibilityType: 'organization'
+    } as CreateManagerBody;
+    return body;
   }
 
 

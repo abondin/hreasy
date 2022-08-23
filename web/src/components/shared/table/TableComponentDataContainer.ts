@@ -23,12 +23,12 @@ export interface CreateBody {
 }
 
 export interface UpdateAction<T extends WithId, M extends UpdateBody> {
-    updateItemRequest: (id: number, body: M) => Promise<T>,
+    updateItemRequest: (id: number, body: M) => Promise<any>,
     itemToUpdateBody: (item: T) => M,
 }
 
 export interface CreateAction<T extends WithId, C extends CreateBody> {
-    createItemRequest: (body: C) => Promise<T>,
+    createItemRequest: (body: C) => Promise<any>,
     defaultBody: () => C
 }
 
@@ -111,10 +111,9 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this._defaultItemsPerTablePage;
     }
 
-    get filter() : F {
+    get filter(): F {
         return this._filter;
     }
-
 
     get loading(): boolean {
         return this._loading;

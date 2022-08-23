@@ -38,7 +38,7 @@
       <v-col align-self="center" cols="auto">
         <v-tooltip bottom v-if="data.deleteAllowed()">
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton"  class="mt-0 pt-0">
+            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
               <v-btn text :disabled="data.loading || !data.editable() || data.selectedItems.length==0"
                      @click="()=>data.openDeleteDialog()" icon>
                 <v-icon>mdi-delete</v-icon>
@@ -77,7 +77,7 @@
 
         </v-data-table>
 
-        <hreasy-table-update-form v-bind:data="data">
+        <hreasy-table-update-form v-bind:data="data" :update-title="updateTitle">
           <template v-slot:fields>
             <slot name="updateFormFields">
             </slot>
@@ -110,6 +110,7 @@ import HreasyTableUpdateForm from "@/components/shared/table/HreasyTableUpdateFo
 import HreasyTableCreateForm from "@/components/shared/table/HreasyTableCreateForm.vue";
 import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTableDeleteConfimration.vue";
 
+
 @Component({
   components: {HreasyTableCreateForm, HreasyTableUpdateForm, HreasyTableDeleteConfimration}
 })
@@ -118,6 +119,8 @@ export default class HreasyTable<T extends WithId, M extends UpdateBody, C exten
   @Prop({required: true})
   private data!: TableComponentDataContainer<T, M, C, F>;
 
+  @Prop({required:false})
+  private updateTitle: Function | string | undefined;
 
   /**
    * Lifecycle hook

@@ -2,8 +2,10 @@ import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
 import {SimpleDict} from "@/store/modules/dict";
 
-export type ManagerResponsibilityType = 'technical' | 'organization' | 'hr';
-export type ManagerResponsibilityObjectType = 'project' | 'business_account' | 'department';
+export const managerResponsibilityTypes = ['technical','organization','hr'];
+export const managerResponsibilityObjectTypes = ['project', 'business_account', 'department'];
+export type ManagerResponsibilityType = typeof managerResponsibilityTypes[number];
+export type ManagerResponsibilityObjectType = typeof managerResponsibilityObjectTypes[number];
 
 export interface ManagerResponsibilityObject {
     id: number,
@@ -30,11 +32,21 @@ export interface Manager {
 }
 
 /**
- * DTO to create or update employee child
+ * DTO to create manager link
  */
-export interface CreateOrManagerBody {
-    employee: number,
-    responsibilityObject: ManagerResponsibilityObject,
+export interface CreateManagerBody {
+    employee: number|null,
+    responsibilityObjectType: ManagerResponsibilityObjectType,
+    responsibilityObjectId: number|null,
+    responsibilityType?: ManagerResponsibilityType|null,
+    comment?: string,
+}
+/**
+ * DTO to update manager link
+ */
+export interface UpdateManagerBody {
+    responsibilityObjectType: ManagerResponsibilityObjectType,
+    responsibilityObjectId: number,
     responsibilityType: ManagerResponsibilityType,
     comment?: string,
 }
@@ -46,12 +58,12 @@ export interface AdminManagerService {
     /**
      * Create new record
      */
-    create(body: CreateOrManagerBody): Promise<Manager>;
+    create(body: CreateManagerBody): Promise<number>;
 
     /**
      * Update existing record
      */
-    update(managerId: number, body: CreateOrManagerBody): Promise<Manager>;
+    update(managerId: number, body: UpdateManagerBody): Promise<number>;
 
     delete(managerId: number[]): Promise<Array<any>>;
 }
@@ -67,13 +79,13 @@ class RestAdminManagerService implements AdminManagerService {
         });
     }
 
-    create(body: CreateOrManagerBody): Promise<Manager> {
+    create(body: CreateManagerBody): Promise<number> {
         return httpService.post(`v1/admin/managers`, body).then(response => {
             return response.data;
         });
     }
 
-    update(managerId: number, body: CreateOrManagerBody): Promise<Manager> {
+    update(managerId: number, body: UpdateManagerBody): Promise<number> {
         return httpService.put(`v1/admin/managers/${managerId}`, body).then(response => {
             return response.data;
         });
