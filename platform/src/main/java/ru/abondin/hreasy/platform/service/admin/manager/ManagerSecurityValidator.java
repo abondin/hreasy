@@ -22,4 +22,15 @@ public class ManagerSecurityValidator {
             return Mono.just(true);
         });
     }
+
+    /**
+     * Everyone can see manager of given project/ba/department
+     * @param auth
+     * @param objectType
+     * @param objectId
+     * @return
+     */
+    public Mono<Boolean> validateViewManagers(AuthContext auth, String objectType, int objectId) {
+        return Mono.just(true);
+    }
 }

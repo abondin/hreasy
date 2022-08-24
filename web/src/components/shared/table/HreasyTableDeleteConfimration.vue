@@ -1,5 +1,4 @@
 <template>
-  <v-dialog max-width="600" v-bind:value="data.deleteDialog" :disabled="data.loading" persistent>
     <v-card>
       <v-card-title>{{ $t('Удаление записей') }}</v-card-title>
       <v-card-text>
@@ -19,7 +18,6 @@
         </v-btn>
       </v-card-actions>
     </v-card>
-  </v-dialog>
 </template>
 
 <script lang="ts">

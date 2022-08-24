@@ -39,6 +39,11 @@
           @close="baDialog=false;fetchDetails()"></admin-b-a-form>
     </v-dialog>
 
+    <!-- Managers -->
+    <v-card>
+      <admin-managers v-if="businessAccount" :selected-object="responsibleObject" mode="compact"></admin-managers>
+    </v-card>
+
     <admin-b-a-positions
         ref="baPositions"
         :load-on-create=false
@@ -53,16 +58,16 @@ import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
 import AdminBAForm from "@/components/admin/business_account/AdminBAForm.vue";
-import adminBaService, {
-  BusinessAccount
-} from "@/components/admin/business_account/admin.ba.service";
+import adminBaService, {BusinessAccount} from "@/components/admin/business_account/admin.ba.service";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import {Prop} from "vue-property-decorator";
 import AdminBAPositions from "@/components/admin/business_account/AdminBAPositions.vue";
+import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
+import {ManagerResponsibilityObjectId} from "@/components/admin/manager/admin.manager.service";
 
 
 @Component({
-      components: {AdminBAPositions, AdminBAForm}
+      components: {AdminManagers, AdminBAPositions, AdminBAForm}
     }
 )
 export default class AdminBusinessAccountDetails extends Vue {
@@ -107,11 +112,18 @@ export default class AdminBusinessAccountDetails extends Vue {
     this.baDialog = true;
   }
 
+  private get responsibleObject(): ManagerResponsibilityObjectId|null{
+    return this.businessAccount ? {
+      id: this.businessAccount.id,
+      type: 'business_account'
+    } : null;
+  }
+
 }
 </script>
 
 <style>
-.archived{
+.archived {
   text-decoration: line-through;
 }
 </style>

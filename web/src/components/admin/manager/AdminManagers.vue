@@ -196,6 +196,7 @@ import employeeService, {Employee} from "@/components/empl/employee.service";
 import adminManagerService, {
   CreateManagerBody,
   Manager,
+  ManagerResponsibilityObjectId,
   ManagerResponsibilityObjectType,
   managerResponsibilityObjectTypes,
   managerResponsibilityTypes,
@@ -207,6 +208,8 @@ import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import {CreateOrUpdateAction} from "@/components/shared/table/EditTableComponentDataContainer";
 import TableComponentDataContainer, {Filter} from "@/components/shared/table/TableComponentDataContainer";
 import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTableDeleteConfimration.vue";
+import {Prop} from "vue-property-decorator";
+import {DataTableHeader} from "vuetify";
 
 
 class ManagerFilter extends Filter<Manager> {
@@ -248,16 +251,27 @@ const namespace_dict: string = 'dict';
 @Component({components: {HreasyTableDeleteConfimration, HreasyTable}})
 export default class AdminManagers extends Vue {
 
+  @Prop({required: false, default: null})
+  private selectedObject!: ManagerResponsibilityObjectId | null;
+
+  @Prop({required: false, default: 'full'})
+  private mode!: 'full' | 'compact';
+
+  private headers(): DataTableHeader[] {
+    const headers = [];
+    headers.push({text: this.$tc('Менеджер'), value: 'employee.name'});
+    if (this.mode == "full") {
+      headers.push({text: this.$tc('Тип объекта'), value: 'responsibilityObject.type'});
+      headers.push({text: this.$tc('Объект'), value: 'responsibilityObject.name'});
+    }
+    headers.push({text: this.$tc('Основное направление'), value: 'responsibilityType'});
+    headers.push({text: this.$tc('Примечание'), value: 'comment'});
+    return headers;
+  }
+
   private data = new TableComponentDataContainer<Manager, UpdateManagerBody, CreateManagerBody, ManagerFilter>(
-      () => adminManagerService.findAll(),
-      () =>
-          [
-            {text: this.$tc('Менеджер'), value: 'employee.name'},
-            {text: this.$tc('Тип объекта'), value: 'responsibilityObject.type'},
-            {text: this.$tc('Объект'), value: 'responsibilityObject.name'},
-            {text: this.$tc('Основное направление'), value: 'responsibilityType'},
-            {text: this.$tc('Примечание'), value: 'comment'}
-          ],
+      () => this.selectedObject ? adminManagerService.findByObject(this.selectedObject) : adminManagerService.findAll(),
+      this.headers,
       {
         updateItemRequest: (id, body) => (adminManagerService.update(id, body)),
         itemToUpdateBody: item =>

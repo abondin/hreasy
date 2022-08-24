@@ -1,6 +1,6 @@
 <!-- Generic table with search and crud actions -->
 <template>
-  <v-container>
+  <v-container v-if="data">
     <v-row v-if="data.error">
       <v-col>
         <v-alert type="error">{{ data.error }}</v-alert>
@@ -76,20 +76,28 @@
 
         </v-data-table>
 
-        <hreasy-table-update-form v-bind:data="data" :update-title="updateTitle">
-          <template v-slot:fields>
-            <slot name="updateFormFields">
-            </slot>
-          </template>
-        </hreasy-table-update-form>
-        <hreasy-table-create-form v-bind:data="data">
-          <template v-slot:fields>
-            <slot name="createFormFields">
-            </slot>
-          </template>
-        </hreasy-table-create-form>
+        <v-dialog v-bind:value="data.updateDialog" :disabled="data.loading" persistent>
+          <hreasy-table-update-form v-bind:data="data" :update-title="updateTitle">
+            <template v-slot:fields>
+              <slot name="updateFormFields">
+              </slot>
+            </template>
+          </hreasy-table-update-form>
+        </v-dialog>
+
+        <v-dialog v-bind:value="data.createDialog" :disabled="data.loading" persistent>
+          <hreasy-table-create-form v-bind:data="data">
+            <template v-slot:fields>
+              <slot name="createFormFields">
+              </slot>
+            </template>
+          </hreasy-table-create-form>
+        </v-dialog>
+
+        <v-dialog max-width="600" v-bind:value="data.deleteDialog" :disabled="data.loading" persistent>
         <hreasy-table-delete-confimration :data="data">
         </hreasy-table-delete-confimration>
+        </v-dialog>
       </v-col>
     </v-row>
   </v-container>
@@ -118,11 +126,11 @@ export default class HreasyTable<T extends WithId, M extends UpdateBody, C exten
   @Prop({required: true})
   private data!: TableComponentDataContainer<T, M, C, F>;
 
-  @Prop({required:false})
+  @Prop({required: false})
   private updateTitle: Function | string | undefined;
 
-  @Prop({required:false, default:()=>['name']})
-  private sortBy! : string|string[];
+  @Prop({required: false, default: () => ['name']})
+  private sortBy!: string | string[];
 
   /**
    * Lifecycle hook

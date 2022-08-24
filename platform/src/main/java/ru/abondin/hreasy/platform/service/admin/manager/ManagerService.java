@@ -37,6 +37,13 @@ public class ManagerService {
                 .map(mapper::fromEntry);
     }
 
+    public Flux<ManagerDto> byObject(AuthContext auth, String objectType, int objectId) {
+        var now = dateTimeService.now();
+        return securityValidator.validateViewManagers(auth, objectType, objectId)
+                .flatMapMany(valid -> repo.findByObjectDetailed(now, objectType, objectId))
+                .map(mapper::fromEntry);
+    }
+
     @Transactional
     public Mono<Integer> create(AuthContext auth, CreateManagerBody body) {
         var createdAt = dateTimeService.now();

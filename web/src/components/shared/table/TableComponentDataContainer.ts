@@ -305,7 +305,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         this._error = null;
         this._loading = true;
         this._items.length = 0;
-        this._selectedItems.length = 0;
+        this._selectedItems= [];
         return this.dataLoader()
             .then(data => {
                 this._items = data;

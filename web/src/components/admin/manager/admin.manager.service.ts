@@ -2,14 +2,17 @@ import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
 import {SimpleDict} from "@/store/modules/dict";
 
-export const managerResponsibilityTypes = ['technical','organization','hr'];
+export const managerResponsibilityTypes = ['technical', 'organization', 'hr'];
 export const managerResponsibilityObjectTypes = ['project', 'business_account', 'department'];
 export type ManagerResponsibilityType = typeof managerResponsibilityTypes[number];
 export type ManagerResponsibilityObjectType = typeof managerResponsibilityObjectTypes[number];
 
-export interface ManagerResponsibilityObject {
+export interface ManagerResponsibilityObjectId {
     id: number,
     type: ManagerResponsibilityObjectType;
+}
+
+export interface ManagerResponsibilityObject extends ManagerResponsibilityObjectId {
     name: string;
     /**
      * relevant to project and business_account
@@ -18,7 +21,7 @@ export interface ManagerResponsibilityObject {
     /**
      * relevant to project and department
      */
-    departmentId?: number|null;
+    departmentId?: number | null;
 }
 
 export interface Manager {
@@ -35,12 +38,13 @@ export interface Manager {
  * DTO to create manager link
  */
 export interface CreateManagerBody {
-    employee: number|null,
+    employee: number | null,
     responsibilityObjectType: ManagerResponsibilityObjectType,
-    responsibilityObjectId: number|null,
-    responsibilityType?: ManagerResponsibilityType|null,
+    responsibilityObjectId: number | null,
+    responsibilityType?: ManagerResponsibilityType | null,
     comment?: string,
 }
+
 /**
  * DTO to update manager link
  */
@@ -53,6 +57,8 @@ export interface UpdateManagerBody {
 
 
 export interface AdminManagerService {
+    findByObject(selectedObject: ManagerResponsibilityObjectId): | Promise<Manager[]>;
+
     findAll(): Promise<Manager[]>;
 
     /**
@@ -75,6 +81,12 @@ class RestAdminManagerService implements AdminManagerService {
 
     findAll(): Promise<Manager[]> {
         return httpService.get(`v1/admin/managers`).then(response => {
+            return response.data;
+        });
+    }
+
+    findByObject(selectedObject: ManagerResponsibilityObjectId): Promise<Manager[]> {
+        return httpService.get(`v1/admin/managers/object/${selectedObject.type}/${selectedObject.id}`).then(response => {
             return response.data;
         });
     }

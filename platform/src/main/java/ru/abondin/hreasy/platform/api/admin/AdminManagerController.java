@@ -24,6 +24,11 @@ public class AdminManagerController {
         return AuthHandler.currentAuth().flatMapMany(auth -> service.all(auth));
     }
 
+    @GetMapping("/object/{objectType}/{objectId}")
+    public Flux<ManagerDto> byObject(@PathVariable String objectType, @PathVariable int objectId) {
+        return AuthHandler.currentAuth().flatMapMany(auth -> service.byObject(auth, objectType, objectId));
+    }
+
     @PostMapping
     public Mono<Integer> create(@RequestBody CreateManagerBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> service.create(auth, body));
