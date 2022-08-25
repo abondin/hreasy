@@ -7,19 +7,25 @@
       </v-col>
     </v-row>
     <v-row dense>
-      <v-col align-self="center" cols="auto">
-        <!-- Refresh button -->
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-              <v-btn text icon @click="reloadData()">
-                <v-icon>refresh</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <span>{{ $t('Обновить данные') }}</span>
-        </v-tooltip>
+      <!-- Title-->
+      <v-col v-if="title">
+        {{title}}
       </v-col>
+      <!-- Refresh button -->
+      <slot name="refreshButton">
+        <v-col align-self="center" cols="auto">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
+                <v-btn text icon @click="reloadData()">
+                  <v-icon>refresh</v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <span>{{ $t('Обновить данные') }}</span>
+          </v-tooltip>
+        </v-col>
+      </slot>
       <!-- Add new item -->
       <v-col align-self="center" cols="auto">
         <v-tooltip bottom v-if="data.createAllowed()">
@@ -50,7 +56,6 @@
       </v-col>
 
       <!-- Filters -->
-      <v-divider vertical class="mr-5"></v-divider>
       <slot name="filters"></slot>
     </v-row>
     <v-row v-if="data.initialized">
@@ -64,7 +69,8 @@
             :sort-by="sortBy"
             dense
             :items-per-page="data.defaultItemsPerTablePage"
-            class="text-truncate table-cursor"
+            class="text-truncate"
+            :class="{'table-cursor': data.updateAllowed()}"
             :show-select="data.deleteAllowed()"
             :single-select="data.singleSelect"
             @click:row="(v)=>data.openUpdateDialog(v)"
@@ -77,7 +83,7 @@
         </v-data-table>
 
         <v-dialog v-bind:value="data.updateDialog" :disabled="data.loading" persistent>
-          <hreasy-table-update-form v-bind:data="data" :update-title="updateTitle">
+          <hreasy-table-update-form v-bind:data="data"  :update-title="updateTitle">
             <template v-slot:fields>
               <slot name="updateFormFields">
               </slot>
@@ -95,8 +101,8 @@
         </v-dialog>
 
         <v-dialog max-width="600" v-bind:value="data.deleteDialog" :disabled="data.loading" persistent>
-        <hreasy-table-delete-confimration :data="data">
-        </hreasy-table-delete-confimration>
+          <hreasy-table-delete-confimration :data="data">
+          </hreasy-table-delete-confimration>
         </v-dialog>
       </v-col>
     </v-row>
@@ -126,6 +132,9 @@ export default class HreasyTable<T extends WithId, M extends UpdateBody, C exten
   @Prop({required: true})
   private data!: TableComponentDataContainer<T, M, C, F>;
 
+  @Prop({required: false, default: null})
+  private title!: string|null;
+
   @Prop({required: false})
   private updateTitle: Function | string | undefined;
 
@@ -140,7 +149,7 @@ export default class HreasyTable<T extends WithId, M extends UpdateBody, C exten
   }
 
 
-  protected reloadData() {
+  public reloadData() {
     return this.data.reloadData();
   }
 

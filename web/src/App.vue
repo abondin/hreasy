@@ -76,11 +76,6 @@
               {{ $t('Админка сотрудников') }}
             </v-list-item-title>
           </v-list-item>
-          <v-list-item to="/admin/managers" v-if="canAdminManagers()">
-            <v-list-item-title>
-              {{ $t('Менеджеры') }}
-            </v-list-item-title>
-          </v-list-item>
           <v-list-item :to="'/admin/dicts/'+firstAvialableDict()" v-if="firstAvialableDict()">
             <v-list-item-title>
               {{ $t('Справочники') }}
@@ -107,6 +102,13 @@
               {{ $t('Статьи и новости') }}
             </v-list-item-title>
           </v-list-item>
+
+          <v-list-item to="/admin/managers" v-if="canAdminManagers()">
+            <v-list-item-title>
+              {{ $t('Все менеджеры') }}
+            </v-list-item-title>
+          </v-list-item>
+
 
         </v-list-group>
 

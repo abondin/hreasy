@@ -12,8 +12,6 @@ public class CreateOrUpdateBABody {
     @NotNull
     private String name;
     @Nullable
-    private Integer responsibleEmployee;
-    @Nullable
     private String description;
 
     private boolean archived = false;

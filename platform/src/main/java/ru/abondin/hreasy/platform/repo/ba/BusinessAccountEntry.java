@@ -15,7 +15,6 @@ public class BusinessAccountEntry {
     @Id
     private Integer id;
     private String name;
-    private Integer responsibleEmployee;
     private String description;
     private boolean archived;
     private OffsetDateTime createdAt;

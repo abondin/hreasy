@@ -9,15 +9,15 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface BusinessAccountRepo extends ReactiveCrudRepository<BusinessAccountEntry, Integer> {
 
-    String FIND_QUERY_PREFIX = "select ba.*, trim(concat_ws(' ', re.lastname, re.firstname, re.patronymic_name)) as responsible_employee_name " +
-            " from ba.business_account ba left join empl.employee re on ba.responsible_employee=re.id";
+    String FIND_QUERY_PREFIX = "select ba.*" +
+            " from ba.business_account ba";
 
     @Query(FIND_QUERY_PREFIX +
-            "  order by responsible_employee_name")
+            "  order by name")
     Flux<BusinessAccountEntryView> findDetailed();
 
     @Query(FIND_QUERY_PREFIX +
-            "  where ba.archived != true order by responsible_employee_name")
+            "  where ba.archived != true order by name")
     Flux<BusinessAccountEntryView> findActive();
 
 

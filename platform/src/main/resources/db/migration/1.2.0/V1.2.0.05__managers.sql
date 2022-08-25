@@ -52,5 +52,6 @@ INSERT INTO sec.perm (permission,description) VALUES
  	 ('admin_managers','Admin managers for department,ba,project employees');
 INSERT INTO sec.role_perm (role, permission) VALUES
    	 ('global_admin', 'admin_managers');
-INSERT INTO sec.role_perm (role, permission) VALUES
-   	 ('hr', 'admin_managers');
+
+ALTER TABLE ba.business_account drop column responsible_employee;
+ALTER TABLE ba.business_account_history drop column responsible_employee;

@@ -21,14 +21,6 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
                   WHEN m.object_type='department' THEN d.name
                   ELSE concat('UNSUPPORTED OBJECT TYPE', m.object_type)
              END as object_name
-            ,CASE WHEN m.object_type='project' THEN p.ba_id\s
-                  WHEN m.object_type='business_account' THEN ba.id
-                  ELSE null
-             END as ba_id
-            ,CASE WHEN m.object_type='project' THEN p.department_id \s
-                  WHEN m.object_type='department' THEN d.id
-                  ELSE null
-             END as department_id
             from empl.manager m
             left join empl.employee e on m.employee=e.id
             left join ba.business_account ba on m.object_id=ba.id\s

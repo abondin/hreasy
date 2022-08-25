@@ -1,7 +1,7 @@
 <!-- Business accounts detailed page -->
 <template>
   <v-container>
-    <v-card>
+    <v-card v-if="businessAccount">
 
       <v-card-title>
         <!-- Refresh button -->
@@ -11,11 +11,8 @@
         <v-btn text icon @click="fetchDetails()" :loading="loading">
           <v-icon>refresh</v-icon>
         </v-btn>
-        <v-divider vertical class="mr-5 ml-5"></v-divider>
-        <div v-if="businessAccount" :class="{archived: businessAccount.archived}">{{ businessAccount.name }} <span
-            v-if="businessAccount.description">({{ businessAccount.description }})</span></div>
+        <div v-if="businessAccount" :class="{archived: businessAccount.archived}">{{ businessAccount.name }}</div>
         <v-spacer></v-spacer>
-        <v-divider vertical class="mr-5 ml-5"></v-divider>
 
         <!-- Update businessAccount -->
         <v-tooltip bottom>
@@ -28,8 +25,10 @@
           </template>
           <span>{{ $t('Редактировать бизнес аккаунт') }}</span>
         </v-tooltip>
-
       </v-card-title>
+      <v-card-text v-if="businessAccount.description">
+        {{businessAccount.description}}
+      </v-card-text>
     </v-card>
 
     <v-dialog v-model="baDialog">
@@ -40,8 +39,13 @@
     </v-dialog>
 
     <!-- Managers -->
-    <v-card>
-      <admin-managers v-if="businessAccount" :selected-object="responsibleObject" mode="compact"></admin-managers>
+    <v-card class="mt-5 mb-5">
+      <admin-managers
+          ref="baManagersTable"
+          v-if="businessAccount"
+          :selected-object="responsibleObject"
+          mode="compact"
+          :title="$t('Менеджеры бизнес аккаунта')"></admin-managers>
     </v-card>
 
     <admin-b-a-positions
@@ -101,6 +105,9 @@ export default class AdminBusinessAccountDetails extends Vue {
           this.businessAccount = ba;
           if (this.$refs.baPositions) {
             (this.$refs.baPositions as AdminBAPositions).refresh();
+          }
+          if (this.$refs.baManagersTable){
+            (this.$refs.baManagersTable as AdminManagers).refresh();
           }
         }).finally(() => {
           if (showLoadingBar) this.loading = false;

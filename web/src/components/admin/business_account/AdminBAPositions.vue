@@ -1,51 +1,56 @@
 <!-- Business accounts positions table -->
 <template>
   <v-card>
-    <v-card-title>
-      <div class="mr-2">{{ $t('Позиции бизнес аккаунта') }}</div>
-      <!-- Refresh button -->
-      <v-text-field
-          v-model="filter.search"
-          :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
-      <v-checkbox :label="$t('Показать архивные позиции')" v-model="filter.showArchived">
-      </v-checkbox>
-      <v-divider vertical class="mr-5 ml-5"></v-divider>
-      <!-- Add new businessAccount position -->
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on: ton, attrs: tattrs}">
-          <div v-bind="tattrs" v-on="ton" class="col-auto">
-            <v-btn text color="primary" :disabled="loading" @click="openBADialog(undefined)" icon>
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
-          </div>
-        </template>
-        <span>{{ $t('Создать новую позицию') }}</span>
-      </v-tooltip>
+    <v-container>
+      <v-row>
+        <v-col align-self="center" cols="auto">
+          <div class="mr-2">{{ $t('Позиции бизнес аккаунта') }}</div>
+        </v-col>
+        <!-- Refresh button -->
+        <v-col align-self="center" cols="auto">
+          <v-text-field
+              v-model="filter.search"
+              :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
+        </v-col>
+        <v-col align-self="center" cols="auto">
+          <v-checkbox :label="$t('Показать архивные позиции')" v-model="filter.showArchived">
+          </v-checkbox>
+        </v-col>
+        <!-- Add new businessAccount position -->
+        <v-col align-self="center" cols="auto">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <div v-bind="tattrs" v-on="ton" class="col-auto">
+                <v-btn text color="primary" :disabled="loading" @click="openBADialog(undefined)" icon>
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <span>{{ $t('Создать новую позицию') }}</span>
+          </v-tooltip>
+        </v-col>
+      </v-row>
+    <v-data-table
+        :loading="loading"
+        :loading-text="$t('Загрузка_данных')"
+        :headers="headers"
+        :items="filteredPositions()"
+        hide-default-footer
+        sort-by="name"
+        sort
+        disable-pagination>
+      <template v-slot:item.name="{ item }">
+        <v-btn text @click="openBADialog(item)" :class="{archived:item.archived}">{{ item.name }}
+        </v-btn>
+      </template>
+    </v-data-table>
 
-    </v-card-title>
-    <v-card-text>
-      <v-data-table
-          :loading="loading"
-          :loading-text="$t('Загрузка_данных')"
-          :headers="headers"
-          :items="filteredPositions()"
-          hide-default-footer
-          sort-by="name"
-          sort
-          disable-pagination>
-        <template v-slot:item.name="{ item }">
-          <v-btn text @click="openBADialog(item)" :class="{archived:item.archived}">{{ item.name }}
-          </v-btn>
-        </template>
-      </v-data-table>
-
-      <v-dialog v-model="baDialog">
-        <admin-b-a-position-form
-            :business-account-id="businessAccountId"
-            :input="selectedPosition" @close="baDialog=false;fetchData()"></admin-b-a-position-form>
-      </v-dialog>
-
-    </v-card-text>
+    <v-dialog v-model="baDialog">
+      <admin-b-a-position-form
+          :business-account-id="businessAccountId"
+          :input="selectedPosition" @close="baDialog=false;fetchData()"></admin-b-a-position-form>
+    </v-dialog>
+    </v-container>
 
   </v-card>
 </template>
@@ -147,7 +152,7 @@ export default class AdminBAPositions extends Vue {
 }
 </script>
 <style>
-.archived{
+.archived {
   text-decoration: line-through;
 }
 </style>

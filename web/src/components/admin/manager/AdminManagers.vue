@@ -1,12 +1,18 @@
 <!-- Managers of departments, business accounts and projects-->
 <template>
-  <hreasy-table :data="data"
+  <hreasy-table ref="managersTable" :data="data"
+                :title="title"
                 :update-title="()=>data.selectedItems.length == 0 ? null : data.selectedItems[0].employee.name"
                 :sort-by="['responsibilityObject.type', 'employee.displayName']"
   >
 
+    <!-- Hide refresh button in compact mode-->
+    <template v-if="mode=='compact'" v-slot:refreshButton>
+      <span/>
+    </template>
+
     <!--<editor-fold desc="Filters">-->
-    <template v-slot:filters>
+    <template v-slot:filters v-if="mode=='full'">
       <v-col>
         <v-text-field v-model="data.filter.search"
                       append-icon="mdi-magnify"
@@ -64,6 +70,7 @@
 
     <!--<editor-fold desc="Update form">-->
     <template v-slot:updateFormFields>
+      <span v-if="selectedObject==null">
       <v-autocomplete
           v-model="data.updateBody.responsibilityObjectType"
           :items="allResponsibilityObjectTypes"
@@ -72,7 +79,7 @@
           @change="data.updateBody.responsibilityObjectId=null"
       ></v-autocomplete>
 
-      <!--<editor-fold desc="Responsibility Object">-->
+        <!--<editor-fold desc="Responsibility Object">-->
       <v-autocomplete
           v-if="data.updateBody.responsibilityObjectType==='project'"
           v-model="data.updateBody.responsibilityObjectId"
@@ -97,7 +104,8 @@
           :label="$t('Отдел')"
           :rules="[v => !!v || $t('Обязательное поле')]"
       ></v-autocomplete>
-      <!-- </editor-fold> -->
+        <!-- </editor-fold> -->
+      </span>
 
       <v-autocomplete
           v-model="data.updateBody.responsibilityType"
@@ -129,6 +137,7 @@
           :rules="[v => !!v || $t('Обязательное поле')]"
       ></v-autocomplete>
 
+      <span v-if="selectedObject==null">
       <v-autocomplete
           v-model="data.createBody.responsibilityObjectType"
           :items="allResponsibilityObjectTypes"
@@ -137,7 +146,7 @@
           @change="data.createBody.responsibilityObjectId=null"
       ></v-autocomplete>
 
-      <!--<editor-fold desc="Responsibility Object">-->
+        <!--<editor-fold desc="Responsibility Object">-->
       <v-autocomplete
           v-if="data.createBody.responsibilityObjectType==='project'"
           v-model="data.createBody.responsibilityObjectId"
@@ -162,7 +171,8 @@
           :label="$t('Отдел')"
           :rules="[v => !!v || $t('Обязательное поле')]"
       ></v-autocomplete>
-      <!-- </editor-fold> -->
+        <!-- </editor-fold> -->
+      </span>
 
       <v-autocomplete
           v-model="data.createBody.responsibilityType"
@@ -182,7 +192,6 @@
 
     </template>
     <!-- </editor-fold> -->
-
   </hreasy-table>
 </template>
 
@@ -206,7 +215,7 @@ import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import {CreateOrUpdateAction} from "@/components/shared/table/EditTableComponentDataContainer";
-import TableComponentDataContainer, {Filter} from "@/components/shared/table/TableComponentDataContainer";
+import TableComponentDataContainer, {Filter, UpdateAction} from "@/components/shared/table/TableComponentDataContainer";
 import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTableDeleteConfimration.vue";
 import {Prop} from "vue-property-decorator";
 import {DataTableHeader} from "vuetify";
@@ -257,6 +266,9 @@ export default class AdminManagers extends Vue {
   @Prop({required: false, default: 'full'})
   private mode!: 'full' | 'compact';
 
+  @Prop({required: false, default: null})
+  private title!: string | null;
+
   private headers(): DataTableHeader[] {
     const headers = [];
     headers.push({text: this.$tc('Менеджер'), value: 'employee.name'});
@@ -269,22 +281,27 @@ export default class AdminManagers extends Vue {
     return headers;
   }
 
+  private updateAction(): UpdateAction<Manager, UpdateManagerBody> | null {
+    return {
+      updateItemRequest: (id, body) => (adminManagerService.update(id, body)),
+      itemToUpdateBody: item =>
+          ({
+            responsibilityObjectType: item.responsibilityObject.type,
+            responsibilityObjectId: item.responsibilityObject.id,
+            responsibilityType: item.responsibilityType,
+            comment: item.comment
+          })
+    };
+  }
+
+
   private data = new TableComponentDataContainer<Manager, UpdateManagerBody, CreateManagerBody, ManagerFilter>(
       () => this.selectedObject ? adminManagerService.findByObject(this.selectedObject) : adminManagerService.findAll(),
       this.headers,
-      {
-        updateItemRequest: (id, body) => (adminManagerService.update(id, body)),
-        itemToUpdateBody: item =>
-            ({
-              responsibilityObjectType: item.responsibilityObject.type,
-              responsibilityObjectId: item.responsibilityObject.id,
-              responsibilityType: item.responsibilityType,
-              comment: item.comment
-            } as UpdateManagerBody)
-      },
+      this.updateAction(),
       {
         createItemRequest: (body) => (adminManagerService.create(body)),
-        defaultBody: () => this.newManagerBody()
+        defaultBody: this.newManagerBody
       } as CreateOrUpdateAction<Manager, CreateManagerBody>,
       {
         deleteItemRequest: itemsToDelete => adminManagerService.delete(itemsToDelete)
@@ -331,11 +348,17 @@ export default class AdminManagers extends Vue {
         );
   }
 
+  public refresh() {
+    if (this.$refs.managersTable) {
+      (this.$refs.managersTable as HreasyTable<any, any, any, any>).reloadData();
+    }
+  }
+
   private newManagerBody(): CreateManagerBody {
     const body = {
       employee: null,
-      responsibilityObjectType: 'project',
-      responsibilityObjectId: null,
+      responsibilityObjectType: this.selectedObject ? this.selectedObject.type : 'project',
+      responsibilityObjectId: this.selectedObject ? this.selectedObject.id : null,
       responsibilityType: 'organization'
     } as CreateManagerBody;
     return body;
