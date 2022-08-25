@@ -27,17 +27,6 @@ public class ManagerDto {
          * project, ba or department name
          */
         private String name;
-
-        /**
-         * project.baId or ba.id.
-         * Uses to filter project or ba by ba id.
-         */
-        private Integer baId;
-        /**
-         * project.departmentId or department.id
-         * Uses to filter project or department by department id.
-         */
-        private Integer departmentId;
     }
 
     private int id;

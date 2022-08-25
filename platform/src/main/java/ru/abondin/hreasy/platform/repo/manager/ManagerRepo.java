@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.repo.manager;
 
-import org.reactivestreams.Publisher;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
@@ -12,7 +11,7 @@ import java.time.OffsetDateTime;
 @Repository
 public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Integer> {
 
-    final String defaultSelectQuery = """
+    String defaultSelectQuery = """
             select m.*,
             trim(concat_ws(' ', e.lastname, e.firstname, e.patronymic_name)) as employee_display_name
             , (e.date_of_dismissal is null or e.date_of_dismissal > :now) as employee_active
@@ -28,10 +27,23 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
             left join dict.department d on m.object_id=d.id\s
             """;
 
-    @Query(defaultSelectQuery+" order by employee_display_name asc")
+    String AGGREGATED_MANAGERS_BY_OBJECT= """
+            select m.object_id, m.object_type, jsonb_agg(jsonb_build_object(
+            					'id', m.id,
+            					'employeeId', e.id,
+            					'employeeName', trim(concat_ws(' ', e.lastname, e.firstname, e.patronymic_name)),
+            					'responsibilityType', m.responsibility_type,
+            					'comment',m.comment\s
+            					)) as managers_json
+            				from empl.manager m
+            				left join empl.employee e on m.employee=e.id
+            				group by m.object_id, m.object_type
+            """;
+
+    @Query(defaultSelectQuery + " order by employee_display_name asc")
     Flux<ManagerView> findDetailed(@Param("now") OffsetDateTime now);
 
-    @Query(defaultSelectQuery+" where object_type=:objectType and object_id=:objectId order by employee_display_name asc")
+    @Query(defaultSelectQuery + " where object_type=:objectType and object_id=:objectId order by employee_display_name asc")
     Flux<ManagerView> findByObjectDetailed(OffsetDateTime now, String objectType, int objectId);
 }
 

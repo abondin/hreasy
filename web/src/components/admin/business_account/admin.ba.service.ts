@@ -12,6 +12,7 @@ export interface BusinessAccount {
     id: number,
     name: string;
     description?: string,
+    managers: SimpleDict[],
     createdBy?: number,
     createdAt?: Date,
     archived: boolean

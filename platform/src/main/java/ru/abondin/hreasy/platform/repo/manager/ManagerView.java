@@ -7,6 +7,4 @@ public class ManagerView extends ManagerEntry {
     private String employeeDisplayName;
     private Boolean employeeActive;
     private String objectName;
-    private Integer baId;
-    private Integer departmentId;
 }

@@ -31,30 +31,6 @@
             multiple
         ></v-autocomplete>
       </v-col>
-      <v-col>
-        <v-autocomplete
-            clearable
-            class="mr-5"
-            v-model="data.filter.bas"
-            :items="allBas"
-            item-text="name"
-            item-value="id"
-            :label="$t('Бизнес аккаунт')"
-            multiple
-        ></v-autocomplete>
-      </v-col>
-      <v-col>
-        <v-autocomplete
-            clearable
-            class="mr-5"
-            v-model="data.filter.departments"
-            :items="allDepartments"
-            item-text="name"
-            item-value="id"
-            :label="$t('Отдел')"
-            multiple
-        ></v-autocomplete>
-      </v-col>
     </template>
     <!-- </editor-fold> -->
 
@@ -223,8 +199,6 @@ import {DataTableHeader} from "vuetify";
 
 class ManagerFilter extends Filter<Manager> {
   public search = '';
-  public bas: number[] = [];
-  public departments: number[] = [];
   public responsibilityObjectTypes: ManagerResponsibilityObjectType[] =
       managerResponsibilityObjectTypes;
 
@@ -237,14 +211,6 @@ class ManagerFilter extends Filter<Manager> {
         searchFilter = searchFilter || Boolean(item.employee && item.employee.name && item.employee.name.toLowerCase().indexOf(search) >= 0)
         searchFilter = searchFilter || Boolean(item.responsibilityObject && item.responsibilityObject.name && item.responsibilityObject.name.toLowerCase().indexOf(search) >= 0)
         filtered = filtered && searchFilter;
-      }
-      if (this.bas && this.bas.length > 0) {
-        filtered = filtered && Boolean(
-            item.responsibilityObject && item.responsibilityObject.baId && this.bas.indexOf(item.responsibilityObject.baId) >= 0);
-      }
-      if (this.departments && this.departments.length > 0) {
-        filtered = filtered && Boolean(
-            item.responsibilityObject && item.responsibilityObject.departmentId && this.departments.indexOf(item.responsibilityObject.departmentId) >= 0);
       }
       if (this.responsibilityObjectTypes) {
         filtered = filtered && Boolean(

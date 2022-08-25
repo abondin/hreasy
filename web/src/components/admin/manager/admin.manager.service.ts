@@ -14,14 +14,6 @@ export interface ManagerResponsibilityObjectId {
 
 export interface ManagerResponsibilityObject extends ManagerResponsibilityObjectId {
     name: string;
-    /**
-     * relevant to project and business_account
-     */
-    baId?: number,
-    /**
-     * relevant to project and department
-     */
-    departmentId?: number | null;
 }
 
 export interface Manager {
