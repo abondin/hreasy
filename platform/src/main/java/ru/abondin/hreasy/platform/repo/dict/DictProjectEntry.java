@@ -41,6 +41,8 @@ public class DictProjectEntry {
     @NotNull
     private Integer createdBy;
 
+    private String info;
+
 
     @Data
     public static class ProjectFullEntry extends DictProjectEntry {

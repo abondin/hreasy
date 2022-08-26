@@ -11,7 +11,7 @@
         <v-btn text icon @click="fetchDetails()" :loading="loading">
           <v-icon>refresh</v-icon>
         </v-btn>
-        <div :class="{archived: project.archived}">{{ project.name }}</div>
+        <div>{{ $t('Подробная информация по проекту ') +project.name }}</div>
         <v-spacer></v-spacer>
 
         <!-- Update project -->
@@ -27,23 +27,7 @@
         </v-tooltip>
       </v-card-title>
       <v-card-text>
-        <v-list dense>
-          <v-list-item>{{ $t('Отдел') }} :
-            {{ project.department ? project.department.name : $t("Не задан") }}
-          </v-list-item>
-          <v-list-item>{{ $t('Бизнес аккаунт') }} :
-            {{ project.businessAccount ? project.businessAccount.name : $t("Не задан") }}
-          </v-list-item>
-          <v-list-item>{{ $t('Заказчик') }} :
-            {{ project.customer ? project.customer : $t("Не задан") }}
-          </v-list-item>
-          <v-list-item>{{ $t('Начало') }} :
-            {{ formatDate(project.startDate) }}
-          </v-list-item>
-          <v-list-item>{{ $t('Окончание') }} :
-            {{ formatDate(project.endDate) }}
-          </v-list-item>
-        </v-list>
+        <project-card :project="project"></project-card>
       </v-card-text>
     </v-card>
 
@@ -53,7 +37,7 @@
           v-bind:input="project"
           :all-departments="allDepartments"
           :all-business-accounts="allBas"
-          @close="updateDialog=false;fetchData()"></admin-project-form>
+          @close="updateDialog=false;fetchDetails()"></admin-project-form>
     </v-dialog>
 
     <!-- Managers -->
@@ -83,12 +67,13 @@ import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import AdminProjectForm from "@/components/admin/project/AdminProjectForm.vue";
+import ProjectCard from "@/components/shared/ProjectCard.vue";
 
 
 const namespace_dict: string = 'dict';
 
 @Component({
-      components: {AdminProjectForm, AdminManagers}
+      components: {ProjectCard, AdminProjectForm, AdminManagers}
     }
 )
 export default class AdminProjectDetails extends Vue {
@@ -151,8 +136,3 @@ export default class AdminProjectDetails extends Vue {
 }
 </script>
 
-<style>
-.archived {
-  text-decoration: line-through;
-}
-</style>

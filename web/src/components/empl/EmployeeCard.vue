@@ -30,7 +30,7 @@ Uses in Employees Table (Employees.vue)
             <span v-if="employee.currentProject.role"> - {{ employee.currentProject.role }}</span>
           </span>
           <span v-else>{{ $tc('Проект не задан') }}</span>
-
+          
           <v-btn v-if="canUpdateCurrentProject()"
                  @click.stop="openUpdateCurrentProjectDialog=true" icon x-small>
             <v-icon small>edit</v-icon>

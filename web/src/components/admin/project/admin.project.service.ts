@@ -8,7 +8,8 @@ export interface CreateOrUpdateProject {
     endDate?: string,
     customer?: string,
     departmentId: number,
-    baId: number
+    baId: number,
+    info?: string
 }
 
 export interface ProjectFullInfo {
@@ -21,6 +22,7 @@ export interface ProjectFullInfo {
     businessAccount: SimpleDict
     createdBy?: number,
     createdAt?: Date,
+    info?: string,
     active: boolean
 }
 

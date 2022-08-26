@@ -65,8 +65,9 @@ public class ProjectAdminService {
                     entry.setCreatedBy(existing.getCreatedBy());
                     entry.setCreatedAt(existing.getCreatedAt());
                     // TODO Person of contact is now is not editable to UI
-                    // Just copy it from current value from database
+                    // Just copy it from current value from database. Probaly it should be removed at all
                     entry.setPersonOfContact(existing.getPersonOfContact());
+                    entry.setInfo(projectToUpdate.getInfo());
                     var history = mapper.historyEntry(auth.getEmployeeInfo().getEmployeeId(), now, entry);
                     return securityValidator.validateUpdateProject(auth, existing)
                             .flatMap(s -> historyRepo.save(history).flatMap((h) -> repo.save(entry)));

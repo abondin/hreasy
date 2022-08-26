@@ -61,6 +61,12 @@
         ></my-date-form-component>
 
 
+        <!-- info -->
+        <vue-editor
+            id="project-info-editor"
+            v-model="projectForm.info">
+        </vue-editor>
+
         <!-- Error block -->
         <v-alert v-if="error" type="error">
           {{ error }}
@@ -90,6 +96,7 @@ import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 import {SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
+import {VueEditor} from "vue2-editor";
 
 
 class ProjectForm {
@@ -101,10 +108,11 @@ class ProjectForm {
   public customer = '';
   public departmentId?: number;
   public baId: number | null = null;
+  public info?: string;
 }
 
 @Component(
-    {components: {MyDateFormComponent}}
+    {components: {MyDateFormComponent, VueEditor}}
 )
 
 export default class AdminProjectForm extends Vue {
@@ -147,6 +155,7 @@ export default class AdminProjectForm extends Vue {
     this.projectForm.startDate = '';
     this.projectForm.endDate = '';
     this.projectForm.baId = null;
+    this.projectForm.info='';
 
     if (this.input) {
       this.projectForm.isNew = false;
@@ -157,6 +166,7 @@ export default class AdminProjectForm extends Vue {
       this.projectForm.startDate = this.input.startDate ? this.input.startDate : '';
       this.projectForm.endDate = this.input.endDate ? this.input.endDate : '';
       this.projectForm.baId = this.input.businessAccount ? this.input.businessAccount.id : null;
+      this.projectForm.info = this.input.info;
     }
     if (this.$refs.startDateRef && this.$refs.endDateRef) {
       (this.$refs.startDateRef as MyDateFormComponent).reset();
@@ -179,7 +189,8 @@ export default class AdminProjectForm extends Vue {
         customer: this.projectForm.customer,
         endDate: this.projectForm.endDate,
         departmentId: this.projectForm.departmentId,
-        baId: this.projectForm.baId
+        baId: this.projectForm.baId,
+        info: this.projectForm.info
       } as CreateOrUpdateProject;
       var serverRequest;
       if (this.projectForm.isNew) {
