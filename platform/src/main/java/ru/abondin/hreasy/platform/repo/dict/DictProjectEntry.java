@@ -1,13 +1,17 @@
 package ru.abondin.hreasy.platform.repo.dict;
 
+import io.r2dbc.postgresql.codec.Json;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.lang.Nullable;
+import ru.abondin.hreasy.platform.service.dto.ManagerInfoDto;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Table("proj.project")
 @Data
@@ -49,6 +53,11 @@ public class DictProjectEntry {
         @NotNull
         private String departmentName;
         private String baName;
+    }
+
+    @Data
+    public static class ProjectFullEntryWithManagers extends ProjectFullEntry {
+        private Json managersJson;
     }
 
 

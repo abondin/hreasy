@@ -7,6 +7,18 @@ export interface SharedSkillName {
     name: string
 }
 
+export interface ProjectInfo {
+    id: number,
+    name: string;
+    startDate?: string,
+    endDate?: string,
+    customer?: string,
+    department: SimpleDict,
+    businessAccount: SimpleDict
+    info?: string,
+    managers: SimpleDict[]
+}
+
 export interface DictService {
     loadAllProjects(): Promise<Array<SimpleDict>>;
 
@@ -25,6 +37,8 @@ export interface DictService {
     loadAllSkillGroups(): Promise<Array<SimpleDict>>;
 
     loadSharedSkills(): Promise<Array<SharedSkillName>>;
+
+    getProjectCard(projectId: number): Promise<ProjectInfo>;
 }
 
 class RestDictService implements DictService {
@@ -67,6 +81,10 @@ class RestDictService implements DictService {
 
     public loadAllBusinessAccounts(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/business_account").then(response => response.data);
+    }
+
+    getProjectCard(projectId: number): Promise<ProjectInfo> {
+        return httpService.get(`v1/projects/${projectId}`).then(response => response.data);
     }
 }
 

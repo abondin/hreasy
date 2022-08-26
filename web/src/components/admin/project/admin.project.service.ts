@@ -27,6 +27,7 @@ export interface ProjectFullInfo {
 }
 
 
+
 export interface AdminProjectService {
     /**
      * Create new project

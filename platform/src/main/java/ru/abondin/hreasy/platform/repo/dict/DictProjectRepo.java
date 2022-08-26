@@ -5,6 +5,7 @@ import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.repo.manager.ManagerRepo;
 
 import java.util.List;
 
@@ -18,6 +19,13 @@ public interface DictProjectRepo extends ReactiveSortingRepository<DictProjectEn
             left join ba.business_account ba on p.ba_id=ba.id
             """;
 
+    String WITH_MANAGERS_QUERY=
+            "select pr.*, mgs.managers_json from ("
+            +FULL_INFO_QUERY
+            +" ) pr left join ( "
+            + ManagerRepo.AGGREGATED_MANAGERS_BY_OBJECT
+            +") mgs on pr.id=mgs.object_id and mgs.object_type='project'";
+
     @Query("select * from proj.project p order by name")
     Flux<DictProjectEntry> findAll();
 
@@ -30,6 +38,11 @@ public interface DictProjectRepo extends ReactiveSortingRepository<DictProjectEn
     @Query(FULL_INFO_QUERY +
             "where p.id=:projectId")
     Mono<DictProjectEntry.ProjectFullEntry> findFullInfoById(int projectId);
+
+    @Query(WITH_MANAGERS_QUERY +
+            "where pr.id=:projectId")
+    Mono<DictProjectEntry.ProjectFullEntryWithManagers> findFullInfoWithManagersById(int projectId);
+
 
     @Query(FULL_INFO_QUERY +
             " order by p.name")

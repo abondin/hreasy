@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-row>
+    <v-row v-if="project">
       <v-col cols="6" lg="3">
         <my-description-list :items="[
             {t:$t('Наименование'), d:project.name}
@@ -15,7 +15,7 @@
       <v-col v-if="project.info">
         <v-card>
           <v-card-text>
-            <div v-html="project.info" style="height: 250px" class="overflow-y-auto"></div>
+            <div v-html="project.info" :style="{'height': height}" class="overflow-y-auto"></div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -30,13 +30,17 @@ import {Prop} from "vue-property-decorator";
 import Component from "vue-class-component";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import MyDescriptionList from "@/components/shared/MyDescriptionList.vue";
+import {ProjectInfo} from "@/store/modules/dict.service";
 
 @Component({
   components: {MyDescriptionList}
 })
-export default class ProjectCard extends Vue {
+export default class ProjectInfoComponent extends Vue {
   @Prop({required: true})
-  private project!: ProjectFullInfo;
+  private project!: ProjectFullInfo | ProjectInfo;
+
+  @Prop({required:false, default:"250px"})
+  private height!:string;
 
   private formatDate(date: string | undefined): string | undefined {
     return DateTimeUtils.formatFromIso(date);

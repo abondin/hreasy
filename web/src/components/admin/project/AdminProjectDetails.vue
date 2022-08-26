@@ -67,13 +67,13 @@ import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import AdminProjectForm from "@/components/admin/project/AdminProjectForm.vue";
-import ProjectCard from "@/components/shared/ProjectCard.vue";
+import ProjectInfoComponent from "@/components/shared/ProjectInfoComponent.vue";
 
 
 const namespace_dict: string = 'dict';
 
 @Component({
-      components: {ProjectCard, AdminProjectForm, AdminManagers}
+      components: {ProjectCard: ProjectInfoComponent, AdminProjectForm, AdminManagers}
     }
 )
 export default class AdminProjectDetails extends Vue {
