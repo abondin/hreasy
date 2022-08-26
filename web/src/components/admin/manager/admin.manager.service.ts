@@ -41,8 +41,6 @@ export interface CreateManagerBody {
  * DTO to update manager link
  */
 export interface UpdateManagerBody {
-    responsibilityObjectType: ManagerResponsibilityObjectType,
-    responsibilityObjectId: number,
     responsibilityType: ManagerResponsibilityType,
     comment?: string,
 }

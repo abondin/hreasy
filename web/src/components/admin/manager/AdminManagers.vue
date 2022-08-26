@@ -46,43 +46,6 @@
 
     <!--<editor-fold desc="Update form">-->
     <template v-slot:updateFormFields>
-      <span v-if="selectedObject==null">
-      <v-autocomplete
-          v-model="data.updateBody.responsibilityObjectType"
-          :items="allResponsibilityObjectTypes"
-          :label="$t('Тип объекта')"
-          :rules="[v => !!v || $t('Обязательное поле')]"
-          @change="data.updateBody.responsibilityObjectId=null"
-      ></v-autocomplete>
-
-        <!--<editor-fold desc="Responsibility Object">-->
-      <v-autocomplete
-          v-if="data.updateBody.responsibilityObjectType==='project'"
-          v-model="data.updateBody.responsibilityObjectId"
-          item-value="id" item-text="name"
-          :items="allProjects"
-          :label="$t('Проект')"
-          :rules="[v => !!v || $t('Обязательное поле')]"
-      ></v-autocomplete>
-      <v-autocomplete
-          v-if="data.updateBody.responsibilityObjectType==='business_account'"
-          v-model="data.updateBody.responsibilityObjectId"
-          item-value="id" item-text="name"
-          :items="allBas"
-          :label="$t('Бизнес аккаунт')"
-          :rules="[v => !!v || $t('Обязательное поле')]"
-      ></v-autocomplete>
-      <v-autocomplete
-          v-if="data.updateBody.responsibilityObjectType==='department'"
-          v-model="data.updateBody.responsibilityObjectId"
-          item-value="id" item-text="name"
-          :items="allDepartments"
-          :label="$t('Отдел')"
-          :rules="[v => !!v || $t('Обязательное поле')]"
-      ></v-autocomplete>
-        <!-- </editor-fold> -->
-      </span>
-
       <v-autocomplete
           v-model="data.updateBody.responsibilityType"
           :items="allResponsibilityTypes"
@@ -252,8 +215,6 @@ export default class AdminManagers extends Vue {
       updateItemRequest: (id, body) => (adminManagerService.update(id, body)),
       itemToUpdateBody: item =>
           ({
-            responsibilityObjectType: item.responsibilityObject.type,
-            responsibilityObjectId: item.responsibilityObject.id,
             responsibilityType: item.responsibilityType,
             comment: item.comment
           })

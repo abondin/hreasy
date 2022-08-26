@@ -39,6 +39,13 @@ export interface AdminProjectService {
 
     findAll(): Promise<ProjectFullInfo[]>;
 
+    get(projectId: number): Promise<ProjectFullInfo>;
+}
+
+export class ProjectCreatedEvent {
+    public constructor(public projectId: number) {
+    }
+
 }
 
 
@@ -60,6 +67,12 @@ class RestAdminProjectService implements AdminProjectService {
 
     findAll(): Promise<ProjectFullInfo[]> {
         return httpService.get(`v1/admin/projects`).then(response => {
+            return response.data;
+        });
+    }
+
+    get(projectId: number): Promise<ProjectFullInfo> {
+        return httpService.get(`v1/admin/projects/${projectId}`).then(response => {
             return response.data;
         });
     }

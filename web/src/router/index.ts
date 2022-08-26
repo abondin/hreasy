@@ -25,6 +25,7 @@ import DictAdminOfficeLocations from "@/components/admin/dict/DictAdminOfficeLoc
 import PageNotFoundComponent from "@/components/PageNotFoundComponent.vue";
 import AdminEmployeeAndKidsTabs from "@/components/admin/employee/AdminEmployeeAndKidsTabs.vue";
 import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
+import AdminProjectDetails from "@/components/admin/project/AdminProjectDetails.vue";
 
 Vue.use(VueRouter)
 
@@ -41,6 +42,7 @@ const routes = [
     {path: "/assessments/:employeeId", component: EmployeeAssessmentProfile, props: true},
     {path: "/assessments/:employeeId/:assessmentId", component: AssessmentDetailedVue, props: true},
     {path: "/admin/projects", component: AdminProjects},
+    {path: "/admin/projects/:projectId", component: AdminProjectDetails, props: true},
     {path: "/admin/users", component: AdminUsers},
     {path: "/admin/ba", component: AdminBusinessAccounts},
     {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true},

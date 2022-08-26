@@ -18,7 +18,7 @@
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
             <div v-bind="tattrs" v-on="ton" class="col-auto">
-              <v-btn text color="primary" :disabled="loading" @click="openProjectDialog(undefined)" icon>
+              <v-btn text color="primary" :disabled="loading" @click="openCreateDialog(undefined)" icon>
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
             </div>
@@ -33,14 +33,13 @@
             :loading-text="$t('Загрузка_данных')"
             :headers="headers"
             :items="filteredProjects()"
+            class="table-cursor"
             hide-default-footer
             sort-by="name"
             sort
-            disable-pagination>
-          <template v-slot:item.name="{ item }">
-            <v-btn text @click="openProjectDialog(item)">{{ item.name }}
-            </v-btn>
-          </template>
+            disable-pagination
+            @click:row="(v)=>navigateProject(v.id)">
+
           <template
               v-slot:item.startDate="{ item }">
             {{ formatDate(item.startDate) }}
@@ -51,17 +50,15 @@
           </template>
         </v-data-table>
 
-        <v-dialog v-model="projectDialog">
-          <admin-project-form
-              ref="adminProjectForm"
-              v-bind:input="selectedProject"
-              :all-departments="allDepartments"
-              :all-business-accounts="allBusinessAccounts"
-              @close="projectDialog=false;fetchData()"></admin-project-form>
-        </v-dialog>
-
       </v-card-text>
     </v-card>
+    <v-dialog v-model="projectDialog">
+      <admin-project-form
+          ref="createProjectForm"
+          :all-departments="allDepartments"
+          :all-business-accounts="allBusinessAccounts"
+          @close="event=>projectCreateDialogClosed(event)"></admin-project-form>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -69,7 +66,10 @@
 <script lang="ts">
 import Vue from 'vue'
 import {DataTableHeader} from "vuetify";
-import adminProjectService, {ProjectFullInfo} from "@/components/admin/project/admin.project.service";
+import adminProjectService, {
+  ProjectCreatedEvent,
+  ProjectFullInfo
+} from "@/components/admin/project/admin.project.service";
 import Component from "vue-class-component";
 import AdminProjectForm from "@/components/admin/project/AdminProjectForm.vue";
 import logger from "@/logger";
@@ -97,7 +97,6 @@ export default class AdminProjects extends Vue {
   private filter = new Filter();
 
   private projectDialog = false;
-  private selectedProject: ProjectFullInfo | null = null;
 
   @Getter("departments", {namespace: namespace_dict})
   private allDepartments!: Array<SimpleDict>;
@@ -129,6 +128,17 @@ export default class AdminProjects extends Vue {
         });
   }
 
+  private openCreateDialog() {
+    this.projectDialog = true;
+  }
+
+  private projectCreateDialogClosed(event: any) {
+    logger.debug("projectCreateDialogClosed", event);
+    if (event instanceof ProjectCreatedEvent) {
+      this.projectDialog=false;
+      this.navigateProject(event.projectId);
+    }
+  }
 
   private filteredProjects() {
     return this.projects.filter((p) => {
@@ -161,13 +171,10 @@ export default class AdminProjects extends Vue {
     this.headers.push({text: this.$tc('Отдел'), value: 'department.name'});
   }
 
-  public openProjectDialog(projectToUpdate: ProjectFullInfo | null) {
-    this.selectedProject = projectToUpdate;
-    this.projectDialog = true;
-    // Wait dialog appears and reset all old valued
-    this.$nextTick(() => {
-      (this.$refs.adminProjectForm as AdminProjectForm).reset();
-    });
+  public navigateProject(projectId: number) {
+    if (projectId) {
+      this.$router.push(`/admin/projects/${projectId}`);
+    }
   }
 
   private formatDate(date: string | undefined): string | undefined {
@@ -176,3 +183,8 @@ export default class AdminProjects extends Vue {
 
 }
 </script>
+<style scoped lang="css">
+.table-cursor >>> tbody tr :hover {
+  cursor: pointer;
+}
+</style>

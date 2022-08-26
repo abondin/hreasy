@@ -74,6 +74,15 @@ public class ProjectAdminService {
                 .map(DictProjectEntry::getId);
     }
 
+    public Mono<ProjectDto> findById(AuthContext auth, int projectId) {
+        var now = dateTimeService.now();
+        return repo.findFullInfoById(projectId)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(projectId))))
+                .flatMap(existing ->
+                        securityValidator.validateUpdateProject(auth, existing).map(v -> mapper.fromEntry(existing))
+                );
+    }
+
     public Flux<ProjectDto> findAll(AuthContext auth) {
         var now = dateTimeService.now();
         return securityValidator.validateFindAllProject(auth).flatMapMany(s ->

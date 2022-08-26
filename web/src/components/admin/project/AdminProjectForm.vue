@@ -80,6 +80,7 @@
 import Vue from 'vue'
 import adminProjectService, {
   CreateOrUpdateProject,
+  ProjectCreatedEvent,
   ProjectFullInfo
 } from "@/components/admin/project/admin.project.service";
 import Component from "vue-class-component";
@@ -188,9 +189,9 @@ export default class AdminProjectForm extends Vue {
         serverRequest = adminProjectService.update(this.projectForm.id!, body);
       }
       return serverRequest
-          .then((result) => {
+          .then((result: number) => {
             logger.log(`Project updated/created: ${result}`);
-            this.$emit('close');
+            this.$emit('close', new ProjectCreatedEvent(result));
           })
           .catch(error => {
             this.error = errorUtils.shortMessage(error);

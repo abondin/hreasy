@@ -30,8 +30,6 @@ public interface ManagerMapper {
 
     @Mapping(source = "createdAt", target = "createdAt")
     @Mapping(source = "createdBy", target = "createdBy")
-    @Mapping(source = "body.responsibilityObjectType", target = "objectType")
-    @Mapping(source = "body.responsibilityObjectId", target = "objectId")
     @Mapping(source = "body.responsibilityType", target = "responsibilityType")
     @Mapping(source = "body.comment", target = "comment")
     ManagerEntry update(@MappingTarget ManagerEntry entry, UpdateManagerBody body, OffsetDateTime createdAt, Integer createdBy);
