@@ -77,7 +77,7 @@ public class OvertimeSecurityValidator {
     public Mono<Boolean> validateExportOvertimes(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("overtime_edit")) {
-                return Mono.just(false);
+                return Mono.error(new AccessDeniedException("Only user with permission overtime_edit can export the overtime"));
             }
             return Mono.just(true);
         });
@@ -87,7 +87,7 @@ public class OvertimeSecurityValidator {
     public Mono<Boolean>  validateAdminOvertime(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("overtime_admin")) {
-                return Mono.just(false);
+                return Mono.error(new AccessDeniedException("Only user with permission overtime_admin can admin overtimes"));
             }
             return Mono.just(true);
         });

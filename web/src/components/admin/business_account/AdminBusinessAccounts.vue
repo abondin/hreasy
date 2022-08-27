@@ -44,7 +44,7 @@
           </template>
           <template v-slot:item.managers="{ item }">
             <v-chip v-for="m in item.managers" v-bind:key="m.id">
-              {{m.name}}
+              {{m.employeeName}}
             </v-chip>
           </template>
         </v-data-table>
