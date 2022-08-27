@@ -9,7 +9,13 @@ import lombok.Data;
  * @see ru.abondin.hreasy.platform.service.admin.manager.dto.ManagerDto
  */
 @Data
-public class ManagerInfoDto extends SimpleDictDto{
+public class ManagerInfoDto {
+    private int id;
+
+    private int employeeId;
+
+    private String employeeName;
+
     /**
      * One of ['technical', 'organization', 'hr']
      */

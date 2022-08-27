@@ -1,10 +1,10 @@
 <template>
-  <div>
-    <dl v-for="(item,_) in items" class="attrs-dotted" v-bind:key="_">
-      <dt>{{ item.t }}</dt>
-      <dd>{{ item.d }}</dd>
-    </dl>
-  </div>
+  <span>
+  <dl class="attrs-dotted" v-for="(item,_) in items" v-bind:key="_">
+    <dt>{{ item.t }}</dt>
+    <dd>{{ item.d }}</dd>
+  </dl>
+    </span>
 </template>
 
 <script lang="ts">
@@ -39,6 +39,7 @@ export default class MyDescriptionList extends Vue {
   align-items: flex-start;
   margin: 0 0 10px 0;
 }
+
 .attrs-dotted dt {
   width: 40%;
   margin: 0 0 8px 0;
@@ -50,6 +51,7 @@ export default class MyDescriptionList extends Vue {
   word-break: break-word;
   color: #808d9a;
 }
+
 .attrs-dotted dt:before {
   content: "";
   display: block;
@@ -59,11 +61,13 @@ export default class MyDescriptionList extends Vue {
   bottom: .2em;
   border-bottom: 1px dotted #d6dbe0;
 }
+
 .attrs-dotted dt span {
   padding-right: 5px;
   background: #fff;
   position: relative;
 }
+
 .attrs-dotted dd {
   width: 60%;
   display: flex;

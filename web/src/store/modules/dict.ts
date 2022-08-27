@@ -11,6 +11,14 @@ export interface SimpleDict {
     active: boolean;
 }
 
+export interface ManagerOfObject {
+    id: number;
+    employeeId: number,
+    employeeName: string,
+    responsibilityType: string,
+    comment?: string;
+}
+
 export interface CurrentProjectRole {
     value: string;
 }

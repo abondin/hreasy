@@ -33,10 +33,10 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
             					'employeeId', e.id,
             					'employeeName', trim(concat_ws(' ', e.lastname, e.firstname, e.patronymic_name)),
             					'responsibilityType', m.responsibility_type,
-            					'comment',m.comment\s
+            					'comment',m.comment
             					)) as managers_json
             				from empl.manager m
-            				left join empl.employee e on m.employee=e.id
+            				left join empl.employee e on m.employee=e.id                           
             				group by m.object_id, m.object_type
             """;
 

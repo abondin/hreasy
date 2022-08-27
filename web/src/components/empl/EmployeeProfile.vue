@@ -10,10 +10,19 @@
             {{ employee.department ? employee.department.name : $t("Не задан") }}
           </v-list-item-subtitle>
           <v-list-item-subtitle>{{ $t('Текущий проект') }} :
-            {{ employee.currentProject ? employee.currentProject.name : $t("Не задан") }}
+            <span v-if="employee.currentProject">
+              <v-btn
+                  @click.stop="projectCardDialog=true" icon x-small color="info">
+              <v-icon small>info</v-icon>
+            </v-btn>
+              {{ employee.currentProject.name }}
+            </span>
+            <span v-else>{{ $t("Не задан") }}</span>
           </v-list-item-subtitle>
           <v-list-item-subtitle>{{ $t('Роль на текущем проекте') }} :
-            {{ (employee.currentProject && employee.currentProject.role) ? employee.currentProject.role : $t("Не задана") }}
+            {{
+              (employee.currentProject && employee.currentProject.role) ? employee.currentProject.role : $t("Не задана")
+            }}
           </v-list-item-subtitle>
           <v-list-item-subtitle>{{ $t('Бизнес Аккаунт') }} :
             {{ employee.ba ? employee.ba.name : $t("Не задан") }}
@@ -39,6 +48,11 @@
       </v-list-item>
     </v-card>
 
+    <!-- Project card dialog -->
+    <v-dialog v-if="employee && employee.currentProject" v-model="projectCardDialog">
+      <project-info-card-component :project-id="employee.currentProject.id"
+                                   @close="projectCardDialog=false"></project-info-card-component>
+    </v-dialog>
 
     <employee-overtime-component
         class="mt-5"
@@ -66,7 +80,7 @@
         v-model="openUpdateTelegramDialog"
         max-width="500">
       <employee-update-telegram v-bind:employee="employee"
-                                       v-on:close="openUpdateTelegramDialog=false"/>
+                                v-on:close="openUpdateTelegramDialog=false"/>
     </v-dialog>
 
   </v-container>
@@ -86,11 +100,13 @@ import MySkills from "@/components/empl/skills/MySkills.vue";
 import MySharedArticles from "@/components/article/MySharedArticles.vue";
 import TechProfilesChips from "@/components/empl/TechProfilesChips.vue";
 import EmployeeUpdateTelegram from "@/components/empl/EmployeeUpdateTelegram.vue";
+import ProjectInfoCardComponent from "@/components/shared/ProjectInfoCardComponent.vue";
 
 const namespace: string = 'auth';
 
 @Component({
   components: {
+    ProjectInfoCardComponent,
     EmployeeUpdateTelegram,
     TechProfilesChips,
     MySharedArticles,
@@ -105,6 +121,7 @@ export default class EmployeeProfile extends Vue {
   private closedOvertimePeriods: ClosedOvertimePeriod[] = [];
   private openUpdateTelegramDialog = false;
 
+  private projectCardDialog = false;
 
   @Getter("employeeId", {namespace})
   employeeId!: number;
@@ -128,7 +145,7 @@ export default class EmployeeProfile extends Vue {
             this.closedOvertimePeriods = data;
           });
         }).then(() => {
-          return (this.$refs.techProfileChips as TechProfilesChips).loadTechProfiles();
+          return this.$nextTick(()=>(this.$refs.techProfileChips as TechProfilesChips).loadTechProfiles());
         })
         .finally(() => {
           this.loading = false
@@ -139,7 +156,7 @@ export default class EmployeeProfile extends Vue {
    *
    * @private
    */
-  private canUpdateTelegram(){
+  private canUpdateTelegram() {
     return true;
   }
 

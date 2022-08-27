@@ -1,6 +1,6 @@
 import httpService from "../../components/http.service";
 import {AxiosInstance} from "axios";
-import {CurrentProjectRole, SimpleDict} from "@/store/modules/dict";
+import {CurrentProjectRole, ManagerOfObject, SimpleDict} from "@/store/modules/dict";
 
 export interface SharedSkillName {
     groupId: number,
@@ -16,7 +16,7 @@ export interface ProjectInfo {
     department: SimpleDict,
     businessAccount: SimpleDict
     info?: string,
-    managers: SimpleDict[]
+    managers: ManagerOfObject[]
 }
 
 export interface DictService {

@@ -1,6 +1,6 @@
 import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
-import {SimpleDict} from "@/store/modules/dict";
+import {ManagerOfObject, SimpleDict} from "@/store/modules/dict";
 
 export interface CreateOrUpdateBusinessAccount {
     name: string;
@@ -12,7 +12,7 @@ export interface BusinessAccount {
     id: number,
     name: string;
     description?: string,
-    managers: SimpleDict[],
+    managers: ManagerOfObject[],
     createdBy?: number,
     createdAt?: Date,
     archived: boolean

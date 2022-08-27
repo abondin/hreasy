@@ -72,7 +72,7 @@ Uses in Employees Table (Employees.vue)
 
         <!-- Project card dialog -->
         <v-dialog v-if="employee && employee.currentProject" v-model="projectCardDialog">
-          <project-card-by-id :project-id="employee.currentProject.id" @close="projectCardDialog=false"></project-card-by-id>
+          <project-info-card-component :project-id="employee.currentProject.id" @close="projectCardDialog=false"></project-info-card-component>
         </v-dialog>
 
       </v-list-item-content>
@@ -110,7 +110,7 @@ import ProjectInfoCardComponent from "@/components/shared/ProjectInfoCardCompone
 
 @Component({
   components: {
-    ProjectCardById: ProjectInfoCardComponent,
+    ProjectInfoCardComponent,
     SkillsChips,
     TechProfilesChips,
     EmployeeAvatarUploader,

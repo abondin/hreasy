@@ -8,7 +8,7 @@
         <div v-for="s in g.skills" v-bind:key="s.id">
           <v-menu v-model="s.menu" bottom right transition="scale-transition" origin="top left">
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" class="mr-2" close @click:close="openDeleteSkillDialog(s)">{{ s.name }}
+              <v-chip v-on="on" class="mr-2 mb-1" close @click:close="openDeleteSkillDialog(s)">{{ s.name }}
                 ({{
                   $t('Средний рейтинг') + ': ' + (s.ratings.averageRating ? s.ratings.averageRating : $t('Нет оценок'))
                 }})
