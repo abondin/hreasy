@@ -17,13 +17,12 @@ import Vue from "vue";
 import {ProjectFullInfo} from "../admin/project/admin.project.service";
 import {Prop} from "vue-property-decorator";
 import Component from "vue-class-component";
-import MyDescriptionList from "@/components/shared/MyDescriptionList.vue";
 import dictService, {ProjectInfo} from "@/store/modules/dict.service";
 import {errorUtils} from "@/components/errors";
 import ProjectInfoComponent from "@/components/shared/ProjectInfoComponent.vue";
 
 @Component({
-  components: {ProjectCard: ProjectInfoComponent, MyDescriptionList}
+  components: {ProjectCard: ProjectInfoComponent}
 })
 export default class ProjectInfoCardComponent extends Vue {
   private project: ProjectFullInfo | ProjectInfo | null = null;
