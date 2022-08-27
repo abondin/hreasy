@@ -51,7 +51,7 @@
                   :items="allBas.filter(p=>p.active)"
                   item-value="id"
                   item-text="name"
-                  :label="$t('Бизнес акаунт')"
+                  :label="$t('Бизнес аккаунт')"
                   multiple
               ></v-autocomplete>
             </v-col>
@@ -165,7 +165,7 @@ export default class AssessmentShortList extends Vue {
   private reloadHeaders() {
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Сотрудник'), value: 'displayName'});
-    this.headers.push({text: this.$tc('Бизнес акаунт'), value: 'ba.name'});
+    this.headers.push({text: this.$tc('Бизнес аккаунт'), value: 'ba.name'});
     this.headers.push({text: this.$tc('Проект'), value: 'currentProject'});
     this.headers.push({text: this.$tc('Дата устройства'), value: 'employeeDateOfEmployment'});
     this.headers.push({text: this.$tc('Послений ассессмент запланирован'), value: 'lastAssessmentDate'});

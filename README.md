@@ -6,73 +6,20 @@
 
 # Key features
 
- - Auth with internal DB password and LDAP
- - Show all employees
- - View/Add/Approve Overtimes
- - View/Add/Update Vacations
- - Admin all dictionaries
- - Admin projects
- - Business Accounts administration  
- - Admin user roles
- - Articles (news and shared information).
- - Assessments
- - Notifications
- - Download and upload Technical Profiles
+- Auth with internal DB password and LDAP
+- Show all employees
+- View/Add/Approve Overtimes
+- View/Add/Update Vacations
+- Admin all dictionaries
+- Admin projects
+- Business Accounts administration
+- Admin user roles
+- Articles (news and shared information).
+- Assessments
+- Notifications
+- Download and upload Technical Profiles
 
-# Projects
-
- - portal - monolite backend
- - web - Vue JS Single Page Application
-
-# Technologies Stack
-
- - Java on backend
- - PostgreSQL as database
- - Spring Reactive
- - Vue + vuetifyjs + ts on frontend
- 
-# Local build
-
-```shell script
-export DOCKER_REPOSITORY=<Your Repository> (optional)
-export CI_DEPLOY_TAG=latest (optional)
-./devops/build.sh
-```
-
-# Local run in Docker-compose
-
-Docker Compose file is located in `.hreasy-localdev`
-
-```shell script
-cd .hreasy-localdev
-docker-compose up -d
-```
-
-*Tip* The following command pulls and updates single services
-
-```shell script
-sudo docker pull docker.io/abondin/hreasyplatform:latest
-sudo docker pull docker.io/abondin/hreasyweb:latest
-sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hreasyplatform hreasyweb
-``` 
-
-## Notifications
-
-Notifications can be sent from admin web UI (not implemented)
-
-or by system event (not implemented).
-HR Easy supports several notification delivery channels:
-- 0 - Web UI - show notification in UI (with ack and archive functionality)
-- 1 - Email - send notification to mail
-
-### Email messages background jobs:
-
-|Job|Schedule|Actions|
-|----|------|-----|
-|upcoming_vacations|fixedDelay 1 hour|Sends email to employee with up to 3 weeks upcoming vacations|
-
-
-# Permissions and roles
+## Permissions and roles
 
 ![Security Database](./platform/.architecture/hr_sec.png "Security Database Scheme")
 
@@ -82,7 +29,7 @@ Employee may have access to the actions for employees, currently assigned to the
 project. Or to the actions for employees,
 currently assigned to any project from specific business account,
 currently assigned to any project from specific department.
-Permissions depended on 
+Permissions depended on
 `employee_accessible_departments`,
 `employee_accessible_bas`,
 and `employee_accessible_projects` marked in the table bellow.
@@ -132,6 +79,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |admin_office_location|N|N|Create/update/delete office location|
 |view_empl_current_project_role|Y|Y|View current project role|
 |view_empl_skills|Y|Y|View employee skills|
+|admin_managers|N|N|Admin managers for department,ba,project employees|
 
 **Default permissions and roles**
 
@@ -172,11 +120,13 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |admin_level|global_admin,hr|
 |admin_position|global_admin,hr|
 |admin_office_location|global_admin,hr|
+|admin_managers|global_admin,hr|
+
 ## Assessments
 
 Project Manager in UI able to select employee and schedule an assessment.
-The goal of this functionality 
-- help PMs and HR to keep in sync employees attitude to work 
+The goal of this functionality
+- help PMs and HR to keep in sync employees attitude to work
 
 ![Security Database](./platform/.architecture/assessment_use_cases.png "Assessment use case")
 
@@ -185,27 +135,99 @@ The goal of this functionality
 Assessment form based on JSON template. System Administrator can update template for every form type
 in database table `assessment_form_template` (*//TODO Admin page to edit template*):
 * `form_type` - type of the form. Possible values:
-  * 1 - self assessment
-  * 2 - manager feedback
-  * 3 - meeting notes
-  * 4 - conclusion and decision
+    * 1 - self assessment
+    * 2 - manager feedback
+    * 3 - meeting notes
+    * 4 - conclusion and decision
 * `content` - template in JSON format. JSON structure:
-  * `groups` [] - array of form fields groups
-    * `key` - system key (code) of the group
-    * `displayName` - Display Name of the group (for UI)
-    * `(?) description` - Text for UI details tooltip
-    * `fields` [] - array of the fields of the group
-        * `key` - system key (code) of the field
-        * `displayName` - Display Name of the field (for UI)
+    * `groups` [] - array of form fields groups
+        * `key` - system key (code) of the group
+        * `displayName` - Display Name of the group (for UI)
         * `(?) description` - Text for UI details tooltip
-        * `type` - Helps UI to render field on the form. Possible values:
-            * `short_text_with_rate` - UI show two fields.
-              1 - single line text field for open comment
-              2 - rate from 1 to 10
-            * `text` - multiline text area   
+        * `fields` [] - array of the fields of the group
+            * `key` - system key (code) of the field
+            * `displayName` - Display Name of the field (for UI)
+            * `(?) description` - Text for UI details tooltip
+            * `type` - Helps UI to render field on the form. Possible values:
+                * `short_text_with_rate` - UI show two fields.
+                  1 - single line text field for open comment
+                  2 - rate from 1 to 10
+                * `text` - multiline text area
 
 
 
 ## Technical Profiles
 
-Employee (or HR/PM/Admin) can upload a technical profile documents.  
+Employee (or HR/PM/Admin) can upload a technical profile documents.
+
+
+## Managers
+
+* In 1.2.0 new functionality to deal with Department, Business Account and project
+  responsible employees added.
+* Manager can be technical, organization or HR lead on project/ba/department (**object** in terms of responsibility feature).
+* Business account, department or project may have several managers
+* Before 1.2.0 we had only one responsible employee on Business Account. No managers for project. No manager for department.
+
+### Goals
+
+* Show every employee on project his managers' matrix (project leads, ba leads, head of the department)
+* Notify managers on events (see [notifications](#notifications))
+
+### Architecture flaws
+
+* Some kind of functionality overlap with
+# Development
+
+## Projects
+
+ - portal - monolite backend
+ - web - Vue JS Single Page Application
+
+## Technologies Stack
+
+ - Java on backend
+ - PostgreSQL as database
+ - Spring Reactive
+ - Vue + vuetifyjs + ts on frontend
+ 
+## Local build
+
+```shell script
+export DOCKER_REPOSITORY=<Your Repository> (optional)
+export CI_DEPLOY_TAG=latest (optional)
+./devops/build.sh
+```
+
+## Local run in Docker-compose
+
+Docker Compose file is located in `.hreasy-localdev`
+
+```shell script
+cd .hreasy-localdev
+docker-compose up -d
+```
+
+*Tip* The following command pulls and updates single services
+
+```shell script
+sudo docker pull docker.io/abondin/hreasyplatform:latest
+sudo docker pull docker.io/abondin/hreasyweb:latest
+sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hreasyplatform hreasyweb
+```
+
+## Notifications
+
+Notifications can be sent from admin web UI (not implemented)
+
+or by system event (not implemented).
+HR Easy supports several notification delivery channels:
+- 0 - Web UI - show notification in UI (with ack and archive functionality)
+- 1 - Email - send notification to mail
+
+### Email messages background jobs:
+
+|Job|Schedule|Actions|
+|----|------|-----|
+|upcoming_vacations|fixedDelay 1 hour|Sends email to employee with up to 3 weeks upcoming vacations|
+

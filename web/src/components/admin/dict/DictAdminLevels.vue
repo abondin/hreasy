@@ -14,17 +14,18 @@
 <script lang="ts">
 import Component from "vue-class-component";
 import Vue from "vue";
-import TableComponentDataContainer, {BasicDictFilter} from "@/components/admin/dict/TableComponentDataContainer";
 import dictAdminService, {DictLevel, DictLevelUpdateBody} from "@/components/admin/dict/dict.admin.service";
 import permissionService from "@/store/modules/permission.service";
 import DictAdminTable from "@/components/admin/dict/DictAdminTable.vue";
+import DictTableComponentDataContainer, {BasicDictFilter} from "@/components/admin/dict/DictTableComponentDataContainer";
+import {CreateOrUpdateAction} from "@/components/shared/table/EditTableComponentDataContainer";
 
 @Component({
   components: {DictAdminTable}
 })
 export default class DictAdminLevels extends Vue {
 
-  private data = new TableComponentDataContainer<DictLevel, DictLevelUpdateBody, BasicDictFilter<DictLevel>>(
+  private data = new DictTableComponentDataContainer<DictLevel, DictLevelUpdateBody, BasicDictFilter<DictLevel>>(
       () => dictAdminService.loadLevels(),
       () =>
           [
@@ -32,11 +33,13 @@ export default class DictAdminLevels extends Vue {
             {text: this.$tc('Вес'), value: 'weight'},
             {text: this.$tc('Архив'), value: 'archived'}
           ],
-      (id, body) => (id ? dictAdminService.updateLevel(id, body)
-          : dictAdminService.createLevel(body)),
-      (item: DictLevel) =>
-          ({name: item.name, archived: item.archived, weight: item.weight} as DictLevelUpdateBody),
-      () => ({name: '', archived: false} as DictLevelUpdateBody),
+      {
+        updateItemRequest: (id, body) => dictAdminService.updateLevel(id, body),
+        itemToUpdateBody: item =>
+            ({name: item.name, archived: item.archived, weight: item.weight} as DictLevelUpdateBody),
+        createItemRequest: (body) => dictAdminService.createLevel(body),
+        defaultBody: () => ({name: '', archived: false} as DictLevelUpdateBody)
+      } as CreateOrUpdateAction<DictLevel, DictLevelUpdateBody>,
       new BasicDictFilter(),
       permissionService.canAdminDictLevels()
   );

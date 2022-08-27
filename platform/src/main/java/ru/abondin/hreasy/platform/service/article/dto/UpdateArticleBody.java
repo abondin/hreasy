@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
 
 /**
  * Information about article

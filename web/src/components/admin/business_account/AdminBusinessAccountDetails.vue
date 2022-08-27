@@ -1,7 +1,7 @@
 <!-- Business accounts detailed page -->
 <template>
   <v-container>
-    <v-card>
+    <v-card v-if="businessAccount">
 
       <v-card-title>
         <!-- Refresh button -->
@@ -11,11 +11,8 @@
         <v-btn text icon @click="fetchDetails()" :loading="loading">
           <v-icon>refresh</v-icon>
         </v-btn>
-        <v-divider vertical class="mr-5 ml-5"></v-divider>
-        <div v-if="businessAccount" :class="{archived: businessAccount.archived}">{{ businessAccount.name }} <span
-            v-if="businessAccount.description">({{ businessAccount.description }})</span></div>
+        <div v-if="businessAccount" :class="{archived: businessAccount.archived}">{{ businessAccount.name }}</div>
         <v-spacer></v-spacer>
-        <v-divider vertical class="mr-5 ml-5"></v-divider>
 
         <!-- Update businessAccount -->
         <v-tooltip bottom>
@@ -26,10 +23,12 @@
               </v-btn>
             </div>
           </template>
-          <span>{{ $t('Редактировать бизнес акаунт') }}</span>
+          <span>{{ $t('Редактировать бизнес аккаунт') }}</span>
         </v-tooltip>
-
       </v-card-title>
+      <v-card-text v-if="businessAccount.description">
+        {{businessAccount.description}}
+      </v-card-text>
     </v-card>
 
     <v-dialog v-model="baDialog">
@@ -38,6 +37,16 @@
           v-bind:allEmployees="allEmployees"
           @close="baDialog=false;fetchDetails()"></admin-b-a-form>
     </v-dialog>
+
+    <!-- Managers -->
+    <v-card class="mt-5 mb-5">
+      <admin-managers
+          ref="baManagersTable"
+          v-if="businessAccount"
+          :selected-object="responsibleObject"
+          mode="compact"
+          :title="$t('Менеджеры бизнес аккаунта')"></admin-managers>
+    </v-card>
 
     <admin-b-a-positions
         ref="baPositions"
@@ -53,16 +62,16 @@ import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
 import AdminBAForm from "@/components/admin/business_account/AdminBAForm.vue";
-import adminBaService, {
-  BusinessAccount
-} from "@/components/admin/business_account/admin.ba.service";
+import adminBaService, {BusinessAccount} from "@/components/admin/business_account/admin.ba.service";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import {Prop} from "vue-property-decorator";
 import AdminBAPositions from "@/components/admin/business_account/AdminBAPositions.vue";
+import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
+import {ManagerResponsibilityObjectId} from "@/components/admin/manager/admin.manager.service";
 
 
 @Component({
-      components: {AdminBAPositions, AdminBAForm}
+      components: {AdminManagers, AdminBAPositions, AdminBAForm}
     }
 )
 export default class AdminBusinessAccountDetails extends Vue {
@@ -97,6 +106,9 @@ export default class AdminBusinessAccountDetails extends Vue {
           if (this.$refs.baPositions) {
             (this.$refs.baPositions as AdminBAPositions).refresh();
           }
+          if (this.$refs.baManagersTable){
+            (this.$refs.baManagersTable as AdminManagers).refresh();
+          }
         }).finally(() => {
           if (showLoadingBar) this.loading = false;
         });
@@ -107,11 +119,18 @@ export default class AdminBusinessAccountDetails extends Vue {
     this.baDialog = true;
   }
 
+  private get responsibleObject(): ManagerResponsibilityObjectId|null{
+    return this.businessAccount ? {
+      id: this.businessAccount.id,
+      type: 'business_account'
+    } : null;
+  }
+
 }
 </script>
 
 <style>
-.archived{
+.archived {
   text-decoration: line-through;
 }
 </style>

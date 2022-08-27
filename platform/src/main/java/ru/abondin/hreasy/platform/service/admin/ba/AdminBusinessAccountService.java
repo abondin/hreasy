@@ -61,7 +61,6 @@ public class AdminBusinessAccountService {
     private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, BusinessAccountEntry entry, CreateOrUpdateBABody body) {
         entry.setName(body.getName());
         entry.setDescription(body.getDescription());
-        entry.setResponsibleEmployee(body.getResponsibleEmployee());
         entry.setArchived(body.isArchived());
         entry.setCreatedBy(currentEmployeeId);
         entry.setCreatedAt(now);

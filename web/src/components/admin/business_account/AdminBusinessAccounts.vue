@@ -42,6 +42,11 @@
               {{ item.name }}
             </v-btn>
           </template>
+          <template v-slot:item.managers="{ item }">
+            <v-chip v-for="m in item.managers" v-bind:key="m.id">
+              {{m.name}}
+            </v-chip>
+          </template>
         </v-data-table>
 
         <v-dialog v-model="baDialog">
@@ -124,8 +129,7 @@ export default class AdminBusinessAccounts extends Vue {
         filtered = filtered &&
             (
                 (p.name.toLowerCase().indexOf(search) >= 0) ||
-                (p.description && p.description.toLowerCase().indexOf(search) >= 0) ||
-                (p.responsibleEmployee && p.responsibleEmployee.name && p.responsibleEmployee.name.toLowerCase().indexOf(search) >= 0)
+                (p.description && p.description.toLowerCase().indexOf(search) >= 0)
             ) as boolean
       }
       return filtered;
@@ -137,7 +141,7 @@ export default class AdminBusinessAccounts extends Vue {
     this.headers.length = 0;
     this.headers.push({text: this.$tc('Наименование'), value: 'name'});
     this.headers.push({text: this.$tc('Описание'), value: 'description'});
-    this.headers.push({text: this.$tc('Ответственный сотрудник'), value: 'responsibleEmployee.name'});
+    this.headers.push({text: this.$tc('Менеджеры'), value: 'managers'});
   }
 
   public openBADialog(baToUpdate: BusinessAccount | null) {
@@ -149,7 +153,7 @@ export default class AdminBusinessAccounts extends Vue {
 </script>
 
 <style>
-.archived{
+.archived {
   text-decoration: line-through;
 }
 </style>

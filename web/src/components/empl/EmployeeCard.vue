@@ -25,6 +25,10 @@ Uses in Employees Table (Employees.vue)
         <!-- Current Project -->
         <v-list-item-subtitle>
           <span v-if="employee.currentProject">
+            <v-btn
+                @click.stop="projectCardDialog=true" icon x-small color="info">
+              <v-icon small>info</v-icon>
+            </v-btn>
             {{ employee.currentProject.name }}
             <span v-if="employee.ba">({{ employee.ba.name }})</span>
             <span v-if="employee.currentProject.role"> - {{ employee.currentProject.role }}</span>
@@ -66,6 +70,10 @@ Uses in Employees Table (Employees.vue)
           ></skills-chips>
         </v-list-item-subtitle>
 
+        <!-- Project card dialog -->
+        <v-dialog v-if="employee && employee.currentProject" v-model="projectCardDialog">
+          <project-info-card-component :project-id="employee.currentProject.id" @close="projectCardDialog=false"></project-info-card-component>
+        </v-dialog>
 
       </v-list-item-content>
     </v-list-item>
@@ -78,7 +86,7 @@ Uses in Employees Table (Employees.vue)
         max-width="500">
       <employee-update-current-project v-bind:employee="employee"
                                        v-on:submit="emitEmployeeUpdated();openUpdateCurrentProjectDialog=false"
-                                      v-on:cancel="openUpdateCurrentProjectDialog=false"/>
+                                       v-on:cancel="openUpdateCurrentProjectDialog=false"/>
     </v-dialog>
   </v-card>
 
@@ -98,9 +106,11 @@ import SkillsChips from "@/components/empl/skills/SkillsChips.vue";
 import vacationService, {EmployeeVacationShort} from "@/components/vacations/vacation.service";
 import TechProfilesChips from "@/components/empl/TechProfilesChips.vue";
 import {DateTimeUtils} from "@/components/datetimeutils";
+import ProjectInfoCardComponent from "@/components/shared/ProjectInfoCardComponent.vue";
 
 @Component({
   components: {
+    ProjectInfoCardComponent,
     SkillsChips,
     TechProfilesChips,
     EmployeeAvatarUploader,
@@ -113,6 +123,8 @@ export default class EmployeeCard extends Vue {
   employee!: Employee;
 
   openUpdateCurrentProjectDialog = false;
+
+  projectCardDialog = false;
 
   vacationsLoading = false;
 
@@ -148,6 +160,7 @@ export default class EmployeeCard extends Vue {
       return (this.$refs.techProfileChips as TechProfilesChips).loadTechProfiles();
     }
   }
+
 
   private canDownloadTechProfiles(): boolean {
     return permissionService.canDownloadTechProfiles(this.employee.id);

@@ -41,6 +41,8 @@ public class ProjectDto {
 
     private boolean active;
 
+    private String info;
+
     @Data
     @ToString
     public static class CreateOrUpdateProjectDto {
@@ -60,5 +62,7 @@ public class ProjectDto {
 
         @Nullable
         private Integer baId;
+
+        private String info;
     }
 }

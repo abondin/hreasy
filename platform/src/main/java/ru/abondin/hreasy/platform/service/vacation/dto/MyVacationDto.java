@@ -1,13 +1,8 @@
 package ru.abondin.hreasy.platform.service.vacation.dto;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import ru.abondin.hreasy.platform.BusinessError;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 
 @Data
 public class MyVacationDto {

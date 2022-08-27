@@ -2,8 +2,8 @@
 <template>
   <v-form ref="baPositionEditForm">
     <v-card>
-      <v-card-title v-if="baPositionForm.isNew">{{ $t('Создание позиции бизнес акаунта') }}</v-card-title>
-      <v-card-title v-else>{{ $t('Изменение позиции бизнес акаунта') }}</v-card-title>
+      <v-card-title v-if="baPositionForm.isNew">{{ $t('Создание позиции бизнес аккаунта') }}</v-card-title>
+      <v-card-title v-else>{{ $t('Изменение позиции бизнес аккаунта') }}</v-card-title>
       <v-card-text>
         <!-- name -->
         <v-text-field

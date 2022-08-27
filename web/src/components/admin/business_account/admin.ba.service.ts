@@ -1,19 +1,18 @@
 import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
-import {SimpleDict} from "@/store/modules/dict";
+import {ManagerOfObject, SimpleDict} from "@/store/modules/dict";
 
 export interface CreateOrUpdateBusinessAccount {
     name: string;
     description?: string;
-    responsibleEmployeeId?: number,
     archived: boolean
 }
 
 export interface BusinessAccount {
     id: number,
     name: string;
-    responsibleEmployee?: SimpleDict,
     description?: string,
+    managers: ManagerOfObject[],
     createdBy?: number,
     createdAt?: Date,
     archived: boolean

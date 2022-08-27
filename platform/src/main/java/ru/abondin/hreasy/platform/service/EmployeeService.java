@@ -5,22 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.http.HttpStatus;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.abondin.hreasy.platform.BusinessError;
-import ru.abondin.hreasy.platform.api.employee.UpdateCurrentProjectBody;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
 import ru.abondin.hreasy.platform.service.currentproject.EmployeeProjectSecurityValidator;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectRole;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.mapper.EmployeeDtoMapper;
-
-import java.util.Arrays;
 
 @Service
 @Slf4j

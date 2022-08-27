@@ -2,7 +2,6 @@ package ru.abondin.hreasy.platform.service.vacation;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ import ru.abondin.hreasy.platform.service.vacation.dto.MyVacationDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

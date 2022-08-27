@@ -1,5 +1,5 @@
 import axios, {AxiosInstance} from 'axios';
-import {AccessDeniedError, AuthenticationError, BusinessError} from "@/components/errors";
+import {AccessDeniedError, AuthenticationError, BusinessError, UnknownBackendError} from "@/components/errors";
 
 
 function createAxios(): AxiosInstance {
@@ -30,6 +30,9 @@ function createAxios(): AxiosInstance {
                     break;
                 case 422:
                     wrappedError = new BusinessError(message, code, attrs);
+                    break;
+                case 500:
+                    wrappedError = new UnknownBackendError(message);
                     break;
             }
         }

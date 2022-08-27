@@ -8,7 +8,8 @@ export interface CreateOrUpdateProject {
     endDate?: string,
     customer?: string,
     departmentId: number,
-    baId: number
+    baId: number,
+    info?: string
 }
 
 export interface ProjectFullInfo {
@@ -21,8 +22,10 @@ export interface ProjectFullInfo {
     businessAccount: SimpleDict
     createdBy?: number,
     createdAt?: Date,
+    info?: string,
     active: boolean
 }
+
 
 
 export interface AdminProjectService {
@@ -38,6 +41,13 @@ export interface AdminProjectService {
 
 
     findAll(): Promise<ProjectFullInfo[]>;
+
+    get(projectId: number): Promise<ProjectFullInfo>;
+}
+
+export class ProjectCreatedEvent {
+    public constructor(public projectId: number) {
+    }
 
 }
 
@@ -60,6 +70,12 @@ class RestAdminProjectService implements AdminProjectService {
 
     findAll(): Promise<ProjectFullInfo[]> {
         return httpService.get(`v1/admin/projects`).then(response => {
+            return response.data;
+        });
+    }
+
+    get(projectId: number): Promise<ProjectFullInfo> {
+        return httpService.get(`v1/admin/projects/${projectId}`).then(response => {
             return response.data;
         });
     }

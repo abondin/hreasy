@@ -2,7 +2,6 @@ package ru.abondin.hreasy.platform.service.overtime.dto;
 
 import lombok.Data;
 import org.springframework.lang.Nullable;
-import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
 
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;

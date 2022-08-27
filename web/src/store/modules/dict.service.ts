@@ -1,10 +1,22 @@
 import httpService from "../../components/http.service";
 import {AxiosInstance} from "axios";
-import {CurrentProjectRole, SimpleDict} from "@/store/modules/dict";
+import {CurrentProjectRole, ManagerOfObject, SimpleDict} from "@/store/modules/dict";
 
 export interface SharedSkillName {
     groupId: number,
     name: string
+}
+
+export interface ProjectInfo {
+    id: number,
+    name: string;
+    startDate?: string,
+    endDate?: string,
+    customer?: string,
+    department: SimpleDict,
+    businessAccount: SimpleDict
+    info?: string,
+    managers: ManagerOfObject[]
 }
 
 export interface DictService {
@@ -25,6 +37,8 @@ export interface DictService {
     loadAllSkillGroups(): Promise<Array<SimpleDict>>;
 
     loadSharedSkills(): Promise<Array<SharedSkillName>>;
+
+    getProjectCard(projectId: number): Promise<ProjectInfo>;
 }
 
 class RestDictService implements DictService {
@@ -67,6 +81,10 @@ class RestDictService implements DictService {
 
     public loadAllBusinessAccounts(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/business_account").then(response => response.data);
+    }
+
+    getProjectCard(projectId: number): Promise<ProjectInfo> {
+        return httpService.get(`v1/projects/${projectId}`).then(response => response.data);
     }
 }
 

@@ -2,8 +2,8 @@
 <template>
   <v-form ref="baEditForm">
     <v-card>
-      <v-card-title v-if="baForm.isNew">{{ $t('Создание бизнес акаунта') }}</v-card-title>
-      <v-card-title v-else>{{ $t('Изменение бизнес акаунта') }}</v-card-title>
+      <v-card-title v-if="baForm.isNew">{{ $t('Создание бизнес аккаунта') }}</v-card-title>
+      <v-card-title v-else>{{ $t('Изменение бизнес аккаунта') }}</v-card-title>
       <v-card-text>
         <!-- name -->
         <v-text-field
@@ -14,14 +14,6 @@
             required>
           >
         </v-text-field>
-
-        <v-autocomplete
-            v-model="baForm.responsibleEmployee"
-            :items="allEmployees"
-            item-value="id"
-            item-text="displayName"
-            :label="$t('Ответственный сотрудник')"
-        ></v-autocomplete>
 
         <!-- description -->
         <v-textarea
@@ -73,8 +65,7 @@ class BaForm {
   public id?: number;
   public name = '';
   public description = '';
-  public responsibleEmployee: number|null = null;
-  public archived=false;
+  public archived = false;
 }
 
 @Component(
@@ -109,7 +100,6 @@ export default class AdminBAForm extends Vue {
     this.baForm.id = undefined;
     this.baForm.name = '';
     this.baForm.description = '';
-    this.baForm.responsibleEmployee = null;
     this.baForm.archived = false;
 
     if (this.input) {
@@ -117,7 +107,6 @@ export default class AdminBAForm extends Vue {
       this.baForm.id = this.input.id;
       this.baForm.name = this.input.name ? this.input.name : '';
       this.baForm.description = this.input.description ? this.input.description : '';
-      this.baForm.responsibleEmployee = this.input.responsibleEmployee ? this.input.responsibleEmployee.id : null;
       this.baForm.archived = this.input.archived;
     }
   }
@@ -135,7 +124,6 @@ export default class AdminBAForm extends Vue {
       const body = {
         name: this.baForm.name,
         description: this.baForm.description,
-        responsibleEmployee: this.baForm.responsibleEmployee,
         archived: this.baForm.archived
       } as CreateOrUpdateBusinessAccount;
       let serverRequest;

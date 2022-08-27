@@ -97,11 +97,18 @@
             </v-list-item-title>
           </v-list-item>
 
-          <v-list-item to="/admin/articles" v-if="canAdminArticles">
+          <v-list-item to="/admin/articles" v-if="canAdminArticles()">
             <v-list-item-title>
               {{ $t('Статьи и новости') }}
             </v-list-item-title>
           </v-list-item>
+
+          <v-list-item to="/admin/managers" v-if="canAdminManagers()">
+            <v-list-item-title>
+              {{ $t('Все менеджеры') }}
+            </v-list-item-title>
+          </v-list-item>
+
 
         </v-list-group>
 
@@ -220,6 +227,10 @@ export default class App extends Vue {
 
   private canAdminEmployees() {
     return permissionService.canAdminEmployees();
+  }
+
+  private canAdminManagers() {
+    return permissionService.canAdminManagers();
   }
 
   private canAdminBusinessAccounts() {

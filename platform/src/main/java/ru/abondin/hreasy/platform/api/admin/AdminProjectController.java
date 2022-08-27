@@ -34,4 +34,10 @@ public class AdminProjectController {
                 projectAdminService.findAll(auth));
     }
 
+    @GetMapping("/{projectId}")
+    public Mono<ProjectDto> findById(@PathVariable int projectId) {
+        return AuthHandler.currentAuth().flatMap(auth ->
+                projectAdminService.findById(auth, projectId));
+    }
+
 }
