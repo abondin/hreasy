@@ -11,7 +11,7 @@
         <v-btn text icon @click="fetchDetails()" :loading="loading">
           <v-icon>refresh</v-icon>
         </v-btn>
-        <div>{{ $t('Подробная информация по проекту ') +project.name }}</div>
+        <div>{{ $t('Подробная информация по проекту ') + project.name }}</div>
         <v-spacer></v-spacer>
 
         <!-- Update project -->
@@ -68,6 +68,8 @@ import {SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import AdminProjectForm from "@/components/admin/project/AdminProjectForm.vue";
 import ProjectInfoComponent from "@/components/shared/ProjectInfoComponent.vue";
+import {AccessDeniedError} from "@/components/errors";
+import router from "@/router";
 
 
 const namespace_dict: string = 'dict';
@@ -112,7 +114,15 @@ export default class AdminProjectDetails extends Vue {
           if (this.$refs.projectsManagersTable) {
             (this.$refs.projectsManagersTable as AdminManagers).refresh();
           }
-        }).finally(() => {
+        })
+        .catch(ex => {
+          if (ex instanceof AccessDeniedError) {
+            logger.error(`Has no access to see project ${this.projectId}. Return to project list`)
+            this.$nextTick(() => router.push("/admin/projects"))
+          }
+          throw ex;
+        })
+        .finally(() => {
           if (showLoadingBar) this.loading = false;
         });
   }
