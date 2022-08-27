@@ -234,7 +234,7 @@ export default class AdminManagers extends Vue {
         deleteItemRequest: itemsToDelete => adminManagerService.delete(itemsToDelete)
       },
       new ManagerFilter(),
-      permissionService.canAdminManagers()
+      this.editable
   );
   private allEmployees: Employee[] = [];
 
@@ -291,6 +291,13 @@ export default class AdminManagers extends Vue {
     return body;
   }
 
+  private editable(): boolean {
+    if (this.selectedObject && this.selectedObject.type == 'project') {
+      return permissionService.canAdminProjects();
+    } else {
+      return permissionService.canAdminManagers();
+    }
+  }
 
 }
 </script>

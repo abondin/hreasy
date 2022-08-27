@@ -41,7 +41,7 @@ export default class EditTableComponentDataContainer<T extends WithId, UC extend
                 private createOrUpdateAction: CreateOrUpdateAction<T, UC> | null,
                 private editDeleteAction: DeleteAction<T> | null,
                 private _editFilter: F,
-                private _editEditable: boolean = false) {
+                private _editEditable: ()=>boolean) {
         super(editDataLoader, editHeaderLoader, createOrUpdateAction, createOrUpdateAction, editDeleteAction, _editFilter, _editEditable);
     }
 

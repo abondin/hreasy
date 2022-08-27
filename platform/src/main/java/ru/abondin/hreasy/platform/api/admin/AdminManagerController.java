@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
-import ru.abondin.hreasy.platform.service.admin.manager.ManagerService;
+import ru.abondin.hreasy.platform.service.admin.manager.AdminManagerService;
 import ru.abondin.hreasy.platform.service.admin.manager.dto.CreateManagerBody;
 import ru.abondin.hreasy.platform.service.admin.manager.dto.ManagerDto;
 import ru.abondin.hreasy.platform.service.admin.manager.dto.UpdateManagerBody;
@@ -17,7 +17,7 @@ import ru.abondin.hreasy.platform.service.admin.manager.dto.UpdateManagerBody;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminManagerController {
-    private final ManagerService service;
+    private final AdminManagerService service;
 
     @GetMapping
     public Flux<ManagerDto> all() {

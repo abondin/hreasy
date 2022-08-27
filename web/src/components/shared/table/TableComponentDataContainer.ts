@@ -85,7 +85,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
                 private createAction: CreateAction<T, C> | null,
                 private deleteAction: DeleteAction<T> | null,
                 private _filter: F,
-                private _editable: boolean = false,
+                private _editable: ()=> boolean,
                 private _singleSelect: boolean = true) {
     }
 
@@ -96,7 +96,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     }
 
     public editable(): boolean {
-        return this._editable;
+        return this._editable();
     }
 
     get singleSelect(): boolean {

@@ -11,6 +11,28 @@
         <v-text-field
             v-model="filter.search"
             :label="$t('Поиск')" class="mr-5 ml-5"></v-text-field>
+
+        <v-autocomplete
+            class="mr-5"
+            v-model="filter.bas"
+            item-value="id" item-text="name"
+            :items="allBusinessAccounts"
+            :label="$t('Бизнес аккаунт')"
+            multiple
+            clearable
+        ></v-autocomplete>
+
+
+        <v-autocomplete
+            class="mr-5"
+            v-model="filter.departments"
+            item-value="id" item-text="name"
+            :items="allDepartments"
+            :label="$t('Отдел')"
+            multiple
+            clearable
+        ></v-autocomplete>
+
         <v-checkbox :label="$t('Показать закрытые проекты')" v-model="filter.showClosed">
         </v-checkbox>
         <v-divider vertical class="mr-5 ml-5"></v-divider>
@@ -82,6 +104,8 @@ const namespace_dict: string = 'dict';
 class Filter {
   public showClosed = false;
   public search = '';
+  public departments: number[] = [];
+  public bas: number[] = [];
 }
 
 @Component({
@@ -135,7 +159,7 @@ export default class AdminProjects extends Vue {
   private projectCreateDialogClosed(event: any) {
     logger.debug("projectCreateDialogClosed", event);
     if (event instanceof ProjectCreatedEvent) {
-      this.projectDialog=false;
+      this.projectDialog = false;
       this.navigateProject(event.projectId);
     }
   }
@@ -156,6 +180,15 @@ export default class AdminProjects extends Vue {
                 (p.customer && p.customer.toLowerCase().indexOf(search) >= 0)
             ) as boolean
       }
+      if (this.filter.bas && this.filter.bas.length > 0) {
+        filtered = filtered && Boolean(
+            p.businessAccount && this.filter.bas.indexOf(p.businessAccount.id) >= 0);
+      }
+      if (this.filter.departments && this.filter.departments.length > 0) {
+        filtered = filtered && Boolean(
+            p.department && this.filter.departments.indexOf(p.department.id) >= 0);
+      }
+
       return filtered;
     });
   }

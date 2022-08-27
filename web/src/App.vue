@@ -97,7 +97,7 @@
             </v-list-item-title>
           </v-list-item>
 
-          <v-list-item to="/admin/articles" v-if="canAdminArticles">
+          <v-list-item to="/admin/articles" v-if="canAdminArticles()">
             <v-list-item-title>
               {{ $t('Статьи и новости') }}
             </v-list-item-title>

@@ -40,6 +40,6 @@ export default class DictTableComponentDataContainer<T extends BasicDict, UC ext
                 private dictCreateOrUpdateAction: CreateOrUpdateAction<T, UC> | null,
                 private _dictFilter: F,
                 private _dictEditable: boolean = false) {
-        super(dictDataLoader, dictHeaderLoader, dictCreateOrUpdateAction, null, _dictFilter, _dictEditable);
+        super(dictDataLoader, dictHeaderLoader, dictCreateOrUpdateAction, null, _dictFilter, () => _dictEditable);
     }
 }

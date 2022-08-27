@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
 import ru.abondin.hreasy.platform.repo.manager.ManagerRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
@@ -22,9 +23,10 @@ import ru.abondin.hreasy.platform.service.admin.manager.dto.UpdateManagerBody;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ManagerService {
+public class AdminManagerService {
 
     private final ManagerRepo repo;
+    private final DictProjectRepo projectRepo;
     private final ManagerMapper mapper;
     private final HistoryDomainService history;
     private final ManagerSecurityValidator securityValidator;
@@ -49,7 +51,7 @@ public class ManagerService {
         var createdAt = dateTimeService.now();
         var createdBy = auth.getEmployeeInfo().getEmployeeId();
         log.info("Creating new manager link {} by ", body, auth.getUsername());
-        return securityValidator.validateAdminManagers(auth)
+        return validateCreateOrUpdate(auth, body.getResponsibilityObjectType(), body.getResponsibilityObjectId())
                 .map(valid -> mapper.toEntry(body, createdAt, createdBy))
                 .flatMap(entry -> repo.save(entry))
                 .flatMap(persistent -> history.persistHistory(persistent.getId(),
@@ -62,14 +64,23 @@ public class ManagerService {
         var updatedAt = dateTimeService.now();
         var updatedBy = auth.getEmployeeInfo().getEmployeeId();
         log.info("Updating manager link {} by {} with {}", managerId, auth.getUsername(), body);
-        return securityValidator.validateAdminManagers(auth)
-                .flatMap(valid -> repo.findById(managerId))
+        return repo.findById(managerId)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(managerId))))
-                .map(entry -> mapper.update(entry, body, updatedAt, updatedBy))
+                .flatMap(entry -> validateCreateOrUpdate(auth, entry.getObjectType(), entry.getObjectId())
+                        .map(v -> mapper.update(entry, body, updatedAt, updatedBy)))
                 .flatMap(entry -> repo.save(entry))
                 .flatMap(persistent -> history.persistHistory(persistent.getId(),
                         HistoryDomainService.HistoryEntityType.MANAGER, persistent,
                         updatedAt, updatedBy).map(h -> persistent.getId()));
+    }
+
+    protected Mono<Boolean> validateCreateOrUpdate(AuthContext auth, String objectType, int objectId) {
+        return switch (ManagerDto.ManagerResponsibilityObjectType.byName(objectType)) {
+            case BUSINESS_ACCOUNT, DEPARTMENT -> securityValidator.validateAdminManagers(auth);
+            case PROJECT -> projectRepo.findFullInfoById(objectId)
+                    .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(objectId))))
+                    .flatMap(projectInfo -> securityValidator.validateCreateManagerForProject(auth, projectInfo));
+        };
     }
 
     @Transactional
