@@ -48,7 +48,7 @@
       <v-col v-if="project.info">
         <v-card>
           <v-card-text>
-            <div v-html="project.info" :style="{'height': height}" class="overflow-y-auto"></div>
+            <div v-html="project.info" :style="{'max-height': maxHeight}" class="overflow-y-auto"></div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -78,7 +78,7 @@ export default class ProjectInfoComponent extends Vue {
   }
 
   @Prop({required: false, default: "250px"})
-  private height!: string;
+  private maxHeight!: string;
 
   private formatDate(date: string | undefined): string | undefined {
     return DateTimeUtils.formatFromIso(date);

@@ -8,18 +8,19 @@
       </v-btn>
     </v-card-title>
     <v-alert type="error" v-if="error">{{ error }}</v-alert>
-    <project-card v-if="project" :project="project" height="600px"></project-card>
+    <project-card v-if="project" :project="project" max-height="400px"></project-card>
   </v-card>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import {ProjectFullInfo} from "../admin/project/admin.project.service";
-import {Prop} from "vue-property-decorator";
+import {Prop, Watch} from "vue-property-decorator";
 import Component from "vue-class-component";
 import dictService, {ProjectInfo} from "@/store/modules/dict.service";
 import {errorUtils} from "@/components/errors";
 import ProjectInfoComponent from "@/components/shared/ProjectInfoComponent.vue";
+import logger from "@/logger";
 
 @Component({
   components: {ProjectCard: ProjectInfoComponent}
@@ -38,6 +39,17 @@ export default class ProjectInfoCardComponent extends Vue {
    * Lifecycle hook
    */
   created() {
+    this.fetch();
+  }
+
+  @Watch("projectId")
+  private watchProjectId(){
+    this.fetch();
+  }
+
+
+  private fetch(){
+    logger.log(`Fetch project card ${this.projectId}`)
     this.loading = true;
     this.error = '';
     dictService.getProjectCard(this.projectId)
