@@ -78,6 +78,85 @@ INSERT INTO sec.user_role (employee_id, role) values (
 (select id from empl.employee  where email ilike 'Maxwell.May@stm-labs.ru' limit 1),
 'pm'
 );
+INSERT INTO empl.manager (employee, object_type, object_id, responsibility_type, created_at) values (
+(select id from empl.employee  where email ilike 'Maxwell.May@stm-labs.ru' limit 1),
+'project',
+(select id from proj.project  where name='M1 Billing' limit 1),
+'organization',
+now()::date
+);
+end if;
+END
+$do$;
+
+-- Husnain.Patterson - Billing business account head
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Husnain.Patterson@stm-labs.ru') then
+INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+(
+  'Husnain.Patterson@stm-labs.ru',
+  'Patterson', 'Patterson',null,
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Project Manager' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 Billing' limit 1),
+  '+79998884455',
+  '1990-06-12 00:00:00.000',
+  'male',
+  '2011-10-01 00:00:00.000',
+  null,
+  null);
+  INSERT INTO empl.manager (employee, object_type, object_id, responsibility_type, created_at) values (
+  (select id from empl.employee  where email ilike 'Husnain.Patterson@stm-labs.ru' limit 1),
+  'business_account',
+  (select id from ba.business_account  where name='Billing' limit 1),
+  'organization',
+  now()::date
+  );
+end if;
+END
+$do$;
+
+-- Fired M1 Billing Project Lead
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Levison.Fired@stm-labs.ru') then
+INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id, date_of_dismissal) VALUES
+(
+  'Levison.Fired@stm-labs.ru',
+  'Fired', 'Levison',null,
+  (select id from dict.department  where name='Development' limit 1),
+  (select id from dict.position  where name='Project Manager' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  (select id from proj.project  where name='M1 Billing' limit 1),
+  '+79998884455',
+  '1990-06-12 00:00:00.000',
+  'male',
+  '2011-10-01 00:00:00.000',
+  null,
+  null,
+  '2000-06-12 00:00:00.000');
+INSERT INTO sec.employee_accessible_projects (employee_id, project_id) values (
+(select id from empl.employee  where email ilike 'Levison.Fired@stm-labs.ru' limit 1),
+(select id from proj.project  where name='M1 Billing' limit 1)
+);
+INSERT INTO sec.user_role (employee_id, role) values (
+(select id from empl.employee  where email ilike 'Levison.Fired@stm-labs.ru' limit 1),
+'pm'
+);
+INSERT INTO empl.manager (employee, object_type, object_id, responsibility_type, created_at) values (
+(select id from empl.employee  where email ilike 'Levison.Fired@stm-labs.ru' limit 1),
+'project',
+(select id from proj.project  where name='M1 Billing' limit 1),
+'organization',
+now()::date
+);
+
 
 end if;
 END
@@ -110,6 +189,13 @@ INSERT into sec.employee_accessible_departments (employee_id, department_id) val
 INSERT INTO sec.user_role (employee_id, role) values (
 (select id from empl.employee  where email ilike 'Percy.Gough@stm-labs.ru' limit 1),
 'pm'
+);
+INSERT INTO empl.manager (employee, object_type, object_id, responsibility_type, created_at) values (
+(select id from empl.employee  where email ilike 'Percy.Gough@stm-labs.ru' limit 1),
+'department',
+(select id from dict.department  where name='Development' limit 1),
+'organization',
+now()::date
 );
 end if;
 END
@@ -179,11 +265,18 @@ INSERT INTO sec.employee_accessible_projects (employee_id, project_id) values (
 (select id from empl.employee  where email ilike 'Jawad.Mcghee@stm-labs.ru' limit 1),
 (select id from proj.project  where name='M1 FMS' limit 1)
 );
-
 INSERT INTO sec.user_role (employee_id, role) values (
 (select id from empl.employee  where email ilike 'Jawad.Mcghee@stm-labs.ru' limit 1),
 'pm'
 );
+INSERT INTO empl.manager (employee, object_type, object_id, responsibility_type, created_at) values (
+(select id from empl.employee  where email ilike 'Jawad.Mcghee@stm-labs.ru' limit 1),
+'project',
+(select id from proj.project  where name='M1 FMS' limit 1),
+'organization',
+now()::date
+);
+
 end if;
 END
 $do$;
@@ -225,29 +318,48 @@ INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
   null,
   null);
 INSERT INTO sec.employee_accessible_projects
-
  (employee_id, project_id) values (
 (select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
 (select id from proj.project  where name='M1 Billing' limit 1)
 );
-INSERT INTO sec.employee_accessible_projects
+INSERT INTO empl.manager (employee, object_type, object_id, responsibility_type, created_at) values (
+(select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
+'project',
+(select id from proj.project  where name='M1 Billing' limit 1),
+'organization',
+now()::date
+);
 
+INSERT INTO sec.employee_accessible_projects
  (employee_id, project_id) values (
 (select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
 (select id from proj.project  where name='M1 FMS' limit 1)
 );
-INSERT INTO sec.employee_accessible_projects
+INSERT INTO empl.manager (employee, object_type, object_id, responsibility_type, created_at) values (
+(select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
+'project',
+(select id from proj.project  where name='M1 FMS' limit 1),
+'organization',
+now()::date
+);
 
+INSERT INTO sec.employee_accessible_projects
  (employee_id, project_id) values (
 (select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
 (select id from proj.project  where name='M1 Policy Manager' limit 1)
+);
+INSERT INTO empl.manager (employee, object_type, object_id, responsibility_type, created_at) values (
+(select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
+'project',
+(select id from proj.project  where name='M1 Policy Manager' limit 1),
+'organization',
+now()::date
 );
 
 INSERT INTO sec.user_role (employee_id, role) values (
 (select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
 'pm'
 );
-
 end if;
 END
 $do$;

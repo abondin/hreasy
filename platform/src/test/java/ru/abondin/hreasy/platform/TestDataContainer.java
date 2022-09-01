@@ -15,6 +15,11 @@ import java.util.Map;
 
 /**
  * Load ids of all test data (dicts and employees).
+ * Initial DB scripts can be found in 'test/resources/db/testdata' folder
+ *
+ * We have 16 employees
+ *
+ * <img src="file:{@docRoot}/db/testdata/testdata.png"/></img>
  *
  * <p>
  * <b>Do not forgot to call async init method in your test</b>
@@ -24,7 +29,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class TestDataContainer {
-
     private final R2dbcEntityTemplate db;
 
 

@@ -141,6 +141,10 @@ public class TestEmployees {
      */
     public static String Billing_Manager_Maxwell_May = "Maxwell.May";
     /**
+     * Billing Business Account head
+     */
+    public static String Billing_BA_Head_Husnain_Patterson = "Husnain.Patterson";
+    /**
      * Head of Development Department
      */
     public static String DevHead_Percy_Gough = "Percy.Gough";
