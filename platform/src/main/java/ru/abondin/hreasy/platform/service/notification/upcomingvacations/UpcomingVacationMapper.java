@@ -1,9 +1,8 @@
 package ru.abondin.hreasy.platform.service.notification.upcomingvacations;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import ru.abondin.hreasy.platform.repo.vacation.VacationView;
+import ru.abondin.hreasy.platform.repo.vacation.VacationViewWithManagers;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
 import java.util.UUID;
@@ -12,7 +11,7 @@ import java.util.UUID;
 public interface UpcomingVacationMapper extends MapperBase {
 
     @Mapping(target = "clientUuid", qualifiedByName = "uuid", source = ".")
-    UpcomingVacationNotificationTemplate.UpcomingVacationContext toEmailContext(VacationView v);
+    UpcomingVacationNotificationTemplate.UpcomingVacationContext toEmailContext(VacationViewWithManagers v);
 
     @Named("uuid")
     default String uuid(VacationView v) {

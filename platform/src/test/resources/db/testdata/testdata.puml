@@ -39,6 +39,7 @@ frame Billing as "Billing BA" #FFAAFF
 frame RND as "RND BA" #FFAAFF
 
 [Haiden.Spooner] --> [M1 Billing] : employee
+[Husnain.Patterson] --> [M1 Billing] : employee
 [Asiyah.Bob] --> [M1 Billing] : employee
 [Dev.Fired] --> [M1 Billing] : employee
 [Maxwell.May] --[#blue]> [M1 Billing] : manager

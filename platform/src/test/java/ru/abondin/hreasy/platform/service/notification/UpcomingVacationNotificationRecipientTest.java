@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import ru.abondin.hreasy.platform.TestDataContainer;
+import ru.abondin.hreasy.platform.config.BackgroundTasksProps;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 import ru.abondin.hreasy.platform.repo.notification.UpcomingVacationNotificationLogRepo;
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
@@ -28,6 +29,8 @@ import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Locale;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.argThat;
@@ -68,6 +71,9 @@ public class UpcomingVacationNotificationRecipientTest extends BaseServiceTest {
     @SpyBean
     private DummyEmailMessageSender emailMessageSender;
 
+    @Autowired
+    private BackgroundTasksProps backgroundTasksProps;
+
 
     @BeforeEach
     protected void beforeEach() {
@@ -83,8 +89,8 @@ public class UpcomingVacationNotificationRecipientTest extends BaseServiceTest {
     }
 
     @Test
-    @DisplayName("Notifications Recipient Test for Haiden Spooner")
-    public void testVacationHaiden() {
+    @DisplayName("Notifications Recipients Test for employee Haiden Spooner")
+    public void testVacationEmployeeHaiden() {
 
         var vacationHaiden = defaultNewVacationBody();
         vacationHaiden.setStartDate(dateTimeService.now().plus(5, ChronoUnit.DAYS).toLocalDate());
@@ -99,20 +105,97 @@ public class UpcomingVacationNotificationRecipientTest extends BaseServiceTest {
         // 3. Verify recipients in sent email
         Mockito.verify(emailMessageSender)
                 .sendMessage(argThat((HrEasyEmailMessage mail) -> {
-                    log.info("Sending email {}", mail);
+                    log.info("Employee haiden email {}", mail);
+                    // Only employee himself should be in 'to' address
                     Assertions.assertEquals(1, mail.getTo().size(), "Only one recipient expected in 'to'");
-                    Assertions.assertEquals(emailFromUserName(Billing_Empl_Haiden_Spooner), mail.getTo().get(0),
+                    Assertions.assertEquals(emailFromUserName(Billing_Empl_Haiden_Spooner), mail.getTo().get(0).toLowerCase(Locale.ROOT),
                             "Unexpected employee in 'to' recipients");
-                    Assertions.assertEquals(4, mail.getCc().size(), "unexpected employee recipients in 'cc'");
-                    Assertions.assertTrue(Stream
+
+
+                    // All employees NOT FIRED managers should be in 'cc' address
+                    // Also all emails from 'hreasy.background.upcoming-vacation.additional-email-addresses' should be added to 'cc'
+                    // Haiden Spooner is empoyee of Billing project with 2 not fired managers, 1 manager of BA, 1 manager of department
+                    // + abondin@gmail.com in 'hreasy.background.upcoming-vacation.additional-email-addresses'
+                    Assertions.assertEquals(5, mail.getCc().size(), "unexpected employee recipients in 'cc'");
+                    Assertions.assertTrue(mail.getCc().stream().map(String::toLowerCase).collect(Collectors.toList()).containsAll(Stream
                             .of(Multiprojet_Manager_Kyran_Neville, Billing_Manager_Maxwell_May, Billing_BA_Head_Husnain_Patterson, DevHead_Percy_Gough)
                             .map(TestDataContainer::emailFromUserName)
-                            .toList().containsAll(mail.getCc()), "Unexpected employees in 'cc' recipients");
+                            .toList()), "Unexpected employees in 'cc' recipients");
+                    Assertions.assertTrue(mail.getCc().stream().map(String::toLowerCase).collect(Collectors.toList()).containsAll(
+                            backgroundTasksProps.getUpcomingVacation().getAdditionalEmailAddresses()
+                    ), "Unexpected employees in 'cc' recipients");
                     return true;
                 }));
 
     }
 
+    @Test
+    @DisplayName("Notifications Recipients Test for ba head Husnain Patterson")
+    public void testVacationBAHeadHusnain() {
+        var vacationHusnain = defaultNewVacationBody();
+        vacationHusnain.setStartDate(dateTimeService.now().plus(5, ChronoUnit.DAYS).toLocalDate());
+        vacationHusnain.setEndDate(dateTimeService.now().plus(10, ChronoUnit.DAYS).toLocalDate());
+        vacationHusnain.setStatus(VacationDto.VacationStatus.PLANNED);
+        // 1. Save new planned vacation
+        vacationService.create(auth, testData.employees.get(Billing_BA_Head_Husnain_Patterson), vacationHusnain)
+                // 2. Start job to notify all incoming vacations
+                .thenMany(sender.notifyUpcomingVacations())
+                .blockLast(MONO_DEFAULT_TIMEOUT);
+
+        // 3. Verify recipients in sent email
+        Mockito.verify(emailMessageSender)
+                .sendMessage(argThat((HrEasyEmailMessage mail) -> {
+                    log.info("Business account head Husnain's email {}", mail);
+                    // Only employee himself should be in 'to' address
+                    Assertions.assertEquals(1, mail.getTo().size(), "Only one recipient expected in 'to'");
+                    Assertions.assertEquals(emailFromUserName(Billing_BA_Head_Husnain_Patterson), mail.getTo().get(0).toLowerCase(Locale.ROOT),
+                            "Unexpected employee in 'to' recipients");
+
+                    // Husnain is manager for himself. He is employee of Billing project and head of Billing business account at the same time.
+                    // Let's check that emails in 'to' are not duplicated in 'cc'.
+                    Assertions.assertEquals(4, mail.getCc().size(), "unexpected employee recipients in 'cc'");
+                    Assertions.assertTrue(mail.getCc().stream().map(String::toLowerCase).collect(Collectors.toList()).containsAll(Stream
+                            .of(Multiprojet_Manager_Kyran_Neville, Billing_Manager_Maxwell_May, DevHead_Percy_Gough)
+                            .map(TestDataContainer::emailFromUserName)
+                            .toList()), "Unexpected employees in 'cc' recipients");
+                    Assertions.assertTrue(mail.getCc().stream().map(String::toLowerCase).collect(Collectors.toList()).containsAll(
+                            backgroundTasksProps.getUpcomingVacation().getAdditionalEmailAddresses()
+                    ), "Unexpected employees in 'cc' recipients");
+                    return true;
+                }));
+    }
+
+
+    @Test
+    @DisplayName("Notifications Recipients Test for dev head Percy Gough")
+    public void testVacationDevHeadPercyGough() {
+        var vacationPercy = defaultNewVacationBody();
+        vacationPercy.setStartDate(dateTimeService.now().plus(5, ChronoUnit.DAYS).toLocalDate());
+        vacationPercy.setEndDate(dateTimeService.now().plus(10, ChronoUnit.DAYS).toLocalDate());
+        vacationPercy.setStatus(VacationDto.VacationStatus.PLANNED);
+        // 1. Save new planned vacation
+        vacationService.create(auth, testData.employees.get(DevHead_Percy_Gough), vacationPercy)
+                // 2. Start job to notify all incoming vacations
+                .thenMany(sender.notifyUpcomingVacations())
+                .blockLast(MONO_DEFAULT_TIMEOUT);
+
+        // 3. Verify recipients in sent email
+        Mockito.verify(emailMessageSender)
+                .sendMessage(argThat((HrEasyEmailMessage mail) -> {
+                    log.info("Department head Percy's email {}", mail);
+                    // Only employee himself should be in 'to' address
+                    Assertions.assertEquals(1, mail.getTo().size(), "Only one recipient expected in 'to'");
+                    Assertions.assertEquals(emailFromUserName(DevHead_Percy_Gough), mail.getTo().get(0).toLowerCase(Locale.ROOT),
+                            "Unexpected employee in 'to' recipients");
+
+                    // Percy is department head. No other managers over him
+                    Assertions.assertEquals(1, mail.getCc().size(), "unexpected employee recipients in 'cc'");
+                    Assertions.assertTrue(mail.getCc().stream().map(String::toLowerCase).collect(Collectors.toList()).containsAll(
+                            backgroundTasksProps.getUpcomingVacation().getAdditionalEmailAddresses()
+                    ), "Unexpected employees in 'cc' recipients");
+                    return true;
+                }));
+    }
 
     private VacationCreateOrUpdateDto defaultNewVacationBody() {
         var vacation = new VacationCreateOrUpdateDto();

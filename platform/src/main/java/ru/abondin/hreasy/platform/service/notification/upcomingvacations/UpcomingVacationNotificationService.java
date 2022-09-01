@@ -10,7 +10,7 @@ import ru.abondin.hreasy.platform.repo.notification.UpcomingVacationNotification
 import ru.abondin.hreasy.platform.repo.notification.UpcomingVacationNotificationLogRepo;
 import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
-import ru.abondin.hreasy.platform.repo.vacation.VacationView;
+import ru.abondin.hreasy.platform.repo.vacation.VacationViewWithManagers;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.message.EmailMessageSender;
 
@@ -63,7 +63,7 @@ public class UpcomingVacationNotificationService {
         return !found.isPresent();
     }
 
-    private Flux<UpcomingVacationNotificationLogEntry> markVacationsAsPersisted(List<VacationView> vacations, OffsetDateTime now) {
+    private Flux<UpcomingVacationNotificationLogEntry> markVacationsAsPersisted(List<VacationViewWithManagers> vacations, OffsetDateTime now) {
         return logRepo.saveAll(vacations.stream().map(v -> {
             var logEntry = new UpcomingVacationNotificationLogEntry();
             logEntry.setVacation(v.getId());
@@ -74,7 +74,7 @@ public class UpcomingVacationNotificationService {
         }).collect(Collectors.toList()));
     }
 
-    private Flux<String> sendNotifications(List<VacationView> vacations) {
+    private Flux<String> sendNotifications(List<VacationViewWithManagers> vacations) {
         return Flux.fromStream(vacations.stream())
                 .flatMap(v -> {
                             var message = template.create(mapper.toEmailContext(v));

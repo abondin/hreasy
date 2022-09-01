@@ -15,9 +15,7 @@ import ru.abondin.hreasy.platform.service.message.dto.HrEasyEmailMessage;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Fill all required fields for upcoming vacation notification
@@ -33,6 +31,7 @@ public class UpcomingVacationNotificationTemplate {
         private String employeeFirstname;
         private String employeeLastname;
         private String employeeEmail;
+        private Set<String> managersEmails = new HashSet<>();
         private LocalDate startDate;
         private LocalDate endDate;
         private int daysNumber;
@@ -65,10 +64,15 @@ public class UpcomingVacationNotificationTemplate {
         message.setAttachments(Map.of(i18n.localize("notification.template.upcoming-vacation.docname"), upcomingDocument));
 
         var to = new ArrayList<String>();
-        // FIXME Uncomment after test period
-        // to.add(context.getEmployeeEmail());
-        to.addAll(backgroundTasksProps.getUpcomingVacation().getAdditionalEmailAddresses());
+        to.add(context.getEmployeeEmail());
         message.setTo(to);
+
+        var cc = new ArrayList<String>();
+        cc.addAll(context.getManagersEmails());
+        cc.addAll(backgroundTasksProps.getUpcomingVacation().getAdditionalEmailAddresses());
+        cc.removeAll(to);
+        message.setCc(cc);
+
         message.setFrom(commonProps.getDefaultEmailFrom());
         return message;
     }

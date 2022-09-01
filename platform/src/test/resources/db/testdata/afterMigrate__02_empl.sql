@@ -98,7 +98,7 @@ INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Husnain.Patterson@stm-labs.ru',
-  'Patterson', 'Patterson',null,
+  'Patterson', 'Husnain',null,
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Project Manager' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
