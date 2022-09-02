@@ -40,6 +40,26 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
             				group by m.object_id, m.object_type
             """;
 
+    /**
+     * For every employee return array of all emails of all not fired manager:
+     * 1. Get employee project
+     * 2. Get project managers
+     * 3. Get project's ba managers
+     * 4. Get project's departments managers
+     */
+    String EMPLOYEE_ALL_MANAGER_EMAILS= """
+            select e.id as id, array_remove(array_agg(em.email),null) as emails from empl.employee e
+            	left join proj.project p on e.current_project = p.id
+            	left join empl.manager m
+            		on (m.object_type='project' and m.object_id=p.id)
+            		or (m.object_type='business_account' and m.object_id=p.ba_id)
+            		or (m.object_type='department' and m.object_id=p.department_id)
+            	left join empl.employee em on m.employee=em.id
+            	where
+            	(em.date_of_dismissal is null or em.date_of_dismissal > :now)
+            	group by e.id
+            """;
+
     @Query(defaultSelectQuery + " order by employee_display_name asc")
     Flux<ManagerView> findDetailed(@Param("now") OffsetDateTime now);
 

@@ -27,6 +27,7 @@ public class DefaultEmailMessageSender implements EmailMessageSender {
 
     @Override
     public Mono<String> sendMessage(HrEasyEmailMessage message) {
+        log.info("Send email message {}", message);
         return validateMessage(message)
                 .then(buildMimeMessage(message))
                 .flatMap(email -> Mono.defer(() -> {

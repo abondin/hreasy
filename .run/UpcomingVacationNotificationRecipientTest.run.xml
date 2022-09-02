@@ -1,14 +1,14 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="UpcomingVacationNotificationServiceTest" type="JUnit" factoryName="JUnit" nameIsGenerated="true">
+  <configuration default="false" name="UpcomingVacationNotificationRecipientTest - Local DB" type="JUnit" factoryName="JUnit">
     <module name="platform" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="ru.abondin.hreasy.platform.service.notification.channels.email.*" />
+        <option name="PATTERN" value="ru.abondin.hreasy.platform.service.notification.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
     <option name="PACKAGE_NAME" value="ru.abondin.hreasy.platform.service.notification" />
-    <option name="MAIN_CLASS_NAME" value="ru.abondin.hreasy.platform.service.notification.UpcomingVacationNotificationServiceTest" />
+    <option name="MAIN_CLASS_NAME" value="ru.abondin.hreasy.platform.service.notification.UpcomingVacationNotificationRecipientTest" />
     <option name="METHOD_NAME" value="" />
     <option name="TEST_OBJECT" value="class" />
     <option name="VM_PARAMETERS" value="-ea -Dhreasy.test.existing-database-docker=true -Duser.country=RU -Duser.language=ru" />

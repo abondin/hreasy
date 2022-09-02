@@ -35,18 +35,27 @@ insert into dict.position (name)
  select  ('Automation QA')
  where NOT EXISTS (SELECT id from dict.position where name='Automation QA');
 
+-- BAs
+
+INSERT INTO ba.business_account ("name") VALUES('RND');
+INSERT INTO ba.business_account ("name") VALUES('Billing');
+
+
 
 -- Projects
-insert into proj.project (name, start_date, customer, department_id) 
+insert into proj.project (name, start_date, customer, department_id, ba_id)
  select 'M1 Billing', now()::date, 'Mobile Operator N1', (SELECT id from dict.department where name='Development')
+ ,(SELECT id from ba.business_account where name='Billing')
  where NOT EXISTS (SELECT id from proj.project where name='M1 Billing');
 
-insert into proj.project (name, start_date, customer, department_id) 
+insert into proj.project (name, start_date, customer, department_id, ba_id)
  select 'M1 FMS', now()::date, 'Mobile Operator N1', (SELECT id from dict.department where name='Development')
+ ,(SELECT id from ba.business_account where name='RND')
  where NOT EXISTS (SELECT id from proj.project where name='M1 FMS');
 
-insert into proj.project (name, start_date, customer, department_id) 
+insert into proj.project (name, start_date, customer, department_id, ba_id)
  select 'M1 Policy Manager', now()::date, 'Mobile Operator N1', (SELECT id from dict.department where name='Development')
+ ,(SELECT id from ba.business_account where name='RND')
  where NOT EXISTS (SELECT id from proj.project where name='M1 Policy Manager');
 
 

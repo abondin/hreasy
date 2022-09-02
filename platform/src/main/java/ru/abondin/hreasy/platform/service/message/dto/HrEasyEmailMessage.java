@@ -14,7 +14,7 @@ import java.util.Map;
  * Message to send via email
  */
 @Data
-@ToString(of = {"clientUuid", "to", "title"})
+@ToString(of = {"clientUuid", "to", "cc", "title"})
 public class HrEasyEmailMessage extends HrEasyMessage {
 
     private List<String> to = new ArrayList<>();
