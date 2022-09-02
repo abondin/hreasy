@@ -48,7 +48,7 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
      * 4. Get project's departments managers
      */
     String EMPLOYEE_ALL_MANAGER_EMAILS= """
-            select e.id as id, array_agg(em.email) as emails from empl.employee e
+            select e.id as id, array_remove(array_agg(em.email),null) as emails from empl.employee e
             	left join proj.project p on e.current_project = p.id
             	left join empl.manager m
             		on (m.object_type='project' and m.object_id=p.id)
