@@ -25,15 +25,26 @@ actor "Amy.Beck"
 actor "Kyran.Neville" #blue
 actor "Husnain.Patterson" #green
 actor/ "Levison.Fired" #gray
+actor "Jonas.Martin"
 actor "Shaan.Pitts" #gold
+actor Toby.Barrow #gold
+actor Maysa.Sheppard #gold
 
-Shaan.Pitts-.->Shaan.Pitts:Global Admin
+Shaan.Pitts .u-() global
+Toby.Barrow .d-() global
+Maysa.Sheppard .l-() global
+
+Shaan.Pitts-.>Shaan.Pitts:Global Admin\nNo manager objects\nEmployee of no projects
+Toby.Barrow-.>Toby.Barrow:Technical Lead of the whole company\nNo manager objects\nEmployee of no projects
+Maysa.Sheppard-.>Maysa.Sheppard:HR\nNo manager objects\nEmployee of no projects
 
 folder "M1 Billing"
 folder "M1 FMS"
 folder "M1 Policy Manager"
+folder "M1 ERP Integration"
 
 frame Development as "Development Department" #FFBBBB
+frame Integration as "Integration Department" #FFBBBB
 
 frame Billing as "Billing BA" #FFAAFF
 frame RND as "RND BA" #FFAAFF
@@ -51,7 +62,7 @@ frame RND as "RND BA" #FFAAFF
 [Kyran.Neville] --[#blue]> [M1 Billing] : manager
 [Kyran.Neville] --[#blue]> [M1 Policy Manager] : manager
 [Kyran.Neville] --[#blue]> [M1 FMS] : manager
-
+[Jonas.Martin]--> [M1 ERP Integration] : employee
 
 [Percy.Gough] -[#green]> [Development] : head
 [Husnain.Patterson] -[#green]> [Billing] : head
@@ -60,6 +71,7 @@ frame RND as "RND BA" #FFAAFF
 [M1 Billing] -[#gray]--> [Development]: dep
 [M1 FMS] -[#gray]--> [Development]: dep
 [M1 Policy Manager]-[#gray]-->[Development]: dep
+[M1 ERP Integration]-[#gray]-->[Integration]: dep
 
 [M1 Billing]--[#gray]->[Billing]:ba
 [M1 FMS]-[#gray]-->[RND]:ba

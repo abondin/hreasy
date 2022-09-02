@@ -197,6 +197,37 @@ public class UpcomingVacationNotificationRecipientTest extends BaseServiceTest {
                 }));
     }
 
+    @Test
+    @DisplayName("Notifications Recipients Test for Jonas Martin - employee on project with no managers")
+    public void testVacationEmployeeOnProjectWithoutManagers() {
+        var vacationJonas = defaultNewVacationBody();
+        vacationJonas.setStartDate(dateTimeService.now().plus(5, ChronoUnit.DAYS).toLocalDate());
+        vacationJonas.setEndDate(dateTimeService.now().plus(10, ChronoUnit.DAYS).toLocalDate());
+        vacationJonas.setStatus(VacationDto.VacationStatus.PLANNED);
+        // 1. Save new planned vacation
+        vacationService.create(auth, testData.employees.get(Integrator_Jonas_Martin), vacationJonas)
+                // 2. Start job to notify all incoming vacations
+                .thenMany(sender.notifyUpcomingVacations())
+                .blockLast(MONO_DEFAULT_TIMEOUT);
+
+        // 3. Verify recipients in sent email
+        Mockito.verify(emailMessageSender)
+                .sendMessage(argThat((HrEasyEmailMessage mail) -> {
+                    log.info("Department head Percy's email {}", mail);
+                    // Only employee himself should be in 'to' address
+                    Assertions.assertEquals(1, mail.getTo().size(), "Only one recipient expected in 'to'");
+                    Assertions.assertEquals(emailFromUserName(Integrator_Jonas_Martin), mail.getTo().get(0).toLowerCase(Locale.ROOT),
+                            "Unexpected employee in 'to' recipients");
+
+                    // no managers for M1 ERP Integration project or integration department. Project has no ba assigned
+                    Assertions.assertEquals(1, mail.getCc().size(), "unexpected employee recipients in 'cc'");
+                    Assertions.assertTrue(mail.getCc().stream().map(String::toLowerCase).collect(Collectors.toList()).containsAll(
+                            backgroundTasksProps.getUpcomingVacation().getAdditionalEmailAddresses()
+                    ), "Unexpected employees in 'cc' recipients");
+                    return true;
+                }));
+    }
+
     private VacationCreateOrUpdateDto defaultNewVacationBody() {
         var vacation = new VacationCreateOrUpdateDto();
         vacation.setYear(dateTimeService.now().getYear());
