@@ -16,7 +16,6 @@ import ru.abondin.hreasy.platform.service.message.dto.HrEasyEmailMessage;
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * Fill all required fields for upcoming vacation notification
@@ -32,7 +31,7 @@ public class UpcomingVacationNotificationTemplate {
         private String employeeFirstname;
         private String employeeLastname;
         private String employeeEmail;
-        private Set<String> managersEmails = new HashSet<>();
+        private List<String> managersEmails = new ArrayList<>();
         private LocalDate startDate;
         private LocalDate endDate;
         private int daysNumber;
@@ -66,13 +65,13 @@ public class UpcomingVacationNotificationTemplate {
 
         List<String> to = new ArrayList<>();
         to.add(context.getEmployeeEmail());
-        to = to.stream().map(String::toLowerCase).distinct().toList();
+        to = cleanUpRecipients(to);
         message.setTo(to);
 
         List<String> cc = new ArrayList<>();
         cc.addAll(context.getManagersEmails());
         cc.addAll(backgroundTasksProps.getUpcomingVacation().getAdditionalEmailAddresses());
-        cc = new ArrayList<>(cc.stream().map(String::toLowerCase).distinct().toList());
+        cc = cleanUpRecipients(cc);
         cc.removeAll(to);
         message.setCc(cc);
 
@@ -90,6 +89,13 @@ public class UpcomingVacationNotificationTemplate {
         context.setVariable("endDate", modelContext.getEndDate());
         context.setVariable("startDate", modelContext.getStartDate());
         return templateEngine.process("upcomingvacation.html", context);
+    }
+
+    private List<String> cleanUpRecipients(Collection<String> emails) {
+        if (emails == null || emails.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(emails.stream().filter(s -> s != null).map(String::trim).map(String::toLowerCase).distinct().toList());
     }
 
 

@@ -2,9 +2,9 @@ package ru.abondin.hreasy.platform.repo.vacation;
 
 import lombok.Data;
 
-import java.util.Set;
+import java.util.List;
 
 @Data
 public class VacationViewWithManagers extends VacationView {
-    private Set<String> managersEmails;
+    private List<String> managersEmails;
 }
