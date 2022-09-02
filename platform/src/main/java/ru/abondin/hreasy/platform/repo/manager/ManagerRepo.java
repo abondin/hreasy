@@ -22,9 +22,9 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
              END as object_name
             from empl.manager m
             left join empl.employee e on m.employee=e.id
-            left join ba.business_account ba on m.object_id=ba.id\s
-            left join proj.project p on m.object_id=p.id\s
-            left join dict.department d on m.object_id=d.id\s
+            left join ba.business_account ba on m.object_id=ba.id
+            left join proj.project p on m.object_id=p.id
+            left join dict.department d on m.object_id=d.id
             """;
 
     String AGGREGATED_MANAGERS_BY_OBJECT= """
