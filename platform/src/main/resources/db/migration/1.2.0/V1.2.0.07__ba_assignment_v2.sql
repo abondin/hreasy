@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS ba.ba_assignment (
 	project integer NULL REFERENCES proj.project (id),
 	ba_position varchar(256) NULL,
 	employment_rate NUMERIC(18,2) NULL,
-	employment_activity_rate real not null default 1.0 CHECK (employment_activity_rate > 0.0 and employment_activity_rate <=1.0)
+	employment_activity_rate real not null default 1.0 CHECK (employment_activity_rate > 0.0 and employment_activity_rate <=1.0),
 	ba_position_rate NUMERIC(18,2) NULL,
-	ba_position_activity_rate real not null default 1.0 CHECK (ba_position_activity_rate > 0.0 and ba_position_activity_rate <=1.0)
+	ba_position_activity_rate real not null default 1.0 CHECK (ba_position_activity_rate > 0.0 and ba_position_activity_rate <=1.0),
 	"comment" text NULL,
 	start_date date NULL,
 	end_date date NULL,
