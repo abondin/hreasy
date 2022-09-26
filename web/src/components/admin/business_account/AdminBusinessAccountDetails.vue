@@ -27,7 +27,7 @@
         </v-tooltip>
       </v-card-title>
       <v-card-text v-if="businessAccount.description">
-        {{businessAccount.description}}
+        {{ businessAccount.description }}
       </v-card-text>
     </v-card>
 
@@ -48,10 +48,6 @@
           :title="$t('Менеджеры бизнес аккаунта')"></admin-managers>
     </v-card>
 
-    <admin-b-a-positions
-        ref="baPositions"
-        :load-on-create=false
-        v-bind:business-account-id="businessAccountId"></admin-b-a-positions>
 
   </v-container>
 </template>
@@ -65,13 +61,12 @@ import AdminBAForm from "@/components/admin/business_account/AdminBAForm.vue";
 import adminBaService, {BusinessAccount} from "@/components/admin/business_account/admin.ba.service";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import {Prop} from "vue-property-decorator";
-import AdminBAPositions from "@/components/admin/business_account/AdminBAPositions.vue";
 import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
 import {ManagerResponsibilityObjectId} from "@/components/admin/manager/admin.manager.service";
 
 
 @Component({
-      components: {AdminManagers, AdminBAPositions, AdminBAForm}
+      components: {AdminManagers, AdminBAForm}
     }
 )
 export default class AdminBusinessAccountDetails extends Vue {
@@ -103,10 +98,7 @@ export default class AdminBusinessAccountDetails extends Vue {
     return adminBaService.get(this.businessAccountId)
         .then(ba => {
           this.businessAccount = ba;
-          if (this.$refs.baPositions) {
-            (this.$refs.baPositions as AdminBAPositions).refresh();
-          }
-          if (this.$refs.baManagersTable){
+          if (this.$refs.baManagersTable) {
             (this.$refs.baManagersTable as AdminManagers).refresh();
           }
         }).finally(() => {
@@ -119,7 +111,7 @@ export default class AdminBusinessAccountDetails extends Vue {
     this.baDialog = true;
   }
 
-  private get responsibleObject(): ManagerResponsibilityObjectId|null{
+  private get responsibleObject(): ManagerResponsibilityObjectId | null {
     return this.businessAccount ? {
       id: this.businessAccount.id,
       type: 'business_account'

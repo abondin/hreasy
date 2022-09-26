@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS ba.ba_assignment (
 	project integer NULL REFERENCES proj.project (id),
 	ba_position varchar(256) NULL,
 	employment_rate NUMERIC(18,2) NULL,
-	employment_activity_rate real not null default 1.0 CHECK (employment_activity_rate > 0.0 and employment_activity_rate <=1.0),
+	employment_rate_factor NUMERIC(3,2) not null default 1.0 CHECK (employment_rate_factor > 0.0 and employment_rate_factor <=1.0),
 	ba_position_rate NUMERIC(18,2) NULL,
-	ba_position_activity_rate real not null default 1.0 CHECK (ba_position_activity_rate > 0.0 and ba_position_activity_rate <=1.0),
+	ba_position_rate_factor NUMERIC(3,2) not null default 1.0 CHECK (ba_position_rate_factor > 0.0 and ba_position_rate_factor <=1.0),
 	"comment" text NULL,
 	start_date date NULL,
 	end_date date NULL,
@@ -39,9 +39,9 @@ COMMENT ON COLUMN ba.ba_assignment.comment IS 'Comment in free format';
 COMMENT ON COLUMN ba.ba_assignment.start_date IS 'Actual assignment start';
 COMMENT ON COLUMN ba.ba_assignment.end_date IS 'Actual assignment end';
 COMMENT ON COLUMN ba.ba_assignment.employment_rate IS 'Rate of employee including all administrative costs';
-COMMENT ON COLUMN ba.ba_assignment.employment_activity_rate IS 'Rate employent activity on given position (1 - full employment, < 1 part-time employment)';
+COMMENT ON COLUMN ba.ba_assignment.employment_rate_factor IS 'Rate employent activity on given position (1 - full employment, < 1 part-time employment)';
 COMMENT ON COLUMN ba.ba_assignment.ba_position_rate IS 'Rate of position';
-COMMENT ON COLUMN ba.ba_assignment.ba_position_activity_rate IS 'How many working hours position needs (1 - full employment, < 1 part-time employment)';
+COMMENT ON COLUMN ba.ba_assignment.ba_position_rate_factor IS 'How many working hours position needs (1 - full employment, < 1 part-time employment)';
 COMMENT ON COLUMN ba.ba_assignment.created_at IS 'Created at';
 COMMENT ON COLUMN ba.ba_assignment.created_by IS 'Created by (link to employee)';
 COMMENT ON COLUMN ba.ba_assignment.closed_at IS 'Created at';
@@ -49,3 +49,4 @@ COMMENT ON COLUMN ba.ba_assignment.closed_by IS 'Created by (link to employee)';
 COMMENT ON COLUMN ba.ba_assignment.closed_reason IS 'Reason of assignment close';
 COMMENT ON COLUMN ba.ba_assignment.closed_comment IS 'Comment on close';
 
+COMMENT ON COLUMN history.history.entity_type IS '[empl_manager] - Entity type, [ba_assignment] - BA assignment. Links project position and employee';

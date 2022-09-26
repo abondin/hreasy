@@ -1,6 +1,6 @@
 import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
-import {ManagerOfObject, SimpleDict} from "@/store/modules/dict";
+import {ManagerOfObject} from "@/store/modules/dict";
 
 export interface CreateOrUpdateBusinessAccount {
     name: string;
@@ -18,20 +18,6 @@ export interface BusinessAccount {
     archived: boolean
 }
 
-export interface BusinessAccountPosition {
-    id: number,
-    name: string;
-    description?: string,
-    archived: boolean
-    rate: number
-}
-
-export interface CreateOrUpdateBAPosition {
-    name: string;
-    description?: string;
-    rate: number,
-    archived: boolean
-}
 
 export interface AdminBAService {
     /**
@@ -48,18 +34,6 @@ export interface AdminBAService {
     findAll(): Promise<BusinessAccount[]>;
 
     get(baId: number): Promise<BusinessAccount>;
-
-    findPositions(baId: number): Promise<BusinessAccountPosition[]>;
-
-    /**
-     * Create new Business Account Position
-     */
-    createPosition(baId: number, body: CreateOrUpdateBAPosition): Promise<number>;
-
-    /**
-     * Update existing Business Account Position
-     */
-    updatePosition(baId: number, positionId: number, body: CreateOrUpdateBAPosition): Promise<number>;
 }
 
 
@@ -97,29 +71,7 @@ class RestAdminBAService implements AdminBAService {
         });
     }
 
-    findPositions(baId: number): Promise<BusinessAccountPosition[]> {
-        return httpService.get(`v1/admin/business_account/${baId}/positions`).then(response => {
-            return response.data;
-        });
-    }
 
-    createPosition(baId: number, body: CreateOrUpdateBAPosition): Promise<number> {
-        return httpService.post(`v1/admin/business_account/${baId}/positions`, body).then(response => {
-            return response.data;
-        });
-    }
-
-    updatePosition(baId: number, positionId: number, body: CreateOrUpdateBAPosition): Promise<number> {
-        return httpService.put(`v1/admin/business_account/${baId}/positions/${positionId}`, body).then(response => {
-            return response.data;
-        });
-    }
-
-    archivePosition(baId: number, positionId: number): Promise<number> {
-        return httpService.delete(`v1/admin/business_account/${baId}/positions/${positionId}`).then(response => {
-            return response.data;
-        });
-    }
 }
 
 
