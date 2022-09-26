@@ -1,8 +1,11 @@
-package ru.abondin.hreasy.platform.service.ba.dto;
+package ru.abondin.hreasy.platform.service.admin.ba.dto;
 
 import lombok.Data;
+import ru.abondin.hreasy.platform.repo.ba.BusinessAccountAssignmentEntry;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
@@ -15,33 +18,41 @@ import java.time.OffsetDateTime;
  *     <li><code>employmentRate < 1</code> - Part-time employment</li>
  *     <li><code>ba_positionRate < 1</code> - Partially budgeting</li>
  * </ul>
- *
+ * <p>
  * Assignment can be closed if:
  * <ul>
  *     <li>Employee assigned/unassigned to/from BA position</li>
  *     <li>New BA position opened for unbudgeted employee</li>
  *     <li>BA position closed before endDate</li>
  * </ul>
- *
  */
 @Data
 public class BusinessAccountAssignmentDto {
     private Integer id;
+    /**
+     * Assignment period in YYYY format
+     * For example 2022
+     * //TODO Probably we can do in year + quarter manner
+     */
+    @NotNull
+    private int period;
+    private Integer ancestorAssignment;
     private SimpleDictDto businessAccount;
     private SimpleDictDto employee;
     private SimpleDictDto project;
-    private Integer parentAssignment;
-    private SimpleDictDto baPosition;
-    private Float employmentRate;
-    private Float baPositionRate;
+    private String baPosition;
+    private BigDecimal employmentRate;
+    private BigDecimal employmentRateFactor = BigDecimal.ONE;
+    private BigDecimal baPositionRate;
+    private BigDecimal baPositionRateFactor = BigDecimal.ONE;
     private String comment;
     private LocalDate startDate;
     private LocalDate endDate;
-    private LocalDate plannedStartDate;
-    private LocalDate plannedEndDate;
-    private boolean archived=false;
     private OffsetDateTime closedAt;
-    private Integer closedBy;
+    private SimpleDictDto closedBy;
+    /**
+     * @see BusinessAccountAssignmentEntry#getClosedReason()
+     */
     private String closedReason;
     private String closedComment;
 }

@@ -9,6 +9,7 @@ DROP TABLE ba.ba_position;
 CREATE SEQUENCE IF NOT EXISTS ba.BA_ASSIGNMENT_ID_SEQ;
 CREATE TABLE IF NOT EXISTS ba.ba_assignment (
 	id integer PRIMARY KEY NOT NULL DEFAULT nextval('ba.BA_ASSIGNMENT_ID_SEQ'),
+	period integer NOT NULL,
 	ancestor_assignment integer NULL REFERENCES ba.ba_assignment (id),
 	business_account integer NOT NULL REFERENCES ba.business_account (id),
 	employee integer NULL REFERENCES empl.employee (id),
@@ -30,6 +31,7 @@ CREATE TABLE IF NOT EXISTS ba.ba_assignment (
 );
 COMMENT ON TABLE ba.ba_assignment IS 'BA assignment. Links project position and employee';
 COMMENT ON COLUMN ba.ba_assignment.id IS 'Primary key to link with other tables';
+COMMENT ON COLUMN ba.ba_assignment.period IS 'Assignment period in YYYY format';
 COMMENT ON COLUMN ba.ba_assignment.ancestor_assignment IS 'Assignment item is immutable. It is important to show historical perspective. To change assignment you need to close one, and open new with link to ancestor';
 COMMENT ON COLUMN ba.ba_assignment.business_account IS 'Link to BA';
 COMMENT ON COLUMN ba.ba_assignment.employee IS 'Link to employee';
@@ -50,3 +52,17 @@ COMMENT ON COLUMN ba.ba_assignment.closed_reason IS 'Reason of assignment close'
 COMMENT ON COLUMN ba.ba_assignment.closed_comment IS 'Comment on close';
 
 COMMENT ON COLUMN history.history.entity_type IS '[empl_manager] - Entity type, [ba_assignment] - BA assignment. Links project position and employee';
+
+
+create or replace view ba.v_ba_assignment as
+    select a.*
+        , ba.name as business_account_name
+        , trim(concat_ws(' ', e.lastname, e.firstname, e.patronymic_name)) as employee_display_name
+        , p.name as project_name
+        , trim(concat_ws(' ', cl.lastname, cl.firstname, cl.patronymic_name)) as closed_by_display_name
+        from
+        ba.ba_assignment a
+        left join ba.business_account ba on a.business_account = ba.id
+        left join empl.employee e on a.employee = e.id
+        left join proj.project p on a.project = p.id
+        left join empl.employee cl on a.closed_by = cl.id;

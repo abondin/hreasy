@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -31,18 +32,24 @@ import java.time.OffsetDateTime;
 public class BusinessAccountAssignmentEntry {
     @Id
     private Integer id;
+    /**
+     * Assignment period in YYYY format
+     * For example 2022
+     */
+    @NotNull
+    private int period;
     private Integer ancestorAssignment;
     private int businessAccount;
     private Integer employee;
     private Integer project;
-    private Integer baPosition;
+    private String baPosition;
     //(18,2)
     private BigDecimal employmentRate;
-    //(1,2)
+    //(3,2)
     private BigDecimal employmentRateFactor=BigDecimal.ONE;
     //(18,2)
     private BigDecimal baPositionRate;
-    //(1,2)
+    //(3,2)
     private BigDecimal baPositionRateFactor=BigDecimal.ONE;
     private String comment;
     private LocalDate startDate;
@@ -59,7 +66,7 @@ public class BusinessAccountAssignmentEntry {
      *      <li><b>employment_rate_factor_updated</b> - Employee rate factor updated</li>
      *      <li><b>bapositition_rate_updated</b> - BA position rate updated</li>
      *      <li><b>bapositition_rate_factor_updated</b> - BA position rate factor updated</li>
-     *  * </ul>
+     *  </ul>
      */
     private String closedReason;
     private String closedComment;
