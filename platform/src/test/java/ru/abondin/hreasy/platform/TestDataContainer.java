@@ -33,6 +33,7 @@ public class TestDataContainer {
 
 
     public final Map<String, Integer> projects = new HashMap<>();
+    public final Map<String, Integer> bas = new HashMap<>();
     public final Map<String, Integer> employees = new HashMap<>();
 
 
@@ -44,7 +45,9 @@ public class TestDataContainer {
     public Mono<?> initAsync() {
         this.projects.clear();
         this.employees.clear();
+        this.bas.clear();
         return simpleDicts("proj.project", projects)
+                .then(simpleDicts("ba.business_account", bas))
                 .then(employees());
     }
 

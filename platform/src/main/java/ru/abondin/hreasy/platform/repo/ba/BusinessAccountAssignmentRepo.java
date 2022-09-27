@@ -8,6 +8,6 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface BusinessAccountAssignmentRepo extends ReactiveCrudRepository<BusinessAccountAssignmentEntry, Integer> {
-    @Query("select * from ba.v_ba_assignment where period=:period and business_account=businessAccount")
+    @Query("select * from ba.v_ba_assignment where period=:period and business_account=:businessAccount")
     Flux<BusinessAccountAssignmentView> findInBusinessAccount(@Param("period") int period, @Param("businessAccount") int businessAccount);
 }
