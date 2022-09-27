@@ -23,7 +23,8 @@ public class HistoryDomainService {
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @Getter
     public enum HistoryEntityType {
-        MANAGER("empl_manager");
+        MANAGER("empl_manager"),
+        BUSINESS_ACCOUNT_ASSIGNMENT("ba_assignment");
         private final String type;
     }
 

@@ -25,7 +25,7 @@ public class AdminBusinessAccountService {
     private final BusinessAccountRepo baRepo;
     private final BusinessAccountHistoryRepo baHistoryRepo;
     private final BusinessAccountMapper mapper;
-    private final AdminSecurityValidator securityValidator;
+    private final AdminBaSecurityValidator securityValidator;
     private final DateTimeService dateTimeService;
 
     /**

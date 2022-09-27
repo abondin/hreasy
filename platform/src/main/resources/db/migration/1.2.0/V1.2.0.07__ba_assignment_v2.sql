@@ -54,6 +54,16 @@ COMMENT ON COLUMN ba.ba_assignment.closed_comment IS 'Comment on close';
 COMMENT ON COLUMN history.history.entity_type IS '[empl_manager] - Entity type, [ba_assignment] - BA assignment. Links project position and employee';
 
 
+DELETE FROM sec.perm
+	WHERE "permission"='assign_to_ba_position';
+INSERT INTO sec.perm ("permission",description)
+	VALUES ('admin_ba_assignment','Admin business account assignments for ba managers');
+
+INSERT INTO sec.role_perm (role, permission) VALUES
+   	 ('global_admin', 'admin_ba_assignment');
+INSERT INTO sec.role_perm (role, permission) VALUES
+   	 ('finance', 'admin_ba_assignment');
+
 create or replace view ba.v_ba_assignment as
     select a.*
         , ba.name as business_account_name

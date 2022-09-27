@@ -92,23 +92,6 @@ public class AdminSecurityValidator {
         });
     }
 
-    public Mono<Boolean> validateAddOrUpdateBusinessAccount(AuthContext auth) {
-        return Mono.defer(() -> {
-            if (!auth.getAuthorities().contains("edit_business_account")) {
-                return Mono.error(new AccessDeniedException("Only user with permission edit_business_account can create" +
-                        " add or update business accounts"));
-            }
-            return Mono.just(true);
-        });
-    }
-
-    public Mono<Boolean> validateGetBusinessAccountDetailed(AuthContext auth) {
-        return validateAddOrUpdateBusinessAccount(auth);
-    }
-
-    public Mono<Boolean> validateUpdateBAPosition(AuthContext auth, int baId) {
-        return validateAddOrUpdateBusinessAccount(auth);
-    }
 
     public Mono<Boolean> validateEditArticle(AuthContext auth) {
         return Mono.defer(() -> {
