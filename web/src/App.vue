@@ -157,7 +157,9 @@
 
     <v-main>
       <v-container>
-        <router-view></router-view>
+        <keep-alive include="AdminProjects,VacationsList">
+          <router-view></router-view>
+        </keep-alive>
       </v-container>
     </v-main>
 
