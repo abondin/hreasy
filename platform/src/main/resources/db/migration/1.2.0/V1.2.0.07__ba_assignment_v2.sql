@@ -56,8 +56,10 @@ COMMENT ON COLUMN history.history.entity_type IS '[empl_manager] - Entity type, 
 DELETE FROM sec.role_perm
 	WHERE "permission"='assign_to_ba_position';
 
+DELETE FROM sec.role_perm
+	WHERE permission='assign_to_ba_position';
 DELETE FROM sec.perm
-	WHERE "permission"='assign_to_ba_position';
+	WHERE permission='assign_to_ba_position';
 INSERT INTO sec.perm ("permission",description)
 	VALUES ('admin_ba_assignment','Admin business account assignments for ba managers');
 
