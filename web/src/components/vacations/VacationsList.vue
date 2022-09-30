@@ -254,6 +254,7 @@ class Filter {
 }
 
 @Component({
+  name: 'VacationsList',
   components: {MyDateRangeComponent, VacationEditForm}
 })
 export default class VacationsListComponent extends Vue {
