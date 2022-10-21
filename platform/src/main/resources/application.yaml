@@ -34,6 +34,8 @@ hreasy:
   common:
     default-email-suffix: "@stm-labs.ru"
     default-email-from: "hreasy@stm-labs.ru"
+    default-calendar-type: "default"
+    default-calendar-region: "RU"
 #  background:
 #    upcoming-vacation:
 #      job-enabled: false

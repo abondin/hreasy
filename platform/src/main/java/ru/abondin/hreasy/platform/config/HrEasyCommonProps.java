@@ -22,6 +22,9 @@ public class HrEasyCommonProps {
      */
    private String defaultEmailSuffix;
 
+   private String defaultCalendarType="default";
+   private String defaultCalendarRegion="RU";
+
     /**
      * Default system account to send information via email
      */
