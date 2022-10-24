@@ -30,11 +30,7 @@ public class DictWorkingDaysCalendarService {
     private Mono<List<DictWorkingDaysCalendarDto>> getCalendar(int year) {
         String region = props.getDefaultCalendarRegion();
         String type = props.getDefaultCalendarType();
-        return workingDayCalendarRepo.findById(DictWorkingDaysCalendarEntry.WorkingDaysCalendarEntryPk.builder()
-                        .region(region)
-                        .type(type)
-                        .year(year)
-                        .build())
+        return workingDayCalendarRepo.find(year,region,type)
                 .map(DictWorkingDaysCalendarEntry::getCalendar)
                 .map(mapper::calendarFromJson);
     }

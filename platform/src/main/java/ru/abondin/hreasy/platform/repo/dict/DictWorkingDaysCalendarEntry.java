@@ -11,6 +11,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("dict.working_days_calendar")
 @Data
 public class DictWorkingDaysCalendarEntry {
+
     private int year;
     private String region;
     private String type;
@@ -18,12 +19,4 @@ public class DictWorkingDaysCalendarEntry {
      * @see ru.abondin.hreasy.platform.service.dict.dto.DictWorkingDaysCalendarDto
      */
     private Json calendar;
-
-    @Data
-    @Builder
-    public static class WorkingDaysCalendarEntryPk {
-        private int year;
-        private String region;
-        private String type;
-    }
 }
