@@ -15,7 +15,13 @@ public class DictWorkingDaysCalendarDto {
     @RequiredArgsConstructor
     @Getter
     public enum WorkingDayType {
+        /**
+         * Any holiday like New Year
+         */
         HOLIDAY(1),
+        /**
+         * Working day in weekend
+         */
         WORKING_DAY(2),
         /**
          * <p>
@@ -34,6 +40,10 @@ public class DictWorkingDaysCalendarDto {
          */
         MOVED_HOLIDAY(4);
         private final int type;
+
+        public static boolean isNotWorking(int type) {
+            return type == HOLIDAY.type || type == MOVED_HOLIDAY.type;
+        }
     }
 
     private LocalDate day;

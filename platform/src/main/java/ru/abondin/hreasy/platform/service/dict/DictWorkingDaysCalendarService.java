@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static ru.abondin.hreasy.platform.service.dict.dto.DictWorkingDaysCalendarDto.WorkingDayType.HOLIDAY;
+import static ru.abondin.hreasy.platform.service.dict.dto.DictWorkingDaysCalendarDto.WorkingDayType.WORKING_DAY;
 
 @RequiredArgsConstructor
 @Service
@@ -30,7 +31,7 @@ public class DictWorkingDaysCalendarService {
     private Mono<List<DictWorkingDaysCalendarDto>> getCalendar(int year) {
         String region = props.getDefaultCalendarRegion();
         String type = props.getDefaultCalendarType();
-        return workingDayCalendarRepo.find(year,region,type)
+        return workingDayCalendarRepo.find(year, region, type)
                 .map(DictWorkingDaysCalendarEntry::getCalendar)
                 .map(mapper::calendarFromJson);
     }
@@ -47,6 +48,26 @@ public class DictWorkingDaysCalendarService {
                 )
                 .map(DictWorkingDaysCalendarDto::getDay)
         ));
+    }
+
+    /**
+     * @param year
+     * @return <b>all</b> not working days of the year include all weekends
+     */
+    public Flux<LocalDate> getNotWorkingDays(int year) {
+        return getCalendar(year).flatMapMany(calendar -> {
+            var allDays = LocalDate.ofYearDay(year, 1).datesUntil(LocalDate.ofYearDay(year + 1, 1));
+            return Flux.fromStream(allDays).filter(d -> {
+                var fromCalendar = calendar.stream().filter(c -> c.getDay().equals(d)).findFirst();
+                if (weekends().contains(d.getDayOfWeek())) {
+                    // Return any weekend except working days
+                    return !fromCalendar.isPresent() || fromCalendar.get().getType() != WORKING_DAY.getType();
+                } else {
+                    // Check if it is a holiday or a moved holiday
+                    return fromCalendar.isPresent() && DictWorkingDaysCalendarDto.WorkingDayType.isNotWorking(fromCalendar.get().getType());
+                }
+            });
+        });
     }
 
 

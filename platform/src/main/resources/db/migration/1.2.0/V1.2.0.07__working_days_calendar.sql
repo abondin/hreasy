@@ -23,6 +23,9 @@ COMMENT ON COLUMN dict.working_days_calendar.calendar IS '
 
 COMMENT ON COLUMN history.history.entity_type IS '[empl_manager] - Entity type, [working_days] - Working Days Calendar';
 
+-- To populate calendar just get all values from http://xmlcalendar.ru/
+-- Replace all t="1" with f="xxx" to type="4"
+
 -- Default Russian 2022 calendar. Got from http://xmlcalendar.ru/
 insert into dict.working_days_calendar(year,region,type,calendar) values (2022,'RU','default',
 '
@@ -64,14 +67,14 @@ insert into dict.working_days_calendar(year,region,type,calendar) values (2023,'
     {"day":"2023-01-08", "type":1},
     {"day":"2023-02-22", "type":2},
     {"day":"2023-02-23", "type":1},
-    {"day":"2023-02-24", "type":1},
+    {"day":"2023-02-24", "type":4},
     {"day":"2023-03-07", "type":2},
     {"day":"2023-03-08", "type":1},
     {"day":"2023-05-01", "type":1},
-    {"day":"2023-05-08", "type":1},
+    {"day":"2023-05-08", "type":4},
     {"day":"2023-05-09", "type":1},
     {"day":"2023-06-12", "type":1},
     {"day":"2023-11-03", "type":2},
     {"day":"2023-11-04", "type":1},
-    {"day":"2023-11-06", "type":1}
+    {"day":"2023-11-06", "type":4}
 ]') on conflict do nothing;
