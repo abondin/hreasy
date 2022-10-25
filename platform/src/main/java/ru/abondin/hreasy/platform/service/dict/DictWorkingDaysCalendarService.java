@@ -13,6 +13,7 @@ import ru.abondin.hreasy.platform.service.dict.dto.DictWorkingDaysCalendarMapper
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,20 +29,24 @@ public class DictWorkingDaysCalendarService {
     private final DictWorkingDaysCalendarMapper mapper;
 
 
-    private Mono<List<DictWorkingDaysCalendarDto>> getCalendar(int year) {
+    private Mono<List<DictWorkingDaysCalendarDto>> getCalendar(List<Integer> years) {
         String region = props.getDefaultCalendarRegion();
         String type = props.getDefaultCalendarType();
-        return workingDayCalendarRepo.find(year, region, type)
+        return workingDayCalendarRepo.find(years, region, type)
                 .map(DictWorkingDaysCalendarEntry::getCalendar)
-                .map(mapper::calendarFromJson);
+                .map(mapper::calendarFromJson)
+                .reduceWith(() -> new ArrayList<DictWorkingDaysCalendarDto>(), (c1, c2) -> {
+                    c1.addAll(c2);
+                    return c1;
+                });
     }
 
     /**
-     * @param year
+     * @param years
      * @return days that should not be considered due vacation duration calculation
      */
-    public Flux<LocalDate> getDaysNotIncludedInVacations(int year) {
-        return getCalendar(year).flatMapMany(days -> Flux.fromStream(days.stream()
+    public Flux<LocalDate> getDaysNotIncludedInVacations(List<Integer> years) {
+        return getCalendar(years).flatMapMany(days -> Flux.fromStream(days.stream()
                 .filter(d ->
                         HOLIDAY.getType() == d.getType()
                                 && !weekends().contains(d.getDay().getDayOfWeek())
@@ -55,7 +60,7 @@ public class DictWorkingDaysCalendarService {
      * @return <b>all</b> not working days of the year include all weekends
      */
     public Flux<LocalDate> getNotWorkingDays(int year) {
-        return getCalendar(year).flatMapMany(calendar -> {
+        return getCalendar(Arrays.asList(year)).flatMapMany(calendar -> {
             var allDays = LocalDate.ofYearDay(year, 1).datesUntil(LocalDate.ofYearDay(year + 1, 1));
             return Flux.fromStream(allDays).filter(d -> {
                 var fromCalendar = calendar.stream().filter(c -> c.getDay().equals(d)).findFirst();

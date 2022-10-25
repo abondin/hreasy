@@ -41,7 +41,7 @@ public class DictWorkingDaysCalendarServiceTest extends BaseServiceTest {
         var days = args.getValue();
         var daysNotInVacation = days.stream().map(dayString -> LocalDate.parse(year + "-" + dayString)).toList();
         StepVerifier
-                .create(service.getDaysNotIncludedInVacations(year).collectList())
+                .create(service.getDaysNotIncludedInVacations(Arrays.asList(year)).collectList())
                 .expectNext(daysNotInVacation)
                 .verifyComplete();
     }

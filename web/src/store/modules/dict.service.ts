@@ -39,6 +39,10 @@ export interface DictService {
     loadSharedSkills(): Promise<Array<SharedSkillName>>;
 
     getProjectCard(projectId: number): Promise<ProjectInfo>;
+
+    notWorkingDays(year: number): Promise<Array<String>>;
+
+    daysNotIncludedInVacations(years: number[]): Promise<Array<String>>;
 }
 
 class RestDictService implements DictService {
@@ -86,6 +90,16 @@ class RestDictService implements DictService {
     getProjectCard(projectId: number): Promise<ProjectInfo> {
         return httpService.get(`v1/projects/${projectId}`).then(response => response.data);
     }
+
+    daysNotIncludedInVacations(years: number[]): Promise<Array<String>> {
+        return httpService.get(`v1/dict/calendar/days_not_included_in_vacations/${years.join(',')}`).then(response => response.data);
+    }
+
+    notWorkingDays(year: number): Promise<Array<String>> {
+        return httpService.get(`v1/dict/calendar/not_working_days/${year}`).then(response => response.data);
+    }
+
+
 }
 
 

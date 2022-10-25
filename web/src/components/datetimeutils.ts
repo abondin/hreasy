@@ -1,5 +1,6 @@
 import moment, {Moment} from "moment";
 import {DataTableCompareFunction} from "vuetify";
+import en from "vuetify/src/locale/en";
 
 export class DateTimeUtils {
     public static DEFAULT_DATE_PATTERN = "DD.MM.YYYY";
@@ -75,6 +76,10 @@ export class DateTimeUtils {
 
     public static nowDateIso(): string|undefined {
         return this.formatToIsoDate(this.now());
+    }
+
+    static vacationDays(start: moment.Moment, end: moment.Moment) {
+        return moment.duration(end.diff(start)).days() + 1;
     }
 }
 
