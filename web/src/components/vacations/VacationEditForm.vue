@@ -145,7 +145,7 @@ export default class VacationEditForm extends Vue {
   public allEmployees!: Array<SimpleDict>;
 
   @Prop({required: true})
-  public daysNotIncludedInVacations!: Array<String>;
+  public daysNotIncludedInVacations!: Array<string>;
 
   @Prop({required: false})
   public defaultYear?: number;
@@ -259,7 +259,7 @@ export default class VacationEditForm extends Vue {
       const start = moment(this.vacationForm.startDate, moment.HTML5_FMT.DATE, true);
       const end = moment(this.vacationForm.endDate, moment.HTML5_FMT.DATE, true);
       if (start.isValid() && end.isValid()) {
-        this.vacationForm.daysNumber = DateTimeUtils.vacationDays(start, end);
+        this.vacationForm.daysNumber = DateTimeUtils.vacationDays(start, end, this.daysNotIncludedInVacations);
       }
     }
   }

@@ -40,9 +40,9 @@ export interface DictService {
 
     getProjectCard(projectId: number): Promise<ProjectInfo>;
 
-    notWorkingDays(year: number): Promise<Array<String>>;
+    notWorkingDays(year: number): Promise<Array<string>>;
 
-    daysNotIncludedInVacations(years: number[]): Promise<Array<String>>;
+    daysNotIncludedInVacations(years: number[]): Promise<Array<string>>;
 }
 
 class RestDictService implements DictService {
@@ -91,11 +91,11 @@ class RestDictService implements DictService {
         return httpService.get(`v1/projects/${projectId}`).then(response => response.data);
     }
 
-    daysNotIncludedInVacations(years: number[]): Promise<Array<String>> {
+    daysNotIncludedInVacations(years: number[]): Promise<Array<string>> {
         return httpService.get(`v1/dict/calendar/days_not_included_in_vacations/${years.join(',')}`).then(response => response.data);
     }
 
-    notWorkingDays(year: number): Promise<Array<String>> {
+    notWorkingDays(year: number): Promise<Array<string>> {
         return httpService.get(`v1/dict/calendar/not_working_days/${year}`).then(response => response.data);
     }
 
