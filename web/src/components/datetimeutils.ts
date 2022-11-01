@@ -1,6 +1,5 @@
 import moment, {Moment} from "moment";
 import {DataTableCompareFunction} from "vuetify";
-import en from "vuetify/src/locale/en";
 
 export class DateTimeUtils {
     public static DEFAULT_DATE_PATTERN = "DD.MM.YYYY";
@@ -74,15 +73,15 @@ export class DateTimeUtils {
         return moment();
     }
 
-    public static nowDateIso(): string|undefined {
+    public static nowDateIso(): string | undefined {
         return this.formatToIsoDate(this.now());
     }
 
-    static vacationDays(start: moment.Moment, end: moment.Moment, notVacationDaysStr:Array<string>) {
-        const notVacationDays = notVacationDaysStr.map(str=>this.dateFromIsoString(str));
+    static vacationDays(start: moment.Moment, end: moment.Moment, notVacationDaysStr: Array<string>) {
+        const notVacationDays = notVacationDaysStr.map(str => this.dateFromIsoString(str));
         let cnt = 0;
-        for (let day = moment(start); day.diff(end, 'days') <= 0; day.add(1,'day')){
-            if (notVacationDays.filter(d=>d.isSame(day)).length == 0){
+        for (let day = moment(start); day.diff(end, 'days') <= 0; day.add(1, 'day')) {
+            if (notVacationDays.filter(d => d.isSame(day)).length == 0) {
                 cnt = cnt + 1;
             }
         }
