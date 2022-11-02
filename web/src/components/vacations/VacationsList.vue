@@ -216,6 +216,7 @@
                             v-bind:allYears="allYears"
                             v-bind:input="selectedVacation"
                             v-bind:default-year="selectedYear"
+                            v-bind:days-not-included-in-vacations="daysNotIncludedInVacations"
                             @close="vacationDialog=false;fetchData(false)"></vacation-edit-form>
       </v-dialog>
 
@@ -243,6 +244,7 @@ import {
   employeeVacationSummaryMapper
 } from "@/components/vacations/employeeVacationSummaryService";
 import {Watch} from "vue-property-decorator";
+import dictService from "@/store/modules/dict.service";
 
 const namespace: string = 'dict';
 
@@ -277,6 +279,7 @@ export default class VacationsListComponent extends Vue {
   public allStatuses: Array<any> = [];
   public allEmployees: Array<SimpleDict> = [];
   public allYears: Array<number> = [];
+  public daysNotIncludedInVacations: Array<String> = [];
 
   private vacationDialog = false;
   private selectedVacation: Vacation | null = null;
@@ -297,6 +300,10 @@ export default class VacationsListComponent extends Vue {
 
     this.reloadHeaders();
     this.$store.dispatch('dict/reloadProjects')
+        .then(() => dictService.daysNotIncludedInVacations(this.allYears))
+        .then(data => {
+          this.daysNotIncludedInVacations = data;
+        })
         .then(() => employeeService.findAll().then(data => {
           this.allEmployees = data.map(e => {
             return {id: e.id, name: e.displayName} as SimpleDict

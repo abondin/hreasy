@@ -39,13 +39,10 @@ import Component from 'vue-class-component';
 import vacationService, {MyVacation} from "@/components/vacations/vacation.service";
 import {DataTableHeader} from "vuetify";
 import moment from 'moment';
-import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
 
-@Component({
-  components: {VacationEditForm}
-})
+@Component({})
 export default class MyVacations extends Vue {
   headers: DataTableHeader[] = [];
   loading: boolean = false;
