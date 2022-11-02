@@ -49,7 +49,6 @@ public class DictWorkingDaysCalendarService {
         return getCalendar(years).flatMapMany(days -> Flux.fromStream(days.stream()
                 .filter(d ->
                         HOLIDAY.getType() == d.getType()
-                                && !weekends().contains(d.getDay().getDayOfWeek())
                 )
                 .map(DictWorkingDaysCalendarDto::getDay)
         ));

@@ -64,18 +64,24 @@ public class DictWorkingDaysCalendarServiceTest extends BaseServiceTest {
                 .verifyComplete();
     }
 
+    /**
+     * From https://its.1c.ru/calendar/work2023
+     * @return
+     */
     private static Stream<Map.Entry<Integer, List<String>>> expectedDaysNotInVacation() {
         return Stream.of(
-                Map.entry(2022, Arrays.asList("01-03", "01-04", "01-05", "01-06", "01-07",
+                Map.entry(2022, Arrays.asList("01-01","01-02","01-03", "01-04", "01-05", "01-06", "01-07","01-08",
                         "02-23",
                         "03-08",
-                        "05-09",
+                        "05-01","05-09",
+                        "06-12",
                         "11-04")),
-                Map.entry(2023, Arrays.asList("01-02", "01-03", "01-04", "01-05", "01-06",
+                Map.entry(2023, Arrays.asList("01-01","01-02","01-03", "01-04", "01-05", "01-06", "01-07","01-08",
                         "02-23",
                         "03-08",
                         "05-01", "05-09",
-                        "06-12"))
+                        "06-12",
+                        "11-04"))
 
         );
     }
