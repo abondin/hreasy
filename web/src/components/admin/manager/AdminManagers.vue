@@ -90,7 +90,7 @@
           v-if="data.createBody.responsibilityObjectType==='project'"
           v-model="data.createBody.responsibilityObjectId"
           item-value="id" item-text="name"
-          :items="allProjects"
+          :items="allProjects.filter(p=>p.active)"
           :label="$t('Проект')"
           :rules="[v => !!v || $t('Обязательное поле')]"
       ></v-autocomplete>
