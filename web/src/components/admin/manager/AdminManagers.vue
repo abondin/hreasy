@@ -221,9 +221,12 @@ export default class AdminManagers extends Vue {
     };
   }
 
+  private dataLoader(){
+    return this.selectedObject ? adminManagerService.findByObject(this.selectedObject) : adminManagerService.findAll();
+  }
 
   private data = new TableComponentDataContainer<Manager, UpdateManagerBody, CreateManagerBody, ManagerFilter>(
-      () => this.selectedObject ? adminManagerService.findByObject(this.selectedObject) : adminManagerService.findAll(),
+      this.dataLoader,
       this.headers,
       this.updateAction(),
       {
