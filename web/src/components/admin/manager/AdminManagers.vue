@@ -35,10 +35,10 @@
     <!-- </editor-fold> -->
 
     <!--<editor-fold desc="Columns">-->
-    <template v-slot:item.responsibilityType="{ item }">
+    <template v-slot:[`item.responsibilityType`]="{ item }">
       {{ $t(`MANAGER_RESPONSIBILITY_TYPE.${item.responsibilityType}`) }}
     </template>
-    <template v-slot:item.responsibilityObject.type="{ item }">
+    <template v-slot:[`item.responsibilityObject.type`]="{ item }">
       {{ $t(`MANAGER_RESPONSIBILITY_OBJECT.${item.responsibilityObject.type}`) }}
     </template>
     <!-- </editor-fold> -->
@@ -167,10 +167,10 @@ class ManagerFilter extends Filter<Manager> {
 
   applyFilter(items: Manager[]): Manager[] {
     return items.filter((item) => {
-      let filtered: boolean = true;
+      let filtered = true;
       const search = this.search.toLowerCase().trim();
       if (search.length > 0) {
-        let searchFilter: boolean = false;
+        let searchFilter = false;
         searchFilter = searchFilter || Boolean(item.employee && item.employee.name && item.employee.name.toLowerCase().indexOf(search) >= 0)
         searchFilter = searchFilter || Boolean(item.responsibilityObject && item.responsibilityObject.name && item.responsibilityObject.name.toLowerCase().indexOf(search) >= 0)
         filtered = filtered && searchFilter;
@@ -184,7 +184,7 @@ class ManagerFilter extends Filter<Manager> {
   }
 }
 
-const namespace_dict: string = 'dict';
+const namespace_dict = 'dict';
 
 @Component({components: {HreasyTableDeleteConfimration, HreasyTable}})
 export default class AdminManagers extends Vue {

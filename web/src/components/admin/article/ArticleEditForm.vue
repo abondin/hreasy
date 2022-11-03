@@ -87,11 +87,11 @@ class ArticleForm {
 
 export default class ArticleEditForm extends Vue {
 
-  loading: boolean = false;
+  loading = false;
 
   private articleForm = new ArticleForm();
 
-  private error: String | null = null;
+  private error: string | null = null;
 
   @Prop({required: true})
   private input!: ArticleFull;
@@ -164,7 +164,7 @@ export default class ArticleEditForm extends Vue {
   }
 
   private handleImageAdded(file: File, Editor: any, cursorLocation: any, resetUploader: any) {
-    var formData = new FormData();
+    const formData = new FormData();
     formData.append("file", file);
     articleAdminService.uploadImage(this.input.id, formData)
         .then((imageFullUrl: string) => {

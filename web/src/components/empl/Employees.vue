@@ -77,12 +77,12 @@ import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import permissionService from "@/store/modules/permission.service";
 
-const namespace_dict: string = 'dict';
+const namespace_dict = 'dict';
 
 class Filter {
   public selectedProjects: Array<number | null> = [];
   public selectedBas: number[] = [];
-  public search: string = "";
+  public search = "";
 }
 
 @Component({
@@ -90,7 +90,7 @@ class Filter {
 })
 export default class EmployeesComponent extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
 
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;
@@ -167,7 +167,7 @@ export default class EmployeesComponent extends Vue {
       }
       if (this.filter.search) {
         const str = this.filter.search.trim().toLocaleLowerCase();
-        let searchFilter: boolean = false;
+        let searchFilter = false;
         // Display Name
         searchFilter = searchFilter || e.displayName.toLocaleLowerCase().indexOf(str) >= 0;
         // Position

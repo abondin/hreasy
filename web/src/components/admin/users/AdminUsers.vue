@@ -92,7 +92,7 @@ import adminUserService, {RoleDict, UserSecurityInfo} from "@/components/admin/u
 import {DateTimeUtils} from "@/components/datetimeutils";
 import AdminUserRolesForm from "@/components/admin/users/AdminUserRolesForm.vue";
 
-const namespace_dict: string = 'dict';
+const namespace_dict = 'dict';
 
 class Filter {
   public search = '';
@@ -101,7 +101,7 @@ class Filter {
 @Component({components: {AdminUserRolesForm}})
 export default class AdminUsers extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
 
   data: UserSecurityInfo[] = [];
 

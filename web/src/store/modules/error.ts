@@ -33,7 +33,7 @@ export const errorGetters: GetterTree<ErrorState, RootState> = {
     },
 };
 
-const namespaced: boolean = true;
+const namespaced = true;
 
 
 export const error: Module<ErrorState, RootState> = {

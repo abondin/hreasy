@@ -89,7 +89,7 @@ class EmployeeKidForm {
 )
 
 export default class AdminEmployeeForm extends Vue {
-  loading: boolean = false;
+  loading = false;
 
   @Prop({required: false})
   private input: EmployeeKid | undefined;
@@ -98,7 +98,7 @@ export default class AdminEmployeeForm extends Vue {
   private allEmployees!: Array<SimpleDict>;
   private employeeKidForm = new EmployeeKidForm();
 
-  private error: String | null = null;
+  private error: string | null = null;
 
   @Watch("input")
   private watch() {

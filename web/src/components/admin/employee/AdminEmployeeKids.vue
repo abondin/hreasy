@@ -94,7 +94,7 @@ class Filter {
 @Component({components: {AdminEmployeeKidForm}})
 export default class AdminEmployeeKids extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
 
   data: EmployeeKid[] = [];
 

@@ -79,7 +79,7 @@ export default class OvertimeApprovalChip extends Vue {
   approval!: ApprovalDecision;
 
   @Prop({required: false})
-  reportLastUpdateTime!: String;
+  reportLastUpdateTime!: string;
 
 
   private formatDateTime(date: Date): string | undefined {

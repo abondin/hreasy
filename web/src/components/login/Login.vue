@@ -69,16 +69,16 @@ import {Action, State} from 'vuex-class';
 import {LoginRequest} from "@/store/modules/auth.service";
 import {errorUtils} from "@/components/errors";
 
-const namespace: string = 'auth';
+const namespace = 'auth';
 
 @Component
 export default class LoginComponent extends Vue {
-  loginField: string = '';
-  passwordField: string = '';
+  loginField = '';
+  passwordField = '';
 
   private loading = false;
 
-  public responseError: string = '';
+  public responseError = '';
 
   @State("auth")
   authState: AuthState | undefined;

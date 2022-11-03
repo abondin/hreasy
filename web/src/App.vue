@@ -180,8 +180,8 @@ import {Action, Getter} from "vuex-class";
 import moment from "moment";
 import permissionService from "@/store/modules/permission.service";
 
-const namespace_auth: string = 'auth';
-const namespace_error: string = 'error';
+const namespace_auth = 'auth';
+const namespace_error = 'error';
 
 @Component
 export default class App extends Vue {
@@ -247,7 +247,7 @@ export default class App extends Vue {
     return permissionService.canAdminArticles();
   }
 
-  private firstAvialableDict(): String | undefined {
+  private firstAvialableDict(): string | undefined {
     if (permissionService.canAdminDictDepartments()) {
       return "departments";
     }

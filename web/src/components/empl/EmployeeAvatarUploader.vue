@@ -52,8 +52,8 @@ import permissionService from "@/store/modules/permission.service";
   components: {"avatar-cropper": AvatarCropper}
 })
 export default class EmployeeAvatarUploader extends Vue {
-  private emplAvatar: String | null = null;
-  private uploadError: String | null = null;
+  private emplAvatar: string | null = null;
+  private uploadError: string | null = null;
 
   @Prop({required: true})
   employee!: Employee;

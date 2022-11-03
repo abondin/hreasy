@@ -2,6 +2,7 @@ module.exports = {
     "transpileDependencies": [
         "vuetify"
     ],
+
     devServer: {
         proxy: {
             '^/api': {
@@ -10,6 +11,7 @@ module.exports = {
             }
         }
     },
+
     pluginOptions: {
         i18n: {
             locale: 'ru',
@@ -18,5 +20,6 @@ module.exports = {
             enableInSFC: false
         }
     },
+
     runtimeCompiler: true
 }

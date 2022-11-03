@@ -75,7 +75,7 @@ import {ManagerResponsibilityObjectId} from "@/components/admin/manager/admin.ma
     }
 )
 export default class AdminBusinessAccountDetails extends Vue {
-  loading: boolean = false;
+  loading = false;
   baDialog = false;
 
   @Prop({required: true})

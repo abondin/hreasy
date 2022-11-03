@@ -210,7 +210,7 @@ export default class AssessmentDetailedVue extends Vue {
   completeAssessmentDialog = false;
   completeAssessmentError : string|null = null;
 
-  loading: boolean = false;
+  loading = false;
   accessDenied = false;
   assessment: AssessmentWithFormsAndFiles | null = null;
 

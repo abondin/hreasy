@@ -92,7 +92,7 @@ class UserRoleForm {
 )
 
 export default class AdminUserRolesForm extends Vue {
-  loading: boolean = false;
+  loading = false;
 
   @Prop({required: true})
   private input!: UserSecurityInfo;
@@ -112,7 +112,7 @@ export default class AdminUserRolesForm extends Vue {
 
   private userRolesEditForm = new UserRoleForm();
 
-  private error: String | null = null;
+  private error: string | null = null;
 
   @Watch("input")
   private watch() {

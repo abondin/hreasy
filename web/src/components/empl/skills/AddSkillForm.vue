@@ -73,9 +73,9 @@ import {SharedSkillName} from "@/store/modules/dict.service";
 
 class SkillForm {
   public groupId: number | null = null;
-  public name: string = '';
+  public name = '';
   public ratingValue: number | null = null;
-  public ratingNotes: string = '';
+  public ratingNotes = '';
 }
 
 @Component(
@@ -83,11 +83,11 @@ class SkillForm {
 )
 
 export default class AddSkillForm extends Vue {
-  loading: boolean = false;
+  loading = false;
 
   private addSkillForm = new SkillForm();
 
-  private error: String | null = null;
+  private error: string | null = null;
 
   @Prop({required: true})
   private allGroups!: SimpleDict[];
@@ -100,7 +100,7 @@ export default class AddSkillForm extends Vue {
 
   private addMore = true;
 
-  private createdSkill: String | null = null;
+  private createdSkill: string | null = null;
 
 
   @Watch("input")

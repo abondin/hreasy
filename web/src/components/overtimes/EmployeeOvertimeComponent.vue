@@ -129,8 +129,8 @@ import OvertimeApprovalChip from "@/components/overtimes/OvertimeApprovalChip.vu
 import ApproveOvertimeReportDialog from "@/components/overtimes/ApproveOvertimeReportDialog.vue";
 import permissionService from "@/store/modules/permission.service";
 
-const namespace_dict: string = 'dict';
-const namespace_auth: string = 'auth';
+const namespace_dict = 'dict';
+const namespace_auth = 'auth';
 @Component({
   components: {
     ApproveOvertimeReportDialog,
@@ -140,7 +140,7 @@ const namespace_auth: string = 'auth';
   }
 })
 export default class EmployeeOvertimeComponent extends Vue {
-  loading: boolean = false;
+  loading = false;
   overtimeReport!: OvertimeReport;
   headers: DataTableHeader[] = [];
 

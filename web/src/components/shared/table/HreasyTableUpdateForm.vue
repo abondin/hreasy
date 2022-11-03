@@ -41,7 +41,7 @@ export default class HreasyTableUpdateForm<T extends WithId, M extends UpdateBod
   private data!: TableComponentDataContainer<T, M, C, F>;
 
   @Prop({required: false})
-  private updateTitle: Function | string | undefined;
+  private updateTitle?: ()=>string | string | undefined;
 
 
   private print = UiConstants.print;

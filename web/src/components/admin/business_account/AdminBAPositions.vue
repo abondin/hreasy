@@ -76,7 +76,7 @@ class Filter {
 )
 export default class AdminBAPositions extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
 
   @Prop({required: true})
   private businessAccountId!: number;

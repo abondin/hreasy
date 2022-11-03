@@ -11,6 +11,7 @@ export interface WithId {
 /**
  * Edit on form
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface UpdateBody {
 
 }
@@ -18,6 +19,7 @@ export interface UpdateBody {
 /**
  * Add new item form
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface CreateBody {
 
 }

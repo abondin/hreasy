@@ -116,7 +116,7 @@ class ProjectForm {
 )
 
 export default class AdminProjectForm extends Vue {
-  loading: boolean = false;
+  loading = false;
 
   @Prop({required: false})
   private input: ProjectFullInfo | undefined;
@@ -136,7 +136,7 @@ export default class AdminProjectForm extends Vue {
 
   private projectForm = new ProjectForm();
 
-  private error: String | null = null;
+  private error: string | null = null;
 
   private created() {
     this.reset();
@@ -192,7 +192,7 @@ export default class AdminProjectForm extends Vue {
         baId: this.projectForm.baId,
         info: this.projectForm.info
       } as CreateOrUpdateProject;
-      var serverRequest;
+      let serverRequest;
       if (this.projectForm.isNew) {
         logger.log(`Create project ${JSON.stringify(this.projectForm)}`);
         serverRequest = adminProjectService.create(body)

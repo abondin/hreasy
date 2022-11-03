@@ -126,7 +126,7 @@ import {SimpleDict} from "@/store/modules/dict";
 import {errorUtils} from "@/components/errors";
 import permissionService from "@/store/modules/permission.service";
 
-const namespace_dict: string = 'dict';
+const namespace_dict = 'dict';
 
 class Filter {
   public search = '';
@@ -137,7 +137,7 @@ class Filter {
 @Component({})
 export default class AssessmentShortList extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
   error: string | null = null;
   assessments: EmployeeAssessmentsSummary[] = [];
 

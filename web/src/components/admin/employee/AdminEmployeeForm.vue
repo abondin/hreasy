@@ -337,8 +337,7 @@ class employeeForm {
 )
 
 export default class AdminEmployeeForm extends Vue {
-  loading: boolean = false;
-  4 = 4;
+  loading = false;
 
   @Prop({required: false})
   private input: EmployeeWithAllDetails | undefined;
@@ -365,7 +364,7 @@ export default class AdminEmployeeForm extends Vue {
 
   private employeeForm = new employeeForm();
 
-  private error: String | null = null;
+  private error: string | null = null;
 
   @Watch("input")
   private watch() {

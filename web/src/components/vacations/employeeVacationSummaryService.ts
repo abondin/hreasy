@@ -9,20 +9,16 @@ export class EmployeeVacationSummary {
     public year: number;
 
     public upcomingVacation: Vacation | null = null;
-    public vacationsNumber: number = 0;
-    public vacationsTotalDays: number = 0;
+    public vacationsNumber = 0;
+    public vacationsTotalDays = 0;
 
     public constructor(vacation: Vacation) {
         this.employee = vacation.employee;
         this.employeeDisplayName = vacation.employeeDisplayName;
         this.employeeCurrentProject = vacation.employeeCurrentProject;
         this.year = vacation.year;
-        this.add(vacation);
     }
 
-    public add(vacation: Vacation) {
-
-    }
 }
 
 

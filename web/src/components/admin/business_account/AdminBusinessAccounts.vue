@@ -82,7 +82,7 @@ class Filter {
 )
 export default class AdminBusinessAccounts extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
 
   bas: BusinessAccount[] = [];
 
@@ -120,7 +120,7 @@ export default class AdminBusinessAccounts extends Vue {
 
   private filteredBA() {
     return this.bas.filter((p) => {
-      var filtered = true;
+      let filtered = true;
       if (!this.filter.showArchived) {
         filtered = filtered && (!p.archived);
       }

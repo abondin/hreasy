@@ -45,7 +45,7 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 @Component({})
 export default class MyVacations extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
   vacations: MyVacation[] = [];
 
   public allStatuses: Array<any> = [];
@@ -61,7 +61,7 @@ export default class MyVacations extends Vue {
     });
     const currentYear = new Date().getFullYear();
     this.allYears = [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];
-    this.allMonths = [...Array(12).keys()].map(m => {
+    this.allMonths = Array.from(Array(12).keys()).map(m => {
       return {
         value: m,
         text: moment(m + 1, 'MM').format("MMMM")

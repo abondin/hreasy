@@ -182,7 +182,7 @@ import {errorUtils} from "@/components/errors";
 import permissionService from "@/store/modules/permission.service";
 import {UiConstants} from "@/components/uiconstants";
 
-const namespace_dict: string = 'dict';
+const namespace_dict = 'dict';
 
 class Filter {
   public search = '';
@@ -195,7 +195,7 @@ class Filter {
 @Component({components: {AdminEmployeeForm}})
 export default class AdminEmployees extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
 
   data: EmployeeWithAllDetails[] = [];
 

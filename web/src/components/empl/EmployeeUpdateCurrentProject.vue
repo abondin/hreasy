@@ -52,7 +52,7 @@ import {Getter} from "vuex-class";
 import {CurrentProjectRole, SimpleDict} from "@/store/modules/dict";
 import Component from "vue-class-component";
 
-const namespace: string = 'dict';
+const namespace = 'dict';
 
 @Component({})
 export default class EmployeeUpdateCurrentProject extends Vue {
