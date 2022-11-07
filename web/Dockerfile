@@ -1,6 +1,6 @@
 # Базовый образ
 # ---- Base Node ----
-FROM node:19-alpine3.15 AS base
+FROM node:lts-alpine AS base
 RUN apk add --no-cache tini && mkdir -p /root/frontend
 
 WORKDIR /root/frontend
