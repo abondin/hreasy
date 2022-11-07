@@ -41,7 +41,7 @@
           :loading="loading"
           :loading-text="$t('Загрузка_данных')"
           :headers="headers"
-          :items="filtered()"
+          :items="filtered"
           sort-by="displayName"
           :show-expand="$vuetify.breakpoint.mdAndUp"
           disable-pagination
@@ -77,6 +77,7 @@ import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import permissionService from "@/store/modules/permission.service";
 import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
+import {Watch} from "vue-property-decorator";
 
 const namespace_dict = 'dict';
 
@@ -106,6 +107,13 @@ export default class EmployeesComponent extends Vue {
 
   employees: Employee[] = [];
   private filter = new Filter();
+
+  private filtered: Employee[] = [];
+
+  @Watch("filter", {deep: true, immediate: false})
+  private watchFilter() {
+      this.filtered = this.filterEmployee();
+  }
 
   /**
    * Lifecycle hook
@@ -148,13 +156,14 @@ export default class EmployeesComponent extends Vue {
     return employeeService.findAll()
         .then(data => {
               this.employees = data as Employee[];
+              this.filtered = this.filterEmployee();
             }
         ).finally(() => {
           this.loading = false
         });
   }
 
-  private filtered() {
+  private filterEmployee() {
     return this.employees.filter(e => {
       let filtered = true;
       // Current project
