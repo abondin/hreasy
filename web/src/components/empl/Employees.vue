@@ -41,7 +41,7 @@
           :loading="loading"
           :loading-text="$t('Загрузка_данных')"
           :headers="headers"
-          :items="filtered()"
+          :items="filtered"
           sort-by="displayName"
           :show-expand="$vuetify.breakpoint.mdAndUp"
           disable-pagination
@@ -76,6 +76,8 @@ import EmployeeCard from "@/components/empl/EmployeeCard.vue";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import permissionService from "@/store/modules/permission.service";
+import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
+import {Watch} from "vue-property-decorator";
 
 const namespace_dict = 'dict';
 
@@ -105,6 +107,13 @@ export default class EmployeesComponent extends Vue {
 
   employees: Employee[] = [];
   private filter = new Filter();
+
+  private filtered: Employee[] = [];
+
+  @Watch("filter", {deep: true, immediate: false})
+  private watchFilter() {
+      this.filtered = this.filterEmployee();
+  }
 
   /**
    * Lifecycle hook
@@ -147,41 +156,36 @@ export default class EmployeesComponent extends Vue {
     return employeeService.findAll()
         .then(data => {
               this.employees = data as Employee[];
+              this.filtered = this.filterEmployee();
             }
         ).finally(() => {
           this.loading = false
         });
   }
 
-  private filtered() {
+  private filterEmployee() {
     return this.employees.filter(e => {
       let filtered = true;
-      if (this.filter.selectedProjects && this.filter.selectedProjects.length > 0) {
-        filtered = filtered && (
-            (!e.currentProject && this.filter.selectedProjects.indexOf(null) >= 0) ||
-            (e.currentProject != undefined && this.filter.selectedProjects.indexOf(e.currentProject!.id) >= 0)
-        );
-      }
-      if (this.filter.selectedBas && this.filter.selectedBas.length > 0) {
-        filtered = filtered && (e.ba != undefined && this.filter.selectedBas.indexOf(e.ba!.id) >= 0);
-      }
-      if (this.filter.search) {
-        const str = this.filter.search.trim().toLocaleLowerCase();
-        let searchFilter = false;
-        // Display Name
-        searchFilter = searchFilter || e.displayName.toLocaleLowerCase().indexOf(str) >= 0;
-        // Position
-        searchFilter = searchFilter || e.position && e.position.name.toLocaleLowerCase().indexOf(str) >= 0;
-        // Role on current project
-        searchFilter = searchFilter || Boolean(e.currentProject && e.currentProject.role && e.currentProject.role.toLocaleLowerCase().indexOf(str) >= 0);
-        // Telegram
-        searchFilter = searchFilter || Boolean(e.telegram && e.telegram.toLocaleLowerCase().indexOf(str) >= 0);
-        // Email
-        searchFilter = searchFilter || (Boolean(e.email) && e.email.toLocaleLowerCase().indexOf(str) >= 0);
-        // Skills
-        searchFilter = searchFilter || e.skills.filter(s => s.name.toLocaleLowerCase().indexOf(str) >= 0).length > 0;
-        filtered = filtered && searchFilter;
-      }
+      // Current project
+      filtered = filtered && searchUtils.array(this.filter.selectedProjects, e.currentProject?.id);
+
+      // Business account
+      filtered = filtered && searchUtils.array(this.filter.selectedBas, e.ba?.id);
+
+      const textFilters = TextFilterBuilder.of()
+          // Display name
+          .splitWords(e.displayName)
+          // Position
+          .ignoreCase(e.position?.name)
+          // Project role
+          .ignoreCase(e.currentProject?.role)
+          // Telegram
+          .ignoreCase(e.telegram)
+          // Email
+          .ignoreCase(e.email)
+          .ignoreCaseArray(e.skills?.map(s => s.name));
+      filtered = filtered && searchUtils.textFilter(this.filter.search, textFilters);
+
       return filtered;
     });
   }
