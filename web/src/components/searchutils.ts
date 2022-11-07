@@ -3,7 +3,7 @@ export enum TextFilterContainerType {
 }
 
 export interface TextFilterContainer {
-    objectFieldInp: string | undefined | null,
+    objectFieldInp: Array<string | undefined | null> | undefined,
     type: TextFilterContainerType
 }
 
@@ -14,17 +14,25 @@ export class TextFilterBuilder {
         return new TextFilterBuilder();
     }
 
-    public ignoreCase(objectFieldInp: string | undefined | null): TextFilterBuilder {
+    public ignoreCaseArray(objectFieldInp: Array<string | undefined | null> | undefined): TextFilterBuilder {
         this.add(objectFieldInp, TextFilterContainerType.SIMPLE_IGNORE_CASE);
         return this;
     }
 
-    public splitWords(objectFieldInp: string | undefined | null): TextFilterBuilder {
+    public ignoreCase(objectFieldInp: string | undefined | null): TextFilterBuilder {
+        return this.ignoreCaseArray([objectFieldInp]);
+    }
+
+    public splitWordsArray(objectFieldInp: Array<string | undefined | null> | undefined): TextFilterBuilder {
         this.add(objectFieldInp, TextFilterContainerType.SPLIT_WORDS);
         return this;
     }
 
-    private add(objectFieldInp: string | undefined | null, type: TextFilterContainerType) {
+    public splitWords(objectFieldInp: string | undefined | null): TextFilterBuilder {
+        return this.splitWordsArray([objectFieldInp]);
+    }
+
+    private add(objectFieldInp: Array<string | undefined | null> | undefined, type: TextFilterContainerType) {
         this._containers.push({objectFieldInp: objectFieldInp, type: type});
     }
 
@@ -52,14 +60,14 @@ export class SearchUtils {
             }).reduce((cur, prev) => cur || prev, false);
     }
 
-    public matchText(textInp: string | undefined | null, objectFieldInp: string | undefined | null): boolean {
-        return !textInp || Boolean(objectFieldInp && this.prepareStr(objectFieldInp).indexOf(this.prepareStr(textInp)) >= 0);
+    private matchText(textInp: string | undefined | null, objectFieldInp: Array<string | undefined | null> | undefined): boolean {
+        return !textInp || Boolean(objectFieldInp && objectFieldInp.filter((s) => this.prepareStr(s).indexOf(this.prepareStr(textInp)) >= 0).length > 0);
     }
 
-    public matchWords(textInp: string | undefined | null, objectFieldInp: string | undefined | null): boolean {
+    private matchWords(textInp: string | undefined | null, objectFieldInp: Array<string | undefined | null> | undefined): boolean {
         const words = this.prepareStr(textInp).split(' ');
-        return !textInp || words.map(w => Boolean(objectFieldInp && this.prepareStr(objectFieldInp).indexOf(this.prepareStr(w)) >= 0))
-            .reduce((prev, cur) => prev && cur, true);
+        return !textInp || objectFieldInp != undefined && objectFieldInp.filter(s => words.map(w => Boolean(s && this.prepareStr(s).indexOf(this.prepareStr(w)) >= 0))
+            .reduce((prev, cur) => prev && cur, true)).length > 0;
     }
 
     public array<T>(array: Array<T | null> | undefined, objectFieldInp: T | null | undefined): boolean {

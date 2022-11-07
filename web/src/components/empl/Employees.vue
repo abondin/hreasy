@@ -173,9 +173,8 @@ export default class EmployeesComponent extends Vue {
           // Telegram
           .ignoreCase(e.telegram)
           // Email
-          .ignoreCase(e.email);
-          // Skills
-//        searchFilter = searchFilter || e.skills.filter(s => s.name.toLocaleLowerCase().indexOf(str) >= 0).length > 0;
+          .ignoreCase(e.email)
+          .ignoreCaseArray(e.skills?.map(s => s.name));
       filtered = filtered && searchUtils.textFilter(this.filter.search, textFilters);
 
       return filtered;
