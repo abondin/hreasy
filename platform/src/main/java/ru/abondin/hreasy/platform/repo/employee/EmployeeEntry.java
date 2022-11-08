@@ -13,11 +13,7 @@ import java.time.LocalDate;
 public class EmployeeEntry {
     @Id
     private Integer id;
-    private String lastname;
-    private String firstname;
-
-    @Column("patronymic_name")
-    private String patronymicName;
+    private String displayName;
     private LocalDate birthday;
     private String sex;
     @Column("department")

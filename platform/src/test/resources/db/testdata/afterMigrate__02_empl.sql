@@ -1,10 +1,10 @@
 -- Safe scripts with empl test data
 
 -- Java Developer from M1 Billing
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Haiden.Spooner@stm-labs.ru',
-  'Spooner', 'Haiden',null,
+  'Spooner Haiden',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Java Developer' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -17,10 +17,10 @@ INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
   null where NOT EXISTS (SELECT id from empl.employee where email ilike 'Haiden.Spooner@stm-labs.ru');
 
 -- Java Developer from M1 Billing
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Asiyah.Bob@stm-labs.ru',
-  'Bob', 'Asiyah',null,
+  'Bob Asiyah',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Java Developer' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -33,11 +33,11 @@ INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
   null where NOT EXISTS (SELECT id from empl.employee where email ilike 'Asiyah.Bob@stm-labs.ru');
 
 -- Fired Java Developer from M1 Billing
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment,
   office_location,ext_erp_id, date_of_dismissal) select
   'Dev.Fired@stm-labs.ru',
-  'Fired', 'Dev',null,
+  'Fired Dev',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Java Developer' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -55,11 +55,11 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Maxwell.May@stm-labs.ru') then
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Maxwell.May@stm-labs.ru',
-  'May', 'Maxwell',null,
+  'May Maxwell',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Project Manager' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -94,11 +94,11 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Husnain.Patterson@stm-labs.ru') then
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Husnain.Patterson@stm-labs.ru',
-  'Patterson', 'Husnain',null,
+  'Patterson Husnain',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Project Manager' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -125,11 +125,11 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Levison.Fired@stm-labs.ru') then
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id, date_of_dismissal) VALUES
 (
   'Levison.Fired@stm-labs.ru',
-  'Fired', 'Levison',null,
+  'Fired Levison',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Project Manager' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -167,11 +167,11 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Percy.Gough@stm-labs.ru') then
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Percy.Gough@stm-labs.ru',
-  'Gough', 'Percy',null,
+  'Gough Percy',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Head of Department' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -206,11 +206,11 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Ammara.Knott@stm-labs.ru') then
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Ammara.Knott@stm-labs.ru',
-  'Knott', 'Ammara',null,
+  'Knott Ammara',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Java Developer' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -226,10 +226,10 @@ END
 $do$;
 
 -- QA from M1 FMS
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Jenson.Curtis@stm-labs.ru',
-  'Curtis', 'Jenson',null,
+  'Curtis Jenson',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Automation QA' limit 1),
   (select id from dict.level  where name='Junior' limit 1),
@@ -246,11 +246,11 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Jawad.Mcghee@stm-labs.ru') then
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Jawad.Mcghee@stm-labs.ru',
-  'Mcghee', 'Jawad',null,
+  'Mcghee Jawad',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Project Manager' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -282,10 +282,10 @@ END
 $do$;
 
 -- Java Developer from M1 Policy Manager
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Amy.Beck@stm-labs.ru',
-  'Beck', 'Amy',null,
+  'Beck Amy',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Java Developer' limit 1),
   (select id from dict.level  where name='Junior' limit 1),
@@ -302,11 +302,11 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Kyran.Neville@stm-labs.ru') then
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Kyran.Neville@stm-labs.ru',
-  'Neville', 'Kyran',null,
+  'Neville Kyran',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Java Developer' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -365,10 +365,10 @@ END
 $do$;
 
 -- QA from M1 ERP Integration
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Jonas.Martin@stm-labs.ru',
-  'Martin', 'Jonas',null,
+  'Martin Jonas',
   (select id from dict.department  where name='Integration' limit 1),
   (select id from dict.position  where name='Automation QA' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -385,11 +385,11 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Toby.Barrow@stm-labs.ru') then
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Toby.Barrow@stm-labs.ru',
-  'Barrow', 'Toby',null,
+  'Barrow Toby',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Java Developer' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -425,11 +425,11 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Maysa.Sheppard@stm-labs.ru') then
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Maysa.Sheppard@stm-labs.ru',
-  'Sheppard', 'Maysa',null,
+  'Sheppard Maysa',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Java Developer' limit 1),
   (select id from dict.level  where name='Senior' limit 1),
@@ -464,11 +464,11 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Shaan.Pitts@stm-labs.ru') then
-INSERT INTO empl.employee (email, lastname,firstname,patronymic_name,
+INSERT INTO empl.employee (email, display_name
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Shaan.Pitts@stm-labs.ru',
-  'Pitts', 'Shaan',null,
+  'Pitts Shaan',
   (select id from dict.department where name='Development' limit 1),
   (select id from dict.position  where name='Java Developer' limit 1),
   (select id from dict.level  where name='Senior' limit 1),

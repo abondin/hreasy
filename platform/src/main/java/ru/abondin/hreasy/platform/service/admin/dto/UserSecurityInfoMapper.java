@@ -22,13 +22,7 @@ public interface UserSecurityInfoMapper extends MapperBase {
 
     @Named("employeeDict")
     default SimpleDictDto employee(UserSecurityInfoEntry entry) {
-        var displayName = entry == null ? null : Stream.of(
-                entry.getLastname(),
-                entry.getFirstname(),
-                entry.getPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" "));
-        return simpleDto(entry.getId(), displayName);
+        return simpleDto(entry.getId(), entry.getDisplayName());
     }
 
 }

@@ -53,16 +53,6 @@ public interface VacationDtoMapper extends MapperBase {
     }
 
 
-    @Named("toDisplayName")
-    default String toDisplayName(VacationView entry) {
-        return entry == null ? null : Stream.of(
-                        entry.getEmployeeLastname(),
-                        entry.getEmployeeFirstname(),
-                        entry.getEmployeePatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" "));
-    }
-
     @Named("vacationStatusFromId")
     default VacationDto.VacationStatus vacationStatusFromId(int statusId) {
         return VacationDto.VacationStatus.fromId(statusId);

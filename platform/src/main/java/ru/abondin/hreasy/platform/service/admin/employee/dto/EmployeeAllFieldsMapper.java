@@ -84,16 +84,6 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
     EmployeeKidDto fromEntry(EmployeeKidView m);
 
 
-    @Named("displayName")
-    default String displayName(EmployeeWithAllDetailsEntry entry) {
-        return entry == null ? null : Stream.of(
-                        entry.getLastname(),
-                        entry.getFirstname(),
-                        entry.getPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" "));
-    }
-
     @Named("kidParent")
     default SimpleDictDto kidParent(EmployeeKidView entry) {
         if (entry == null || entry.getParent() == null) {
@@ -102,12 +92,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
         var result = new SimpleDictDto();
         result.setId(entry.getParent());
         result.setActive(entry.isParentNotDismissed());
-        result.setName(Stream.of(
-                        entry.getParentLastname(),
-                        entry.getParentFirstname(),
-                        entry.getParentPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" ")));
+        result.setName(entry.getParentDisplayName());
         return result;
     }
 

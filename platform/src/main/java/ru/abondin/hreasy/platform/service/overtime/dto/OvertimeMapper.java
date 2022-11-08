@@ -41,15 +41,6 @@ public interface OvertimeMapper {
 
     OvertimeClosedPeriodDto fromEntry(OvertimeClosedPeriodEntry entry);
 
-    @Named("toDisplayName")
-    default String toDisplayName(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry) {
-        return entry == null ? null : Stream.of(
-                entry.getApproverLastName(),
-                entry.getApproverFirstName(),
-                entry.getApproverPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" "));
-    }
 
     default OvertimeApprovalDecisionDto approvalToDtoIncludeOutdated(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry approvalEntry,
                                                                      OvertimeReportDto report) {

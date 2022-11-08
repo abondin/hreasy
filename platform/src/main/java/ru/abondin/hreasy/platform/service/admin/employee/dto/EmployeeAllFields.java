@@ -10,9 +10,7 @@ import java.time.LocalDate;
  */
 @Data
 public class EmployeeAllFields {
-    private String lastname;
-    private String firstname;
-    private String patronymicName;
+    private String displayName;
     private LocalDate birthday;
     private String sex;
     @NotNull

@@ -37,16 +37,6 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
         return result;
     }
 
-    @Named("displayName")
-    default String displayName(EmployeeDetailedEntry entry) {
-        return entry == null ? null : Stream.of(
-                        entry.getLastname(),
-                        entry.getFirstname(),
-                        entry.getPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" "));
-    }
-
     @Named("department")
     default SimpleDictDto department(EmployeeDetailedEntry entry) {
         return simpleDto(entry.getDepartmentId(), entry.getDepartmentName());
