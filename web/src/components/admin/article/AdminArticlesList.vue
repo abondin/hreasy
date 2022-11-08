@@ -116,7 +116,7 @@ class Filter {
 })
 export default class AdminArticlesList extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
   articles: ArticleFull[] = [];
 
   private filter: Filter = new Filter();

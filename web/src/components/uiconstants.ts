@@ -9,7 +9,7 @@ export class UiConstants {
      * @param customValue
      * @param defaultValue
      */
-    static print(customValue: Function | string | undefined, defaultValue?: string): string|undefined {
+    static print(customValue: ()=>string | string | undefined, defaultValue?: string): string|undefined {
         if (!customValue) {
             return defaultValue;
         }

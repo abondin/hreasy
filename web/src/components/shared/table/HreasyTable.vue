@@ -136,7 +136,7 @@ export default class HreasyTable<T extends WithId, M extends UpdateBody, C exten
   private title!: string|null;
 
   @Prop({required: false})
-  private updateTitle: Function | string | undefined;
+  private updateTitle?: ()=>string | string | undefined;
 
   @Prop({required: false, default: () => ['name']})
   private sortBy!: string | string[];

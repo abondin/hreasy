@@ -12,7 +12,7 @@ export interface BasicDict extends WithId {
 }
 
 export class BasicDictFilter<T extends BasicDict> extends Filter<T> {
-    private search: string = '';
+    private search = '';
     private onlyNotArchived = true;
 
     applyFilter(items: T[]): T[] {

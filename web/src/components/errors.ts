@@ -2,7 +2,7 @@
  * 401 Error
  */
 export class AuthenticationError extends Error {
-    constructor(public message: string, public code?: string) {
+    public constructor(public message: string, public code?: string) {
         super(message);
     }
 }

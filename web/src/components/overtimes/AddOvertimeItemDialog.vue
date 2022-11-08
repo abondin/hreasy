@@ -140,7 +140,7 @@ export default class AddOvertimeItemDialog extends Vue {
 
   private addMore = true;
 
-  private error: String | null = null;
+  private error: string | null = null;
 
   private dateMenu = false;
 
@@ -190,7 +190,7 @@ export default class AddOvertimeItemDialog extends Vue {
 
   private default(projectId: number | undefined = undefined,
                   date: string | undefined = undefined,
-                  hours: number = 4): OvertimeItem {
+                  hours = 4): OvertimeItem {
     return {
       date: date ? date : this.dateToString(new Date()),
       projectId: projectId ? projectId : this.defaultProject == null ? undefined : this.defaultProject,

@@ -125,7 +125,7 @@ class VacationForm {
 )
 
 export default class VacationEditForm extends Vue {
-  loading: boolean = false;
+  loading = false;
 
   @Prop({required: false})
   private input: Vacation | undefined;
@@ -133,7 +133,7 @@ export default class VacationEditForm extends Vue {
 
   private vacationForm = new VacationForm();
 
-  private error: String | null = null;
+  private error: string | null = null;
 
   @Prop({required: true})
   public allStatuses!: Array<any>;
@@ -217,7 +217,7 @@ export default class VacationEditForm extends Vue {
         documents: this.vacationForm.documents,
         daysNumber: this.vacationForm.daysNumber
       } as CreateOrUpdateVacation;
-      var serverRequest;
+      let serverRequest;
       if (this.vacationForm.isNew) {
         serverRequest = vacationService.create(this.vacationForm.employeeId as number, body)
       } else {

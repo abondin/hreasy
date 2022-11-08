@@ -77,7 +77,7 @@ export default class SharedArticlesWindow extends Vue {
 
   private getPrevArticleName(): string | undefined {
     if (this.allArticles && this.allArticles.length > 1) {
-      let index = this.selectedArticleIndex == 0 ? this.allArticles.length - 1 : this.selectedArticleIndex - 1;
+      const index = this.selectedArticleIndex == 0 ? this.allArticles.length - 1 : this.selectedArticleIndex - 1;
       const article = this.allArticles[index];
       return article && article.name ? this.truncate(article.name, 30) : undefined;
     }
@@ -86,7 +86,7 @@ export default class SharedArticlesWindow extends Vue {
 
   private getNextArticleName(): string | undefined {
     if (this.allArticles && this.allArticles.length > 1) {
-      let index = this.selectedArticleIndex == this.allArticles.length - 1 ? 0 : this.selectedArticleIndex + 1;
+      const index = this.selectedArticleIndex == this.allArticles.length - 1 ? 0 : this.selectedArticleIndex + 1;
       const article = this.allArticles[index];
       return article && article.name ? this.truncate(article.name, 30) : undefined;
     }

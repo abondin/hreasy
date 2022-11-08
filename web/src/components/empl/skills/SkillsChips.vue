@@ -104,7 +104,7 @@ interface SkillWithMenu extends Skill {
   menu: boolean
 }
 
-const namespace: string = 'dict';
+const namespace = 'dict';
 @Component({
   components: {AddSkillForm}
 })

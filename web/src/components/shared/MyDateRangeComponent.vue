@@ -67,10 +67,7 @@ export default class MyDateRangeComponent extends Vue {
   private menu = false;
 
   private pickerDate: string | null = null;
-
-  created() {
-  }
-
+  
   public get selectedDates() {
     return this.value;
   }

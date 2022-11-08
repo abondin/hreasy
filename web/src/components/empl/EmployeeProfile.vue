@@ -102,7 +102,7 @@ import TechProfilesChips from "@/components/empl/TechProfilesChips.vue";
 import EmployeeUpdateTelegram from "@/components/empl/EmployeeUpdateTelegram.vue";
 import ProjectInfoCardComponent from "@/components/shared/ProjectInfoCardComponent.vue";
 
-const namespace: string = 'auth';
+const namespace = 'auth';
 
 @Component({
   components: {
@@ -114,7 +114,7 @@ const namespace: string = 'auth';
   }
 })
 export default class EmployeeProfile extends Vue {
-  loading: boolean = false;
+  loading = false;
 
   private employee: Employee | null = null;
   private currentOvertimePeriod = ReportPeriod.currentPeriod();

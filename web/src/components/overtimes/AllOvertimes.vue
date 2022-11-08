@@ -184,7 +184,7 @@ import {Watch} from "vue-property-decorator";
 import permissionService from "@/store/modules/permission.service";
 import adminOvertimeService from "@/components/admin/overtime/admin.overtime.service";
 
-const namespace_dict: string = 'dict';
+const namespace_dict = 'dict';
 
 class RawData {
   public employees: Employee[] = [];
@@ -204,7 +204,7 @@ class Filter {
 })
 export default class AllOvertimes extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
   search = '';
 
   selectedPeriod = ReportPeriod.currentPeriod();

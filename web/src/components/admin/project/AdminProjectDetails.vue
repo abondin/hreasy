@@ -72,14 +72,14 @@ import {AccessDeniedError} from "@/components/errors";
 import router from "@/router";
 
 
-const namespace_dict: string = 'dict';
+const namespace_dict = 'dict';
 
 @Component({
       components: {ProjectCard: ProjectInfoComponent, AdminProjectForm, AdminManagers}
     }
 )
 export default class AdminProjectDetails extends Vue {
-  loading: boolean = false;
+  loading = false;
   updateDialog = false;
 
   @Prop({required: true})

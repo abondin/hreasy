@@ -33,7 +33,7 @@ export default class ProjectInfoCardComponent extends Vue {
 
   private loading = false;
 
-  private error: string = '';
+  private error = '';
 
   /**
    * Lifecycle hook

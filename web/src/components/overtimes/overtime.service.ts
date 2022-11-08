@@ -190,7 +190,7 @@ export interface OvertimeService {
      * @param comment
      * @param previousDecision
      */
-    approve(employeeId: number, reportPeriod: number, comment: String | null, previousDecision: number | null): Promise<OvertimeReport>;
+    approve(employeeId: number, reportPeriod: number, comment: string | null, previousDecision: number | null): Promise<OvertimeReport>;
 
     /**
      * Decline overtime report
@@ -199,7 +199,7 @@ export interface OvertimeService {
      * @param comment
      * @param previousDecision
      */
-    decline(employeeId: number, reportPeriod: number, comment: String, previousDecision: number | null): Promise<OvertimeReport>;
+    decline(employeeId: number, reportPeriod: number, comment: string, previousDecision: number | null): Promise<OvertimeReport>;
 
     export(reportPeriod: number): Promise<void>;
 }
@@ -243,7 +243,7 @@ class RestOvertimeService implements OvertimeService {
         });
     }
 
-    approve(employeeId: number, reportPeriod: number, comment: String | null, previousDecision: number | null): Promise<OvertimeReport> {
+    approve(employeeId: number, reportPeriod: number, comment: string | null, previousDecision: number | null): Promise<OvertimeReport> {
         return httpService.post(`v1/overtimes/${employeeId}/report/${reportPeriod}/approve`, {
             comment: comment,
             previousApprovalId: previousDecision
@@ -252,7 +252,7 @@ class RestOvertimeService implements OvertimeService {
         });
     }
 
-    decline(employeeId: number, reportPeriod: number, comment: String, previousDecision: number | null): Promise<OvertimeReport> {
+    decline(employeeId: number, reportPeriod: number, comment: string, previousDecision: number | null): Promise<OvertimeReport> {
         return httpService.post(`v1/overtimes/${employeeId}/report/${reportPeriod}/decline`, {
             comment: comment,
             previousApprovalId: previousDecision

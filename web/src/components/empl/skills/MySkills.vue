@@ -25,14 +25,14 @@ import skillsService, {Skill} from "@/components/empl/skills/skills.service";
 import {Getter} from "vuex-class";
 import SkillsChips from "@/components/empl/skills/SkillsChips.vue";
 
-const namespace_auth: string = 'auth';
+const namespace_auth = 'auth';
 
 
 @Component({
   components: {SkillsChips}
 })
 export default class MySkills extends Vue {
-  loading: boolean = false;
+  loading = false;
   skills: Skill[] = [];
 
   @Getter("employeeId", {namespace: namespace_auth})

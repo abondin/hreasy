@@ -106,7 +106,7 @@ export const getters: GetterTree<AuthState, RootState> = {
     }
 };
 
-const namespaced: boolean = true;
+const namespaced = true;
 
 
 export const auth: Module<AuthState, RootState> = {

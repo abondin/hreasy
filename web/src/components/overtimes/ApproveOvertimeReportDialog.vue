@@ -91,8 +91,8 @@ export default class ApproveOvertimeReportDialog extends Vue {
 
   private dialog = false;
 
-  private error: String | null = null;
-  private comment: String | null = null;
+  private error: string | null = null;
+  private comment: string | null = null;
 
   @Watch("dialog")
   private watch() {

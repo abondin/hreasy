@@ -49,11 +49,6 @@ export interface AssessmentForm {
     completedAt: Date | null;
     completedBy: number | null;
 }
-
-export interface UploadAssessmentAttachmentResponse {
-
-}
-
 export interface DeleteAssessmentAttachmentResponse {
     deleted: boolean;
 }

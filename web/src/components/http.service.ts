@@ -12,7 +12,7 @@ function createAxios(): AxiosInstance {
     )
 
     http.interceptors.response.use(undefined, (error) => {
-        let wrappedError: Error | undefined;
+        let wrappedError;
         let code: string;
         let attrs: Map<string, string>;
         let message: string;

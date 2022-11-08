@@ -73,7 +73,7 @@ class BaForm {
 )
 
 export default class AdminBAForm extends Vue {
-  loading: boolean = false;
+  loading = false;
 
   @Prop({required: false})
   private input: BusinessAccount | undefined;
@@ -83,7 +83,7 @@ export default class AdminBAForm extends Vue {
 
   private baForm = new BaForm();
 
-  private error: String | null = null;
+  private error: string | null = null;
 
 
   @Watch("input")

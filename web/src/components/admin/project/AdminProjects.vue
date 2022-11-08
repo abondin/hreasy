@@ -99,7 +99,7 @@ import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
-const namespace_dict: string = 'dict';
+const namespace_dict = 'dict';
 
 class Filter {
   public showClosed = false;
@@ -115,7 +115,7 @@ class Filter {
 )
 export default class AdminProjects extends Vue {
   headers: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
 
   projects: ProjectFullInfo[] = [];
 
@@ -167,7 +167,7 @@ export default class AdminProjects extends Vue {
 
   private filteredProjects() {
     return this.projects.filter((p) => {
-      var filtered = true;
+      let filtered = true;
       if (!this.filter.showClosed) {
         filtered = filtered && (p.active);
       }

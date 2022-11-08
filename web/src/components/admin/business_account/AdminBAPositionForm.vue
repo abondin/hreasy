@@ -74,7 +74,7 @@ class BaPositionForm {
   public isNew = true;
   public id?: number;
   public name = '';
-  public rate: number = 0;
+  public rate = 0;
   public description = '';
   public archived = false;
 }
@@ -84,7 +84,7 @@ class BaPositionForm {
 )
 
 export default class AdminBaPositionForm extends Vue {
-  loading: boolean = false;
+  loading = false;
 
   @Prop({required: true})
   private businessAccountId!: number;
@@ -94,7 +94,7 @@ export default class AdminBaPositionForm extends Vue {
 
   private baPositionForm = new BaPositionForm();
 
-  private error: String | null = null;
+  private error: string | null = null;
 
 
   @Watch("input")

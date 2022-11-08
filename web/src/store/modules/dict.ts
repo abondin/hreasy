@@ -157,7 +157,7 @@ export const dictGetters: GetterTree<DictLoadedState, RootState> = {
     }
 };
 
-const namespaced: boolean = true;
+const namespaced = true;
 
 
 export const dict: Module<DictLoadedState, RootState> = {

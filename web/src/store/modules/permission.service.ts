@@ -258,7 +258,7 @@ interface PermissionService {
     canAdminManagers(): boolean;
 }
 
-const namespace: string = 'auth';
+const namespace = 'auth';
 
 class VuexPermissionService implements PermissionService {
 

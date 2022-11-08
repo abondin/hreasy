@@ -246,7 +246,7 @@ import {
 import {Watch} from "vue-property-decorator";
 import dictService from "@/store/modules/dict.service";
 
-const namespace: string = 'dict';
+const namespace = 'dict';
 
 class Filter {
   public selectedStatuses: Array<string> = ['PLANNED', 'TAKEN'];
@@ -262,9 +262,9 @@ class Filter {
 export default class VacationsListComponent extends Vue {
   headers: DataTableHeader[] = [];
   summaryHeaders: DataTableHeader[] = [];
-  loading: boolean = false;
+  loading = false;
   vacations: Vacation[] = [];
-  selectedTab: number = 0;
+  selectedTab = 0;
 
   @Getter("projects", {namespace})
   private allProjects!: Array<SimpleDict>;
@@ -279,7 +279,7 @@ export default class VacationsListComponent extends Vue {
   public allStatuses: Array<any> = [];
   public allEmployees: Array<SimpleDict> = [];
   public allYears: Array<number> = [];
-  public daysNotIncludedInVacations: Array<String> = [];
+  public daysNotIncludedInVacations: Array<string> = [];
 
   private vacationDialog = false;
   private selectedVacation: Vacation | null = null;
@@ -287,7 +287,7 @@ export default class VacationsListComponent extends Vue {
   private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
   private snackbarNotification = false;
-  private snackbarMessage: string = '';
+  private snackbarMessage = '';
 
   /**
    * Lifecycle hook

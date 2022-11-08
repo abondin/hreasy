@@ -148,7 +148,7 @@ class NewAssessmentForm {
   }
 })
 export default class EmployeeAssessmentProfile extends Vue {
-  loading: boolean = false;
+  loading = false;
   headers: DataTableHeader[] = [];
   assessments: AssessmentBase[] = [];
 
