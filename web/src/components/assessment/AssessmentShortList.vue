@@ -134,7 +134,9 @@ class Filter {
   public selectedBas: number[] = [];
 }
 
-@Component({})
+@Component({
+  name: 'AssessmentShortList'
+})
 export default class AssessmentShortList extends Vue {
   headers: DataTableHeader[] = [];
   loading = false;
