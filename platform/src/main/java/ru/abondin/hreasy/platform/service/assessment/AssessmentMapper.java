@@ -24,8 +24,8 @@ import java.util.stream.Stream;
 public interface AssessmentMapper extends MapperBase {
 
     @Mapping(source = "employeeId", target = "employeeId")
-    @Mapping(source = ".", target = "displayName", qualifiedByName = "displayName")
     @Mapping(source = "id", target = "lastAssessmentId")
+    @Mapping(source = "employeeDisplayName", target = "displayName")
     @Mapping(source = "plannedDate", target = "lastAssessmentDate")
     @Mapping(target = "lastAssessmentCompletedDate", source = "completedAt", qualifiedByName = "toLocalDate")
     @Mapping(source = "employeeDateOfEmployment", target = "employeeDateOfEmployment")

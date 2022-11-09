@@ -44,7 +44,6 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
      * @param entry
      * @return
      */
-    @Mapping(target = "displayName", source = ".", qualifiedByName = "displayName")
     @Mapping(target = "documentFull", source = ".", qualifiedByName = "documentFull")
     //TODO Set phone datatype in database to string
     EmployeeWithAllDetailsDto fromEntryPartially(EmployeeWithAllDetailsEntry entry);

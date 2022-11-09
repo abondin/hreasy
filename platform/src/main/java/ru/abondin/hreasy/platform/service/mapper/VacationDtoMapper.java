@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.service.mapper;
 
-import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.*;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
@@ -9,8 +8,6 @@ import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.*;
 
 import java.util.Locale;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Map all dictionaries database entries to API DTO
@@ -18,7 +15,6 @@ import java.util.stream.Stream;
 @Mapper(componentModel = "spring")
 public interface VacationDtoMapper extends MapperBase {
 
-    @Mapping(target = "employeeDisplayName", source = ".", qualifiedByName = "toDisplayName")
     @Mapping(target = "status", source = "status", qualifiedByName = "vacationStatusFromId")
     @Mapping(target = "employeeCurrentProject", qualifiedByName = "employeeCurrentProject", source = ".")
     VacationDto vacationToDto(VacationView entry);

@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 @Mapper(componentModel = "spring")
 public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
 
-    @Mapping(target = "displayName", source = ".", qualifiedByName = "displayName")
     @Mapping(target = "department", source = ".", qualifiedByName = "department")
     @Mapping(target = "currentProject", source = ".", qualifiedByName = "currentProject")
     @Mapping(target = "position", source = ".", qualifiedByName = "position")

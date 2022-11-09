@@ -57,7 +57,7 @@ public class TestDataContainer {
 
     private Mono<?> employees() {
         return db.getDatabaseClient().sql(
-                        "select display_name name, id from empl.employee")
+                        "select substring(email, 0, position('@' in email)) name, id from empl.employee")
                 .fetch()
                 .all()
                 .doOnNext(d -> employees.put((String) d.get("name"), (Integer) d.get("id"))).collectList();

@@ -35,7 +35,6 @@ public interface OvertimeMapper {
     @Mapping(target = "items", ignore = true)
     OvertimeEmployeeSummary summaryFromEntry(OvertimeReportEntry.OvertimeReportSummaryEntry entry);
 
-    @Mapping(target = "approverDisplayName", source = ".", qualifiedByName = "toDisplayName")
     @Mapping(target = "outdated", ignore = true)
     OvertimeApprovalDecisionDto fromEntry(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry);
 

@@ -16,7 +16,7 @@ import java.time.OffsetDateTime;
 public interface OvertimeApprovalDecisionRepo extends R2dbcRepository<OvertimeApprovalDecisionEntry, Integer> {
 
     @Query("select d.*," +
-            " e.display_name as approver_displayname" +
+            " e.display_name as approver_display_name" +
             " from ovt.overtime_approval_decision d" +
             " join empl.employee e on d.approver=e.id" +
             " where d.report_id=:reportId and d.cancel_decision_time is null order by d.decision_time")

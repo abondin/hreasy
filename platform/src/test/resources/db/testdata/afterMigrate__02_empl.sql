@@ -1,7 +1,7 @@
 -- Safe scripts with empl test data
 
 -- Java Developer from M1 Billing
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Haiden.Spooner@stm-labs.ru',
   'Spooner Haiden',
@@ -17,7 +17,7 @@ INSERT INTO empl.employee (email, display_name
   null where NOT EXISTS (SELECT id from empl.employee where email ilike 'Haiden.Spooner@stm-labs.ru');
 
 -- Java Developer from M1 Billing
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Asiyah.Bob@stm-labs.ru',
   'Bob Asiyah',
@@ -33,7 +33,7 @@ INSERT INTO empl.employee (email, display_name
   null where NOT EXISTS (SELECT id from empl.employee where email ilike 'Asiyah.Bob@stm-labs.ru');
 
 -- Fired Java Developer from M1 Billing
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment,
   office_location,ext_erp_id, date_of_dismissal) select
   'Dev.Fired@stm-labs.ru',
@@ -55,7 +55,7 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Maxwell.May@stm-labs.ru') then
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Maxwell.May@stm-labs.ru',
@@ -94,7 +94,7 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Husnain.Patterson@stm-labs.ru') then
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Husnain.Patterson@stm-labs.ru',
@@ -125,7 +125,7 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Levison.Fired@stm-labs.ru') then
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id, date_of_dismissal) VALUES
 (
   'Levison.Fired@stm-labs.ru',
@@ -167,7 +167,7 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Percy.Gough@stm-labs.ru') then
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Percy.Gough@stm-labs.ru',
@@ -206,7 +206,7 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Ammara.Knott@stm-labs.ru') then
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Ammara.Knott@stm-labs.ru',
@@ -226,7 +226,7 @@ END
 $do$;
 
 -- QA from M1 FMS
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Jenson.Curtis@stm-labs.ru',
   'Curtis Jenson',
@@ -246,7 +246,7 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Jawad.Mcghee@stm-labs.ru') then
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Jawad.Mcghee@stm-labs.ru',
@@ -282,7 +282,7 @@ END
 $do$;
 
 -- Java Developer from M1 Policy Manager
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Amy.Beck@stm-labs.ru',
   'Beck Amy',
@@ -302,7 +302,7 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Kyran.Neville@stm-labs.ru') then
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Kyran.Neville@stm-labs.ru',
@@ -365,7 +365,7 @@ END
 $do$;
 
 -- QA from M1 ERP Integration
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Jonas.Martin@stm-labs.ru',
   'Martin Jonas',
@@ -385,7 +385,7 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Toby.Barrow@stm-labs.ru') then
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Toby.Barrow@stm-labs.ru',
@@ -425,7 +425,7 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Maysa.Sheppard@stm-labs.ru') then
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Maysa.Sheppard@stm-labs.ru',
@@ -464,7 +464,7 @@ DO
 $do$
 BEGIN
 IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Shaan.Pitts@stm-labs.ru') then
-INSERT INTO empl.employee (email, display_name
+INSERT INTO empl.employee (email, display_name,
   department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
 (
   'Shaan.Pitts@stm-labs.ru',
