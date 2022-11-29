@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <workbook>
     <worksheet>
-        <loop startRow="7" endRow="7" items="employees" var="employee" varType="ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeeExcelDto">
-            <section startRow="7" endRow="7">
-                <mapping row="7" col="0">employee.name</mapping>
-                <mapping row="7" col="1">employee.age</mapping>
-                <mapping row="7" col="3">employee.payment</mapping>
-                <mapping row="7" col="4">employee.bonus</mapping>
+        <loop startRow="11" endRow="1000" items="employees" var="e" varType="ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeeExcelDto">
+            <section startRow="11" endRow="1000">
+                <mapping row="11" col="2">e.displayName</mapping>
+                <mapping row="11" col="17">e.email</mapping>
             </section>
             <loopbreakcondition>
                 <rowcheck offset="0">

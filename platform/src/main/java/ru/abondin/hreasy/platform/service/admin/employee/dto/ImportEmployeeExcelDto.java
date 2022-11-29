@@ -5,4 +5,6 @@ import lombok.Data;
 
 @Data
 public class ImportEmployeeExcelDto {
+    private String displayName;
+    private String email;
 }
