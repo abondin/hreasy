@@ -10,7 +10,7 @@
             </section>
             <loopbreakcondition>
                 <rowcheck offset="0">
-                    <cellcheck offset="0">Employee Payment Totals:</cellcheck>
+                    <cellcheck offset="0"></cellcheck>
                 </rowcheck>
             </loopbreakcondition>
         </loop>
