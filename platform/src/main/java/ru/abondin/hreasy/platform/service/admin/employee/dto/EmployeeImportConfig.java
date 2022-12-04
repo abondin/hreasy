@@ -9,15 +9,15 @@ import lombok.Data;
 public class EmployeeImportConfig {
 
     /**
-     * First sheet uses by default
+     * 1 - first sheet
      */
-    private int sheetIndex = 0;
+    private int sheetNumber = 1;
 
     /**
      * First row with actual employee data (not header)
      */
     private int tableStartRow = 8;
 
-    private String nameCell = "A";
-    private String ageCell = "B";
+    private Short displayNameCell = 1;
+    private Short emailCell = 2;
 }

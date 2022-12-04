@@ -28,11 +28,14 @@ public class AdminEmployeeExcelImporter {
     @Value("${classpath:jxls/import_employees_template.xml}")
     private final Resource template;
 
+    private final String tableBeanName = "employees";
+    private final String tableItemBeanName = "employee";
+
     public Flux<ImportEmployeeExcelDto> importEmployees(InputStream excel) throws IOException {
         try {
             var employees = new ArrayList<ImportEmployeeExcelDto>();
             var beans = new HashMap<String, Object>();
-            beans.put("employees", employees);
+            beans.put(tableBeanName, employees);
             var readStatus = ReaderBuilder.buildFromXML(template.getInputStream()).read(excel, beans);
             log.info("Import employee: Read excel file using template status {}: {}", readStatus.isStatusOK(), readStatus.getReadMessages());
             return Flux.fromIterable(employees);
@@ -42,16 +45,16 @@ public class AdminEmployeeExcelImporter {
     }
 
 
-    public XLSReader configureReader(EmployeeImportConfig config){
+    public XLSReader configureReader(EmployeeImportConfig config) {
         var reader = new XLSReaderImpl();
-        reader.addSheetReader(config.getSheetIndex(), configureSheetReader(config));
+        reader.addSheetReader(config.getSheetNumber() - 1, configureSheetReader(config));
         return reader;
     }
 
     private XLSSheetReader configureSheetReader(EmployeeImportConfig config) {
         var emptyBlock = new SimpleBlockReaderImpl();
         emptyBlock.setStartRow(0);
-        emptyBlock.setEndRow(config.getTableStartRow()-1);
+        emptyBlock.setEndRow(Math.max(config.getTableStartRow() - 2, 0));
         var sheetReader = new XLSSheetReaderImpl();
         sheetReader.addBlockReader(emptyBlock);
         sheetReader.addBlockReader(configureLoopReader(config));
@@ -60,12 +63,34 @@ public class AdminEmployeeExcelImporter {
 
     private XLSBlockReader configureLoopReader(EmployeeImportConfig config) {
         var loopBlock = new XLSForEachBlockReaderImpl();
-        loopBlock.setStartRow(config.getTableStartRow()-1);
-        loopBlock.setEndRow(config.getTableStartRow()-1+3);
-        loopBlock.setItems("employees");
-        loopBlock.setVar("employee");
+        loopBlock.setStartRow(config.getTableStartRow() - 1);
+        loopBlock.setEndRow(config.getTableStartRow() - 1);
+        loopBlock.setItems(tableBeanName);
+        loopBlock.setVar(tableItemBeanName);
         loopBlock.setVarType(ImportEmployeeExcelDto.class);
+
+        var breakCondition = new SimpleSectionCheck();
+        var rowCheck = new OffsetRowCheckImpl();
+        var cellCheck = new OffsetCellCheckImpl();
+        cellCheck.setValue("");
+        rowCheck.addCellCheck(cellCheck);
+        rowCheck.setOffset(0);
+        breakCondition.addRowCheck(rowCheck);
+        loopBlock.setLoopBreakCondition(breakCondition);
+
+        loopBlock.addBlockReader(loopSectionBlockReader(config));
         return loopBlock;
+    }
+
+    private XLSBlockReader loopSectionBlockReader(EmployeeImportConfig config) {
+        var reader = new SimpleBlockReaderImpl(config.getTableStartRow() - 1, config.getTableStartRow() - 1);
+        reader.addMapping(simpleMapping("email", config.getEmailCell()));
+        reader.addMapping(simpleMapping("displayName", config.getDisplayNameCell()));
+        return reader;
+    }
+
+    private BeanCellMapping simpleMapping(String property, short columnNumber) {
+        return new BeanCellMapping(0, (short) (columnNumber - 1), tableItemBeanName, property);
     }
 
 
