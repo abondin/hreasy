@@ -25,27 +25,12 @@ import java.util.HashMap;
 @Slf4j
 public class AdminEmployeeExcelImporter {
 
-    @Value("${classpath:jxls/import_employees_template.xml}")
-    private final Resource template;
-
     private final String tableBeanName = "employees";
     private final String tableItemBeanName = "employee";
 
-    public Flux<ImportEmployeeExcelDto> importEmployees(InputStream excel) throws IOException {
-        try {
-            var employees = new ArrayList<ImportEmployeeExcelDto>();
-            var beans = new HashMap<String, Object>();
-            beans.put(tableBeanName, employees);
-            var readStatus = ReaderBuilder.buildFromXML(template.getInputStream()).read(excel, beans);
-            log.info("Import employee: Read excel file using template status {}: {}", readStatus.isStatusOK(), readStatus.getReadMessages());
-            return Flux.fromIterable(employees);
-        } catch (InvalidFormatException | SAXException e) {
-            throw new IOException(e);
-        }
-    }
 
 
-    public XLSReader configureReader(EmployeeImportConfig config) {
+    private XLSReader configureReader(EmployeeImportConfig config) {
         var reader = new XLSReaderImpl();
         reader.addSheetReader(config.getSheetNumber() - 1, configureSheetReader(config));
         return reader;

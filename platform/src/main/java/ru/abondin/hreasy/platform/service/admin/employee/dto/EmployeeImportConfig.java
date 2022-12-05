@@ -18,6 +18,18 @@ public class EmployeeImportConfig {
      */
     private int tableStartRow = 8;
 
-    private Short displayNameCell = 1;
-    private Short emailCell = 2;
+    private Short displayNameCell = 2;
+    private Short emailCell = 17;
+    private Short phoneCell = 33;
+    private Short departmentCell = 34;
+    private Short positionCell = 35;
+    private Short dateOfEmploymentCell = 36;
+    private Short dateOfDismissalCell = 37;
+    private Short birthdayCell = 39;
+    private Short sexCell = 40;
+    private Short documentSeriesCell = 42;
+    private Short documentNumberCell = 43;
+    private Short documentIssuedDateCell = 44;
+    private Short documentIssuedByCell = 45;
+    private Short registrationAddressCell = 47;
 }

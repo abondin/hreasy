@@ -18,7 +18,7 @@ public class AdminEmployeesImporterTest {
 
     @BeforeEach
     public void before() {
-        importer = new AdminEmployeeExcelImporter(new ClassPathResource("jxls/import_employees_template.xml"));
+        importer = new AdminEmployeeExcelImporter();
     }
 
 
@@ -42,7 +42,7 @@ public class AdminEmployeesImporterTest {
         var employees = new ArrayList<ImportExcelTestDataDto>();
         beans.put("employees", employees);
         var status = importer.configureReader(new EmployeeImportConfig()).read(
-                new ClassPathResource("excel/import_test_data.xlsx")
+                new ClassPathResource("excel/employees-to-import.xlsx")
                         .getInputStream(), beans
         );
         Assertions.assertEquals(4, employees.size());
