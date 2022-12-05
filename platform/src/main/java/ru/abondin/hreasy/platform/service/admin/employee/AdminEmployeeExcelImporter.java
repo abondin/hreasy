@@ -14,6 +14,7 @@ import ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeeExcel
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -30,7 +31,7 @@ public class AdminEmployeeExcelImporter {
 
 
 
-    private XLSReader configureReader(EmployeeImportConfig config) {
+    public XLSReader configureReader(EmployeeImportConfig config) {
         var reader = new XLSReaderImpl();
         reader.addSheetReader(config.getSheetNumber() - 1, configureSheetReader(config));
         return reader;
@@ -69,13 +70,33 @@ public class AdminEmployeeExcelImporter {
 
     private XLSBlockReader loopSectionBlockReader(EmployeeImportConfig config) {
         var reader = new SimpleBlockReaderImpl(config.getTableStartRow() - 1, config.getTableStartRow() - 1);
-        reader.addMapping(simpleMapping("email", config.getEmailCell()));
-        reader.addMapping(simpleMapping("displayName", config.getDisplayNameCell()));
+        // 14 fields handled
+        addSimpleMapping(reader, "email", config.getEmailCell(), false, null);
+        addSimpleMapping(reader, "displayName", config.getDisplayNameCell(), true, null);
+        addSimpleMapping(reader, "documentNumber", config.getDocumentNumberCell(), true, null);
+        addSimpleMapping(reader, "documentSeries", config.getDocumentSeriesCell(), true, null);
+        addSimpleMapping(reader, "documentIssuedBy", config.getDocumentIssuedByCell(), true, null);
+        addSimpleMapping(reader, "documentIssuedDate", config.getDocumentIssuedDateCell(), true, LocalDate.class.getCanonicalName());
+        addSimpleMapping(reader, "birthday", config.getBirthdayCell(), true, LocalDate.class.getCanonicalName());
+        addSimpleMapping(reader, "departmentName", config.getDepartmentNameCell(), true, null);
+        addSimpleMapping(reader, "phone", config.getPhoneCell(), true, null);
+        addSimpleMapping(reader, "sex", config.getSexCell(), true, null);
+        addSimpleMapping(reader, "registrationAddress", config.getRegistrationAddressCell(), true, null);
+        addSimpleMapping(reader, "positionName", config.getPositionNameCell(), true, null);
+        addSimpleMapping(reader, "displayName", config.getDisplayNameCell(), true, null);
+        addSimpleMapping(reader, "displayName", config.getDisplayNameCell(), true, null);
         return reader;
     }
 
-    private BeanCellMapping simpleMapping(String property, short columnNumber) {
-        return new BeanCellMapping(0, (short) (columnNumber - 1), tableItemBeanName, property);
+    private void addSimpleMapping(SimpleBlockReader reader, String property, Short columnNumber, boolean nullAllowed, String type) {
+        if (columnNumber == null || columnNumber <= 0){
+            return;
+        }
+        var mapping = new BeanCellMapping(0, (short) (columnNumber - 1), tableItemBeanName, property);
+        mapping.setNullAllowed(nullAllowed);
+        if (type!=null){
+            mapping.setType(type);
+        }
     }
 
 

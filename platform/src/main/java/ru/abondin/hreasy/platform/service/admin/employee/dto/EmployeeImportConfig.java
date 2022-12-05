@@ -16,13 +16,16 @@ public class EmployeeImportConfig {
     /**
      * First row with actual employee data (not header)
      */
-    private int tableStartRow = 8;
+    private int tableStartRow = 11;
 
+    /**
+     * 14 fields supported at the moment
+     */
     private Short displayNameCell = 2;
     private Short emailCell = 17;
     private Short phoneCell = 33;
-    private Short departmentCell = 34;
-    private Short positionCell = 35;
+    private Short departmentNameCell = 34;
+    private Short positionNameCell = 35;
     private Short dateOfEmploymentCell = 36;
     private Short dateOfDismissalCell = 37;
     private Short birthdayCell = 39;
