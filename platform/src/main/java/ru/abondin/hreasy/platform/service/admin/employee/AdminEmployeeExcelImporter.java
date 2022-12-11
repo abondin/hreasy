@@ -4,11 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.jxls.reader.*;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-import org.xml.sax.SAXException;
 import reactor.core.publisher.Flux;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeeExcelDto;
 
@@ -30,8 +28,25 @@ public class AdminEmployeeExcelImporter {
     private final String tableItemBeanName = "employee";
 
 
+    public Flux<ImportEmployeeExcelDto> importEmployees(int importFlowId, InputStream file) {
+        var beans = new HashMap<String, Object>();
+        var employees = new ArrayList<ImportEmployeeExcelDto>();
+        beans.put("employees", employees);
+        XLSReadStatus status = null;
+        try {
+            status = configureReader(new EmployeeImportConfig())
+                    .read(file, beans);
+        } catch (IOException | InvalidFormatException e) {
+            log.error("Unable to import employees. Flow: " + importFlowId, e);
+            Flux.error(new BusinessError("errors.import.unexpectedError", Integer.toString(importFlowId)));
+        }
+        if (status.isStatusOK()) {
+            return Flux.error(new BusinessError("errors.import.statusNotOk", Integer.toString(importFlowId)));
+        }
+        return Flux.fromIterable(employees);
+    }
 
-    public XLSReader configureReader(EmployeeImportConfig config) {
+    private XLSReader configureReader(EmployeeImportConfig config) {
         var reader = new XLSReaderImpl();
         reader.addSheetReader(config.getSheetNumber() - 1, configureSheetReader(config));
         return reader;
@@ -89,12 +104,12 @@ public class AdminEmployeeExcelImporter {
     }
 
     private void addSimpleMapping(SimpleBlockReader reader, String property, Short columnNumber, boolean nullAllowed, String type) {
-        if (columnNumber == null || columnNumber <= 0){
+        if (columnNumber == null || columnNumber <= 0) {
             return;
         }
-        var mapping = new BeanCellMapping(0, (short) (columnNumber - 1), tableItemBeanName, property);
+        var mapping = new BeanCellMapping(0, (short) (columnNumber - 1), tableItemBeanName, property + ".raw");
         mapping.setNullAllowed(nullAllowed);
-        if (type!=null){
+        if (type != null) {
             mapping.setType(type);
         }
     }

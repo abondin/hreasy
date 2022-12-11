@@ -4,10 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.jxls.reader.*;
+import org.jxls.reader.ReaderBuilder;
 import org.springframework.core.io.ClassPathResource;
+import reactor.test.StepVerifier;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeExcelImporter;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeImportConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,13 +38,9 @@ public class AdminEmployeesImporterTest {
 
     @Test
     public void testExcelImportRuntimeTemplate() throws Exception {
-        var beans = new HashMap<String, Object>();
-        var employees = new ArrayList<ImportExcelTestDataDto>();
-        beans.put("employees", employees);
-        var status = importer.configureReader(new EmployeeImportConfig()).read(
-                new ClassPathResource("excel/employees-to-import.xlsx")
-                        .getInputStream(), beans
-        );
-        Assertions.assertEquals(4, employees.size());
+        StepVerifier.create(importer.importEmployees(0, new ClassPathResource("excel/employees-to-import.xlsx")
+                .getInputStream()))
+                        .expectNextCount(3)
+                                .expectComplete();
     }
 }
