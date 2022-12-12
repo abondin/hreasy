@@ -22,14 +22,15 @@ public class EmployeeImportConfig {
      * 14 fields supported at the moment
      */
     private Short displayNameCell = 2;
+    private Short externalErpId = 8;
     private Short emailCell = 17;
     private Short phoneCell = 33;
-    private Short departmentNameCell = 34;
-    private Short positionNameCell = 35;
+    private Short departmentCell = 34;
+    private Short positionCell = 35;
     private Short dateOfEmploymentCell = 36;
     private Short dateOfDismissalCell = 37;
-    private Short birthdayCell = 39;
-    private Short sexCell = 40;
+    private Short birthdayCell = 38;
+    private Short sexCell = 39;
     private Short documentSeriesCell = 42;
     private Short documentNumberCell = 43;
     private Short documentIssuedDateCell = 44;

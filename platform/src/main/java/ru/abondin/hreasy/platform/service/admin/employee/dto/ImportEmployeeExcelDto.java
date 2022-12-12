@@ -3,8 +3,6 @@ package ru.abondin.hreasy.platform.service.admin.employee.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 /**
  * Collection of all imported attributes.
  * Each attribute contains current value from database,
@@ -12,11 +10,12 @@ import java.time.LocalDate;
  * raw imported value,
  * processed imported value (find dict key by dict value)
  * <p>
- *     14 fields can be imported
+ * 15 fields can be imported
  * </p>
  */
 @Data
 public class ImportEmployeeExcelDto {
+    @Data
     public static class DataProperty<T> {
         private T currentValue;
         private T importedValue;
@@ -24,10 +23,11 @@ public class ImportEmployeeExcelDto {
     }
 
     private DataProperty<String> displayName = new DataProperty<>();
+    private DataProperty<String> externalErpId = new DataProperty<>();
     private DataProperty<String> email = new DataProperty<>();
     private DataProperty<String> phone = new DataProperty<>();
-    private DataProperty<String> departmentName = new DataProperty<>();
-    private DataProperty<String> positionName = new DataProperty<>();
+    private DataProperty<String> department = new DataProperty<>();
+    private DataProperty<String> position = new DataProperty<>();
     private DataProperty<String> dateOfEmployment = new DataProperty<>();
     private DataProperty<String> dateOfDismissal = new DataProperty<>();
     private DataProperty<String> birthday = new DataProperty<>();
