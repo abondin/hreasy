@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.admin.employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.util.CellReference;
 import org.jxls.reader.*;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -13,7 +14,6 @@ import ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeeExcel
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -87,32 +87,47 @@ public class AdminEmployeeExcelImporter {
     private XLSBlockReader loopSectionBlockReader(EmployeeImportConfig config) {
         var reader = new SimpleBlockReaderImpl(config.getTableStartRow() - 1, config.getTableStartRow() - 1);
         // 15 fields handled
-        addSimpleMapping(reader, config, "email", config.getEmailCell(), false, null);
-        addSimpleMapping(reader, config, "externalErpId", config.getExternalErpId(), false, null);
-        addSimpleMapping(reader, config, "displayName", config.getDisplayNameCell(), true, null);
-        addSimpleMapping(reader, config, "documentNumber", config.getDocumentNumberCell(), true, null);
-        addSimpleMapping(reader, config, "documentSeries", config.getDocumentSeriesCell(), true, null);
-        addSimpleMapping(reader, config, "documentIssuedBy", config.getDocumentIssuedByCell(), true, null);
-        addSimpleMapping(reader, config, "documentIssuedDate", config.getDocumentIssuedDateCell(), true, null);
-        addSimpleMapping(reader, config, "birthday", config.getBirthdayCell(), true, null);
-        addSimpleMapping(reader, config, "department", config.getDepartmentCell(), true, null);
-        addSimpleMapping(reader, config, "phone", config.getPhoneCell(), true, null);
-        addSimpleMapping(reader, config, "sex", config.getSexCell(), true, null);
-        addSimpleMapping(reader, config, "registrationAddress", config.getRegistrationAddressCell(), true, null);
-        addSimpleMapping(reader, config, "position", config.getPositionCell(), true, null);
-        addSimpleMapping(reader, config, "dateOfEmployment", config.getDateOfEmploymentCell(), true, null);
-        addSimpleMapping(reader, config, "dateOfDismissal", config.getDateOfDismissalCell(), true, null);
+        addSimpleMapping(reader, config, "email", config.getColumns().getEmail(), false, null);
+        addSimpleMapping(reader, config, "externalErpId", config.getColumns().getExternalErpId(), false, null);
+        addSimpleMapping(reader, config, "displayName", config.getColumns().getDisplayName(), true, null);
+        addSimpleMapping(reader, config, "documentNumber", config.getColumns().getDocumentNumberCell(), true, null);
+        addSimpleMapping(reader, config, "documentSeries", config.getColumns().getDocumentSeries(), true, null);
+        addSimpleMapping(reader, config, "documentIssuedBy", config.getColumns().getDocumentIssuedByCell(), true, null);
+        addSimpleMapping(reader, config, "documentIssuedDate", config.getColumns().getDocumentIssuedDateCell(), true, null);
+        addSimpleMapping(reader, config, "birthday", config.getColumns().getBirthday(), true, null);
+        addSimpleMapping(reader, config, "department", config.getColumns().getDepartment(), true, null);
+        addSimpleMapping(reader, config, "phone", config.getColumns().getPhone(), true, null);
+        addSimpleMapping(reader, config, "sex", config.getColumns().getSex(), true, null);
+        addSimpleMapping(reader, config, "registrationAddress", config.getColumns().getRegistrationAddressCell(), true, null);
+        addSimpleMapping(reader, config, "position", config.getColumns().getPosition(), true, null);
+        addSimpleMapping(reader, config, "dateOfEmployment", config.getColumns().getDateOfEmployment(), true, null);
+        addSimpleMapping(reader, config, "dateOfDismissal", config.getColumns().getDateOfDismissal(), true, null);
         return reader;
     }
 
-    private void addSimpleMapping(SimpleBlockReader reader, EmployeeImportConfig config, String property, Short columnNumber, boolean nullAllowed, String type) {
-        if (columnNumber == null || columnNumber <= 0) {
+    private void addSimpleMapping(SimpleBlockReader reader, EmployeeImportConfig config, String property, String column, boolean nullAllowed, String type) {
+        if (column == null) {
             return;
         }
-        var mapping = new BeanCellMapping(config.getTableStartRow() - 1, (short) (columnNumber - 1), tableItemBeanName, property + ".raw");
+        int columnIndex = getColumnIndex(column);
+        var mapping = new BeanCellMapping(config.getTableStartRow() - 1, (short) columnIndex, tableItemBeanName, property + ".raw");
         mapping.setNullAllowed(nullAllowed);
         mapping.setType(Optional.ofNullable(type).orElse(String.class.getCanonicalName()));
         reader.addMapping(mapping);
+    }
+
+    /**
+     * Accept column name in letter format (AN) or column number format (40)
+     *
+     * @param column
+     * @return
+     */
+    public static int getColumnIndex(String column) {
+        try {
+            return Integer.parseInt(column) - 1;
+        } catch (NumberFormatException ex) {
+            return CellReference.convertColStringToIndex(column);
+        }
     }
 
 

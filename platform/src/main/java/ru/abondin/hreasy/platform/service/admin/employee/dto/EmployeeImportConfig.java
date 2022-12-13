@@ -18,22 +18,29 @@ public class EmployeeImportConfig {
      */
     private int tableStartRow = 11;
 
-    /**
-     * 14 fields supported at the moment
-     */
-    private Short displayNameCell = 2;
-    private Short externalErpId = 8;
-    private Short emailCell = 17;
-    private Short phoneCell = 33;
-    private Short departmentCell = 34;
-    private Short positionCell = 35;
-    private Short dateOfEmploymentCell = 36;
-    private Short dateOfDismissalCell = 37;
-    private Short birthdayCell = 38;
-    private Short sexCell = 39;
-    private Short documentSeriesCell = 40;
-    private Short documentNumberCell = 41;
-    private Short documentIssuedDateCell = 42;
-    private Short documentIssuedByCell = 43;
-    private Short registrationAddressCell = 44;
+    private EmployeeImportConfigColumns columns = new EmployeeImportConfigColumns();
+
+    @Data
+    public static class EmployeeImportConfigColumns {
+
+        /**
+         * 14 fields supported at the moment
+         */
+        private String displayName = "B";
+        private String externalErpId = "H";
+        private String email = "Q";
+        private String phone = "AG";
+        private String department = "AH";
+        private String position = "AI";
+        private String dateOfEmployment = "AJ";
+        private String dateOfDismissal = "AK";
+        private String birthday = "AL";
+        private String sex = "AM";
+        private String documentSeries = "AN";
+        private String documentNumberCell = "AO";
+        private String documentIssuedDateCell = "AP";
+        private String documentIssuedByCell = "AQ";
+        private String registrationAddressCell = "AR";
+    }
+
 }
