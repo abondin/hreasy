@@ -38,8 +38,8 @@ public class AdminEmployeesImporterTest {
                         .getInputStream(), beans
         );
         Assertions.assertEquals(4, employees.size());
-        Assertions.assertEquals(new Date(1974, 0, 2), employees.get(0).getBirthday());
-        Assertions.assertEquals(new Date(1977, 8, 26), employees.get(1).getBirthday());
+        Assertions.assertEquals(new Date(74, 0, 2), employees.get(0).getBirthday());
+        Assertions.assertEquals(new Date(77, 8, 26), employees.get(1).getBirthday());
     }
 
     @Test
@@ -69,18 +69,18 @@ public class AdminEmployeesImporterTest {
                     assertEqualsStr("Кнотт Амара Юрьевна", empl.getDisplayName());
                     assertEqualsStr("СТЗК-00112", empl.getExternalErpId());
                     assertEqualsStr("Ammara.Knott@stm-labs.ru", empl.getEmail());
-                    Assertions.assertNull(empl.getPhone());
+                    Assertions.assertNull(empl.getPhone().getRaw());
                     assertEqualsStr("Непонятный отдел", empl.getDepartment());
                     assertEqualsStr("Project Manager", empl.getPosition());
                     assertEqualsStr("20.06.2022", empl.getDateOfEmployment());
-                    Assertions.assertNull(empl.getDateOfDismissal());
+                    Assertions.assertNull(empl.getDateOfDismissal().getRaw());
                     assertEqualsStr("01.02.1998", empl.getBirthday());
                     assertEqualsStr("женский", empl.getSex());
                     assertEqualsStr("87 23", empl.getDocumentSeries());
                     assertEqualsStr("859173", empl.getDocumentNumber());
                     assertEqualsStr("14.02.2018", empl.getDocumentIssuedDate());
                     assertEqualsStr("ГУ МВД России по Нижегородской области", empl.getDocumentIssuedBy());
-                    Assertions.assertNull(empl.getRegistrationAddress());
+                    Assertions.assertNull(empl.getRegistrationAddress().getRaw());
                 })
                 .assertNext((empl) -> {
                     // Бобов Асиях Петрович
@@ -91,8 +91,8 @@ public class AdminEmployeesImporterTest {
                     assertEqualsStr("Integration", empl.getDepartment());
                     assertEqualsStr("Непонятная должность", empl.getPosition());
                     assertEqualsStr("28.03.2022", empl.getDateOfEmployment());
-                    Assertions.assertNull(empl.getDateOfDismissal());
-                    assertEqualsStr("08.06.1993", empl.getBirthday());
+                    Assertions.assertNull(empl.getDateOfDismissal().getRaw());
+                    assertEqualsStr("06.08.1993", empl.getBirthday());
                     assertEqualsStr("Муж.", empl.getSex());
                     assertEqualsStr("87 21", empl.getDocumentSeries());
                     assertEqualsStr("563732", empl.getDocumentNumber());

@@ -31,9 +31,9 @@ public class EmployeeImportConfig {
     private Short dateOfDismissalCell = 37;
     private Short birthdayCell = 38;
     private Short sexCell = 39;
-    private Short documentSeriesCell = 42;
-    private Short documentNumberCell = 43;
-    private Short documentIssuedDateCell = 44;
-    private Short documentIssuedByCell = 45;
-    private Short registrationAddressCell = 47;
+    private Short documentSeriesCell = 40;
+    private Short documentNumberCell = 41;
+    private Short documentIssuedDateCell = 42;
+    private Short documentIssuedByCell = 43;
+    private Short registrationAddressCell = 44;
 }

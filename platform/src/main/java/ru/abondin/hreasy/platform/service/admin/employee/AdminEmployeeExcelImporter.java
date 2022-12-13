@@ -94,7 +94,7 @@ public class AdminEmployeeExcelImporter {
         addSimpleMapping(reader, config, "documentSeries", config.getDocumentSeriesCell(), true, null);
         addSimpleMapping(reader, config, "documentIssuedBy", config.getDocumentIssuedByCell(), true, null);
         addSimpleMapping(reader, config, "documentIssuedDate", config.getDocumentIssuedDateCell(), true, null);
-        addSimpleMapping(reader, config, "birthday", config.getBirthdayCell(), true, Date.class.getCanonicalName());
+        addSimpleMapping(reader, config, "birthday", config.getBirthdayCell(), true, null);
         addSimpleMapping(reader, config, "department", config.getDepartmentCell(), true, null);
         addSimpleMapping(reader, config, "phone", config.getPhoneCell(), true, null);
         addSimpleMapping(reader, config, "sex", config.getSexCell(), true, null);
