@@ -24,7 +24,7 @@ public class EmployeeImportConfig {
     public static class EmployeeImportConfigColumns {
 
         /**
-         * 14 fields supported at the moment
+         * 15 fields supported at the moment
          */
         private String displayName = "B";
         private String externalErpId = "H";
@@ -34,13 +34,13 @@ public class EmployeeImportConfig {
         private String position = "AI";
         private String dateOfEmployment = "AJ";
         private String dateOfDismissal = "AK";
-        private String birthday = "AL";
-        private String sex = "AM";
-        private String documentSeries = "AN";
-        private String documentNumberCell = "AO";
-        private String documentIssuedDateCell = "AP";
-        private String documentIssuedByCell = "AQ";
-        private String registrationAddressCell = "AR";
+        private String birthday = "AM";
+        private String sex = "AN";
+        private String documentSeries = "AP";
+        private String documentNumberCell = "AQ";
+        private String documentIssuedDateCell = "AR";
+        private String documentIssuedByCell = "AS";
+        private String registrationAddressCell = "AU";
     }
 
 }
