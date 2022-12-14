@@ -8,11 +8,10 @@ import org.jxls.reader.ReaderBuilder;
 import org.springframework.core.io.ClassPathResource;
 import reactor.test.StepVerifier;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeExcelImporter;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeeExcelDto;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -44,13 +43,13 @@ public class AdminEmployeesImporterTest {
 
     @Test
     public void testExcelImportRuntimeTemplate() throws Exception {
-        StepVerifier.create(importer.importEmployees(0, new ClassPathResource("excel/employees-to-import.xlsx")
+        StepVerifier.create(importer.importEmployees(new EmployeeImportConfig(), new ClassPathResource("excel/employees-to-import.xlsx")
                         .getInputStream()))
                 .assertNext((empl) -> {
                     // Хайден Спуннер
                     assertEqualsStr("Хайден Спуннер", empl.getDisplayName());
                     assertEqualsStr("СТЗК-00111", empl.getExternalErpId());
-                    assertEqualsStr("Haiden.Spooner@stm-labs.ru", empl.getEmail());
+                    Assertions.assertEquals("Haiden.Spooner@stm-labs.ru", empl.getEmail());
                     assertEqualsStr("79998884455", empl.getPhone());
                     assertEqualsStr("Development", empl.getDepartment());
                     assertEqualsStr("Java Developer", empl.getPosition());
@@ -68,7 +67,7 @@ public class AdminEmployeesImporterTest {
                     // Кнотт Амара Юрьевна
                     assertEqualsStr("Кнотт Амара Юрьевна", empl.getDisplayName());
                     assertEqualsStr("СТЗК-00112", empl.getExternalErpId());
-                    assertEqualsStr("Ammara.Knott@stm-labs.ru", empl.getEmail());
+                    Assertions.assertEquals("Ammara.Knott@stm-labs.ru", empl.getEmail());
                     Assertions.assertNull(empl.getPhone().getRaw());
                     assertEqualsStr("Непонятный отдел", empl.getDepartment());
                     assertEqualsStr("Project Manager", empl.getPosition());
@@ -86,7 +85,7 @@ public class AdminEmployeesImporterTest {
                     // Бобов Асиях Петрович
                     assertEqualsStr("Бобов Асиях Петрович", empl.getDisplayName());
                     assertEqualsStr("СТЗК-00113", empl.getExternalErpId());
-                    assertEqualsStr("Asiyah.Bob@stm-labs.ru", empl.getEmail());
+                    Assertions.assertEquals("Asiyah.Bob@stm-labs.ru", empl.getEmail());
                     assertEqualsStr("79998884455", empl.getPhone());
                     assertEqualsStr("Integration", empl.getDepartment());
                     assertEqualsStr("Непонятная должность", empl.getPosition());

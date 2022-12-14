@@ -29,7 +29,7 @@ public class AdminEmployeeExcelImporter {
     private final String tableItemBeanName = "employee";
 
 
-    public Flux<ImportEmployeeExcelDto> importEmployees(int importFlowId, InputStream file) {
+    public Flux<ImportEmployeeExcelDto> importEmployees(EmployeeImportConfig config, InputStream file) {
         var beans = new HashMap<String, Object>();
         var employees = new ArrayList<ImportEmployeeExcelDto>();
         beans.put("employees", employees);
@@ -38,11 +38,11 @@ public class AdminEmployeeExcelImporter {
             status = configureReader(new EmployeeImportConfig())
                     .read(file, beans);
         } catch (IOException | InvalidFormatException e) {
-            log.error("Unable to import employees. Flow: " + importFlowId, e);
-            Flux.error(new BusinessError("errors.import.unexpectedError", Integer.toString(importFlowId)));
+            log.error("Unable to import employees", e);
+            Flux.error(new BusinessError("errors.import.unexpectedError"));
         }
         if (!status.isStatusOK()) {
-            return Flux.error(new BusinessError("errors.import.statusNotOk", Integer.toString(importFlowId)));
+            return Flux.error(new BusinessError("errors.import.statusNotOk"));
         }
         return Flux.fromIterable(employees);
     }
@@ -87,32 +87,36 @@ public class AdminEmployeeExcelImporter {
     private XLSBlockReader loopSectionBlockReader(EmployeeImportConfig config) {
         var reader = new SimpleBlockReaderImpl(config.getTableStartRow() - 1, config.getTableStartRow() - 1);
         // 15 fields handled
-        addSimpleMapping(reader, config, "email", config.getColumns().getEmail(), false, null);
-        addSimpleMapping(reader, config, "externalErpId", config.getColumns().getExternalErpId(), false, null);
-        addSimpleMapping(reader, config, "displayName", config.getColumns().getDisplayName(), true, null);
-        addSimpleMapping(reader, config, "documentNumber", config.getColumns().getDocumentNumberCell(), true, null);
-        addSimpleMapping(reader, config, "documentSeries", config.getColumns().getDocumentSeries(), true, null);
-        addSimpleMapping(reader, config, "documentIssuedBy", config.getColumns().getDocumentIssuedByCell(), true, null);
-        addSimpleMapping(reader, config, "documentIssuedDate", config.getColumns().getDocumentIssuedDateCell(), true, null);
-        addSimpleMapping(reader, config, "birthday", config.getColumns().getBirthday(), true, null);
-        addSimpleMapping(reader, config, "department", config.getColumns().getDepartment(), true, null);
-        addSimpleMapping(reader, config, "phone", config.getColumns().getPhone(), true, null);
-        addSimpleMapping(reader, config, "sex", config.getColumns().getSex(), true, null);
-        addSimpleMapping(reader, config, "registrationAddress", config.getColumns().getRegistrationAddressCell(), true, null);
-        addSimpleMapping(reader, config, "position", config.getColumns().getPosition(), true, null);
-        addSimpleMapping(reader, config, "dateOfEmployment", config.getColumns().getDateOfEmployment(), true, null);
-        addSimpleMapping(reader, config, "dateOfDismissal", config.getColumns().getDateOfDismissal(), true, null);
+        addSimpleMapping(reader, config, "email", config.getColumns().getEmail(), true);
+        addSimpleMapping(reader, config, "externalErpId", config.getColumns().getExternalErpId(), false);
+        addSimpleMapping(reader, config, "displayName", config.getColumns().getDisplayName(), false);
+        addSimpleMapping(reader, config, "documentNumber", config.getColumns().getDocumentNumberCell(), false);
+        addSimpleMapping(reader, config, "documentSeries", config.getColumns().getDocumentSeries(), false);
+        addSimpleMapping(reader, config, "documentIssuedBy", config.getColumns().getDocumentIssuedByCell(), false);
+        addSimpleMapping(reader, config, "documentIssuedDate", config.getColumns().getDocumentIssuedDateCell(), false);
+        addSimpleMapping(reader, config, "birthday", config.getColumns().getBirthday(), false);
+        addSimpleMapping(reader, config, "department", config.getColumns().getDepartment(), false);
+        addSimpleMapping(reader, config, "phone", config.getColumns().getPhone(), false);
+        addSimpleMapping(reader, config, "sex", config.getColumns().getSex(), false);
+        addSimpleMapping(reader, config, "registrationAddress", config.getColumns().getRegistrationAddressCell(), false);
+        addSimpleMapping(reader, config, "position", config.getColumns().getPosition(), false);
+        addSimpleMapping(reader, config, "dateOfEmployment", config.getColumns().getDateOfEmployment(), false);
+        addSimpleMapping(reader, config, "dateOfDismissal", config.getColumns().getDateOfDismissal(), false);
         return reader;
     }
 
-    private void addSimpleMapping(SimpleBlockReader reader, EmployeeImportConfig config, String property, String column, boolean nullAllowed, String type) {
+    private void addSimpleMapping(SimpleBlockReader reader, EmployeeImportConfig config, String property, String column, boolean keyProp) {
         if (column == null) {
             return;
         }
         int columnIndex = getColumnIndex(column);
-        var mapping = new BeanCellMapping(config.getTableStartRow() - 1, (short) columnIndex, tableItemBeanName, property + ".raw");
-        mapping.setNullAllowed(nullAllowed);
-        mapping.setType(Optional.ofNullable(type).orElse(String.class.getCanonicalName()));
+        var fullPropertyName = property;
+        if (!keyProp){
+            fullPropertyName += ".raw";
+        }
+        var mapping = new BeanCellMapping(config.getTableStartRow() - 1, (short) columnIndex, tableItemBeanName, fullPropertyName);
+        mapping.setNullAllowed(!keyProp);
+        mapping.setType(String.class.getCanonicalName());
         reader.addMapping(mapping);
     }
 

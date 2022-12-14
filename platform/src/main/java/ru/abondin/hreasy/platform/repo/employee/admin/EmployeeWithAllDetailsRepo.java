@@ -6,11 +6,16 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Set;
+
 @Repository
 public interface EmployeeWithAllDetailsRepo extends ReactiveCrudRepository<EmployeeWithAllDetailsEntry, Integer> {
 
     @Query("select * from empl.v_employee_detailed where email=:email")
-    Mono<EmployeeWithAllDetailsEntry> findByEmail(String email);
+    Mono<EmployeeWithAllDetailsEntry> findByEmailsInLowerCase(String email);
+
+    @Query("select * from empl.v_employee_detailed where lower(email) in (:emails)")
+    Flux<EmployeeWithAllDetailsEntry> findByEmailsInLowerCase(Set<String> emails);
 
     @Query("select * from empl.v_employee_detailed order by display_name")
     Flux<EmployeeWithAllDetailsWithBaView> findAllDetailed();

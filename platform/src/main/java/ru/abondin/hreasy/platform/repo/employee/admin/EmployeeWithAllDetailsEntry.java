@@ -42,4 +42,6 @@ public class EmployeeWithAllDetailsEntry extends EmployeeEntry {
     @Column("spouse_name")
     private String spouseName;
     private String children;
+    @Column("ext_erp_id")
+    private String extErpId;
 }

@@ -4,6 +4,9 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Configuration
 @ConfigurationProperties(prefix = "hreasy.common")
 @Data
@@ -29,4 +32,13 @@ public class HrEasyCommonProps {
      * Default system account to send information via email
      */
     private String defaultEmailFrom;
+
+    private ImportEmployeeProps importEmployee = new ImportEmployeeProps();
+
+    @Data
+    public static class ImportEmployeeProps {
+        private String dateFormat="dd.MM.yyyy";
+        private List<String> sexManVariants = Arrays.asList("м", "муж", "мужской");
+        private List<String> sexWomanVariants = Arrays.asList("ж", "жеж", "женский");
+    }
 }

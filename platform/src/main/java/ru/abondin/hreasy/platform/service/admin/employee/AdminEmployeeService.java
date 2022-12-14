@@ -63,7 +63,7 @@ public class AdminEmployeeService {
         log.info("Create new employee {} by {}", body, auth.getUsername());
         var now = dateTimeService.now();
         return securityValidator.validateEditEmployee(auth)
-                .flatMap(s -> employeeRepo.findByEmail(body.getEmail()))
+                .flatMap(s -> employeeRepo.findByEmailsInLowerCase(body.getEmail()))
                 .defaultIfEmpty(EMPTY_INSTANCE)
                 .flatMap(existing -> {
                     if (existing == EMPTY_INSTANCE) {
