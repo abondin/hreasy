@@ -38,7 +38,9 @@ public class HrEasyCommonProps {
     @Data
     public static class ImportEmployeeProps {
         private String dateFormat="dd.MM.yyyy";
-        private List<String> sexManVariants = Arrays.asList("м", "муж", "мужской");
-        private List<String> sexWomanVariants = Arrays.asList("ж", "жеж", "женский");
+        private List<String> sexMaleVariants = Arrays.asList("м", "муж", "мужской");
+        private String sexDefaultMaleValue="Мужской";
+        private List<String> sexFemaleVariants = Arrays.asList("ж", "жеж", "женский");
+        private String sexDefaultFemaleValue="Женский";
     }
 }

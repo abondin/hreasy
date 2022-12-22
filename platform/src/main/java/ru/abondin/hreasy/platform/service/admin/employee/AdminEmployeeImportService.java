@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.service.admin.employee;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -56,7 +55,10 @@ public class AdminEmployeeImportService {
         this.formatter = DateTimeFormatter.ofPattern(props.getImportEmployee().getDateFormat());
     }
 
-    public Mono<ImportEmployeesWorkflowDto> startImportProcess(AuthContext auth, EmployeeImportConfig config, Resource inputFile) {
+    public Mono<ImportEmployeesWorkflowDto> startImportProcess(AuthContext auth,
+                                                               EmployeeImportConfig config,
+                                                               Resource inputFile,
+                                                               Locale locale) {
         log.info("Start import employee process by {}", auth.getUsername());
         final OffsetDateTime now = dateTimeService.now();
         try {
@@ -72,7 +74,7 @@ public class AdminEmployeeImportService {
                                             // 3. Load employees
                                             return emplRepo.findByEmailsInLowerCase(
                                                     fromExcel.stream().map(
-                                                                    e -> e.getEmail().trim().toLowerCase(Locale.getDefault()))
+                                                                    e -> e.getEmail().trim().toLowerCase(locale))
                                                             .collect(Collectors.toSet())
                                             ).collectList().flatMap(employees ->
                                                     // 4. Merge excel with existing employees and find the diff
@@ -96,12 +98,12 @@ public class AdminEmployeeImportService {
     }
 
     private void parseRawData(ImportEmployeeExcelDto excelRow, ImportContext context) {
-        var existingEmpl = context.employees.stream().filter(e -> e.getEmail().trim().toLowerCase(Locale.getDefault())
-                .equals(excelRow.getEmail().toLowerCase(Locale.getDefault()).trim())).findFirst();
+        var existingEmpl = context.employees.stream().filter(e -> e.getEmail().trim().toLowerCase(context.locale)
+                .equals(excelRow.getEmail().toLowerCase(context.locale).trim())).findFirst();
 
         apply(excelRow.getBirthday(), existingEmpl, EmployeeWithAllDetailsEntry::getBirthday, context, this::applyLocalDate);
-        apply(excelRow.getDepartment(), existingEmpl, EmployeeWithAllDetailsEntry::getDepartmentId, context, (p, c) -> applyDict(p, c.departments));
-        apply(excelRow.getPosition(), existingEmpl, EmployeeWithAllDetailsEntry::getPositionId, context, (p, c) -> applyDict(p, c.positions));
+        apply(excelRow.getDepartment(), existingEmpl, EmployeeWithAllDetailsEntry::getDepartmentId, context, (p, c) -> applyDict(p, c, c.departments));
+        apply(excelRow.getPosition(), existingEmpl, EmployeeWithAllDetailsEntry::getPositionId, context, (p, c) -> applyDict(p, c, c.positions));
         apply(excelRow.getDisplayName(), existingEmpl, EmployeeWithAllDetailsEntry::getDisplayName, context, this::applyStringWithTrim);
 
         apply(excelRow.getDisplayName(), existingEmpl, EmployeeWithAllDetailsEntry::getDisplayName, context, this::applyStringWithTrim);
@@ -127,50 +129,53 @@ public class AdminEmployeeImportService {
                            ImportContext context,
                            BiConsumer<ImportEmployeeExcelDto.DataProperty<T>, ImportContext> mapper) {
         prop.setCurrentValue(existingEmployee.map(existingEmployeeProp).orElse(null));
-        mapper.accept(prop, context);
+        if (prop.getRaw() != null) {
+            mapper.accept(prop, context);
+        }
     }
 
-    private void applyDict(ImportEmployeeExcelDto.DataProperty<Integer> prop, List<SimpleDictDto> dict) {
-        if (prop.getRaw() != null) {
-            var value = prop.getRaw().trim().toLowerCase(Locale.getDefault());
-            var key = dict
-                    .stream()
-                    .filter(d -> d.getName().toLowerCase(Locale.getDefault()).trim().equals(value))
-                    .findFirst();
-            if (key.isPresent()) {
-                prop.setImportedValue(key.get().getId());
-            } else {
-                prop.setError(i18n.localize("errors.import.not_in_dict"));
-            }
+    private void applyDict(ImportEmployeeExcelDto.DataProperty<Integer> prop,
+                           ImportContext context,
+                           List<SimpleDictDto> dict) {
+        var value = prop.getRaw().trim().toLowerCase(context.locale);
+        var key = dict
+                .stream()
+                .filter(d -> d.getName().toLowerCase(context.locale).trim().equals(value))
+                .findFirst();
+        if (key.isPresent()) {
+            prop.setImportedValue(key.get().getId());
+        } else {
+            prop.setError(i18n.localize("errors.import.not_in_dict"));
         }
     }
 
     private void applyLocalDate(ImportEmployeeExcelDto.DataProperty<LocalDate> prop, ImportContext ctx) {
-        if (prop.getRaw() != null) {
-            try {
-                var date = formatter.parse(prop.getRaw().trim(), LocalDate::from);
-                prop.setImportedValue(date);
-            } catch (DateTimeParseException ex) {
-                prop.setError(i18n.localize("errors.import.invalid_date_format", props.getImportEmployee().getDateFormat()));
-            }
+        try {
+            var date = formatter.parse(prop.getRaw().trim(), LocalDate::from);
+            prop.setImportedValue(date);
+        } catch (DateTimeParseException ex) {
+            prop.setError(i18n.localize("errors.import.invalid_date_format", props.getImportEmployee().getDateFormat()));
         }
     }
 
     private void applyStringWithTrim(ImportEmployeeExcelDto.DataProperty<String> prop, ImportContext ctx) {
-        prop.setImportedValue(prop.getImportedValue() == null ? null : prop.getImportedValue().trim());
+        prop.setImportedValue(prop.getRaw().trim());
     }
 
     private void applySex(ImportEmployeeExcelDto.DataProperty<String> prop, ImportContext ctx) {
-
+        var value = prop.getRaw().toLowerCase(ctx.locale).replaceAll("\\W", "");
+        if (props.getImportEmployee().getSexMaleVariants().contains(value)) {
+            prop.setImportedValue(props.getImportEmployee().getSexDefaultMaleValue());
+        } else if (props.getImportEmployee().getSexFemaleVariants().contains(value)) {
+            prop.setImportedValue(props.getImportEmployee().getSexDefaultFemaleValue());
+        } else {
+            prop.setError(i18n.localize("errors.import.not_in_dict"));
+        }
     }
 
 
-    @Data
-    @RequiredArgsConstructor
-    private static class ImportContext {
-        private final List<EmployeeWithAllDetailsEntry> employees;
-        private final List<SimpleDictDto> positions;
-        private final List<SimpleDictDto> departments;
+    private record ImportContext(List<EmployeeWithAllDetailsEntry> employees, List<SimpleDictDto> positions,
+                                 List<SimpleDictDto> departments, Locale locale) {
     }
 
 }

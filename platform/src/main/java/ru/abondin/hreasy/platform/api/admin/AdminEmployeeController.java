@@ -3,11 +3,14 @@ package ru.abondin.hreasy.platform.api.admin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeExportService;
+import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeImportService;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 
@@ -25,6 +28,8 @@ public class AdminEmployeeController {
 
     private final AdminEmployeeService employeeService;
     private final AdminEmployeeExportService exportService;
+
+    private final AdminEmployeeImportService importService;
 
 
     @GetMapping
@@ -71,5 +76,19 @@ public class AdminEmployeeController {
     public Mono<Integer> createKid(@PathVariable int employeeId, @PathVariable int kidId, @RequestBody @Valid CreateOrUpdateEmployeeKidBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> employeeService.updateKid(auth, employeeId, kidId, body));
     }
+
+
+    @PostMapping("/import")
+    public Mono<ImportEmployeesWorkflowDto> startImportProcess(Locale locale,
+                                                               @RequestBody EmployeeImportConfig config,
+                                                               @RequestPart("file") Mono<FilePart> multipartFile,
+                                                               @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength
+    ) {
+        return AuthHandler.currentAuth().flatMap(auth ->
+                multipartFile.flatMap(filePart -> {
+                    return importService.startImportProcess(auth, config, filePart.content(), locale);
+                }));
+    }
+
 
 }
