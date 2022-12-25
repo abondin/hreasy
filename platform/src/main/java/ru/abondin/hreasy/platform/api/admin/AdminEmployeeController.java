@@ -10,9 +10,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeExportService;
-import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeImportService;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeImportService;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeesWorkflowDto;
 
 import javax.validation.Valid;
 import java.util.Locale;
@@ -79,20 +81,28 @@ public class AdminEmployeeController {
 
 
     @PostMapping("/import")
-    public Mono<ImportEmployeesWorkflowDto> startImportProcess(Locale locale,
-                                                               @RequestPart("file") Mono<FilePart> multipartFile,
-                                                               @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength
+    public Mono<ImportEmployeesWorkflowDto> getActiveOrStartNewImportProcess() {
+        return AuthHandler.currentAuth().flatMap(auth -> importService.getActiveOrStartNewImportProcess(auth));
+    }
+
+    @PostMapping("/import/{processId}/upload")
+    public Mono<ImportEmployeesWorkflowDto> uploadImportFile(
+            @PathVariable Integer processId,
+            @RequestPart("file") Mono<FilePart> multipartFile,
+            @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength
     ) {
         return AuthHandler.currentAuth().flatMap(auth ->
-                multipartFile.flatMap(filePart -> {
-                    return importService.startImportProcess(auth, filePart.content(), locale);
-                }));
+                multipartFile.flatMap(filePart -> importService.uploadImportFile(auth,
+                        processId,
+                        filePart,
+                        contentLength)));
     }
 
-    @PostMapping("/import")
-    public Mono<ImportEmployeesWorkflowDto> startNewOrGetCurrentImportProcess(Locale locale) {
-        return AuthHandler.currentAuth().flatMap(auth -> importService.startNewOrGetCurrentImportProcess(auth));
+    @PostMapping("/import/{processId}/preview")
+    public Mono<ImportEmployeesWorkflowDto> applyConfigAndPreview(@PathVariable Integer processId,
+                                                                  @RequestBody EmployeeImportConfig config,
+                                                                  Locale locale) {
+        return AuthHandler.currentAuth().flatMap(auth -> importService.applyConfigAndPreview(auth, processId, config, locale));
     }
-
 
 }

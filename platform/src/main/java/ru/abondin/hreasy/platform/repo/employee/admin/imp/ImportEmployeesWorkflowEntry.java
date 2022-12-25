@@ -5,13 +5,21 @@ import io.r2dbc.postgresql.codec.Json;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeeExcelDto;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelDto;
 
 import java.time.OffsetDateTime;
 
 @Data
 @Table("empl.import_workflow")
 public class ImportEmployeesWorkflowEntry {
+
+    public static int STATE_CREATED=0;
+    public static int STATE_FILE_UPLOADED=1;
+    public static int STATE_CONFIGURATION_SET=2;
+    public static int STATE_CHANGES_APPLIED=3;
+    public static int STATE_ABORTED=-1;
+
+
     @Id
     private Integer id;
 

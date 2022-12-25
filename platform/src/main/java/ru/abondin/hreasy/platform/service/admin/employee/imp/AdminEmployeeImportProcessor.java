@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.platform.service.admin.employee;
+package ru.abondin.hreasy.platform.service.admin.employee.imp;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,20 +10,16 @@ import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
-import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportEmployeesWorkflowEntry;
-import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportEmployeesWorkflowRepo;
-import ru.abondin.hreasy.platform.service.DateTimeService;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeImportConfig;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeImportMapper;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeeExcelDto;
-import ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeesWorkflowDto;
+import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelDto;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeesWorkflowDto;
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -33,22 +29,21 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Parse excel, validate and format all fields, find dicts by text value, prepare diff with database patch
+ */
 @Service
-@RequiredArgsConstructor
 @Slf4j
-public class AdminEmployeeImportService {
-    private final DictService dictService;
-    private final AdminEmployeeExcelImporter exporter;
-    private final ImportEmployeesWorkflowRepo workflowRepo;
-    private final DateTimeService dateTimeService;
-
-    private final EmployeeImportMapper importMapper;
-
+@RequiredArgsConstructor
+public class AdminEmployeeImportProcessor {
+    private final I18Helper i18n;
     private final HrEasyCommonProps props;
 
-    private final I18Helper i18n;
-
     private DateTimeFormatter formatter;
+
+    private final DictService dictService;
+    private final AdminEmployeeExcelImporter exporter;
+    private final EmployeeWithAllDetailsRepo emplRepo;
 
 
     @PostConstruct
@@ -56,84 +51,64 @@ public class AdminEmployeeImportService {
         this.formatter = DateTimeFormatter.ofPattern(props.getImportEmployee().getDateFormat());
     }
 
-    /**
-     * First step in import process.
-     *
-     * @param auth
-     * @return not completed or canceled process initiated by this user or start new import process
-     */
-    public Mono<ImportEmployeesWorkflowDto> startNewOrGetCurrentImportProcess(AuthContext auth) {
-        log.info("Start new import employee process by {}", auth.getUsername());
-        return workflowRepo.get(auth.getEmployeeInfo().getEmployeeId())
-                .switchIfEmpty(workflowRepo.save(defaultImportConfig(auth)))
-                .map(importMapper::fromEntry);
-    }
 
-    private ImportEmployeesWorkflowEntry defaultImportConfig(AuthContext auth) {
-        var entry = new ImportEmployeesWorkflowEntry();
-        entry.setState(0);
-        entry.setConfig(importMapper.config(new EmployeeImportConfig()));
-        entry.setCreatedAt(dateTimeService.now());
-        entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-        return entry;
-    }
-
-
-    public Mono<ImportEmployeesWorkflowDto> startImportProcess(AuthContext auth,
-                                                               EmployeeImportConfig config,
-                                                               Resource inputFile,
-                                                               Locale locale) {
-        log.info("Start import employee process by {}", auth.getUsername());
-        final OffsetDateTime now = dateTimeService.now();
-        try {
-            return
-                    // 1. Parse the Excel
-                    exporter.importEmployees(config, inputFile.getInputStream())
-                            .collectList()
-                            .flatMap(fromExcel -> {
-                                // 2. Load required dictionaries
-                                return Mono.zip(dictService.findPositions(auth)
-                                                .collectList(), dictService.findDepartments(auth).collectList())
-                                        .flatMap(dicts -> {
-                                            // 3. Load employees
-                                            return emplRepo.findByEmailsInLowerCase(
-                                                    fromExcel.stream().map(
-                                                                    e -> e.getEmail().trim().toLowerCase(locale))
-                                                            .collect(Collectors.toSet())
-                                            ).collectList().flatMap(employees ->
+    public Mono<List<ImportEmployeeExcelDto>> applyConfigAndParseExcelFile(AuthContext auth,
+                                                                               EmployeeImportConfig config,
+                                                                               Resource excel,
+                                                                               Locale locale) {
+        return Mono.defer(() -> {
+            try {
+                return Mono.just(excel.getInputStream());
+            } catch (IOException e) {
+                log.error("Unable to parse excel file", e);
+                return Mono.error(new BusinessError("errors.import.unexpectedError"));
+            }
+        }).flatMap(excelStream ->
+                // 1. Parse the Excel
+                exporter.importEmployees(config, excelStream)
+                        .collectList()
+                        .flatMap(fromExcel -> {
+                            // 2. Load required dictionaries
+                            return Mono.zip(dictService.findPositions(auth)
+                                            .collectList(), dictService.findDepartments(auth).collectList())
+                                    .flatMap(dicts -> {
+                                        // 3. Load employees
+                                        return emplRepo.findByEmailsInLowerCase(
+                                                fromExcel.stream().map(
+                                                                e -> e.getEmail().trim().toLowerCase(locale))
+                                                        .collect(Collectors.toSet())
+                                        ).collectList().map(employees -> {
                                                     // 4. Merge excel with existing employees and find the diff
-                                                    merge(fromExcel, new ImportContext(employees, dicts.getT1(), dicts.getT2())));
-                                        });
-                            });
-        } catch (IOException e) {
-            log.error("Unable to read excel file", e);
-            return Mono.error(new BusinessError("errors.import.unexpectedError"));
-        }
+                                                    merge(fromExcel, new ImportContext(employees, dicts.getT1(), dicts.getT2(), locale));
+                                                    return fromExcel;
+                                                }
+                                        );
+                                    });
+                        }));
     }
 
-    private Mono<ImportEmployeesWorkflowDto> merge(List<ImportEmployeeExcelDto> fromExcel,
-                                                   ImportContext context) {
-        var result = new ImportEmployeesWorkflowDto();
+
+    private void merge(List<ImportEmployeeExcelDto> fromExcel,
+                       ImportContext context) {
         for (var excelRow : fromExcel) {
             parseRawData(excelRow, context);
         }
-        result.setData(fromExcel);
-        return Mono.just(result);
     }
 
     private void parseRawData(ImportEmployeeExcelDto excelRow, ImportContext context) {
         var existingEmpl = context.employees.stream().filter(e -> e.getEmail().trim().toLowerCase(context.locale)
                 .equals(excelRow.getEmail().toLowerCase(context.locale).trim())).findFirst();
 
+        excelRow.setEmployeeId(existingEmpl.map(EmployeeWithAllDetailsEntry::getId).orElse(null));
+
         apply(excelRow.getBirthday(), existingEmpl, EmployeeWithAllDetailsEntry::getBirthday, context, this::applyLocalDate);
         apply(excelRow.getDepartment(), existingEmpl, EmployeeWithAllDetailsEntry::getDepartmentId, context, (p, c) -> applyDict(p, c, c.departments));
         apply(excelRow.getPosition(), existingEmpl, EmployeeWithAllDetailsEntry::getPositionId, context, (p, c) -> applyDict(p, c, c.positions));
         apply(excelRow.getDisplayName(), existingEmpl, EmployeeWithAllDetailsEntry::getDisplayName, context, this::applyStringWithTrim);
-
-        apply(excelRow.getDisplayName(), existingEmpl, EmployeeWithAllDetailsEntry::getDisplayName, context, this::applyStringWithTrim);
         apply(excelRow.getDateOfDismissal(), existingEmpl, EmployeeWithAllDetailsEntry::getDateOfDismissal, context, this::applyLocalDate);
         apply(excelRow.getDateOfEmployment(), existingEmpl, EmployeeWithAllDetailsEntry::getDateOfEmployment, context, this::applyLocalDate);
         apply(excelRow.getDocumentIssuedDate(), existingEmpl, EmployeeWithAllDetailsEntry::getDocumentIssuedDate, context, this::applyLocalDate);
+        apply(excelRow.getDocumentIssuedBy(), existingEmpl, EmployeeWithAllDetailsEntry::getDocumentIssuedBy, context, this::applyStringWithTrim);
         apply(excelRow.getDocumentSeries(), existingEmpl, EmployeeWithAllDetailsEntry::getDocumentSeries, context, this::applyStringWithTrim);
         apply(excelRow.getDocumentNumber(), existingEmpl, EmployeeWithAllDetailsEntry::getDocumentNumber, context, this::applyStringWithTrim);
         apply(excelRow.getExternalErpId(), existingEmpl, EmployeeWithAllDetailsEntry::getExtErpId, context, this::applyStringWithTrim);
@@ -141,9 +116,6 @@ public class AdminEmployeeImportService {
         // TODO Set phone datatype in database to string
         // apply(excelRow.getPhone(), existingEmpl, EmployeeWithAllDetailsEntry::getPhone, context, this::applyStringWithTrim);
         apply(excelRow.getSex(), existingEmpl, EmployeeWithAllDetailsEntry::getSex, context, this::applySex);
-        apply(excelRow.getDisplayName(), existingEmpl, EmployeeWithAllDetailsEntry::getDisplayName, context, this::applyStringWithTrim);
-
-
     }
 
 
@@ -197,9 +169,7 @@ public class AdminEmployeeImportService {
         }
     }
 
-
     private record ImportContext(List<EmployeeWithAllDetailsEntry> employees, List<SimpleDictDto> positions,
                                  List<SimpleDictDto> departments, Locale locale) {
     }
-
 }

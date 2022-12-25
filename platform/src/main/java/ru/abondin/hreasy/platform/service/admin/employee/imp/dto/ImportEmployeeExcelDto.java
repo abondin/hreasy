@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.platform.service.admin.employee.dto;
+package ru.abondin.hreasy.platform.service.admin.employee.imp.dto;
 
 
 import lombok.Data;

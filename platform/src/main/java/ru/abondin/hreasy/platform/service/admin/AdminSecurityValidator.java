@@ -130,6 +130,16 @@ public class AdminSecurityValidator {
         });
     }
 
+    public Mono<Boolean> validateImportEmployee(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("import_employee")) {
+                return Mono.error(new AccessDeniedException("Only user with permission edit_employee_full can import " +
+                        "employees from file"));
+            }
+            return Mono.just(true);
+        });
+    }
+
     public Mono<Boolean> validateViewEmployeeFull(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("view_employee_full")) {
