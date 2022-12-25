@@ -80,14 +80,18 @@ public class AdminEmployeeController {
 
     @PostMapping("/import")
     public Mono<ImportEmployeesWorkflowDto> startImportProcess(Locale locale,
-                                                               @RequestBody EmployeeImportConfig config,
                                                                @RequestPart("file") Mono<FilePart> multipartFile,
                                                                @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength
     ) {
         return AuthHandler.currentAuth().flatMap(auth ->
                 multipartFile.flatMap(filePart -> {
-                    return importService.startImportProcess(auth, config, filePart.content(), locale);
+                    return importService.startImportProcess(auth, filePart.content(), locale);
                 }));
+    }
+
+    @PostMapping("/import")
+    public Mono<ImportEmployeesWorkflowDto> startNewOrGetCurrentImportProcess(Locale locale) {
+        return AuthHandler.currentAuth().flatMap(auth -> importService.startNewOrGetCurrentImportProcess(auth));
     }
 
 

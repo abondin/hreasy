@@ -18,5 +18,16 @@ public class ImportEmployeesWorkflowDto {
     private int id;
     private int newEmployeesCnt;
     private int updatedEmployeesCnt;
+    /**
+     * <ul>
+     *     <li>0 - created</li>
+     *     <li>1 - file uploaded</li>
+     *     <li>2 - configuration set</li>
+     *     <li>3 - changes applied</li>
+     *     <li>-1 - aborted</>
+     * </ul>
+     */
+    private int state = 0;
+    private EmployeeImportConfig config;
     private List<ImportEmployeeExcelDto> data;
 }

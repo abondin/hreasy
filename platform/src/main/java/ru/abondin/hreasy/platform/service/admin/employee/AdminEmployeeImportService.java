@@ -10,10 +10,11 @@ import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
-import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
-import ru.abondin.hreasy.platform.repo.employee.admin.ImportEmployeesWorkflowRepo;
+import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportEmployeesWorkflowEntry;
+import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportEmployeesWorkflowRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeImportConfig;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeImportMapper;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeeExcelDto;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.ImportEmployeesWorkflowDto;
 import ru.abondin.hreasy.platform.service.dict.DictService;
@@ -36,12 +37,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminEmployeeImportService {
-    private final AdminEmployeeService employeeService;
     private final DictService dictService;
     private final AdminEmployeeExcelImporter exporter;
     private final ImportEmployeesWorkflowRepo workflowRepo;
     private final DateTimeService dateTimeService;
-    private final EmployeeWithAllDetailsRepo emplRepo;
+
+    private final EmployeeImportMapper importMapper;
 
     private final HrEasyCommonProps props;
 
@@ -54,6 +55,29 @@ public class AdminEmployeeImportService {
     public void postConstruct() {
         this.formatter = DateTimeFormatter.ofPattern(props.getImportEmployee().getDateFormat());
     }
+
+    /**
+     * First step in import process.
+     *
+     * @param auth
+     * @return not completed or canceled process initiated by this user or start new import process
+     */
+    public Mono<ImportEmployeesWorkflowDto> startNewOrGetCurrentImportProcess(AuthContext auth) {
+        log.info("Start new import employee process by {}", auth.getUsername());
+        return workflowRepo.get(auth.getEmployeeInfo().getEmployeeId())
+                .switchIfEmpty(workflowRepo.save(defaultImportConfig(auth)))
+                .map(importMapper::fromEntry);
+    }
+
+    private ImportEmployeesWorkflowEntry defaultImportConfig(AuthContext auth) {
+        var entry = new ImportEmployeesWorkflowEntry();
+        entry.setState(0);
+        entry.setConfig(importMapper.config(new EmployeeImportConfig()));
+        entry.setCreatedAt(dateTimeService.now());
+        entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
+        return entry;
+    }
+
 
     public Mono<ImportEmployeesWorkflowDto> startImportProcess(AuthContext auth,
                                                                EmployeeImportConfig config,
