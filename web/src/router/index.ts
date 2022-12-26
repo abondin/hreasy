@@ -26,6 +26,7 @@ import PageNotFoundComponent from "@/components/PageNotFoundComponent.vue";
 import AdminEmployeeAndKidsTabs from "@/components/admin/employee/AdminEmployeeAndKidsTabs.vue";
 import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
 import AdminProjectDetails from "@/components/admin/project/AdminProjectDetails.vue";
+import AdminEmployeesImportWorkflowComponent from "@/components/admin/employee/imp/AdminEmployeesImportWorkflow.vue";
 
 Vue.use(VueRouter)
 
@@ -52,8 +53,10 @@ const routes = [
         path: "/admin/employees",
         component: AdminEmployeeAndKidsTabs,
         children: [
-            {path: '', component: AdminEmployees},
-            {path: 'kids', component: AdminEmployeeKids}
+            {path: '', redirect: 'list'},
+            {path: 'list', component: AdminEmployees},
+            {path: 'kids', component: AdminEmployeeKids},
+            {path: 'import', component: AdminEmployeesImportWorkflowComponent}
         ]
     },
     {

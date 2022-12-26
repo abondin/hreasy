@@ -37,10 +37,10 @@ public class EmployeeImportConfig {
         private String birthday = "AM";
         private String sex = "AN";
         private String documentSeries = "AP";
-        private String documentNumberCell = "AQ";
-        private String documentIssuedDateCell = "AR";
-        private String documentIssuedByCell = "AS";
-        private String registrationAddressCell = "AU";
+        private String documentNumber = "AQ";
+        private String documentIssuedDate = "AR";
+        private String documentIssuedBy = "AS";
+        private String registrationAddress = "AU";
     }
 
 }

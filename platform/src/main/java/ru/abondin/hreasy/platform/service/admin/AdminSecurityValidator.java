@@ -133,7 +133,7 @@ public class AdminSecurityValidator {
     public Mono<Boolean> validateImportEmployee(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("import_employee")) {
-                return Mono.error(new AccessDeniedException("Only user with permission edit_employee_full can import " +
+                return Mono.error(new AccessDeniedException("Only user with permission import_employee can import " +
                         "employees from file"));
             }
             return Mono.just(true);

@@ -85,8 +85,8 @@ public class AdminEmployeeController {
         return AuthHandler.currentAuth().flatMap(auth -> importService.getActiveOrStartNewImportProcess(auth));
     }
 
-    @PostMapping("/import/{processId}/upload")
-    public Mono<ImportEmployeesWorkflowDto> uploadImportFile(
+    @PostMapping("/import/{processId}/excel")
+    public Mono<ImportEmployeesWorkflowDto> uploadExcelFile(
             @PathVariable Integer processId,
             @RequestPart("file") Mono<FilePart> multipartFile,
             @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength
@@ -98,7 +98,7 @@ public class AdminEmployeeController {
                         contentLength)));
     }
 
-    @PostMapping("/import/{processId}/preview")
+    @PostMapping("/import/{processId}/config")
     public Mono<ImportEmployeesWorkflowDto> applyConfigAndPreview(@PathVariable Integer processId,
                                                                   @RequestBody EmployeeImportConfig config,
                                                                   Locale locale) {
