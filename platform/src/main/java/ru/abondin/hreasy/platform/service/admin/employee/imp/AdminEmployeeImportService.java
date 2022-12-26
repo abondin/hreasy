@@ -53,7 +53,7 @@ public class AdminEmployeeImportService {
     @Transactional
     public Mono<ImportEmployeesWorkflowDto> getActiveOrStartNewImportProcess(AuthContext auth) {
         log.info("Get active or start new import employee process by {}", auth.getUsername());
-        return validator.validateImportEmployee(auth).then(workflowRepo.get(auth.getEmployeeInfo().getEmployeeId())
+        return validator.validateImportEmployee(auth).flatMap(f->workflowRepo.get(auth.getEmployeeInfo().getEmployeeId())
                 .switchIfEmpty(workflowRepo.save(defaultImportConfig(auth)))
                 .map(importMapper::fromEntry));
     }
@@ -68,15 +68,15 @@ public class AdminEmployeeImportService {
                                                              long contentLength) {
         log.info("Upload {} to {} import process by {}", filePart.filename(), processId, auth.getUsername());
         return validator.validateImportEmployee(auth)
-                .then(workflowRepo.findById(processId))
+                .flatMap(v->workflowRepo.findById(processId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
-                .flatMap(entry -> fileStorage.uploadFile(getImportEmployeeFolder(processId), Integer.toString(processId), filePart, contentLength)
+                .flatMap(entry -> fileStorage.uploadFile(getImportEmployeeFolder(auth.getEmployeeInfo().getEmployeeId()), Integer.toString(processId), filePart, contentLength)
                         .then(Mono.defer(() -> {
                             entry.setFilename(filePart.filename());
                             entry.setFileContentLength(contentLength);
                             entry.setState(ImportEmployeesWorkflowEntry.STATE_FILE_UPLOADED);
                             entry.setData(null);
-                            entry.setConfig(null);
+                            entry.setConfig(importMapper.config(new EmployeeImportConfig()));
                             return workflowRepo.save(entry);
                         }))).map(importMapper::fromEntry);
     }
@@ -94,7 +94,7 @@ public class AdminEmployeeImportService {
     public Mono<ImportEmployeesWorkflowDto> applyConfigAndPreview(AuthContext auth, Integer processId, EmployeeImportConfig config, Locale locale) {
         return validator.validateImportEmployee(auth)
                 // 1. Get import workflow in the database
-                .then(workflowRepo.findById(processId))
+                .flatMap(v->workflowRepo.findById(processId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
                 // 2. Read the Excel file, stored at file system on previous step
                 .flatMap(entry -> fileStorage.streamFile

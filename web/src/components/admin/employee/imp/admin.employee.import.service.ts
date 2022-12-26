@@ -20,7 +20,8 @@ export interface ImportEmployeesWorkflow {
      */
     state: number,
     config: EmployeeImportConfig | null,
-    data: ImportEmployeeExcelRow[]
+    filename: string | null,
+    data: ImportEmployeeExcelRows
 }
 
 export interface EmployeeImportConfig {
@@ -44,13 +45,13 @@ export interface EmployeeImportConfigColumns {
     birthday: string | null,
     sex: string | null,
     documentSeries: string | null,
-    documentNumberCell: string | null,
+    documentNumber: string | null,
     documentIssuedDate: string | null,
     documentIssuedBy: string | null,
     registrationAddress: string | null
 }
 
-export interface ImportEmployeeExcelRow {
+export interface ImportEmployeeExcelRows {
     email: string,
     employeeId: number | null,
     displayName: ExcelRowDataProperty<string>,
