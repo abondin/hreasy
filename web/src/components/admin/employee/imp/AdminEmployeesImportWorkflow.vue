@@ -22,7 +22,11 @@
       </v-stepper-header>
       <v-stepper-items>
         <v-stepper-content step="0">
-          Выберите файл для загрузки
+          <file-upload
+              :file-id="'process-'+workflow.id"
+              :post-action="getUploadImportFileUrl()"
+              @close="uploadComplete"
+          ></file-upload>
         </v-stepper-content>
         <v-stepper-content step="1">
           Задайте конфигурацию
@@ -41,10 +45,11 @@ import Vue from 'vue'
 import Component from 'vue-class-component';
 import adminEmployeeImportService, {ImportEmployeesWorkflow} from "@/components/admin/employee/imp/admin.employee.import.service";
 import {errorUtils} from "@/components/errors";
+import MyFileUploader from "@/components/shared/MyFileUploader.vue";
 
 
 @Component({
-  components: {}
+  components: {'file-upload': MyFileUploader}
 })
 export default class AdminEmployeesImportWorkflowComponent extends Vue {
   loading = false;
@@ -61,9 +66,24 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
 
   private fetchData() {
     this.loading = true;
-    adminEmployeeImportService.getActiveOrStartNewImportProcess().then(data => this.workflow = data)
+    adminEmployeeImportService.getActiveOrStartNewImportProcess().then(data => {
+      this.workflow = data;
+      this.refreshStep(this.workflow)
+    })
         .catch((er: any) => this.error = errorUtils.shortMessage(er))
         .finally(() => this.loading = false);
+  }
+
+  private getUploadImportFileUrl() {
+    return adminEmployeeImportService.getUploadImportFileUrl(this.workflow!.id);
+  }
+
+  private uploadComplete() {
+    return this.fetchData();
+  }
+
+  private refreshStep(workflow: ImportEmployeesWorkflow) {
+    this.step = workflow.state;
   }
 
 }

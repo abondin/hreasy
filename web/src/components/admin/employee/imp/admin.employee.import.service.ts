@@ -79,7 +79,7 @@ export interface ExcelRowDataProperty<T> {
 export interface AdminEmployeeImportService {
     getActiveOrStartNewImportProcess(): Promise<ImportEmployeesWorkflow>;
 
-    uploadImportFile(processId: number, formData: FormData): Promise<ImportEmployeesWorkflow>;
+    getUploadImportFileUrl(processId: number): string;
 
     applyConfigAndPreview(processId: number, config: EmployeeImportConfig): Promise<ImportEmployeesWorkflow>;
 
@@ -101,12 +101,8 @@ class RestAdminEmployeeImportService implements AdminEmployeeImportService {
             });
     }
 
-    uploadImportFile(processId: number, formData: FormData): Promise<ImportEmployeesWorkflow> {
-        return httpService.post(`v1/admin/employees/import/${processId}/excel`, formData)
-            .then((response: AxiosResponse<ImportEmployeesWorkflow>) => {
-                return response.data;
-            });
-
+    getUploadImportFileUrl(processId: number): string {
+        return `${httpService.defaults.baseURL}v1/admin/employees/import/${processId}/file`;
     }
 
     applyConfigAndPreview(processId: number, config: EmployeeImportConfig): Promise<ImportEmployeesWorkflow> {

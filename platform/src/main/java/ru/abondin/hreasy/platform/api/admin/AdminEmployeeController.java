@@ -85,7 +85,7 @@ public class AdminEmployeeController {
         return AuthHandler.currentAuth().flatMap(auth -> importService.getActiveOrStartNewImportProcess(auth));
     }
 
-    @PostMapping("/import/{processId}/excel")
+    @PostMapping("/import/{processId}/file")
     public Mono<ImportEmployeesWorkflowDto> uploadExcelFile(
             @PathVariable Integer processId,
             @RequestPart("file") Mono<FilePart> multipartFile,

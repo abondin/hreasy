@@ -71,14 +71,14 @@ public class AdminEmployeeImportService {
                 .then(workflowRepo.findById(processId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
                 .flatMap(entry -> fileStorage.uploadFile(getImportEmployeeFolder(processId), Integer.toString(processId), filePart, contentLength)
-                        .flatMap(v -> {
+                        .then(Mono.defer(() -> {
                             entry.setFilename(filePart.filename());
                             entry.setFileContentLength(contentLength);
                             entry.setState(ImportEmployeesWorkflowEntry.STATE_FILE_UPLOADED);
                             entry.setData(null);
                             entry.setConfig(null);
                             return workflowRepo.save(entry);
-                        })).map(importMapper::fromEntry);
+                        }))).map(importMapper::fromEntry);
     }
 
 
