@@ -83,7 +83,7 @@
         <v-stepper-content step="3">
           Подвердите результат
         </v-stepper-content>
-        
+
         <!--</editor-fold>-->
       </v-stepper-items>
     </v-stepper>
@@ -111,7 +111,6 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
   config: EmployeeImportConfig = this.defaultConfig();
   workflow: ImportEmployeesWorkflow | null = null;
   error: string | null = null;
-
 
   /**
    * Lifecycle hook
