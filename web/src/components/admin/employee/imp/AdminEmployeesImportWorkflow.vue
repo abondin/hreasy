@@ -33,49 +33,8 @@
 
         <!--<editor-fold desc="Configuration">-->
         <v-stepper-content step="2">
-          <v-card>
-            <v-card-text>
-              <v-form name="workflowConfigForm">
-                <v-subheader>{{ $t('Общие настройки') }}</v-subheader>
-                <v-container>
-                  <v-row>
-                    <v-col>
-                      <v-text-field
-                          :label="$t('Порядковый номер листа в документе')"
-                          v-model="config.sheetNumber"
-                          :rules="[v=>(!v || v.length <= 3 || $t('Не более N символов', {n:3}))]"
-                          dense>
-                      </v-text-field>
-                      <v-text-field
-                          :label="$t('Порядковый номер первой строки с данными')"
-                          v-model="config.tableStartRow"
-                          :rules="[v=>(!v || v.length <= 3 || $t('Не более N символов', {n:3}))]"
-                          dense>
-                      </v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-                <v-subheader>{{ $t('Названия (анлгийские буквы) или порядковые номера столбцов') }}</v-subheader>
-                <v-container>
-                  <v-row>
-                    <v-col cols="6" lg="4" v-for="(value, propertyName) in config.columns"
-                           v-bind:key="propertyName">
-                      <v-text-field
-                          :label="$t('IMPORT_CONFIG.'+propertyName)"
-                          v-model="config.columns[propertyName]"
-                          :rules="[v=>(!v || v.length <= 3 || $t('Не более N символов', {n:3}))]"
-                          dense>
-                      </v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-form>
-            </v-card-text>
-            <v-card-actions>
-              <v-btn @click="step=1">{{ $t('Выбрать другой файл') }}</v-btn>
-              <v-btn @click="updateConfig()">{{ $t('Применить настройки') }}</v-btn>
-            </v-card-actions>
-          </v-card>
+          <admin-employees-import-config-form :config="config" @back="step=1" @apply="updateConfig()">
+          </admin-employees-import-config-form>
         </v-stepper-content>
         <!--</editor-fold>-->
 
@@ -100,10 +59,11 @@ import adminEmployeeImportService, {
 } from "@/components/admin/employee/imp/admin.employee.import.service";
 import {errorUtils} from "@/components/errors";
 import MyFileUploader from "@/components/shared/MyFileUploader.vue";
+import AdminEmployeesImportConfigForm from "@/components/admin/employee/imp/AdminEmployeesImportConfigForm.vue";
 
 
 @Component({
-  components: {'file-upload': MyFileUploader}
+  components: {AdminEmployeesImportConfigForm, 'file-upload': MyFileUploader}
 })
 export default class AdminEmployeesImportWorkflowComponent extends Vue {
   loading = false;
