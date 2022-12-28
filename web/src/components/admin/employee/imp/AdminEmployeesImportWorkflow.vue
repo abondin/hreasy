@@ -40,7 +40,9 @@
 
         <!--<editor-fold desc="Preview">-->
         <v-stepper-content step="3">
-          Подвердите результат
+          <admin-employees-import-preview :data="workflow.data" v-if="workflow.data"></admin-employees-import-preview>
+          <v-alert v-else type="warning">{{ $t('Не удалось корректно обратотать файл. Загрузите другой или измените конфигурацию') }}
+          </v-alert>
         </v-stepper-content>
 
         <!--</editor-fold>-->
@@ -60,10 +62,11 @@ import adminEmployeeImportService, {
 import {errorUtils} from "@/components/errors";
 import MyFileUploader from "@/components/shared/MyFileUploader.vue";
 import AdminEmployeesImportConfigForm from "@/components/admin/employee/imp/AdminEmployeesImportConfigForm.vue";
+import AdminEmployeesImportPreview from "@/components/admin/employee/imp/AdminEmployeesImportPreview.vue";
 
 
 @Component({
-  components: {AdminEmployeesImportConfigForm, 'file-upload': MyFileUploader}
+  components: {AdminEmployeesImportPreview, AdminEmployeesImportConfigForm, 'file-upload': MyFileUploader}
 })
 export default class AdminEmployeesImportWorkflowComponent extends Vue {
   loading = false;
@@ -80,14 +83,12 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
   }
 
   private fetchData() {
-    this.loading = true;
-    adminEmployeeImportService.getActiveOrStartNewImportProcess().then(data => {
-      this.workflow = data;
-      this.config = data.config || this.defaultConfig();
-      this.refreshStep(this.workflow)
-    })
-        .catch((er: any) => this.error = errorUtils.shortMessage(er))
-        .finally(() => this.loading = false);
+    return this.wrapServerRequest(
+        adminEmployeeImportService.getActiveOrStartNewImportProcess().then(data => {
+          this.workflow = data;
+          this.config = data.config || this.defaultConfig();
+          this.refreshStep(this.workflow)
+        }));
   }
 
   private getUploadImportFileUrl() {
@@ -99,12 +100,12 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
   }
 
   private updateConfig() {
-    return adminEmployeeImportService
+    return this.wrapServerRequest(adminEmployeeImportService
         .applyConfigAndPreview(this.workflow!.id, this.config!)
         .then(data => {
           this.workflow = data;
           this.refreshStep(this.workflow);
-        });
+        }));
   }
 
   private refreshStep(workflow: ImportEmployeesWorkflow) {
@@ -135,6 +136,12 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
     }
   }
 
+  private wrapServerRequest<T>(request: Promise<T>): Promise<string | T> {
+    this.loading = true;
+    return request
+        .catch((er: any) => this.error = errorUtils.shortMessage(er))
+        .finally(() => this.loading = false);
+  }
 }
 </script>
 

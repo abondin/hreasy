@@ -106,6 +106,7 @@ public class AdminEmployeeImportService {
                                         .flatMap(data -> {
                                             entry.setConfig(importMapper.config(config));
                                             entry.setData(importMapper.data(data));
+                                            entry.setState(ImportEmployeesWorkflowEntry.STATE_CONFIGURATION_SET);
                                             return workflowRepo.save(entry);
                                         }).map(importMapper::fromEntry)
                         )

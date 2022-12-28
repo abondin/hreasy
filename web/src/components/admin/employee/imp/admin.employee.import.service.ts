@@ -21,7 +21,7 @@ export interface ImportEmployeesWorkflow {
     state: number,
     config: EmployeeImportConfig | null,
     filename: string | null,
-    data: ImportEmployeeExcelRows
+    data: ImportEmployeeExcelRows[]
 }
 
 export interface EmployeeImportConfig {
