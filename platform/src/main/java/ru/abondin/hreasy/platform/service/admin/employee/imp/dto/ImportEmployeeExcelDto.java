@@ -4,6 +4,7 @@ package ru.abondin.hreasy.platform.service.admin.employee.imp.dto;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.stream.Stream;
 
 /**
  * Collection of all imported attributes.
@@ -25,6 +26,7 @@ public class ImportEmployeeExcelDto {
      * If employee found in database
      */
     private Integer employeeId;
+
     private DataProperty<String> displayName = new DataProperty<>();
     private DataProperty<String> externalErpId = new DataProperty<>();
     private DataProperty<String> phone = new DataProperty<>();
@@ -39,6 +41,33 @@ public class ImportEmployeeExcelDto {
     private DataProperty<LocalDate> documentIssuedDate = new DataProperty<>();
     private DataProperty<String> documentIssuedBy = new DataProperty<>();
     private DataProperty<String> registrationAddress = new DataProperty<>();
+
+    public int getErrorCount() {
+        return (int)allProperties().filter(p->p.getError()!=null).count();
+    }
+
+    public boolean isNew(){
+        return employeeId == null;
+    }
+
+    private Stream<DataProperty<?>> allProperties() {
+        return Stream.of(
+                displayName,
+                externalErpId,
+                phone,
+                department,
+                position,
+                dateOfEmployment,
+                dateOfDismissal,
+                birthday,
+                sex,
+                documentSeries,
+                documentNumber,
+                documentIssuedDate,
+                documentIssuedBy,
+                registrationAddress
+        );
+    }
 
     @Data
     public static class DataProperty<T> {

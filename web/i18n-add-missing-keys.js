@@ -38,20 +38,25 @@ console.log(`Create i18n and add missing keys to the locale files`);
 console.log(` -- vueFilesPattern: ${vueFilesPattern}`);
 console.log(` -- localeFilesPattern: ${localeFilesPattern}`);
 
-const VueI18NExtract = require('vue-i18n-extract').default;
+const VueI18NExtract = require('vue-i18n-extract');
 
-const report = VueI18NExtract.createI18NReport(vueFilesPattern, localeFilesPattern, {});
+const promise = VueI18NExtract.createI18NReport({
+    vueFiles: vueFilesPattern,
+    languageFiles: localeFilesPattern
+});
 
 
-console.log(JSON.stringify(report, undefined, 2));
 
-if (report.missingKeys) {
-    const missingKeys = groupBy(report.missingKeys, 'language');
-    console.log(`Adding missing keys to locale files ${Object.keys(missingKeys)}`);
-    for (let lang in missingKeys) {
-        appendMissingKey(lang, missingKeys[lang]);
+promise.then((report)=>{
+    console.log(JSON.stringify(report, undefined, 2));
+    if (report.missingKeys) {
+        const missingKeys = groupBy(report.missingKeys, 'language');
+        console.log(`Adding missing keys to locale files ${Object.keys(missingKeys)}`);
+        for (let lang in missingKeys) {
+            appendMissingKey(lang, missingKeys[lang]);
+        }
     }
-}
+})
 
 
 

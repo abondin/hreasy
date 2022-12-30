@@ -52,6 +52,8 @@ export interface EmployeeImportConfigColumns {
 }
 
 export interface ImportEmployeeExcelRows {
+    new: boolean,
+    errorCount: number,
     email: string,
     employeeId: number | null,
     displayName: ExcelRowDataProperty<string>,

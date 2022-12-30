@@ -159,7 +159,7 @@ public class AdminEmployeeImportProcessor {
     }
 
     private void applySex(ImportEmployeeExcelDto.DataProperty<String> prop, ImportContext ctx) {
-        var value = prop.getRaw().toLowerCase(ctx.locale).replaceAll("\\W", "");
+        var value = prop.getRaw().toLowerCase(ctx.locale).replaceAll("\\s", "");
         if (props.getImportEmployee().getSexMaleVariants().contains(value)) {
             prop.setImportedValue(props.getImportEmployee().getSexDefaultMaleValue());
         } else if (props.getImportEmployee().getSexFemaleVariants().contains(value)) {

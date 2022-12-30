@@ -40,8 +40,10 @@
 
         <!--<editor-fold desc="Preview">-->
         <v-stepper-content step="3">
-          <admin-employees-import-preview :data="workflow.data" v-if="workflow.data"></admin-employees-import-preview>
-          <v-alert v-else type="warning">{{ $t('Не удалось корректно обратотать файл. Загрузите другой или измените конфигурацию') }}
+          <admin-employees-import-preview :data="workflow.data" v-if="workflow.data"
+                                          @back="step=2" @apply="applyChanges()"></admin-employees-import-preview>
+          <v-alert v-else type="warning">
+            {{ $t('Не удалось корректно обратотать файл. Загрузите другой или измените конфигурацию') }}
           </v-alert>
         </v-stepper-content>
 
@@ -106,6 +108,16 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
           this.workflow = data;
           this.refreshStep(this.workflow);
         }));
+  }
+
+  private applyChanges() {
+    return this.wrapServerRequest(
+        adminEmployeeImportService.commit(this.workflow!.id)
+            .then(data => {
+              this.workflow = data;
+              this.refreshStep(this.workflow);
+            })
+    );
   }
 
   private refreshStep(workflow: ImportEmployeesWorkflow) {
