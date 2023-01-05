@@ -47,6 +47,10 @@ public class ImportEmployeeExcelDto {
         return (int) allProperties().filter(p -> p.getError() != null).count();
     }
 
+    public int getUpdatedCellsCount() {
+        return (int) allProperties().filter(p -> p.isUpdated()).count();
+    }
+
     public boolean isNew() {
         return employeeId == null;
     }

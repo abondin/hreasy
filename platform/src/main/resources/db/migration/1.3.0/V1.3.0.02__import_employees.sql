@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS empl.import_workflow (
     filename varchar(1024) NULL,
     file_content_length bigint NULL,
     config jsonb NULL,
-    data jsonb NULL
+    imported_rows jsonb NULL,
+    import_process_stats jsonb NULL
 );
 -- Allow only one active import workflow for user
 CREATE UNIQUE INDEX IF NOT EXISTS active_unique ON empl.import_workflow (created_by)
@@ -25,7 +26,8 @@ COMMENT ON COLUMN empl.import_workflow.completed_by IS 'Completed/Canceled by (l
 COMMENT ON COLUMN empl.import_workflow.filename IS 'Original uploaded filename';
 COMMENT ON COLUMN empl.import_workflow.file_content_length IS 'Uploaded file size';
 COMMENT ON COLUMN empl.import_workflow.config IS 'Workflow configuration';
-COMMENT ON COLUMN empl.import_workflow.data IS 'Workflow data changes preview';
+COMMENT ON COLUMN empl.import_workflow.imported_rows IS 'Workflow data changes preview';
+COMMENT ON COLUMN empl.import_workflow.import_process_stats IS 'Aggregated statistics of processed rows';
 
 INSERT INTO sec.perm (permission,description) VALUES
     ('import_employee','Import employees from file');

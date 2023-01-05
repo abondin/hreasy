@@ -19,8 +19,13 @@ public abstract class EmployeeImportMapper extends MapperBaseWithJsonSupport {
         return data == null ? null : Json.of(toJsonString(data));
     }
 
+    public Json stats(ImportProcessStats stats) {
+        return stats == null ? null : Json.of(toJsonString(stats));
+    }
+
     @Mapping(target = "config", qualifiedByName = "importEmployeeConfig", source = "config")
-    @Mapping(target = "data", qualifiedByName = "importEmployeeData", source = "data")
+    @Mapping(target = "importedRows", qualifiedByName = "importedRows", source = "importedRows")
+    @Mapping(target = "importProcessStats", qualifiedByName = "importProcessStats", source = "importProcessStats")
     public abstract ImportEmployeesWorkflowDto fromEntry(ImportEmployeesWorkflowEntry entry);
 
     @Named("importEmployeeConfig")
@@ -28,10 +33,13 @@ public abstract class EmployeeImportMapper extends MapperBaseWithJsonSupport {
         return fromJson(config, EmployeeImportConfig.class);
     }
 
-    @Named("importEmployeeData")
-    protected List<ImportEmployeeExcelDto> importEmployeeData(Json data) {
+    @Named("importedRows")
+    protected List<ImportEmployeeExcelDto> importedRows(Json data) {
         return listFromJson(data, ImportEmployeeExcelDto.class);
     }
 
-
+    @Named("importProcessStats")
+    protected ImportProcessStats importProcessStats(Json data) {
+        return fromJson(data, ImportProcessStats.class);
+    }
 }

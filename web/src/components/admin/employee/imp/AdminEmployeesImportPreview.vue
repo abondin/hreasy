@@ -1,6 +1,39 @@
 <!-- Employees admin table -->
 <template>
   <v-container>
+    <v-card v-if="workflow.importProcessStats" class="mb-2 pa-2">
+      <v-chip label dense class="mr-2">{{ $t('Количество обработанных строк') }}:
+        {{ workflow.importProcessStats.processedRows }}
+      </v-chip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-chip v-on="on" label dense class="mr-2" :class="{error:workflow.importProcessStats.errors>0}">
+            {{ $t('Количество ошибок') }}: {{ workflow.importProcessStats.errors }}
+          </v-chip>
+        </template>
+        {{ $t('Поля с ошибками обновляться не будут!') }}
+      </v-tooltip>
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-chip v-on="on" label dense class="mr-2">
+            {{ $t('Новых сотрудников') }}: {{ workflow.importProcessStats.newItems }}
+          </v-chip>
+        </template>
+        {{ $t('Количество новых сотрудников, которые будут добавлены в систему') }}
+      </v-tooltip>
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-chip v-on="on" label dense class="mr-2">
+            {{ $t('Сотрудников с изменениями') }}: {{ workflow.importProcessStats.updatedItems }}
+          </v-chip>
+        </template>
+        {{ $t('Количество сотрудников, которые будут обновлены в системе') }}
+      </v-tooltip>
+
+
+    </v-card>
     <v-card>
       <v-card-title>
         <v-text-field
@@ -16,14 +49,14 @@
             dense
             :headers="headers"
             :items-per-page="defaultItemsPerTablePage"
-            :items="data"
+            :items="workflow.importedRows"
             :search="filter.search"
             sort-by="displayName"
             class="text-truncate">
           <template v-slot:item.email="{item}">
             <v-tooltip right v-if="item.errorCount>0">
               <template v-slot:activator="{ on }">
-                <v-chip v-on="on" x-small class="error mr-1 pa-2" >{{ item.errorCount }}</v-chip>
+                <v-chip v-on="on" x-small class="error mr-1 pa-2">{{ item.errorCount }}</v-chip>
               </template>
               {{ $t('Количество ошибок при разборе документа') }}
             </v-tooltip>
@@ -55,7 +88,7 @@ import {UiConstants} from "@/components/uiconstants";
 import {Prop} from "vue-property-decorator";
 import {
   ExcelRowDataProperty,
-  ImportEmployeeExcelRows
+  ImportEmployeesWorkflow
 } from "@/components/admin/employee/imp/admin.employee.import.service";
 import ImportPreviewTableCell from "@/components/admin/employee/imp/ImportPreviewTableCell.vue";
 
@@ -72,7 +105,7 @@ export default class AdminEmployeesImportPreview extends Vue {
   headers: ImportPreviewDataHeader[] = [];
 
   @Prop({required: true})
-  data!: ImportEmployeeExcelRows[];
+  workflow!: ImportEmployeesWorkflow;
 
   private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
@@ -154,7 +187,7 @@ export default class AdminEmployeesImportPreview extends Vue {
 <style scoped lang="scss">
 @import 'import.scss';
 
-.table-cursor >>> tbody tr :hover {
+.table-cursor > > > tbody tr :hover {
   cursor: pointer;
 }
 

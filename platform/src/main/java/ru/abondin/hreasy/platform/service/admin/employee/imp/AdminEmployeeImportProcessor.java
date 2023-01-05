@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.service.admin.employee.imp;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -13,6 +14,7 @@ import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntr
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelDto;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportProcessStats;
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
@@ -51,39 +53,40 @@ public class AdminEmployeeImportProcessor {
     }
 
 
-    public Mono<List<ImportEmployeeExcelDto>> applyConfigAndParseExcelFile(AuthContext auth,
-                                                                           EmployeeImportConfig config,
-                                                                           Resource excel,
-                                                                           Locale locale) {
+    public Mono<ImportProcessingResult> applyConfigAndParseExcelFile(AuthContext auth,
+                                                                     EmployeeImportConfig config,
+                                                                     Resource excel,
+                                                                     Locale locale) {
         return Mono.defer(() -> {
-            try {
-                return Mono.just(excel.getInputStream());
-            } catch (IOException e) {
-                log.error("Unable to parse excel file", e);
-                return Mono.error(new BusinessError("errors.import.unexpectedError"));
-            }
-        }).flatMap(excelStream ->
-                // 1. Parse the Excel
-                exporter.importEmployees(config, excelStream)
-                        .collectList()
-                        .flatMap(fromExcel -> {
-                            // 2. Load required dictionaries
-                            return Mono.zip(dictService.findPositions(auth)
-                                            .collectList(), dictService.findDepartments(auth).collectList())
-                                    .flatMap(dicts -> {
-                                        // 3. Load employees
-                                        return emplRepo.findByEmailsInLowerCase(
-                                                fromExcel.stream().map(
-                                                                e -> e.getEmail().trim().toLowerCase(locale))
-                                                        .collect(Collectors.toSet())
-                                        ).collectList().map(employees -> {
-                                                    // 4. Merge excel with existing employees and find the diff
-                                                    merge(fromExcel, new ImportContext(employees, dicts.getT1(), dicts.getT2(), locale));
-                                                    return fromExcel;
-                                                }
-                                        );
-                                    });
-                        }));
+                    try {
+                        return Mono.just(excel.getInputStream());
+                    } catch (IOException e) {
+                        log.error("Unable to parse excel file", e);
+                        return Mono.error(new BusinessError("errors.import.unexpectedError"));
+                    }
+                }).flatMap(excelStream ->
+                        // 1. Parse the Excel
+                        exporter.importEmployees(config, excelStream)
+                                .collectList()
+                                .flatMap(fromExcel -> {
+                                    // 2. Load required dictionaries
+                                    return Mono.zip(dictService.findPositions(auth)
+                                                    .collectList(), dictService.findDepartments(auth).collectList())
+                                            .flatMap(dicts -> {
+                                                // 3. Load employees
+                                                return emplRepo.findByEmailsInLowerCase(
+                                                        fromExcel.stream().map(
+                                                                        e -> e.getEmail().trim().toLowerCase(locale))
+                                                                .collect(Collectors.toSet())
+                                                ).collectList().map(employees -> {
+                                                            // 4. Merge excel with existing employees and find the diff
+                                                            merge(fromExcel, new ImportContext(employees, dicts.getT1(), dicts.getT2(), locale));
+                                                            return fromExcel;
+                                                        }
+                                                );
+                                            });
+                                }))
+                .map(ImportProcessingResult::new);
     }
 
 
@@ -102,12 +105,11 @@ public class AdminEmployeeImportProcessor {
 
         Function<EmployeeWithAllDetailsEntry, SimpleDictDto> currentEmployeeDepartmentMapper
                 = e -> e.getDepartmentId() == null ? null :
-                context.departments.stream().filter(d->d.getId() == e.getDepartmentId()).findFirst().orElse(null);
+                context.departments.stream().filter(d -> d.getId() == e.getDepartmentId()).findFirst().orElse(null);
 
         Function<EmployeeWithAllDetailsEntry, SimpleDictDto> currentEmployeePositionMapper
                 = e -> e.getPositionId() == null ? null :
-                context.positions.stream().filter(d->d.getId() == e.getPositionId()).findFirst().orElse(null);
-
+                context.positions.stream().filter(d -> d.getId() == e.getPositionId()).findFirst().orElse(null);
 
 
         apply(excelRow.getBirthday(), existingEmpl, EmployeeWithAllDetailsEntry::getBirthday, context, this::applyLocalDate);
@@ -181,4 +183,30 @@ public class AdminEmployeeImportProcessor {
     private record ImportContext(List<EmployeeWithAllDetailsEntry> employees, List<SimpleDictDto> positions,
                                  List<SimpleDictDto> departments, Locale locale) {
     }
+
+    @Data
+    public static class ImportProcessingResult {
+        private final List<ImportEmployeeExcelDto> rows;
+        private final ImportProcessStats stats;
+
+        public ImportProcessingResult(List<ImportEmployeeExcelDto> rows) {
+            this.rows = rows;
+            int processedRows = rows.size();
+            int errors = 0;
+            int newItems = 0;
+            int updatedItems = 0;
+            for (var row : rows) {
+                if (row.getErrorCount() > 0) {
+                    errors += row.getErrorCount();
+                }
+                if (row.isNew()) {
+                    newItems++;
+                } else if (row.getUpdatedCellsCount() > 0) {
+                    updatedItems++;
+                }
+            }
+            this.stats = new ImportProcessStats(processedRows, errors, newItems, updatedItems);
+        }
+    }
+
 }

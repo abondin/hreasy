@@ -45,5 +45,7 @@ public class ImportEmployeesWorkflowEntry {
      * Imported data
      * @see ImportEmployeeExcelDto
      */
-    private Json data;
+    private Json importedRows;
+
+    private Json importProcessStats;
 }

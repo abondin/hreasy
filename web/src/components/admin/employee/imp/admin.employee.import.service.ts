@@ -7,8 +7,6 @@ import {AxiosInstance, AxiosResponse} from "axios";
  */
 export interface ImportEmployeesWorkflow {
     id: number,
-    newEmployeesCnt: number | null,
-    updatedEmployeesCnt: number | null,
     /**
      * <ul>
      *     <li>0 - created</li>
@@ -21,7 +19,8 @@ export interface ImportEmployeesWorkflow {
     state: number,
     config: EmployeeImportConfig | null,
     filename: string | null,
-    data: ImportEmployeeExcelRows[]
+    importedRows: ImportEmployeeExcelRows[],
+    importProcessStats: ImportProcessStats
 }
 
 export interface EmployeeImportConfig {
@@ -78,6 +77,13 @@ export interface ExcelRowDataProperty<T> {
     raw: string | null,
     error: string | null,
     updated: false
+}
+
+export interface ImportProcessStats {
+    processedRows: number,
+    errors: number,
+    newItems: number,
+    updatedItems: number
 }
 
 export interface AdminEmployeeImportService {

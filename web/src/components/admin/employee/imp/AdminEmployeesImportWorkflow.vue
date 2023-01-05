@@ -40,7 +40,7 @@
 
         <!--<editor-fold desc="Preview">-->
         <v-stepper-content step="3">
-          <admin-employees-import-preview :data="workflow.data" v-if="workflow.data"
+          <admin-employees-import-preview :workflow="workflow" v-if="workflow.importedRows"
                                           @back="step=2" @apply="applyChanges()"></admin-employees-import-preview>
           <v-alert v-else type="warning">
             {{ $t('Не удалось корректно обратотать файл. Загрузите другой или измените конфигурацию') }}

@@ -29,6 +29,7 @@ public class ImportEmployeesWorkflowDto {
      */
     private int state = 0;
     private EmployeeImportConfig config;
-    private List<ImportEmployeeExcelDto> data;
+    private List<ImportEmployeeExcelDto> importedRows;
+    private ImportProcessStats importProcessStats;
     private String filename;
 }
