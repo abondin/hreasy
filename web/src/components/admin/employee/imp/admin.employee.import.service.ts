@@ -76,7 +76,8 @@ export interface ExcelRowDataProperty<T> {
     currentValue: T | null,
     importedValue: T | null,
     raw: string | null,
-    error: string | null
+    error: string | null,
+    updated: false
 }
 
 export interface AdminEmployeeImportService {

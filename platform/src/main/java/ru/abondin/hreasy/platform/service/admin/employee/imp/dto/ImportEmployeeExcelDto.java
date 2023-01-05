@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.admin.employee.imp.dto;
 
 
 import lombok.Data;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.LocalDate;
 import java.util.stream.Stream;
@@ -30,8 +31,8 @@ public class ImportEmployeeExcelDto {
     private DataProperty<String> displayName = new DataProperty<>();
     private DataProperty<String> externalErpId = new DataProperty<>();
     private DataProperty<String> phone = new DataProperty<>();
-    private DataProperty<Integer> department = new DataProperty<>();
-    private DataProperty<Integer> position = new DataProperty<>();
+    private DataProperty<SimpleDictDto> department = new DataProperty<>();
+    private DataProperty<SimpleDictDto> position = new DataProperty<>();
     private DataProperty<LocalDate> dateOfEmployment = new DataProperty<>();
     private DataProperty<LocalDate> dateOfDismissal = new DataProperty<>();
     private DataProperty<LocalDate> birthday = new DataProperty<>();
@@ -43,10 +44,10 @@ public class ImportEmployeeExcelDto {
     private DataProperty<String> registrationAddress = new DataProperty<>();
 
     public int getErrorCount() {
-        return (int)allProperties().filter(p->p.getError()!=null).count();
+        return (int) allProperties().filter(p -> p.getError() != null).count();
     }
 
-    public boolean isNew(){
+    public boolean isNew() {
         return employeeId == null;
     }
 
@@ -75,6 +76,13 @@ public class ImportEmployeeExcelDto {
         private T importedValue;
         private String raw;
         private String error;
+
+        /**
+         * @return false if some errors or current value and imported value the same or imported value is null
+         */
+        public boolean isUpdated() {
+            return error == null && importedValue != null && !importedValue.equals(currentValue);
+        }
     }
 
 }

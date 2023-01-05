@@ -13,11 +13,11 @@
       <span v-if="cell.raw"><br>{{ $t('Необработанное значение', {value: cell.raw}) }}</span>
     </v-tooltip>
     <!-- Current value -->
-    <span v-if="cell.currentValue && cell.currentValue!==cell.importedValue" class="old">
+    <span v-if="cell.currentValue && cell.updated" class="old">
       {{ formatValue(cell.currentValue) }}
     </span>
     <!-- Imported value -->
-    <span v-if="cell.importedValue" :class="(cell.importedValue===cell.currentValue)?'same':'new'">
+    <span v-if="cell.importedValue" :class="cell.updated?'new':'same'">
       {{ formatValue(cell.importedValue) }}
     </span>
   </span>

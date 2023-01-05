@@ -1,10 +1,12 @@
 package ru.abondin.hreasy.platform.service.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class SimpleDictDto{
     private int id;
     private String name;

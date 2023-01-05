@@ -13,7 +13,6 @@ import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntr
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelDto;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeesWorkflowDto;
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
@@ -53,9 +52,9 @@ public class AdminEmployeeImportProcessor {
 
 
     public Mono<List<ImportEmployeeExcelDto>> applyConfigAndParseExcelFile(AuthContext auth,
-                                                                               EmployeeImportConfig config,
-                                                                               Resource excel,
-                                                                               Locale locale) {
+                                                                           EmployeeImportConfig config,
+                                                                           Resource excel,
+                                                                           Locale locale) {
         return Mono.defer(() -> {
             try {
                 return Mono.just(excel.getInputStream());
@@ -101,9 +100,19 @@ public class AdminEmployeeImportProcessor {
 
         excelRow.setEmployeeId(existingEmpl.map(EmployeeWithAllDetailsEntry::getId).orElse(null));
 
+        Function<EmployeeWithAllDetailsEntry, SimpleDictDto> currentEmployeeDepartmentMapper
+                = e -> e.getDepartmentId() == null ? null :
+                context.departments.stream().filter(d->d.getId() == e.getDepartmentId()).findFirst().orElse(null);
+
+        Function<EmployeeWithAllDetailsEntry, SimpleDictDto> currentEmployeePositionMapper
+                = e -> e.getPositionId() == null ? null :
+                context.positions.stream().filter(d->d.getId() == e.getPositionId()).findFirst().orElse(null);
+
+
+
         apply(excelRow.getBirthday(), existingEmpl, EmployeeWithAllDetailsEntry::getBirthday, context, this::applyLocalDate);
-        apply(excelRow.getDepartment(), existingEmpl, EmployeeWithAllDetailsEntry::getDepartmentId, context, (p, c) -> applyDict(p, c, c.departments));
-        apply(excelRow.getPosition(), existingEmpl, EmployeeWithAllDetailsEntry::getPositionId, context, (p, c) -> applyDict(p, c, c.positions));
+        apply(excelRow.getDepartment(), existingEmpl, currentEmployeeDepartmentMapper, context, (p, c) -> applyDict(p, c, c.departments));
+        apply(excelRow.getPosition(), existingEmpl, currentEmployeePositionMapper, context, (p, c) -> applyDict(p, c, c.positions));
         apply(excelRow.getDisplayName(), existingEmpl, EmployeeWithAllDetailsEntry::getDisplayName, context, this::applyStringWithTrim);
         apply(excelRow.getDateOfDismissal(), existingEmpl, EmployeeWithAllDetailsEntry::getDateOfDismissal, context, this::applyLocalDate);
         apply(excelRow.getDateOfEmployment(), existingEmpl, EmployeeWithAllDetailsEntry::getDateOfEmployment, context, this::applyLocalDate);
@@ -130,7 +139,7 @@ public class AdminEmployeeImportProcessor {
         }
     }
 
-    private void applyDict(ImportEmployeeExcelDto.DataProperty<Integer> prop,
+    private void applyDict(ImportEmployeeExcelDto.DataProperty<SimpleDictDto> prop,
                            ImportContext context,
                            List<SimpleDictDto> dict) {
         var value = prop.getRaw().trim().toLowerCase(context.locale);
@@ -139,7 +148,7 @@ public class AdminEmployeeImportProcessor {
                 .filter(d -> d.getName().toLowerCase(context.locale).trim().equals(value))
                 .findFirst();
         if (key.isPresent()) {
-            prop.setImportedValue(key.get().getId());
+            prop.setImportedValue(key.get());
         } else {
             prop.setError(i18n.localize("errors.import.not_in_dict"));
         }
