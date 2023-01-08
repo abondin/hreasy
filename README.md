@@ -1,6 +1,6 @@
 # HREasy - HR Portal for STM Internal Uses
 
-@author Alexander Bondin 2019-2022
+@author Alexander Bondin 2019-2023
 
 [![CI](https://github.com/abondin/hreasy/actions/workflows/main.yml/badge.svg)](https://github.com/abondin/hreasy/actions/workflows/main.yml)
 
@@ -10,15 +10,18 @@
 - Show all employees
 - View/Add/Approve Overtimes
 - View/Add/Update Vacations
+- Admin employees
+- Import employees from Excel
 - Admin all dictionaries
 - Admin projects
-- Business Accounts administration
+- Admin Business Accounts
 - Admin user roles
 - Articles (news and shared information).
 - Assessments
 - Notifications
   - Upcoming vacations email
 - Download and upload Technical Profiles
+
 
 ## Permissions and roles
 
