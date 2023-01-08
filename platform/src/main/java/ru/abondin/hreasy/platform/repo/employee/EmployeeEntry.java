@@ -13,11 +13,7 @@ import java.time.LocalDate;
 public class EmployeeEntry {
     @Id
     private Integer id;
-    private String lastname;
-    private String firstname;
-
-    @Column("patronymic_name")
-    private String patronymicName;
+    private String displayName;
     private LocalDate birthday;
     private String sex;
     @Column("department")
@@ -33,8 +29,7 @@ public class EmployeeEntry {
     @Column("date_of_dismissal")
     private LocalDate dateOfDismissal;
     private String email;
-    //TODO Set phone datatype in database to string
-    private BigDecimal phone;
+    private String phone;
     private String skype;
     private String telegram;
 }

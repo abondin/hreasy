@@ -33,7 +33,7 @@ public class EmployeeService {
             criteria = addNotFiredCriteria(criteria);
         }
         return emplRepo.findDetailed(criteria,
-                Sort.by("lastname", "firstname", "patronymicName")
+                Sort.by("display_name")
         ).map(e -> mapper.employeeWithSkills(e, auth.getEmployeeInfo().getEmployeeId()))
                 .doOnNext(empl->employeeProjectSecurityValidator.setToNullUngrantedFields(empl, auth));
     }

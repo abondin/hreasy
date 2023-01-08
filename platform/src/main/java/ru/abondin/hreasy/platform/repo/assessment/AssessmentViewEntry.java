@@ -4,20 +4,12 @@ import lombok.Data;
 
 @Data
 public class AssessmentViewEntry extends AssessmentEntry{
-    private String employeeLastname;
-    private String employeeFirstname;
-    private String employeePatronymicName;
+    private String employeeDisplayName;
 
 
-    private String createdByLastname;
-    private String createdByFirstname;
-    private String createdByPatronymicName;
+    private String createdByDisplayName;
 
-    private String completedByLastname;
-    private String completedByFirstname;
-    private String completedByPatronymicName;
+    private String completedByDisplayName;
 
-    private String canceledByLastname;
-    private String canceledByFirstname;
-    private String canceledByPatronymicName;
+    private String canceledByDisplayName;
 }

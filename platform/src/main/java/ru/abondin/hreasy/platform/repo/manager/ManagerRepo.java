@@ -13,7 +13,7 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
 
     String defaultSelectQuery = """
             select m.*,
-            trim(concat_ws(' ', e.lastname, e.firstname, e.patronymic_name)) as employee_display_name
+            e.display_name as employee_display_name
             , (e.date_of_dismissal is null or e.date_of_dismissal > :now) as employee_active
             ,CASE WHEN m.object_type='project' THEN p.name
                   WHEN m.object_type='business_account' THEN ba.name
@@ -31,7 +31,7 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
             select m.object_id, m.object_type, jsonb_agg(jsonb_build_object(
             					'id', m.id,
             					'employeeId', e.id,
-            					'employeeName', trim(concat_ws(' ', e.lastname, e.firstname, e.patronymic_name)),
+            					'employeeName', e.display_name,
             					'responsibilityType', m.responsibility_type,
             					'comment',m.comment
             					)) as managers_json

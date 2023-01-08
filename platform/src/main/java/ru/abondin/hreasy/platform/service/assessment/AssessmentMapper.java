@@ -24,8 +24,8 @@ import java.util.stream.Stream;
 public interface AssessmentMapper extends MapperBase {
 
     @Mapping(source = "employeeId", target = "employeeId")
-    @Mapping(source = ".", target = "displayName", qualifiedByName = "displayName")
     @Mapping(source = "id", target = "lastAssessmentId")
+    @Mapping(source = "employeeDisplayName", target = "displayName")
     @Mapping(source = "plannedDate", target = "lastAssessmentDate")
     @Mapping(target = "lastAssessmentCompletedDate", source = "completedAt", qualifiedByName = "toLocalDate")
     @Mapping(source = "employeeDateOfEmployment", target = "employeeDateOfEmployment")
@@ -78,54 +78,25 @@ public interface AssessmentMapper extends MapperBase {
         return simpleDto(entry.getBaId(), entry.getBaName());
     }
 
-    @Named("displayName")
-    default String displayName(EmployeeAssessmentEntry entry) {
-        return entry == null ? null : Stream.of(
-                        entry.getEmployeeLastname(),
-                        entry.getEmployeeFirstname(),
-                        entry.getEmployeePatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" "));
-    }
 
     @Named("assessmentEmployeeName")
     default SimpleDictDto assessmentEmployeeName(AssessmentViewEntry entry) {
-        return entry == null ? null : simpleDto(entry.getCreatedBy(), Stream.of(
-                        entry.getEmployeeLastname(),
-                        entry.getEmployeeFirstname(),
-                        entry.getEmployeePatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" ")));
+        return entry == null ? null : simpleDto(entry.getEmployee(), entry.getEmployeeDisplayName());
     }
 
     @Named("createdBy")
     default SimpleDictDto createdBy(AssessmentViewEntry entry) {
-        return entry == null ? null : simpleDto(entry.getCreatedBy(), Stream.of(
-                        entry.getCreatedByLastname(),
-                        entry.getCreatedByFirstname(),
-                        entry.getCreatedByPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" ")));
+        return entry == null ? null : simpleDto(entry.getCreatedBy(), entry.getCreatedByDisplayName());
     }
 
     @Named("completedBy")
     default SimpleDictDto completedBy(AssessmentViewEntry entry) {
-        return entry == null ? null : simpleDto(entry.getCompletedBy(), Stream.of(
-                        entry.getCompletedByLastname(),
-                        entry.getCompletedByFirstname(),
-                        entry.getCompletedByPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" ")));
+        return entry == null ? null : simpleDto(entry.getCompletedBy(), entry.getCompletedByDisplayName());
     }
 
     @Named("canceledBy")
     default SimpleDictDto canceledBy(AssessmentViewEntry entry) {
-        return entry == null ? null : simpleDto(entry.getCanceledBy(), Stream.of(
-                        entry.getCanceledByLastname(),
-                        entry.getCanceledByFirstname(),
-                        entry.getCanceledByPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" ")));
+        return entry == null ? null : simpleDto(entry.getCanceledBy(), entry.getCanceledByDisplayName());
     }
 
     @Named("toLocalDate")

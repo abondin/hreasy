@@ -28,8 +28,7 @@ public class UpcomingVacationNotificationTemplate {
     @Data
     public static class UpcomingVacationContext {
         private String clientUuid;
-        private String employeeFirstname;
-        private String employeeLastname;
+        private String employeeDisplayName;
         private String employeeEmail;
         private List<String> managersEmails = new ArrayList<>();
         private LocalDate startDate;
@@ -84,8 +83,7 @@ public class UpcomingVacationNotificationTemplate {
         context.setVariable("clientUuid", modelContext.getClientUuid());
         context.setVariable("daysNumber", modelContext.getDaysNumber());
         context.setVariable("employeeEmail", modelContext.getEmployeeEmail());
-        context.setVariable("employeeFirstname", modelContext.getEmployeeFirstname());
-        context.setVariable("employeeLastname", modelContext.getEmployeeLastname());
+        context.setVariable("employeeDisplayName", modelContext.getEmployeeDisplayName());
         context.setVariable("endDate", modelContext.getEndDate());
         context.setVariable("startDate", modelContext.getStartDate());
         return templateEngine.process("upcomingvacation.html", context);

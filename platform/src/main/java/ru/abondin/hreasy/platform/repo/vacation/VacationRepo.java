@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Integer> {
 
-    @Query("select e.firstname as employee_firstname, e.lastname as employee_lastname, e.patronymic_name as employee_patronymic_name" +
+    @Query("select e.display_name as employee_display_name" +
             ", e.email as employee_email" +
             ", e.current_project as employee_current_project" +
             ", p.name as employee_current_project_name" +
@@ -37,7 +37,7 @@ public interface VacationRepo extends ReactiveCrudRepository<VacationEntry, Inte
 
 
     @Query("""
-            select e.firstname as employee_firstname, e.lastname as employee_lastname, e.patronymic_name as employee_patronymic_name
+            select e.display_name as employee_display_name
             , e.email as employee_email
             , e.current_project as employee_current_project
             , p.name as employee_current_project_name

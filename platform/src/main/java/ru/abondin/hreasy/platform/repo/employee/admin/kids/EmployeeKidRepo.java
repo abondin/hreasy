@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
 @Repository
 public interface EmployeeKidRepo extends ReactiveCrudRepository<EmployeeKidEntry, Integer> {
 
-    @Query("select k.*, e.lastname parent_lastname, e.firstname parent_firstname, e.patronymic_name parent_patronymic_name" +
+    @Query("select k.*, e.display_name parent_display_name" +
             ", (case when e.date_of_dismissal is null or e.date_of_dismissal > :now then true else false end)" +
             " as parent_not_dismissed" +
             " from empl.kids k left join empl.employee e on k.parent=e.id")

@@ -7,9 +7,7 @@ import java.time.LocalDate;
 @Data
 public class EmployeeAssessmentEntry extends AssessmentEntry {
     private Integer employeeId;
-    private String employeeLastname;
-    private String employeeFirstname;
-    private String employeePatronymicName;
+    private String employeeDisplayName;
     private int employeeCurrentProjectId;
     private String employeeCurrentProjectName;
     private String employeeCurrentProjectRole;

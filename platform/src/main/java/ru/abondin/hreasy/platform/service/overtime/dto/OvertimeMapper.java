@@ -35,21 +35,11 @@ public interface OvertimeMapper {
     @Mapping(target = "items", ignore = true)
     OvertimeEmployeeSummary summaryFromEntry(OvertimeReportEntry.OvertimeReportSummaryEntry entry);
 
-    @Mapping(target = "approverDisplayName", source = ".", qualifiedByName = "toDisplayName")
     @Mapping(target = "outdated", ignore = true)
     OvertimeApprovalDecisionDto fromEntry(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry);
 
     OvertimeClosedPeriodDto fromEntry(OvertimeClosedPeriodEntry entry);
 
-    @Named("toDisplayName")
-    default String toDisplayName(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry) {
-        return entry == null ? null : Stream.of(
-                entry.getApproverLastName(),
-                entry.getApproverFirstName(),
-                entry.getApproverPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" "));
-    }
 
     default OvertimeApprovalDecisionDto approvalToDtoIncludeOutdated(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry approvalEntry,
                                                                      OvertimeReportDto report) {

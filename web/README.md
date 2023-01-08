@@ -1,6 +1,6 @@
 # hreasy-web - Internal company platform for HR and employees
 
-@author: Alexander Bondin 2020
+@author: Alexander Bondin 2020-2023
 
 ## Frameworks
 

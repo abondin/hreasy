@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 @Mapper(componentModel = "spring")
 public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
 
-    @Mapping(target = "displayName", source = ".", qualifiedByName = "displayName")
     @Mapping(target = "department", source = ".", qualifiedByName = "department")
     @Mapping(target = "currentProject", source = ".", qualifiedByName = "currentProject")
     @Mapping(target = "position", source = ".", qualifiedByName = "position")
@@ -35,16 +34,6 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
             result.setSkills(parseAssembledSkills(entry.getAggregatedSkills(), loggedInEmployee));
         }
         return result;
-    }
-
-    @Named("displayName")
-    default String displayName(EmployeeDetailedEntry entry) {
-        return entry == null ? null : Stream.of(
-                        entry.getLastname(),
-                        entry.getFirstname(),
-                        entry.getPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" "));
     }
 
     @Named("department")

@@ -4,8 +4,6 @@ import lombok.Data;
 
 @Data
 public class EmployeeKidView extends EmployeeKidEntry{
-    private String parentFirstname;
-    private String parentLastname;
-    private String parentPatronymicName;
+    private String parentDisplayName;
     private boolean parentNotDismissed;
 }

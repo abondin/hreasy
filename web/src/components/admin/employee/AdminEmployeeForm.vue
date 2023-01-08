@@ -13,28 +13,12 @@
       <v-card-text>
         <v-container>
           <v-row>
-            <!--<editor-fold desc="1 row (lastname, firstname, patronymicName)">-->
-            <v-col cols=4>
-              <v-text-field v-model="employeeForm.lastname"
+            <!--<editor-fold desc="1 row (display name)">-->
+            <v-col cols=12>
+              <v-text-field v-model="employeeForm.displayName"
                             :counter="255"
                             :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Фамилия')">
-                >
-              </v-text-field>
-            </v-col>
-            <v-col cols=4>
-              <v-text-field v-model="employeeForm.firstname"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Имя')">
-                >
-              </v-text-field>
-            </v-col>
-            <v-col cols=4>
-              <v-text-field v-model="employeeForm.patronymicName"
-                            :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
-                            :label="$t('Отчество')">
+                            :label="$t('ФИО')">
                 >
               </v-text-field>
             </v-col>
@@ -302,9 +286,7 @@ class employeeForm {
   public id: number | null = null;
   currentProjectId: number | null = null;
   currentProjectRole: string | null = null;
-  lastname: string | null = null;
-  firstname: string | null = null;
-  patronymicName: string | null = null;
+  displayName: string | null = null;
   departmentId: number | null = null;
   birthday: string | null = null;
   sex: string | null = null;
@@ -401,11 +383,9 @@ export default class AdminEmployeeForm extends Vue {
     this.employeeForm.dateOfDismissal = null;
     this.employeeForm.phone = null;
     this.employeeForm.foreignPassport = null;
-    this.employeeForm.lastname = null;
-    this.employeeForm.firstname = null;
+    this.employeeForm.displayName = null;
     this.employeeForm.levelId = null;
     this.employeeForm.officeLocationId = null;
-    this.employeeForm.patronymicName = null;
     this.employeeForm.spouseName = null;
     this.employeeForm.sex = null;
     this.employeeForm.positionId = null;
@@ -418,9 +398,7 @@ export default class AdminEmployeeForm extends Vue {
       this.employeeForm.isNew = false;
       this.employeeForm.id = this.input.id;
       this.employeeForm.email = this.input.email;
-      this.employeeForm.lastname = this.input.lastname;
-      this.employeeForm.firstname = this.input.firstname;
-      this.employeeForm.patronymicName = this.input.patronymicName;
+      this.employeeForm.displayName = this.input.displayName;
       this.employeeForm.currentProjectId = this.input.currentProjectId || null;
       this.employeeForm.currentProjectRole = this.input.currentProjectRole || null;
       this.employeeForm.skype = this.input.skype;

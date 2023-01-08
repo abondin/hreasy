@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, Integer> {
 
     @Query("select e.id employee_id," +
-            " e.lastname employee_lastname, e.firstname employee_firstname, e.patronymic_name employee_patronymic_name" +
+            " e.display_name employee_display_name " +
             ", e.date_of_employment employee_date_of_employment,  a.*" +
             ", p.id employee_current_project_id, p.name employee_current_project_name, e.current_project_role employee_current_project_role" +
             ", ba.id ba_id, ba.name ba_name" +
@@ -26,10 +26,10 @@ public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, 
     Flux<EmployeeAssessmentEntry> findNotCanceledAssessmentForNotFired(@Param("now") OffsetDateTime now);
 
     @Query("select a.*, " +
-            " empl.lastname employee_lastname, empl.firstname employee_firstname, empl.patronymic_name employee_patronymic_name" +
-            " ,createdBy.lastname created_by_lastname, createdBy.firstname created_by_firstname, createdBy.patronymic_name created_by_patronymic_name" +
-            " ,completedBy.lastname completed_by_lastname, completedBy.firstname completed_by_firstname, completedBy.patronymic_name completed_by_patronymic_name" +
-            " ,canceledBy.lastname canceled_by_lastname, canceledBy.firstname canceled_by_firstname, canceledBy.patronymic_name canceled_by_patronymic_name" +
+            " empl.display_name employee_display_name" +
+            " ,createdBy.display_name created_by_display_name" +
+            " ,completedBy.display_name completed_by_display_name" +
+            " ,canceledBy.display_name canceled_by_display_name" +
             " from assmnt.assessment a" +
             " left join empl.employee empl on a.employee=empl.id " +
             " left join empl.employee createdBy on a.created_by=createdBy.id " +
@@ -40,10 +40,10 @@ public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, 
     Flux<AssessmentViewEntry> findByEmployeeId(int employee);
 
     @Query("select a.*, " +
-            " empl.lastname employee_lastname, empl.firstname employee_firstname, empl.patronymic_name employee_patronymic_name" +
-            " ,createdBy.lastname created_by_lastname, createdBy.firstname created_by_firstname, createdBy.patronymic_name created_by_patronymic_name" +
-            " ,completedBy.lastname completed_by_lastname, completedBy.firstname completed_by_firstname, completedBy.patronymic_name completed_by_patronymic_name" +
-            " ,canceledBy.lastname canceled_by_lastname, canceledBy.firstname canceled_by_firstname, canceledBy.patronymic_name canceled_by_patronymic_name" +
+            " empl.display_name employee_display_name" +
+            " ,createdBy.display_name created_by_display_name" +
+            " ,completedBy.display_name completed_by_display_name" +
+            " ,canceledBy.display_name canceled_by_display_name" +
             " from assmnt.assessment a" +
             " left join empl.employee empl on a.employee=empl.id " +
             " left join empl.employee createdBy on a.created_by=createdBy.id " +

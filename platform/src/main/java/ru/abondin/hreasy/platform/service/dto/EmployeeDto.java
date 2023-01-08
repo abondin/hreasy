@@ -17,9 +17,6 @@ import java.util.List;
 @AllArgsConstructor
 public class EmployeeDto {
     private Integer id;
-    private String lastname;
-    private String firstname;
-    private String patronymicName;
     private String displayName;
     private LocalDate birthday;
     private String sex;

@@ -1,10 +1,7 @@
 package ru.abondin.hreasy.platform.service.admin.employee.dto;
 
 import org.apache.commons.lang3.StringUtils;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeHistoryEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsWithBaView;
@@ -23,6 +20,8 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
 
     @Mapping(target = "id", ignore = true)
     void populateFromBody(@MappingTarget EmployeeWithAllDetailsEntry entry, CreateOrUpdateEmployeeBody dto);
+
+    CreateOrUpdateEmployeeBody createOrUpdateBodyFromEntry(EmployeeWithAllDetailsDto entry);
 
     default EmployeeHistoryEntry history(EmployeeWithAllDetailsEntry persisted, Integer createdBy, OffsetDateTime createdAt) {
         var history = historyBase(persisted);
@@ -44,9 +43,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
      * @param entry
      * @return
      */
-    @Mapping(target = "displayName", source = ".", qualifiedByName = "displayName")
     @Mapping(target = "documentFull", source = ".", qualifiedByName = "documentFull")
-    //TODO Set phone datatype in database to string
     EmployeeWithAllDetailsDto fromEntryPartially(EmployeeWithAllDetailsEntry entry);
 
 
@@ -84,16 +81,6 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
     EmployeeKidDto fromEntry(EmployeeKidView m);
 
 
-    @Named("displayName")
-    default String displayName(EmployeeWithAllDetailsEntry entry) {
-        return entry == null ? null : Stream.of(
-                        entry.getLastname(),
-                        entry.getFirstname(),
-                        entry.getPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" "));
-    }
-
     @Named("kidParent")
     default SimpleDictDto kidParent(EmployeeKidView entry) {
         if (entry == null || entry.getParent() == null) {
@@ -102,12 +89,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
         var result = new SimpleDictDto();
         result.setId(entry.getParent());
         result.setActive(entry.isParentNotDismissed());
-        result.setName(Stream.of(
-                        entry.getParentLastname(),
-                        entry.getParentFirstname(),
-                        entry.getParentPatronymicName())
-                .filter(s -> StringUtils.isNotBlank(s))
-                .collect(Collectors.joining(" ")));
+        result.setName(entry.getParentDisplayName());
         return result;
     }
 
@@ -121,6 +103,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
                 .filter(s -> StringUtils.isNotBlank(s))
                 .collect(Collectors.joining(" "));
     }
+
 
 
 }

@@ -52,13 +52,7 @@ public class OvertimeApprovalDecisionEntry {
 
     @Data
     public static class OvertimeApprovalDecisionWithEmployeeEntry extends OvertimeApprovalDecisionEntry {
-        @Column("approver_lastname")
-        private String approverLastName;
-
-        @Column("approver_firstname")
-        private String approverFirstName;
-
-        @Column("approver_patronymic_name")
-        private String approverPatronymicName;
+        @Column("approver_display_name")
+        private String approverDisplayName;
     }
 }

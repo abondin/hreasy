@@ -1,7 +1,8 @@
 hreasy:
   # Hack to support both Flyway JDBC and Spring R2DBC urls to the database
   db:
-    host: sql.hr
+    #host: sql.hr
+    host: localhost
     port: 5432
     database: hr
     username: hr

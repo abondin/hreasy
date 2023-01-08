@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.admin.employee.dto;
 
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.lang.Nullable;
 
 @Data
 @ToString(of = {"email"})
@@ -11,5 +12,8 @@ public class CreateOrUpdateEmployeeBody extends EmployeeAllFields {
     private String currentProjectRole;
     private Integer positionId;
     private Integer officeLocationId;
+    private String extErpId;
 
+    @Nullable
+    private Integer importProcessId;
 }

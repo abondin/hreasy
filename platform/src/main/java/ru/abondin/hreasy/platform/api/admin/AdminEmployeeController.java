@@ -3,6 +3,8 @@ package ru.abondin.hreasy.platform.api.admin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -10,6 +12,9 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeExportService;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeImportService;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeesWorkflowDto;
 
 import javax.validation.Valid;
 import java.util.Locale;
@@ -25,6 +30,8 @@ public class AdminEmployeeController {
 
     private final AdminEmployeeService employeeService;
     private final AdminEmployeeExportService exportService;
+
+    private final AdminEmployeeImportService importService;
 
 
     @GetMapping
@@ -72,4 +79,39 @@ public class AdminEmployeeController {
         return AuthHandler.currentAuth().flatMap(auth -> employeeService.updateKid(auth, employeeId, kidId, body));
     }
 
+
+    @PostMapping("/import")
+    public Mono<ImportEmployeesWorkflowDto> getActiveOrStartNewImportProcess() {
+        return AuthHandler.currentAuth().flatMap(auth -> importService.getActiveOrStartNewImportProcess(auth));
+    }
+
+    @PostMapping("/import/{processId}/file")
+    public Mono<ImportEmployeesWorkflowDto> uploadExcelFile(
+            @PathVariable Integer processId,
+            @RequestPart("file") Mono<FilePart> multipartFile,
+            @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength
+    ) {
+        return AuthHandler.currentAuth().flatMap(auth ->
+                multipartFile.flatMap(filePart -> importService.uploadImportFile(auth,
+                        processId,
+                        filePart,
+                        contentLength)));
+    }
+
+    @PostMapping("/import/{processId}/config")
+    public Mono<ImportEmployeesWorkflowDto> applyConfigAndPreview(@PathVariable Integer processId,
+                                                                  @RequestBody EmployeeImportConfig config,
+                                                                  Locale locale) {
+        return AuthHandler.currentAuth().flatMap(auth -> importService.applyConfigAndPreview(auth, processId, config, locale));
+    }
+
+    @PostMapping("/import/{processId}/commit")
+    public Mono<ImportEmployeesWorkflowDto> commit(@PathVariable Integer processId) {
+        return AuthHandler.currentAuth().flatMap(auth -> importService.commit(auth, processId));
+    }
+
+    @PostMapping("/import/{processId}/abort")
+    public Mono<ImportEmployeesWorkflowDto> abort(@PathVariable Integer processId) {
+        return AuthHandler.currentAuth().flatMap(auth -> importService.abort(auth, processId));
+    }
 }
