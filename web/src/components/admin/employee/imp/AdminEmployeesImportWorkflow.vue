@@ -2,72 +2,87 @@
 <template>
   <div>
     <v-skeleton-loader v-if="loading" class="mx-auto" type="card"></v-skeleton-loader>
-    <v-card v-if="error">
-      <v-card-text>
-        <v-alert class="error">{{ error }}</v-alert>
-      </v-card-text>
-    </v-card>
-        <v-stepper v-model="step" v-if="workflow">
-          <v-stepper-header>
-            <v-stepper-step step="1" editable>
-              {{ $t('Загрузка файла') }}
-            </v-stepper-step>
-            <v-stepper-step step="2" editable>
-              {{ $t('Конфигурация') }}
-            </v-stepper-step>
-            <v-stepper-step step="3" editable>
-              {{ $t('Предпросмотр') }}
-            </v-stepper-step>
-          </v-stepper-header>
-          <v-stepper-items>
-            <!--<editor-fold desc="File uploader">-->
-            <v-stepper-content step="1">
-              <file-upload
-                  :file-id="'process-'+workflow.id"
-                  :post-action="getUploadImportFileUrl()"
-                  @close="uploadComplete"
-              ></file-upload>
-            </v-stepper-content>
-            <!--</editor-fold>-->
+    <v-stepper v-model="step" v-if="workflow">
+      <v-stepper-header>
+        <v-stepper-step step="1" editable>
+          {{ $t('Загрузка файла') }}
+        </v-stepper-step>
+        <v-stepper-step step="2" editable>
+          {{ $t('Конфигурация') }}
+        </v-stepper-step>
+        <v-stepper-step step="3" editable>
+          {{ $t('Предпросмотр') }}
+        </v-stepper-step>
+      </v-stepper-header>
+      <v-stepper-items>
+        <v-alert v-if="error" class="error">{{ error }}</v-alert>
+        <!--<editor-fold desc="File uploader">-->
+        <v-stepper-content step="1">
+          <div class="text-center font-weight-bold" v-if="workflow.filename">
+            {{ $t('Выбранный файл') }}: {{ workflow.filename }}
+          </div>
+          <file-upload
+              :file-id="'process-'+workflow.id"
+              :post-action="getUploadImportFileUrl()"
+              @close="uploadComplete"
+          ></file-upload>
+        </v-stepper-content>
+        <!--</editor-fold>-->
+        <!--<editor-fold desc="Configuration">-->
+        <v-stepper-content step="2" class="pa-0">
+          <admin-employees-import-config-form :config="config" @back="step=1" @apply="updateConfig()">
+          </admin-employees-import-config-form>
+        </v-stepper-content>
+        <!--</editor-fold>-->
+        <!--<editor-fold desc="Preview">-->
+        <v-stepper-content step="3" class="pa-0">
+          <v-skeleton-loader v-if="loading"></v-skeleton-loader>
+          <admin-employees-import-preview :workflow="workflow" v-else-if="workflow.importedRows"
+                                          @back="step=2" @apply="applyChanges()"></admin-employees-import-preview>
+          <v-alert v-else type="warning">
+            {{ $t('Не удалось корректно обратотать файл. Загрузите другой или измените конфигурацию') }}
+          </v-alert>
+        </v-stepper-content>
+        <!--</editor-fold>-->
+        <!--<editor-fold desc="Success">-->
+        <v-stepper-content step="4">
+          <v-alert type="success">
+            {{ $t('Изменения успешно применились!') }}
+          </v-alert>
+        </v-stepper-content>
 
-            <!--<editor-fold desc="Configuration">-->
-            <v-stepper-content step="2">
-              <admin-employees-import-config-form :config="config" @back="step=1" @apply="updateConfig()">
-              </admin-employees-import-config-form>
-            </v-stepper-content>
-            <!--</editor-fold>-->
+        <!--</editor-fold>-->
+      </v-stepper-items>
+      <!--<editor-fold desc="Actions buttons">-->
+      <v-card-actions>
+        <v-btn v-if="step>1 && step < 4" @click="goBack()">
+          <v-icon>mdi-arrow-left</v-icon>
+          {{ $t('Назад') }}
+        </v-btn>
+        <v-spacer></v-spacer>
+        <v-btn v-if="step>1 || workflow.state>0" @click="apply()" :class="{primary:step==3}" :disabled="error">
+          {{ step == 3 ? $t('Применить') : (step == 4 ? $t('Закрыть') : $t('Далее')) }}
+          <v-icon v-if="step!=4 && step!=3">mdi-arrow-right</v-icon>
+        </v-btn>
+      </v-card-actions>
+      <!--</editor-fold>-->
+    </v-stepper>
 
-            <!--<editor-fold desc="Preview">-->
-            <v-stepper-content step="3">
-              <v-skeleton-loader v-if="loading"></v-skeleton-loader>
-              <admin-employees-import-preview :workflow="workflow" v-else-if="workflow.importedRows"
-                                              @back="step=2" @apply="applyChanges()"></admin-employees-import-preview>
-              <v-alert v-else type="warning">
-                {{ $t('Не удалось корректно обратотать файл. Загрузите другой или измените конфигурацию') }}
-              </v-alert>
-            </v-stepper-content>
-            <!--</editor-fold>-->
-            <!--<editor-fold desc="Success">-->
-            <v-stepper-content step="4">
-              <v-alert type="success">
-                {{ $t('Изменения успешно применились!') }}
-              </v-alert>
-            </v-stepper-content>
+    <!--<editor-fold desc="Apply Dialog">-->
+    <v-dialog v-model="applyDialog" width="500">
+      <v-card>
+        <v-card-title primary-title>{{ $t('Применение изменений в системе') }}</v-card-title>
 
-            <!--</editor-fold>-->
-          </v-stepper-items>
-          <v-card-actions>
-            <v-btn v-if="step>1 && step < 4" @click="step=(step-1)">
-              <v-icon>mdi-arrow-left</v-icon>
-                  {{ $t('Назад') }}</v-btn>
-            <v-spacer></v-spacer>
-            <v-btn v-if="step>1 || workflow.config" @click="apply()" :class="{primary:step==3}">
-              {{ step==3 ? $t('Применить'): (step == 4 ? $t('Закрыть') : $t('Далее')) }}
-              <v-icon>mdi-arrow-right</v-icon>
-            </v-btn>
-          </v-card-actions>
-        </v-stepper>
-
+        <v-card-text>
+          {{ $t('Вы проверили все вносимые изменения и готовы применить их?') }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer><v-btn text @click="applyDialog = false">{{ $t('Нет') }}</v-btn>
+          <v-btn color="primary" @click="commit()">{{ $t('Да') }}</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!--</editor-fold>-->
   </div>
 </template>
 
@@ -90,10 +105,11 @@ import AdminEmployeesImportPreview from "@/components/admin/employee/imp/AdminEm
 })
 export default class AdminEmployeesImportWorkflowComponent extends Vue {
   loading = false;
-  step: 1 | 2 | 3 | 4= 1;
+  step: 1 | 2 | 3 | 4 = 1;
   config: EmployeeImportConfig = this.defaultConfig();
   workflow: ImportEmployeesWorkflow | null = null;
   error: string | null = null;
+  applyDialog = false;
 
   /**
    * Lifecycle hook
@@ -124,7 +140,7 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
         this.applyConfig()
         break;
       case 3:
-        this.applyChanges();
+        this.applyDialog = true;
         break;
       case 4:
         this.$router.push('/admin/employees');
@@ -144,7 +160,8 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
         }));
   }
 
-  private applyChanges() {
+  private commit() {
+    this.applyDialog = false;
     return this.wrapServerRequest(
         adminEmployeeImportService.commit(this.workflow!.id)
             .then(data => {
@@ -156,6 +173,13 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
 
   private refreshStep(workflow: ImportEmployeesWorkflow) {
     this.step = Math.max(1, workflow.state + 1) as (1 | 2 | 3 | 4);
+  }
+
+  private goBack() {
+    if (this.step > 0) {
+      this.error = null;
+      this.step = (this.step - 1) as (1 | 2 | 3 | 4);
+    }
   }
 
   defaultConfig(): EmployeeImportConfig {
@@ -184,6 +208,7 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
 
   private wrapServerRequest<T>(request: Promise<T>): Promise<string | T> {
     this.loading = true;
+    this.error = null;
     return request
         .catch((er: any) => this.error = errorUtils.shortMessage(er))
         .finally(() => this.loading = false);
