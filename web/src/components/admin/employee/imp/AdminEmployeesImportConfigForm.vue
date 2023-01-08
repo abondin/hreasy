@@ -63,10 +63,6 @@
         </v-container>
       </v-form>
     </v-card-text>
-    <v-card-actions>
-      <v-btn @click="$emit('back')">{{ $t('Выбрать другой файл') }}</v-btn>
-      <v-btn @click="$emit('apply')">{{ $t('Применить настройки') }}</v-btn>
-    </v-card-actions>
   </v-card>
 </template>
 

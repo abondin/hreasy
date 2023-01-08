@@ -6,7 +6,7 @@
       <template v-slot:activator="{ on }">
         <span v-on="on" class="error--text">
           <v-icon class="error--text" x-small>mdi-alert</v-icon>
-          {{ $t('Ошибка') }}
+          {{ $t('Ошибка') }} ({{cell.raw}})
         </span>
       </template>
       {{ cell.error }}.
