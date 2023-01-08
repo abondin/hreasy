@@ -9,7 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import reactor.test.StepVerifier;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeExcelImporter;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelDto;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -103,7 +103,7 @@ public class AdminEmployeesImporterTest {
     }
 
 
-    private void assertEqualsStr(String expected, ImportEmployeeExcelDto.DataProperty<?> property) {
+    private void assertEqualsStr(String expected, ImportEmployeeExcelRowDto.DataProperty<?> property) {
         Assertions.assertEquals(expected, property.getRaw().trim());
     }
 }

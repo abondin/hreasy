@@ -1,10 +1,7 @@
 package ru.abondin.hreasy.platform.service.admin.employee.dto;
 
 import org.apache.commons.lang3.StringUtils;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeHistoryEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsWithBaView;
@@ -23,6 +20,8 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
 
     @Mapping(target = "id", ignore = true)
     void populateFromBody(@MappingTarget EmployeeWithAllDetailsEntry entry, CreateOrUpdateEmployeeBody dto);
+
+    CreateOrUpdateEmployeeBody createOrUpdateBodyFromEntry(EmployeeWithAllDetailsDto entry);
 
     default EmployeeHistoryEntry history(EmployeeWithAllDetailsEntry persisted, Integer createdBy, OffsetDateTime createdAt) {
         var history = historyBase(persisted);
@@ -45,7 +44,6 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
      * @return
      */
     @Mapping(target = "documentFull", source = ".", qualifiedByName = "documentFull")
-    //TODO Set phone datatype in database to string
     EmployeeWithAllDetailsDto fromEntryPartially(EmployeeWithAllDetailsEntry entry);
 
 
@@ -105,6 +103,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
                 .filter(s -> StringUtils.isNotBlank(s))
                 .collect(Collectors.joining(" "));
     }
+
 
 
 }

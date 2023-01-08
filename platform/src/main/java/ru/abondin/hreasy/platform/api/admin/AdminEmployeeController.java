@@ -105,4 +105,13 @@ public class AdminEmployeeController {
         return AuthHandler.currentAuth().flatMap(auth -> importService.applyConfigAndPreview(auth, processId, config, locale));
     }
 
+    @PostMapping("/import/{processId}/commit")
+    public Mono<ImportEmployeesWorkflowDto> commit(@PathVariable Integer processId) {
+        return AuthHandler.currentAuth().flatMap(auth -> importService.commit(auth, processId));
+    }
+
+    @PostMapping("/import/{processId}/abort")
+    public Mono<ImportEmployeesWorkflowDto> abort(@PathVariable Integer processId) {
+        return AuthHandler.currentAuth().flatMap(auth -> importService.abort(auth, processId));
+    }
 }

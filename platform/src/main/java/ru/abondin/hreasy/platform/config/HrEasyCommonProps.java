@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class HrEasyCommonProps {
     /**
      * Should be skill be shared on creation by default
      */
-   private boolean skillAddDefaultShared = true;
+    private boolean skillAddDefaultShared = true;
 
     /**
      * Append email suffix to login form.
@@ -23,10 +24,10 @@ public class HrEasyCommonProps {
      * If user populate username without email as <code>ivan.ivanov</code> system login him as
      * <code>ivan.ivanov@company.org</code>.
      */
-   private String defaultEmailSuffix;
+    private String defaultEmailSuffix;
 
-   private String defaultCalendarType="default";
-   private String defaultCalendarRegion="RU";
+    private String defaultCalendarType = "default";
+    private String defaultCalendarRegion = "RU";
 
     /**
      * Default system account to send information via email
@@ -37,10 +38,12 @@ public class HrEasyCommonProps {
 
     @Data
     public static class ImportEmployeeProps {
-        private String dateFormat="dd.MM.yyyy";
+        private String dateFormat = "dd.MM.yyyy";
         private List<String> sexMaleVariants = Arrays.asList("м", "муж", "мужской");
-        private String sexDefaultMaleValue="Мужской";
+        private String sexDefaultMaleValue = "Мужской";
         private List<String> sexFemaleVariants = Arrays.asList("ж", "жеж", "женский");
-        private String sexDefaultFemaleValue="Женский";
+        private String sexDefaultFemaleValue = "Женский";
+
+        private Duration importConfigTtl = Duration.ofHours(3);
     }
 }

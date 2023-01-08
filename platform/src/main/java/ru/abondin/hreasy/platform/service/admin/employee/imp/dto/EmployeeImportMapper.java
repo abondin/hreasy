@@ -15,7 +15,7 @@ public abstract class EmployeeImportMapper extends MapperBaseWithJsonSupport {
         return config == null ? null : Json.of(toJsonString(config));
     }
 
-    public Json data(List<ImportEmployeeExcelDto> data) {
+    public Json importedRows(List<ImportEmployeeExcelRowDto> data) {
         return data == null ? null : Json.of(toJsonString(data));
     }
 
@@ -34,8 +34,8 @@ public abstract class EmployeeImportMapper extends MapperBaseWithJsonSupport {
     }
 
     @Named("importedRows")
-    protected List<ImportEmployeeExcelDto> importedRows(Json data) {
-        return listFromJson(data, ImportEmployeeExcelDto.class);
+    public List<ImportEmployeeExcelRowDto> importedRows(Json data) {
+        return listFromJson(data, ImportEmployeeExcelRowDto.class);
     }
 
     @Named("importProcessStats")

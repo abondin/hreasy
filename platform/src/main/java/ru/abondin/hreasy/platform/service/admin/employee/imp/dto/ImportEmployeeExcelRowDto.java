@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  * </p>
  */
 @Data
-public class ImportEmployeeExcelDto {
+public class ImportEmployeeExcelRowDto {
     /**
      * Key property to merge employees from excel and database
      */

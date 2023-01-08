@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
 import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportEmployeesWorkflowEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportEmployeesWorkflowRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
@@ -32,8 +34,11 @@ public class AdminEmployeeImportService {
 
     private final AdminEmployeeImportProcessor importProcessor;
 
+    private final HrEasyCommonProps props;
+
     private final ImportEmployeesWorkflowRepo workflowRepo;
 
+    private final AdminEmployeeImportCommitter committer;
     private final DateTimeService dateTimeService;
 
     private final EmployeeImportMapper importMapper;
@@ -77,6 +82,8 @@ public class AdminEmployeeImportService {
                             entry.setState(ImportEmployeesWorkflowEntry.STATE_FILE_UPLOADED);
                             entry.setImportedRows(null);
                             entry.setImportProcessStats(null);
+                            entry.setConfigSetAt(null);
+                            entry.setConfigSetBy(null);
                             entry.setConfig(importMapper.config(new EmployeeImportConfig()));
                             return workflowRepo.save(entry);
                         }))).map(importMapper::fromEntry);
@@ -93,6 +100,7 @@ public class AdminEmployeeImportService {
      */
     @Transactional
     public Mono<ImportEmployeesWorkflowDto> applyConfigAndPreview(AuthContext auth, Integer processId, EmployeeImportConfig config, Locale locale) {
+        log.info("Apply configuration for {} import process by {}", processId, auth.getUsername());
         return validator.validateImportEmployee(auth)
                 // 1. Get import workflow in the database
                 .flatMap(v -> workflowRepo.findById(processId))
@@ -106,13 +114,59 @@ public class AdminEmployeeImportService {
                                         // 4. Update information in the database
                                         .flatMap(processingResult -> {
                                             entry.setConfig(importMapper.config(config));
-                                            entry.setImportedRows(importMapper.data(processingResult.getRows()));
+                                            entry.setImportedRows(importMapper.importedRows(processingResult.getRows()));
                                             entry.setImportProcessStats(importMapper.stats(processingResult.getStats()));
                                             entry.setState(ImportEmployeesWorkflowEntry.STATE_CONFIGURATION_SET);
+                                            entry.setConfigSetBy(auth.getEmployeeInfo().getEmployeeId());
+                                            entry.setConfigSetAt(dateTimeService.now());
                                             return workflowRepo.save(entry);
                                         }).map(importMapper::fromEntry)
                         )
                 );
+    }
+
+    @Transactional
+    public Mono<ImportEmployeesWorkflowDto> commit(AuthContext auth, Integer processId) {
+        log.info("Commit import process {} by {}", processId, auth.getUsername());
+        var now = dateTimeService.now();
+        return validator.validateImportEmployee(auth)
+                // 1. Get import workflow in the database
+                .flatMap(v -> workflowRepo.findById(processId))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
+                // 2. Process each row one by one
+                .flatMap(entry -> {
+                    // 3. Check that import process configuration is up-to-date
+                    if (entry.getConfigSetAt() == null || now.minus(props.getImportEmployee().getImportConfigTtl()).isAfter(entry.getConfigSetAt())) {
+                        return Mono.error(new BusinessError("errors.import.configuration_exprired"));
+                    }
+                    return Flux.fromIterable(importMapper.importedRows(entry.getImportedRows()))
+                            .flatMap(row -> committer.commitRow(auth, row, processId))
+                            .reduce(0, ((sum, updated) -> sum + updated))
+                            .flatMap(updates -> {
+                                log.info("Import process {} completed. Number of updates in database - {}", processId, updates);
+                                entry.setCompletedAt(now);
+                                entry.setCompletedBy(auth.getEmployeeInfo().getEmployeeId());
+                                entry.setState(ImportEmployeesWorkflowEntry.STATE_CHANGES_APPLIED);
+                                return workflowRepo.save(entry);
+                            });
+                }).map(importMapper::fromEntry);
+
+    }
+
+    @Transactional
+    public Mono<ImportEmployeesWorkflowDto> abort(AuthContext auth, Integer processId) {
+        log.info("Abort import process {} by {}", processId, auth.getUsername());
+        return validator.validateImportEmployee(auth)
+                // 1. Get import workflow in the database
+                .flatMap(v -> workflowRepo.findById(processId))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
+                // 2. Process each row one by one
+                .flatMap(entry -> {
+                    entry.setState(ImportEmployeesWorkflowEntry.STATE_ABORTED);
+                    entry.setCompletedBy(auth.getEmployeeInfo().getEmployeeId());
+                    entry.setCompletedAt(dateTimeService.now());
+                    return workflowRepo.save(entry);
+                }).map(importMapper::fromEntry);
     }
 
     private ImportEmployeesWorkflowEntry defaultImportConfig(AuthContext auth) {
@@ -123,4 +177,6 @@ public class AdminEmployeeImportService {
         entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
         return entry;
     }
+
+
 }

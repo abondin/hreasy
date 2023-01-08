@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS empl.import_workflow (
     created_by integer NOT NULL REFERENCES empl.employee (id),
     completed_at timestamp with time zone NULL,
     completed_by integer NULL REFERENCES empl.employee (id),
+    config_set_at timestamp with time zone NULL,
+    config_set_by integer NULL REFERENCES empl.employee (id),
     filename varchar(1024) NULL,
     file_content_length bigint NULL,
     config jsonb NULL,
@@ -23,6 +25,8 @@ COMMENT ON COLUMN empl.import_workflow.created_at IS 'Created at';
 COMMENT ON COLUMN empl.import_workflow.created_by IS 'Created by (link to employee)';
 COMMENT ON COLUMN empl.import_workflow.completed_at IS 'Completed/Canceled/Aborted by error at';
 COMMENT ON COLUMN empl.import_workflow.completed_by IS 'Completed/Canceled by (link to employee)';
+COMMENT ON COLUMN empl.import_workflow.config_set_at IS 'Configuration set at';
+COMMENT ON COLUMN empl.import_workflow.config_set_by IS 'Configuration set by (link to employee)';
 COMMENT ON COLUMN empl.import_workflow.filename IS 'Original uploaded filename';
 COMMENT ON COLUMN empl.import_workflow.file_content_length IS 'Uploaded file size';
 COMMENT ON COLUMN empl.import_workflow.config IS 'Workflow configuration';
@@ -35,3 +39,7 @@ INSERT INTO sec.perm (permission,description) VALUES
 INSERT INTO sec.role_perm ("role","permission") VALUES
     ('global_admin','import_employee'),
      ('hr','import_employee');
+
+-- Add link to employee history and import_workflow
+ALTER TABLE empl.employee_history ADD COLUMN IF NOT EXISTS import_process INTEGER NULL REFERENCES empl.import_workflow (id);
+COMMENT ON COLUMN empl.employee_history.import_process IS 'Created/Updated during import process';

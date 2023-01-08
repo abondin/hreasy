@@ -5,7 +5,7 @@ import io.r2dbc.postgresql.codec.Json;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelDto;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
 
 import java.time.OffsetDateTime;
 
@@ -30,6 +30,9 @@ public class ImportEmployeesWorkflowEntry {
     private Integer completedBy;
 
 
+    private OffsetDateTime configSetAt;
+    private Integer configSetBy;
+
     private int state = 0;
 
     private String filename;
@@ -43,7 +46,7 @@ public class ImportEmployeesWorkflowEntry {
 
     /**
      * Imported data
-     * @see ImportEmployeeExcelDto
+     * @see ImportEmployeeExcelRowDto
      */
     private Json importedRows;
 

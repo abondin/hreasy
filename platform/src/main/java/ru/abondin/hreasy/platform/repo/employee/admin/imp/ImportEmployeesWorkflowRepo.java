@@ -13,6 +13,6 @@ public interface ImportEmployeesWorkflowRepo extends ReactiveCrudRepository<Impo
      * @param employeeId
      * @return
      */
-    @Query("select * from empl.import_workflow where state>=0 and created_by=:employeeId limit 1")
+    @Query("select * from empl.import_workflow where state in (0,1,2) and created_by=:employeeId limit 1")
     Mono<ImportEmployeesWorkflowEntry> get(@Param("employeeId") int employeeId);
 }

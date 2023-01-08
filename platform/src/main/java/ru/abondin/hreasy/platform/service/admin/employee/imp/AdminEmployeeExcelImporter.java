@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelDto;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,9 +28,9 @@ public class AdminEmployeeExcelImporter {
     private final String tableItemBeanName = "employee";
 
 
-    public Flux<ImportEmployeeExcelDto> importEmployees(EmployeeImportConfig config, InputStream file) {
+    public Flux<ImportEmployeeExcelRowDto> importEmployees(EmployeeImportConfig config, InputStream file) {
         var beans = new HashMap<String, Object>();
-        var employees = new ArrayList<ImportEmployeeExcelDto>();
+        var employees = new ArrayList<ImportEmployeeExcelRowDto>();
         beans.put("employees", employees);
         XLSReadStatus status = null;
         try {
@@ -68,7 +68,7 @@ public class AdminEmployeeExcelImporter {
         loopBlock.setEndRow(config.getTableStartRow() - 1);
         loopBlock.setItems(tableBeanName);
         loopBlock.setVar(tableItemBeanName);
-        loopBlock.setVarType(ImportEmployeeExcelDto.class);
+        loopBlock.setVarType(ImportEmployeeExcelRowDto.class);
 
         var breakCondition = new SimpleSectionCheck();
         var rowCheck = new OffsetRowCheckImpl();

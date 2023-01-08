@@ -44,4 +44,5 @@ public class EmployeeWithAllDetailsEntry extends EmployeeEntry {
     private String children;
     @Column("ext_erp_id")
     private String extErpId;
+    private Integer importProcessId;
 }

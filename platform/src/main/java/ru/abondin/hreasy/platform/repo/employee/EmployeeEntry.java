@@ -29,8 +29,7 @@ public class EmployeeEntry {
     @Column("date_of_dismissal")
     private LocalDate dateOfDismissal;
     private String email;
-    //TODO Set phone datatype in database to string
-    private BigDecimal phone;
+    private String phone;
     private String skype;
     private String telegram;
 }
