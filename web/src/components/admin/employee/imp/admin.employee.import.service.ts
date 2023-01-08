@@ -69,6 +69,8 @@ export interface ImportEmployeeExcelRows {
     documentIssuedDate: ExcelRowDataProperty<string>,
     documentIssuedBy: ExcelRowDataProperty<string>,
     registrationAddress: ExcelRowDataProperty<string>,
+
+    updatedCellsCount: number
 }
 
 export interface ExcelRowDataProperty<T> {

@@ -15,7 +15,7 @@
         <v-select
             v-model="data.filter.onlyNotArchived"
             :label="$t('Скрыть архивные')"
-            :items="[{value:false, text:'Нет'}, {value:true, text:'Да'}]">
+            :items="[{value:false, text:$t('Нет')}, {value:true, text:$t('Да')}]">
         </v-select>
       </v-col>
     </template>

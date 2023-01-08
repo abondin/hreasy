@@ -36,21 +36,33 @@
     </v-card>
     <v-card>
       <v-card-title>
-        <v-text-field
-            v-model="filter.search"
-            append-icon="mdi-magnify"
-            :label="$t('Поиск')"
-            single-line
-            hide-details
-        ></v-text-field>
+        <v-container>
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                  v-model="filter.search"
+                  append-icon="mdi-magnify"
+                  :label="$t('Поиск')"
+                  single-line
+                  hide-details
+              ></v-text-field>
+            </v-col>
+            <v-col cols="auto">
+              <v-select
+                  v-model="filter.hideNotUpdatedWithoutErrors"
+                  :label="$t('Скрыть строки без изменений и без ошибок')"
+                  :items="[{value:false, text:$t('Нет')}, {value:true, text:$t('Да')}]">
+              </v-select>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-card-title>
       <v-card-text>
         <v-data-table
             dense
             :headers="headers"
             :items-per-page="defaultItemsPerTablePage"
-            :items="workflow.importedRows"
-            :search="filter.search"
+            :items="filterRows(workflow.importedRows)"
             sort-by="displayName"
             class="text-truncate">
           <template v-slot:item.email="{item}">
@@ -88,12 +100,14 @@ import {UiConstants} from "@/components/uiconstants";
 import {Prop} from "vue-property-decorator";
 import {
   ExcelRowDataProperty,
+  ImportEmployeeExcelRows,
   ImportEmployeesWorkflow
 } from "@/components/admin/employee/imp/admin.employee.import.service";
 import ImportPreviewTableCell from "@/components/admin/employee/imp/ImportPreviewTableCell.vue";
 
 class Filter {
   public search = '';
+  public hideNotUpdatedWithoutErrors = true;
 }
 
 interface ImportPreviewDataHeader<T = any> extends DataTableHeader<T> {
@@ -172,6 +186,12 @@ export default class AdminEmployeesImportPreview extends Vue {
       width: 500,
       format: 'string'
     });
+    this.headers.push({
+      text: this.$tc('Идентификатор во внешней ERP системе'),
+      value: 'externalErpId',
+      width: 150,
+      format: 'string'
+    });
     this.headers.push({text: this.$tc('Пол'), value: 'sex', width: 100, format: 'string'});
   }
 
@@ -180,6 +200,22 @@ export default class AdminEmployeesImportPreview extends Vue {
     return DateTimeUtils.formatFromIso(date?.importedValue);
   }
 
+  private filterRows(items: ImportEmployeeExcelRows[]) {
+    return items.filter((item) => {
+      let result = true
+      if (this.filter.hideNotUpdatedWithoutErrors) {
+        result = result && (item.updatedCellsCount > 0 || item.errorCount > 0);
+      }
+      if (this.filter.search && this.filter.search.trim().length > 0) {
+        const search = this.filter.search.trim().toLowerCase();
+        result = result && (
+            (item.displayName?.importedValue && item.displayName.importedValue.toLowerCase().indexOf(search) >= 0)
+            || (item.email && item.email.toLowerCase().indexOf(search) >= 0)
+        ) as boolean;
+      }
+      return result;
+    });
+  }
 
 }
 </script>
