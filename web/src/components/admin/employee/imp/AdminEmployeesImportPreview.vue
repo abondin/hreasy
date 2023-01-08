@@ -58,7 +58,7 @@
               <template v-slot:activator="{ on }">
                 <v-chip v-on="on" x-small class="error mr-1 pa-2">{{ item.errorCount }}</v-chip>
               </template>
-              {{ $t('Количество ошибок при разборе документа') }}
+              {{ $t('Количество ошибок при разборе строки документа') }}
             </v-tooltip>
             <span :class="{'new': item.new}">{{ item.email }}</span>
           </template>

@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.admin.employee.imp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
@@ -25,6 +26,7 @@ public class AdminEmployeeImportCommitter {
      * @param row
      * @return number of updates (actually 1 or 0 if skipped)
      */
+    @Transactional()
     public Mono<Integer> commitRow(AuthContext ctx, ImportEmployeeExcelRowDto row, Integer processId) {
         return Mono.defer(() -> {
                     // Return skip status if no cells require update
@@ -34,7 +36,11 @@ public class AdminEmployeeImportCommitter {
                         // 1. Prepare body to update
                         return createOrUpdateBody(ctx, row, processId)
                                 // 2. Commit changes in database
-                                .flatMap(body -> row.isNew() ? employeeService.create(ctx, body) : employeeService.update(ctx, row.getEmployeeId(), body));
+                                .flatMap(body -> row.isNew() ? employeeService.create(ctx, body) : employeeService.update(ctx, row.getEmployeeId(), body))
+                                .doOnError(e -> {
+                                    log.error("Unable to commit employee " + row.getEmail(), e);
+                                }).map(id->1 // Show that row was updated
+                                        );
                     }
                 }
         );

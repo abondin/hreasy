@@ -10,6 +10,7 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
+import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
@@ -98,8 +99,12 @@ public class AdminEmployeeImportProcessor {
     }
 
     private void parseRawData(ImportEmployeeExcelRowDto excelRow, ImportContext context) {
+        var trimmedEmailInLowerCase = excelRow.getEmail().toLowerCase(context.locale).trim();
         var existingEmpl = context.employees.stream().filter(e -> e.getEmail().trim().toLowerCase(context.locale)
-                .equals(excelRow.getEmail().toLowerCase(context.locale).trim())).findFirst();
+                .equals(trimmedEmailInLowerCase)).findFirst();
+
+        // Do not update email for existing employee!
+        excelRow.setEmail(existingEmpl.map(EmployeeEntry::getEmail).orElse(trimmedEmailInLowerCase));
 
         excelRow.setEmployeeId(existingEmpl.map(EmployeeWithAllDetailsEntry::getId).orElse(null));
 

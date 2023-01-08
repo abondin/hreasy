@@ -67,7 +67,7 @@ public class AdminEmployeeService {
                 .defaultIfEmpty(EMPTY_INSTANCE)
                 .flatMap(existing -> {
                     if (existing == EMPTY_INSTANCE) {
-                        return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, new EmployeeWithAllDetailsEntry(), body);
+                        return doUpdateFromBody(auth.getEmployeeInfo().getEmployeeId(), now, new EmployeeWithAllDetailsEntry(), body);
                     } else {
                         return Mono.error(new BusinessError("errors.employeewithemail.exists", body.getEmail()));
                     }
@@ -78,7 +78,6 @@ public class AdminEmployeeService {
     @Transactional
     public Mono<Integer> createNewKid(AuthContext auth, int employeeId, CreateOrUpdateEmployeeKidBody body) {
         log.info("Create new employee {} kid {} by {}", employeeId, body, auth.getUsername());
-        var now = dateTimeService.now();
         return securityValidator.validateEditEmployee(auth)
                 .flatMap(s -> employeeRepo.findById(employeeId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
@@ -113,7 +112,7 @@ public class AdminEmployeeService {
 
     @Transactional
     public Mono<Integer> update(AuthContext auth, int employeeId, CreateOrUpdateEmployeeBody body) {
-        log.info("Update new employee {} with {} by {}", employeeId, body, auth.getUsername());
+        log.info("Update employee {} with {} by {}", employeeId, body, auth.getUsername());
         var now = dateTimeService.now();
         return securityValidator.validateEditEmployee(auth)
                 .flatMap(s -> employeeRepo.findById(employeeId))
@@ -122,7 +121,7 @@ public class AdminEmployeeService {
                     if (!entry.getEmail().equals(body.getEmail())) {
                         return Mono.error(new BusinessError("errors.emailupdate.unsupported", entry.getEmail(), body.getEmail()));
                     }
-                    return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry, body);
+                    return doUpdateFromBody(auth.getEmployeeInfo().getEmployeeId(), now, entry, body);
                 });
     }
 
@@ -135,12 +134,11 @@ public class AdminEmployeeService {
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
                 .flatMap(entry -> {
                     entry.setTelegram(body.getTelegram());
-                    return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry);
+                    return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry, null);
                 });
     }
 
     /**
-     *
      * @param employeeId
      * @param newCurrentProject - link to new project. null to unlnk current project
      * @param auth
@@ -155,25 +153,25 @@ public class AdminEmployeeService {
                 .flatMap(s -> employeeRepo.findById(employeeId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
                 .flatMap(entry -> {
-                    entry.setCurrentProjectId(newCurrentProject == null? null : newCurrentProject.getId());
-                    entry.setCurrentProjectRole(newCurrentProject == null? null : newCurrentProject.getRole());
-                    return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry);
+                    entry.setCurrentProjectId(newCurrentProject == null ? null : newCurrentProject.getId());
+                    entry.setCurrentProjectRole(newCurrentProject == null ? null : newCurrentProject.getRole());
+                    return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry, null);
                 });
     }
 
 
-    private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry, CreateOrUpdateEmployeeBody body) {
+    private Mono<Integer> doUpdateFromBody(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry, CreateOrUpdateEmployeeBody body) {
         mapper.populateFromBody(entry, body);
-        return doUpdate(currentEmployeeId, now, entry);
+        return doUpdate(currentEmployeeId, now, entry, body.getImportProcessId());
     }
 
-    private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry) {
+    private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry, @Nullable Integer importProcessId) {
         return employeeRepo.save(entry).flatMap(persisted -> {
             var history = mapper.history(persisted, currentEmployeeId, now);
+            history.setImportProcess(importProcessId);
             return historyRepo.save(history).map(e -> persisted.getId());
         });
     }
-
 
 
 }

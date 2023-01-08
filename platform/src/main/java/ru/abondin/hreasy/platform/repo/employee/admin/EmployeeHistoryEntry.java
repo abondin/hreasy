@@ -14,4 +14,5 @@ public class EmployeeHistoryEntry extends EmployeeWithAllDetailsEntry {
     private int employee;
     private OffsetDateTime createdAt;
     private int createdBy;
+    private Integer importProcess;
 }

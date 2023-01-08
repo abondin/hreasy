@@ -20,7 +20,7 @@ public interface EmployeeWithAllDetailsRepo extends ReactiveCrudRepository<Emplo
     @Query("select * from empl.v_employee_detailed order by display_name")
     Flux<EmployeeWithAllDetailsWithBaView> findAllDetailed();
 
-    @Query("select * from empl.v_employee_detailed order by display_name where id=:id")
+    @Query("select * from empl.v_employee_detailed where id=:id order by display_name")
     Mono<EmployeeWithAllDetailsWithBaView> findDetailedById(int id);
 
 }
