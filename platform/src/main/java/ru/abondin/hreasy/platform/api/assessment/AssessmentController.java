@@ -84,7 +84,7 @@ public class AssessmentController {
     public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(@PathVariable("employeeId") int employeeId,
                                                                      @PathVariable int assessmentId,
                                                                      @RequestPart("file") Mono<FilePart> multipartFile,
-                                                                     @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength) {
+                                                                     @RequestHeader(value = HttpHeaders.CONTENT_LENGTH) long contentLength) {
         log.debug("Upload new attachment for assessment {}:{}", employeeId, assessmentId);
         return AuthHandler.currentAuth().flatMap(auth -> multipartFile
                 .flatMap(it -> service.uploadAttachment(auth, employeeId, assessmentId, it, contentLength)));
@@ -94,9 +94,8 @@ public class AssessmentController {
     @DeleteMapping(value = "/{employeeId}/{assessmentId}/attachment/{filename}")
     public Mono<DeleteAssessmentAttachmentResponse> deleteAttachment(@PathVariable("employeeId") int employeeId,
                                                                      @PathVariable int assessmentId,
-                                                                     @PathVariable String filename,
-                                                                     @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength) {
-        log.debug("Upload new attachment for assessment {}:{}. Content length={}", employeeId, assessmentId, contentLength);
+                                                                     @PathVariable String filename) {
+        log.debug("Delete attachment {} for assessment {}:{}. Content length={}", filename, employeeId, assessmentId);
         return AuthHandler.currentAuth().flatMap(auth -> service.deleteAttachment(auth, employeeId, assessmentId, filename));
     }
 

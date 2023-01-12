@@ -35,10 +35,10 @@
             </v-col>
             <v-col cols=4>
               <v-text-field v-model="employeeForm.phone"
-                            :counter="11"
-                            :rules="[v=>(!v || /^\d{11}$/.test(v) || $t('Число 11 символов'))]"
+                            :counter="12"
+                            :rules="[v=>(!v || v.length <= 12 || $t('Не более N символов', 12))]"
                             :label="$t('Телефон')"
-                            hint="Формат 81112223344">
+                            hint="Формат +71112223344">
                 >
               </v-text-field>
             </v-col>
