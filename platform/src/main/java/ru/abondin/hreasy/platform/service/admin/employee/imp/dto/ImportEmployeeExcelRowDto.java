@@ -28,6 +28,11 @@ public class ImportEmployeeExcelRowDto {
      */
     private Integer employeeId;
 
+    /**
+     * Row number in document
+     */
+    private Integer rowNumber;
+
     private DataProperty<String> displayName = new DataProperty<>();
     private DataProperty<String> externalErpId = new DataProperty<>();
     private DataProperty<String> phone = new DataProperty<>();
@@ -86,6 +91,11 @@ public class ImportEmployeeExcelRowDto {
          */
         public boolean isUpdated() {
             return error == null && importedValue != null && !importedValue.equals(currentValue);
+        }
+
+        @Override
+        public String toString() {
+            return raw == null ? "NULL" : raw;
         }
     }
 

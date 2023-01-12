@@ -130,7 +130,7 @@ public class AdminEmployeeImportProcessor {
         apply(excelRow.getExternalErpId(), existingEmpl, EmployeeWithAllDetailsEntry::getExtErpId, context, this::applyStringWithTrim);
         apply(excelRow.getRegistrationAddress(), existingEmpl, EmployeeWithAllDetailsEntry::getRegistrationAddress, context, this::applyStringWithTrim);
         apply(excelRow.getPhone(), existingEmpl, EmployeeWithAllDetailsEntry::getPhone, context, this::applyStringWithTrim);
-        apply(excelRow.getSex(), existingEmpl, EmployeeWithAllDetailsEntry::getSex, context, this::applySex);
+        apply(excelRow.getSex(), existingEmpl, EmployeeWithAllDetailsEntry::getSex, context, this::applyStringWithTrim);
     }
 
 
@@ -173,16 +173,6 @@ public class AdminEmployeeImportProcessor {
         prop.setImportedValue(prop.getRaw().trim());
     }
 
-    private void applySex(ImportEmployeeExcelRowDto.DataProperty<String> prop, ImportContext ctx) {
-        var value = prop.getRaw().toLowerCase(ctx.locale).replaceAll("\\s", "");
-        if (props.getImportEmployee().getSexMaleVariants().contains(value)) {
-            prop.setImportedValue(props.getImportEmployee().getSexDefaultMaleValue());
-        } else if (props.getImportEmployee().getSexFemaleVariants().contains(value)) {
-            prop.setImportedValue(props.getImportEmployee().getSexDefaultFemaleValue());
-        } else {
-            prop.setError(i18n.localize("errors.import.not_in_dict"));
-        }
-    }
 
     private record ImportContext(List<EmployeeWithAllDetailsEntry> employees, List<SimpleDictDto> positions,
                                  List<SimpleDictDto> departments, Locale locale) {

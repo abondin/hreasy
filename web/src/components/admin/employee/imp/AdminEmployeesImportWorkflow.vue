@@ -2,7 +2,7 @@
 <template>
   <div>
     <v-skeleton-loader v-if="loading" class="mx-auto" type="card"></v-skeleton-loader>
-    <v-stepper v-model="step" v-if="workflow">
+    <v-stepper v-model="step" v-else-if="workflow">
       <v-stepper-header>
         <v-stepper-step step="1" editable>
           {{ $t('Загрузка файла') }}
@@ -36,8 +36,7 @@
         <!--</editor-fold>-->
         <!--<editor-fold desc="Preview">-->
         <v-stepper-content step="3" class="pa-0">
-          <v-skeleton-loader v-if="loading"></v-skeleton-loader>
-          <admin-employees-import-preview :workflow="workflow" v-else-if="workflow.importedRows"
+          <admin-employees-import-preview :workflow="workflow" v-if="workflow.importedRows"
                                           @back="step=2" @apply="applyChanges()"></admin-employees-import-preview>
           <v-alert v-else type="warning">
             {{ $t('Не удалось корректно обратотать файл. Загрузите другой или измените конфигурацию') }}
@@ -60,7 +59,7 @@
           {{ $t('Назад') }}
         </v-btn>
         <v-spacer></v-spacer>
-        <v-btn v-if="step>1 || workflow.state>0" @click="apply()" :class="{primary:step==3}" :disabled="error">
+        <v-btn v-if="step>1 || workflow.state>0" @click="apply()" :class="{primary:step==3}">
           {{ step == 3 ? $t('Применить') : (step == 4 ? $t('Закрыть') : $t('Далее')) }}
           <v-icon v-if="step!=4 && step!=3">mdi-arrow-right</v-icon>
         </v-btn>
@@ -187,21 +186,21 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
       sheetNumber: 1,
       tableStartRow: 11,
       columns: {
-        displayName: 'B',
-        externalErpId: 'H',
-        email: 'Q',
-        phone: 'G',
-        department: 'H',
-        position: 'I',
-        dateOfEmployment: 'J',
-        dateOfDismissal: 'K',
-        birthday: 'M',
-        sex: 'N',
-        documentSeries: 'P',
-        documentNumber: 'Q',
-        documentIssuedDate: 'R',
-        documentIssuedBy: 'S',
-        registrationAddress: 'U',
+        displayName : 'B',
+        externalErpId : 'H',
+        email : 'R',
+        phone : 'AI',
+        department : 'AJ',
+        position : 'AK',
+        dateOfEmployment : 'AL',
+        dateOfDismissal : 'AM',
+        birthday : 'AO',
+        sex : 'AP',
+        documentSeries : 'AR',
+        documentNumber : 'AS',
+        documentIssuedDate : 'AT',
+        documentIssuedBy : 'AU',
+        registrationAddress : 'AW'
       }
     }
   }

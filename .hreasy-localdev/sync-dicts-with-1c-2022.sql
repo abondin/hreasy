@@ -1,14 +1,15 @@
-update dict.department set "name"='РћС‚РґРµР» СЂР°Р·СЂР°Р±РѕС‚РєРё РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РѕР±РµСЃРїРµС‡РµРЅРёСЏ' where id=3;
-update dict.department set "name"='РћС‚РґРµР» С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РѕР±РµСЃРїРµС‡РµРЅРёСЏ' where id=5;
-UPDATE dict."position" SET "name"='РРЅР¶РµРЅРµСЂ-РїСЂРѕРіСЂР°РјРјРёСЃС‚ 1 РєР°С‚.' WHERE id=9;
-UPDATE dict."position" SET "name"='РРЅР¶РµРЅРµСЂ-РїСЂРѕРіСЂР°РјРјРёСЃС‚ 2 РєР°С‚.' WHERE id=10;
-UPDATE dict."position" SET "name"='РРЅР¶РµРЅРµСЂ-РїСЂРѕРіСЂР°РјРјРёСЃС‚ 3 РєР°С‚.' WHERE id=11;
-UPDATE dict."position" SET "name"='РРЅР¶РµРЅРµСЂ РїРѕ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЋ 3 РєР°С‚.' WHERE id=12;
-UPDATE dict."position" SET "name"='РРЅР¶РµРЅРµСЂ РїРѕ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЋ 2 РєР°С‚.' WHERE id=13;
-UPDATE dict."position" SET "name"='РРЅР¶РµРЅРµСЂ РїРѕ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЋ 1 РєР°С‚РµРіРѕСЂРёРё' WHERE id=32;
-UPDATE dict."position" SET "name"='Р СѓРєРѕРІРѕРґРёС‚РµР»СЊ РѕС‚РґРµР»Р° С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ РџРћ' WHERE id=24;
-UPDATE dict."position" SET "name"='РњРµРЅРµРґР¶РµСЂ РїСЂРѕРµРєС‚РѕРІ' WHERE id=18;
-UPDATE dict."position" SET "name"='РњР»Р°РґС€РёР№ РєРѕРЅСЃСѓР»СЊС‚Р°РЅС‚ РїРѕ РІРЅРµРґСЂРµРЅРёСЋ Рё РёРЅС‚РµРіСЂР°С†РёРё РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ РѕР±РµСЃРїРµС‡РµРЅРёСЏ' WHERE id=40;
-UPDATE dict."position" SET "name"='РЎРїРµС†РёР°Р»РёСЃС‚ РїРѕ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РёРІРЅРѕ-С…РѕР·СЏР№СЃС‚РІРµРЅРЅРѕР№ РґРµСЏС‚РµР»СЊРЅРѕСЃС‚Рё' WHERE id=35;
+update dict.department set "name"='Отдел разработки программного обеспечения' where id=3;
+update dict.department set "name"='Отдел тестирования программного обеспечения' where id=5;
+UPDATE dict."position" SET "name"='Инженер-программист 1 кат.' WHERE id=9;
+UPDATE dict."position" SET "name"='Инженер-программист 2 кат.' WHERE id=10;
+UPDATE dict."position" SET "name"='Инженер-программист 3 кат.' WHERE id=11;
+UPDATE dict."position" SET "name"='Инженер по тестированию 3 кат.' WHERE id=12;
+UPDATE dict."position" SET "name"='Инженер по тестированию 2 кат.' WHERE id=13;
+UPDATE dict."position" SET "name"='Инженер по тестированию 1 категории' WHERE id=32;
+UPDATE dict."position" SET "name"='Руководитель отдела тестирования ПО' WHERE id=24;
+UPDATE dict."position" SET "name"='Менеджер проектов' WHERE id=18;
+UPDATE dict."position" SET "name"='Младший консультант по внедрению и интеграции программного обеспечения' WHERE id=40;
+UPDATE dict."position" SET "name"='Специалист по административно-хозяйственной деятельности' WHERE id=35;
+UPDATE dict."position" SET "name"='Руководитель отдела внедрения и интеграции ПО' WHERE id=22;
 
 update empl.employee set display_name=trim(regexp_replace(display_name, '\s+', ' ', 'g'));

@@ -65,15 +65,18 @@
           :headers="headers"
           :items-per-page="defaultItemsPerTablePage"
           :items="filterRows(workflow.importedRows)"
-          sort-by="displayName"
           class="text-truncate">
-        <template v-slot:item.email="{item}">
+        <template v-slot:item.rowNumber="{item}">
+          <span>{{ item.rowNumber }}</span>
           <v-tooltip right v-if="item.errorCount>0">
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" x-small class="error mr-1 pa-2">{{ item.errorCount }}</v-chip>
+              <v-chip v-on="on" x-small class="error ml-1 pa-2"><v-icon x-small color="white">mdi-flash-alert</v-icon> {{ item.errorCount }}</v-chip>
             </template>
             {{ $t('Количество ошибок при разборе строки документа') }}
           </v-tooltip>
+        </template>
+
+        <template v-slot:item.email="{item}">
           <span :class="{'new': item.new}">{{ item.email }}</span>
         </template>
         <template v-for="header in headers.filter(h=>h.format)"
@@ -130,6 +133,7 @@ export default class AdminEmployeesImportPreview extends Vue {
 
   private reloadHeaders() {
     this.headers.length = 0;
+    this.headers.push({text: this.$tc('Строка'), value: 'rowNumber', width: 20});
     this.headers.push({text: this.$tc('Email'), value: 'email', width: 280});
     this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 280, format: 'string'});
     this.headers.push({text: this.$tc('Телефон'), value: 'phone', width: 150, format: 'string'});

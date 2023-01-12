@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.admin.employee.imp;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.util.CellReference;
 import org.jxls.reader.*;
@@ -43,8 +44,18 @@ public class AdminEmployeeExcelImporter {
         if (!status.isStatusOK()) {
             return Flux.error(new BusinessError("errors.import.statusNotOk"));
         }
+        // validate that email is properly set
+        // add row number to simplify
+        for (var i = 0; i < employees.size(); i++) {
+            var e = employees.get(i);
+            e.setRowNumber(i + config.getTableStartRow());
+            if (StringUtils.isBlank(e.getEmail())) {
+                return Flux.error(new BusinessError("errors.import.emailNotSet", Integer.toString(e.getRowNumber()), config.getColumns().getEmail()));
+            }
+        }
         return Flux.fromIterable(employees);
     }
+
 
     private XLSReader configureReader(EmployeeImportConfig config) {
         var reader = new XLSReaderImpl();
@@ -110,7 +121,7 @@ public class AdminEmployeeExcelImporter {
         }
         int columnIndex = getColumnIndex(column);
         var fullPropertyName = property;
-        if (!keyProp){
+        if (!keyProp) {
             fullPropertyName += ".raw";
         }
         var mapping = new BeanCellMapping(config.getTableStartRow() - 1, (short) columnIndex, tableItemBeanName, fullPropertyName);
