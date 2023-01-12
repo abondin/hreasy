@@ -35,7 +35,7 @@ public class AdminEmployeeExcelImporter {
         beans.put("employees", employees);
         XLSReadStatus status = null;
         try {
-            status = configureReader(new EmployeeImportConfig())
+            status = configureReader(config)
                     .read(file, beans);
         } catch (IOException | InvalidFormatException e) {
             log.error("Unable to import employees", e);

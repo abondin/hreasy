@@ -43,7 +43,7 @@ public class AdminEmployeesImporterTest {
 
     @Test
     public void testExcelImportRuntimeTemplate() throws Exception {
-        StepVerifier.create(importer.importEmployees(new EmployeeImportConfig(), new ClassPathResource("excel/employees-to-import.xlsx")
+        StepVerifier.create(importer.importEmployees(employeesToImportConfig(), new ClassPathResource("excel/employees-to-import.xlsx")
                         .getInputStream()))
                 .assertNext((empl) -> {
                     // Хайден Спуннер
@@ -100,6 +100,24 @@ public class AdminEmployeesImporterTest {
                     assertEqualsStr("РОССИЯ, 602222, Лучший город на свете, супер улица", empl.getRegistrationAddress());
                 })
                 .verifyComplete();
+    }
+
+    private EmployeeImportConfig employeesToImportConfig() {
+        var config = new EmployeeImportConfig();
+        config.getColumns().setEmail("Q");
+        config.getColumns().setPhone("AG");
+        config.getColumns().setDepartment("AH");
+        config.getColumns().setPosition("AI");
+        config.getColumns().setDateOfEmployment("AJ");
+        config.getColumns().setDateOfDismissal("AK");
+        config.getColumns().setBirthday("AM");
+        config.getColumns().setSex("AN");
+        config.getColumns().setDocumentSeries("AP");
+        config.getColumns().setDocumentNumber("AQ");
+        config.getColumns().setDocumentIssuedDate("AR");
+        config.getColumns().setDocumentIssuedBy("AS");
+        config.getColumns().setRegistrationAddress("AU");
+        return config;
     }
 
 
