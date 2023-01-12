@@ -36,7 +36,7 @@
             <v-col cols=4>
               <v-text-field v-model="employeeForm.phone"
                             :counter="12"
-                            :rules="[v=>(!v || v.length <= 12 || $t('Не более N символов', 12))]"
+                            :rules="[v=>(!v || v.length <= 12 || $t('Не более N символов', {n:12}))]"
                             :label="$t('Телефон')"
                             hint="Формат +71112223344">
                 >
@@ -45,7 +45,7 @@
             <v-col cols=2>
               <v-text-field v-model="employeeForm.skype"
                             :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', 255))]"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Skype')">
                 >
               </v-text-field>
@@ -53,7 +53,7 @@
             <v-col cols=2>
               <v-text-field v-model="employeeForm.telegram"
                             :counter="255"
-                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', 255))]"
+                            :rules="[v=>(!v || v.length <= 255 || $t('Не более N символов', {n:255}))]"
                             :label="$t('Telegram')">
                 >
               </v-text-field>
@@ -80,7 +80,7 @@
             <v-col cols=4>
               <v-text-field v-model="employeeForm.currentProjectRole"
                             :counter="64"
-                            :rules="[v=>(!v || v.length <= 64 || $t('Не более N символов', 64))]"
+                            :rules="[v=>(!v || v.length <= 64 || $t('Не более N символов', {n:64}))]"
                             :label="$t('Роль на проекте')">
                 >
               </v-text-field>
