@@ -60,12 +60,12 @@ public class StaticContentController {
                                      @RequestPart("file") Flux<FilePart> multipartFile
             , @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength) {
         log.debug("Upload new avatar for " + employeeId);
-        return AuthHandler.currentAuth().flatMap(auth -> {
-            SecurityUtils.validateUploadAvatar(auth, employeeId);
-            return multipartFile
-                    .flatMap(it -> fileStorage.uploadFile("avatars", employeeId + ".png", it, contentLength))
-                    .then(Mono.just("OK"));
-        });
+        return AuthHandler.currentAuth().flatMap(
+                auth -> SecurityUtils.validateUploadAvatar(auth, employeeId)
+                        .flatMap(v ->
+                                multipartFile
+                                        .flatMap(it -> fileStorage.uploadFile("avatars", employeeId + ".png", it, contentLength))
+                                        .then(Mono.just("OK"))));
     }
 
     @Operation(summary = "Get tech profile file")

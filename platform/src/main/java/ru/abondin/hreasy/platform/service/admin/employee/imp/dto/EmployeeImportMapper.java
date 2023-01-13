@@ -11,16 +11,16 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public abstract class EmployeeImportMapper extends MapperBaseWithJsonSupport {
-    public Json config(EmployeeImportConfig config) {
-        return config == null ? null : Json.of(toJsonString(config));
+    public Json impCfg(EmployeeImportConfig config) {
+        return config == null ? null : Json.of(toJsonStr(config, true));
     }
 
     public Json importedRows(List<ImportEmployeeExcelRowDto> data) {
-        return data == null ? null : Json.of(toJsonString(data));
+        return data == null ? null : Json.of(toJsonStr(data, true));
     }
 
     public Json stats(ImportProcessStats stats) {
-        return stats == null ? null : Json.of(toJsonString(stats));
+        return stats == null ? null : Json.of(toJsonStr(stats, true));
     }
 
     @Mapping(target = "config", qualifiedByName = "importEmployeeConfig", source = "config")

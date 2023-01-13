@@ -84,7 +84,7 @@ public class AdminEmployeeImportService {
                             entry.setImportProcessStats(null);
                             entry.setConfigSetAt(null);
                             entry.setConfigSetBy(null);
-                            entry.setConfig(importMapper.config(new EmployeeImportConfig()));
+                            entry.setConfig(importMapper.impCfg(new EmployeeImportConfig()));
                             return workflowRepo.save(entry);
                         }))).map(importMapper::fromEntry);
     }
@@ -113,7 +113,7 @@ public class AdminEmployeeImportService {
                                 importProcessor.applyConfigAndParseExcelFile(auth, config, file, locale)
                                         // 4. Update information in the database
                                         .flatMap(processingResult -> {
-                                            entry.setConfig(importMapper.config(config));
+                                            entry.setConfig(importMapper.impCfg(config));
                                             entry.setImportedRows(importMapper.importedRows(processingResult.getRows()));
                                             entry.setImportProcessStats(importMapper.stats(processingResult.getStats()));
                                             entry.setState(ImportEmployeesWorkflowEntry.STATE_CONFIGURATION_SET);
@@ -172,7 +172,7 @@ public class AdminEmployeeImportService {
     private ImportEmployeesWorkflowEntry defaultImportConfig(AuthContext auth) {
         var entry = new ImportEmployeesWorkflowEntry();
         entry.setState(ImportEmployeesWorkflowEntry.STATE_CREATED);
-        entry.setConfig(importMapper.config(new EmployeeImportConfig()));
+        entry.setConfig(importMapper.impCfg(new EmployeeImportConfig()));
         entry.setCreatedAt(dateTimeService.now());
         entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
         return entry;
