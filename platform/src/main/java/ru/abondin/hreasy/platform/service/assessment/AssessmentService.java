@@ -69,7 +69,7 @@ public class AssessmentService {
 
     public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(AuthContext auth, int employeeId, int assessmentId
             , FilePart file, long contentLength) {
-        return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
+        return validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentId)
                 .flatMap(v -> {
                     var filename = file.filename();
                     return fileStorage.uploadFile(getAssessmentAttachmentFolder(employeeId, assessmentId), filename, file, contentLength)
@@ -86,7 +86,7 @@ public class AssessmentService {
      * @return
      */
     public Mono<AssessmentWithFormsAndFiles> getAssessment(AuthContext auth, int employeeId, int assessmentId) {
-        return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
+        return validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentId)
                 // 1. Get assessment entry with base info
                 .flatMap(v -> assessmentRepo.findById(assessmentId))
                 .flatMap(assessmentEntry -> {
@@ -125,29 +125,29 @@ public class AssessmentService {
     @Transactional
     public Mono<Integer> cancelAssessment(AuthContext auth, int employeeId, int assessmentId) {
         var now = dateTimeService.now();
-        return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
+        return validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentId)
                 .flatMap(v -> assessmentRepo.updateCanceledBy(assessmentId, auth.getEmployeeInfo().getEmployeeId(), now));
     }
 
     @Transactional
     public Mono<Integer> completeAssessment(AuthContext auth, int employeeId, int assessmentId) {
         var now = dateTimeService.now();
-        return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
+        return validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentId)
                 .flatMap(v -> assessmentRepo.updateCompletedBy(assessmentId, auth.getEmployeeInfo().getEmployeeId(), now));
     }
 
     public Mono<? extends DeleteAssessmentAttachmentResponse> deleteAttachment(AuthContext auth, int employeeId, int assessmentId, String filename) {
-        return validateOwnerOrCanViewAssessmentFull(auth, assessmentId)
+        return validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentId)
                 .flatMap(v -> fileStorage.toRecycleBin(getAssessmentAttachmentFolder(employeeId, assessmentId), filename))
                 .map(deleted -> new DeleteAssessmentAttachmentResponse(deleted));
     }
 
 
-    private Mono<Boolean> validateOwnerOrCanViewAssessmentFull(AuthContext auth, int assessmentId) {
+    private Mono<Boolean> validateOwnerOrCanViewAssessmentFull(AuthContext auth, int employeeId, int assessmentId) {
         return assessmentRepo.findAllAssessmentOwners(assessmentId)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(assessmentId))))
                 .collectList()
-                .flatMap(assessmentOwners -> securityValidator.validateOwnerOrCanViewAssessmentFull(auth, assessmentOwners));
+                .flatMap(assessmentOwners -> securityValidator.validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentOwners));
     }
 }
 
