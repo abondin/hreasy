@@ -1,7 +1,7 @@
 CREATE schema if not exists ts;
-CREATE SEQUENCE IF NOT EXISTS ts.timesheet_id_seq;
-CREATE TABLE IF NOT EXISTS ts.timesheet (
-    id integer PRIMARY KEY NOT NULL DEFAULT nextval('ts.timesheet_id_seq'),
+CREATE SEQUENCE IF NOT EXISTS ts.timesheet_record_id_seq;
+CREATE TABLE IF NOT EXISTS ts.timesheet_record (
+    id integer PRIMARY KEY NOT NULL DEFAULT nextval('ts.timesheet_record_id_seq'),
     employee integer NOT NULL REFERENCES empl.employee (id),
     business_account integer NOT NULL REFERENCES ba.business_account (id),
     project integer NULL REFERENCES proj.project (id),
@@ -14,16 +14,16 @@ CREATE TABLE IF NOT EXISTS ts.timesheet (
 );
 
 COMMENT ON TABLE ts.timesheet IS 'Daily spent hours';
-COMMENT ON COLUMN ts.timesheet.id IS 'Primary key';
-COMMENT ON COLUMN ts.timesheet.employee IS 'Key attribute - link to employee';
-COMMENT ON COLUMN ts.timesheet.business_account IS 'Key attribute - link to business account';
-COMMENT ON COLUMN ts.timesheet.project IS 'Link to specific project';
-COMMENT ON COLUMN ts.timesheet.date IS 'Reporting date';
-COMMENT ON COLUMN ts.timesheet.hours IS 'Amount of working hours';
-COMMENT ON COLUMN ts.timesheet.created_at IS 'Created at';
-COMMENT ON COLUMN ts.timesheet.created_by IS 'Created by (link to employee)';
-COMMENT ON COLUMN ts.timesheet.deleted_at IS 'Deleted/Canceled at';
-COMMENT ON COLUMN ts.timesheet.deleted_by IS 'Deleted/Canceled by (link to employee)';
+COMMENT ON COLUMN ts.timesheet_record.id IS 'Primary key';
+COMMENT ON COLUMN ts.timesheet_record.employee IS 'Key attribute - link to employee';
+COMMENT ON COLUMN ts.timesheet_record.business_account IS 'Key attribute - link to business account';
+COMMENT ON COLUMN ts.timesheet_record.project IS 'Link to specific project';
+COMMENT ON COLUMN ts.timesheet_record.date IS 'Reporting date';
+COMMENT ON COLUMN ts.timesheet_record.hours IS 'Amount of working hours';
+COMMENT ON COLUMN ts.timesheet_record.created_at IS 'Created at';
+COMMENT ON COLUMN ts.timesheet_record.created_by IS 'Created by (link to employee)';
+COMMENT ON COLUMN ts.timesheet_record.deleted_at IS 'Deleted/Canceled at';
+COMMENT ON COLUMN ts.timesheet_record.deleted_by IS 'Deleted/Canceled by (link to employee)';
 
 INSERT INTO sec.perm (permission,description) VALUES
     ('report_timesheet','Report daily timesheet');

@@ -52,7 +52,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 **List of supported permissions**:
 
 |permission|depends on department|always available to oneself|always available to project/ba manager| description                                                                                                                                                      |
-|----|------|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|----|------|------|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |update_current_project_global|N|N|N| Change current employee project                                                                                                                                   |
 |update_current_project|Y|N|Y| Update current project for employee from my projects or my departments                                                                                            |
 |update_avatar|N|N|N| Update employee avatar                                                                                                                                            |
