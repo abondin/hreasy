@@ -18,12 +18,12 @@ public class TimesheetSecurityValidator {
 
     private final ProjectHierarchyAccessor projectHierarchyService;
 
-    public Mono<Boolean> validatePostTimesheet(AuthContext auth, int employeeId) {
+    public Mono<Boolean> validateViewTimesheet(AuthContext auth, int employeeId) {
         return Mono.defer(() -> {
             if (employeeId == auth.getEmployeeInfo().getEmployeeId()) {
                 return Mono.just(true);
             }
-            if (!auth.getAuthorities().contains("techprofile_upload")) {
+            if (!auth.getAuthorities().contains("view_timesheet")) {
                 return Mono.just(false);
             }
             return projectHierarchyService.isManager(auth, employeeId);
@@ -31,16 +31,23 @@ public class TimesheetSecurityValidator {
             if (r) {
                 return Mono.just(true);
             }
-            return Mono.error(new AccessDeniedException("Only logged in user or user with permission techprofile_upload can upload or delete tech profile"));
+            return Mono.error(new AccessDeniedException("Only logged in user or user with permission view_timesheet can view timesheet"));
         });
     }
 
-    public Mono<Boolean> validateDownloadTechProfile(AuthContext auth, int employeeId) {
+    public Mono<Boolean> validateViewTimesheetSummary(AuthContext auth) {
+        return Mono.defer(() ->
+                        Mono.just(auth.getAuthorities().contains("view_timesheet_summary")))
+                .flatMap(r ->
+                        Mono.error(new AccessDeniedException("Only user with permission view_timesheet_summary can view timesheet summary")));
+    }
+
+    public Mono<Boolean> validateReportTimesheet(AuthContext auth, int employeeId) {
         return Mono.defer(() -> {
             if (employeeId == auth.getEmployeeInfo().getEmployeeId()) {
                 return Mono.just(true);
             }
-            if (!auth.getAuthorities().contains("techprofile_download")) {
+            if (!auth.getAuthorities().contains("report_timesheet")) {
                 return Mono.just(false);
             }
             return projectHierarchyService.isManager(auth, employeeId);
@@ -48,8 +55,7 @@ public class TimesheetSecurityValidator {
             if (r) {
                 return Mono.just(true);
             }
-            return Mono.error(new AccessDeniedException("Only logged in user or user with permission techprofile_download can download tech profile"));
+            return Mono.error(new AccessDeniedException("Only logged in user or user with permission report_timesheet can report timesheet"));
         });
     }
-
 }

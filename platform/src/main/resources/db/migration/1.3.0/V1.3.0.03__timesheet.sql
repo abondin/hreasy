@@ -27,7 +27,16 @@ COMMENT ON COLUMN ts.timesheet_record.deleted_by IS 'Deleted/Canceled by (link t
 
 INSERT INTO sec.perm (permission,description) VALUES
     ('report_timesheet','Report daily timesheet');
+INSERT INTO sec.perm (permission,description) VALUES
+        ('view_timesheet','View daily timesheet for given employee');
+INSERT INTO sec.perm (permission,description) VALUES
+        ('view_timesheet_summary','View daily timesheet summary');
 
 INSERT INTO sec.role_perm ("role","permission") VALUES
+    ('global_admin','view_timesheet_summary'),
+     ('pm','view_timesheet_summary'),
+     ('hr','view_timesheet_summary'),
+    ('global_admin','view_timesheet'),
+     ('pm','view_timesheet'),
     ('global_admin','report_timesheet'),
      ('pm','report_timesheet');

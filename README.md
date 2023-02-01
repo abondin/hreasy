@@ -51,40 +51,43 @@ and Dave's overtimes. Dave can see only his own overtimes.
 
 **List of supported permissions**:
 
-|permission|depends on department|always available to oneself|always available to project/ba manager| description                                                                                                                                                      |
-|----|------|------|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|update_current_project_global|N|N|N| Change current employee project                                                                                                                                   |
-|update_current_project|Y|N|Y| Update current project for employee from my projects or my departments                                                                                            |
-|update_avatar|N|N|N| Update employee avatar                                                                                                                                            |
-|overtime_view|N|Y|Y| View overtimes of given employee                                                                                                                                  |
-|overtime_edit|Y|Y|Y| Edit and approve overtimes of given employee                                                                                                                      |
-|overtime_admin|N|N|N| Admin overtime configuration. Close overtime period and other stuff                                                                                               |
-|vacation_view|Y|Y|Y| View vacations of given employee                                                                                                                                  |
-|vacation_edit|Y|Y|Y| View vacations of given employee                                                                                                                                  |
-|project_admin_area|N|N|N| Access to project admin area in UI                                                                                                                                |
-|update_project_globally|N|N|N| Admin permission to update information of any project. Without this permission user can update only projects created by himself or with update_project permission |
-|update_project|Y|Y|Y| Admin project if employee is project/ba/department manager                                                                                                        |
-|create_project|N|N|N| Admin permission to create new project                                                                                                                            |
-|admin_users|N|N|N| Admin user. Assign roles. Assign accessible projects and departments                                                                                              |
-|edit_skills|Y|Y|Y| Add/Delete employee skills of managed project/department                                                                                                          |
-|edit_business_account|N|N|N| Add/Update business account and create/update BA positions                                                                                                        |
-|assign_to_ba_position|Y|N|N| Assign employee to business account position                                                                                                                      |
-|edit_articles|N|N|N| Create, update and moderate articles and news                                                                                                                     |
-|edit_employee_full|N|N|N| Create/update employee                                                                                                                                            |
-|import_employee|N|N|N| Import employees from file                                                                                                                                        |
-|view_employee_full|N|N|N| View employee all fields including personal                                                                                                                       |
-|view_assessment_full|N|N|Y| View all assessment forms without restrictions                                                                                                                    |
-|create_assessment|N|N|Y| View last assessment date for employee. Schedule new assessment and invite managers                                                                               |
-|admin_notifications|N|N|N| Create notifications for the employees                                                                                                                            |
-|techprofile_download|Y|Y|Y| Download employee's tech profile                                                                                                                                  |
-|techprofile_upload|Y|Y|Y| Upload or delete employee's tech profile                                                                                                                          |
-|admin_department|N|N|N| Create/update/delete department                                                                                                                                   |
-|admin_level|N|N|N| Create/update/delete employee overall skills level                                                                                                                |
-|admin_position|N|N|N| Create/update/delete employee position                                                                                                                            |
-|admin_office_location|N|N|N| Create/update/delete office location                                                                                                                              |
-|view_empl_current_project_role|Y|Y|Y| View current project role                                                                                                                                         |
-|view_empl_skills|Y|Y|Y| View employee skills                                                                                                                                              |
-|admin_managers|N|N|N| Admin managers for department,ba,project employees                                                                                                                |
+| permission                     | depends on department | always available to oneself | always available to project/ba manager | description                                                                                                                                                       |
+|--------------------------------|-----------------------|-----------------------------|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| update_current_project_global  | N                     | N                           | N                                      | Change current employee project                                                                                                                                   |
+| update_current_project         | Y                     | N                           | Y                                      | Update current project for employee from my projects or my departments                                                                                            |
+| update_avatar                  | N                     | N                           | N                                      | Update employee avatar                                                                                                                                            |
+| overtime_view                  | N                     | Y                           | Y                                      | View overtimes of given employee                                                                                                                                  |
+| overtime_edit                  | Y                     | Y                           | Y                                      | Edit and approve overtimes of given employee                                                                                                                      |
+| overtime_admin                 | N                     | N                           | N                                      | Admin overtime configuration. Close overtime period and other stuff                                                                                               |
+| vacation_view                  | Y                     | Y                           | Y                                      | View vacations of given employee                                                                                                                                  |
+| vacation_edit                  | Y                     | Y                           | Y                                      | View vacations of given employee                                                                                                                                  |
+| project_admin_area             | N                     | N                           | N                                      | Access to project admin area in UI                                                                                                                                |
+| update_project_globally        | N                     | N                           | N                                      | Admin permission to update information of any project. Without this permission user can update only projects created by himself or with update_project permission |
+| update_project                 | Y                     | Y                           | Y                                      | Admin project if employee is project/ba/department manager                                                                                                        |
+| create_project                 | N                     | N                           | N                                      | Admin permission to create new project                                                                                                                            |
+| admin_users                    | N                     | N                           | N                                      | Admin user. Assign roles. Assign accessible projects and departments                                                                                              |
+| edit_skills                    | Y                     | Y                           | Y                                      | Add/Delete employee skills of managed project/department                                                                                                          |
+| edit_business_account          | N                     | N                           | N                                      | Add/Update business account and create/update BA positions                                                                                                        |
+| assign_to_ba_position          | Y                     | N                           | N                                      | Assign employee to business account position                                                                                                                      |
+| edit_articles                  | N                     | N                           | N                                      | Create, update and moderate articles and news                                                                                                                     |
+| edit_employee_full             | N                     | N                           | N                                      | Create/update employee                                                                                                                                            |
+| import_employee                | N                     | N                           | N                                      | Import employees from file                                                                                                                                        |
+| view_employee_full             | N                     | N                           | N                                      | View employee all fields including personal                                                                                                                       |
+| view_assessment_full           | N                     | N                           | Y                                      | View all assessment forms without restrictions                                                                                                                    |
+| create_assessment              | N                     | N                           | Y                                      | View last assessment date for employee. Schedule new assessment and invite managers                                                                               |
+| admin_notifications            | N                     | N                           | N                                      | Create notifications for the employees                                                                                                                            |
+| techprofile_download           | Y                     | Y                           | Y                                      | Download employee's tech profile                                                                                                                                  |
+| techprofile_upload             | Y                     | Y                           | Y                                      | Upload or delete employee's tech profile                                                                                                                          |
+| admin_department               | N                     | N                           | N                                      | Create/update/delete department                                                                                                                                   |
+| admin_level                    | N                     | N                           | N                                      | Create/update/delete employee overall skills level                                                                                                                |
+| admin_position                 | N                     | N                           | N                                      | Create/update/delete employee position                                                                                                                            |
+| admin_office_location          | N                     | N                           | N                                      | Create/update/delete office location                                                                                                                              |
+| view_empl_current_project_role | Y                     | Y                           | Y                                      | View current project role                                                                                                                                         |
+| view_empl_skills               | Y                     | Y                           | Y                                      | View employee skills                                                                                                                                              |
+| admin_managers                 | N                     | N                           | N                                      | Admin managers for department,ba,project employees                                                                                                                |
+| view_timesheet                 | Y                     | Y                           | Y                                      | View daily timesheet for given employees                                                                                                                          |
+| view_timesheet_global          | N                     | N                           | N                                      | View daily timesheet for all employees                                                                                                                            |
+| report_timesheet               | Y                     | Y                           | Y                                      | Report daily timesheet                                                                                                                                            |
 
 **Default permissions and roles**
 
@@ -96,37 +99,40 @@ and Dave's overtimes. Dave can see only his own overtimes.
 |finance|Work with business account positions and expenses|
 |content_management|Create, update and moderate articles and news|
 
-| permissions                   |roles|
-|-------------------------------|------|
-| update_current_project_global |global_admin, hr|
-| update_current_project        |global_admin, hr, pm|
-| update_avatar                 |global_admin, hr|
-| overtime_view                 |global_admin, hr, pm|
-| overtime_edit                 |global_admin, hr, pm|
-| overtime_admin                |global_admin|
-| vacation_view                 |global_admin, hr, pm|
-| vacation_edit                 |global_admin, hr, pm|
-| project_admin_area            |global_admin,pm|
-| update_project_globally       |global_admin|
-| update_project                |pm|
-| create_project                |global_admin, pm|
-| admin_users                   |global_admin|
-| edit_skills                   |global_admin,pm,hr|
-| edit_business_account         |global_admin,finance|
-| assign_to_ba_position         |global_admin,pm,finance|
-| edit_articles                 |global_admin,content_management|
-| edit_employee_full            |global_admin,hr|
-| import_employee               |global_admin,hr|
-| view_employee_full            |global_admin,hr|
-| view_assessment_full          |global_admin,hr|
-| create_assessment             |pm,global_admin,hr|
-| techprofile_download          |pm,global_admin,hr|
-| techprofile_upload            |pm,global_admin,hr|
-| admin_department              |global_admin,hr|
-| admin_level                   |global_admin,hr|
-| admin_position                |global_admin,hr|
-| admin_office_location         |global_admin,hr|
-| admin_managers                |global_admin,hr|
+| permissions                   | roles                           |
+|-------------------------------|---------------------------------|
+| update_current_project_global | global_admin, hr                |
+| update_current_project        | global_admin, hr, pm            |
+| update_avatar                 | global_admin, hr                |
+| overtime_view                 | global_admin, hr, pm            |
+| overtime_edit                 | global_admin, hr, pm            |
+| overtime_admin                | global_admin                    |
+| vacation_view                 | global_admin, hr, pm            |
+| vacation_edit                 | global_admin, hr, pm            |
+| project_admin_area            | global_admin,pm                 |
+| update_project_globally       | global_admin                    |
+| update_project                | pm                              |
+| create_project                | global_admin, pm                |
+| admin_users                   | global_admin                    |
+| edit_skills                   | global_admin,pm,hr              |
+| edit_business_account         | global_admin,finance            |
+| assign_to_ba_position         | global_admin,pm,finance         |
+| edit_articles                 | global_admin,content_management |
+| edit_employee_full            | global_admin,hr                 |
+| import_employee               | global_admin,hr                 |
+| view_employee_full            | global_admin,hr                 |
+| view_assessment_full          | global_admin,hr                 |
+| create_assessment             | pm,global_admin,hr              |
+| techprofile_download          | pm,global_admin,hr              |
+| techprofile_upload            | pm,global_admin,hr              |
+| admin_department              | global_admin,hr                 |
+| admin_level                   | global_admin,hr                 |
+| admin_position                | global_admin,hr                 |
+| admin_office_location         | global_admin,hr                 |
+| admin_managers                | global_admin,hr                 |
+| view_timesheet                | pm,global_admin                 |            
+| view_timesheet_summary        | pm, hr, global_admin            |            
+| report_timesheet              | pm,global_admin                 |            
 
 ## Assessments
 

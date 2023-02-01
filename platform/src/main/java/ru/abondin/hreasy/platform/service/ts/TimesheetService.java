@@ -9,10 +9,7 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.ts.TimesheetRecordRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetAggregatedFilter;
-import ru.abondin.hreasy.platform.service.ts.dto.TimesheetAggregatedRecordsDto;
-import ru.abondin.hreasy.platform.service.ts.dto.TimesheetRecordDto;
-
-import java.time.LocalDate;
+import ru.abondin.hreasy.platform.service.ts.dto.TimesheetSummaryDto;
 
 @Service
 @Slf4j
@@ -21,8 +18,12 @@ public class TimesheetService {
     private final DateTimeService dateTimeService;
     private final TimesheetRecordRepo repo;
 
+    private final TimesheetSecurityValidator sec;
 
-    public Flux<TimesheetAggregatedRecordsDto> aggregated(AuthContext ctx, TimesheetAggregatedFilter filter){
-        return repo.findFiltered()
+    public Flux<TimesheetSummaryDto> timesheetSummary(AuthContext ctx, TimesheetAggregatedFilter filter) {
+        log.info("Get timesheet summary by {}: {}", ctx.getUsername(), filter);
+        return sec.validateViewTimesheetSummary(ctx)
+                .flatMapMany(v -> repo.summary(filter.getFrom(), filter.getTo()))
+                .map();
     }
 }
