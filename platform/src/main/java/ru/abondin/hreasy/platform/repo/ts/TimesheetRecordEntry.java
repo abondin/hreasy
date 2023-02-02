@@ -1,7 +1,7 @@
 package ru.abondin.hreasy.platform.repo.ts;
 
 import lombok.Data;
-import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import javax.validation.constraints.NotNull;
@@ -11,9 +11,9 @@ import java.time.OffsetDateTime;
 @Data
 @Table("ts.timesheet_record")
 public class TimesheetRecordEntry {
-    @Column
+    @Id
     private Integer id;
-    private int employee;
+    private Integer employee;
     private int businessAccount;
     private Integer project;
     @NotNull

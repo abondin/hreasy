@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS ts.timesheet_record (
     deleted_by integer NULL REFERENCES empl.employee (id)
 );
 
-COMMENT ON TABLE ts.timesheet IS 'Daily spent hours';
+COMMENT ON TABLE ts.timesheet_record IS 'Daily spent hours';
 COMMENT ON COLUMN ts.timesheet_record.id IS 'Primary key';
 COMMENT ON COLUMN ts.timesheet_record.employee IS 'Key attribute - link to employee';
 COMMENT ON COLUMN ts.timesheet_record.business_account IS 'Key attribute - link to business account';

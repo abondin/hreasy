@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Load ids of all test data (dicts and employees).
  * Initial DB scripts can be found in 'test/resources/db/testdata' folder
- *
+ * <p>
  * We have 16 employees
  *
  * <img src="file:{@docRoot}/db/testdata/testdata.png"/></img>
@@ -32,7 +32,8 @@ public class TestDataContainer {
     private final R2dbcEntityTemplate db;
 
 
-    public final Map<String, Integer> projects = new HashMap<>();
+    private final Map<String, Integer> projects = new HashMap<>();
+    private final Map<String, Integer> bas = new HashMap<>();
     public final Map<String, Integer> employees = new HashMap<>();
 
 
@@ -44,7 +45,9 @@ public class TestDataContainer {
     public Mono<?> initAsync() {
         this.projects.clear();
         this.employees.clear();
+        this.bas.clear();
         return simpleDicts("proj.project", projects)
+                .then(simpleDicts("ba.business_account", bas))
                 .then(employees());
     }
 
@@ -84,5 +87,30 @@ public class TestDataContainer {
     public UpdateCurrentProjectBody updateCurrentProjectBody(String projectName) {
         var id = projects.get(projectName);
         return id == null ? null : new UpdateCurrentProjectBody(id, "Tester");
+    }
+
+
+    public Integer project_M1_Billing() {
+        return projects.get("M1 Billing");
+    }
+
+    public Integer project_M1_FMS() {
+        return projects.get("M1 FMS");
+    }
+
+    public Integer project_M1_Policy_Manager() {
+        return projects.get("M1 Policy Manager");
+    }
+
+    public Integer project_M1_ERP_Integration() {
+        return projects.get("M1 ERP Integration");
+    }
+
+    public Integer ba_RND() {
+        return bas.get("RND");
+    }
+
+    public Integer ba_Billing() {
+        return bas.get("Billing");
     }
 }
