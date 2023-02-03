@@ -28,6 +28,6 @@ public interface TimesheetMapper extends MapperBase {
 
     @Named("employee")
     default SimpleDictDto employee(TimesheetSummaryView entry) {
-        return simpleDto(entry.getEmployee(), entry.getEmployeeDisplayname());
+        return simpleDto(entry.getEmployee(), entry.getEmployeeDisplayName());
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.ts.TimesheetRecordEntry;
 import ru.abondin.hreasy.platform.repo.ts.TimesheetRecordRepo;
@@ -43,4 +44,15 @@ public class TimesheetService {
                 .map(TimesheetRecordEntry::getId);
     }
 
+    public Mono<Integer> delete(AuthContext ctx, Integer employeeId, Integer timesheetRecordId) {
+        log.info("Delete timesheet record {} of employee {} by {}", timesheetRecordId, employeeId, ctx.getUsername());
+        return sec.validateReportTimesheet(ctx, employeeId)
+                .flatMap(v -> repo.findById(timesheetRecordId))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", employeeId + ":" + timesheetRecordId)))
+                .flatMap(entry -> {
+                    entry.setDeletedBy(ctx.getEmployeeInfo().getEmployeeId());
+                    entry.setDeletedAt(dateTimeService.now());
+                    return repo.save(entry);
+                }).map(TimesheetRecordEntry::getId);
+    }
 }

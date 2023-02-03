@@ -36,10 +36,13 @@ public class TimesheetSecurityValidator {
     }
 
     public Mono<Boolean> validateViewTimesheetSummary(AuthContext auth) {
-        return Mono.defer(() ->
-                        Mono.just(auth.getAuthorities().contains("view_timesheet_summary")))
-                .flatMap(r ->
-                        Mono.error(new AccessDeniedException("Only user with permission view_timesheet_summary can view timesheet summary")));
+        return Mono.defer(() -> {
+            if (auth.getAuthorities().contains("view_timesheet_summary")) {
+                return Mono.just(true);
+            } else {
+                return Mono.error(new AccessDeniedException("Only user with permission view_timesheet_summary can view timesheet summary"));
+            }
+        });
     }
 
     public Mono<Boolean> validateReportTimesheet(AuthContext auth, int employeeId) {

@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class TimesheetSummaryView extends TimesheetRecordEntry{
-    private String employeeDisplayname;
+    private String employeeDisplayName;
 }

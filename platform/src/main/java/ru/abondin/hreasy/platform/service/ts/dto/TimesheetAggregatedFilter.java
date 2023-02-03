@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.service.ts.dto;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 
@@ -10,6 +11,7 @@ import java.time.LocalDate;
  * Filter timesheet grouped by employee
  */
 @Data
+@Builder
 @ToString
 public class TimesheetAggregatedFilter {
     @NotNull
