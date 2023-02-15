@@ -18,7 +18,9 @@ public class TimesheetRecordEntry {
     private Integer project;
     @NotNull
     private LocalDate date;
-    private short hours;
+    private short hoursPlanned;
+    private short hoursSpent;
+
     @NotNull
     private OffsetDateTime createdAt;
     private int createdBy;

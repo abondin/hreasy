@@ -20,7 +20,8 @@ public interface TimesheetMapper extends MapperBase {
     @Mapping(source = "body.businessAccount", target = "businessAccount")
     @Mapping(source = "body.project", target = "project")
     @Mapping(source = "body.date", target = "date")
-    @Mapping(source = "body.hours", target = "hours")
+    @Mapping(source = "body.hoursSpent", target = "hoursSpent")
+    @Mapping(source = "body.hoursPlanned", target = "hoursPlanned")
     @Mapping(source = "now", target = "createdAt")
     @Mapping(source = "createdBy", target = "createdBy")
     TimesheetRecordEntry toEntry(Integer employeeId, TimesheetReportBody body, OffsetDateTime now, Integer createdBy);

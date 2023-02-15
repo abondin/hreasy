@@ -59,11 +59,13 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var ctx = auth(TestEmployees.FMS_Empl_Jenson_Curtis).block(MONO_DEFAULT_TIMEOUT);
         var date = LocalDate.of(2023, Month.FEBRUARY.getValue(), 02);
         var ba = testData.ba_RND();
-        var hours = (short) 8;
+        var hoursPlanned = (short) 8;
+        var hoursSpent = (short) 4;
         var report = TimesheetReportBody.builder()
                 .businessAccount(ba)
                 .date(date)
-                .hours(hours)
+                .hoursPlanned(hoursPlanned)
+                .hoursSpent(hoursSpent)
                 .project(null).build();
         StepVerifier
                 .create(timesheetService.report(ctx, jensonId, report)
@@ -74,7 +76,8 @@ public class TimesheetServiceTest extends BaseServiceTest {
                                 && entry.getProject() == null
                                 && entry.getDate().equals(date)
                                 && entry.getEmployee().equals(jensonId)
-                                && entry.getHours() == hours
+                                && entry.getHoursPlanned() == hoursPlanned
+                                && entry.getHoursSpent() == hoursSpent
                                 && entry.getCreatedBy() == jensonId)
                 .verifyComplete();
     }
@@ -90,7 +93,7 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var report = TimesheetReportBody.builder()
                 .businessAccount(ba)
                 .date(date)
-                .hours(hours)
+                .hoursPlanned(hours)
                 .project(project).build();
         StepVerifier
                 .create(timesheetService.report(ctx, employeeId, report)
@@ -111,7 +114,7 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var report = TimesheetReportBody.builder()
                 .businessAccount(ba)
                 .date(date)
-                .hours(hours)
+                .hoursSpent(hours)
                 .project(project).build();
         StepVerifier
                 .create(timesheetService.report(ctx, employeeId, report)
@@ -175,13 +178,13 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var result = new HashMap<String, Integer>();
         return timesheetService.report(ctx, employeeId, TimesheetReportBody.builder()
                         .businessAccount(testData.ba_RND())
-                        .hours((short) 6)
+                        .hoursSpent((short) 6)
                         .project(testData.project_M1_FMS())
                         .date(defaultDate)
                         .build()).doOnNext(id -> result.put("2023-02-02:6", id))
                 .flatMap(r -> timesheetService.report(ctx, employeeId, TimesheetReportBody.builder()
                         .businessAccount(testData.ba_RND())
-                        .hours((short) 2)
+                        .hoursSpent((short) 2)
                         .project(testData.project_M1_FMS())
                         .date(defaultDate.plusDays(1))
                         .build()).doOnNext(id -> result.put("2023-02-03:2", id)))

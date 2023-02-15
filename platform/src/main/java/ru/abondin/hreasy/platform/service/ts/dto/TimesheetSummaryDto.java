@@ -16,5 +16,6 @@ public class TimesheetSummaryDto {
     private Integer project;
     @NotNull
     private LocalDate date;
-    private short hours;
+    private short hoursPlanned;
+    private short hoursSpent;
 }
