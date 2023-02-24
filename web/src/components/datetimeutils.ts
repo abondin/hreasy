@@ -22,6 +22,10 @@ export class DateTimeUtils {
         return date ? date.format(moment.HTML5_FMT.DATE) : undefined;
     }
 
+    public static formatToDayMonthDate(date?: Moment): string | undefined {
+        return date ? date.format("DD.MM") : undefined;
+    }
+
     public static validateFormattedDate(formattedDate: string, allowEmpty = true) {
         if (!formattedDate) {
             return allowEmpty;
@@ -77,7 +81,7 @@ export class DateTimeUtils {
         return this.formatToIsoDate(this.now());
     }
 
-    static vacationDays(start: moment.Moment, end: moment.Moment, notVacationDaysStr: Array<string>) {
+    static vacationDays(start: moment.Moment, end: moment.Moment, notVacationDaysStr: Array<string>): number {
         const notVacationDays = notVacationDaysStr.map(str => this.dateFromIsoString(str));
         let cnt = 0;
         for (let day = moment(start); day.diff(end, 'days') <= 0; day.add(1, 'day')) {
@@ -86,6 +90,14 @@ export class DateTimeUtils {
             }
         }
         return cnt;
+    }
+
+    static daysBetweenDates(start: moment.Moment, end: moment.Moment): Moment[] {
+        const days = [];
+        for (let day = moment(start); day.diff(end, 'days') <= 0; day.add(1, 'day')) {
+            days.push(day.clone());
+        }
+        return days;
     }
 
 }
