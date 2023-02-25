@@ -7,11 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.repo.ts.TimesheetRecordEntry;
 import ru.abondin.hreasy.platform.repo.ts.TimesheetRecordRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetAggregatedFilter;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetMapper;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetReportBody;
@@ -25,6 +24,8 @@ public class TimesheetService {
     private final TimesheetRecordRepo repo;
 
     private final TimesheetMapper mapper;
+
+    private final HistoryDomainService history;
     private final TimesheetSecurityValidator sec;
 
     @Transactional(readOnly = true)
@@ -36,23 +37,27 @@ public class TimesheetService {
     }
 
     @Transactional
-    public Mono<Integer> report(AuthContext ctx, int employeeId, TimesheetReportBody body) {
-        log.info("Report timesheet by {}: {}", ctx.getUsername(), body);
-        return sec.validateReportTimesheet(ctx, employeeId)
-                .map(v -> mapper.toEntry(employeeId, body, dateTimeService.now(), ctx.getEmployeeInfo().getEmployeeId()))
+    public Mono<Integer> report(AuthContext auth, int employeeId, TimesheetReportBody body) {
+        log.info("Report timesheet by {}: {}", auth.getUsername(), body);
+        var createdAt = dateTimeService.now();
+        var createdBy = auth.getEmployeeInfo().getEmployeeId();
+        return sec.validateReportTimesheet(auth, employeeId)
+                .map(v -> mapper.toEntry(employeeId, body, createdAt, createdBy))
                 .flatMap(repo::save)
-                .map(TimesheetRecordEntry::getId);
+                .flatMap(persistent -> history.persistHistory(persistent.getId(),
+                        HistoryDomainService.HistoryEntityType.TIMESHEET_RECORD, persistent,
+                        createdAt, createdBy).map(h -> persistent.getId()));
     }
 
-    public Mono<Integer> delete(AuthContext ctx, Integer employeeId, Integer timesheetRecordId) {
-        log.info("Delete timesheet record {} of employee {} by {}", timesheetRecordId, employeeId, ctx.getUsername());
-        return sec.validateReportTimesheet(ctx, employeeId)
-                .flatMap(v -> repo.findById(timesheetRecordId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", employeeId + ":" + timesheetRecordId)))
-                .flatMap(entry -> {
-                    entry.setDeletedBy(ctx.getEmployeeInfo().getEmployeeId());
-                    entry.setDeletedAt(dateTimeService.now());
-                    return repo.save(entry);
-                }).map(TimesheetRecordEntry::getId);
+    @Transactional
+    public Mono<Void> delete(AuthContext auth, Integer employeeId, Integer timesheetRecordId) {
+        log.info("Delete timesheet record {} of employee {} by {}", timesheetRecordId, employeeId, auth.getUsername());
+        var deletedAt = dateTimeService.now();
+        var deletedBy = auth.getEmployeeInfo().getEmployeeId();
+        return sec.validateUpdateOrDeleteTimesheet(auth, employeeId, timesheetRecordId)
+                .flatMap(v ->
+                        history.persistHistory(
+                                timesheetRecordId, HistoryDomainService.HistoryEntityType.TIMESHEET_RECORD, null, deletedAt, deletedBy))
+                .flatMap(v -> repo.deleteById(timesheetRecordId));
     }
 }

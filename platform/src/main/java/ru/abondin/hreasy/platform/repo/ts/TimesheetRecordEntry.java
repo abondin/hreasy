@@ -21,6 +21,10 @@ public class TimesheetRecordEntry {
     private short hoursPlanned;
     private short hoursSpent;
 
+    private boolean billable = true;
+
+    private String description;
+
     @NotNull
     private OffsetDateTime createdAt;
     private int createdBy;

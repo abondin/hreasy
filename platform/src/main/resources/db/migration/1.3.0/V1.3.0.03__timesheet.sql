@@ -8,10 +8,10 @@ CREATE TABLE IF NOT EXISTS ts.timesheet_record (
     date date not null,
     hours_planned smallint null,
     hours_spent smallint null,
+    billable boolean not null default true,
+    description varchar(1024) NULL,
     created_at timestamp with time zone NOT NULL,
     created_by integer NOT NULL REFERENCES empl.employee (id),
-    deleted_at timestamp with time zone,
-    deleted_by integer NULL REFERENCES empl.employee (id),
     constraint timesheet_record_hours_not_null check (hours_planned is not null or hours_spent is not null)
 );
 
@@ -23,10 +23,10 @@ COMMENT ON COLUMN ts.timesheet_record.project IS 'Link to specific project';
 COMMENT ON COLUMN ts.timesheet_record.date IS 'Reporting date';
 COMMENT ON COLUMN ts.timesheet_record.hours_planned IS 'Amount of planned working hours';
 COMMENT ON COLUMN ts.timesheet_record.hours_spent IS 'Amount of actually spent working hours';
+COMMENT ON COLUMN ts.timesheet_record.billable IS 'If spent hours billable';
+COMMENT ON COLUMN ts.timesheet_record.description IS 'General description';
 COMMENT ON COLUMN ts.timesheet_record.created_at IS 'Created at';
 COMMENT ON COLUMN ts.timesheet_record.created_by IS 'Created by (link to employee)';
-COMMENT ON COLUMN ts.timesheet_record.deleted_at IS 'Deleted/Canceled at';
-COMMENT ON COLUMN ts.timesheet_record.deleted_by IS 'Deleted/Canceled by (link to employee)';
 
 INSERT INTO sec.perm (permission,description) VALUES
     ('report_timesheet','Report daily timesheet');
@@ -43,3 +43,5 @@ INSERT INTO sec.role_perm ("role","permission") VALUES
      ('pm','view_timesheet'),
     ('global_admin','report_timesheet'),
      ('pm','report_timesheet');
+
+COMMENT ON COLUMN history.history.entity_type IS '[empl_manager] - Entity type, [working_days] - Working Days Calendar, [timesheet_record] - Timesheet Record';

@@ -29,7 +29,7 @@ public class TimesheetController {
     }
 
     @DeleteMapping("/{employeeId}/{recordId}")
-    public Mono<Integer> delete(Integer employeeId, Integer recordId) {
+    public Mono<Void> delete(Integer employeeId, Integer recordId) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> service.delete(auth, employeeId, recordId));
     }

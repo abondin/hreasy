@@ -11,6 +11,6 @@ import java.time.LocalDate;
 @Repository
 public interface TimesheetRecordRepo extends ReactiveCrudRepository<TimesheetRecordEntry, Integer> {
     @Query("select ts.*, e.display_name employee_display_name from ts.timesheet_record ts join empl.employee e on ts.employee=e.id" +
-            " where ts.date>=:fr and ts.date<=:t and ts.deleted_at is null")
+            " where ts.date>=:fr and ts.date<=:t")
     Flux<TimesheetSummaryView> summary(@Param("fr") LocalDate from, @Param("t") LocalDate to);
 }

@@ -18,4 +18,8 @@ public class TimesheetSummaryDto {
     private LocalDate date;
     private short hoursPlanned;
     private short hoursSpent;
+
+    private boolean billable = true;
+
+    private String description;
 }

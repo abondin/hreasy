@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.TestEmployees;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
@@ -159,9 +160,31 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var reports = generateDefaultReports(ctx).block(MONO_DEFAULT_TIMEOUT);
         Assertions.assertEquals(2, timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
                 .builder().from(defaultDate).to(defaultDate.plusDays(1)).build()).collectList().block(MONO_DEFAULT_TIMEOUT).size());
-        timesheetService.delete(ctx, employeeId, reports.get("2023-02-02:6")).block(MONO_DEFAULT_TIMEOUT);
+        timesheetService.delete(ctx, employeeId, reports.get("1:2023-02-02:6")).block(MONO_DEFAULT_TIMEOUT);
         StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
                 .builder().from(defaultDate).to(defaultDate.plusDays(1)).build())).expectNextCount(1).verifyComplete();
+    }
+
+    @Test
+    public void testDeleteNotMyReport() {
+        var ctx = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
+        var employeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
+        generateDefaultReports(ctx).block(MONO_DEFAULT_TIMEOUT);
+
+        var employee2Id = testData.employees.get(TestEmployees.Integrator_Jonas_Martin);
+        var employee2Ts = timesheetService.report(ctx, employee2Id, TimesheetReportBody.builder()
+                .businessAccount(testData.ba_Billing())
+                .hoursSpent((short) 8)
+                .project(testData.project_M1_ERP_Integration())
+                .date(defaultDate)
+                .build()).block(MONO_DEFAULT_TIMEOUT);
+        Assertions.assertEquals(3, timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
+                .builder().from(defaultDate).to(defaultDate.plusDays(1)).build()).collectList().block(MONO_DEFAULT_TIMEOUT).size());
+
+        StepVerifier.create(timesheetService.delete(ctx, employeeId, employee2Ts))
+                .expectError(BusinessError.class).verify(MONO_DEFAULT_TIMEOUT);
+        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
+                .builder().from(defaultDate).to(defaultDate.plusDays(1)).build())).expectNextCount(3).verifyComplete();
     }
 
     /**
@@ -181,13 +204,13 @@ public class TimesheetServiceTest extends BaseServiceTest {
                         .hoursSpent((short) 6)
                         .project(testData.project_M1_FMS())
                         .date(defaultDate)
-                        .build()).doOnNext(id -> result.put("2023-02-02:6", id))
+                        .build()).doOnNext(id -> result.put("1:2023-02-02:6", id))
                 .flatMap(r -> timesheetService.report(ctx, employeeId, TimesheetReportBody.builder()
                         .businessAccount(testData.ba_RND())
                         .hoursSpent((short) 2)
                         .project(testData.project_M1_FMS())
                         .date(defaultDate.plusDays(1))
-                        .build()).doOnNext(id -> result.put("2023-02-03:2", id)))
+                        .build()).doOnNext(id -> result.put("1:2023-02-03:2", id)))
                 .map(s -> result);
     }
 }

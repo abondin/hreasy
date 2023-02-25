@@ -4,17 +4,19 @@
       dense
       :loading="loading"
       :loading-text="$t('Загрузка_данных')"
+      disable-sort
+      fixed-header
       :headers="headers"
       :items-per-page="defaultItemsPerTablePage"
-      :items="records"
-      :group-by="groupBy"
+      :items="groupedRows"
+      :group-by="groupBy=='employee'?'employee.displayName':'project.name'"
   >
     <template v-slot:group.header="row">
       <td colspan="30" class="text-start">
-      <v-btn x-small icon @click="row.toggle()" >
-        <v-icon>{{ row.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-      </v-btn>
-      {{ row.group }}
+        <v-btn x-small icon @click="row.toggle()">
+          <v-icon>{{ row.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+        </v-btn>
+        {{ row.group }}
       </td>
     </template>
   </v-data-table>
@@ -26,7 +28,11 @@ import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
 import {DataTableHeader} from "vuetify";
-import timesheetService, {TimesheetAggregated, TimesheetSummaryFilter} from "@/components/ts/timesheet.service";
+import timesheetService, {
+  TimesheetAggregated,
+  TimesheetRecord,
+  TimesheetSummaryFilter
+} from "@/components/ts/timesheet.service";
 import {UiConstants} from "@/components/uiconstants";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import moment, {Moment} from "moment";
@@ -58,7 +64,12 @@ export default class TimesheetTableComponent extends Vue {
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;
 
-  private records: TimesheetAggregated[] = [];
+
+  // Dirty rows from backend
+  private records: TimesheetRecord[] = [];
+  // Grouped by project and employee rows. Uses in the table
+  private groupedRows: TimesheetAggregated[] = [];
+
   private employees: Employee[] = [];
 
   private headers: DataTableHeader[] = [];
@@ -80,7 +91,7 @@ export default class TimesheetTableComponent extends Vue {
     }
   }
 
-  private groupBy: 'employee.displayName' | 'project' = 'employee.displayName';
+  private groupBy: 'employee' | 'project' = 'employee';
 
 
   /**
@@ -99,7 +110,7 @@ export default class TimesheetTableComponent extends Vue {
         }))
         .then(() =>
             timesheetService.timesheetSummary(this.periodFilterStr()).then(records => {
-                  // TODO
+                  this.records = records;
                 }
             )
         )
@@ -138,15 +149,15 @@ export default class TimesheetTableComponent extends Vue {
   }
 
   private rebuildRows() {
-    this.records.length = 0;
-    if (this.groupBy === "employee.displayName") {
+    this.groupedRows.length = 0;
+    if (this.groupBy === "employee") {
       this.employees.forEach(employee => {
         const record: TimesheetAggregated = {
           employee: {uuid: 'empl-' + employee.id, displayName: employee.displayName, id: employee.id, empty: false},
           project: {uuid: 'project-empty', displayName: this.$tc("Без проекта"), id: null, empty: true},
           dates: []
         }
-        this.records.push(record);
+        this.groupedRows.push(record);
       });
     }
   }

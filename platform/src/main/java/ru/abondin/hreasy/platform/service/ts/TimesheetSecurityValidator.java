@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.ts.TimesheetRecordRepo;
 import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 
 /**
@@ -17,6 +19,7 @@ import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 public class TimesheetSecurityValidator {
 
     private final ProjectHierarchyAccessor projectHierarchyService;
+    private final TimesheetRecordRepo repo;
 
     public Mono<Boolean> validateViewTimesheet(AuthContext auth, int employeeId) {
         return Mono.defer(() -> {
@@ -60,5 +63,17 @@ public class TimesheetSecurityValidator {
             }
             return Mono.error(new AccessDeniedException("Only logged in user or user with permission report_timesheet can report timesheet"));
         });
+    }
+
+    public Mono<Boolean> validateUpdateOrDeleteTimesheet(AuthContext auth, int employeeId, int timesheetRecordId) {
+        return repo.findById(timesheetRecordId)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", employeeId + ":" + timesheetRecordId)))
+                .flatMap(t -> {
+                    if (employeeId != t.getEmployee()) {
+                        return Mono.error(new BusinessError("errors.entity.invalid.parent", Integer.toString(timesheetRecordId),
+                                Integer.toString(employeeId)));
+                    }
+                    return validateReportTimesheet(auth, employeeId);
+                });
     }
 }
