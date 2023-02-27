@@ -26,6 +26,15 @@ export class DateTimeUtils {
         return date ? date.format("DD.MM") : undefined;
     }
 
+    /**
+     * Unique string key based on given date (without time)
+     * @param date
+     * @return "key23072022"
+     */
+    public static formatToDayKey(date?: Moment): string | undefined {
+        return date ? "key"+date.format("DDMMYYYY") : undefined;
+    }
+
     public static validateFormattedDate(formattedDate: string, allowEmpty = true) {
         if (!formattedDate) {
             return allowEmpty;

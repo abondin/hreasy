@@ -1,16 +1,23 @@
-<!-- Managers of departments, business accounts and projects-->
 <template>
-  <v-data-table
-      dense
-      :loading="loading"
-      :loading-text="$t('Загрузка_данных')"
-      disable-sort
-      fixed-header
-      :headers="headers"
-      :items-per-page="defaultItemsPerTablePage"
-      :items="aggregatedByEmployees"
-  >
-  </v-data-table>
+  <v-card>
+    {{ daysKeys }}
+    <v-data-table
+        dense
+        :loading="loading"
+        :loading-text="$t('Загрузка_данных')"
+        disable-sort
+        fixed-header
+        :headers="headers"
+        :items-per-page="defaultItemsPerTablePage"
+        :items="aggregatedByEmployees">
+      <template v-slot:[`item.employee.displayName`]="{ item }">
+        {{ item.employee.displayName }}
+      </template>
+      <template v-for="s of daysKeys" v-slot:[`item.dates.${s}`]="item">
+        <timesheet-hours-cell v-bind:key="s" :value="item.item.dates[s]"></timesheet-hours-cell>
+      </template>
+    </v-data-table>
+  </v-card>
 </template>
 
 
@@ -25,18 +32,19 @@ import timesheetService, {
   TimesheetSummaryFilter
 } from "@/components/ts/timesheet.service";
 import {UiConstants} from "@/components/uiconstants";
+
 import {DateTimeUtils} from "@/components/datetimeutils";
 import moment, {Moment} from "moment";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import {errorUtils} from "@/components/errors";
+import TimesheetHoursCell from "@/components/ts/TimesheetHoursCell.vue";
 
 
 const namespace_dict = 'dict';
 
-
-@Component({components: {}})
+@Component({components: {TimesheetHoursCell}})
 export default class TimesheetTableComponent extends Vue {
 
 
@@ -57,6 +65,8 @@ export default class TimesheetTableComponent extends Vue {
   private headers: DataTableHeader[] = [];
 
   private error: string | null = null;
+
+  private daysKeys: string[] = [];
 
   private loading = false;
   private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
@@ -112,10 +122,18 @@ export default class TimesheetTableComponent extends Vue {
       value: 'employee.displayName',
       width: "300px"
     });
+    this.headers.push({
+      text: this.$tc('Всего'),
+      value: 'total',
+      width: "50px"
+    });
+    this.daysKeys.length = 0;
     DateTimeUtils.daysBetweenDates(this.periodFilter.from, this.periodFilter.to).forEach((day) => {
+      const dayKey = `${DateTimeUtils.formatToDayKey(day)}`;
+      this.daysKeys.push(dayKey);
       this.headers.push({
         text: DateTimeUtils.formatToDayMonthDate(day)!,
-        value: `dates[${DateTimeUtils.formatToDayMonthDate(day)}].hoursPlanned`,
+        value: `dates.${dayKey}`,
         width: "50px"
       });
     });
@@ -127,16 +145,21 @@ export default class TimesheetTableComponent extends Vue {
     this.employees.forEach(employee => {
       const record: TimesheetAggregatedByEmployee = {
         employee: employee,
-        dates: {}
+        dates: {},
+        total: {hoursPlannedNonBillable: 0, hoursPlannedBillable: 0, hoursSpentBillable: 0, hoursSpentNonBillable: 0}
       }
       this.records.filter(r => r.employee == employee.id).forEach(r => {
-        record.dates[DateTimeUtils.formatToDayMonthDate(DateTimeUtils.dateFromIsoString(r.date))!] = {
+        record.dates[DateTimeUtils.formatToDayKey(DateTimeUtils.dateFromIsoString(r.date))!] = {
           id: r.id,
           hoursPlanned: r.hoursPlanned,
           hoursSpent: r.hoursSpent,
           billable: r.billable,
           description: r.description
         }
+        record.total.hoursSpentBillable = (r.hoursSpent || 0) * (r.billable === true ? 1 : 0);
+        record.total.hoursSpentNonBillable = (r.hoursSpent || 0) * (r.billable === true ? 0 : 1);
+        record.total.hoursPlannedBillable = (r.hoursPlanned || 0) * (r.billable === true ? 1 : 0);
+        record.total.hoursPlannedNonBillable = (r.hoursPlanned || 0) * (r.billable === true ? 0 : 1);
       });
       this.aggregatedByEmployees.push(record);
     });

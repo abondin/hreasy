@@ -11,7 +11,7 @@ export interface TimesheetRecord extends TimesheetHours {
 }
 
 export interface TimesheetHours {
-    id: number,
+    id: number|string,
     hoursPlanned?: number,
     hoursSpent?: number
     billable: boolean,
@@ -21,6 +21,12 @@ export interface TimesheetHours {
 export interface TimesheetAggregatedByEmployee {
     employee: Employee,
     dates: { [key: string]: TimesheetHours }
+    total: {
+        hoursPlannedBillable: number,
+        hoursPlannedNonBillable: number,
+        hoursSpentBillable: number,
+        hoursSpentNonBillable: number
+    }
 }
 
 
