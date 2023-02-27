@@ -19,6 +19,9 @@ public class TimesheetSummaryDto {
     private short hoursPlanned;
     private short hoursSpent;
 
+    /**
+     * If spent hours billable
+     */
     private boolean billable = true;
 
     private String description;

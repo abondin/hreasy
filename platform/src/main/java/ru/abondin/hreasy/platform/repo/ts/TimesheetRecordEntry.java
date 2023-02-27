@@ -20,7 +20,9 @@ public class TimesheetRecordEntry {
     private LocalDate date;
     private short hoursPlanned;
     private short hoursSpent;
-
+    /**
+     * If spent hours billable
+     */
     private boolean billable = true;
 
     private String description;

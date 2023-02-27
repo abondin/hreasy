@@ -1,6 +1,5 @@
 <template>
   <v-card>
-    {{ daysKeys }}
     <v-data-table
         dense
         :loading="loading"
@@ -146,7 +145,7 @@ export default class TimesheetTableComponent extends Vue {
       const record: TimesheetAggregatedByEmployee = {
         employee: employee,
         dates: {},
-        total: {hoursPlannedNonBillable: 0, hoursPlannedBillable: 0, hoursSpentBillable: 0, hoursSpentNonBillable: 0}
+        total: {hoursPlanned: 0, hoursSpentBillable: 0, hoursSpentNonBillable: 0}
       }
       this.records.filter(r => r.employee == employee.id).forEach(r => {
         record.dates[DateTimeUtils.formatToDayKey(DateTimeUtils.dateFromIsoString(r.date))!] = {
@@ -158,8 +157,7 @@ export default class TimesheetTableComponent extends Vue {
         }
         record.total.hoursSpentBillable = (r.hoursSpent || 0) * (r.billable === true ? 1 : 0);
         record.total.hoursSpentNonBillable = (r.hoursSpent || 0) * (r.billable === true ? 0 : 1);
-        record.total.hoursPlannedBillable = (r.hoursPlanned || 0) * (r.billable === true ? 1 : 0);
-        record.total.hoursPlannedNonBillable = (r.hoursPlanned || 0) * (r.billable === true ? 0 : 1);
+        record.total.hoursPlanned = r.hoursPlanned || 0;
       });
       this.aggregatedByEmployees.push(record);
     });

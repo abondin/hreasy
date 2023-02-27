@@ -1,9 +1,9 @@
 <template>
-  <span>
-    <span v-if="value">
-      <span :class="value.billable ? 'text-green':'text-red'">{{ value.hoursPlanned }}</span>
-    </span>
-  </span>
+  <a v-if="value" href="#" @click.prevent="alert('a')">
+    <span :class="(value.billable ? 'billable':'non-billable')">{{ value.hoursSpent }}</span>
+    /
+    <span>{{ value.hoursPlanned }}</span>
+  </a>
 </template>
 
 <script lang="ts">
@@ -18,4 +18,16 @@ export default class TimesheetHoursCell extends Vue {
   private value: TimesheetHours | undefined;
 }
 </script>
+
+<style lang="scss">
+@import "~vuetify/src/styles/settings/_colors.scss";
+
+.billable {
+  color: map-get($green, 'base');
+}
+
+.non-billable {
+  color: map-get($red, 'base');
+}
+</style>
 

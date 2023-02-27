@@ -22,8 +22,7 @@ export interface TimesheetAggregatedByEmployee {
     employee: Employee,
     dates: { [key: string]: TimesheetHours }
     total: {
-        hoursPlannedBillable: number,
-        hoursPlannedNonBillable: number,
+        hoursPlanned: number,
         hoursSpentBillable: number,
         hoursSpentNonBillable: number
     }

@@ -19,6 +19,9 @@ public class TimesheetReportBody {
     private short hoursPlanned;
     private short hoursSpent;
 
+    /**
+     * If spent hours billable
+     */
     private boolean billable;
 
     private String description;
