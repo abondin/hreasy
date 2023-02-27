@@ -8,17 +8,8 @@
       fixed-header
       :headers="headers"
       :items-per-page="defaultItemsPerTablePage"
-      :items="groupedRows"
-      :group-by="groupBy=='employee'?'employee.displayName':'project.name'"
+      :items="aggregatedByEmployees"
   >
-    <template v-slot:group.header="row">
-      <td colspan="30" class="text-start">
-        <v-btn x-small icon @click="row.toggle()">
-          <v-icon>{{ row.isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-        </v-btn>
-        {{ row.group }}
-      </td>
-    </template>
   </v-data-table>
 </template>
 
@@ -29,7 +20,7 @@ import Component from "vue-class-component";
 import logger from "@/logger";
 import {DataTableHeader} from "vuetify";
 import timesheetService, {
-  TimesheetAggregated,
+  TimesheetAggregatedByEmployee,
   TimesheetRecord,
   TimesheetSummaryFilter
 } from "@/components/ts/timesheet.service";
@@ -44,15 +35,6 @@ import {errorUtils} from "@/components/errors";
 
 const namespace_dict = 'dict';
 
-/**
- * employee or project depends on group order
- */
-export interface RowGroup {
-  uuid: string,
-  id: number | null,
-  displayName: string | null
-  empty: boolean
-}
 
 @Component({components: {}})
 export default class TimesheetTableComponent extends Vue {
@@ -68,7 +50,7 @@ export default class TimesheetTableComponent extends Vue {
   // Dirty rows from backend
   private records: TimesheetRecord[] = [];
   // Grouped by project and employee rows. Uses in the table
-  private groupedRows: TimesheetAggregated[] = [];
+  private aggregatedByEmployees: TimesheetAggregatedByEmployee[] = [];
 
   private employees: Employee[] = [];
 
@@ -90,9 +72,6 @@ export default class TimesheetTableComponent extends Vue {
       "to": DateTimeUtils.formatToIsoDate(this.periodFilter.to)!
     }
   }
-
-  private groupBy: 'employee' | 'project' = 'employee';
-
 
   /**
    * Lifecycle hook
@@ -133,15 +112,10 @@ export default class TimesheetTableComponent extends Vue {
       value: 'employee.displayName',
       width: "300px"
     });
-    this.headers.push({
-      text: this.$tc('Проект'),
-      value: 'project.displayName',
-      width: "350px"
-    });
     DateTimeUtils.daysBetweenDates(this.periodFilter.from, this.periodFilter.to).forEach((day) => {
       this.headers.push({
         text: DateTimeUtils.formatToDayMonthDate(day)!,
-        value: 'day-' + DateTimeUtils.formatToIsoDate(day),
+        value: `dates[${DateTimeUtils.formatToDayMonthDate(day)}].hoursPlanned`,
         width: "50px"
       });
     });
@@ -149,17 +123,23 @@ export default class TimesheetTableComponent extends Vue {
   }
 
   private rebuildRows() {
-    this.groupedRows.length = 0;
-    if (this.groupBy === "employee") {
-      this.employees.forEach(employee => {
-        const record: TimesheetAggregated = {
-          employee: {uuid: 'empl-' + employee.id, displayName: employee.displayName, id: employee.id, empty: false},
-          project: {uuid: 'project-empty', displayName: this.$tc("Без проекта"), id: null, empty: true},
-          dates: []
+    this.aggregatedByEmployees.length = 0;
+    this.employees.forEach(employee => {
+      const record: TimesheetAggregatedByEmployee = {
+        employee: employee,
+        dates: {}
+      }
+      this.records.filter(r => r.employee == employee.id).forEach(r => {
+        record.dates[DateTimeUtils.formatToDayMonthDate(DateTimeUtils.dateFromIsoString(r.date))!] = {
+          id: r.id,
+          hoursPlanned: r.hoursPlanned,
+          hoursSpent: r.hoursSpent,
+          billable: r.billable,
+          description: r.description
         }
-        this.groupedRows.push(record);
       });
-    }
+      this.aggregatedByEmployees.push(record);
+    });
   }
 
 }

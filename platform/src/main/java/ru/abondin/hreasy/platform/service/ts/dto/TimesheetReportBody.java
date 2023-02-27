@@ -18,4 +18,8 @@ public class TimesheetReportBody {
     private LocalDate date;
     private short hoursPlanned;
     private short hoursSpent;
+
+    private boolean billable;
+
+    private String description;
 }

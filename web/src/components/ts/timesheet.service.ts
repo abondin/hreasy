@@ -1,23 +1,26 @@
 import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
-import {Moment} from "moment";
 import {Employee} from "@/components/empl/employee.service";
-import {RowGroup} from "@/components/ts/TimesheetTableComponent.vue";
 
-export interface TimesheetRecord {
-    id?: number,
+export interface TimesheetRecord extends TimesheetHours {
+    id: number,
     employee: number,
     businessAccount: number,
     project?: number,
     date: string,
-    hoursPlanned?: number,
-    hoursSpent?: number
 }
 
-export interface TimesheetAggregated {
-    employee: RowGroup,
-    project: RowGroup,
-    dates: {date:Moment, hours: number}[]
+export interface TimesheetHours {
+    id: number,
+    hoursPlanned?: number,
+    hoursSpent?: number
+    billable: boolean,
+    description?: string
+}
+
+export interface TimesheetAggregatedByEmployee {
+    employee: Employee,
+    dates: { [key: string]: TimesheetHours }
 }
 
 

@@ -2,10 +2,7 @@ package ru.abondin.hreasy.platform.service.ts.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.ts.TimesheetRecordEntry;
-import ru.abondin.hreasy.platform.repo.ts.TimesheetSummaryView;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
 import java.time.OffsetDateTime;
@@ -13,8 +10,7 @@ import java.time.OffsetDateTime;
 @Mapper(componentModel = "spring")
 public interface TimesheetMapper extends MapperBase {
 
-    @Mapping(source = ".", target = "employee", qualifiedByName = "employee")
-    TimesheetSummaryDto fromEntry(TimesheetSummaryView entry);
+    TimesheetSummaryDto fromEntry(TimesheetRecordEntry entry);
 
     @Mapping(source = "employeeId", target = "employee")
     @Mapping(source = "body.businessAccount", target = "businessAccount")
@@ -22,13 +18,10 @@ public interface TimesheetMapper extends MapperBase {
     @Mapping(source = "body.date", target = "date")
     @Mapping(source = "body.hoursSpent", target = "hoursSpent")
     @Mapping(source = "body.hoursPlanned", target = "hoursPlanned")
+    @Mapping(source = "body.billable", target = "billable")
+    @Mapping(source = "body.description", target = "description")
     @Mapping(source = "now", target = "createdAt")
     @Mapping(source = "createdBy", target = "createdBy")
     TimesheetRecordEntry toEntry(Integer employeeId, TimesheetReportBody body, OffsetDateTime now, Integer createdBy);
 
-
-    @Named("employee")
-    default SimpleDictDto employee(TimesheetSummaryView entry) {
-        return simpleDto(entry.getEmployee(), entry.getEmployeeDisplayName());
-    }
 }

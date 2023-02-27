@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 public class TimesheetSummaryDto {
     @NotNull
-    private SimpleDictDto employee;
+    private int employee;
     private int businessAccount;
     private Integer project;
     @NotNull
