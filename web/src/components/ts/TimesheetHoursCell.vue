@@ -1,12 +1,17 @@
 <template>
-  <div :style="'width: 100%;'+((value&&!value.workingDay)?'background:red':'')">
-    {{ value.workingDay }}
-    <a v-if="value" href="#" @click.prevent="alert('a')">
-      <span :class="(value.billable ? 'billable':'non-billable')">{{ value.hoursSpent }}</span>
-      /
-      <span>{{ value.hoursPlanned }}</span>
-    </a>
-  </div>
+  <v-hover v-slot="{ hover }">
+    <div class="d-flex flex-row align-center justify-start" v-if="value"
+         :style="'width: 100%; height:100%; '+((value&&!value.workingDay)?'background:rgba(100, 0, 0, 0.1)':'')">
+      <div v-if="value.hoursPlanned || value.hoursSpent">
+        <span :class="(value.billable ? 'billable':'non-billable')">{{ value.hoursSpent }}</span>
+        /
+        <span>{{ value.hoursPlanned }}</span>
+      </div>
+      <v-btn x-small v-if="hover" icon @click.prevent="alert('a')">
+        <v-icon>mdi-pencil</v-icon>
+      </v-btn>
+    </div>
+  </v-hover>
 </template>
 
 <script lang="ts">
@@ -32,5 +37,11 @@ export default class TimesheetHoursCell extends Vue {
 .non-billable {
   color: map-get($red, 'base');
 }
+
+.v-data-table > .v-data-table__wrapper > table > tbody > tr > td {
+  padding-right: 2px;
+  padding-left: 2px;
+}
+
 </style>
 
