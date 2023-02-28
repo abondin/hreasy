@@ -35,6 +35,8 @@ export class DateTimeUtils {
         return date ? "key"+date.format("DDMMYYYY") : undefined;
     }
 
+
+
     public static validateFormattedDate(formattedDate: string, allowEmpty = true) {
         if (!formattedDate) {
             return allowEmpty;

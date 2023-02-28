@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS ts.timesheet_record (
     description varchar(1024) NULL,
     created_at timestamp with time zone NOT NULL,
     created_by integer NOT NULL REFERENCES empl.employee (id),
-    constraint timesheet_record_hours_not_null check (hours_planned is not null or hours_spent is not null)
+    constraint timesheet_record_hours_not_null check (hours_planned is not null or hours_spent is not null),
+    constraint timesheet_record_uk UNIQUE NULLS NOT DISTINCT ("employee","business_account","project","date")
 );
 
 COMMENT ON TABLE ts.timesheet_record IS 'Daily spent hours';

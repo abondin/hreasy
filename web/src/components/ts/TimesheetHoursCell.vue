@@ -1,9 +1,12 @@
 <template>
-  <a v-if="value" href="#" @click.prevent="alert('a')">
-    <span :class="(value.billable ? 'billable':'non-billable')">{{ value.hoursSpent }}</span>
-    /
-    <span>{{ value.hoursPlanned }}</span>
-  </a>
+  <div :style="'width: 100%;'+((value&&!value.workingDay)?'background:red':'')">
+    {{ value.workingDay }}
+    <a v-if="value" href="#" @click.prevent="alert('a')">
+      <span :class="(value.billable ? 'billable':'non-billable')">{{ value.hoursSpent }}</span>
+      /
+      <span>{{ value.hoursPlanned }}</span>
+    </a>
+  </div>
 </template>
 
 <script lang="ts">

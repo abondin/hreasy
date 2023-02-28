@@ -15,7 +15,8 @@ export interface TimesheetHours {
     hoursPlanned?: number,
     hoursSpent?: number
     billable: boolean,
-    description?: string
+    description?: string,
+    workingDay: boolean
 }
 
 export interface TimesheetAggregatedByEmployee {
