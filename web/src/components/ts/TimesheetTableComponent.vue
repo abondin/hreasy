@@ -26,7 +26,8 @@ import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
 import {DataTableHeader} from "vuetify";
-import timesheetService, {
+import {
+  EmployeeWithNotWorkingDays,
   TimesheetAggregatedByEmployee,
   TimesheetRecord,
   TimesheetSummaryFilter
@@ -37,13 +38,15 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import {Moment} from "moment";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
-import employeeService, {Employee} from "@/components/empl/employee.service";
+import employeeService from "@/components/empl/employee.service";
 import {errorUtils} from "@/components/errors";
 import TimesheetHoursCell from "@/components/ts/TimesheetHoursCell.vue";
 import dictService from "@/store/modules/dict.service";
+import vacationService from "@/components/vacations/vacation.service";
 
 
 const namespace_dict = 'dict';
+
 
 @Component({components: {TimesheetHoursCell}})
 export default class TimesheetTableComponent extends Vue {
@@ -56,9 +59,8 @@ export default class TimesheetTableComponent extends Vue {
   private allBas!: Array<SimpleDict>;
 
   // dynamic dicts
-  private employees: Employee[] = [];
+  private employees: Array<EmployeeWithNotWorkingDays> = [];
   private notWorkingDays: Array<Moment> = [];
-
 
   // Dirty rows from backend
   private records: TimesheetRecord[] = [];
@@ -100,18 +102,29 @@ export default class TimesheetTableComponent extends Vue {
         .then(() => this.$store.dispatch('dict/reloadProjects'))
         .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
         .then(() => this.$store.dispatch('dict/reloadDepartments'))
-        .then(() => employeeService.findAll().then(data => {
-          this.employees = data as Employee[];
-        }))
-        .then(() => dictService.notWorkingDays(this.periodFilter.year).then(data => {
-          this.notWorkingDays = data.map(str => DateTimeUtils.dateFromIsoString(str));
-        }))
-        .then(() =>
-            timesheetService.timesheetSummary(this.periodFilterStr()).then(records => {
-                  this.records = records;
-                }
-            )
-        )
+        // 1. Get all employees
+        .then(() => employeeService.findAll().then(employees =>
+            // 2. Get all not working days for given year
+            dictService.notWorkingDays(this.periodFilter.year).then(notWorkingDaysStr =>
+                // 3. Get all vacations for given year
+                vacationService.findAll([this.periodFilter.year]).then(vacations => {
+                  // 4. Merge all not working days with employee's vacations to get all not working days for each employee
+                  const notWorkingDays = notWorkingDaysStr.map(str => DateTimeUtils.dateFromIsoString(str));
+                  return employees.forEach(employee => {
+                    const emplNotWorkingDays: Array<Moment> = [];
+                    vacations.filter(v => v.employee == employee.id && vacationService.isNotWorkingDays(v) && v.startDate && v.endDate)
+                        .forEach(v => {
+                          const vacationsDays = DateTimeUtils.daysBetweenDates(DateTimeUtils.dateFromIsoString(v.startDate), DateTimeUtils.dateFromIsoString(v.endDate));
+                          emplNotWorkingDays.push(...vacationsDays);
+                          emplNotWorkingDays.push(...notWorkingDays);
+                        });
+                    this.employees.push({
+                      id: employee.id,
+                      displayName: employee.displayName,
+                      notWorkingDays: emplNotWorkingDays
+                    })
+                  });
+                }))))
         .then(() => this.rebuildTable())
         .catch((er: any) => {
           this.error = errorUtils.shortMessage(er);
@@ -165,7 +178,7 @@ export default class TimesheetTableComponent extends Vue {
           hoursSpent: r.hoursSpent,
           billable: r.billable,
           description: r.description,
-          workingDay: this.isWorkingDay(date)
+          workingDay: this.isWorkingDay(employee.notWorkingDays, date)
         }
         record.total.hoursSpentBillable = (r.hoursSpent || 0) * (r.billable === true ? 1 : 0);
         record.total.hoursSpentNonBillable = (r.hoursSpent || 0) * (r.billable === true ? 0 : 1);
@@ -182,12 +195,12 @@ export default class TimesheetTableComponent extends Vue {
       hoursSpent: null,
       billable: true,
       description: null,
-      workingDay: this.isWorkingDay(date)
+      workingDay: this.isWorkingDay(record.employee.notWorkingDays, date)
     };
   }
 
-  private isWorkingDay(date: Moment){
-    return this.notWorkingDays.filter(d=>d.isSame(date, 'day')).length == 0;
+  private isWorkingDay(notWorkingDays: Array<Moment>, date: Moment) {
+    return notWorkingDays.filter(d => d.isSame(date, 'day')).length == 0;
   }
 }
 </script>

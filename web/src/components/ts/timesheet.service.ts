@@ -1,6 +1,6 @@
 import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
-import {Employee} from "@/components/empl/employee.service";
+import {Moment} from "moment";
 
 export interface TimesheetRecord extends TimesheetHours {
     id: number,
@@ -11,7 +11,7 @@ export interface TimesheetRecord extends TimesheetHours {
 }
 
 export interface TimesheetHours {
-    id: number|string,
+    id: number | string,
     hoursPlanned?: number,
     hoursSpent?: number
     billable: boolean,
@@ -19,8 +19,14 @@ export interface TimesheetHours {
     workingDay: boolean
 }
 
+export interface EmployeeWithNotWorkingDays {
+    id: number,
+    displayName: string,
+    notWorkingDays: Array<Moment>
+}
+
 export interface TimesheetAggregatedByEmployee {
-    employee: Employee,
+    employee: EmployeeWithNotWorkingDays,
     dates: { [key: string]: TimesheetHours }
     total: {
         hoursPlanned: number,
@@ -28,7 +34,6 @@ export interface TimesheetAggregatedByEmployee {
         hoursSpentNonBillable: number
     }
 }
-
 
 export interface TimesheetReportBody {
     businessAccount: number,
