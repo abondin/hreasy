@@ -200,7 +200,7 @@ export default class TimesheetTableComponent extends Vue {
   }
 
   private isWorkingDay(notWorkingDays: Array<Moment>, date: Moment) {
-    return notWorkingDays.filter(d => d.isSame(date, 'day')).length == 0;
+    return notWorkingDays.filter(d => DateTimeUtils.isSameDate(d, date)).length == 0;
   }
 }
 </script>

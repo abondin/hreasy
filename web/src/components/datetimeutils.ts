@@ -32,9 +32,8 @@ export class DateTimeUtils {
      * @return "key23072022"
      */
     public static formatToDayKey(date?: Moment): string | undefined {
-        return date ? "key"+date.format("DDMMYYYY") : undefined;
+        return date ? "key" + date.format("DDMMYYYY") : undefined;
     }
-
 
 
     public static validateFormattedDate(formattedDate: string, allowEmpty = true) {
@@ -111,6 +110,16 @@ export class DateTimeUtils {
         return days;
     }
 
+    /**
+     * Moment.isSame works extremely slow
+     * @param d1
+     * @param d2
+     */
+    static isSameDate(d1: Moment, d2: Moment): boolean {
+        return d1.get('year') === d2.get('year') &&
+            d1.get('month') === d2.get('month') &&
+            d1.get('day') === d2.get('day')
+    }
 }
 
 
