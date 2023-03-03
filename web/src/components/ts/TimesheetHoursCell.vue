@@ -7,7 +7,7 @@
         /
         <span>{{ value.hoursPlanned }}</span>
       </div>
-      <v-btn x-small v-if="hover" icon @click.prevent="alert('a')">
+      <v-btn x-small v-if="hover" icon @click.prevent="edit()">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>
     </div>
@@ -24,6 +24,12 @@ import {Prop} from "vue-property-decorator";
 export default class TimesheetHoursCell extends Vue {
   @Prop({required: true})
   private value: TimesheetHours | undefined;
+
+  private edit() {
+    this.$nextTick(function () {
+      this.$emit('edit', this.value);
+    })
+  }
 }
 </script>
 

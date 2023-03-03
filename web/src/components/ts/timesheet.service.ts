@@ -4,14 +4,14 @@ import {Moment} from "moment";
 
 export interface TimesheetRecord extends TimesheetHours {
     id: number,
-    employee: number,
     businessAccount: number,
     project?: number,
-    date: string,
 }
 
 export interface TimesheetHours {
     id: number | string,
+    date: string,
+    employee: EmployeeWithNotWorkingDays,
     hoursPlanned?: number,
     hoursSpent?: number
     billable: boolean,

@@ -14,7 +14,8 @@
       </template>
       <template v-for="d of daysKeys" v-slot:[`item.dates.${d.key}`]="item">
         <timesheet-hours-cell v-bind:key="d.key"
-                              :value="item.item.dates[d.key]??emptyHours(item.item, d.date)"></timesheet-hours-cell>
+                              :value="item.item.dates[d.key]??emptyHours(item.item, d.date)"
+                              @edit="openEditDialog"></timesheet-hours-cell>
       </template>
     </v-data-table>
   </v-card>
@@ -29,6 +30,7 @@ import {DataTableHeader} from "vuetify";
 import {
   EmployeeWithNotWorkingDays,
   TimesheetAggregatedByEmployee,
+  TimesheetHours,
   TimesheetRecord,
   TimesheetSummaryFilter
 } from "@/components/ts/timesheet.service";
@@ -116,8 +118,8 @@ export default class TimesheetTableComponent extends Vue {
                         .forEach(v => {
                           const vacationsDays = DateTimeUtils.daysBetweenDates(DateTimeUtils.dateFromIsoString(v.startDate), DateTimeUtils.dateFromIsoString(v.endDate));
                           emplNotWorkingDays.push(...vacationsDays);
-                          emplNotWorkingDays.push(...notWorkingDays);
                         });
+                    emplNotWorkingDays.push(...notWorkingDays);
                     this.employees.push({
                       id: employee.id,
                       displayName: employee.displayName,
@@ -170,10 +172,12 @@ export default class TimesheetTableComponent extends Vue {
         dates: {},
         total: {hoursPlanned: 0, hoursSpentBillable: 0, hoursSpentNonBillable: 0}
       }
-      this.records.filter(r => r.employee == employee.id).forEach(r => {
+      this.records.filter(r => r.employee.id === employee.id).forEach(r => {
         const date = DateTimeUtils.dateFromIsoString(r.date);
         record.dates[DateTimeUtils.formatToDayKey(date)!] = {
           id: r.id,
+          employee: employee,
+          date: r.date,
           hoursPlanned: r.hoursPlanned,
           hoursSpent: r.hoursSpent,
           billable: r.billable,
@@ -191,6 +195,8 @@ export default class TimesheetTableComponent extends Vue {
   private emptyHours(record: TimesheetAggregatedByEmployee, date: Moment) {
     return {
       id: null,
+      employee: record.employee,
+      date: date,
       hoursPlanned: null,
       hoursSpent: null,
       billable: true,
@@ -201,6 +207,10 @@ export default class TimesheetTableComponent extends Vue {
 
   private isWorkingDay(notWorkingDays: Array<Moment>, date: Moment) {
     return notWorkingDays.filter(d => DateTimeUtils.isSameDate(d, date)).length == 0;
+  }
+
+  private openEditDialog(value: TimesheetHours) {
+    console.log('Open edit dialog', value);
   }
 }
 </script>

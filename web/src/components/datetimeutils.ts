@@ -116,9 +116,9 @@ export class DateTimeUtils {
      * @param d2
      */
     static isSameDate(d1: Moment, d2: Moment): boolean {
-        return d1.get('year') === d2.get('year') &&
-            d1.get('month') === d2.get('month') &&
-            d1.get('day') === d2.get('day')
+        return d1.year() === d2.year() &&
+            d1.month() === d2.month() &&
+            d1.day() === d2.day();
     }
 }
 
