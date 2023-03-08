@@ -91,6 +91,11 @@ export class DateTimeUtils {
         return this.formatToIsoDate(this.now());
     }
 
+    public static defaultYears(): number[]{
+        const currentYear = this.now().year();
+        return [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];
+    }
+
     static vacationDays(start: moment.Moment, end: moment.Moment, notVacationDaysStr: Array<string>): number {
         const notVacationDays = notVacationDaysStr.map(str => this.dateFromIsoString(str));
         let cnt = 0;
@@ -120,6 +125,7 @@ export class DateTimeUtils {
             d1.month() === d2.month() &&
             d1.day() === d2.day();
     }
+
 }
 
 
