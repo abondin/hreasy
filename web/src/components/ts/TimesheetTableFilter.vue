@@ -9,9 +9,22 @@
             :label="$t('Год')"></v-select>
       </v-col>
 
+            <v-col lg="3" sm="6" xs="6" class="pb-0">
+              <v-select
+                  clearable
+                  v-model="input.project"
+                  :items="allProjects.filter(p=>p.active)"
+                  item-value="id"
+                  item-text="name"
+                  :label="$t('Проект')"
+                  multiple
+              ></v-select>
+            </v-col>
+
       <v-col lg="4" sm="6" xs="6" class="pb-0">
         <!-- Dates selection filter -->
         <my-date-range-component ref="dateSelector" v-model="input.selectedDates"
+                                 :allowed-short-cut="['month']"
                                  :label="$t('Период')"></my-date-range-component>
       </v-col>
     </v-row>
@@ -113,10 +126,13 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import {Moment} from "moment";
 import moment from "moment/moment";
 import MyDateRangeComponent from "@/components/shared/MyDateRangeComponent.vue";
+import {SimpleDict} from "@/store/modules/dict";
 
 export class TimesheetTableFilterData {
   private _year: number;
   public selectedDates: Array<string> = [];
+  public ba: number|null = null;
+  public project: number|null = null;
 
   public constructor() {
     const now = DateTimeUtils.now();
@@ -158,6 +174,12 @@ export class TimesheetTableFilterData {
 export default class TimesheetTableFilter extends Vue {
   @Prop({required: true})
   private input!: TimesheetTableFilterData;
+
+  @Prop({required: true})
+  private allBas!: Array<SimpleDict>;
+
+  @Prop({required: true})
+  private allProjects!: Array<SimpleDict>;
 
   private allYears = DateTimeUtils.defaultYears();
 

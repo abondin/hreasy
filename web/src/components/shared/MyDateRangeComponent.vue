@@ -21,13 +21,13 @@
                      range
                      width="500px">
         <v-btn-toggle rounded>
-          <v-btn x-small @click="today()">
+          <v-btn x-small @click="today()" v-if="allowedShortCut && allowedShortCut.indexOf('todayPlus5Days')>=0">
             {{ $t('Текущая дата +5 дней') }}
           </v-btn>
-          <v-btn x-small @click="currentMonth()">
-            {{ $t('Месяц') }}
+          <v-btn x-small @click="currentMonth()" v-if="allowedShortCut && allowedShortCut.indexOf('month')>=0">
+            {{ $t('Текущий месяц') }}
           </v-btn>
-          <v-btn x-small @click="currentYear()">
+          <v-btn x-small @click="currentYear()" v-if="allowedShortCut && allowedShortCut.indexOf('year')>=0">
             {{ $t('Год') }}
           </v-btn>
         </v-btn-toggle>
@@ -52,6 +52,8 @@ import moment, {HTML5_FMT} from "moment";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
 
+export type MyDateRangeComponentAllowedTypes='year'|'month'|'todayPlus5Days';
+
 @Component
 export default class MyDateRangeComponent extends Vue {
 
@@ -64,10 +66,13 @@ export default class MyDateRangeComponent extends Vue {
   @Prop({required: false, type: Array})
   private rules: any;
 
+  @Prop({type: Array, default:()=>['year', 'month', 'todayPlus5Days']})
+  private allowedShortCut!: Array<MyDateRangeComponentAllowedTypes>;
+
   private menu = false;
 
   private pickerDate: string | null = null;
-  
+
   public get selectedDates() {
     return this.value;
   }
