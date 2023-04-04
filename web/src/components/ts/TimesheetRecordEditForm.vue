@@ -41,20 +41,20 @@ import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 import {DateTimeUtils} from "@/components/datetimeutils";
-import {TimesheetHours} from "@/components/ts/timesheet.service";
+import {EmployeeOneDayTimesheet} from "@/components/ts/timesheetUiDto";
 
 
 export class EditTimesheetRecordData {
   private dialog = false;
-  private selectedItem: TimesheetHours | null = null;
+  private selectedItem: EmployeeOneDayTimesheet | null = null;
   private _error: string | null = null;
   private loading = false;
 
   public isNew(): boolean {
-    return this.selectedItem == null || this.selectedItem.id == null;
+    return this.selectedItem == null || this.selectedItem.record.id == null;
   }
 
-  public show(value: TimesheetHours) {
+  public show(value: EmployeeOneDayTimesheet) {
     this.selectedItem = value;
     this.dialog = true;
   }

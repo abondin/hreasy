@@ -11,6 +11,10 @@ export interface SimpleDict {
     active: boolean;
 }
 
+export interface ProjectDictDto extends SimpleDict{
+    baId: number;
+}
+
 export interface ManagerOfObject {
     id: number;
     employeeId: number,
@@ -24,7 +28,7 @@ export interface CurrentProjectRole {
 }
 
 export interface DictLoadedState {
-    projects: Array<SimpleDict>;
+    projects: Array<ProjectDictDto>;
     businessAccounts: Array<SimpleDict>;
     departments: Array<SimpleDict>;
     positions: Array<SimpleDict>;
@@ -97,7 +101,7 @@ export const dictActions: ActionTree<DictLoadedState, RootState> = {
 }
 
 export const dictMutations: MutationTree<DictLoadedState> = {
-    projectsLoaded(state: DictLoadedState, projects: Array<SimpleDict>) {
+    projectsLoaded(state: DictLoadedState, projects: Array<ProjectDictDto>) {
         state.projects = projects;
     },
     businessAccountsLoaded(state: DictLoadedState, bas: Array<SimpleDict>) {
@@ -128,7 +132,7 @@ export const dictMutations: MutationTree<DictLoadedState> = {
 
 
 export const dictGetters: GetterTree<DictLoadedState, RootState> = {
-    projects(state: DictLoadedState): Array<SimpleDict> {
+    projects(state: DictLoadedState): Array<ProjectDictDto> {
         return state.projects;
     },
     businessAccounts(state: DictLoadedState): Array<SimpleDict> {

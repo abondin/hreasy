@@ -100,7 +100,7 @@ public class AdminEmployeeExportService {
         }
     }
 
-    private Map<Integer, String> fromDicts(List<SimpleDictDto> list) {
+    private Map<Integer, String> fromDicts(List<? extends SimpleDictDto> list) {
         return list.stream().filter(d -> StringUtils.isNotBlank(d.getName()))
                 .collect(Collectors.toMap(SimpleDictDto::getId, SimpleDictDto::getName));
     }
