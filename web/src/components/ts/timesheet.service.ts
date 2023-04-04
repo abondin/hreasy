@@ -11,7 +11,7 @@ export interface TimesheetRecord extends TimesheetHours {
 export interface TimesheetHours {
     id: number | string,
     date: string,
-    employee: EmployeeWithNotWorkingDays,
+    employee: number,
     hoursPlanned?: number,
     hoursSpent?: number
     billable: boolean,

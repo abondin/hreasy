@@ -9,17 +9,17 @@
             :label="$t('Год')"></v-select>
       </v-col>
 
-            <v-col lg="3" sm="6" xs="6" class="pb-0">
-              <v-select
-                  clearable
-                  v-model="input.project"
-                  :items="allProjects.filter(p=>p.active)"
-                  item-value="id"
-                  item-text="name"
-                  :label="$t('Проект')"
-                  multiple
-              ></v-select>
-            </v-col>
+      <v-col lg="3" sm="6" xs="6" class="pb-0">
+        <v-select
+            clearable
+            v-model="input.project"
+            :items="allProjects.filter(p=>p.active)"
+            item-value="id"
+            item-text="name"
+            :label="$t('Проект')"
+            multiple
+        ></v-select>
+      </v-col>
 
       <v-col lg="4" sm="6" xs="6" class="pb-0">
         <!-- Dates selection filter -->
@@ -127,12 +127,13 @@ import {Moment} from "moment";
 import moment from "moment/moment";
 import MyDateRangeComponent from "@/components/shared/MyDateRangeComponent.vue";
 import {SimpleDict} from "@/store/modules/dict";
+import {TimesheetSummaryFilter} from "@/components/ts/timesheet.service";
 
 export class TimesheetTableFilterData {
   private _year: number;
   public selectedDates: Array<string> = [];
-  public ba: number|null = null;
-  public project: number|null = null;
+  public ba: number | null = null;
+  public project: number | null = null;
 
   public constructor() {
     const now = DateTimeUtils.now();
@@ -149,11 +150,11 @@ export class TimesheetTableFilterData {
   }
 
   public get from(): Moment {
-    return moment(this.selectedDates[0]);
+    return moment(this.fromStr());
   }
 
   public get to(): Moment {
-    return moment(this.selectedDates.length > 1 ? this.selectedDates[1] : this.selectedDates[0]);
+    return moment(this.toStr());
   }
 
   public get year() {
@@ -165,6 +166,23 @@ export class TimesheetTableFilterData {
     this.updateDatesOnYearChange();
   }
 
+  /**
+   * Filter to provide in API request
+   */
+  public timesheetSummaryFilter(): TimesheetSummaryFilter {
+    return {
+      from: this.fromStr(),
+      to: this.toStr()
+    }
+  }
+
+  private fromStr(): string {
+    return this.selectedDates[0];
+  }
+
+  private toStr(): string {
+    return this.selectedDates.length > 1 ? this.selectedDates[1] : this.selectedDates[0]
+  }
 
 }
 

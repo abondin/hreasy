@@ -3,6 +3,8 @@
     <v-card-title>
       <timesheet-table-filter
           :input="filter"
+          :all-bas="allBas"
+          :all-projects="allProjects"
           @dateIntervalUpdated="refresh()"
       ></timesheet-table-filter>
     </v-card-title>
@@ -40,7 +42,7 @@ import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
 import {DataTableHeader} from "vuetify";
-import {
+import timesheetService, {
   EmployeeWithNotWorkingDays,
   TimesheetAggregatedByEmployee,
   TimesheetHours,
@@ -143,10 +145,15 @@ export default class TimesheetTableComponent extends Vue {
                   notWorkingDays: emplNotWorkingDays
                 })
               });
-            }))).then(() => {
-      this.rebuildHeaders();
-      this.rebuildRows();
-    });
+            })))
+        .then(() => timesheetService.timesheetSummary(this.filter.timesheetSummaryFilter()).then(records => {
+              this.records = records;
+            }
+        ))
+        .then(() => {
+          this.rebuildHeaders();
+          this.rebuildRows();
+        });
     if (handleLoading) {
       promise.catch((er: any) => {
         this.error = errorUtils.shortMessage(er);
@@ -189,11 +196,11 @@ export default class TimesheetTableComponent extends Vue {
         dates: {},
         total: {hoursPlanned: 0, hoursSpentBillable: 0, hoursSpentNonBillable: 0}
       }
-      this.records.filter(r => r.employee.id === employee.id).forEach(r => {
+      this.records.filter(r => (r.employee === employee.id)).forEach(r => {
         const date = DateTimeUtils.dateFromIsoString(r.date);
         record.dates[DateTimeUtils.formatToDayKey(date)!] = {
           id: r.id,
-          employee: employee,
+          employee: employee.id,
           date: r.date,
           hoursPlanned: r.hoursPlanned,
           hoursSpent: r.hoursSpent,
