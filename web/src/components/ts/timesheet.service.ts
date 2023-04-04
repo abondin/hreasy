@@ -7,8 +7,8 @@ import {Moment} from "moment";
  */
 export interface TimesheetRecord {
     id?: number,
-    businessAccount?: number,
-    project?: number,
+    businessAccount: number|null,
+    project: number|null,
     date?: string,
     employee: number,
     hoursPlanned?: number,

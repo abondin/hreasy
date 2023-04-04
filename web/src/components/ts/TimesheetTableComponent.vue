@@ -236,8 +236,8 @@ export default class TimesheetTableComponent extends Vue {
         hoursSpent: undefined,
         billable: true,
         description: undefined,
-        businessAccount: undefined,
-        project: undefined
+        businessAccount: this.filter.ba,
+        project: this.filter.project
       },
       employee: record.employee,
       workingDay: this.isWorkingDay(record.employee.notWorkingDays, date)
