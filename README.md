@@ -134,7 +134,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 | view_timesheet_summary        | pm, hr, global_admin            |            
 | report_timesheet              | pm,global_admin                 |            
 
-## Assessments
+## Assessments (Work in Progress)
 
 Project Manager in UI able to select employee and schedule an assessment.
 The goal of this functionality
@@ -181,14 +181,48 @@ Employee (or HR/PM/Admin) can upload a technical profile documents.
 * Business account, department or project may have several managers
 * Before 1.2.0 we had only one responsible employee on Business Account. No managers for project. No manager for department.
 
-### Goals
-
+**Goals**:
 * Show every employee on project his managers' matrix (project leads, ba leads, head of the department)
 * Notify managers on events (see [notifications](#notifications))
 
-### Architecture flaws
+## Notifications
 
-* Some kind of functionality overlap with
+Notifications can be sent from admin web UI (not implemented)
+
+or by system event (not implemented).
+HR Easy supports several notification delivery channels:
+- 0 - Web UI - show notification in UI (with ack and archive functionality)
+- 1 - Email - send notification to mail
+
+### Email messages background jobs:
+
+|Job|Schedule|Actions|
+|----|------|-----|
+|upcoming_vacations|fixedDelay 1 hour|Sends email to employee with up to 3 weeks upcoming vacations|
+
+### Upcoming vacations email
+
+HR Easy automatically sends one email for every upcoming vacation (vacation, which will be started in up to 3 weeks)
+
+Email recipients:
+* (to) employee
+* (cc) all not fired employee's project managers
+* (cc) all not fired managers of project's business account
+* (cc) all not fired managers of project's department
+* (cc) Additional emails from `HREASY_BACKGROUND_UPCOMING-VACATION_ADDITIONAL-EMAIL-ADDRESSES` env variable
+
+### Employees import from excel
+Web provides wizard to import employees from excel file.
+User selects the file, configure column to field mapping.
+After than the UI shows witch employees will be created, which will be updated.
+User can commit or abort import operation.
+Employees in the system and in the excel files match by email.
+
+**Implementation:**
+![Employees Import Process](./platform/src/main/java/ru/abondin/hreasy/platform/service/admin/employee/imp/import-employee-flow.png "Employees import process")
+
+
+
 # Development
 
 ## Projects
@@ -227,29 +261,3 @@ sudo docker pull docker.io/abondin/hreasyplatform:latest
 sudo docker pull docker.io/abondin/hreasyweb:latest
 sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hreasyplatform hreasyweb
 ```
-
-## Notifications
-
-Notifications can be sent from admin web UI (not implemented)
-
-or by system event (not implemented).
-HR Easy supports several notification delivery channels:
-- 0 - Web UI - show notification in UI (with ack and archive functionality)
-- 1 - Email - send notification to mail
-
-### Email messages background jobs:
-
-|Job|Schedule|Actions|
-|----|------|-----|
-|upcoming_vacations|fixedDelay 1 hour|Sends email to employee with up to 3 weeks upcoming vacations|
-
-### Upcoming vacations email
-
-HR Easy automatically sends one email for every upcoming vacation (vacation, which will be started in up to 3 weeks)
-
-Email recipients:
-* (to) employee
-* (cc) all not fired employee's project managers
-* (cc) all not fired managers of project's business account
-* (cc) all not fired managers of project's department
-* (cc) Additional emails from `HREASY_BACKGROUND_UPCOMING-VACATION_ADDITIONAL-EMAIL-ADDRESSES` env variable

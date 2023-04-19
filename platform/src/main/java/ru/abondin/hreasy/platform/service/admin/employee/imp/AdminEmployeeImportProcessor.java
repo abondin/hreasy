@@ -44,7 +44,7 @@ public class AdminEmployeeImportProcessor {
     private DateTimeFormatter formatter;
 
     private final DictService dictService;
-    private final AdminEmployeeExcelImporter exporter;
+    private final AdminEmployeeExcelImporter importer;
     private final EmployeeWithAllDetailsRepo emplRepo;
 
 
@@ -67,7 +67,7 @@ public class AdminEmployeeImportProcessor {
                     }
                 }).flatMap(excelStream ->
                         // 1. Parse the Excel
-                        exporter.importEmployees(config, excelStream)
+                        importer.importEmployees(config, excelStream)
                                 .collectList()
                                 .flatMap(fromExcel -> {
                                     // 2. Load required dictionaries
