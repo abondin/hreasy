@@ -3,6 +3,8 @@
     <v-card-title>
       <timesheet-table-filter
           :input="filter"
+          :all-bas="allBas"
+          :all-projects="allProjects"
           @dateIntervalUpdated="refresh()"
       ></timesheet-table-filter>
     </v-card-title>

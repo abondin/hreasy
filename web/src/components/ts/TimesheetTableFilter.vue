@@ -9,6 +9,17 @@
             :label="$t('Год')"></v-select>
       </v-col>
 
+      <v-col lg="3" sm="6" xs="6" class="pb-0">
+        <v-select
+            clearable
+            v-model="input.ba"
+            :items="allBas.filter(p=>p.active)"
+            item-value="id"
+            item-text="name"
+            :label="$t('Бизнес аккаунт')"
+            multiple
+        ></v-select>
+      </v-col>
             <v-col lg="3" sm="6" xs="6" class="pb-0">
               <v-select
                   clearable
