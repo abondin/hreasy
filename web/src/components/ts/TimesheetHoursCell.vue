@@ -1,11 +1,11 @@
 <template>
   <v-hover v-slot="{ hover }">
-    <div class="d-flex flex-row align-center justify-start" v-if="value"
+    <div class="d-flex flex-row align-center justify-start" v-if="value && value.record"
          :style="'width: 100%; height:100%; '+((value&&!value.workingDay)?'background:rgba(100, 0, 0, 0.1)':'')">
-      <div v-if="value.hoursPlanned || value.hoursSpent">
-        <span :class="(value.billable ? 'billable':'non-billable')">{{ value.hoursSpent }}</span>
+      <div v-if="value.record.hoursPlanned || value.record.hoursSpent">
+        <span :class="(value.record.billable ? 'billable':'non-billable')">{{ value.record.hoursSpent }}</span>
         /
-        <span>{{ value.hoursPlanned }}</span>
+        <span>{{ value.record.hoursPlanned }}</span>
       </div>
       <v-btn x-small v-if="hover" icon @click.prevent="edit()">
         <v-icon>mdi-pencil</v-icon>
@@ -17,13 +17,13 @@
 <script lang="ts">
 import Component from "vue-class-component";
 import Vue from "vue";
-import {TimesheetHours} from "@/components/ts/timesheet.service";
 import {Prop} from "vue-property-decorator";
+import {EmployeeOneDayTimesheet} from "@/components/ts/timesheetUiDto";
 
 @Component({components: {}})
 export default class TimesheetHoursCell extends Vue {
   @Prop({required: true})
-  private value: TimesheetHours | undefined;
+  private value: EmployeeOneDayTimesheet | undefined;
 
   private edit() {
     this.$nextTick(function () {

@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dict.DictWorkingDaysCalendarService;
+import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.LocalDate;
@@ -25,7 +26,7 @@ public class DictController {
     @Operation(summary = "All projects")
     @GetMapping("/projects")
     @ResponseBody
-    public Flux<SimpleDictDto> projects() {
+    public Flux<ProjectDictDto> projects() {
         return AuthHandler.currentAuth().flatMapMany(
                 auth -> dictService.findProjects(auth));
     }

@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.DictDtoMapper;
 
@@ -28,7 +29,7 @@ public class DictService {
     private final DictDtoMapper mapper;
 
 
-    public Flux<SimpleDictDto> findProjects(AuthContext auth) {
+    public Flux<ProjectDictDto> findProjects(AuthContext auth) {
         var now = dateTimeService.now().toLocalDate();
         return projectRepo
                 .findAll()

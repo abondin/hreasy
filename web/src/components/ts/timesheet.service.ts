@@ -2,37 +2,27 @@ import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
 import {Moment} from "moment";
 
-export interface TimesheetRecord extends TimesheetHours {
-    id: number,
-    businessAccount: number,
-    project?: number,
-}
-
-export interface TimesheetHours {
-    id: number | string,
-    date: string,
-    employee: EmployeeWithNotWorkingDays,
+/**
+ * DTO from backend API
+ */
+export interface TimesheetRecord {
+    id?: number,
+    businessAccount: number|null,
+    project: number|null,
+    date?: string,
+    employee: number,
     hoursPlanned?: number,
     hoursSpent?: number
     billable: boolean,
-    description?: string,
-    workingDay: boolean
+    description?: string
 }
 
-export interface EmployeeWithNotWorkingDays {
-    id: number,
-    displayName: string,
-    notWorkingDays: Array<Moment>
-}
-
-export interface TimesheetAggregatedByEmployee {
-    employee: EmployeeWithNotWorkingDays,
-    dates: { [key: string]: TimesheetHours }
-    total: {
-        hoursPlanned: number,
-        hoursSpentBillable: number,
-        hoursSpentNonBillable: number
-    }
+/**
+ * DTO for filter for the api request
+ */
+export interface TimesheetSummaryFilter {
+    from: string,
+    to: string
 }
 
 export interface TimesheetReportBody {
@@ -43,10 +33,7 @@ export interface TimesheetReportBody {
     hoursSpent?: number
 }
 
-export interface TimesheetSummaryFilter {
-    from: string,
-    to: string
-}
+
 
 
 export interface TimesheetService {

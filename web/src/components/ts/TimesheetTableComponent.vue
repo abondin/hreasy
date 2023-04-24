@@ -5,18 +5,18 @@
           :input="filter"
           :all-bas="allBas"
           :all-projects="allProjects"
-          @dateIntervalUpdated="refresh()"
+          @updated="refresh()"
       ></timesheet-table-filter>
     </v-card-title>
-    <v-data-table
-        dense
-        :loading="loading"
-        :loading-text="$t('Загрузка_данных')"
-        disable-sort
-        fixed-header
-        :headers="headers"
-        :items-per-page="defaultItemsPerTablePage"
-        :items="aggregatedByEmployees">
+    <v-data-table v-if="filter.isReady()"
+                  dense
+                  :loading="loading"
+                  :loading-text="$t('Загрузка_данных')"
+                  disable-sort
+                  fixed-header
+                  :headers="headers"
+                  :items-per-page="defaultItemsPerTablePage"
+                  :items="aggregatedByEmployees">
       <template v-slot:[`item.employee.displayName`]="{ item }">
         {{ item.employee.displayName }}
       </template>
@@ -26,7 +26,9 @@
                               @edit="openEditDialog"></timesheet-hours-cell>
       </template>
     </v-data-table>
-
+    <v-card-text v-else>
+      <v-alert type="info">{{ $t("Необходимо выбрать бизнес аккаунт и проект") }}</v-alert>
+    </v-card-text>
     <v-dialog v-model="editData.dialog" persistent>
       <timesheet-record-edit-form :input="editData">
       </timesheet-record-edit-form>
@@ -42,25 +44,26 @@ import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
 import {DataTableHeader} from "vuetify";
-import {
-  EmployeeWithNotWorkingDays,
-  TimesheetAggregatedByEmployee,
-  TimesheetHours,
-  TimesheetRecord
-} from "@/components/ts/timesheet.service";
+import timesheetService, {TimesheetRecord} from "@/components/ts/timesheet.service";
 import {UiConstants} from "@/components/uiconstants";
 
 import {DateTimeUtils} from "@/components/datetimeutils";
 import {Moment} from "moment";
 import {Getter} from "vuex-class";
-import {SimpleDict} from "@/store/modules/dict";
+import {ProjectDictDto, SimpleDict} from "@/store/modules/dict";
 import employeeService from "@/components/empl/employee.service";
 import {errorUtils} from "@/components/errors";
 import TimesheetHoursCell from "@/components/ts/TimesheetHoursCell.vue";
 import dictService from "@/store/modules/dict.service";
 import vacationService from "@/components/vacations/vacation.service";
 import TimesheetRecordEditForm, {EditTimesheetRecordData} from "@/components/ts/TimesheetRecordEditForm.vue";
-import TimesheetTableFilter, {TimesheetTableFilterData} from "@/components/ts/TimesheetTableFilter.vue";
+import TimesheetTableFilter from "@/components/ts/TimesheetTableFilter.vue";
+import {
+  EmployeeOneDayTimesheet,
+  EmployeeWithNotWorkingDays,
+  TimesheetAggregatedByEmployee,
+  TimesheetTableFilterData
+} from "@/components/ts/timesheetUiDto";
 
 
 const namespace_dict = 'dict';
@@ -71,7 +74,7 @@ export default class TimesheetTableComponent extends Vue {
 
   // static dicts
   @Getter("projects", {namespace: namespace_dict})
-  private allProjects!: Array<SimpleDict>;
+  private allProjects!: Array<ProjectDictDto>;
 
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;
@@ -145,10 +148,15 @@ export default class TimesheetTableComponent extends Vue {
                   notWorkingDays: emplNotWorkingDays
                 })
               });
-            }))).then(() => {
-      this.rebuildHeaders();
-      this.rebuildRows();
-    });
+            })))
+        .then(() => timesheetService.timesheetSummary(this.filter.timesheetSummaryFilter()).then(records => {
+              this.records = records;
+            }
+        ))
+        .then(() => {
+          this.rebuildHeaders();
+          this.rebuildRows();
+        });
     if (handleLoading) {
       promise.catch((er: any) => {
         this.error = errorUtils.shortMessage(er);
@@ -191,35 +199,47 @@ export default class TimesheetTableComponent extends Vue {
         dates: {},
         total: {hoursPlanned: 0, hoursSpentBillable: 0, hoursSpentNonBillable: 0}
       }
-      this.records.filter(r => r.employee.id === employee.id).forEach(r => {
-        const date = DateTimeUtils.dateFromIsoString(r.date);
-        record.dates[DateTimeUtils.formatToDayKey(date)!] = {
-          id: r.id,
-          employee: employee,
-          date: r.date,
-          hoursPlanned: r.hoursPlanned,
-          hoursSpent: r.hoursSpent,
-          billable: r.billable,
-          description: r.description,
-          workingDay: this.isWorkingDay(employee.notWorkingDays, date)
-        }
-        record.total.hoursSpentBillable = (r.hoursSpent || 0) * (r.billable === true ? 1 : 0);
-        record.total.hoursSpentNonBillable = (r.hoursSpent || 0) * (r.billable === true ? 0 : 1);
-        record.total.hoursPlanned = r.hoursPlanned || 0;
-      });
+      this.records.filter(r =>
+          (r.employee === employee.id && r.businessAccount == this.filter.ba && (this.filter.project == null || r.project == this.filter.project)))
+          .forEach(r => {
+            const date = DateTimeUtils.dateFromIsoString(r.date!);
+            record.dates[DateTimeUtils.formatToDayKey(date)!] = {
+              employee: employee,
+              workingDay: this.isWorkingDay(record.employee.notWorkingDays, date),
+              record: {
+                id: r.id,
+                employee: employee.id,
+                businessAccount: r.businessAccount,
+                project: r.project,
+                date: r.date,
+                hoursPlanned: r.hoursPlanned,
+                hoursSpent: r.hoursSpent,
+                billable: r.billable,
+                description: r.description
+              }
+            }
+            record.total.hoursSpentBillable = (r.hoursSpent || 0) * (r.billable === true ? 1 : 0);
+            record.total.hoursSpentNonBillable = (r.hoursSpent || 0) * (r.billable === true ? 0 : 1);
+            record.total.hoursPlanned = r.hoursPlanned || 0;
+          });
       this.aggregatedByEmployees.push(record);
     });
   }
 
-  private emptyHours(record: TimesheetAggregatedByEmployee, date: Moment) {
+  private emptyHours(record: TimesheetAggregatedByEmployee, date: Moment): EmployeeOneDayTimesheet {
     return {
-      id: null,
+      record: {
+        id: undefined,
+        employee: record.employee.id,
+        date: DateTimeUtils.formatToIsoDate(date),
+        hoursPlanned: undefined,
+        hoursSpent: undefined,
+        billable: true,
+        description: undefined,
+        businessAccount: this.filter.ba,
+        project: this.filter.project
+      },
       employee: record.employee,
-      date: date,
-      hoursPlanned: null,
-      hoursSpent: null,
-      billable: true,
-      description: null,
       workingDay: this.isWorkingDay(record.employee.notWorkingDays, date)
     };
   }
@@ -228,7 +248,7 @@ export default class TimesheetTableComponent extends Vue {
     return notWorkingDays.filter(d => DateTimeUtils.isSameDate(d, date)).length == 0;
   }
 
-  private openEditDialog(value: TimesheetHours) {
+  private openEditDialog(value: EmployeeOneDayTimesheet) {
     console.log('Open edit dialog', value);
     this.editData.show(value);
   }
