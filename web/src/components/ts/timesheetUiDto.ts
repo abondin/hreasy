@@ -1,36 +1,34 @@
 import {Moment} from "moment/moment";
-import {TimesheetRecord, TimesheetSummaryFilter} from "@/components/ts/timesheet.service";
+import {TimesheetSummaryFilter} from "@/components/ts/timesheet.service";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import moment from "moment";
 
 /**
- * Information about employee including all not working days (vacations and holidays)
- */
-export interface EmployeeWithNotWorkingDays {
-    id: number,
-    displayName: string,
-    notWorkingDays: Array<Moment>
-}
-
-
-/**
  * Timesheet report for one employee on one project
  */
-export interface EmployeeOneDayTimesheet {
-    employee: EmployeeWithNotWorkingDays,
-    record: TimesheetRecord,
+export interface TimesheetAggregatedByEmployeeDay {
     workingDay: boolean,
+    hoursSpent: number
 }
 
 /**
- *
+ * One row in timesheet table component (timesheet for one employee on one project for given period)
  */
-export interface TimesheetAggregatedByEmployee {
-    employee: EmployeeWithNotWorkingDays,
-    dates: { [key: string]: EmployeeOneDayTimesheet }
-    editMode: boolean,
-    total: {
-        hoursSpent: number
+export class TimesheetAggregatedByEmployee {
+    public constructor(public employee: number,
+                       public employeeDisplayName: string,
+                       public notWorkingDays: Array<Moment>,
+                       public ba: number,
+                       public project: number | null,
+    ) {
+    }
+
+    public dates: { [key: string]: TimesheetAggregatedByEmployeeDay } = {};
+    public editMode = false;
+
+    public totalHoursSpent(): number {
+        return Object.values(this.dates)
+            .map(d => d.hoursSpent||0).reduce((sum: number, value: number) => (sum + value * 1 ), 0);
     }
 }
 

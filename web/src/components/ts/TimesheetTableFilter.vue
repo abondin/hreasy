@@ -24,7 +24,6 @@
             item-value="id"
             item-text="name"
             :label="$t('Бизнес аккаунт')"
-            multiple
         ></v-select>
       </v-col>
 
@@ -50,6 +49,7 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import MyDateRangeComponent from "@/components/shared/MyDateRangeComponent.vue";
 import {ProjectDictDto, SimpleDict} from "@/store/modules/dict";
 import {TimesheetTableFilterData} from "@/components/ts/timesheetUiDto";
+import logger from "@/logger";
 
 
 @Component(
@@ -76,7 +76,8 @@ export default class TimesheetTableFilter extends Vue {
   }
 
   @Watch("input.project")
-  private watchProject() {
+  private projectChanged() {
+    logger.log("Timesheet filter: Project changed", this.input.project);
     this.emitUpdated();
   }
 
@@ -88,6 +89,7 @@ export default class TimesheetTableFilter extends Vue {
 
   @Watch("input.ba")
   private baChanged() {
+    logger.log("Timesheet filter: BA changed", this.input.ba);
     this.input.project = null;
     this.allowedProjects.length = 0;
     this.allowedProjects.push({value: null, text: this.$tc('Без проекта')});
@@ -100,6 +102,8 @@ export default class TimesheetTableFilter extends Vue {
         }
       }));
     }
+    this.projectChanged();
+
   }
 
 }

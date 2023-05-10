@@ -1,8 +1,11 @@
 <template>
-  <div class="d-flex flex-row align-center justify-start" v-if="value && value.record"
-       :style="'width: 100%; height:100%; '+((value&&!value.workingDay)?'background:rgba(100, 0, 0, 0.1)':'')">
-    <v-text-field v-if="editMode" v-model="value.record.hoursSpent"></v-text-field>
-    <span v-else>{{ value.record.hoursSpent || '-' }}</span>
+  <div v-if="value"
+       :class="{'notWorkingDay':(value&&!value.workingDay)}">
+    <v-text-field v-if="editMode" v-model="value.hoursSpent"
+                  type="number" hide-spin-buttons
+                  :autofocus="autofocus"
+                  @focus="$event.target.select()"></v-text-field>
+    <span v-else>{{ value.hoursSpent || '-' }}</span>
   </div>
 </template>
 
@@ -10,20 +13,16 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
-import {EmployeeOneDayTimesheet} from "@/components/ts/timesheetUiDto";
+import {TimesheetAggregatedByEmployeeDay} from "@/components/ts/timesheetUiDto";
 
 @Component({components: {}})
 export default class TimesheetHoursCell extends Vue {
   @Prop({required: true})
-  private value: EmployeeOneDayTimesheet | undefined;
+  private value: TimesheetAggregatedByEmployeeDay | undefined;
   @Prop({required: true})
   private editMode!: boolean;
-
-  private edit() {
-    this.$nextTick(function () {
-      this.$emit('edit', this.value);
-    })
-  }
+  @Prop({required: true})
+  private autofocus!: boolean;
 }
 </script>
 
@@ -33,6 +32,10 @@ export default class TimesheetHoursCell extends Vue {
 .v-data-table > .v-data-table__wrapper > table > tbody > tr > td {
   padding-right: 2px;
   padding-left: 2px;
+}
+
+.notWorkingDay {
+  background-color: #FCE4EC;
 }
 
 </style>
