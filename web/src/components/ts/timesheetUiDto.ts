@@ -19,7 +19,7 @@ export interface EmployeeWithNotWorkingDays {
 export interface EmployeeOneDayTimesheet {
     employee: EmployeeWithNotWorkingDays,
     record: TimesheetRecord,
-    workingDay: boolean
+    workingDay: boolean,
 }
 
 /**
@@ -28,10 +28,9 @@ export interface EmployeeOneDayTimesheet {
 export interface TimesheetAggregatedByEmployee {
     employee: EmployeeWithNotWorkingDays,
     dates: { [key: string]: EmployeeOneDayTimesheet }
+    editMode: boolean,
     total: {
-        hoursPlanned: number,
-        hoursSpentBillable: number,
-        hoursSpentNonBillable: number
+        hoursSpent: number
     }
 }
 

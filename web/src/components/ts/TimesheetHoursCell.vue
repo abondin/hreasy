@@ -1,17 +1,9 @@
 <template>
-  <v-hover v-slot="{ hover }">
-    <div class="d-flex flex-row align-center justify-start" v-if="value && value.record"
-         :style="'width: 100%; height:100%; '+((value&&!value.workingDay)?'background:rgba(100, 0, 0, 0.1)':'')">
-      <div v-if="value.record.hoursPlanned || value.record.hoursSpent">
-        <span :class="(value.record.billable ? 'billable':'non-billable')">{{ value.record.hoursSpent }}</span>
-        /
-        <span>{{ value.record.hoursPlanned }}</span>
-      </div>
-      <v-btn x-small v-if="hover" icon @click.prevent="edit()">
-        <v-icon>mdi-pencil</v-icon>
-      </v-btn>
-    </div>
-  </v-hover>
+  <div class="d-flex flex-row align-center justify-start" v-if="value && value.record"
+       :style="'width: 100%; height:100%; '+((value&&!value.workingDay)?'background:rgba(100, 0, 0, 0.1)':'')">
+    <v-text-field v-if="editMode" v-model="value.record.hoursSpent"></v-text-field>
+    <span v-else>{{ value.record.hoursSpent || '-' }}</span>
+  </div>
 </template>
 
 <script lang="ts">
@@ -24,6 +16,8 @@ import {EmployeeOneDayTimesheet} from "@/components/ts/timesheetUiDto";
 export default class TimesheetHoursCell extends Vue {
   @Prop({required: true})
   private value: EmployeeOneDayTimesheet | undefined;
+  @Prop({required: true})
+  private editMode!: boolean;
 
   private edit() {
     this.$nextTick(function () {
@@ -35,14 +29,6 @@ export default class TimesheetHoursCell extends Vue {
 
 <style lang="scss">
 @import "~vuetify/src/styles/settings/_colors.scss";
-
-.billable {
-  color: map-get($green, 'base');
-}
-
-.non-billable {
-  color: map-get($red, 'base');
-}
 
 .v-data-table > .v-data-table__wrapper > table > tbody > tr > td {
   padding-right: 2px;

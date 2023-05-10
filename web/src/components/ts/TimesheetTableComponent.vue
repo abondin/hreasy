@@ -19,10 +19,24 @@
                   :items="aggregatedByEmployees">
       <template v-slot:[`item.employee.displayName`]="{ item }">
         {{ item.employee.displayName }}
+        <span v-if="item.editMode">
+          <v-btn x-small icon color="success">
+            <v-icon>mdi-checkbox-marked-circle-outline</v-icon>
+          </v-btn>
+          <v-btn x-small color="error" icon @click="revertChanges(item)">
+            <v-icon>mdi-cancel</v-icon>
+          </v-btn>
+        </span>
+        <span v-else>
+          <v-btn x-small icon @click="item.editMode = true">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+        </span>
       </template>
       <template v-for="d of daysKeys" v-slot:[`item.dates.${d.key}`]="item">
         <timesheet-hours-cell v-bind:key="d.key"
-                              :value="item.item.dates[d.key]??emptyHours(item.item, d.date)"
+                              :value="item.item.dates[d.key]"
+                              :editMode="item.item.editMode"
                               @edit="openEditDialog"></timesheet-hours-cell>
       </template>
     </v-data-table>
@@ -197,32 +211,40 @@ export default class TimesheetTableComponent extends Vue {
       const record: TimesheetAggregatedByEmployee = {
         employee: employee,
         dates: {},
-        total: {hoursPlanned: 0, hoursSpentBillable: 0, hoursSpentNonBillable: 0}
+        total: {hoursSpent: 0},
+        editMode: false
       }
-      this.records.filter(r =>
-          (r.employee === employee.id && r.businessAccount == this.filter.ba && (this.filter.project == null || r.project == this.filter.project)))
-          .forEach(r => {
-            const date = DateTimeUtils.dateFromIsoString(r.date!);
-            record.dates[DateTimeUtils.formatToDayKey(date)!] = {
-              employee: employee,
-              workingDay: this.isWorkingDay(record.employee.notWorkingDays, date),
-              record: {
-                id: r.id,
-                employee: employee.id,
-                businessAccount: r.businessAccount,
-                project: r.project,
-                date: r.date,
-                hoursPlanned: r.hoursPlanned,
-                hoursSpent: r.hoursSpent,
-                billable: r.billable,
-                description: r.description
-              }
-            }
-            record.total.hoursSpentBillable = (r.hoursSpent || 0) * (r.billable === true ? 1 : 0);
-            record.total.hoursSpentNonBillable = (r.hoursSpent || 0) * (r.billable === true ? 0 : 1);
-            record.total.hoursPlanned = r.hoursPlanned || 0;
-          });
+      this.rebuildEmployeeHours(record);
       this.aggregatedByEmployees.push(record);
+    });
+  }
+
+  private rebuildEmployeeHours(record: TimesheetAggregatedByEmployee): void {
+    record.dates = {};
+    DateTimeUtils.daysBetweenDates(this.filter.from, this.filter.to).forEach((day) => {
+      const r: TimesheetRecord | null = this.records.find(r =>
+          (DateTimeUtils.dateFromIsoString(r.date!) === day
+              && r.employee === record.employee.id
+              && r.businessAccount == this.filter.ba
+              && ((this.filter.project == null && r.project == null) || r.project == this.filter.project))) || null;
+      if (r) {
+        record.dates[DateTimeUtils.formatToDayKey(day)!] = {
+          employee: record.employee,
+          workingDay: this.isWorkingDay(record.employee.notWorkingDays, day),
+          record: {
+            id: r.id,
+            employee: record.employee.id,
+            businessAccount: r.businessAccount,
+            project: r.project,
+            date: r.date,
+            hoursSpent: r.hoursSpent,
+            description: r.description
+          }
+        }
+        record.total.hoursSpent += (r.hoursSpent || 0);
+      } else {
+        record.dates[DateTimeUtils.formatToDayKey(day)!] = this.emptyHours(record, day);
+      }
     });
   }
 
@@ -232,9 +254,7 @@ export default class TimesheetTableComponent extends Vue {
         id: undefined,
         employee: record.employee.id,
         date: DateTimeUtils.formatToIsoDate(date),
-        hoursPlanned: undefined,
         hoursSpent: undefined,
-        billable: true,
         description: undefined,
         businessAccount: this.filter.ba,
         project: this.filter.project
@@ -246,6 +266,18 @@ export default class TimesheetTableComponent extends Vue {
 
   private isWorkingDay(notWorkingDays: Array<Moment>, date: Moment) {
     return notWorkingDays.filter(d => DateTimeUtils.isSameDate(d, date)).length == 0;
+  }
+
+  private revertChanges(record: TimesheetAggregatedByEmployee){
+    this.rebuildEmployeeHours(record);
+    record.editMode = false;
+  }
+
+  private applyChanges(record: TimesheetAggregatedByEmployee){
+    timesheetService.report(record.employee.id, {
+      businessAccount: record.
+    })
+    record.editMode = false;
   }
 
   private openEditDialog(value: EmployeeOneDayTimesheet) {

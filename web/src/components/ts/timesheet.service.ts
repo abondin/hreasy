@@ -11,9 +11,7 @@ export interface TimesheetRecord {
     project: number|null,
     date?: string,
     employee: number,
-    hoursPlanned?: number,
     hoursSpent?: number
-    billable: boolean,
     description?: string
 }
 
@@ -28,9 +26,13 @@ export interface TimesheetSummaryFilter {
 export interface TimesheetReportBody {
     businessAccount: number,
     project?: number,
+    hours: OneDayReport[],
+    comment?: string
+}
+
+export interface OneDayReport {
     date: string,
-    hoursPlanned?: number,
-    hoursSpent?: number
+    hoursSpent: number,
 }
 
 

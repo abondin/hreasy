@@ -27,15 +27,7 @@
             multiple
         ></v-select>
       </v-col>
-            <v-col lg="3" sm="6" xs="6" class="pb-0">
-        <v-select
-            v-model="input.ba"
-            :items="allBas.filter(b=>b.active)"
-            item-value="id"
-            item-text="name"
-            :label="$t('Бизнес аккаунт')"
-        ></v-select>
-      </v-col>
+
 
       <v-col lg="3" sm="6" xs="6" class="pb-0">
         <v-select
