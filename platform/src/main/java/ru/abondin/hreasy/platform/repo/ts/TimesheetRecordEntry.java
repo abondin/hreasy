@@ -18,14 +18,9 @@ public class TimesheetRecordEntry {
     private Integer project;
     @NotNull
     private LocalDate date;
-    private short hoursPlanned;
     private short hoursSpent;
-    /**
-     * If spent hours billable
-     */
-    private boolean billable = true;
 
-    private String description;
+    private String comment;
 
     @NotNull
     private OffsetDateTime createdAt;

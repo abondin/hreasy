@@ -25,6 +25,7 @@ import ru.abondin.hreasy.platform.service.ts.dto.TimesheetReportBody;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,24 +61,21 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var ctx = auth(TestEmployees.FMS_Empl_Jenson_Curtis).block(MONO_DEFAULT_TIMEOUT);
         var date = LocalDate.of(2023, Month.FEBRUARY.getValue(), 02);
         var ba = testData.ba_RND();
-        var hoursPlanned = (short) 8;
         var hoursSpent = (short) 4;
         var report = TimesheetReportBody.builder()
                 .businessAccount(ba)
-                .date(date)
-                .hoursPlanned(hoursPlanned)
-                .hoursSpent(hoursSpent)
+                .hours(Arrays.asList(new TimesheetReportBody.TimesheetReportOneDay(date, hoursSpent)))
                 .project(null).build();
         StepVerifier
                 .create(timesheetService.report(ctx, jensonId, report)
-                        .flatMap(repo::findById)
+                        .collectList().map(l -> l.get(0)) // FIXME: Hack to deal with transactions
+                        .flatMap(r -> repo.findById(r))
                 )
                 .expectNextMatches((entry) ->
                         entry.getBusinessAccount() == ba
                                 && entry.getProject() == null
                                 && entry.getDate().equals(date)
                                 && entry.getEmployee().equals(jensonId)
-                                && entry.getHoursPlanned() == hoursPlanned
                                 && entry.getHoursSpent() == hoursSpent
                                 && entry.getCreatedBy() == jensonId)
                 .verifyComplete();
@@ -93,11 +91,11 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var hours = (short) 8;
         var report = TimesheetReportBody.builder()
                 .businessAccount(ba)
-                .date(date)
-                .hoursPlanned(hours)
+                .hours(Arrays.asList(new TimesheetReportBody.TimesheetReportOneDay(date, hours)))
                 .project(project).build();
         StepVerifier
                 .create(timesheetService.report(ctx, employeeId, report)
+                        .collectList().map(l -> l.get(0)) // FIXME: Hack to deal with transactions
                         .flatMap(repo::findById)
                 )
                 .expectNextCount(1)
@@ -114,8 +112,7 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var hours = (short) 8;
         var report = TimesheetReportBody.builder()
                 .businessAccount(ba)
-                .date(date)
-                .hoursSpent(hours)
+                .hours(Arrays.asList(new TimesheetReportBody.TimesheetReportOneDay(date, hours)))
                 .project(project).build();
         StepVerifier
                 .create(timesheetService.report(ctx, employeeId, report)
@@ -174,10 +171,9 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var employee2Id = testData.employees.get(TestEmployees.Integrator_Jonas_Martin);
         var employee2Ts = timesheetService.report(ctx, employee2Id, TimesheetReportBody.builder()
                 .businessAccount(testData.ba_Billing())
-                .hoursSpent((short) 8)
+                .hours(Arrays.asList(new TimesheetReportBody.TimesheetReportOneDay(defaultDate, (short) 8)))
                 .project(testData.project_M1_ERP_Integration())
-                .date(defaultDate)
-                .build()).block(MONO_DEFAULT_TIMEOUT);
+                .build()).blockLast(MONO_DEFAULT_TIMEOUT);
         Assertions.assertEquals(3, timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
                 .builder().from(defaultDate).to(defaultDate.plusDays(1)).build()).collectList().block(MONO_DEFAULT_TIMEOUT).size());
 
@@ -201,16 +197,15 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var result = new HashMap<String, Integer>();
         return timesheetService.report(ctx, employeeId, TimesheetReportBody.builder()
                         .businessAccount(testData.ba_RND())
-                        .hoursSpent((short) 6)
+                        .hours(Arrays.asList(new TimesheetReportBody.TimesheetReportOneDay(defaultDate, (short) 6)))
                         .project(testData.project_M1_FMS())
-                        .date(defaultDate)
                         .build()).doOnNext(id -> result.put("1:2023-02-02:6", id))
                 .flatMap(r -> timesheetService.report(ctx, employeeId, TimesheetReportBody.builder()
                         .businessAccount(testData.ba_RND())
-                        .hoursSpent((short) 2)
+                        .hours(Arrays.asList(new TimesheetReportBody.TimesheetReportOneDay(defaultDate.plusDays(1), (short) 8)))
                         .project(testData.project_M1_FMS())
-                        .date(defaultDate.plusDays(1))
                         .build()).doOnNext(id -> result.put("1:2023-02-03:2", id)))
+                .collectList()
                 .map(s -> result);
     }
 }

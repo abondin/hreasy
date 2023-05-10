@@ -38,7 +38,7 @@
 
       <!--<editor-fold desc="Total hours spent">-->
       <template v-slot:[`item.totalHoursSpent`]="{ item }">
-        {{item.totalHoursSpent()}}
+        {{ item.totalHoursSpent() }}
       </template>
 
       <template v-for="(d,index) of daysKeys" v-slot:[`item.dates.${d.key}`]="item">
@@ -61,7 +61,7 @@ import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
 import {DataTableHeader} from "vuetify";
-import timesheetService, {TimesheetRecord} from "@/components/ts/timesheet.service";
+import timesheetService, {OneDayReport, TimesheetRecord} from "@/components/ts/timesheet.service";
 import {UiConstants} from "@/components/uiconstants";
 
 import {DateTimeUtils} from "@/components/datetimeutils";
@@ -216,7 +216,8 @@ export default class TimesheetTableComponent extends Vue {
       const hoursSpent = (r && r.hoursSpent) || 0
       record.dates[DateTimeUtils.formatToDayKey(day)!] = {
         workingDay: this.isWorkingDay(record.notWorkingDays, day),
-        hoursSpent: hoursSpent
+        hoursSpent: hoursSpent,
+        date: day
       };
     });
   }
@@ -233,6 +234,22 @@ export default class TimesheetTableComponent extends Vue {
   private applyChanges(record: TimesheetAggregatedByEmployee) {
     //TODO
     record.editMode = false;
+    this.loading = true;
+    return timesheetService.report(record.employee, {
+      businessAccount: record.ba,
+      project: record.project,
+      comment: null, // TODO
+      hours: Object.values(record.dates).map(v => {
+        return {
+          date: DateTimeUtils.formatToIsoDate(v.date),
+          hoursSpent: v.hoursSpent
+        } as OneDayReport
+      })
+    })
+        .then(() => this.refresh(false))
+        .finally(() => {
+          this.loading = false;
+        })
   }
 
 

@@ -7,6 +7,7 @@ import moment from "moment";
  * Timesheet report for one employee on one project
  */
 export interface TimesheetAggregatedByEmployeeDay {
+    date: Moment,
     workingDay: boolean,
     hoursSpent: number
 }

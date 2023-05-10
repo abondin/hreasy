@@ -25,9 +25,9 @@ export interface TimesheetSummaryFilter {
 
 export interface TimesheetReportBody {
     businessAccount: number,
-    project?: number,
+    project: number|null,
     hours: OneDayReport[],
-    comment?: string
+    comment: string|null
 }
 
 export interface OneDayReport {

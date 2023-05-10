@@ -17,5 +17,5 @@ public class TimesheetSummaryDto {
     @NotNull
     private LocalDate date;
     private short hoursSpent;
-    private String description;
+    private String comment;
 }

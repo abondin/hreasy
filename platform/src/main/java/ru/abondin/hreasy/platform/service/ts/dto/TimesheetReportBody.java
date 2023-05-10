@@ -6,23 +6,24 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Update employee's timesheet on given project
+ */
 @Data
 @ToString
 @Builder()
 public class TimesheetReportBody {
+    public record TimesheetReportOneDay(@NotNull
+                                        LocalDate date, short hoursSpent) {
+    }
+
     @NotNull
     private int businessAccount;
     private Integer project;
-    @NotNull
-    private LocalDate date;
-    private short hoursPlanned;
-    private short hoursSpent;
+    private String comment;
 
-    /**
-     * If spent hours billable
-     */
-    private boolean billable;
-
-    private String description;
+    private List<TimesheetReportOneDay> hours = new ArrayList<>();
 }

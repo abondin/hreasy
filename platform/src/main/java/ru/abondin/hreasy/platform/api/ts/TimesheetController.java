@@ -23,8 +23,8 @@ public class TimesheetController {
     private final TimesheetService service;
 
     @PostMapping("/{employeeId}")
-    public Mono<Integer> report(@PathVariable int employeeId, @RequestBody TimesheetReportBody body) {
-        return AuthHandler.currentAuth().flatMap(
+    public Flux<Integer> report(@PathVariable int employeeId, @RequestBody TimesheetReportBody body) {
+        return AuthHandler.currentAuth().flatMapMany(
                 auth -> service.report(auth, employeeId, body));
     }
 

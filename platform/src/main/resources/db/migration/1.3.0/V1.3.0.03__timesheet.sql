@@ -8,8 +8,7 @@ CREATE TABLE IF NOT EXISTS ts.timesheet_record (
     date date not null,
     hours_planned smallint null,
     hours_spent smallint null,
-    billable boolean not null default true,
-    description varchar(1024) NULL,
+    comment varchar(1024) NULL,
     created_at timestamp with time zone NOT NULL,
     created_by integer NOT NULL REFERENCES empl.employee (id),
     constraint timesheet_record_hours_not_null check (hours_planned is not null or hours_spent is not null),
@@ -22,10 +21,8 @@ COMMENT ON COLUMN ts.timesheet_record.employee IS 'Key attribute - link to emplo
 COMMENT ON COLUMN ts.timesheet_record.business_account IS 'Key attribute - link to business account';
 COMMENT ON COLUMN ts.timesheet_record.project IS 'Link to specific project';
 COMMENT ON COLUMN ts.timesheet_record.date IS 'Reporting date';
-COMMENT ON COLUMN ts.timesheet_record.hours_planned IS 'Amount of planned working hours';
 COMMENT ON COLUMN ts.timesheet_record.hours_spent IS 'Amount of actually spent working hours';
-COMMENT ON COLUMN ts.timesheet_record.billable IS 'If spent hours billable';
-COMMENT ON COLUMN ts.timesheet_record.description IS 'General description';
+COMMENT ON COLUMN ts.timesheet_record.comment IS 'Timesheet comment';
 COMMENT ON COLUMN ts.timesheet_record.created_at IS 'Created at';
 COMMENT ON COLUMN ts.timesheet_record.created_by IS 'Created by (link to employee)';
 

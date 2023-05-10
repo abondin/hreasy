@@ -16,6 +16,5 @@ public class TimesheetRecordDto {
     private Integer project;
     @NotNull
     private LocalDate date;
-    private short hoursPlanned;
     private short hoursSpent;
 }

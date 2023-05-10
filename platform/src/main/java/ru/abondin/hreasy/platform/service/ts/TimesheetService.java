@@ -37,16 +37,27 @@ public class TimesheetService {
     }
 
     @Transactional
-    public Mono<Integer> report(AuthContext auth, int employeeId, TimesheetReportBody body) {
+    public Flux<Integer> report(AuthContext auth, int employeeId, TimesheetReportBody body) {
         log.info("Report timesheet by {}: {}", auth.getUsername(), body);
         var createdAt = dateTimeService.now();
         var createdBy = auth.getEmployeeInfo().getEmployeeId();
+        // 1. Validate access
         return sec.validateReportTimesheet(auth, employeeId)
-                .map(v -> mapper.toEntry(employeeId, body, createdAt, createdBy))
+                // 2. Map every day in report body to list of separate database entries
+                .flatMapMany(v -> Flux.fromIterable(body.getHours())
+                        .map(h -> mapper.toEntry(employeeId,
+                                body.getBusinessAccount(),
+                                body.getProject(),
+                                body.getComment(),
+                                h, createdAt, createdBy)))
+                // 3. Save every timesheet entry
                 .flatMap(repo::save)
+                // 4. Save every timesheet entry history
                 .flatMap(persistent -> history.persistHistory(persistent.getId(),
-                        HistoryDomainService.HistoryEntityType.TIMESHEET_RECORD, persistent,
-                        createdAt, createdBy).map(h -> persistent.getId()));
+                                HistoryDomainService.HistoryEntityType.TIMESHEET_RECORD, persistent,
+                                createdAt, createdBy)
+                        // 5. Return ids of created timesheet records
+                        .map(h -> persistent.getId()));
     }
 
     @Transactional
