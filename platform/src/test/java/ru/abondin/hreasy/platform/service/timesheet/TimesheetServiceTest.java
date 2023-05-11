@@ -77,7 +77,7 @@ public class TimesheetServiceTest extends BaseServiceTest {
                                 && entry.getDate().equals(date)
                                 && entry.getEmployee().equals(jensonId)
                                 && entry.getHoursSpent() == hoursSpent
-                                && entry.getCreatedBy() == jensonId)
+                                && entry.getUpdatedBy() == jensonId)
                 .verifyComplete();
     }
 
@@ -163,6 +163,32 @@ public class TimesheetServiceTest extends BaseServiceTest {
     }
 
     @Test
+    public void testUpdateReport() {
+        var employeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
+        var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+
+        // Report ts
+        timesheetService.report(ctx, employeeId, TimesheetReportBody.builder()
+                .businessAccount(testData.ba_RND())
+                .hours(Arrays.asList(new TimesheetReportBody.TimesheetReportOneDay(defaultDate, (short) 8)))
+                .project(testData.project_M1_FMS())
+                .build()).blockLast(MONO_DEFAULT_TIMEOUT);
+
+        // Update ts
+        timesheetService.report(ctx, employeeId, TimesheetReportBody.builder()
+                .businessAccount(testData.ba_RND())
+                .hours(Arrays.asList(new TimesheetReportBody.TimesheetReportOneDay(defaultDate, (short) 2)))
+                .project(testData.project_M1_FMS())
+                .build()).blockLast(MONO_DEFAULT_TIMEOUT);
+
+        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
+                        .builder().from(defaultDate).to(defaultDate).build()).map(t -> t.getHoursSpent()))
+                .expectNext((short) 2).verifyComplete();
+
+    }
+
+
+    @Test
     public void testDeleteNotMyReport() {
         var ctx = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
         var employeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
@@ -189,7 +215,8 @@ public class TimesheetServiceTest extends BaseServiceTest {
      * @return
      */
     private Mono<Void> cleanTimesheetTables() {
-        return db.sql("delete from ts.timesheet_record").then();
+        return db.sql("delete from ts.timesheet_record").then()
+                .then(db.sql("delete from history.history where entity_type='timesheet_record'").then());
     }
 
     private Mono<Map<String, Integer>> generateDefaultReports(AuthContext ctx) {

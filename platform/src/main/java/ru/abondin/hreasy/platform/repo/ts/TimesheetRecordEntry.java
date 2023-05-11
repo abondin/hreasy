@@ -23,8 +23,6 @@ public class TimesheetRecordEntry {
     private String comment;
 
     @NotNull
-    private OffsetDateTime createdAt;
-    private int createdBy;
-    private OffsetDateTime deletedAt;
-    private Integer deletedBy;
+    private OffsetDateTime updatedAt;
+    private int updatedBy;
 }

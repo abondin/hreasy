@@ -6,12 +6,10 @@ CREATE TABLE IF NOT EXISTS ts.timesheet_record (
     business_account integer NOT NULL REFERENCES ba.business_account (id),
     project integer NULL REFERENCES proj.project (id),
     date date not null,
-    hours_planned smallint null,
-    hours_spent smallint null,
+    hours_spent smallint not null,
     comment varchar(1024) NULL,
-    created_at timestamp with time zone NOT NULL,
-    created_by integer NOT NULL REFERENCES empl.employee (id),
-    constraint timesheet_record_hours_not_null check (hours_planned is not null or hours_spent is not null),
+    updated_at timestamp with time zone NOT NULL,
+    updated_by integer NOT NULL REFERENCES empl.employee (id),
     constraint timesheet_record_uk UNIQUE NULLS NOT DISTINCT ("employee","business_account","project","date")
 );
 
@@ -23,8 +21,8 @@ COMMENT ON COLUMN ts.timesheet_record.project IS 'Link to specific project';
 COMMENT ON COLUMN ts.timesheet_record.date IS 'Reporting date';
 COMMENT ON COLUMN ts.timesheet_record.hours_spent IS 'Amount of actually spent working hours';
 COMMENT ON COLUMN ts.timesheet_record.comment IS 'Timesheet comment';
-COMMENT ON COLUMN ts.timesheet_record.created_at IS 'Created at';
-COMMENT ON COLUMN ts.timesheet_record.created_by IS 'Created by (link to employee)';
+COMMENT ON COLUMN ts.timesheet_record.updated_at IS 'Last update time';
+COMMENT ON COLUMN ts.timesheet_record.updated_by IS 'Last update user (link to employee)';
 
 INSERT INTO sec.perm (permission,description) VALUES
     ('report_timesheet','Report daily timesheet');

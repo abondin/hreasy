@@ -28,7 +28,7 @@
             <v-icon>mdi-cancel</v-icon>
           </v-btn>
         </span>
-        <span v-else>
+        <span v-else-if="noEditModeActivated()">
           <v-btn x-small icon @click="item.editMode = true">
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
@@ -209,11 +209,12 @@ export default class TimesheetTableComponent extends Vue {
     record.dates = {};
     DateTimeUtils.daysBetweenDates(this.filter.from, this.filter.to).forEach((day) => {
       const r: TimesheetRecord | null = this.records.find(r =>
-          (DateTimeUtils.dateFromIsoString(r.date!) === day
-              && r.employee === record.employee
-              && r.businessAccount == this.filter.ba
-              && ((this.filter.project == null && r.project == null) || r.project == this.filter.project))) || null;
-      const hoursSpent = (r && r.hoursSpent) || 0
+          DateTimeUtils.isSameDate(DateTimeUtils.dateFromIsoString(r.date!), day)
+          && r.employee === record.employee
+          && r.businessAccount === this.filter.ba
+          && ((this.filter.project == null && r.project == null) || r.project == this.filter.project)
+      ) || null;
+      const hoursSpent = (r && r.hoursSpent) || 0;
       record.dates[DateTimeUtils.formatToDayKey(day)!] = {
         workingDay: this.isWorkingDay(record.notWorkingDays, day),
         hoursSpent: hoursSpent,
@@ -252,6 +253,9 @@ export default class TimesheetTableComponent extends Vue {
         })
   }
 
+  private noEditModeActivated() {
+    return this.aggregatedByEmployees.map(r => r.editMode).filter(e => e).length == 0;
+  }
 
 }
 </script>

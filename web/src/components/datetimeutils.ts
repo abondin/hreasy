@@ -123,7 +123,7 @@ export class DateTimeUtils {
     static isSameDate(d1: Moment, d2: Moment): boolean {
         return d1.year() === d2.year() &&
             d1.month() === d2.month() &&
-            d1.day() === d2.day();
+            d1.date() === d2.date();
     }
 
 }

@@ -45,11 +45,16 @@ public class TimesheetService {
         return sec.validateReportTimesheet(auth, employeeId)
                 // 2. Map every day in report body to list of separate database entries
                 .flatMapMany(v -> Flux.fromIterable(body.getHours())
-                        .map(h -> mapper.toEntry(employeeId,
-                                body.getBusinessAccount(),
-                                body.getProject(),
-                                body.getComment(),
-                                h, createdAt, createdBy)))
+                        // 3. Check if we have timesheet record in database
+                        .flatMap(h ->
+                                repo.find(employeeId, body.getBusinessAccount(), body.getProject(), h.date())
+                                        .defaultIfEmpty(mapper.toBaseEntry(employeeId,
+                                                body.getBusinessAccount(),
+                                                body.getProject()))
+                                        // 4. Update fields
+                                        .map(baseEntry -> mapper.applyChanges(baseEntry, h, body.getComment(),
+                                                createdAt, createdBy)))
+                )
                 // 3. Save every timesheet entry
                 .flatMap(repo::save)
                 // 4. Save every timesheet entry history
