@@ -8,7 +8,18 @@
           @updated="refresh(true)"
       ></timesheet-table-filter>
     </v-card-title>
-    <v-data-table v-if="filter.isReady()"
+
+
+    <vue-excel-editor v-model="aggregatedByEmployees">
+      <vue-excel-column field="employeeDisplayName"   label="User ID"       type="string" width="80px" />
+      <vue-excel-column field="name"   label="Name"          type="string" width="150px" />
+      <vue-excel-column field="phone"  label="Contact"       type="string" width="130px" />
+      <vue-excel-column field="gender" label="Gender"        type="select" width="50px" :options="['F','M','U']" />
+      <vue-excel-column field="age"    label="Age"           type="number" width="70px" />
+      <vue-excel-column field="birth"  label="Date Of Birth" type="date"   width="80px" />
+    </vue-excel-editor>
+
+    <v-data-table v-if="filter.isReady() == 2"
                   dense
                   :loading="loading"
                   :loading-text="$t('Загрузка_данных')"
@@ -82,6 +93,17 @@ const namespace_dict = 'dict';
 
 @Component({components: {TimesheetTableFilter, TimesheetHoursCell}})
 export default class TimesheetTableComponent extends Vue {
+
+
+  private jsondata = [{
+    user: "alex",
+    name: "Alexander",
+    phone: "+79030602028",
+    gender: "male",
+    age: "36",
+    birth: "05.04.1986"
+  }]
+
 
   // static dicts
   @Getter("projects", {namespace: namespace_dict})
