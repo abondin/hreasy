@@ -8,17 +8,17 @@
           @updated="refresh(true)"
       ></timesheet-table-filter>
     </v-card-title>
-
-    <vue-excel-editor v-if="aggregatedByEmployees" v-model="aggregatedByEmployees"
-                      :cell-style="dateCellStyle" filter-row no-header-edit>
-      <vue-excel-column field="employeeDisplayName" :label="$t('ФИО')" type="string" width="300px" readonly sticky/>
-      <vue-excel-column v-for="(d) of daysKeys" v-bind:key="d.key"
-                        :field="`hoursSpent_${d.key}`"
-                        :label="dateHeaderLabel(d.date)"
-                        :change="onChange"
-                        :autocomplete="false"
-                        type="number" width="50px"/>
-    </vue-excel-editor>
+      <v-data-table v-if="filter.isReady()"
+          dense
+          :loading="loading"
+          :loading-text="$t('Загрузка_данных')"
+          :no-data-text="$t('По выбранныму проекту за выбранные даты записи не найдены')"
+          disable-sort
+          fixed-header
+          :headers="headers"
+          :items-per-page="defaultItemsPerTablePage"
+          :items="aggregatedByEmployees">
+      </v-data-table>
     <v-card-text v-else>
       <v-alert type="info">{{ $t("Необходимо выбрать бизнес аккаунт и проект") }}</v-alert>
     </v-card-text>
@@ -42,6 +42,8 @@ import dictService from "@/store/modules/dict.service";
 import vacationService from "@/components/vacations/vacation.service";
 import TimesheetTableFilter from "@/components/ts/TimesheetTableFilter.vue";
 import {TimesheetAggregatedByEmployee, TimesheetTableFilterData} from "@/components/ts/timesheetUiDto";
+import {UiConstants} from "@/components/uiconstants";
+import {DataTableHeader} from "vuetify";
 
 
 const namespace_dict = 'dict';
@@ -50,12 +52,16 @@ const namespace_dict = 'dict';
 @Component({components: {TimesheetTableFilter}})
 export default class TimesheetTableComponent extends Vue {
 
+  private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
+
   // static dicts
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<ProjectDictDto>;
 
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;
+
+  private headers: DataTableHeader[] = [];
 
   // Dirty rows from backend
   private records: TimesheetRecord[] = [];
@@ -124,7 +130,7 @@ export default class TimesheetTableComponent extends Vue {
                     const record: TimesheetAggregatedByEmployee = {
                       employee: employee.id,
                       employeeDisplayName: employee.displayName,
-                      notWorkingDayKeys: emplNotWorkingDays.map(d=>'hoursSpent_'+DateTimeUtils.formatToDayKey(d)),
+                      notWorkingDayKeys: emplNotWorkingDays.map(d => 'hoursSpent_' + DateTimeUtils.formatToDayKey(d)),
                       ba: this.filter.ba!,
                       project: this.filter.project,
                       editMode: false,
@@ -146,11 +152,23 @@ export default class TimesheetTableComponent extends Vue {
 
 
   private rebuildHeaders() {
+    this.headers.length = 0;
+    this.headers.push({
+      text: this.$tc('Сотрудник'),
+      value: 'employeeDisplayName',
+      width: "300px"
+    });
     this.daysKeys.length = 0;
     DateTimeUtils.daysBetweenDates(this.filter.from, this.filter.to).forEach((day) => {
       const dayKey = `${DateTimeUtils.formatToDayKey(day)}`;
       this.daysKeys.push({key: dayKey, date: day});
+      this.headers.push({
+        text: DateTimeUtils.formatToDayMonthDate(day)!,
+        value: `dates.${dayKey}`,
+        width: "50px"
+      });
     });
+    return this.headers;
   }
 
   private rebuildEmployeeHours(record: TimesheetAggregatedByEmployee): void {
@@ -181,7 +199,7 @@ export default class TimesheetTableComponent extends Vue {
     if (!(cell.name as string)?.startsWith('hoursSpent_')) {
       return "";
     }
-    if (employee.notWorkingDayKeys.filter(d => d==cell.name).length > 0) {
+    if (employee.notWorkingDayKeys.filter(d => d == cell.name).length > 0) {
       return {"background-color": "#a4adbd"}
     }
     return {};

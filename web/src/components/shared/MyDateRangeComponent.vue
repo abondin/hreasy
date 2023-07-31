@@ -27,6 +27,9 @@
           <v-btn x-small @click="currentMonth()" v-if="allowedShortCut && allowedShortCut.indexOf('month')>=0">
             {{ $t('Текущий месяц') }}
           </v-btn>
+          <v-btn x-small @click="currentWeek()" v-if="allowedShortCut && allowedShortCut.indexOf('week')>=0">
+            {{ $t('Текущая неделя') }}
+          </v-btn>
           <v-btn x-small @click="currentYear()" v-if="allowedShortCut && allowedShortCut.indexOf('year')>=0">
             {{ $t('Год') }}
           </v-btn>
@@ -52,7 +55,7 @@ import moment, {HTML5_FMT} from "moment";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
 
-export type MyDateRangeComponentAllowedTypes='year'|'month'|'todayPlus5Days';
+export type MyDateRangeComponentAllowedTypes='year'|'month'|'week'|'todayPlus5Days';
 
 @Component
 export default class MyDateRangeComponent extends Vue {
@@ -66,7 +69,7 @@ export default class MyDateRangeComponent extends Vue {
   @Prop({required: false, type: Array})
   private rules: any;
 
-  @Prop({type: Array, default:()=>['year', 'month', 'todayPlus5Days']})
+  @Prop({type: Array, default:()=>['year', 'month', 'week', 'todayPlus5Days']})
   private allowedShortCut!: Array<MyDateRangeComponentAllowedTypes>;
 
   private menu = false;
@@ -102,6 +105,11 @@ export default class MyDateRangeComponent extends Vue {
   public currentMonth() {
     this.selectedDates = [moment().startOf('month').format(HTML5_FMT.DATE),
       moment().endOf('month').format(HTML5_FMT.DATE)];
+  }
+
+  public currentWeek() {
+    this.selectedDates = [moment().startOf('week').format(HTML5_FMT.DATE),
+      moment().endOf('week').format(HTML5_FMT.DATE)];
   }
 
   public currentYear() {

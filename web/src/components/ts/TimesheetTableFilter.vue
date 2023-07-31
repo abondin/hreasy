@@ -12,7 +12,7 @@
       <v-col lg="4" sm="6" xs="6" class="pb-0">
         <!-- Dates selection filter -->
         <my-date-range-component ref="dateSelector" v-model="input.selectedDates"
-                                 :allowed-short-cut="['month']"
+                                 :allowed-short-cut="['week']"
                                  :label="$t('Период')"></my-date-range-component>
       </v-col>
 

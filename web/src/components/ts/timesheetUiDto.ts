@@ -47,8 +47,8 @@ export class TimesheetTableFilterData {
     private updateDatesOnYearChange() {
         const now = DateTimeUtils.now().set({year: this._year});
         this.selectedDates = [
-            DateTimeUtils.formatToIsoDate(now.startOf('month'))!,
-            DateTimeUtils.formatToIsoDate(now.endOf('month'))!
+            DateTimeUtils.formatToIsoDate(now.startOf('week'))!,
+            DateTimeUtils.formatToIsoDate(now.endOf('week'))!
         ];
     }
 

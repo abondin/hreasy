@@ -25,7 +25,6 @@
     "vue-avatar-cropper": "^1.0.6",
     "vue-class-component": "^7.2.6",
     "vue-clipboard2": "^0.3.3",
-    "vue-excel-editor": "^1.5.19",
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.6.5",
     "vue-upload-component": "^2.8.22",
