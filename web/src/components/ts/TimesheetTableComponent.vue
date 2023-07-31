@@ -9,16 +9,57 @@
       ></timesheet-table-filter>
     </v-card-title>
 
-    <vue-excel-editor v-if="aggregatedByEmployees" v-model="aggregatedByEmployees"
-                      :cell-style="dateCellStyle" filter-row no-header-edit>
-      <vue-excel-column field="employeeDisplayName" :label="$t('ФИО')" type="string" width="300px" readonly sticky/>
-      <vue-excel-column v-for="(d) of daysKeys" v-bind:key="d.key"
-                        :field="`hoursSpent_${d.key}`"
-                        :label="dateHeaderLabel(d.date)"
-                        :change="onChange"
-                        :autocomplete="false"
-                        type="number" width="50px"/>
+
+    <vue-excel-editor v-model="aggregatedByEmployees">
+      <vue-excel-column field="employeeDisplayName"   label="User ID"       type="string" width="80px" />
+      <vue-excel-column field="name"   label="Name"          type="string" width="150px" />
+      <vue-excel-column field="phone"  label="Contact"       type="string" width="130px" />
+      <vue-excel-column field="gender" label="Gender"        type="select" width="50px" :options="['F','M','U']" />
+      <vue-excel-column field="age"    label="Age"           type="number" width="70px" />
+      <vue-excel-column field="birth"  label="Date Of Birth" type="date"   width="80px" />
     </vue-excel-editor>
+
+    <v-data-table v-if="filter.isReady() == 2"
+                  dense
+                  :loading="loading"
+                  :loading-text="$t('Загрузка_данных')"
+                  disable-sort
+                  fixed-header
+                  :headers="headers"
+                  :items-per-page="defaultItemsPerTablePage"
+                  :items="aggregatedByEmployees">
+      <!--<editor-fold desc="Employee Display Name with controls">-->
+      <template v-slot:[`item.employeeDisplayName`]="{ item }">
+        {{ item.employeeDisplayName }}
+        <span v-if="item.editMode">
+          <v-btn x-small icon color="success" @click="applyChanges(item)">
+            <v-icon>mdi-checkbox-marked-circle-outline</v-icon>
+          </v-btn>
+          <v-btn x-small color="error" icon @click="revertChanges(item)">
+            <v-icon>mdi-cancel</v-icon>
+          </v-btn>
+        </span>
+        <span v-else-if="noEditModeActivated()">
+          <v-btn x-small icon @click="item.editMode = true">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+        </span>
+      </template>
+      <!--</editor-fold>-->
+
+      <!--<editor-fold desc="Total hours spent">-->
+      <template v-slot:[`item.totalHoursSpent`]="{ item }">
+        {{ item.totalHoursSpent() }}
+      </template>
+
+      <template v-for="(d,index) of daysKeys" v-slot:[`item.dates.${d.key}`]="item">
+        <timesheet-hours-cell v-bind:key="d.key"
+                              :value="item.item.dates[d.key]"
+                              :editMode="item.item.editMode"
+                              :autofocus="index==0"
+        ></timesheet-hours-cell>
+      </template>
+    </v-data-table>
     <v-card-text v-else>
       <v-alert type="info">{{ $t("Необходимо выбрать бизнес аккаунт и проект") }}</v-alert>
     </v-card-text>
@@ -30,7 +71,9 @@
 import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
-import timesheetService, {TimesheetRecord} from "@/components/ts/timesheet.service";
+import {DataTableHeader} from "vuetify";
+import timesheetService, {OneDayReport, TimesheetRecord} from "@/components/ts/timesheet.service";
+import {UiConstants} from "@/components/uiconstants";
 
 import {DateTimeUtils} from "@/components/datetimeutils";
 import {Moment} from "moment";
@@ -38,6 +81,7 @@ import {Getter} from "vuex-class";
 import {ProjectDictDto, SimpleDict} from "@/store/modules/dict";
 import employeeService from "@/components/empl/employee.service";
 import {errorUtils} from "@/components/errors";
+import TimesheetHoursCell from "@/components/ts/TimesheetHoursCell.vue";
 import dictService from "@/store/modules/dict.service";
 import vacationService from "@/components/vacations/vacation.service";
 import TimesheetTableFilter from "@/components/ts/TimesheetTableFilter.vue";
@@ -47,8 +91,19 @@ import {TimesheetAggregatedByEmployee, TimesheetTableFilterData} from "@/compone
 const namespace_dict = 'dict';
 
 
-@Component({components: {TimesheetTableFilter}})
+@Component({components: {TimesheetTableFilter, TimesheetHoursCell}})
 export default class TimesheetTableComponent extends Vue {
+
+
+  private jsondata = [{
+    user: "alex",
+    name: "Alexander",
+    phone: "+79030602028",
+    gender: "male",
+    age: "36",
+    birth: "05.04.1986"
+  }]
+
 
   // static dicts
   @Getter("projects", {namespace: namespace_dict})
@@ -63,11 +118,14 @@ export default class TimesheetTableComponent extends Vue {
   // Grouped by project and employee rows. Uses in the table
   private aggregatedByEmployees: TimesheetAggregatedByEmployee[] = [];
 
+  private headers: DataTableHeader[] = [];
+
   private error: string | null = null;
 
   private daysKeys: Array<{ key: string, date: Moment }> = [];
 
   private loading = false;
+  private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
   private filter = new TimesheetTableFilterData();
 
@@ -121,14 +179,13 @@ export default class TimesheetTableComponent extends Vue {
                           emplNotWorkingDays.push(...vacationsDays);
                         });
                     emplNotWorkingDays.push(...notWorkingDays);
-                    const record: TimesheetAggregatedByEmployee = {
-                      employee: employee.id,
-                      employeeDisplayName: employee.displayName,
-                      notWorkingDayKeys: emplNotWorkingDays.map(d=>'hoursSpent_'+DateTimeUtils.formatToDayKey(d)),
-                      ba: this.filter.ba!,
-                      project: this.filter.project,
-                      editMode: false,
-                    }
+                    const record = new TimesheetAggregatedByEmployee(
+                        employee.id,
+                        employee.displayName,
+                        emplNotWorkingDays,
+                        this.filter.ba!,
+                        this.filter.project,
+                    );
                     this.rebuildEmployeeHours(record);
                     this.aggregatedByEmployees.push(record);
                   });
@@ -145,18 +202,33 @@ export default class TimesheetTableComponent extends Vue {
   }
 
 
-  private rebuildHeaders() {
+  private rebuildHeaders(): DataTableHeader[] {
+    this.headers.length = 0;
+    this.headers.push({
+      text: this.$tc('Сотрудник'),
+      value: 'employeeDisplayName',
+      width: "300px"
+    });
+    this.headers.push({
+      text: this.$tc('Всего'),
+      value: 'totalHoursSpent',
+      width: "50px"
+    });
     this.daysKeys.length = 0;
     DateTimeUtils.daysBetweenDates(this.filter.from, this.filter.to).forEach((day) => {
       const dayKey = `${DateTimeUtils.formatToDayKey(day)}`;
       this.daysKeys.push({key: dayKey, date: day});
+      this.headers.push({
+        text: DateTimeUtils.formatToDayMonthDate(day)!,
+        value: `dates.${dayKey}`,
+        width: "50px"
+      });
     });
+    return this.headers;
   }
 
   private rebuildEmployeeHours(record: TimesheetAggregatedByEmployee): void {
-    Object.keys(record).filter(k => k.startsWith('hoursSpent_')).forEach((k: string) => {
-      record[k] = 0;
-    });
+    record.dates = {};
     DateTimeUtils.daysBetweenDates(this.filter.from, this.filter.to).forEach((day) => {
       const r: TimesheetRecord | null = this.records.find(r =>
           DateTimeUtils.isSameDate(DateTimeUtils.dateFromIsoString(r.date!), day)
@@ -164,33 +236,54 @@ export default class TimesheetTableComponent extends Vue {
           && r.businessAccount === this.filter.ba
           && ((this.filter.project == null && r.project == null) || r.project == this.filter.project)
       ) || null;
-      record['hoursSpent_' + DateTimeUtils.formatToDayKey(day)!] = (r && r.hoursSpent) || 0;
+      const hoursSpent = (r && r.hoursSpent) || 0;
+      record.dates[DateTimeUtils.formatToDayKey(day)!] = {
+        workingDay: this.isWorkingDay(record.notWorkingDays, day),
+        hoursSpent: hoursSpent,
+        date: day
+      };
     });
   }
 
-  private dateHeaderLabel(date: Moment) {
-    return DateTimeUtils.formatToDayMonthDate(date);
+  private isWorkingDay(notWorkingDays: Array<Moment>, date: Moment) {
+    return notWorkingDays.filter(d => DateTimeUtils.isSameDate(d, date)).length == 0;
   }
 
-  private onChange(hoursSpentNew: number, hoursSpentOld: number, item: TimesheetAggregatedByEmployee, cell: any) {
+  private revertChanges(record: TimesheetAggregatedByEmployee) {
+    this.rebuildEmployeeHours(record);
+    record.editMode = false;
+  }
+
+  private applyChanges(record: TimesheetAggregatedByEmployee) {
     //TODO
-    logger.log(`change-${hoursSpentNew}-${hoursSpentOld}-${item.employeeDisplayName}: ${cell.name}`, hoursSpentNew, hoursSpentOld, item, cell);
+    record.editMode = false;
+    this.loading = true;
+    return timesheetService.report(record.employee, {
+      businessAccount: record.ba,
+      project: record.project,
+      comment: null, // TODO
+      hours: Object.values(record.dates).map(v => {
+        return {
+          date: DateTimeUtils.formatToIsoDate(v.date),
+          hoursSpent: v.hoursSpent
+        } as OneDayReport
+      })
+    })
+        .then(() => this.refresh(false))
+        .finally(() => {
+          this.loading = false;
+        })
   }
 
-  private dateCellStyle(employee: TimesheetAggregatedByEmployee, cell: any) {
-    if (!(cell.name as string)?.startsWith('hoursSpent_')) {
-      return "";
-    }
-    if (employee.notWorkingDayKeys.filter(d => d==cell.name).length > 0) {
-      return {"background-color": "#a4adbd"}
-    }
-    return {};
+  private noEditModeActivated() {
+    return this.aggregatedByEmployees.map(r => r.editMode).filter(e => e).length == 0;
   }
+
 }
 </script>
 
 <style scoped lang="css">
-.not-working-day {
-  background-color: #fffafa;
+.table-cursor >>> tbody tr :hover {
+  cursor: pointer;
 }
 </style>
