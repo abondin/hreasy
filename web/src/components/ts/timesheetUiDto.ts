@@ -1,5 +1,5 @@
 import {Moment} from "moment/moment";
-import {OneDayReport, TimesheetSummaryFilter} from "@/components/ts/timesheet.service";
+import {TimesheetSummaryApiQueryFilterFilter} from "@/components/ts/timesheet.service";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import moment from "moment";
 
@@ -15,13 +15,6 @@ export interface TimesheetAggregatedByEmployeeDay {
 /**
  * One row in timesheet table component (timesheet for one employee on one project for given period)
  *
- * vue-excel-editor does not support:
- * 1) nested fields
- * 2) complex types in cell editing
- *
- * This is way we have:
- * 1) "hoursSpent_${d.key}" dynamic fields to edit in excel table (thanks to Record)
- * 2) separate array for working days
  */
 export interface TimesheetAggregatedByEmployee extends Record<string,any> {
     employee: number,
@@ -32,7 +25,7 @@ export interface TimesheetAggregatedByEmployee extends Record<string,any> {
     editMode : boolean;
 }
 
-export class TimesheetTableFilterData {
+export class TimesheetTableNavigatorData {
     private _year: number;
     public selectedDates: Array<string> = [];
     public ba: number | null = null;
@@ -72,7 +65,7 @@ export class TimesheetTableFilterData {
     /**
      * Filter to provide in API request
      */
-    public timesheetSummaryFilter(): TimesheetSummaryFilter {
+    public timesheetSummaryApiQueryFilter(): TimesheetSummaryApiQueryFilterFilter {
         return {
             from: this.fromStr(),
             to: this.toStr()

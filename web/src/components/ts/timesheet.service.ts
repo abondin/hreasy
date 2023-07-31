@@ -18,7 +18,7 @@ export interface TimesheetRecord {
 /**
  * DTO for filter for the api request
  */
-export interface TimesheetSummaryFilter {
+export interface TimesheetSummaryApiQueryFilterFilter {
     from: string,
     to: string
 }
@@ -39,7 +39,7 @@ export interface OneDayReport {
 
 
 export interface TimesheetService {
-    timesheetSummary(filter: TimesheetSummaryFilter): Promise<Array<TimesheetRecord>>;
+    timesheetSummary(filter: TimesheetSummaryApiQueryFilterFilter): Promise<Array<TimesheetRecord>>;
 
     report(employeeId: number, body: TimesheetReportBody): Promise<number>;
 
@@ -52,7 +52,7 @@ class RestTimesheetService implements TimesheetService {
     }
 
 
-    timesheetSummary(filter: TimesheetSummaryFilter): Promise<Array<TimesheetRecord>> {
+    timesheetSummary(filter: TimesheetSummaryApiQueryFilterFilter): Promise<Array<TimesheetRecord>> {
         return httpService.get("v1/timesheet", {params: filter}).then(response => response.data);
     }
 

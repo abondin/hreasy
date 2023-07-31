@@ -1,28 +1,32 @@
 <template>
-  <v-card>
-    <v-card-title>
-      <timesheet-table-filter
-          :input="filter"
-          :all-bas="allBas"
-          :all-projects="allProjects"
-          @updated="refresh(true)"
-      ></timesheet-table-filter>
-    </v-card-title>
-      <v-data-table v-if="filter.isReady()"
-          dense
-          :loading="loading"
-          :loading-text="$t('Загрузка_данных')"
-          :no-data-text="$t('По выбранныму проекту за выбранные даты записи не найдены')"
-          disable-sort
-          fixed-header
-          :headers="headers"
-          :items-per-page="defaultItemsPerTablePage"
-          :items="aggregatedByEmployees">
-      </v-data-table>
-    <v-card-text v-else>
-      <v-alert type="info">{{ $t("Необходимо выбрать бизнес аккаунт и проект") }}</v-alert>
-    </v-card-text>
-  </v-card>
+  <v-container>
+    <v-row fill-height>
+      <v-col cols="auto">
+          <timesheet-table-navigator
+              :input="filter"
+              :all-bas="allBas"
+              :all-projects="allProjects"
+              @updated="refresh(true)"
+          ></timesheet-table-navigator>
+      </v-col>
+      <v-col>
+        <div>
+          <v-data-table v-if="filter.isReady()"
+                        dense
+                        :loading="loading"
+                        :loading-text="$t('Загрузка_данных')"
+                        :no-data-text="$t('По выбранныму проекту за выбранные даты записи не найдены')"
+                        disable-sort
+                        fixed-header
+                        :headers="headers"
+                        :items-per-page="defaultItemsPerTablePage"
+                        :items="aggregatedByEmployees">
+          </v-data-table>
+          <v-alert v-else type="info">{{ $t("Необходимо выбрать бизнес аккаунт и проект") }}</v-alert>
+        </div>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 
@@ -40,8 +44,8 @@ import employeeService from "@/components/empl/employee.service";
 import {errorUtils} from "@/components/errors";
 import dictService from "@/store/modules/dict.service";
 import vacationService from "@/components/vacations/vacation.service";
-import TimesheetTableFilter from "@/components/ts/TimesheetTableFilter.vue";
-import {TimesheetAggregatedByEmployee, TimesheetTableFilterData} from "@/components/ts/timesheetUiDto";
+import TimesheetTableNavigator from "@/components/ts/TimesheetTableNavigator.vue";
+import {TimesheetAggregatedByEmployee, TimesheetTableNavigatorData} from "@/components/ts/timesheetUiDto";
 import {UiConstants} from "@/components/uiconstants";
 import {DataTableHeader} from "vuetify";
 
@@ -49,7 +53,7 @@ import {DataTableHeader} from "vuetify";
 const namespace_dict = 'dict';
 
 
-@Component({components: {TimesheetTableFilter}})
+@Component({components: {TimesheetTableNavigator: TimesheetTableNavigator}})
 export default class TimesheetTableComponent extends Vue {
 
   private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
@@ -75,7 +79,7 @@ export default class TimesheetTableComponent extends Vue {
 
   private loading = false;
 
-  private filter = new TimesheetTableFilterData();
+  private filter = new TimesheetTableNavigatorData();
 
 
   /**
@@ -108,7 +112,7 @@ export default class TimesheetTableComponent extends Vue {
     }
     const promise =
         // 1. Read all timesheet records from backend
-        timesheetService.timesheetSummary(this.filter.timesheetSummaryFilter()).then(records => {
+        timesheetService.timesheetSummary(this.filter.timesheetSummaryApiQueryFilter()).then(records => {
               this.records = records;
             }
             // 2. Read all employees

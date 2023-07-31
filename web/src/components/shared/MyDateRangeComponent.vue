@@ -6,7 +6,7 @@
       <template v-slot:activator="{ on, attrs }">
         <v-combobox v-model="selectedDates"
                     :label="label"
-                    prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on" class="mr-5">
+                    prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on">
           <template v-slot:selection="{ item }">
             <span v-on="on" v-bind="attrs">{{ parseDateRange(item) }}</span>
           </template>
@@ -69,7 +69,7 @@ export default class MyDateRangeComponent extends Vue {
   @Prop({required: false, type: Array})
   private rules: any;
 
-  @Prop({type: Array, default:()=>['year', 'month', 'week', 'todayPlus5Days']})
+  @Prop({type: Array, default:()=>['year', 'month', 'todayPlus5Days']})
   private allowedShortCut!: Array<MyDateRangeComponentAllowedTypes>;
 
   private menu = false;
