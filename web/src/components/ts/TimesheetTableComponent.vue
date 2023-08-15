@@ -2,28 +2,38 @@
   <v-container>
     <v-row fill-height>
       <v-col cols="auto">
+        <v-card>
+          <v-card-title>{{ $t('Проект для указания рабочего времени') }}</v-card-title>
           <timesheet-table-navigator
-              :input="filter"
+              :input="navigatorData"
               :all-bas="allBas"
               :all-projects="allProjects"
               @updated="refresh(true)"
           ></timesheet-table-navigator>
+        </v-card>
       </v-col>
       <v-col>
-        <div>
-          <v-data-table v-if="filter.isReady()"
-                        dense
-                        :loading="loading"
-                        :loading-text="$t('Загрузка_данных')"
-                        :no-data-text="$t('По выбранныму проекту за выбранные даты записи не найдены')"
-                        disable-sort
-                        fixed-header
-                        :headers="headers"
-                        :items-per-page="defaultItemsPerTablePage"
-                        :items="aggregatedByEmployees">
+        <v-card v-if="navigatorData.isReady()">
+          <v-card-title>
+            <timesheet-table-toolbar :model="toolbarData"></timesheet-table-toolbar>
+          </v-card-title>
+          <v-data-table
+              dense
+              :loading="loading"
+              :loading-text="$t('Загрузка_данных')"
+              :no-data-text="$t('По выбранныму проекту за выбранные даты записи не найдены')"
+              disable-sort
+              fixed-header
+              :headers="headers"
+              :items-per-page="defaultItemsPerTablePage"
+              :items="aggregatedByEmployees">
           </v-data-table>
-          <v-alert v-else type="info">{{ $t("Необходимо выбрать бизнес аккаунт и проект") }}</v-alert>
-        </div>
+        </v-card>
+        <v-card v-else>
+          <v-card-text>
+          <v-alert type="info">{{ $t("Необходимо выбрать бизнес аккаунт и проект") }}</v-alert>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
@@ -48,12 +58,13 @@ import TimesheetTableNavigator from "@/components/ts/TimesheetTableNavigator.vue
 import {TimesheetAggregatedByEmployee, TimesheetTableNavigatorData} from "@/components/ts/timesheetUiDto";
 import {UiConstants} from "@/components/uiconstants";
 import {DataTableHeader} from "vuetify";
+import TimesheetTableToolbar, {TimesheetTableToolbarData} from "@/components/ts/TimesheetTableToolbar.vue";
 
 
 const namespace_dict = 'dict';
 
 
-@Component({components: {TimesheetTableNavigator: TimesheetTableNavigator}})
+@Component({components: {TimesheetTableToolbar, TimesheetTableNavigator: TimesheetTableNavigator}})
 export default class TimesheetTableComponent extends Vue {
 
   private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
@@ -79,7 +90,8 @@ export default class TimesheetTableComponent extends Vue {
 
   private loading = false;
 
-  private filter = new TimesheetTableNavigatorData();
+  private navigatorData = new TimesheetTableNavigatorData();
+  private toolbarData = new TimesheetTableToolbarData();
 
 
   /**
@@ -102,9 +114,9 @@ export default class TimesheetTableComponent extends Vue {
   }
 
   private refresh(handleLoading = true) {
-    logger.log("Reload all timesheet information from backend", this.filter);
+    logger.log("Reload all timesheet information from backend", this.navigatorData);
     this.aggregatedByEmployees.length = 0;
-    if (!this.filter.ba) {
+    if (!this.navigatorData.ba) {
       return;
     }
     if (handleLoading) {
@@ -112,15 +124,15 @@ export default class TimesheetTableComponent extends Vue {
     }
     const promise =
         // 1. Read all timesheet records from backend
-        timesheetService.timesheetSummary(this.filter.timesheetSummaryApiQueryFilter()).then(records => {
+        timesheetService.timesheetSummary(this.navigatorData.timesheetSummaryApiQueryFilter()).then(records => {
               this.records = records;
             }
             // 2. Read all employees
         ).then(() => employeeService.findAll().then(employees =>
             // 3. Get all not working days for given year
-            dictService.notWorkingDays(this.filter.year).then(notWorkingDaysStr =>
+            dictService.notWorkingDays(this.navigatorData.year).then(notWorkingDaysStr =>
                 // 4. Get all vacations for given year
-                vacationService.findAll([this.filter.year]).then(vacations => {
+                vacationService.findAll([this.navigatorData.year]).then(vacations => {
                   // 4. Merge all not working days with employee's vacations to get all not working days for each employee
                   const notWorkingDays = notWorkingDaysStr.map(str => DateTimeUtils.dateFromIsoString(str));
                   return employees.forEach(employee => {
@@ -135,8 +147,8 @@ export default class TimesheetTableComponent extends Vue {
                       employee: employee.id,
                       employeeDisplayName: employee.displayName,
                       notWorkingDayKeys: emplNotWorkingDays.map(d => 'hoursSpent_' + DateTimeUtils.formatToDayKey(d)),
-                      ba: this.filter.ba!,
-                      project: this.filter.project,
+                      ba: this.navigatorData.ba!,
+                      project: this.navigatorData.project,
                       editMode: false,
                     }
                     this.rebuildEmployeeHours(record);
@@ -163,7 +175,7 @@ export default class TimesheetTableComponent extends Vue {
       width: "300px"
     });
     this.daysKeys.length = 0;
-    DateTimeUtils.daysBetweenDates(this.filter.from, this.filter.to).forEach((day) => {
+    DateTimeUtils.daysBetweenDates(this.navigatorData.from, this.navigatorData.to).forEach((day) => {
       const dayKey = `${DateTimeUtils.formatToDayKey(day)}`;
       this.daysKeys.push({key: dayKey, date: day});
       this.headers.push({
@@ -179,12 +191,12 @@ export default class TimesheetTableComponent extends Vue {
     Object.keys(record).filter(k => k.startsWith('hoursSpent_')).forEach((k: string) => {
       record[k] = 0;
     });
-    DateTimeUtils.daysBetweenDates(this.filter.from, this.filter.to).forEach((day) => {
+    DateTimeUtils.daysBetweenDates(this.navigatorData.from, this.navigatorData.to).forEach((day) => {
       const r: TimesheetRecord | null = this.records.find(r =>
           DateTimeUtils.isSameDate(DateTimeUtils.dateFromIsoString(r.date!), day)
           && r.employee === record.employee
-          && r.businessAccount === this.filter.ba
-          && ((this.filter.project == null && r.project == null) || r.project == this.filter.project)
+          && r.businessAccount === this.navigatorData.ba
+          && ((this.navigatorData.project == null && r.project == null) || r.project == this.navigatorData.project)
       ) || null;
       record['hoursSpent_' + DateTimeUtils.formatToDayKey(day)!] = (r && r.hoursSpent) || 0;
     });
