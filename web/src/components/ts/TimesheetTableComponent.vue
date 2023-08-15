@@ -26,12 +26,12 @@
               fixed-header
               :headers="headers"
               :items-per-page="defaultItemsPerTablePage"
-              :items="aggregatedByEmployees">
+              :items="filterTableData()">
           </v-data-table>
         </v-card>
         <v-card v-else>
           <v-card-text>
-          <v-alert type="info">{{ $t("Необходимо выбрать бизнес аккаунт и проект") }}</v-alert>
+            <v-alert type="info">{{ $t("Необходимо выбрать бизнес аккаунт и проект") }}</v-alert>
           </v-card-text>
         </v-card>
       </v-col>
@@ -202,6 +202,24 @@ export default class TimesheetTableComponent extends Vue {
     });
   }
 
+  private filterTableData() {
+    const filtered =  this.aggregatedByEmployees.filter(r => {
+      let result = true;
+      // 1. Check only selected project
+      if (this.toolbarData.filter.onlySelectedProject) {
+        result = result && (
+            r.ba == this.navigatorData.ba &&
+           (!this.navigatorData.project || this.navigatorData.project == r.project)
+        )
+      }
+      if (!result){
+        console.log(`Not filtered ${r.employeeDisplayName}`);
+      }
+      return result;
+    });
+    console.log(`filterTableData ${filtered.length} of ${this.aggregatedByEmployees.length}. Filter: ${this.toolbarData.filter.onlySelectedProject}:`);
+  }
+
   private dateHeaderLabel(date: Moment) {
     return DateTimeUtils.formatToDayMonthDate(date);
   }
@@ -220,6 +238,7 @@ export default class TimesheetTableComponent extends Vue {
     }
     return {};
   }
+
 }
 </script>
 

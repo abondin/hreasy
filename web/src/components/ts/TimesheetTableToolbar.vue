@@ -14,7 +14,6 @@
           class="mr-5"
           v-model="model.filter.onlySelectedProject"
           :label="$t('Только сотрудники выбранного проекта')"
-          multiple
       ></v-checkbox>
     </v-col>
   </v-row>

@@ -14,6 +14,7 @@
       </template>
       <v-date-picker v-model="selectedDates"
                      :pickerDate.sync="pickerDate"
+                     :first-day-of-week="1"
                      show-current
                      show-week
                      scrollable
