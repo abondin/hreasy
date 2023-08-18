@@ -128,7 +128,10 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
         generateDefaultReports(ctx).block(MONO_DEFAULT_TIMEOUT);
         StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetQueryFilter
-                .builder().from(defaultDate).to(defaultDate.plusDays(1)).build())).expectNextCount(2).verifyComplete();
+                                .builder().from(defaultDate).to(defaultDate.plusDays(1)).build())
+                        .filter(r -> r.getEmployee().getId() == employeeId)
+                )
+                .expectNextCount(2).verifyComplete();
     }
 
     @Test

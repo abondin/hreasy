@@ -22,7 +22,7 @@ public interface TimesheetRecordRepo extends ReactiveCrudRepository<TimesheetRec
      * For every employee returns all timesheet for given filter and all vacations for geiven filter's dates
      */
     @Query("""
-            select e.id employeeId,
+            select e.id employee_id,
                    e.display_name employee_display_name,
                    e.current_project employee_current_project,
                    p.ba_id employee_ba,
@@ -34,15 +34,15 @@ public interface TimesheetRecordRepo extends ReactiveCrudRepository<TimesheetRec
                    ) vacations
                from empl.employee e
                left join proj.project p on e.current_project = p.id
-               left join\s
+               left join
                	(select * from ts.timesheet_record where "date" between :from and :to and business_account = :ba and (:project is null or project = :project)) ts
                    on ts.employee = e.id
-               left join\s
+               left join
                	(select * from vac.vacation v where v.start_date <= :to and v.end_date >= :from and v.stat in (0,1,2)) v
                		on v.employee = e.id
                where (e.date_of_dismissal  is null or e.date_of_dismissal >= :now)
-               group by e.id,e.display_name,e.current_project,p.ba_id\s
-               order by e.id;          
+               group by e.id,e.display_name,e.current_project,p.ba_id
+               order by e.id   
             """)
     Flux<TimesheetSummaryView> summary(@Param("fr") LocalDate from, @Param("t") LocalDate to,
                                        @Param("ba") int ba, @Param("project") Integer project, OffsetDateTime now);
