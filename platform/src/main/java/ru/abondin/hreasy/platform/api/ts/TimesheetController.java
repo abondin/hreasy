@@ -8,7 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.ts.TimesheetService;
-import ru.abondin.hreasy.platform.service.ts.dto.TimesheetAggregatedFilter;
+import ru.abondin.hreasy.platform.service.ts.dto.TimesheetQueryFilter;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetReportBody;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetSummaryDto;
 
@@ -38,10 +38,17 @@ public class TimesheetController {
     @ResponseBody
     public Flux<TimesheetSummaryDto> timesheetSummary(
             @RequestParam(name = "from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(name = "to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+            @RequestParam(name = "to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(name = "ba") int ba,
+            @RequestParam(name = "project", required = false) Integer project
     ) {
         return AuthHandler.currentAuth().flatMapMany(
-                auth -> service.timesheetSummary(auth, TimesheetAggregatedFilter.builder().from(from).to(to).build()));
+                auth -> service.timesheetSummary(auth, TimesheetQueryFilter.builder()
+                        .from(from)
+                        .to(to)
+                        .ba(ba)
+                        .project(project)
+                        .build()));
     }
 
 }

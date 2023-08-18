@@ -19,7 +19,7 @@ import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer
 import ru.abondin.hreasy.platform.repo.ts.TimesheetRecordRepo;
 import ru.abondin.hreasy.platform.service.BaseServiceTest;
 import ru.abondin.hreasy.platform.service.ts.TimesheetService;
-import ru.abondin.hreasy.platform.service.ts.dto.TimesheetAggregatedFilter;
+import ru.abondin.hreasy.platform.service.ts.dto.TimesheetQueryFilter;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetReportBody;
 
 import java.time.Duration;
@@ -127,7 +127,7 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var employeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
         var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
         generateDefaultReports(ctx).block(MONO_DEFAULT_TIMEOUT);
-        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
+        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetQueryFilter
                 .builder().from(defaultDate).to(defaultDate.plusDays(1)).build())).expectNextCount(2).verifyComplete();
     }
 
@@ -136,7 +136,7 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var employeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
         var ctx = auth(TestEmployees.FMS_Empl_Jenson_Curtis).block(MONO_DEFAULT_TIMEOUT);
         generateDefaultReports(ctx).block(MONO_DEFAULT_TIMEOUT);
-        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
+        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetQueryFilter
                 .builder().from(defaultDate).to(defaultDate).build())).expectError(AccessDeniedException.class);
         ;
     }
@@ -146,7 +146,7 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var employeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
         var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
         generateDefaultReports(ctx).block(MONO_DEFAULT_TIMEOUT);
-        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
+        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetQueryFilter
                 .builder().from(defaultDate).to(defaultDate).build())).expectNextCount(1).verifyComplete();
     }
 
@@ -155,10 +155,10 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var employeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
         var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
         var reports = generateDefaultReports(ctx).block(MONO_DEFAULT_TIMEOUT);
-        Assertions.assertEquals(2, timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
+        Assertions.assertEquals(2, timesheetService.timesheetSummary(ctx, TimesheetQueryFilter
                 .builder().from(defaultDate).to(defaultDate.plusDays(1)).build()).collectList().block(MONO_DEFAULT_TIMEOUT).size());
         timesheetService.delete(ctx, employeeId, reports.get("1:2023-02-02:6")).block(MONO_DEFAULT_TIMEOUT);
-        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
+        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetQueryFilter
                 .builder().from(defaultDate).to(defaultDate.plusDays(1)).build())).expectNextCount(1).verifyComplete();
     }
 
@@ -181,8 +181,8 @@ public class TimesheetServiceTest extends BaseServiceTest {
                 .project(testData.project_M1_FMS())
                 .build()).blockLast(MONO_DEFAULT_TIMEOUT);
 
-        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
-                        .builder().from(defaultDate).to(defaultDate).build()).map(t -> t.getHoursSpent()))
+        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetQueryFilter
+                        .builder().from(defaultDate).to(defaultDate).build()).map(t -> t.getTimesheet().get(0).getHoursSpent()))
                 .expectNext((short) 2).verifyComplete();
 
     }
@@ -200,12 +200,12 @@ public class TimesheetServiceTest extends BaseServiceTest {
                 .hours(Arrays.asList(new TimesheetReportBody.TimesheetReportOneDay(defaultDate, (short) 8)))
                 .project(testData.project_M1_ERP_Integration())
                 .build()).blockLast(MONO_DEFAULT_TIMEOUT);
-        Assertions.assertEquals(3, timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
+        Assertions.assertEquals(3, timesheetService.timesheetSummary(ctx, TimesheetQueryFilter
                 .builder().from(defaultDate).to(defaultDate.plusDays(1)).build()).collectList().block(MONO_DEFAULT_TIMEOUT).size());
 
         StepVerifier.create(timesheetService.delete(ctx, employeeId, employee2Ts))
                 .expectError(BusinessError.class).verify(MONO_DEFAULT_TIMEOUT);
-        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetAggregatedFilter
+        StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetQueryFilter
                 .builder().from(defaultDate).to(defaultDate.plusDays(1)).build())).expectNextCount(3).verifyComplete();
     }
 

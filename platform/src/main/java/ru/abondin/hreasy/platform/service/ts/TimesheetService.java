@@ -11,8 +11,8 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.ts.TimesheetRecordRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
-import ru.abondin.hreasy.platform.service.ts.dto.TimesheetAggregatedFilter;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetMapper;
+import ru.abondin.hreasy.platform.service.ts.dto.TimesheetQueryFilter;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetReportBody;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetSummaryDto;
 
@@ -29,11 +29,11 @@ public class TimesheetService {
     private final TimesheetSecurityValidator sec;
 
     @Transactional(readOnly = true)
-    public Flux<TimesheetSummaryDto> timesheetSummary(AuthContext ctx, TimesheetAggregatedFilter filter) {
+    public Flux<TimesheetSummaryDto> timesheetSummary(AuthContext ctx, TimesheetQueryFilter filter) {
         log.info("Get timesheet summary by {}: {}", ctx.getUsername(), filter);
         return sec.validateViewTimesheetSummary(ctx)
-                .flatMapMany(v -> repo.summary(filter.getFrom(), filter.getTo()))
-                .map(mapper::fromEntry);
+                .flatMapMany(v -> repo.summary(filter.getFrom(), filter.getTo(), filter.getBa(), filter.getProject(), dateTimeService.now()))
+                .map(v -> mapper.fromView(v, filter.getBa(), filter.getProject()));
     }
 
     @Transactional
