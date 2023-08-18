@@ -18,12 +18,10 @@ import java.util.Set;
 @Mapper(componentModel = "spring")
 public abstract class TimesheetMapper extends MapperBaseWithJsonSupport {
 
-    @Mapping(source = "entry.", target = "employee", qualifiedByName = "employee")
-    @Mapping(source = "entry.timesheet", target = "timesheet", qualifiedByName = "timesheetJson")
-    @Mapping(source = "entry.vacations", target = "vacationDays", qualifiedByName = "vacationDays")
-    @Mapping(source = "businessAccount", target = "businessAccount")
-    @Mapping(source = "project", target = "project")
-    public abstract TimesheetSummaryDto fromView(TimesheetSummaryView entry, Integer businessAccount, Integer project);
+    @Mapping(source = ".", target = "employee", qualifiedByName = "employee")
+    @Mapping(source = "timesheet", target = "timesheet", qualifiedByName = "timesheetJson")
+    @Mapping(source = "vacations", target = "vacationDays", qualifiedByName = "vacationDays")
+    public abstract TimesheetSummaryDto fromView(TimesheetSummaryView entry);
 
     @Named("employee")
     protected TimesheetSummaryDto.EmployeeShortForTimesheetSummary employee(TimesheetSummaryView entry) {
@@ -42,8 +40,8 @@ public abstract class TimesheetMapper extends MapperBaseWithJsonSupport {
     }
 
     @Named("timesheetJson")
-    protected List<TimesheetSummaryDto.TimesheetShortForSummary> timesheetJson(Json data) {
-        return listFromJson(data, TimesheetSummaryDto.TimesheetShortForSummary.class);
+    protected List<TimesheetDto> timesheetJson(Json data) {
+        return listFromJson(data, TimesheetDto.class);
     }
 
     public abstract TimesheetDto fromEntry(TimesheetRecordEntry entry);
@@ -51,6 +49,12 @@ public abstract class TimesheetMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "employeeId", target = "employee")
     @Mapping(source = "businessAccount", target = "businessAccount")
     @Mapping(source = "project", target = "project")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "date", ignore = true)
+    @Mapping(target = "hoursSpent", ignore = true)
+    @Mapping(target = "comment", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     public abstract TimesheetRecordEntry toBaseEntry(Integer employeeId,
                                                      int businessAccount,
                                                      Integer project);
@@ -60,6 +64,10 @@ public abstract class TimesheetMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "hours.hoursSpent", target = "hoursSpent")
     @Mapping(source = "now", target = "updatedAt")
     @Mapping(source = "updatedBy", target = "updatedBy")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "employee", ignore = true)
+    @Mapping(target = "businessAccount", ignore = true)
+    @Mapping(target = "project", ignore = true)
     public abstract TimesheetRecordEntry applyChanges(@MappingTarget TimesheetRecordEntry entry,
                                                       TimesheetReportBody.TimesheetReportOneDay hours,
                                                       String comment,

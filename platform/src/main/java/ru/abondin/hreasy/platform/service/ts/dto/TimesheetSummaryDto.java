@@ -22,20 +22,11 @@ public class TimesheetSummaryDto {
         private Integer currentProjectBa;
     }
 
-    @Data
-    public static class TimesheetShortForSummary {
-        private int id;
-        private LocalDate date;
-        private String comment;
-        private short hoursSpent;
-    }
 
     @NotNull
     private EmployeeShortForTimesheetSummary employee;
-    private Integer businessAccount;
-    private Integer project;
     @NotNull
-    private List<TimesheetShortForSummary> timesheet = new ArrayList<>();
+    private List<TimesheetDto> timesheet = new ArrayList<>();
 
     /**
      * Set of all days in vacations

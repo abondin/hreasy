@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.ts.dto;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -19,7 +20,8 @@ public class TimesheetQueryFilter {
     @NotNull
     private LocalDate to;
 
-    private int ba;
-
+    @Nullable
+    private Integer ba;
+    @Nullable
     private Integer project;
 }

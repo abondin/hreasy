@@ -33,7 +33,7 @@ public class TimesheetService {
         log.info("Get timesheet summary by {}: {}", ctx.getUsername(), filter);
         return sec.validateViewTimesheetSummary(ctx)
                 .flatMapMany(v -> repo.summary(filter.getFrom(), filter.getTo(), filter.getBa(), filter.getProject(), dateTimeService.now()))
-                .map(v -> mapper.fromView(v, filter.getBa(), filter.getProject()));
+                .map(mapper::fromView);
     }
 
     @Transactional
