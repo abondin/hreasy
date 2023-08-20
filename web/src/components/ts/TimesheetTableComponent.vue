@@ -13,6 +13,7 @@
         </v-card>
       </v-col>
       <v-col>
+        <v-alert type="error" v-if="error">{{ error }}</v-alert>
         <v-card v-if="navigatorData.isReady()">
           <v-card-title>
             <timesheet-table-toolbar :model="toolbarData"></timesheet-table-toolbar>
@@ -27,6 +28,9 @@
               :headers="headers"
               :items-per-page="defaultItemsPerTablePage"
               :items="filterTableData()">
+            <template v-for="s of daysKeys" v-slot:[`item.timesheet.${s.key}`]="item">
+              <span v-bind:key="s.key">{{item.item.timesheet[s.key]?.totalHours}}</span>
+            </template>
           </v-data-table>
         </v-card>
         <v-card v-else>
@@ -44,21 +48,19 @@
 import Vue from 'vue'
 import Component from "vue-class-component";
 import logger from "@/logger";
-import timesheetService, {TimesheetRecord} from "@/components/ts/timesheet.service";
+import timesheetService, {TimesheetSummary} from "@/components/ts/timesheet.service";
 
 import {DateTimeUtils} from "@/components/datetimeutils";
 import {Moment} from "moment";
 import {Getter} from "vuex-class";
 import {ProjectDictDto, SimpleDict} from "@/store/modules/dict";
-import employeeService from "@/components/empl/employee.service";
 import {errorUtils} from "@/components/errors";
-import dictService from "@/store/modules/dict.service";
-import vacationService from "@/components/vacations/vacation.service";
 import TimesheetTableNavigator from "@/components/ts/TimesheetTableNavigator.vue";
-import {TimesheetAggregatedByEmployee, TimesheetTableNavigatorData} from "@/components/ts/timesheetUiDto";
+import {TimesheetTableNavigatorData} from "@/components/ts/timesheetUiDto";
 import {UiConstants} from "@/components/uiconstants";
 import {DataTableHeader} from "vuetify";
 import TimesheetTableToolbar, {TimesheetTableToolbarData} from "@/components/ts/TimesheetTableToolbar.vue";
+import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 
 
 const namespace_dict = 'dict';
@@ -79,10 +81,8 @@ export default class TimesheetTableComponent extends Vue {
   private headers: DataTableHeader[] = [];
 
   // Dirty rows from backend
-  private records: TimesheetRecord[] = [];
+  private records: TimesheetSummary[] = [];
 
-  // Grouped by project and employee rows. Uses in the table
-  private aggregatedByEmployees: TimesheetAggregatedByEmployee[] = [];
 
   private error: string | null = null;
 
@@ -115,10 +115,6 @@ export default class TimesheetTableComponent extends Vue {
 
   private refresh(handleLoading = true) {
     logger.log("Reload all timesheet information from backend", this.navigatorData);
-    this.aggregatedByEmployees.length = 0;
-    if (!this.navigatorData.ba) {
-      return;
-    }
     if (handleLoading) {
       this.loading = true;
     }
@@ -128,36 +124,9 @@ export default class TimesheetTableComponent extends Vue {
               this.records = records;
             }
             // 2. Read all employees
-        ).then(() => employeeService.findAll().then(employees =>
-            // 3. Get all not working days for given year
-            dictService.notWorkingDays(this.navigatorData.year).then(notWorkingDaysStr =>
-                // 4. Get all vacations for given year
-                vacationService.findAll([this.navigatorData.year]).then(vacations => {
-                  // 4. Merge all not working days with employee's vacations to get all not working days for each employee
-                  const notWorkingDays = notWorkingDaysStr.map(str => DateTimeUtils.dateFromIsoString(str));
-                  return employees.forEach(employee => {
-                    const emplNotWorkingDays: Array<Moment> = [];
-                    vacations.filter(v => v.employee == employee.id && vacationService.isNotWorkingDays(v) && v.startDate && v.endDate)
-                        .forEach(v => {
-                          const vacationsDays = DateTimeUtils.daysBetweenDates(DateTimeUtils.dateFromIsoString(v.startDate), DateTimeUtils.dateFromIsoString(v.endDate));
-                          emplNotWorkingDays.push(...vacationsDays);
-                        });
-                    emplNotWorkingDays.push(...notWorkingDays);
-                    const record: TimesheetAggregatedByEmployee = {
-                      employee: employee.id,
-                      employeeDisplayName: employee.displayName,
-                      notWorkingDayKeys: emplNotWorkingDays.map(d => 'hoursSpent_' + DateTimeUtils.formatToDayKey(d)),
-                      ba: this.navigatorData.ba!,
-                      project: this.navigatorData.project,
-                      editMode: false,
-                    }
-                    this.rebuildEmployeeHours(record);
-                    this.aggregatedByEmployees.push(record);
-                  });
-                })))
-            .then(() => {
-              this.rebuildHeaders();
-            }));
+        ).then(() => {
+          this.rebuildHeaders();
+        });
     if (handleLoading) {
       promise.catch((er: any) => {
         this.error = errorUtils.shortMessage(er);
@@ -171,7 +140,7 @@ export default class TimesheetTableComponent extends Vue {
     this.headers.length = 0;
     this.headers.push({
       text: this.$tc('Сотрудник'),
-      value: 'employeeDisplayName',
+      value: 'employee.displayName',
       width: "300px"
     });
     this.daysKeys.length = 0;
@@ -180,64 +149,36 @@ export default class TimesheetTableComponent extends Vue {
       this.daysKeys.push({key: dayKey, date: day});
       this.headers.push({
         text: DateTimeUtils.formatToDayMonthDate(day)!,
-        value: `dates.${dayKey}`,
+        value: `timesheet.${dayKey}`,
         width: "50px"
       });
     });
     return this.headers;
   }
 
-  private rebuildEmployeeHours(record: TimesheetAggregatedByEmployee): void {
-    Object.keys(record).filter(k => k.startsWith('hoursSpent_')).forEach((k: string) => {
-      record[k] = 0;
-    });
-    DateTimeUtils.daysBetweenDates(this.navigatorData.from, this.navigatorData.to).forEach((day) => {
-      const r: TimesheetRecord | null = this.records.find(r =>
-          DateTimeUtils.isSameDate(DateTimeUtils.dateFromIsoString(r.date!), day)
-          && r.employee === record.employee
-          && r.businessAccount === this.navigatorData.ba
-          && ((this.navigatorData.project == null && r.project == null) || r.project == this.navigatorData.project)
-      ) || null;
-      record['hoursSpent_' + DateTimeUtils.formatToDayKey(day)!] = (r && r.hoursSpent) || 0;
-    });
-  }
-
   private filterTableData() {
-    const filtered =  this.aggregatedByEmployees.filter(r => {
+    const filtered = this.records.filter(r => {
       let result = true;
       // 1. Check only selected project
       if (this.toolbarData.filter.onlySelectedProject) {
         result = result && (
-            r.ba == this.navigatorData.ba &&
-           (!this.navigatorData.project || this.navigatorData.project == r.project)
+            (!this.navigatorData.ba || r.employee.currentProjectBa == this.navigatorData.ba) &&
+            (!this.navigatorData.project || this.navigatorData.project == r.employee.currentProject)
         )
       }
-      if (!result){
-        console.log(`Not filtered ${r.employeeDisplayName}`);
-      }
+      result = result && searchUtils.textFilter(this.toolbarData.filter.search,
+          TextFilterBuilder.of()
+              // Display name
+              .splitWords(r.employee.displayName));
       return result;
     });
-    console.log(`filterTableData ${filtered.length} of ${this.aggregatedByEmployees.length}. Filter: ${this.toolbarData.filter.onlySelectedProject}:`);
+    return filtered;
   }
 
   private dateHeaderLabel(date: Moment) {
     return DateTimeUtils.formatToDayMonthDate(date);
   }
 
-  private onChange(hoursSpentNew: number, hoursSpentOld: number, item: TimesheetAggregatedByEmployee, cell: any) {
-    //TODO
-    logger.log(`change-${hoursSpentNew}-${hoursSpentOld}-${item.employeeDisplayName}: ${cell.name}`, hoursSpentNew, hoursSpentOld, item, cell);
-  }
-
-  private dateCellStyle(employee: TimesheetAggregatedByEmployee, cell: any) {
-    if (!(cell.name as string)?.startsWith('hoursSpent_')) {
-      return "";
-    }
-    if (employee.notWorkingDayKeys.filter(d => d == cell.name).length > 0) {
-      return {"background-color": "#a4adbd"}
-    }
-    return {};
-  }
 
 }
 </script>

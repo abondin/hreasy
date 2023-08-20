@@ -3,27 +3,6 @@ import {TimesheetSummaryApiQueryFilterFilter} from "@/components/ts/timesheet.se
 import {DateTimeUtils} from "@/components/datetimeutils";
 import moment from "moment";
 
-/**
- * Timesheet report for one employee on one project
- */
-export interface TimesheetAggregatedByEmployeeDay {
-    date: Moment,
-    workingDay: boolean,
-    hoursSpent: number
-}
-
-/**
- * One row in timesheet table component (timesheet for one employee on one project for given period)
- *
- */
-export interface TimesheetAggregatedByEmployee extends Record<string,any> {
-    employee: number,
-    employeeDisplayName: string,
-    notWorkingDayKeys: Array<string>,
-    ba: number,
-    project: number | null,
-    editMode : boolean;
-}
 
 export class TimesheetTableNavigatorData {
     private _year: number;
@@ -68,12 +47,14 @@ export class TimesheetTableNavigatorData {
     public timesheetSummaryApiQueryFilter(): TimesheetSummaryApiQueryFilterFilter {
         return {
             from: this.fromStr(),
-            to: this.toStr()
+            to: this.toStr(),
+            ba: this.ba,
+            project: this.project
         }
     }
 
     public isReady() {
-        return this.from && this.to && this.ba;
+        return this.from && this.to;
     }
 
     private fromStr(): string {

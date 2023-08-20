@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.ts.dto;
 
 import io.r2dbc.postgresql.codec.Json;
+import lombok.Data;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -11,12 +12,20 @@ import ru.abondin.hreasy.platform.service.mapper.MapperBaseWithJsonSupport;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.HashSet;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Mapper(componentModel = "spring")
 public abstract class TimesheetMapper extends MapperBaseWithJsonSupport {
+
+    @Data
+    public static class VacationDates {
+        private LocalDate startDate;
+        private LocalDate endDate;
+    }
 
     @Mapping(source = ".", target = "employee", qualifiedByName = "employee")
     @Mapping(source = "timesheet", target = "timesheet", qualifiedByName = "timesheetJson")
@@ -35,8 +44,11 @@ public abstract class TimesheetMapper extends MapperBaseWithJsonSupport {
 
     @Named("vacationDays")
     protected Set<LocalDate> vacationDays(Json data) {
-        //TODO
-        return new HashSet<>();
+        return listFromJson(data, VacationDates.class)
+                .stream().filter(v -> v.startDate != null && v.endDate != null && !v.endDate.isBefore(v.startDate))
+                .flatMap(v -> Stream.iterate(v.getStartDate(), d -> d.plusDays(1))
+                        .limit(ChronoUnit.DAYS.between(v.startDate, v.endDate) + 1))
+                .collect(Collectors.toSet());
     }
 
     @Named("timesheetJson")

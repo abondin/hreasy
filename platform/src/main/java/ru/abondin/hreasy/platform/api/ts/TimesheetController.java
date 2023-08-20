@@ -39,7 +39,7 @@ public class TimesheetController {
     public Flux<TimesheetSummaryDto> timesheetSummary(
             @RequestParam(name = "from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(name = "to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-            @RequestParam(name = "ba") int ba,
+            @RequestParam(name = "ba", required = false) Integer ba,
             @RequestParam(name = "project", required = false) Integer project
     ) {
         return AuthHandler.currentAuth().flatMapMany(

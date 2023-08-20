@@ -34,7 +34,8 @@ public interface TimesheetRecordRepo extends ReactiveCrudRepository<TimesheetRec
                      end)
                 )timesheet,
                 jsonb_agg(
-                    distinct (case when v.id is null then null else jsonb_build_object('id', v.id, 'start_date',v.start_date, 'end_date', v.end_date) end)
+                    distinct (case when v.id is null then null else 
+                        jsonb_build_object('id', v.id, 'startDate',v.start_date, 'endDate', v.end_date) end)
                 ) vacations
             from empl.employee e
             left join proj.project p on e.current_project = p.id
@@ -47,7 +48,7 @@ public interface TimesheetRecordRepo extends ReactiveCrudRepository<TimesheetRec
                 on v.employee = e.id
             where (e.date_of_dismissal  is null or e.date_of_dismissal >= :now)
             group by e.id,e.display_name,e.current_project,p.ba_id
-            order by e.id
+            order by e.display_name
             """)
     Flux<TimesheetSummaryView> summary(@Param("fr") LocalDate from, @Param("t") LocalDate to,
                                        @Param("ba") Integer ba, @Param("project") Integer project, OffsetDateTime now);
