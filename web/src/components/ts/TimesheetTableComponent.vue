@@ -28,8 +28,12 @@
               :headers="headers"
               :items-per-page="defaultItemsPerTablePage"
               :items="filterTableData()">
+            <template v-slot:item.employee.displayName="{item}">
+              <v-btn text @click="openEditDialog(item)">{{ item.employee.displayName }}
+              </v-btn>
+            </template>
             <template v-for="s of daysKeys" v-slot:[`item.timesheet.${s.key}`]="item">
-              <span v-bind:key="s.key">{{item.item.timesheet[s.key]?.totalHours}}</span>
+              <span v-bind:key="s.key">{{ item.item.timesheet[s.key]?.totalHours }}</span>
             </template>
           </v-data-table>
         </v-card>
@@ -40,6 +44,16 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-dialog v-bind:value="editDialog" :disabled="loading" persistent>
+      <timesheet-employee-edit-form
+          :allProjects="allProjects"
+          :allBas="allBas"
+          :daysKeys="daysKeys"
+          :record="recordToEdit"
+          @close="closeEditDialog()"
+      ></timesheet-employee-edit-form>
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -61,12 +75,19 @@ import {UiConstants} from "@/components/uiconstants";
 import {DataTableHeader} from "vuetify";
 import TimesheetTableToolbar, {TimesheetTableToolbarData} from "@/components/ts/TimesheetTableToolbar.vue";
 import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
+import TimesheetEmployeeEditForm from "@/components/ts/TimesheetEmployeeEditForm.vue";
 
 
 const namespace_dict = 'dict';
 
 
-@Component({components: {TimesheetTableToolbar, TimesheetTableNavigator: TimesheetTableNavigator}})
+@Component({
+  components: {
+    TimesheetTableToolbar,
+    TimesheetTableNavigator: TimesheetTableNavigator,
+    TimesheetEmployeeEditForm: TimesheetEmployeeEditForm
+  }
+})
 export default class TimesheetTableComponent extends Vue {
 
   private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
@@ -92,6 +113,9 @@ export default class TimesheetTableComponent extends Vue {
 
   private navigatorData = new TimesheetTableNavigatorData();
   private toolbarData = new TimesheetTableToolbarData();
+
+  private editDialog = false;
+  private recordToEdit: TimesheetSummary | null = null;
 
 
   /**
@@ -173,6 +197,16 @@ export default class TimesheetTableComponent extends Vue {
       return result;
     });
     return filtered;
+  }
+
+  private openEditDialog(record: TimesheetSummary) {
+    this.recordToEdit = record;
+    this.editDialog = true;
+  }
+
+  private closeEditDialog() {
+    this.editDialog = false;
+    this.recordToEdit = null;
   }
 
   private dateHeaderLabel(date: Moment) {

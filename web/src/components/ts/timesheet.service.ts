@@ -31,7 +31,7 @@ export interface TimesheetSummary {
     timesheet: TimesheetGroupedByDay
 }
 
-interface TimesheetGroupedByDay {
+interface TimesheetGroupedByDay extends Record<string, any>{
     [key: string]: {
         records: TimesheetRecord[],
         totalHours: number
