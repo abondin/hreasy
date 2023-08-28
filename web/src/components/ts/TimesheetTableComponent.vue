@@ -49,7 +49,7 @@
           :allProjects="allProjects"
           :allBas="allBas"
           :daysKeys="daysKeys"
-          :record="recordToEdit"
+          :input="recordToEdit"
           @close="closeEditDialog()"
       ></timesheet-employee-edit-form>
     </v-dialog>
