@@ -37,8 +37,10 @@ insert into dict.position (name)
 
 -- BAs
 
-INSERT INTO ba.business_account ("name") VALUES('RND');
-INSERT INTO ba.business_account ("name") VALUES('Billing');
+INSERT INTO ba.business_account ("name")
+    select ('RND') where not EXISTS(select id from ba.business_account where name='RND');
+INSERT INTO ba.business_account ("name")
+    select ('Billing') where not EXISTS(select id from ba.business_account where name='Billing');
 
 
 

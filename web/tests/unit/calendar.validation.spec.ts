@@ -1,5 +1,4 @@
 import {DateTimeUtils} from "@/components/datetimeutils";
-import moment, {Moment} from "moment";
 
 /**
  * Get from production backend

@@ -22,6 +22,20 @@ export class DateTimeUtils {
         return date ? date.format(moment.HTML5_FMT.DATE) : undefined;
     }
 
+    public static formatToDayMonthDate(date?: Moment): string | undefined {
+        return date ? date.format("DD.MM") : undefined;
+    }
+
+    /**
+     * Unique string key based on given date (without time)
+     * @param date
+     * @return "key23072022"
+     */
+    public static formatToDayKey(date?: Moment): string | undefined {
+        return date ? "key" + date.format("DDMMYYYY") : undefined;
+    }
+
+
     public static validateFormattedDate(formattedDate: string, allowEmpty = true) {
         if (!formattedDate) {
             return allowEmpty;
@@ -77,7 +91,12 @@ export class DateTimeUtils {
         return this.formatToIsoDate(this.now());
     }
 
-    static vacationDays(start: moment.Moment, end: moment.Moment, notVacationDaysStr: Array<string>) {
+    public static defaultYears(): number[]{
+        const currentYear = this.now().year();
+        return [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];
+    }
+
+    static vacationDays(start: moment.Moment, end: moment.Moment, notVacationDaysStr: Array<string>): number {
         const notVacationDays = notVacationDaysStr.map(str => this.dateFromIsoString(str));
         let cnt = 0;
         for (let day = moment(start); day.diff(end, 'days') <= 0; day.add(1, 'day')) {
@@ -87,6 +106,26 @@ export class DateTimeUtils {
         }
         return cnt;
     }
+
+    static daysBetweenDates(start: moment.Moment, end: moment.Moment): Moment[] {
+        const days = [];
+        for (let day = moment(start); day.diff(end, 'days') <= 0; day.add(1, 'day')) {
+            days.push(day.clone());
+        }
+        return days;
+    }
+
+    /**
+     * Moment.isSame works extremely slow
+     * @param d1
+     * @param d2
+     */
+    static isSameDate(d1: Moment, d2: Moment): boolean {
+        return d1.year() === d2.year() &&
+            d1.month() === d2.month() &&
+            d1.date() === d2.date();
+    }
+
 }
 
 

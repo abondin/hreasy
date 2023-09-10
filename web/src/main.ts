@@ -6,7 +6,6 @@ import router from "@/router"
 import logger from "@/logger";
 import i18n from "@/i18n";
 
-
 Vue.config.productionTip = false
 
 const vue = new Vue({
@@ -19,7 +18,6 @@ const vue = new Vue({
         return h('pre', {style: {color: 'red'}}, err.stack)
     }
 }).$mount('#app')
-
 
 window.addEventListener('unhandledrejection', function (event) {
     logger.log('Dispath unhandledrejection', event);

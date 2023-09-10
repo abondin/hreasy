@@ -1,6 +1,6 @@
 import httpService from "../../http.service";
 import {AxiosInstance} from "axios";
-import {ManagerOfObject, SimpleDict} from "@/store/modules/dict";
+import {ManagerOfObject} from "@/store/modules/dict";
 
 export interface CreateOrUpdateBusinessAccount {
     name: string;

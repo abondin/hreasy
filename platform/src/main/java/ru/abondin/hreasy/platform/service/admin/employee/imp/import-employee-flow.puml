@@ -1,0 +1,71 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+'autonumber
+
+participant "HR Easy Web" as web
+box "HR Easy Backend"
+participant AdminEmployeeController
+participant AdminEmployeeImportService
+participant FileStorage
+participant AdminEmployeeImportProcessor
+participant AdminEmployeeImportCommitter
+participant AdminEmployeeService
+participant EmployeeWithAllDetailsRepo
+participant DictServices
+participant AdminEmployeeExcelImporter
+end box
+
+== 1. Get import workflow to start or continue import process ==
+web -> AdminEmployeeController ++ : POST\n".../import"
+AdminEmployeeController -> AdminEmployeeImportService ++ : getActiveOrStartNewImportProcess()
+AdminEmployeeImportService -> AdminEmployeeImportService : finds wf in states [0,1,2]\nor creates new one
+return
+return
+
+== 2. Upload excel file to import ==
+web -> AdminEmployeeController ++ : POST\n".../import/{processId}/file"
+AdminEmployeeController -> AdminEmployeeImportService ++ : uploadImportFile()
+AdminEmployeeImportService -> FileStorage ++: upload file
+return
+AdminEmployeeImportService -> AdminEmployeeImportService : update workflow in database
+return
+return
+
+== 3. Apply configuration and import excel ==
+web -> web: Configure import process:\nMap employee fields\nto excel columns.\nSelect first data row.
+web -> AdminEmployeeController ++ : POST\n".../import/{processId}/config"
+AdminEmployeeController -> AdminEmployeeImportService ++ : applyConfigAndPreview()
+AdminEmployeeImportService -> FileStorage ++: get (stream) file
+return
+AdminEmployeeImportService -> AdminEmployeeImportProcessor ++: applyConfigAndParseExcelFile()
+AdminEmployeeImportProcessor -> AdminEmployeeExcelImporter ++: importEmployees()
+return
+AdminEmployeeImportProcessor -> DictServices++: load()
+return [positions,departments]
+AdminEmployeeImportProcessor -> EmployeeWithAllDetailsRepo ++: findByEmailsInLowerCase()
+return [existing employees]
+AdminEmployeeImportProcessor -> AdminEmployeeImportProcessor: merge imported rows\nwith current employees
+
+||45||
+return
+return
+return JSON with new and\nupdated employees
+
+
+== 4. Commit updates to database ==
+web -> web: Analyze new employees\nand updated fields\nof existing employees\nin table view
+web -> AdminEmployeeController ++ : POST\n".../import/{processId}/commit"
+AdminEmployeeController -> AdminEmployeeImportService ++ : applyConfigAndPreview()
+loop Every imported row
+AdminEmployeeImportService -> AdminEmployeeImportCommitter++: commitRow
+AdminEmployeeImportCommitter -> AdminEmployeeImportCommitter++: prepare "createNew"\nor\n"updateExisting"\nemployee request
+AdminEmployeeImportCommitter -> AdminEmployeeService++: create() or update()
+return
+return
+return
+return
+return number of created\nor updated employees
+end loop
+
+@enduml

@@ -18,7 +18,6 @@ import java.util.List;
 public class EmployeeDto {
     private Integer id;
     private String displayName;
-    private LocalDate birthday;
     private String sex;
     private SimpleDictDto department;
     private CurrentProjectDictDto currentProject;
@@ -26,8 +25,6 @@ public class EmployeeDto {
     private SimpleDictDto officeLocation;
     private SimpleDictDto ba;
     private String email;
-    private String phone;
-    private String skype;
     private String telegram;
     private boolean hasAvatar;
     private List<SkillDto> skills = new ArrayList<>();

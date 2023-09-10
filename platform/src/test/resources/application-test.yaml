@@ -23,7 +23,7 @@ hreasy:
   db:
     database: hr-unit
     # Will be overridden in PostgreSQLTestContainerContextInitializer for hreasy.test.existing-database-docker=false
-    host: sql.hr
+    host: localhost
     port: 5432
     username: hr
     password: HREasyPassword2019!

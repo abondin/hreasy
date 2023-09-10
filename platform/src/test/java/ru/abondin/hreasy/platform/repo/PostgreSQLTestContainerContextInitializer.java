@@ -16,7 +16,7 @@ public class PostgreSQLTestContainerContextInitializer implements ApplicationCon
     /**
      * Single container shared between test methods
      */
-    private final static PostgreSQLContainer dbContainer = new PostgreSQLContainer<>("postgres")
+    private final static PostgreSQLContainer dbContainer = new PostgreSQLContainer<>("postgres:15")
             .withDatabaseName("hr-unit")
             .withUsername("hr");
     @Override

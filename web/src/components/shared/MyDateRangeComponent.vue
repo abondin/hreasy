@@ -6,7 +6,7 @@
       <template v-slot:activator="{ on, attrs }">
         <v-combobox v-model="selectedDates"
                     :label="label"
-                    prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on" class="mr-5">
+                    prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on">
           <template v-slot:selection="{ item }">
             <span v-on="on" v-bind="attrs">{{ parseDateRange(item) }}</span>
           </template>
@@ -14,6 +14,7 @@
       </template>
       <v-date-picker v-model="selectedDates"
                      :pickerDate.sync="pickerDate"
+                     :first-day-of-week="1"
                      show-current
                      show-week
                      scrollable
@@ -21,13 +22,16 @@
                      range
                      width="500px">
         <v-btn-toggle rounded>
-          <v-btn x-small @click="today()">
+          <v-btn x-small @click="today()" v-if="allowedShortCut && allowedShortCut.indexOf('todayPlus5Days')>=0">
             {{ $t('Текущая дата +5 дней') }}
           </v-btn>
-          <v-btn x-small @click="currentMonth()">
-            {{ $t('Месяц') }}
+          <v-btn x-small @click="currentMonth()" v-if="allowedShortCut && allowedShortCut.indexOf('month')>=0">
+            {{ $t('Текущий месяц') }}
           </v-btn>
-          <v-btn x-small @click="currentYear()">
+          <v-btn x-small @click="currentWeek()" v-if="allowedShortCut && allowedShortCut.indexOf('week')>=0">
+            {{ $t('Текущая неделя') }}
+          </v-btn>
+          <v-btn x-small @click="currentYear()" v-if="allowedShortCut && allowedShortCut.indexOf('year')>=0">
             {{ $t('Год') }}
           </v-btn>
         </v-btn-toggle>
@@ -52,6 +56,8 @@ import moment, {HTML5_FMT} from "moment";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
 
+export type MyDateRangeComponentAllowedTypes='year'|'month'|'week'|'todayPlus5Days';
+
 @Component
 export default class MyDateRangeComponent extends Vue {
 
@@ -64,10 +70,13 @@ export default class MyDateRangeComponent extends Vue {
   @Prop({required: false, type: Array})
   private rules: any;
 
+  @Prop({type: Array, default:()=>['year', 'month', 'todayPlus5Days']})
+  private allowedShortCut!: Array<MyDateRangeComponentAllowedTypes>;
+
   private menu = false;
 
   private pickerDate: string | null = null;
-  
+
   public get selectedDates() {
     return this.value;
   }
@@ -97,6 +106,11 @@ export default class MyDateRangeComponent extends Vue {
   public currentMonth() {
     this.selectedDates = [moment().startOf('month').format(HTML5_FMT.DATE),
       moment().endOf('month').format(HTML5_FMT.DATE)];
+  }
+
+  public currentWeek() {
+    this.selectedDates = [moment().startOf('week').format(HTML5_FMT.DATE),
+      moment().endOf('week').format(HTML5_FMT.DATE)];
   }
 
   public currentYear() {

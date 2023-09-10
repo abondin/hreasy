@@ -11,6 +11,10 @@ export interface SimpleDict {
     active: boolean;
 }
 
+export interface ProjectDictDto extends SimpleDict{
+    baId: number;
+}
+
 export interface ManagerOfObject {
     id: number;
     employeeId: number,
@@ -24,7 +28,7 @@ export interface CurrentProjectRole {
 }
 
 export interface DictLoadedState {
-    projects: Array<SimpleDict>;
+    projects: Array<ProjectDictDto>;
     businessAccounts: Array<SimpleDict>;
     departments: Array<SimpleDict>;
     positions: Array<SimpleDict>;
@@ -97,62 +101,62 @@ export const dictActions: ActionTree<DictLoadedState, RootState> = {
 }
 
 export const dictMutations: MutationTree<DictLoadedState> = {
-    projectsLoaded(state, projects: Array<SimpleDict>) {
+    projectsLoaded(state: DictLoadedState, projects: Array<ProjectDictDto>) {
         state.projects = projects;
     },
-    businessAccountsLoaded(state, bas: Array<SimpleDict>) {
+    businessAccountsLoaded(state: DictLoadedState, bas: Array<SimpleDict>) {
         state.businessAccounts = bas;
     },
-    departmentsLoaded(state, deps: Array<SimpleDict>) {
+    departmentsLoaded(state: DictLoadedState, deps: Array<SimpleDict>) {
         state.departments = deps;
     },
-    positionsLoaded(state, value: Array<SimpleDict>) {
+    positionsLoaded(state: DictLoadedState, value: Array<SimpleDict>) {
         state.positions = value;
     },
-    levelsLoaded(state, value: Array<SimpleDict>) {
+    levelsLoaded(state: DictLoadedState, value: Array<SimpleDict>) {
         state.levels = value;
     },
-    officeLocationsLoaded(state, value: Array<SimpleDict>) {
+    officeLocationsLoaded(state: DictLoadedState, value: Array<SimpleDict>) {
         state.officeLocations = value;
     },
-    skillGroupsLoaded(state, groups: Array<SimpleDict>) {
+    skillGroupsLoaded(state: DictLoadedState, groups: Array<SimpleDict>) {
         state.skillGroups = groups;
     },
-    sharedSkillsLoaded(state, names: Array<SharedSkillName>) {
+    sharedSkillsLoaded(state: DictLoadedState, names: Array<SharedSkillName>) {
         state.sharedSkillsNames = names;
     },
-    currentProjectRolesLoaded(state, roles: Array<CurrentProjectRole>) {
+    currentProjectRolesLoaded(state: DictLoadedState, roles: Array<CurrentProjectRole>) {
         state.currentProjectRoles = roles;
     }
 }
 
 
 export const dictGetters: GetterTree<DictLoadedState, RootState> = {
-    projects(state): Array<SimpleDict> {
+    projects(state: DictLoadedState): Array<ProjectDictDto> {
         return state.projects;
     },
-    businessAccounts(state): Array<SimpleDict> {
+    businessAccounts(state: DictLoadedState): Array<SimpleDict> {
         return state.businessAccounts;
     },
-    departments(state): Array<SimpleDict> {
+    departments(state: DictLoadedState): Array<SimpleDict> {
         return state.departments;
     },
-    positions(state): Array<SimpleDict> {
+    positions(state: DictLoadedState): Array<SimpleDict> {
         return state.positions;
     },
-    levels(state): Array<SimpleDict> {
+    levels(state: DictLoadedState): Array<SimpleDict> {
         return state.levels;
     },
-    officeLocations(state): Array<SimpleDict> {
+    officeLocations(state: DictLoadedState): Array<SimpleDict> {
         return state.officeLocations;
     },
-    skillGroups(state): Array<SimpleDict> {
+    skillGroups(state: DictLoadedState): Array<SimpleDict> {
         return state.skillGroups;
     },
-    sharedSkills(state): Array<SharedSkillName> {
+    sharedSkills(state: DictLoadedState): Array<SharedSkillName> {
         return state.sharedSkillsNames;
     },
-    currentProjectRoles(state): Array<CurrentProjectRole> {
+    currentProjectRoles(state: DictLoadedState): Array<CurrentProjectRole> {
         return state.currentProjectRoles;
     }
 };

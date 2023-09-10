@@ -71,6 +71,8 @@ export interface VacationService {
     update(employeeId: number, vacationId: number, body: CreateOrUpdateVacation): Promise<number>;
 
     export(selectedYears: Array<number>): Promise<any>;
+
+    isNotWorkingDays(vacation: Vacation): boolean;
 }
 
 class RestVacationService implements VacationService {
@@ -118,6 +120,15 @@ class RestVacationService implements VacationService {
             link.download = `Vacations.xlsx`;
             link.click();
         });
+    }
+
+    /**
+     *
+     * @param vacation
+     * @return true if employee doesn't work in the vacation
+     */
+    public isNotWorkingDays(vacation: Vacation): boolean{
+        return vacation && (vacation.status == "PLANNED" || vacation.status == "TAKEN");
     }
 }
 

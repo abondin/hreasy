@@ -61,7 +61,7 @@ public class OvertimeServiceTest extends BaseServiceTest {
                         overtimeService.addItem(
                                 ctx.getEmployeeInfo().getEmployeeId(),
                                 202008,
-                                new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 1, uniqueNotes),
+                                new NewOvertimeItemDto(LocalDate.now(), testData.project_M1_Billing(), 1, uniqueNotes),
                                 ctx).thenMany(overtimeService.getSummary(202008, ctx)))
                 //TODO Validate the actual result
                 .expectNextMatches(o -> true).verifyComplete();
@@ -84,7 +84,7 @@ public class OvertimeServiceTest extends BaseServiceTest {
                         overtimeService.addItem(
                                 jensonId,
                                 202008,
-                                new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 4, null),
+                                new NewOvertimeItemDto(LocalDate.now(), testData.project_M1_Billing(), 4, null),
                                 ctx))
                 .expectNextCount(1).verifyComplete();
     }
@@ -99,7 +99,7 @@ public class OvertimeServiceTest extends BaseServiceTest {
                         overtimeService.addItem(
                                         jensonId,
                                         202008,
-                                        new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 7, uuidComment),
+                                        new NewOvertimeItemDto(LocalDate.now(), testData.project_M1_Billing(), 7, uuidComment),
                                         ctx)
                                 .flatMap(r -> {
                                     var itemId = r.getItems().stream().filter(i -> uuidComment.equals(i.getNotes())).findFirst().get().getId();
@@ -117,7 +117,7 @@ public class OvertimeServiceTest extends BaseServiceTest {
                 .create(overtimeService.addItem(
                         jensonId,
                         202008,
-                        new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 2, "testAddOvertimeItemForEmployeeFromAnotherProject"),
+                        new NewOvertimeItemDto(LocalDate.now(), testData.project_M1_Billing(), 2, "testAddOvertimeItemForEmployeeFromAnotherProject"),
                         ctx))
                 .expectError(AccessDeniedException.class).verify(MONO_DEFAULT_TIMEOUT);
     }
@@ -130,7 +130,7 @@ public class OvertimeServiceTest extends BaseServiceTest {
                 .create(overtimeService.addItem(
                         jensonId,
                         202008,
-                        new NewOvertimeItemDto(LocalDate.now(), testData.projects.get("M1 Billing"), 6, "testAddOvertimeOfMyProject"),
+                        new NewOvertimeItemDto(LocalDate.now(), testData.project_M1_Billing(), 6, "testAddOvertimeOfMyProject"),
                         ctx))
                 .expectNextCount(1).verifyComplete();
     }

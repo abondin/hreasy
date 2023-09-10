@@ -296,7 +296,7 @@ export default class VacationsListComponent extends Vue {
     this.allStatuses = ['PLANNED', 'TAKEN', 'COMPENSATION', 'CANCELED', 'REJECTED'].map(status => {
       return {value: status, text: this.$tc(`VACATION_STATUS_ENUM.${status}`)}
     });
-    this.allYears = [(this.currentYear - 2), (this.currentYear - 1), this.currentYear, (this.currentYear + 1)];
+    this.allYears = DateTimeUtils.defaultYears();
 
     this.reloadHeaders();
     this.$store.dispatch('dict/reloadProjects')
