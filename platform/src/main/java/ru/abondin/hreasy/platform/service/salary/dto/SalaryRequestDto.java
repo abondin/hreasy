@@ -16,10 +16,7 @@ public class SalaryRequestDto {
     @NotNull
     private SimpleDictDto employee;
     /**
-     * <ul>
-     *     <li>1 - salary increase</li>
-     *     <li>1 - bonus</li>
-     * </ul>
+     * @see SalaryRequestReportType
      */
     @NotNull
     private Integer type;
@@ -28,13 +25,7 @@ public class SalaryRequestDto {
     private LocalDate budgetExpectedFundingUntil;
 
     /**
-     * <ul>
-     *     <li>0 - created: when PM creates a request</li>
-     *     <li>1 - in progress: when HR move it to in progress</li>
-     *     <li>2 - implemented: when Finance implements</li>
-     *     <li>3 - approved: when all required approvals collected and request is ready for the implementation by Finance</li>
-     *     <li>4 - declined: when HR or Finance or BA Manager declines the request</li>
-     * </ul>
+     * @see SalaryRequestReportStat
      */
     @NotNull
     private Short stat;

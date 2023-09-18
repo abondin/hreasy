@@ -15,6 +15,7 @@ public interface SalaryRequestMapper extends MapperBase {
 
     @Mapping(source = "createdBy", target = "createdBy")
     @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(target = "stat", constant = "0")
     SalaryRequestEntry toEntry(SalaryRequestReportBody body, Integer createdBy, OffsetDateTime createdAt);
 
     @Mapping(source = ".", target = "employee", qualifiedByName = "employee")

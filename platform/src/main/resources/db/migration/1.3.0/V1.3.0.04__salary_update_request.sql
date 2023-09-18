@@ -9,11 +9,9 @@ CREATE TABLE IF NOT EXISTS sal.salary_request (
     type integer NOT NULL default 1,
     budget_business_account integer NOT NULL REFERENCES ba.business_account (id),
     budget_expected_funding_until date NULL,
-    -- 0 - created: when PM creates a request
-    -- 1 - in progress: when HR moves to in progress
-    -- 2 - implemented: when Finance implements
-    -- 3 - approved: when all required approvals collected and request is ready for the implementation by Finance
-    -- 4 - declined: when HR or Finance or BA Manager declines the request
+     -- 0 - created: when PM creates a request
+     -- 1 - in progress: when Salary Manager move request to in progress
+     -- 2 - implemented: when Salary Manager or Finance mark after Finance implemented in real
     stat smallint NOT NULL,
     salary_increase numeric(10, 2) NOT NULL,
     increase_start_period integer not null,
@@ -33,10 +31,8 @@ COMMENT ON COLUMN sal.salary_request.budget_business_account IS 'Key attribute -
 COMMENT ON COLUMN sal.salary_request.budget_expected_funding_until IS 'Expected budgeting end date';
 COMMENT ON COLUMN sal.salary_request.stat IS 'Status of the request:
   0 - created: when PM creates a request
-  1 - in progress: when HR take in progress
-  2 - implemented: when Finance implemented
-  3 - approved: when all required approvals collected and request is ready for the implementation by Finance
-  4 - declined: when HR or Finance or BA Manager declined the request
+  1 - in progress: when Salary Manager move request to in progress
+  2 - implemented: when Salary Manager or Finance mark after Finance implemented in real
 ';
 COMMENT ON COLUMN sal.salary_request.salary_increase IS 'Increase sum';
 COMMENT ON COLUMN sal.salary_request.increase_start_period IS 'YYYYMM period. Month starts with 0. 202308 - September of 2023';
