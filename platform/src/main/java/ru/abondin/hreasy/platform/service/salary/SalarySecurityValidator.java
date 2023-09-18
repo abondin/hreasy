@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
+import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
 import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 
 /**
@@ -103,7 +104,7 @@ public class SalarySecurityValidator {
         });
     }
 
-    public Mono<Boolean> validateViewSalaryRequest(AuthContext auth, SalaryRequestEntry salaryRequest, EmployeeEntry employee) {
+    public Mono<Boolean> validateViewSalaryRequest(AuthContext auth, SalaryRequestView salaryRequest) {
         return Mono.defer(() -> {
             // Manager who report the request can view it
             if (auth.getEmployeeInfo().getEmployeeId().equals(salaryRequest.getCreatedBy())) {
@@ -114,7 +115,7 @@ public class SalarySecurityValidator {
                 return Mono.just(true);
             }
             // Manager who can approve request can view it
-            return Mono.just(validateApproveSalaryRequestSync(auth, salaryRequest.getBudgetBusinessAccount(), employee.getDepartmentId()));
+            return Mono.just(validateApproveSalaryRequestSync(auth, salaryRequest.getBudgetBusinessAccount(), salaryRequest.getEmployeeDepartmentId()));
         }).flatMap(r -> {
             if (r) {
                 return Mono.just(true);

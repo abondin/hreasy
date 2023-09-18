@@ -23,7 +23,10 @@ public class HistoryDomainService {
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @Getter
     public enum HistoryEntityType {
-        MANAGER("empl_manager"), TIMESHEET_RECORD("timesheet_record");
+        MANAGER("empl_manager"),
+        TIMESHEET_RECORD("timesheet_record"),
+        SALARY_REQUEST("salary_request"),
+        SALARY_REQUEST_APPROVAL("salary_request_approval");
         private final String type;
     }
 
