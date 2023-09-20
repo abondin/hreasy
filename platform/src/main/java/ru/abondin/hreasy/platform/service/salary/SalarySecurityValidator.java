@@ -6,8 +6,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
-import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
 import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 
@@ -35,9 +33,9 @@ public class SalarySecurityValidator {
         });
     }
 
-    public Mono<Boolean> validateUpdateSalaryRequest(AuthContext auth) {
+    public Mono<Boolean> validateMoveInProgressSalaryRequest(AuthContext auth) {
         return Mono.defer(() -> {
-            if (!auth.getAuthorities().contains("update_salary_request")) {
+            if (!auth.getAuthorities().contains("inprogress_salary_request")) {
                 return Mono.just(false);
             }
             return Mono.just(true);
@@ -45,7 +43,21 @@ public class SalarySecurityValidator {
             if (r) {
                 return Mono.just(true);
             }
-            return Mono.error(new AccessDeniedException("Only employee with update_salary_request permission can update report salary request state"));
+            return Mono.error(new AccessDeniedException("Only employee with inprogress_salary_request permission can update report salary request state"));
+        });
+    }
+
+    public Mono<Boolean> validateMarkAsImplementedSalaryRequest(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("implement_salary_request")) {
+                return Mono.just(false);
+            }
+            return Mono.just(true);
+        }).flatMap(r -> {
+            if (r) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only employee with implement_salary_request permission can update report salary request state"));
         });
     }
 

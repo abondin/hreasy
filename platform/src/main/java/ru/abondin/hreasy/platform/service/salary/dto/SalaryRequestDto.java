@@ -19,7 +19,7 @@ public class SalaryRequestDto {
      * @see SalaryRequestReportType
      */
     @NotNull
-    private Integer type;
+    private Short type;
     @NotNull
     private SimpleDictDto budgetBusinessAccount;
     private LocalDate budgetExpectedFundingUntil;
@@ -44,6 +44,15 @@ public class SalaryRequestDto {
     @NotNull
     private String reason;
     private String comment;
+
+    @NotNull
     private OffsetDateTime createdAt;
+    @NotNull
     private SimpleDictDto createdBy;
+
+    private OffsetDateTime inprogressAt;
+    private SimpleDictDto inprogressBy;
+
+    private OffsetDateTime implementedAt;
+    private SimpleDictDto implementedBy;
 }

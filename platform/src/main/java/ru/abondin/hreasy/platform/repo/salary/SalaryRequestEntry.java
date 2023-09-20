@@ -26,11 +26,6 @@ public class SalaryRequestEntry {
     private Integer budgetBusinessAccount;
     private LocalDate budgetExpectedFundingUntil;
 
-    /**
-     * @see ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportStat
-     */
-    @NotNull
-    private Short stat;
 
     @NotNull
     private BigDecimal salaryIncrease;
@@ -44,8 +39,19 @@ public class SalaryRequestEntry {
     @NotNull
     private String reason;
     private String comment;
+    @NotNull
     private OffsetDateTime createdAt;
+    @NotNull
+
     private Integer createdBy;
+
+    private OffsetDateTime inprogressAt;
+    private Integer inprogressBy;
+
+    private OffsetDateTime implementedAt;
+    private Integer implementedBy;
+
+
     private OffsetDateTime deletedAt;
     private Integer deletedBy;
 }

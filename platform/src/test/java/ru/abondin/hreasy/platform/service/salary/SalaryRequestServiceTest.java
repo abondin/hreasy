@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.salary;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,16 +60,16 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
         var report = defaultReport(ctx, jensonId, ba);
         StepVerifier
                 .create(salaryRequestService.report(ctx, report)
-                        .flatMap(r -> repo.findById(r))
+                        .flatMap(r -> salaryRequestService.get(auth, r))
                 )
-                .expectNextMatches((entry) ->
-                        entry.getBudgetBusinessAccount() == ba
-                                && entry.getComment().equals(report.getComment())
-                                && entry.getType().equals(report.getType())
-                                && entry.getStat().equals(SalaryRequestReportStat.CREATED.getValue())
-                                && entry.getCreatedBy().equals(ctx.getEmployeeInfo().getEmployeeId())
-                                && entry.getEmployeeId().equals(jensonId)
-                                && entry.getIncreaseStartPeriod().equals(report.getIncreaseStartPeriod())
+                .expectNextMatches((dto) ->
+                        dto.getBudgetBusinessAccount().getId() == ba
+                                && dto.getComment().equals(report.getComment())
+                                && dto.getType().equals(report.getType())
+                                && dto.getStat().equals(SalaryRequestReportStat.CREATED.getValue())
+                                && dto.getCreatedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
+                                && dto.getEmployee().getId() == jensonId
+                                && dto.getIncreaseStartPeriod().equals(report.getIncreaseStartPeriod())
                 ).verifyComplete();
     }
 
@@ -85,18 +86,40 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                 .expectError(AccessDeniedException.class);
     }
 
-    private SalaryRequestReportBody defaultReport(AuthContext ctx, int employeeId, int ba) {
-        return SalaryRequestReportBody.builder()
-                .employeeId(employeeId)
-                .type(SalaryRequestReportType.SALARY_INCREASE.getValue())
-                .assessmentId(null)
-                .comment("My First Report")
-                .budgetExpectedFundingUntil(null)
-                .budgetBusinessAccount(ba)
-                .reason("Just increase salary")
-                .salaryIncrease(BigDecimal.valueOf(1000))
-                .increaseStartPeriod(202308)
-                .build();
+    @Test
+    public void testMoveInProgress() {
+        var jensonId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
+        var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var ba = testData.ba_RND();
+        var report = defaultReport(ctx, jensonId, ba);
+        StepVerifier
+                .create(salaryRequestService.report(ctx, report)
+                        .flatMap(id -> salaryRequestService.moveToInProgress(auth, id)
+                                .flatMap(updatedId -> {
+                                    Assertions.assertEquals(id, updatedId, "");
+                                    return repo.findById(updatedId);
+                                }))
+                ).expectNextMatches(entry ->
+                        entry.getInprogressAt() != null && entry.getInprogressBy().equals(ctx.getEmployeeInfo().getEmployeeId())
+                ).verifyComplete();
+    }
+
+    @Test
+    public void testMarkAsImplemented() {
+        var jensonId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
+        var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var ba = testData.ba_RND();
+        var report = defaultReport(ctx, jensonId, ba);
+        StepVerifier
+                .create(salaryRequestService.report(ctx, report)
+                        .flatMap(id -> salaryRequestService.markAsImplemented(auth, id)
+                                .flatMap(updatedId -> {
+                                    Assertions.assertEquals(id, updatedId, "");
+                                    return repo.findById(updatedId);
+                                }))
+                ).expectNextMatches(entry ->
+                        entry.getInprogressAt() != null && entry.getInprogressBy().equals(ctx.getEmployeeInfo().getEmployeeId())
+                ).verifyComplete();
     }
 
     /**
@@ -121,4 +144,17 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                         "category='" + NotificationPersistService.NotificationCategory.SALARY_REQUEST.getCategory() + "'").then());
     }
 
+    private SalaryRequestReportBody defaultReport(AuthContext ctx, int employeeId, int ba) {
+        return SalaryRequestReportBody.builder()
+                .employeeId(employeeId)
+                .type(SalaryRequestReportType.SALARY_INCREASE.getValue())
+                .assessmentId(null)
+                .comment("My First Report")
+                .budgetExpectedFundingUntil(null)
+                .budgetBusinessAccount(ba)
+                .reason("Just increase salary")
+                .salaryIncrease(BigDecimal.valueOf(1000))
+                .increaseStartPeriod(202308)
+                .build();
+    }
 }

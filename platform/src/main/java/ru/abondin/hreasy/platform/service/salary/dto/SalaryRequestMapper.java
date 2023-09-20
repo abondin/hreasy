@@ -15,7 +15,6 @@ public interface SalaryRequestMapper extends MapperBase {
 
     @Mapping(source = "createdBy", target = "createdBy")
     @Mapping(source = "createdAt", target = "createdAt")
-    @Mapping(target = "stat", constant = "0")
     SalaryRequestEntry toEntry(SalaryRequestReportBody body, Integer createdBy, OffsetDateTime createdAt);
 
     @Mapping(source = ".", target = "employee", qualifiedByName = "employee")
@@ -23,6 +22,9 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = ".", target = "assessment", qualifiedByName = "assessment")
     @Mapping(source = ".", target = "employeeDepartment", qualifiedByName = "employeeDepartment")
     @Mapping(source = ".", target = "createdBy", qualifiedByName = "createdBy")
+    @Mapping(source = ".", target = "inprogressBy", qualifiedByName = "inprogressBy")
+    @Mapping(source = ".", target = "implementedBy", qualifiedByName = "implementedBy")
+    @Mapping(source = ".", target = "stat", qualifiedByName = "calculateStat")
     SalaryRequestDto fromEntry(SalaryRequestView entry);
 
     @Named("employee")
@@ -38,7 +40,7 @@ public interface SalaryRequestMapper extends MapperBase {
     @Named("assessment")
     default SimpleDictDto assessment(SalaryRequestView entry) {
         //TODO Add local date format
-        return simpleDto(entry.getAssessmentId(), entry.getAssessmentPlannedDate().toString());
+        return simpleDto(entry.getAssessmentId(), entry.getAssessmentPlannedDate() == null ? null : entry.getAssessmentPlannedDate().toString());
     }
 
     @Named("employeeDepartment")
@@ -49,6 +51,24 @@ public interface SalaryRequestMapper extends MapperBase {
     @Named("createdBy")
     default SimpleDictDto createdBy(SalaryRequestView entry) {
         return simpleDto(entry.getCreatedBy(), entry.getCreatedByDisplayName());
+    }
+
+    @Named("inprogressBy")
+    default SimpleDictDto inprogressBy(SalaryRequestView entry) {
+        return simpleDto(entry.getInprogressBy(), entry.getInprgressDisplayName());
+    }
+
+    @Named("implementedBy")
+    default SimpleDictDto implementedBy(SalaryRequestView entry) {
+        return simpleDto(entry.getImplementedBy(), entry.getImplementedDisplayName());
+    }
+
+    @Named("calculateStat")
+    default int calculateStat(SalaryRequestView entry) {
+        return entry.getImplementedAt() != null ? SalaryRequestReportStat.IMPLEMENTED.getValue() :
+                (
+                        entry.getInprogressAt() != null ? SalaryRequestReportStat.IN_PROGRESS.getValue() : SalaryRequestReportStat.CREATED.getValue()
+                );
     }
 
 }
