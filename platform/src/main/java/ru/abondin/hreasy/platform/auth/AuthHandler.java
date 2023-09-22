@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class AuthHandler {
 
     @Data
@@ -80,9 +82,11 @@ public class AuthHandler {
         } else {
             employee = null;
         }
-        return new AuthContext(userDetails.getUsername(), email,
+        var ctx = new AuthContext(userDetails.getUsername(), email,
                 userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()),
                 employee);
+        log.debug("Auth context built for {}", userDetails.getUsername());
+        return ctx;
     }
 
     private final ReactiveAuthenticationManager authenticationManager;
@@ -110,7 +114,7 @@ public class AuthHandler {
                                     securityContext.setAuthentication(authResult);
                                     return securityContext;
                                 }
-                        ).subscriberContext(ReactiveSecurityContextHolder.withAuthentication(authResult)).map(
+                        ).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult)).map(
                                 context -> buildFromSecurityContext(context)));
     }
 

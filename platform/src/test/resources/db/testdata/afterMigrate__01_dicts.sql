@@ -9,6 +9,10 @@ insert into dict.department (name)
  select  ('Integration')
  where NOT EXISTS (SELECT id from dict.department where name='Integration');
 
+ insert into dict.department (name)
+  select  ('Organization')
+  where NOT EXISTS (SELECT id from dict.department where name='Organization');
+
 -- Level
 insert into dict.level (name) 
  select  ('Senior')
@@ -34,6 +38,15 @@ insert into dict.position (name)
 insert into dict.position (name) 
  select  ('Automation QA')
  where NOT EXISTS (SELECT id from dict.position where name='Automation QA');
+
+insert into dict.position (name)
+ select  ('HR Lead')
+ where NOT EXISTS (SELECT id from dict.position where name='HR Lead');
+
+
+insert into dict.position (name)
+ select  ('Finance Director')
+ where NOT EXISTS (SELECT id from dict.position where name='Finance Director');
 
 -- BAs
 

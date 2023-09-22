@@ -497,3 +497,62 @@ end if;
 END
 $do$;
 
+
+-- Salary manager
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Salary.Gold@stm-labs.ru') then
+INSERT INTO empl.employee (email, display_name,
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+(
+  'Salary.Gold@stm-labs.ru',
+  'Gold Salary',
+  (select id from dict.department  where name='Organization' limit 1),
+  (select id from dict.position  where name='HR Lead' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  null,
+  '+79998814451',
+  '1990-06-12 00:00:00.000',
+  'female',
+  '2011-10-01 00:00:00.000',
+  null,
+  null);
+INSERT INTO sec.user_role (employee_id, role) values (
+(select id from empl.employee  where email ilike 'Salary.Gold@stm-labs.ru' limit 1),
+'salary_manager'
+);
+
+end if;
+END
+$do$;
+
+
+-- Finance Director
+DO
+$do$
+BEGIN
+IF NOT EXISTS (SELECT id from empl.employee where email ilike 'Scrooge.McDuck@stm-labs.ru') then
+INSERT INTO empl.employee (email, display_name,
+  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) VALUES
+(
+  'Scrooge.McDuck@stm-labs.ru',
+  'McDuck Scrooge',
+  (select id from dict.department  where name='Organization' limit 1),
+  (select id from dict.position  where name='Finance Director' limit 1),
+  (select id from dict.level  where name='Senior' limit 1),
+  null,
+  '+79928814451',
+  '1990-06-12 00:00:00.000',
+  'male',
+  '2011-10-01 00:00:00.000',
+  null,
+  null);
+INSERT INTO sec.user_role (employee_id, role) values (
+(select id from empl.employee  where email ilike 'Scrooge.McDuck@stm-labs.ru' limit 1),
+'finance'
+);
+
+end if;
+END
+$do$;

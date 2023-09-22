@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
@@ -34,6 +35,17 @@ public class SalaryRequestService {
                 .flatMap(entry -> secValidator.validateViewSalaryRequest(auth, entry).map(v -> mapper.fromEntry(entry)));
     }
 
+    public Flux<SalaryRequestDto> findInBa(AuthContext auth, int baId) {
+        return secValidator.validateViewSalaryRequestsOfBusinessAccount(auth, baId)
+                .flatMapMany(v -> requestRepo.findByBA(baId, dateTimeService.now()))
+                .map(mapper::fromEntry);
+    }
+
+    public Flux<SalaryRequestDto> findInDepartment(AuthContext auth, int baId) {
+        return secValidator.validateViewSalaryRequestsOfBusinessAccount(auth, baId)
+                .flatMapMany(v -> requestRepo.findByBA(baId, dateTimeService.now()))
+                .map(mapper::fromEntry);
+    }
     @Transactional
     public Mono<Integer> report(AuthContext ctx, SalaryRequestReportBody body) {
         var now = dateTimeService.now();
