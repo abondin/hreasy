@@ -28,6 +28,7 @@ import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
 import AdminProjectDetails from "@/components/admin/project/AdminProjectDetails.vue";
 import AdminEmployeesImportWorkflowComponent from "@/components/admin/employee/imp/AdminEmployeesImportWorkflow.vue";
 import TimesheetTableComponent from "@/components/ts/TimesheetTableComponent.vue";
+import AdminSalaryAllRequests from "@/components/admin/salary/AdminSalaryAllRequests.vue";
 
 Vue.use(VueRouter)
 
@@ -51,6 +52,7 @@ const routes = [
     {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true},
     {path: "/admin/managers", component: AdminManagers},
     {path: "/admin/articles", component: AdminArticlesList},
+    {path: "/admin/salaries", component: AdminSalaryAllRequests},
     {
         path: "/admin/employees",
         component: AdminEmployeeAndKidsTabs,

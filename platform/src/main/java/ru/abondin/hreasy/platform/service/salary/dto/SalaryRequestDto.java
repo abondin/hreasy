@@ -16,7 +16,7 @@ public class SalaryRequestDto {
     @NotNull
     private SimpleDictDto employee;
     /**
-     * @see SalaryRequestReportType
+     * @see SalaryRequestType
      */
     @NotNull
     private Short type;
@@ -25,7 +25,7 @@ public class SalaryRequestDto {
     private LocalDate budgetExpectedFundingUntil;
 
     /**
-     * @see SalaryRequestReportStat
+     * @see SalaryRequestStat
      */
     @NotNull
     private Short stat;

@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public enum SalaryRequestReportType {
+public enum SalaryRequestType {
     /**
      * Salary increase
      */

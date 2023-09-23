@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.assessment.AssessmentRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
@@ -29,6 +30,8 @@ public class SalaryRequestService {
 
     private final DateTimeService dateTimeService;
 
+    private final AssessmentRepo assessmentRepo;
+
     public Mono<SalaryRequestDto> get(AuthContext auth, int id) {
         return requestRepo.findFullNotDeletedById(id, dateTimeService.now())
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(id))))
@@ -46,6 +49,7 @@ public class SalaryRequestService {
                 .flatMapMany(v -> requestRepo.findByBA(baId, dateTimeService.now()))
                 .map(mapper::fromEntry);
     }
+
     @Transactional
     public Mono<Integer> report(AuthContext ctx, SalaryRequestReportBody body) {
         var now = dateTimeService.now();
@@ -53,6 +57,8 @@ public class SalaryRequestService {
         log.info("Reporting {} by {}", body, ctx.getUsername());
         // 1. Validate if logged-in user has permissions to report new salary request
         return secValidator.validateReportSalaryRequest(ctx)
+                // 2. Additional validation
+                .flatMap(v -> checkReportBodyConsistency(ctx, body))
                 .map(v -> mapper.toEntry(body, createdBy, now)).flatMap(entry -> {
                             // 2. Save new request to DB
                             return requestRepo.save(entry).flatMap(persisted ->
@@ -65,6 +71,19 @@ public class SalaryRequestService {
                         }
                 );
         // 4. TODO Send email notification
+    }
+
+    private Mono<Boolean> checkReportBodyConsistency(AuthContext ctx, SalaryRequestReportBody body) {
+        // 1. Check if assessment for the same employee
+        return body.getAssessmentId() == null ? Mono.defer(() -> Mono.just(true)) :
+                assessmentRepo.findById(body.getAssessmentId())
+                        .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(body.getAssessmentId()))))
+                        .flatMap(assessment -> {
+                            if (assessment.getEmployee() == null || !assessment.getEmployee().equals(body.getEmployeeId())) {
+                                return Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(body.getAssessmentId())));
+                            }
+                            return Mono.just(true);
+                        });
     }
 
     @Transactional

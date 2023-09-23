@@ -65,9 +65,9 @@ public interface SalaryRequestMapper extends MapperBase {
 
     @Named("calculateStat")
     default int calculateStat(SalaryRequestView entry) {
-        return entry.getImplementedAt() != null ? SalaryRequestReportStat.IMPLEMENTED.getValue() :
+        return entry.getImplementedAt() != null ? SalaryRequestStat.IMPLEMENTED.getValue() :
                 (
-                        entry.getInprogressAt() != null ? SalaryRequestReportStat.IN_PROGRESS.getValue() : SalaryRequestReportStat.CREATED.getValue()
+                        entry.getInprogressAt() != null ? SalaryRequestStat.IN_PROGRESS.getValue() : SalaryRequestStat.CREATED.getValue()
                 );
     }
 

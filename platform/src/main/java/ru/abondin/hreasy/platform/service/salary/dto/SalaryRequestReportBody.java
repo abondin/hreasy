@@ -18,9 +18,9 @@ public class SalaryRequestReportBody {
     /**
      * <ul>
      *     <li>1 - salary increase</li>
-     *     <li>1 - bonus</li>
+     *     <li>2 - bonus</li>
      * </ul>
-     * @see SalaryRequestReportType
+     * @see SalaryRequestType
      */
     @NotNull
     private Short type;

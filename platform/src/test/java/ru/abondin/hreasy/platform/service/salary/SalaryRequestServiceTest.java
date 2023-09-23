@@ -20,8 +20,8 @@ import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
 import ru.abondin.hreasy.platform.service.BaseServiceTest;
 import ru.abondin.hreasy.platform.service.notification.NotificationPersistService;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportStat;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportType;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestStat;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestType;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -67,7 +67,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                         dto.getBudgetBusinessAccount().getId() == ba
                                 && dto.getComment().equals(report.getComment())
                                 && dto.getType().equals(report.getType())
-                                && dto.getStat().equals(SalaryRequestReportStat.CREATED.getValue())
+                                && dto.getStat().equals(SalaryRequestStat.CREATED.getValue())
                                 && dto.getCreatedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
                                 && dto.getEmployee().getId() == jensonId
                                 && dto.getIncreaseStartPeriod().equals(report.getIncreaseStartPeriod())
@@ -184,7 +184,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     private SalaryRequestReportBody defaultRequest(AuthContext ctx, int employeeId, int ba) {
         return SalaryRequestReportBody.builder()
                 .employeeId(employeeId)
-                .type(SalaryRequestReportType.SALARY_INCREASE.getValue())
+                .type(SalaryRequestType.SALARY_INCREASE.getValue())
                 .assessmentId(null)
                 .comment("My First Report")
                 .budgetExpectedFundingUntil(null)

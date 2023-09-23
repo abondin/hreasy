@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.repo.salary;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestType;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -18,7 +19,7 @@ public class SalaryRequestEntry {
     @NotNull
     private Integer employeeId;
     /**
-     * @see ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportType
+     * @see SalaryRequestType
      */
     @NotNull
     private Short type;
