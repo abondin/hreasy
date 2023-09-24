@@ -65,7 +65,7 @@ class RestSalaryService implements SalaryService {
     }
 
     loadAllSalaryRequests(): Promise<Array<SalaryRequest>> {
-        return httpService.get("v1/salaries/requests").then(response => response.data);
+        return httpService.get("v1/admin/salaries/requests").then(response => response.data);
     }
 
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number> {

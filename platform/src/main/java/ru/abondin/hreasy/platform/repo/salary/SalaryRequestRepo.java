@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.repo.salary;
 
+import org.reactivestreams.Publisher;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
@@ -45,10 +46,15 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
     @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.created_by = :creatorId")
     Flux<SalaryRequestView> findMy(Integer creatorId, OffsetDateTime now);
 
+    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL)
+    Flux<SalaryRequestView> findAllNotDeleted(OffsetDateTime now);
+
     @Query("update sal.salary_request set inprogress_at=:now, inprogress_by=:inprogressBy where id=:salaryRequestId returning id")
     Mono<Integer> moveToInProgress(int salaryRequestId, OffsetDateTime now, int inprogressBy);
 
     @Query("update sal.salary_request set implemented_at=:now, implemented_by=:implementedBy where id=:salaryRequestId returning id")
     Mono<Integer> markAsImplemented(int salaryRequestId, OffsetDateTime now, int implementedBy);
+
+
 }
 

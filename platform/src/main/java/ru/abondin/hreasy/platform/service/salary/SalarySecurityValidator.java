@@ -102,7 +102,7 @@ public class SalarySecurityValidator {
         });
     }
 
-    public Mono<Boolean> validateViewSalaryRequestsOfDepartments(AuthContext auth, int departmentId) {
+    public Mono<Boolean> validateViewSalaryRequestsOfDepartment(AuthContext auth, int departmentId) {
         return Mono.defer(() -> Mono.just(validateApproveSalaryRequestSync(auth, null, departmentId))).flatMap(r -> {
             if (r) {
                 return Mono.just(true);
@@ -113,6 +113,20 @@ public class SalarySecurityValidator {
                             Employee with 'approve_salary_request' permission can view salary request only if he/she is department manager 
                                                         """
             ));
+        });
+    }
+
+    public Mono<Boolean> validateViewAllSalaryRequests(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("approve_salary_request_globally")) {
+                return Mono.just(false);
+            }
+            return Mono.just(true);
+        }).flatMap(r -> {
+            if (r) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only employee with approve_salary_request_globally permission view all salary requests"));
         });
     }
 
@@ -141,4 +155,20 @@ public class SalarySecurityValidator {
         });
 
     }
+
+    public Mono<Boolean> validateViewMySalaryRequest(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (auth.getAuthorities().contains("report_salary_request")) {
+                return Mono.just(true);
+            }
+            return Mono.just(false);
+        }).flatMap(r -> {
+            if (r) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only employee with report_salary_request permission may view own reports"));
+        });
+
+    }
+
 }

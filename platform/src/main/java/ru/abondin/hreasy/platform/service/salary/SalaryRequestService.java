@@ -33,22 +33,40 @@ public class SalaryRequestService {
     private final AssessmentRepo assessmentRepo;
 
     public Mono<SalaryRequestDto> get(AuthContext auth, int id) {
+        log.debug("Getting salary request {} by {}", id, auth);
         return requestRepo.findFullNotDeletedById(id, dateTimeService.now())
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(id))))
                 .flatMap(entry -> secValidator.validateViewSalaryRequest(auth, entry).map(v -> mapper.fromEntry(entry)));
     }
 
+    public Flux<SalaryRequestDto> getMy(AuthContext auth) {
+        log.debug("Getting my requests {}", auth);
+        return secValidator.validateViewMySalaryRequest(auth)
+                .flatMapMany(v -> requestRepo.findMy(auth.getEmployeeInfo().getEmployeeId(), dateTimeService.now()))
+                .map(mapper::fromEntry);
+    }
+
+    public Flux<SalaryRequestDto> findAll(AuthContext auth) {
+        log.info("Getting all salary requests by {}", auth);
+        return secValidator.validateViewAllSalaryRequests(auth)
+                .flatMapMany(v -> requestRepo.findAllNotDeleted(dateTimeService.now()))
+                .map(mapper::fromEntry);
+    }
+
     public Flux<SalaryRequestDto> findInBa(AuthContext auth, int baId) {
+        log.debug("Getting salary request in ba {} by {}", baId, auth);
         return secValidator.validateViewSalaryRequestsOfBusinessAccount(auth, baId)
                 .flatMapMany(v -> requestRepo.findByBA(baId, dateTimeService.now()))
                 .map(mapper::fromEntry);
     }
 
-    public Flux<SalaryRequestDto> findInDepartment(AuthContext auth, int baId) {
-        return secValidator.validateViewSalaryRequestsOfBusinessAccount(auth, baId)
-                .flatMapMany(v -> requestRepo.findByBA(baId, dateTimeService.now()))
+    public Flux<SalaryRequestDto> findInDepartment(AuthContext auth, int departmentId) {
+        log.debug("Getting salary request in department {} by {}", departmentId, auth);
+        return secValidator.validateViewSalaryRequestsOfDepartment(auth, departmentId)
+                .flatMapMany(v -> requestRepo.findByDepartment(departmentId, dateTimeService.now()))
                 .map(mapper::fromEntry);
     }
+
 
     @Transactional
     public Mono<Integer> report(AuthContext ctx, SalaryRequestReportBody body) {
@@ -121,4 +139,6 @@ public class SalaryRequestService {
                     return requestRepo.markAsImplemented(salaryRequestId, now, auth.getEmployeeInfo().getEmployeeId());
                 });
     }
+
+
 }

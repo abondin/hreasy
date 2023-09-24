@@ -1,9 +1,6 @@
 package ru.abondin.hreasy.platform.auth;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.lang.Nullable;
 
 import java.util.ArrayList;
@@ -17,6 +14,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(of="username")
 public class AuthContext {
     private String username;
     private String email;

@@ -1,0 +1,35 @@
+package ru.abondin.hreasy.platform.api.salary;
+
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.auth.AuthHandler;
+import ru.abondin.hreasy.platform.service.salary.SalaryRequestService;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
+
+@RestController
+@RequiredArgsConstructor
+@Slf4j
+@RequestMapping("/api/v1/salaries/requests")
+public class SalaryRequestsController {
+    private final SalaryRequestService requestService;
+
+    @PostMapping()
+    public Mono<Integer> report(@RequestBody SalaryRequestReportBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.report(auth, body));
+    }
+
+    @GetMapping("/{requestId}")
+    public Mono<SalaryRequestDto> get(@PathVariable int requestId) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.get(auth, requestId));
+    }
+
+    @GetMapping("/my")
+    public Flux<SalaryRequestDto> my() {
+        return AuthHandler.currentAuth().flatMapMany(auth -> requestService.getMy(auth));
+    }
+}
