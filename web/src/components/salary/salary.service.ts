@@ -55,7 +55,7 @@ export interface SalaryRequest extends WithId{
 }
 
 export interface SalaryService {
-    loadAllSalaryRequests(): Promise<Array<SalaryRequest>>;
+    loadAllSalaryRequests(periodId: number): Promise<Array<SalaryRequest>>;
 
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number>;
 }
@@ -64,8 +64,8 @@ class RestSalaryService implements SalaryService {
     constructor(private httpService: AxiosInstance) {
     }
 
-    loadAllSalaryRequests(): Promise<Array<SalaryRequest>> {
-        return httpService.get("v1/admin/salaries/requests").then(response => response.data);
+    loadAllSalaryRequests(periodId: number): Promise<Array<SalaryRequest>> {
+        return httpService.get(`v1/admin/salaries/requests/${periodId}`).then(response => response.data);
     }
 
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number> {

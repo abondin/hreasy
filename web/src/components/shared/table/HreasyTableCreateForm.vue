@@ -1,7 +1,7 @@
 <template>
   <v-form v-if="data.createBody">
     <v-card>
-      <v-card-title>{{ $t('Создание') }}</v-card-title>
+      <v-card-title>{{ print(title, $t('Создание')) }}</v-card-title>
       <v-card-text>
         <slot name="fields"></slot>
         <!-- Error block -->
@@ -32,6 +32,7 @@ import TableComponentDataContainer, {
   UpdateBody,
   WithId
 } from "@/components/shared/table/TableComponentDataContainer";
+import {UiConstants} from "@/components/uiconstants";
 
 @Component
 export default class HreasyTableCreateForm<T extends WithId, M extends UpdateBody, C extends CreateBody, F extends Filter<T>> extends Vue {
@@ -39,6 +40,10 @@ export default class HreasyTableCreateForm<T extends WithId, M extends UpdateBod
   @Prop({required: true})
   private data!: TableComponentDataContainer<T, M, C, F>;
 
+  @Prop({required: false})
+  private title?: ()=>string | string | undefined;
+
+  private print = UiConstants.print;
 }
 </script>
 

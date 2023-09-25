@@ -83,7 +83,7 @@
         </v-data-table>
 
         <v-dialog v-bind:value="data.updateDialog" :disabled="data.loading" persistent>
-          <hreasy-table-update-form v-bind:data="data"  :update-title="updateTitle">
+          <hreasy-table-update-form v-bind:data="data" :update-title="updateTitle">
             <template v-slot:fields>
               <slot name="updateFormFields">
               </slot>
@@ -92,7 +92,7 @@
         </v-dialog>
 
         <v-dialog v-bind:value="data.createDialog" :disabled="data.loading" persistent>
-          <hreasy-table-create-form v-bind:data="data">
+          <hreasy-table-create-form v-bind:data="data" :title="createNewTitle">
             <template v-slot:fields>
               <slot name="createFormFields">
               </slot>
@@ -134,6 +134,9 @@ export default class HreasyTable<T extends WithId, M extends UpdateBody, C exten
 
   @Prop({required: false, default: null})
   private title!: string|null;
+
+  @Prop({required: false})
+  private createNewTitle?: ()=>string | string | undefined;
 
   @Prop({required: false})
   private updateTitle?: ()=>string | string | undefined;

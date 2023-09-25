@@ -46,10 +46,10 @@ public class SalaryRequestService {
                 .map(mapper::fromEntry);
     }
 
-    public Flux<SalaryRequestDto> findAll(AuthContext auth) {
-        log.info("Getting all salary requests by {}", auth);
+    public Flux<SalaryRequestDto> findAll(AuthContext auth, int periodId) {
+        log.info("Getting all salary requests for {} by {}", periodId, auth);
         return secValidator.validateViewAllSalaryRequests(auth)
-                .flatMapMany(v -> requestRepo.findAllNotDeleted(dateTimeService.now()))
+                .flatMapMany(v -> requestRepo.findAllNotDeleted(periodId, dateTimeService.now()))
                 .map(mapper::fromEntry);
     }
 
