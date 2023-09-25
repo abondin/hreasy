@@ -46,7 +46,7 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
     @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.created_by = :creatorId")
     Flux<SalaryRequestView> findMy(Integer creatorId, OffsetDateTime now);
 
-    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL+" and increase_start_period=:periodId")
+    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL+" and increase_start_period=:periodId order by created_at desc")
     Flux<SalaryRequestView> findAllNotDeleted(int periodId, OffsetDateTime now);
 
     @Query("update sal.salary_request set inprogress_at=:now, inprogress_by=:inprogressBy where id=:salaryRequestId returning id")

@@ -1,5 +1,8 @@
 <template>
   <hreasy-table :data="data" :create-new-title="$t('Создание запроса на индексацию ЗП или бонус')">
+    <template v-slot:item.createdAt="{ item }">
+      {{ formatDateTime(item.createdAt) }}
+    </template>
     <template v-slot:filters>
       <!-- Report Period -->
       <v-btn @click.stop="decrementPeriod()" text x-small>
@@ -150,7 +153,17 @@ export default class AdminSalaryAllRequests extends Vue {
       () =>
           [
             {text: this.$tc('Сотрудник'), value: 'employee.name'},
-            {text: this.$tc('Тип'), value: 'type'}
+            {text: this.$tc('Отдел'), value: 'department.name'},
+            {text: this.$tc('Тип'), value: 'type'},
+            {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'},
+            {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
+            {text: this.$tc('Сумма в рублях'), value: 'salaryIncrease'},
+            {text: this.$tc('Созданно'), value: 'createdBy.name'},
+            {text: this.$tc('Созданно (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
+            {text: this.$tc('Взято в работу'), value: 'inprogressBy.name'},
+            {text: this.$tc('Взято в работу (время)'), value: 'inprogressAt', sort: DateTimeUtils.dateComparatorNullLast},
+            {text: this.$tc('Реализовано'), value: 'implementedBy.name'},
+            {text: this.$tc('Реализовано (время)'), value: 'implementedAt', sort: DateTimeUtils.dateComparatorNullLast},
           ],
       null,
       {
@@ -210,6 +223,10 @@ export default class AdminSalaryAllRequests extends Vue {
         && this.closedPeriods.map(p => p.period).indexOf(this.selectedPeriod.periodId()) >= 0;
   }
 
+  private formatDateTime(date: string | undefined): string | undefined {
+    logger.log(`Format date ${date}`);
+    return DateTimeUtils.formatDateTimeFromIso(date);
+  }
 
 }
 </script>
