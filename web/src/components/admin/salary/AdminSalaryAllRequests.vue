@@ -3,21 +3,41 @@
     <template v-slot:item.createdAt="{ item }">
       {{ formatDateTime(item.createdAt) }}
     </template>
+    <template v-slot:item.inprogressAt="{ item }">
+      {{ formatDateTime(item.inprogressAt) }}
+    </template>
+    <template v-slot:item.implementedAt="{ item }">
+      {{ formatDateTime(item.implementedAt) }}
+    </template>
+    <template v-slot:item.type="{ item }">
+      {{ $t(`SALARY_REQUEST_TYPE.${item.type}`) }}
+    </template>
+    <template v-slot:item.stat="{ item }">
+      {{ $t(`SALARY_REQUEST_STAT.${item.stat}`) }}
+    </template>
+    <template v-slot:item.salaryIncrease="{ item }">
+      {{ formatMoney(item.salaryIncrease) }}
+    </template>
+    <template v-slot:item.budgetExpectedFundingUntil="{ item }">
+      {{ formatDate(item.budgetExpectedFundingUntil) }}
+    </template>
     <template v-slot:filters>
-      <!-- Report Period -->
-      <v-btn @click.stop="decrementPeriod()" text x-small>
-        <v-icon>mdi-chevron-left</v-icon>
-      </v-btn>
-      <span class="ml-1 mr-2">
-          {{ selectedPeriod }}
-          <v-icon v-if="periodClosed()" color="primary"
-                  :title="$t('Период закрыт для внесения изменений')">mdi-lock</v-icon>
-        </span>
-      <v-btn @click.stop="incrementPeriod()" text x-small>
-        <v-icon>mdi-chevron-right</v-icon>
-      </v-btn>
+      <v-col align-self="center" cols="auto">
+        <!-- Report Period -->
+        <v-btn @click.stop="decrementPeriod()" text x-small>
+          <v-icon>mdi-chevron-left</v-icon>
+        </v-btn>
+        <span class="ml-1 mr-2">
+            {{ selectedPeriod }}
+            <v-icon v-if="periodClosed()" color="primary"
+                    :title="$t('Период закрыт для внесения изменений')">mdi-lock</v-icon>
+          </span>
+        <v-btn @click.stop="incrementPeriod()" text x-small>
+          <v-icon>mdi-chevron-right</v-icon>
+        </v-btn>
+      </v-col>
 
-      <v-col>
+      <v-col >
         <v-text-field v-if="data.filter"
                       v-model="data.filter.search"
                       append-icon="mdi-magnify"
@@ -25,6 +45,14 @@
                       single-line
                       hide-details
         ></v-text-field>
+      </v-col>
+      <v-col cols="auto">
+      <v-select
+          v-model="data.filter.stat"
+          :label="$t('Статус')"
+          :multiple="true"
+          :items="salaryStats">
+      </v-select>
       </v-col>
     </template>
 
@@ -41,7 +69,7 @@
           v-model="data.createBody.type"
           :label="$t('Тип')"
           :rules="[v => !!v || $t('Обязательное поле')]"
-          :items="[{value:1, text:'Повышение'}, {value:2, text:'Единоразовый бонус'}]">
+          :items="salaryTypes">
       </v-select>
       <v-autocomplete
           v-model="data.createBody.budgetBusinessAccount"
@@ -90,7 +118,9 @@ import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import salaryService, {
   SalaryRequest,
   SalaryRequestReportBody,
-  SalaryRequestType
+  salaryRequestStats,
+  SalaryRequestType,
+  salaryRequestTypes
 } from "@/components/salary/salary.service";
 import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 import permissionService from "@/store/modules/permission.service";
@@ -102,6 +132,7 @@ import logger from "@/logger";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import overtimeService, {ClosedOvertimePeriod, ReportPeriod} from "@/components/overtimes/overtime.service";
+import {NumberUtils} from "@/components/numberutils";
 
 
 export class SalaryRequestUpdateBody {
@@ -112,21 +143,21 @@ const namespace_dict = 'dict';
 
 export class SalaryRequestFilter extends Filter<SalaryRequest> {
   public search = '';
+  public stat: number[]=[];
 
   applyFilter(items: SalaryRequest[]): SalaryRequest[] {
     return items.filter((item) => {
       let filtered = true;
       const search = this.search.toLowerCase().trim();
-      if (search.length > 0) {
-        let searchFilter = false;
         const textFilters = TextFilterBuilder.of()
             .splitWords(item.employee?.name)
             .splitWords(item.createdBy?.name)
             .ignoreCase(item.employeeDepartment?.name)
             .ignoreCase(item?.budgetBusinessAccount.name)
             .ignoreCase(item?.reason);
-        filtered = filtered && searchUtils.textFilter(this.search, textFilters);
-      }
+
+      filtered = filtered && searchUtils.textFilter(this.search, textFilters);
+      filtered = filtered && searchUtils.array(this.stat, item.stat);
       return filtered;
     });
   }
@@ -153,15 +184,20 @@ export default class AdminSalaryAllRequests extends Vue {
       () =>
           [
             {text: this.$tc('Сотрудник'), value: 'employee.name'},
-            {text: this.$tc('Отдел'), value: 'department.name'},
             {text: this.$tc('Тип'), value: 'type'},
             {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'},
-            {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
             {text: this.$tc('Сумма в рублях'), value: 'salaryIncrease'},
+            {text: this.$tc('Статус'), value: 'stat'},
+            {text: this.$tc('Отдел'), value: 'employeeDepartment.name'},
+            {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
             {text: this.$tc('Созданно'), value: 'createdBy.name'},
             {text: this.$tc('Созданно (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
             {text: this.$tc('Взято в работу'), value: 'inprogressBy.name'},
-            {text: this.$tc('Взято в работу (время)'), value: 'inprogressAt', sort: DateTimeUtils.dateComparatorNullLast},
+            {
+              text: this.$tc('Взято в работу (время)'),
+              value: 'inprogressAt',
+              sort: DateTimeUtils.dateComparatorNullLast
+            },
             {text: this.$tc('Реализовано'), value: 'implementedBy.name'},
             {text: this.$tc('Реализовано (время)'), value: 'implementedAt', sort: DateTimeUtils.dateComparatorNullLast},
           ],
@@ -223,10 +259,20 @@ export default class AdminSalaryAllRequests extends Vue {
         && this.closedPeriods.map(p => p.period).indexOf(this.selectedPeriod.periodId()) >= 0;
   }
 
-  private formatDateTime(date: string | undefined): string | undefined {
-    logger.log(`Format date ${date}`);
-    return DateTimeUtils.formatDateTimeFromIso(date);
-  }
+  formatDateTime = (v: string | undefined)=>DateTimeUtils.formatDateTimeFromIso(v);
+
+  formatDate = (v: string | undefined)=>DateTimeUtils.formatFromIso(v);
+
+  formatMoney = (v: string|number|null|undefined)=>NumberUtils.formatMoney(v);
+
+
+  salaryTypes = salaryRequestTypes.map(v=>{
+    return {text: this.$tc(`SALARY_REQUEST_TYPE.${v}`), value: v};
+  });
+
+  salaryStats =  salaryRequestStats.map(v=>{
+    return {text: this.$tc(`SALARY_REQUEST_STAT.${v}`), value: v};
+  });
 
 }
 </script>

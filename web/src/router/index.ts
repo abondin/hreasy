@@ -52,7 +52,7 @@ const routes = [
     {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true},
     {path: "/admin/managers", component: AdminManagers},
     {path: "/admin/articles", component: AdminArticlesList},
-    {path: "/admin/salaries", component: AdminSalaryAllRequests},
+    {path: "/admin/salaries/requests", component: AdminSalaryAllRequests},
     {
         path: "/admin/employees",
         component: AdminEmployeeAndKidsTabs,

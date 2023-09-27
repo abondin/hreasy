@@ -60,7 +60,7 @@
         <v-divider></v-divider>
         <v-list-group
             no-action
-            v-if="canAdminEmployees() || canAdminProjects() || canAdminUsers() || canAdminBusinessAccounts() || canAdminArticles()"
+            v-if="canAdminEmployees() || canAdminProjects() || canAdminUsers() || canAdminBusinessAccounts() || canAdminArticles() || canAdminSalaryRequests"
         >
           <template v-slot:activator>
             <v-list-item-action>
@@ -109,6 +109,12 @@
             </v-list-item-title>
           </v-list-item>
 
+
+          <v-list-item to="/admin/salaries/requests" v-if="canAdminSalaryRequests()">
+            <v-list-item-title>
+              {{ $t('Запросы на повыешение') }}
+            </v-list-item-title>
+          </v-list-item>
 
         </v-list-group>
 
@@ -247,6 +253,10 @@ export default class App extends Vue {
     return permissionService.canAdminArticles();
   }
 
+  private canAdminSalaryRequests() {
+    return permissionService.canAdminSalaryRequests();
+  }
+
   private firstAvialableDict(): string | undefined {
     if (permissionService.canAdminDictDepartments()) {
       return "departments";
@@ -267,6 +277,8 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss">
+@import '../node_modules/@fontsource/roboto/index.css';
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

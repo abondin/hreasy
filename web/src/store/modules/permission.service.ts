@@ -90,6 +90,11 @@ export enum Permissions {
     EditArticles = "edit_articles",
 
     /**
+     * View all salaries requests
+     */
+    AdminSalaryRequests = "approve_salary_request_globally",
+
+    /**
      * View employee all fields including personal
      */
     AdminViewEmployeeFull = "view_employee_full",
@@ -203,6 +208,8 @@ interface PermissionService {
     canAdminBusinessAccounts(): boolean;
 
     canAdminArticles(): boolean;
+
+    canAdminSalaryRequests(): boolean;
 
     /**
      * Check if given user can download employee's tech profiles
@@ -338,6 +345,10 @@ class VuexPermissionService implements PermissionService {
 
     canAdminArticles(): boolean {
         return this.simplePermissionCheck(Permissions.EditArticles);
+    }
+
+    canAdminSalaryRequests(): boolean{
+        return this.simplePermissionCheck(Permissions.AdminSalaryRequests);
     }
 
     canUploadTechProfiles(employeeId: number): boolean {

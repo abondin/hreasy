@@ -4,16 +4,25 @@ import httpService from "@/components/http.service";
 import {DictAdminService} from "@/components/admin/dict/dict.admin.service";
 import {WithId} from "@/components/shared/table/TableComponentDataContainer";
 
-export enum SalaryRequestStat {
+export const enum SalaryRequestStat {
     CREATED = 0,
     IN_PROGRESS = 1,
     IMPLEMENTED = 2
 }
+export const salaryRequestStats = [
+    SalaryRequestStat.CREATED,
+    SalaryRequestStat.IN_PROGRESS,
+    SalaryRequestStat.IMPLEMENTED
+];
 
-export enum SalaryRequestType {
+export const enum SalaryRequestType {
     SALARY_INCREASE = 1,
     BONUS = 2
 }
+export const salaryRequestTypes = [
+    SalaryRequestType.SALARY_INCREASE,
+    SalaryRequestType.BONUS
+];
 
 export interface SalaryRequestReportBody {
     employeeId: number;
