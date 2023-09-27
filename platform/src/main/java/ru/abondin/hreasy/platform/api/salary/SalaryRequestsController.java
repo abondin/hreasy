@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.salary.SalaryRequestService;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 
@@ -31,5 +32,11 @@ public class SalaryRequestsController {
     @GetMapping("/my")
     public Flux<SalaryRequestDto> my() {
         return AuthHandler.currentAuth().flatMapMany(auth -> requestService.getMy(auth));
+    }
+
+    @GetMapping("/periods")
+    public Flux<SalaryRequestClosedPeriodDto> getClosedPeriods() {
+        return AuthHandler.currentAuth().flatMapMany(auth ->
+                requestService.getClosedSalaryRequestPeriods(auth));
     }
 }

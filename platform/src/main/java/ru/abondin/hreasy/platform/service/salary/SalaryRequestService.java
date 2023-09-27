@@ -10,9 +10,11 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.assessment.AssessmentRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalRepo;
+import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestMapper;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
@@ -22,6 +24,8 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 @Slf4j
 public class SalaryRequestService {
     private final SalaryRequestRepo requestRepo;
+
+    private final SalaryRequestClosedPeriodRepo closedPeriodRepo;
     private final SalaryRequestApprovalRepo approvalRepo;
     private final SalarySecurityValidator secValidator;
     private final SalaryRequestMapper mapper;
@@ -46,12 +50,6 @@ public class SalaryRequestService {
                 .map(mapper::fromEntry);
     }
 
-    public Flux<SalaryRequestDto> findAll(AuthContext auth, int periodId) {
-        log.info("Getting all salary requests for {} by {}", periodId, auth);
-        return secValidator.validateViewAllSalaryRequests(auth)
-                .flatMapMany(v -> requestRepo.findAllNotDeleted(periodId, dateTimeService.now()))
-                .map(mapper::fromEntry);
-    }
 
     public Flux<SalaryRequestDto> findInBa(AuthContext auth, int baId) {
         log.debug("Getting salary request in ba {} by {}", baId, auth);
@@ -140,5 +138,8 @@ public class SalaryRequestService {
                 });
     }
 
+    public Flux<SalaryRequestClosedPeriodDto> getClosedSalaryRequestPeriods(AuthContext auth) {
+        return closedPeriodRepo.findAll().map(mapper::closedPeriodFromEntry);
+    }
 
 }

@@ -14,4 +14,14 @@ INSERT INTO sec.perm (permission,description) VALUES
     ('close_salary_request_period','Close salary request period to deny new requests reporting') ON CONFLICT DO NOTHING;
 INSERT INTO sec.role_perm ("role","permission") VALUES
     ('global_admin','close_salary_request_period'),
+    ('salary_manager','close_salary_request_period'),
     ('finance','close_salary_request_period') ON CONFLICT DO NOTHING;
+
+COMMENT ON COLUMN history.history.entity_type IS '
+  [empl_manager] - Employee Manager,
+  [working_days] - Working Days Calendar,
+  [timesheet_record] - Timesheet Record
+  [salary_request] - Salary Request,
+  [salary_request_approval] - Salary Request,
+  [salary_request_closed_report_period] - Salary Request Closed Report Periods
+';

@@ -112,7 +112,7 @@
 
           <v-list-item to="/admin/salaries/requests" v-if="canAdminSalaryRequests()">
             <v-list-item-title>
-              {{ $t('Запросы на повыешение') }}
+              {{ $t('Повышения и бонусы') }}
             </v-list-item-title>
           </v-list-item>
 

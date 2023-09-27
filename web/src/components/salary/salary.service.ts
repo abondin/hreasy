@@ -63,10 +63,21 @@ export interface SalaryRequest extends WithId{
     implementedBy: SimpleDict|null;
 }
 
+export interface ClosedSalaryRequestPeriod {
+    period: number,
+    closedBy: number,
+    closedAt: Date,
+    comment: string
+}
+
 export interface SalaryService {
     loadAllSalaryRequests(periodId: number): Promise<Array<SalaryRequest>>;
 
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number>;
+
+    getClosedSalaryRequestPeriods(): Promise<Array<ClosedSalaryRequestPeriod>>;
+
+    deleteSalaryRequest(ids: number[]): Promise<Array<any>>;
 }
 
 class RestSalaryService implements SalaryService {
@@ -80,6 +91,19 @@ class RestSalaryService implements SalaryService {
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number> {
         return httpService.post("v1/salaries/requests", body);
     }
+
+    deleteSalaryRequest(ids: number[]): Promise<Array<any>> {
+        return Promise.all(
+            ids.map(requestId => httpService.delete(`v1/admin/salaries/requests/${requestId}`))
+        );
+    }
+
+    getClosedSalaryRequestPeriods(): Promise<Array<ClosedSalaryRequestPeriod>> {
+        return httpService.get("v1/salaries/requests/periods").then(response => {
+            return response.data;
+        });
+    }
+
 }
 
 const salaryService: SalaryService = new RestSalaryService(httpService);

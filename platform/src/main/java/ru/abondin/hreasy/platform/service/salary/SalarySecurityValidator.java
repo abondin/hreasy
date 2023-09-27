@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
@@ -168,7 +169,19 @@ public class SalarySecurityValidator {
             }
             return Mono.error(new AccessDeniedException("Only employee with report_salary_request permission may view own reports"));
         });
-
     }
 
+    public Mono<Boolean> validateCloseSalaryRequestPeriod(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (auth.getAuthorities().contains("close_salary_request_period")) {
+                return Mono.just(true);
+            }
+            return Mono.just(false);
+        }).flatMap(r -> {
+            if (r) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only employee with close_salary_request_period permission may close report period"));
+        });
+    }
 }

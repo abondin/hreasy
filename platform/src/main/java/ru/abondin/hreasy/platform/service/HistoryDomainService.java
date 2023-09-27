@@ -26,7 +26,8 @@ public class HistoryDomainService {
         MANAGER("empl_manager"),
         TIMESHEET_RECORD("timesheet_record"),
         SALARY_REQUEST("salary_request"),
-        SALARY_REQUEST_APPROVAL("salary_request_approval");
+        SALARY_REQUEST_APPROVAL("salary_request_approval"),
+        SALARY_REQUEST_CLOSED_REPORT_PERIOD("salary_request_closed_report_period");
         private final String type;
     }
 

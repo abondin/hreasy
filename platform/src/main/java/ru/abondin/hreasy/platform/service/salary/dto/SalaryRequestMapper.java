@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.salary.dto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
@@ -71,4 +72,5 @@ public interface SalaryRequestMapper extends MapperBase {
                 );
     }
 
+    SalaryRequestClosedPeriodDto closedPeriodFromEntry(SalaryRequestClosedPeriodEntry salaryRequestClosedPeriodEntry);
 }

@@ -1,5 +1,6 @@
 <template>
   <hreasy-table :data="data" :create-new-title="$t('Создание запроса на индексацию ЗП или бонус')">
+    <!--<editor-fold desc="Table columns">-->
     <template v-slot:item.createdAt="{ item }">
       {{ formatDateTime(item.createdAt) }}
     </template>
@@ -21,6 +22,8 @@
     <template v-slot:item.budgetExpectedFundingUntil="{ item }">
       {{ formatDate(item.budgetExpectedFundingUntil) }}
     </template>
+    <!--</editor-fold>-->
+
     <template v-slot:filters>
       <v-col align-self="center" cols="auto">
         <!-- Report Period -->
@@ -53,6 +56,24 @@
           :multiple="true"
           :items="salaryStats">
       </v-select>
+      </v-col>
+      <v-col cols="auto">
+        <v-select
+            v-model="data.filter.type"
+            :label="$t('Тип')"
+            :multiple="true"
+            :items="salaryTypes">
+        </v-select>
+      </v-col>
+      <v-col cols="auto">
+        <v-select
+            v-model="data.filter.ba"
+            item-text="name"
+            item-value="id"
+            :label="$t('Бизнес аккаунт')"
+            :multiple="true"
+            :items="allBas">
+        </v-select>
       </v-col>
     </template>
 
@@ -108,6 +129,29 @@
 
     </template>
 
+    <template v-slot:additionalActions>
+      <v-col align-self="center" cols="auto" v-if="selectedPeriod">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
+              <v-btn v-if="!periodClosed()" link :disabled="data.loading" @click="closePeriod()"
+                     icon>
+                <v-icon>mdi-lock</v-icon>
+              </v-btn>
+              <v-btn v-if="periodClosed()" link :disabled="data.loading" @click="reopenPeriod()"
+                     icon>
+                <v-icon>mdi-lock-open</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{
+          $t(periodClosed() ? 'Переоткрыть период. Вернуть возможность вносить изменения'
+          : 'Закрыть период. Запретить внесение изменений.')
+          }}</span>
+        </v-tooltip>
+      </v-col>
+    </template>
+
   </hreasy-table>
 </template>
 
@@ -116,6 +160,7 @@ import Component from "vue-class-component";
 import TableComponentDataContainer, {CreateAction, Filter} from "@/components/shared/table/TableComponentDataContainer";
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import salaryService, {
+  ClosedSalaryRequestPeriod,
   SalaryRequest,
   SalaryRequestReportBody,
   salaryRequestStats,
@@ -133,6 +178,7 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import overtimeService, {ClosedOvertimePeriod, ReportPeriod} from "@/components/overtimes/overtime.service";
 import {NumberUtils} from "@/components/numberutils";
+import adminOvertimeService from "@/components/admin/overtime/admin.overtime.service";
 
 
 export class SalaryRequestUpdateBody {
@@ -144,6 +190,8 @@ const namespace_dict = 'dict';
 export class SalaryRequestFilter extends Filter<SalaryRequest> {
   public search = '';
   public stat: number[]=[];
+  public type: number[]=[];
+  public ba: number[]=[];
 
   applyFilter(items: SalaryRequest[]): SalaryRequest[] {
     return items.filter((item) => {
@@ -158,6 +206,8 @@ export class SalaryRequestFilter extends Filter<SalaryRequest> {
 
       filtered = filtered && searchUtils.textFilter(this.search, textFilters);
       filtered = filtered && searchUtils.array(this.stat, item.stat);
+      filtered = filtered && searchUtils.array(this.type, item.type);
+      filtered = filtered && searchUtils.array(this.ba, item.budgetBusinessAccount?.id);
       return filtered;
     });
   }
@@ -169,7 +219,7 @@ export class SalaryRequestFilter extends Filter<SalaryRequest> {
 export default class AdminSalaryAllRequests extends Vue {
 
   selectedPeriod = ReportPeriod.currentPeriod();
-  private closedPeriods: ClosedOvertimePeriod[] = [];
+  private closedPeriods: ClosedSalaryRequestPeriod[] = [];
 
   private allEmployees: Employee[] = [];
 
@@ -206,9 +256,11 @@ export default class AdminSalaryAllRequests extends Vue {
         createItemRequest: (body) => salaryService.reportSalaryRequest(body),
         defaultBody: () => this.defaultBody(),
       } as CreateAction<SalaryRequest, SalaryRequestReportBody>,
-      null,
+      {
+        deleteItemRequest: (ids)=>salaryService.deleteSalaryRequest(ids)
+      },
       new SalaryRequestFilter(),
-      () => permissionService.canAdminDictDepartments(),
+      () => permissionService.canAdminSalaryRequests(),
       true
   );
 
@@ -233,7 +285,7 @@ export default class AdminSalaryAllRequests extends Vue {
                 }
             )
         )
-        .then(() => overtimeService.getClosedOvertimes()
+        .then(() => salaryService.getClosedSalaryRequestPeriods()
             .then(data => {
               this.closedPeriods = data;
             }));
@@ -257,6 +309,26 @@ export default class AdminSalaryAllRequests extends Vue {
     return this.selectedPeriod &&
         this.closedPeriods
         && this.closedPeriods.map(p => p.period).indexOf(this.selectedPeriod.periodId()) >= 0;
+  }
+
+  private closePeriod() {
+    //TODO
+    // this.data.loading = true;
+    // adminOvertimeService.closeOvertimePeriod(this.selectedPeriod.periodId()).then(() => {
+    //   return this.data.reloadData();
+    // }).finally(() => {
+    //   this.loading = false;
+    // })
+  }
+
+  private reopenPeriod() {
+    // TODO
+    // this.loading = true;
+    // adminOvertimeService.reopenOvertimePeriod(this.selectedPeriod.periodId()).then(() => {
+    //   return this.data.reloadData();
+    // }).finally(() => {
+    //   this.loading = false;
+    // })
   }
 
   formatDateTime = (v: string | undefined)=>DateTimeUtils.formatDateTimeFromIso(v);

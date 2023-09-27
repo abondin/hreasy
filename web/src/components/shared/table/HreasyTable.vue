@@ -55,6 +55,8 @@
         </v-tooltip>
       </v-col>
 
+      <slot name="additionalActions"></slot>
+
       <!-- Filters -->
       <slot name="filters"></slot>
     </v-row>
