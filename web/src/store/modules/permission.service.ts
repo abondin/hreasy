@@ -92,7 +92,7 @@ export enum Permissions {
     /**
      * View all salaries requests
      */
-    AdminSalaryRequests = "approve_salary_request_globally",
+    AdminSalaryRequests = "admin_salary_request",
 
     /**
      * View employee all fields including personal

@@ -40,6 +40,10 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     @Autowired
     private SalaryRequestService salaryRequestService;
 
+
+    @Autowired
+    private SalaryRequestAdminService salaryAdminRequestService;
+
     @Autowired
     private SalaryRequestRepo repo;
 
@@ -92,7 +96,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
         var requestId = reportDefaultRequest();
         StepVerifier
-                .create(salaryRequestService.moveToInProgress(ctx, requestId)
+                .create(salaryAdminRequestService.moveToInProgress(ctx, requestId)
                         .flatMap(updatedId -> {
                             Assertions.assertEquals(requestId, updatedId, "Invalid ID after update");
                             return repo.findById(updatedId);
@@ -107,7 +111,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
         var requestId = reportDefaultRequest();
         StepVerifier
-                .create(salaryRequestService.markAsImplemented(ctx, requestId))
+                .create(salaryAdminRequestService.markAsImplemented(ctx, requestId))
                 .expectErrorMatches(e -> e instanceof BusinessError && ((BusinessError) e).getCode().equals("errors.salary_request.not_in_inprogress"))
                 .verify();
 
@@ -117,9 +121,9 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     public void testMarkAsImplemented() {
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
         var requestId = reportDefaultRequest();
-        salaryRequestService.moveToInProgress(ctx, requestId).block(MONO_DEFAULT_TIMEOUT);
+        salaryAdminRequestService.moveToInProgress(ctx, requestId).block(MONO_DEFAULT_TIMEOUT);
         StepVerifier
-                .create(salaryRequestService.markAsImplemented(ctx, requestId)
+                .create(salaryAdminRequestService.markAsImplemented(ctx, requestId)
                         .flatMap(updatedId -> {
                             Assertions.assertEquals(requestId, updatedId, "Invalid ID after update");
                             return repo.findById(updatedId);

@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.repo.salary;
 
-import org.reactivestreams.Publisher;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
@@ -8,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Repository
 public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestEntry, Integer> {
@@ -37,17 +37,17 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
     @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.id = :id")
     Mono<SalaryRequestView> findFullNotDeletedById(Integer id, OffsetDateTime now);
 
-    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.budget_business_account = :baId")
-    Flux<SalaryRequestView> findByBA(Integer baId, OffsetDateTime now);
+    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.increase_start_period=:period and (" +
+            "r.created_by =:createdBy " +
+            "or r.budget_business_account in (:baId) " +
+            "or e.department in (:departments)" +
+            ") order by r.created_at desc")
+    Flux<SalaryRequestView> findNotDeleted(int period, int createdBy, List<Integer> bas, List<Integer> departments, OffsetDateTime now);
 
-    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.employee_department_id = :departmentId")
-    Flux<SalaryRequestView> findByDepartment(Integer departmentId, OffsetDateTime now);
 
-    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.created_by = :creatorId")
-    Flux<SalaryRequestView> findMy(Integer creatorId, OffsetDateTime now);
-
-    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL+" and increase_start_period=:periodId order by created_at desc")
+    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL+" and r.increase_start_period=:periodId order by r.created_at desc")
     Flux<SalaryRequestView> findAllNotDeleted(int periodId, OffsetDateTime now);
+
 
     @Query("update sal.salary_request set inprogress_at=:now, inprogress_by=:inprogressBy where id=:salaryRequestId returning id")
     Mono<Integer> moveToInProgress(int salaryRequestId, OffsetDateTime now, int inprogressBy);

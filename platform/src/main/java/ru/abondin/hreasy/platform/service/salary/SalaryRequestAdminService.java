@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
@@ -33,6 +34,42 @@ public class SalaryRequestAdminService {
     private final HistoryDomainService historyDomainService;
 
     private final DateTimeService dateTimeService;
+
+    @Transactional
+    public Mono<Integer> moveToInProgress(AuthContext auth, int salaryRequestId) {
+        log.info("Salary request {} moved to in progress by {}", salaryRequestId, auth.getUsername());
+        var now = dateTimeService.now();
+        return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
+                        requestRepo.findFullNotDeletedById(salaryRequestId, now))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
+                .flatMap(entry -> {
+                    if (entry.getImplementedAt() != null) {
+                        return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
+                    }
+                    if (entry.getInprogressAt() != null) {
+                        return Mono.error(new BusinessError("errors.salary_request.already_inprogress", Integer.toString(salaryRequestId)));
+                    }
+                    return requestRepo.moveToInProgress(salaryRequestId, now, auth.getEmployeeInfo().getEmployeeId());
+                });
+    }
+
+    @Transactional
+    public Mono<Integer> markAsImplemented(AuthContext auth, int salaryRequestId) {
+        log.info("Salary request {} marked to in progress by {}", salaryRequestId, auth.getUsername());
+        var now = dateTimeService.now();
+        return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
+                        requestRepo.findFullNotDeletedById(salaryRequestId, now))
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
+                .flatMap(entry -> {
+                    if (entry.getInprogressAt() == null) {
+                        return Mono.error(new BusinessError("errors.salary_request.not_in_inprogress", Integer.toString(salaryRequestId)));
+                    }
+                    if (entry.getImplementedAt() != null) {
+                        return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
+                    }
+                    return requestRepo.markAsImplemented(salaryRequestId, now, auth.getEmployeeInfo().getEmployeeId());
+                });
+    }
 
     @Transactional
     public Mono<Integer> closeSalaryRequestPeriod(AuthContext auth, @NotNull int periodId, @Nullable String comment) {
@@ -64,14 +101,5 @@ public class SalaryRequestAdminService {
                                 null, now, auth.getEmployeeInfo().getEmployeeId())
                 ).flatMap(h -> closedPeriodRepo.deleteById(periodId));
     }
-
-    public Flux<SalaryRequestDto> findAll(AuthContext auth, int periodId) {
-        log.info("Getting all salary requests for {} by {}", periodId, auth);
-        return secValidator.validateViewAllSalaryRequests(auth)
-                .flatMapMany(v -> requestRepo.findAllNotDeleted(periodId, dateTimeService.now()))
-                .map(mapper::fromEntry);
-    }
-
-
 
 }

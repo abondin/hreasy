@@ -23,16 +23,16 @@ public class SalaryRequestsController {
     public Mono<Integer> report(@RequestBody SalaryRequestReportBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.report(auth, body));
     }
+    @GetMapping("/{period}")
+    public Flux<SalaryRequestDto> my(@PathVariable int period) {
+        return AuthHandler.currentAuth().flatMapMany(auth -> requestService.findMy(auth, period));
+    }
 
-    @GetMapping("/{requestId}")
-    public Mono<SalaryRequestDto> get(@PathVariable int requestId) {
+    @GetMapping("/{period}/{requestId}")
+    public Mono<SalaryRequestDto> get(@PathVariable int period, @PathVariable int requestId) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.get(auth, requestId));
     }
 
-    @GetMapping("/my")
-    public Flux<SalaryRequestDto> my() {
-        return AuthHandler.currentAuth().flatMapMany(auth -> requestService.getMy(auth));
-    }
 
     @GetMapping("/periods")
     public Flux<SalaryRequestClosedPeriodDto> getClosedPeriods() {

@@ -19,6 +19,8 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestMapper;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -43,28 +45,30 @@ public class SalaryRequestService {
                 .flatMap(entry -> secValidator.validateViewSalaryRequest(auth, entry).map(v -> mapper.fromEntry(entry)));
     }
 
-    public Flux<SalaryRequestDto> getMy(AuthContext auth) {
-        log.debug("Getting my requests {}", auth);
-        return secValidator.validateViewMySalaryRequest(auth)
-                .flatMapMany(v -> requestRepo.findMy(auth.getEmployeeInfo().getEmployeeId(), dateTimeService.now()))
+    /**
+     * @param auth
+     * @param periodId
+     * @return not deleted salary requests for given period filtered by logged-in permissions:
+     * <ul>
+     *     <li>All requests for user with "admin_salary_request" permission</li>
+     *     <li>Only if user has permission "approve_salary_request" and access to request's budgeting business account or request employee's department</>
+     *     <li>(in any ways) requests created by logged in user</li>
+     * </ul>
+     */
+    public Flux<SalaryRequestDto> findMy(AuthContext auth, int periodId) {
+        var now = dateTimeService.now();
+        var authEmplInfo = auth.getEmployeeInfo();
+        log.debug("Get all accessible requests for period {} by {}", periodId, auth);
+        return secValidator.validateView(auth)
+                .flatMapMany(v -> switch (v) {
+                    case ALL -> requestRepo.findAllNotDeleted(periodId, now);
+                    case FROM_MY_BA_OR_DEPARTMENTS -> requestRepo.findNotDeleted(
+                            periodId, authEmplInfo.getEmployeeId(), authEmplInfo.getAccessibleBas(), authEmplInfo.getAccessibleDepartments(), now);
+                    case ONLY_MY -> requestRepo.findNotDeleted(
+                            periodId, authEmplInfo.getEmployeeId(), List.of(), List.of(), now);
+                })
                 .map(mapper::fromEntry);
     }
-
-
-    public Flux<SalaryRequestDto> findInBa(AuthContext auth, int baId) {
-        log.debug("Getting salary request in ba {} by {}", baId, auth);
-        return secValidator.validateViewSalaryRequestsOfBusinessAccount(auth, baId)
-                .flatMapMany(v -> requestRepo.findByBA(baId, dateTimeService.now()))
-                .map(mapper::fromEntry);
-    }
-
-    public Flux<SalaryRequestDto> findInDepartment(AuthContext auth, int departmentId) {
-        log.debug("Getting salary request in department {} by {}", departmentId, auth);
-        return secValidator.validateViewSalaryRequestsOfDepartment(auth, departmentId)
-                .flatMapMany(v -> requestRepo.findByDepartment(departmentId, dateTimeService.now()))
-                .map(mapper::fromEntry);
-    }
-
 
     @Transactional
     public Mono<Integer> report(AuthContext ctx, SalaryRequestReportBody body) {
@@ -90,8 +94,14 @@ public class SalaryRequestService {
     }
 
     private Mono<Boolean> checkReportBodyConsistency(AuthContext ctx, SalaryRequestReportBody body) {
-        // 1. Check if assessment for the same employee
-        return body.getAssessmentId() == null ? Mono.defer(() -> Mono.just(true)) :
+        // 1. Check if report period is not closed
+        var closedPeriodCheck = closedPeriodRepo.findById(body.getIncreaseStartPeriod())
+                .flatMap(p -> Mono.error(new BusinessError("errors.salary_request.period_closed", Integer.toString(p.getPeriod()))))
+                .defaultIfEmpty(true);
+
+
+        // 2. Check if assessment for the same employee
+        var assessmentCorrent = body.getAssessmentId() == null ? Mono.defer(() -> Mono.just(true)) :
                 assessmentRepo.findById(body.getAssessmentId())
                         .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(body.getAssessmentId()))))
                         .flatMap(assessment -> {
@@ -100,42 +110,7 @@ public class SalaryRequestService {
                             }
                             return Mono.just(true);
                         });
-    }
-
-    @Transactional
-    public Mono<Integer> moveToInProgress(AuthContext auth, int salaryRequestId) {
-        log.info("Salary request {} moved to in progress by {}", salaryRequestId, auth.getUsername());
-        var now = dateTimeService.now();
-        return secValidator.validateMoveInProgressSalaryRequest(auth).flatMap(v ->
-                        requestRepo.findFullNotDeletedById(salaryRequestId, now))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
-                .flatMap(entry -> {
-                    if (entry.getImplementedAt() != null) {
-                        return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
-                    }
-                    if (entry.getInprogressAt() != null) {
-                        return Mono.error(new BusinessError("errors.salary_request.already_inprogress", Integer.toString(salaryRequestId)));
-                    }
-                    return requestRepo.moveToInProgress(salaryRequestId, now, auth.getEmployeeInfo().getEmployeeId());
-                });
-    }
-
-    @Transactional
-    public Mono<Integer> markAsImplemented(AuthContext auth, int salaryRequestId) {
-        log.info("Salary request {} marked to in progress by {}", salaryRequestId, auth.getUsername());
-        var now = dateTimeService.now();
-        return secValidator.validateMarkAsImplementedSalaryRequest(auth).flatMap(v ->
-                        requestRepo.findFullNotDeletedById(salaryRequestId, now))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
-                .flatMap(entry -> {
-                    if (entry.getInprogressAt() == null) {
-                        return Mono.error(new BusinessError("errors.salary_request.not_in_inprogress", Integer.toString(salaryRequestId)));
-                    }
-                    if (entry.getImplementedAt() != null) {
-                        return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
-                    }
-                    return requestRepo.markAsImplemented(salaryRequestId, now, auth.getEmployeeInfo().getEmployeeId());
-                });
+        return closedPeriodCheck.flatMap(v -> assessmentCorrent);
     }
 
     public Flux<SalaryRequestClosedPeriodDto> getClosedSalaryRequestPeriods(AuthContext auth) {

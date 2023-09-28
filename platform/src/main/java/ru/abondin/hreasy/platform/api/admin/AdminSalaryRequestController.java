@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.salary.SalaryRequestAdminService;
+import ru.abondin.hreasy.platform.service.salary.SalaryRequestService;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 
@@ -15,25 +16,27 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 @Slf4j
 @RequestMapping("/api/v1/admin/salaries/requests")
 public class AdminSalaryRequestController {
-    private final SalaryRequestAdminService requestService;
+
+    private final SalaryRequestService requestService;
+    private final SalaryRequestAdminService requestAdminService;
 
     @GetMapping("/{period}")
     public Flux<SalaryRequestDto> findAll(@PathVariable int period) {
-        return AuthHandler.currentAuth().flatMapMany(auth -> requestService.findAll(auth, period));
+        return AuthHandler.currentAuth().flatMapMany(auth -> requestService.findMy(auth, period));
     }
 
     @PostMapping("/periods/{period}/close")
     public Mono<Integer> closeSalaryRequestPeriod(@PathVariable int period,
                                              @RequestBody OvertimeAdminController.CloseOvertimePeriodBody body) {
         return AuthHandler.currentAuth().flatMap(auth ->
-                requestService.closeSalaryRequestPeriod(auth, period, body.getComment()));
+                requestAdminService.closeSalaryRequestPeriod(auth, period, body.getComment()));
     }
 
     @PostMapping("/periods/{period}/reopen")
     public Mono<Void> reopenSalaryRequestPeriod(@PathVariable int period,
                                            @RequestBody OvertimeAdminController.ReopenOvertimePeriodBody body) {
         return AuthHandler.currentAuth().flatMap(auth ->
-                requestService.reopenSalaryRequestPeriod(auth, period, body.getComment()));
+                requestAdminService.reopenSalaryRequestPeriod(auth, period, body.getComment()));
     }
 
 }

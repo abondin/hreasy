@@ -81,33 +81,29 @@ INSERT INTO sec."role" ("role", description) VALUES
 INSERT INTO sec.perm (permission,description) VALUES
     ('report_salary_request','Report salary increase or bonus request for the employee (PM)') ON CONFLICT DO NOTHING;
 INSERT INTO sec.perm (permission,description) VALUES
-        ('inprogress_salary_request','Update salary increase or bonus request status (Salary manager, Finance)') ON CONFLICT DO NOTHING;
+        ('approve_salary_request','Approve request (BA or department leads)') ON CONFLICT DO NOTHING;
 INSERT INTO sec.perm (permission,description) VALUES
-        ('implement_salary_request','Update salary increase or bonus request status (Salary manager, Finance)') ON CONFLICT DO NOTHING;
-INSERT INTO sec.perm (permission,description) VALUES
-        ('approve_salary_request_globally','View and approve salary increase or bonus request of any employee (Global admin, Finance)') ON CONFLICT DO NOTHING;
-INSERT INTO sec.perm (permission,description) VALUES
-        ('approve_salary_request','View and approve salary increase or bonus request for employee from user`s department or budgeting from user`s business account') ON CONFLICT DO NOTHING;
+        ('admin_salary_request','View all requests in company. Change request states') ON CONFLICT DO NOTHING;
 
 INSERT INTO sec.role_perm ("role","permission") VALUES
     ('global_admin','report_salary_request'),
-    ('global_admin','inprogress_salary_request'),
-    ('global_admin','implement_salary_request'),
-    ('global_admin','approve_salary_request_globally'),
-    ('finance','report_salary_request'),
-    ('finance','inprogress_salary_request'),
-    ('finance','implement_salary_request'),
-    ('finance','approve_salary_request_globally'),
-    ('salary_manager','inprogress_salary_request'),
-    ('salary_manager','implement_salary_request'),
-    ('salary_manager','approve_salary_request_globally'),
-    ('pm','report_salary_request'),
-    ('pm','approve_salary_request') ON CONFLICT DO NOTHING;
+    ('global_admin','approve_salary_request'),
+    ('global_admin','admin_salary_request'),
+    ('finance','approve_salary_request'),
+    ('salary_manager','admin_salary_request'),
+    ('pm','report_salary_request')
+     ON CONFLICT DO NOTHING;
 
-COMMENT ON COLUMN history.history.entity_type IS '
-  [empl_manager] - Employee Manager,
-  [working_days] - Working Days Calendar,
-  [timesheet_record] - Timesheet Record
-  [salary_request] - Salary Request,
-  [salary_request_approval] - Salary Request
-';
+
+--- Salary Request Period
+CREATE TABLE IF NOT EXISTS sal.salary_request_closed_period (
+    period integer PRIMARY KEY NOT NULL,
+	closed_at timestamp with time zone NOT NULL,
+	closed_by integer NOT NULL REFERENCES empl.employee (id),
+	"comment" text NULL
+);
+COMMENT ON TABLE sal.salary_request_closed_period IS 'Salary request periods closed for editing. No requests can be reported';
+COMMENT ON COLUMN sal.salary_request_closed_period.period IS 'Salary request period (PK)';
+COMMENT ON COLUMN sal.salary_request_closed_period.comment IS 'Comment';
+COMMENT ON COLUMN sal.salary_request_closed_period.closed_at IS 'Closed at';
+COMMENT ON COLUMN sal.salary_request_closed_period.closed_by IS 'Closed by (link to employee)';
