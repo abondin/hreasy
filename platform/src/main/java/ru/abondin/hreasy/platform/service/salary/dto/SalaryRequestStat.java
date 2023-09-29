@@ -13,14 +13,14 @@ public enum SalaryRequestStat {
     CREATED((short) 0),
 
     /**
-     * When Salary Manager move it to in progress<
-     */
-    IN_PROGRESS((short) 1),
-
-    /**
      * Salary Manager or Finance marks after Finance implements
      */
-    IMPLEMENTED((short) 2);
+    IMPLEMENTED((short) 1),
+
+    /**
+     * When Salary Manager reject request
+     */
+    REJECTED((short) -1);
     private final short value;
 
 }

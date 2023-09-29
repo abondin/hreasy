@@ -23,7 +23,7 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = ".", target = "assessment", qualifiedByName = "assessment")
     @Mapping(source = ".", target = "employeeDepartment", qualifiedByName = "employeeDepartment")
     @Mapping(source = ".", target = "createdBy", qualifiedByName = "createdBy")
-    @Mapping(source = ".", target = "inprogressBy", qualifiedByName = "inprogressBy")
+    @Mapping(source = ".", target = "rejectedBy", qualifiedByName = "rejectedBy")
     @Mapping(source = ".", target = "implementedBy", qualifiedByName = "implementedBy")
     @Mapping(source = ".", target = "stat", qualifiedByName = "calculateStat")
     SalaryRequestDto fromEntry(SalaryRequestView entry);
@@ -54,9 +54,9 @@ public interface SalaryRequestMapper extends MapperBase {
         return simpleDto(entry.getCreatedBy(), entry.getCreatedByDisplayName());
     }
 
-    @Named("inprogressBy")
-    default SimpleDictDto inprogressBy(SalaryRequestView entry) {
-        return simpleDto(entry.getInprogressBy(), entry.getInprgressDisplayName());
+    @Named("rejectedBy")
+    default SimpleDictDto rejectedBy(SalaryRequestView entry) {
+        return simpleDto(entry.getRejectedBy(), entry.getInprgressDisplayName());
     }
 
     @Named("implementedBy")
@@ -66,9 +66,9 @@ public interface SalaryRequestMapper extends MapperBase {
 
     @Named("calculateStat")
     default int calculateStat(SalaryRequestView entry) {
-        return entry.getImplementedAt() != null ? SalaryRequestStat.IMPLEMENTED.getValue() :
+        return entry.getRejectedAt() != null ? SalaryRequestStat.REJECTED.getValue() :
                 (
-                        entry.getInprogressAt() != null ? SalaryRequestStat.IN_PROGRESS.getValue() : SalaryRequestStat.CREATED.getValue()
+                        entry.getImplementedBy() != null ? SalaryRequestStat.IMPLEMENTED.getValue() : SalaryRequestStat.CREATED.getValue()
                 );
     }
 

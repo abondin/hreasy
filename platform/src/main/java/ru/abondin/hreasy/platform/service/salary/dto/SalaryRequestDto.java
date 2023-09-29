@@ -50,8 +50,9 @@ public class SalaryRequestDto {
     @NotNull
     private SimpleDictDto createdBy;
 
-    private OffsetDateTime inprogressAt;
-    private SimpleDictDto inprogressBy;
+    private OffsetDateTime rejectedAt;
+    private SimpleDictDto rejectedBy;
+    private String rejectReason;
 
     private OffsetDateTime implementedAt;
     private SimpleDictDto implementedBy;

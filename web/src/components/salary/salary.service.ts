@@ -6,13 +6,13 @@ import {WithId} from "@/components/shared/table/TableComponentDataContainer";
 
 export const enum SalaryRequestStat {
     CREATED = 0,
-    IN_PROGRESS = 1,
-    IMPLEMENTED = 2
+    IMPLEMENTED = 1,
+    REJECTED = -1
 }
 export const salaryRequestStats = [
     SalaryRequestStat.CREATED,
-    SalaryRequestStat.IN_PROGRESS,
-    SalaryRequestStat.IMPLEMENTED
+    SalaryRequestStat.IMPLEMENTED,
+    SalaryRequestStat.REJECTED
 ];
 
 export const enum SalaryRequestType {
@@ -57,8 +57,9 @@ export interface SalaryRequest extends WithId{
     comment: string | null;
     createdAt: string;
     createdBy: SimpleDict;
-    inprogressAt: string|null;
-    inprogressBy: SimpleDict|null;
+    rejectedAt: string|null;
+    rejectedBy: SimpleDict|null;
+    rejectReason: string|null;
     implementedAt: string|null;
     implementedBy: SimpleDict|null;
 }

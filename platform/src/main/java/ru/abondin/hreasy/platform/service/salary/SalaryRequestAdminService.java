@@ -44,20 +44,20 @@ public class SalaryRequestAdminService {
     }
 
     @Transactional
-    public Mono<Integer> moveToInProgress(AuthContext auth, int salaryRequestId) {
-        log.info("Salary request {} moved to in progress by {}", salaryRequestId, auth.getUsername());
+    public Mono<Integer> reject(AuthContext auth, int salaryRequestId, String reason) {
+        log.info("Reject salary request {} by {}", salaryRequestId, auth.getUsername());
         var now = dateTimeService.now();
         return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
                         requestRepo.findFullNotDeletedById(salaryRequestId, now))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
                 .flatMap(entry -> {
-                    if (entry.getImplementedAt() != null) {
+                    if (entry.getRejectedAt() != null) {
+                        return Mono.error(new BusinessError("errors.salary_request.already_rejected", Integer.toString(salaryRequestId)));
+                    }
+                    if (entry.getImplementedBy() != null) {
                         return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
                     }
-                    if (entry.getInprogressAt() != null) {
-                        return Mono.error(new BusinessError("errors.salary_request.already_inprogress", Integer.toString(salaryRequestId)));
-                    }
-                    return requestRepo.moveToInProgress(salaryRequestId, now, auth.getEmployeeInfo().getEmployeeId());
+                    return requestRepo.reject(salaryRequestId, reason, now, auth.getEmployeeInfo().getEmployeeId());
                 });
     }
 
@@ -69,10 +69,10 @@ public class SalaryRequestAdminService {
                         requestRepo.findFullNotDeletedById(salaryRequestId, now))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
                 .flatMap(entry -> {
-                    if (entry.getInprogressAt() == null) {
-                        return Mono.error(new BusinessError("errors.salary_request.not_in_inprogress", Integer.toString(salaryRequestId)));
+                    if (entry.getRejectedAt() != null) {
+                        return Mono.error(new BusinessError("errors.salary_request.already_rejected", Integer.toString(salaryRequestId)));
                     }
-                    if (entry.getImplementedAt() != null) {
+                    if (entry.getImplementedBy() != null) {
                         return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
                     }
                     return requestRepo.markAsImplemented(salaryRequestId, now, auth.getEmployeeInfo().getEmployeeId());

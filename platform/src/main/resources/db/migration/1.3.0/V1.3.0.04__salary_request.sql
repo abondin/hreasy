@@ -16,8 +16,9 @@ CREATE TABLE IF NOT EXISTS sal.salary_request (
     comment text NULL,
     created_at timestamp with time zone NOT NULL,
     created_by integer NOT NULL REFERENCES empl.employee (id),
-    inprogress_at timestamp with time zone NULL,
-    inprogress_by integer NULL REFERENCES empl.employee (id),
+    rejected_at timestamp with time zone NULL,
+    rejected_by integer NULL REFERENCES empl.employee (id),
+    reject_reason varchar(1024) NULL,
     implemented_at timestamp with time zone NULL,
     implemented_by integer NULL REFERENCES empl.employee (id),
     deleted_at timestamp with time zone  NULL,
@@ -36,8 +37,9 @@ COMMENT ON COLUMN sal.salary_request.reason IS 'Reason';
 COMMENT ON COLUMN sal.salary_request.comment IS 'Optional additional comment';
 COMMENT ON COLUMN sal.salary_request.created_at IS 'When request is reported';
 COMMENT ON COLUMN sal.salary_request.created_by IS 'Created by';
-COMMENT ON COLUMN sal.salary_request.inprogress_at IS 'When the request was taken into processing';
-COMMENT ON COLUMN sal.salary_request.inprogress_by IS 'In progress by';
+COMMENT ON COLUMN sal.salary_request.rejected_at IS 'When the request was rejected';
+COMMENT ON COLUMN sal.salary_request.rejected_by IS 'Rejected by';
+COMMENT ON COLUMN sal.salary_request.reject_reason IS 'Reject reason';
 COMMENT ON COLUMN sal.salary_request.implemented_at IS 'When the request was marked as implemented';
 COMMENT ON COLUMN sal.salary_request.implemented_by IS 'Implemented by';
 COMMENT ON COLUMN sal.salary_request.deleted_at IS 'Deleted at';

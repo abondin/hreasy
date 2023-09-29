@@ -46,8 +46,9 @@ public class SalaryRequestEntry {
 
     private Integer createdBy;
 
-    private OffsetDateTime inprogressAt;
-    private Integer inprogressBy;
+    private OffsetDateTime rejectedAt;
+    private Integer rejectedBy;
+    private String rejectReason;
 
     private OffsetDateTime implementedAt;
     private Integer implementedBy;

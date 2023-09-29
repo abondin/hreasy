@@ -4,8 +4,8 @@
     <template v-slot:item.createdAt="{ item }">
       {{ formatDateTime(item.createdAt) }}
     </template>
-    <template v-slot:item.inprogressAt="{ item }">
-      {{ formatDateTime(item.inprogressAt) }}
+    <template v-slot:item.rejectedAt="{ item }">
+      {{ formatDateTime(item.rejectedAt) }}
     </template>
     <template v-slot:item.implementedAt="{ item }">
       {{ formatDateTime(item.implementedAt) }}
@@ -114,7 +114,7 @@
       <v-textarea
           v-model="data.createBody.reason"
           counter="1024"
-          :rules="[v=>(!v || v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024}))]"
+          :rules="[v=>(v && v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024}))]"
           :label="$t('Обоснование')">
       </v-textarea>
       <v-textarea
@@ -130,6 +130,35 @@
     </template>
 
     <template v-slot:additionalActions>
+      <!--<editor-fold desc="Implement and reject buttons">-->
+      <v-col align-self="center" cols="auto">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
+              <v-btn color="success"  text :disabled="data.loading || !data.editable() || data.selectedItems.length==0"
+                     @click="()=>{}" icon>
+                <v-icon>mdi-note-check</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{ $t('Отметить как реализовано') }}</span>
+        </v-tooltip>
+      </v-col>
+      <v-col align-self="center" cols="auto">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
+              <v-btn color="error"  text :disabled="data.loading || !data.editable() || data.selectedItems.length==0"
+                     @click="()=>{}" icon>
+                <v-icon>mdi-note-remove</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{ $t('Отметить как отклонённые') }}</span>
+        </v-tooltip>
+      </v-col>
+      <!--</editor-fold-->
+
       <v-col align-self="center" cols="auto" v-if="selectedPeriod">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
@@ -162,7 +191,7 @@ import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import salaryService, {
   ClosedSalaryRequestPeriod,
   SalaryRequest,
-  SalaryRequestReportBody,
+  SalaryRequestReportBody, SalaryRequestStat,
   salaryRequestStats,
   SalaryRequestType,
   salaryRequestTypes
@@ -189,7 +218,7 @@ const namespace_dict = 'dict';
 
 export class SalaryRequestFilter extends Filter<SalaryRequest> {
   public search = '';
-  public stat: number[] = [];
+  public stat: number[] = [SalaryRequestStat.CREATED];
   public type: number[] = [];
   public ba: number[] = [];
 
@@ -250,10 +279,10 @@ export default class AdminSalaryAllRequests extends Vue {
             {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
             {text: this.$tc('Созданно'), value: 'createdBy.name'},
             {text: this.$tc('Созданно (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
-            {text: this.$tc('Взято в работу'), value: 'inprogressBy.name'},
+            {text: this.$tc('Отклонено'), value: 'rejectedBy.name'},
             {
-              text: this.$tc('Взято в работу (время)'),
-              value: 'inprogressAt',
+              text: this.$tc('Отклонено (время)'),
+              value: 'rejectedAt',
               sort: DateTimeUtils.dateComparatorNullLast
             },
             {text: this.$tc('Реализовано'), value: 'implementedBy.name'},
@@ -269,7 +298,7 @@ export default class AdminSalaryAllRequests extends Vue {
       },
       new SalaryRequestFilter(),
       () => permissionService.canAdminSalaryRequests(),
-      true
+      false
   );
 
 

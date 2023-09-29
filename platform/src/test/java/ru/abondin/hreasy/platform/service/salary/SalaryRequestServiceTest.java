@@ -112,36 +112,27 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     }
 
     @Test
-    public void testMoveInProgress() {
+    public void testReject() {
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
         var requestId = reportDefaultRequest();
         StepVerifier
-                .create(salaryAdminRequestService.moveToInProgress(ctx, requestId)
+                .create(salaryAdminRequestService.reject(ctx, requestId, "Don't like")
                         .flatMap(updatedId -> {
                             Assertions.assertEquals(requestId, updatedId, "Invalid ID after update");
                             return repo.findById(updatedId);
                         })
                 ).expectNextMatches(entry ->
-                        entry.getInprogressAt() != null && entry.getInprogressBy().equals(ctx.getEmployeeInfo().getEmployeeId())
+                        entry.getRejectedAt() != null
+                                && entry.getRejectedBy().equals(ctx.getEmployeeInfo().getEmployeeId())
+                                && "Don't like".equals(entry.getRejectReason())
                 ).verifyComplete();
     }
 
-    @Test
-    public void testMarkAsImplementedNotInProgress() {
-        var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
-        var requestId = reportDefaultRequest();
-        StepVerifier
-                .create(salaryAdminRequestService.markAsImplemented(ctx, requestId))
-                .expectErrorMatches(e -> e instanceof BusinessError && ((BusinessError) e).getCode().equals("errors.salary_request.not_in_inprogress"))
-                .verify();
-
-    }
 
     @Test
     public void testMarkAsImplemented() {
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
         var requestId = reportDefaultRequest();
-        salaryAdminRequestService.moveToInProgress(ctx, requestId).block(MONO_DEFAULT_TIMEOUT);
         StepVerifier
                 .create(salaryAdminRequestService.markAsImplemented(ctx, requestId)
                         .flatMap(updatedId -> {
