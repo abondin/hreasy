@@ -87,7 +87,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
                 private createAction: CreateAction<T, C> | null,
                 private deleteAction: DeleteAction<T> | null,
                 private _filter: F,
-                private _editable: ()=> boolean,
+                private _editable: () => boolean,
                 private _singleSelect: boolean = true) {
     }
 
@@ -307,7 +307,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         this._error = null;
         this._loading = true;
         this._items.length = 0;
-        this._selectedItems= [];
+        this._selectedItems = [];
         return this.dataLoader()
             .then(data => {
                 this._items = data;
@@ -323,6 +323,17 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
     public filteredItems(): T[] {
         return this._filter.applyFilter(this._items);
+    }
+
+    public doInLoadingSection(action: () => Promise<any>) {
+        this._error = null;
+        this._loading = true;
+        return action().catch(error => {
+            this._error = errorUtils.shortMessage(error);
+        })
+            .finally(() => {
+                this._loading = false;
+            });
     }
 
 }

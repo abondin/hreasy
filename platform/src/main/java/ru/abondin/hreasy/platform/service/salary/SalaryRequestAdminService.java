@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.salary;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +16,6 @@ import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestMapper;
 
@@ -34,6 +34,14 @@ public class SalaryRequestAdminService {
     private final HistoryDomainService historyDomainService;
 
     private final DateTimeService dateTimeService;
+
+    public Flux<SalaryRequestDto> findAll(AuthContext auth, int periodId) {
+        var now = dateTimeService.now();
+        log.debug("Get all requests for period {} by {}", periodId, auth);
+        return secValidator.validateViewAll(auth)
+                .flatMapMany(v -> requestRepo.findAllNotDeleted(periodId, now))
+                .map(mapper::fromEntry);
+    }
 
     @Transactional
     public Mono<Integer> moveToInProgress(AuthContext auth, int salaryRequestId) {
@@ -82,7 +90,8 @@ public class SalaryRequestAdminService {
                     closedPeriod.setClosedBy(auth.getEmployeeInfo().getEmployeeId());
                     closedPeriod.setComment(comment);
                     return closedPeriodRepo.save(closedPeriod);
-                }).flatMap(persisted ->
+                })
+                .flatMap(persisted ->
                         historyDomainService.persistHistory(periodId,
                                 HistoryDomainService.HistoryEntityType.SALARY_REQUEST_CLOSED_REPORT_PERIOD,
                                 persisted, now, auth.getEmployeeInfo().getEmployeeId())

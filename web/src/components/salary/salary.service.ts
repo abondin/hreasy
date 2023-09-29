@@ -71,8 +71,6 @@ export interface ClosedSalaryRequestPeriod {
 }
 
 export interface SalaryService {
-    loadAllSalaryRequests(periodId: number): Promise<Array<SalaryRequest>>;
-
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number>;
 
     getClosedSalaryRequestPeriods(): Promise<Array<ClosedSalaryRequestPeriod>>;
@@ -82,10 +80,6 @@ export interface SalaryService {
 
 class RestSalaryService implements SalaryService {
     constructor(private httpService: AxiosInstance) {
-    }
-
-    loadAllSalaryRequests(periodId: number): Promise<Array<SalaryRequest>> {
-        return httpService.get(`v1/admin/salaries/requests/${periodId}`).then(response => response.data);
     }
 
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number> {

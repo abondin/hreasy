@@ -25,11 +25,7 @@ public class SalarySecurityValidator {
         /**
          * logged in user has role finance and has access to request's budgeting business account or request employee's department
          */
-        FROM_MY_BA_OR_DEPARTMENTS,
-        /**
-         * View all requests
-         */
-        ALL
+        FROM_MY_BA_OR_DEPARTMENTS
     }
 
     private final ProjectHierarchyAccessor projectHierarchyService;
@@ -41,13 +37,29 @@ public class SalarySecurityValidator {
      */
     public Mono<ViewSalaryRequestMode> validateView(AuthContext auth) {
         return Mono.defer(() ->  {
-            if (auth.getAuthorities().contains("admin_salary_request")) {
-                return Mono.just(ViewSalaryRequestMode.ALL);
-            }
             if (auth.getAuthorities().contains("approve_salary_request")) {
                 return Mono.just(ViewSalaryRequestMode.FROM_MY_BA_OR_DEPARTMENTS);
             }
             return Mono.just(ViewSalaryRequestMode.ONLY_MY);
+        });
+    }
+
+    /**
+     *
+     * @param auth
+     * @return true
+     */
+    public Mono<Boolean> validateViewAll(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("admin_salary_request")) {
+                return Mono.just(false);
+            }
+            return Mono.just(true);
+        }).flatMap(r -> {
+            if (r) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only employee with admin_salary_request permission can view all salary requests"));
         });
     }
 

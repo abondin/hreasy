@@ -61,7 +61,6 @@ public class SalaryRequestService {
         log.debug("Get all accessible requests for period {} by {}", periodId, auth);
         return secValidator.validateView(auth)
                 .flatMapMany(v -> switch (v) {
-                    case ALL -> requestRepo.findAllNotDeleted(periodId, now);
                     case FROM_MY_BA_OR_DEPARTMENTS -> requestRepo.findNotDeleted(
                             periodId, authEmplInfo.getEmployeeId(), authEmplInfo.getAccessibleBas(), authEmplInfo.getAccessibleDepartments(), now);
                     case ONLY_MY -> requestRepo.findNotDeleted(
@@ -101,7 +100,7 @@ public class SalaryRequestService {
 
 
         // 2. Check if assessment for the same employee
-        var assessmentCorrent = body.getAssessmentId() == null ? Mono.defer(() -> Mono.just(true)) :
+        var assessmentCorrect = body.getAssessmentId() == null ? Mono.defer(() -> Mono.just(true)) :
                 assessmentRepo.findById(body.getAssessmentId())
                         .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(body.getAssessmentId()))))
                         .flatMap(assessment -> {
@@ -110,7 +109,7 @@ public class SalaryRequestService {
                             }
                             return Mono.just(true);
                         });
-        return closedPeriodCheck.flatMap(v -> assessmentCorrent);
+        return closedPeriodCheck.flatMap(v -> assessmentCorrect);
     }
 
     public Flux<SalaryRequestClosedPeriodDto> getClosedSalaryRequestPeriods(AuthContext auth) {

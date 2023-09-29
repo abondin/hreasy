@@ -40,7 +40,7 @@
         </v-btn>
       </v-col>
 
-      <v-col >
+      <v-col>
         <v-text-field v-if="data.filter"
                       v-model="data.filter.search"
                       append-icon="mdi-magnify"
@@ -50,12 +50,12 @@
         ></v-text-field>
       </v-col>
       <v-col cols="auto">
-      <v-select
-          v-model="data.filter.stat"
-          :label="$t('Статус')"
-          :multiple="true"
-          :items="salaryStats">
-      </v-select>
+        <v-select
+            v-model="data.filter.stat"
+            :label="$t('Статус')"
+            :multiple="true"
+            :items="salaryStats">
+        </v-select>
       </v-col>
       <v-col cols="auto">
         <v-select
@@ -145,9 +145,9 @@
             </div>
           </template>
           <span>{{
-          $t(periodClosed() ? 'Переоткрыть период. Вернуть возможность вносить изменения'
-          : 'Закрыть период. Запретить внесение изменений.')
-          }}</span>
+              $t(periodClosed() ? 'Переоткрыть период. Вернуть возможность вносить изменения'
+                  : 'Закрыть период. Запретить внесение изменений.')
+            }}</span>
         </v-tooltip>
       </v-col>
     </template>
@@ -176,9 +176,9 @@ import {SimpleDict} from "@/store/modules/dict";
 import logger from "@/logger";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
-import overtimeService, {ClosedOvertimePeriod, ReportPeriod} from "@/components/overtimes/overtime.service";
+import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import {NumberUtils} from "@/components/numberutils";
-import adminOvertimeService from "@/components/admin/overtime/admin.overtime.service";
+import salaryAdminService from "@/components/admin/salary/admin.salary.service";
 
 
 export class SalaryRequestUpdateBody {
@@ -189,20 +189,20 @@ const namespace_dict = 'dict';
 
 export class SalaryRequestFilter extends Filter<SalaryRequest> {
   public search = '';
-  public stat: number[]=[];
-  public type: number[]=[];
-  public ba: number[]=[];
+  public stat: number[] = [];
+  public type: number[] = [];
+  public ba: number[] = [];
 
   applyFilter(items: SalaryRequest[]): SalaryRequest[] {
     return items.filter((item) => {
       let filtered = true;
       const search = this.search.toLowerCase().trim();
-        const textFilters = TextFilterBuilder.of()
-            .splitWords(item.employee?.name)
-            .splitWords(item.createdBy?.name)
-            .ignoreCase(item.employeeDepartment?.name)
-            .ignoreCase(item?.budgetBusinessAccount.name)
-            .ignoreCase(item?.reason);
+      const textFilters = TextFilterBuilder.of()
+          .splitWords(item.employee?.name)
+          .splitWords(item.createdBy?.name)
+          .ignoreCase(item.employeeDepartment?.name)
+          .ignoreCase(item?.budgetBusinessAccount.name)
+          .ignoreCase(item?.reason);
 
       filtered = filtered && searchUtils.textFilter(this.search, textFilters);
       filtered = filtered && searchUtils.array(this.stat, item.stat);
@@ -217,9 +217,8 @@ export class SalaryRequestFilter extends Filter<SalaryRequest> {
   components: {MyDateFormComponent, HreasyTable}
 })
 export default class AdminSalaryAllRequests extends Vue {
-
   selectedPeriod = ReportPeriod.currentPeriod();
-  private closedPeriods: ClosedSalaryRequestPeriod[] = [];
+  closedPeriods: ClosedSalaryRequestPeriod[] = [];
 
   private allEmployees: Employee[] = [];
 
@@ -229,8 +228,17 @@ export default class AdminSalaryAllRequests extends Vue {
   @Getter("departments", {namespace: namespace_dict})
   private allDepartments!: Array<SimpleDict>;
 
+  dataLoader: ()=>Promise<SalaryRequest[]> = ()=>salaryService.getClosedSalaryRequestPeriods()
+      .then(data => {
+        this.setClosedPeriods(data);
+        return data;
+      }).then(d => {
+        return salaryAdminService.loadAllSalaryRequests(this.selectedPeriod.periodId());
+      });
+
+
   private data = new TableComponentDataContainer<SalaryRequest, SalaryRequestUpdateBody, SalaryRequestReportBody, SalaryRequestFilter>(
-      () => salaryService.loadAllSalaryRequests(this.selectedPeriod.periodId()),
+      this.dataLoader,
       () =>
           [
             {text: this.$tc('Сотрудник'), value: 'employee.name'},
@@ -257,12 +265,13 @@ export default class AdminSalaryAllRequests extends Vue {
         defaultBody: () => this.defaultBody(),
       } as CreateAction<SalaryRequest, SalaryRequestReportBody>,
       {
-        deleteItemRequest: (ids)=>salaryService.deleteSalaryRequest(ids)
+        deleteItemRequest: (ids) => salaryService.deleteSalaryRequest(ids)
       },
       new SalaryRequestFilter(),
       () => permissionService.canAdminSalaryRequests(),
       true
   );
+
 
   private defaultBody(): SalaryRequestReportBody {
     return {
@@ -284,11 +293,7 @@ export default class AdminSalaryAllRequests extends Vue {
                   this.allEmployees = employees;
                 }
             )
-        )
-        .then(() => salaryService.getClosedSalaryRequestPeriods()
-            .then(data => {
-              this.closedPeriods = data;
-            }));
+        );
   }
 
   private validateDate(formattedDate: string, allowEmpty = true): boolean {
@@ -312,37 +317,41 @@ export default class AdminSalaryAllRequests extends Vue {
   }
 
   private closePeriod() {
-    //TODO
-    // this.data.loading = true;
-    // adminOvertimeService.closeOvertimePeriod(this.selectedPeriod.periodId()).then(() => {
-    //   return this.data.reloadData();
-    // }).finally(() => {
-    //   this.loading = false;
-    // })
+    if (this.selectedPeriod) {
+      this.data.doInLoadingSection(() => {
+        return salaryAdminService.closeReportPeriod(this.selectedPeriod.periodId()).then(() => {
+          this.data.reloadData();
+        })
+      });
+    }
   }
 
   private reopenPeriod() {
-    // TODO
-    // this.loading = true;
-    // adminOvertimeService.reopenOvertimePeriod(this.selectedPeriod.periodId()).then(() => {
-    //   return this.data.reloadData();
-    // }).finally(() => {
-    //   this.loading = false;
-    // })
+    if (this.selectedPeriod) {
+      this.data.doInLoadingSection(() => {
+        return salaryAdminService.reopenReportPeriod(this.selectedPeriod.periodId()).then(() => {
+          this.data.reloadData();
+        })
+      });
+    }
   }
 
-  formatDateTime = (v: string | undefined)=>DateTimeUtils.formatDateTimeFromIso(v);
+  private setClosedPeriods(data: ClosedSalaryRequestPeriod[]) {
+    this.closedPeriods = data;
+  }
 
-  formatDate = (v: string | undefined)=>DateTimeUtils.formatFromIso(v);
+  formatDateTime = (v: string | undefined) => DateTimeUtils.formatDateTimeFromIso(v);
 
-  formatMoney = (v: string|number|null|undefined)=>NumberUtils.formatMoney(v);
+  formatDate = (v: string | undefined) => DateTimeUtils.formatFromIso(v);
+
+  formatMoney = (v: string | number | null | undefined) => NumberUtils.formatMoney(v);
 
 
-  salaryTypes = salaryRequestTypes.map(v=>{
+  salaryTypes = salaryRequestTypes.map(v => {
     return {text: this.$tc(`SALARY_REQUEST_TYPE.${v}`), value: v};
   });
 
-  salaryStats =  salaryRequestStats.map(v=>{
+  salaryStats = salaryRequestStats.map(v => {
     return {text: this.$tc(`SALARY_REQUEST_STAT.${v}`), value: v};
   });
 

@@ -17,12 +17,11 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 @RequestMapping("/api/v1/admin/salaries/requests")
 public class AdminSalaryRequestController {
 
-    private final SalaryRequestService requestService;
     private final SalaryRequestAdminService requestAdminService;
 
     @GetMapping("/{period}")
     public Flux<SalaryRequestDto> findAll(@PathVariable int period) {
-        return AuthHandler.currentAuth().flatMapMany(auth -> requestService.findMy(auth, period));
+        return AuthHandler.currentAuth().flatMapMany(auth -> requestAdminService.findAll(auth, period));
     }
 
     @PostMapping("/periods/{period}/close")

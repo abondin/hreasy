@@ -54,7 +54,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     @BeforeEach
     protected void beforeEach() {
         initEmployeesDataAndLogin();
-        cleanSalaryAndNotificationsTables().block(MONO_DEFAULT_TIMEOUT);
+        cleanSalaryAndClosedPeriodAndNotificationsTables().block(MONO_DEFAULT_TIMEOUT);
     }
 
     @Test
@@ -89,6 +89,26 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                         .flatMap(r -> repo.findById(r))
                 )
                 .expectError(AccessDeniedException.class).verify();
+    }
+
+    @Test
+    public void testReportClosedPeriod() {
+        var jensonId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
+        var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
+
+        salaryAdminRequestService.closeSalaryRequestPeriod(ctx, 202305, "testReportClosedPeriod").block(MONO_DEFAULT_TIMEOUT);
+
+        var ba = testData.ba_RND();
+
+        ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var report = defaultRequest(ctx, jensonId, ba);
+        report.setIncreaseStartPeriod(202305);
+        StepVerifier
+                .create(salaryRequestService.report(ctx, report)
+                        .flatMap(r -> repo.findById(r))
+                )
+                .expectErrorMatches(e -> e instanceof BusinessError && ((BusinessError) e).getCode().equals("errors.salary_request.period_closed"))
+                .verify();
     }
 
     @Test
@@ -175,14 +195,15 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
      *
      * @return
      */
-    private Mono<Void> cleanSalaryAndNotificationsTables() {
+    private Mono<Void> cleanSalaryAndClosedPeriodAndNotificationsTables() {
         return db.sql("delete from sal.salary_request").then()
                 .then(db.sql("delete from sal.salary_request_approval").then())
                 .then(db.sql("delete from history.history where " +
                         "entity_type='" + SALARY_REQUEST.getType() + "'" +
                         " or entity_type='" + SALARY_REQUEST_APPROVAL.getType() + "'").then())
                 .then(db.sql("delete from notify.notification where " +
-                        "category='" + NotificationPersistService.NotificationCategory.SALARY_REQUEST.getCategory() + "'").then());
+                        "category='" + NotificationPersistService.NotificationCategory.SALARY_REQUEST.getCategory() + "'").then())
+                .then(db.sql("delete from sal.salary_request_closed_period").then());
     }
 
     private SalaryRequestReportBody defaultRequest(AuthContext ctx, int employeeId, int ba) {
