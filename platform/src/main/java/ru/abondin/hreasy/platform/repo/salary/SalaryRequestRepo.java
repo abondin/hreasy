@@ -18,19 +18,24 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
                 e.display_name as employee_display_name,
                 e.department as employee_department_id,
                 dep.name as employee_department_name,
+                e.position as employee_position_id,
+                pos.name as employee_position_name,
                 ba.name as budget_business_account_name,
                 asm.planned_date as assessment_planned_date,
                 cr.display_name as created_by_display_name,
                 rj.display_name as rejected_by_display_name,
-                im.display_name as implemented_by_display_name
+                im.display_name as implemented_by_display_name,
+                newPos.name as impl_new_position_name,
             from sal.salary_request r
                 left join empl.employee e on r.employee_id = e.id
                 left join dict.department dep on e.department = dep.id 
+                left join dict.position pos on e.position = pos.id 
                 left join ba.business_account ba on r.budget_business_account=ba.id
                 left join assmnt.assessment asm on r.assessment_id=asm.id
                 left join empl.employee cr on r.created_by = cr.id
                 left join empl.employee rj on r.rejected_by = rj.id
                 left join empl.employee im on r.implemented_by = im.id
+                left join dict.position newPos on r.impl_new_position = newPos.id 
             """;
     String GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL = GET_SALARY_REQUEST_VIEW_BASE_SQL + " where (r.deleted_at is null or r.deleted_at > :now) ";
 

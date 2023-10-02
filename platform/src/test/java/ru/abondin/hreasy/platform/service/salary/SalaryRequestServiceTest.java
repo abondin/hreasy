@@ -20,7 +20,7 @@ import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
 import ru.abondin.hreasy.platform.service.BaseServiceTest;
 import ru.abondin.hreasy.platform.service.notification.NotificationPersistService;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestStat;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementationState;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestType;
 
 import java.math.BigDecimal;
@@ -71,7 +71,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                         dto.getBudgetBusinessAccount().getId() == ba
                                 && dto.getComment().equals(report.getComment())
                                 && dto.getType().equals(report.getType())
-                                && dto.getStat().equals(SalaryRequestStat.CREATED.getValue())
+                                && dto.getStat().equals(SalaryRequestImplementationState.CREATED.getValue())
                                 && dto.getCreatedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
                                 && dto.getEmployee().getId() == jensonId
                                 && dto.getIncreaseStartPeriod().equals(report.getIncreaseStartPeriod())

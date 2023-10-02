@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 @Data
 @Table("sal.salary_request")
 public class SalaryRequestEntry {
+    // <editor-fold desc="Common fields">
     @Id
     private Integer id;
 
@@ -27,33 +28,47 @@ public class SalaryRequestEntry {
     private Integer budgetBusinessAccount;
     private LocalDate budgetExpectedFundingUntil;
 
-
-    @NotNull
-    private BigDecimal salaryIncrease;
-
-    /**
-     * YYYYMM period. Month starts with 0. 202308 - September of 2023
-     */
-    @NotNull
-    private Integer increaseStartPeriod;
-    private Integer assessmentId;
-    @NotNull
-    private String reason;
-    private String comment;
     @NotNull
     private OffsetDateTime createdAt;
     @NotNull
 
     private Integer createdBy;
-
-    private OffsetDateTime rejectedAt;
-    private Integer rejectedBy;
-    private String rejectReason;
-
-    private OffsetDateTime implementedAt;
-    private Integer implementedBy;
-
+    private Integer assessmentId;
 
     private OffsetDateTime deletedAt;
     private Integer deletedBy;
+// </editor-fold>
+
+// <editor-fold desc="Request fields">
+
+    @NotNull
+    private BigDecimal reqSalaryIncrease;
+    /**
+     * YYYYMM period. Month starts with 0. 202308 - September of 2023
+     */
+    @NotNull
+    private Integer reqIncreaseStartPeriod;
+    @NotNull
+    private String reqReason;
+    private String reqComment;
+// </editor-fold>
+
+
+    // <editor-fold desc="Implementation fields">
+    private Integer implState;
+    private OffsetDateTime implementedAt;
+    private Integer implementedBy;
+    @NotNull
+    private BigDecimal implSalaryIncrease;
+    /**
+     * YYYYMM period. Month starts with 0. 202308 - September of 2023
+     */
+    @NotNull
+    private Integer implIncreaseStartPeriod;
+    @NotNull
+    private String implReason;
+    private String implComment;
+    private Integer implNewPosition;
+// </editor-fold>
+
 }

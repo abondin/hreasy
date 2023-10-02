@@ -24,36 +24,57 @@ public class SalaryRequestDto {
     private SimpleDictDto budgetBusinessAccount;
     private LocalDate budgetExpectedFundingUntil;
 
-    /**
-     * @see SalaryRequestStat
-     */
-    @NotNull
-    private Short stat;
 
-    @NotNull
-    private BigDecimal salaryIncrease;
-
-    /**
-     * YYYYMM period. Month starts with 0. 202308 - September of 2023
-     */
-    @NotNull
-    private Integer increaseStartPeriod;
     private SimpleDictDto assessment;
     private SimpleDictDto employeeDepartment;
-
-    @NotNull
-    private String reason;
-    private String comment;
+    private SimpleDictDto employeePosition;
 
     @NotNull
     private OffsetDateTime createdAt;
     @NotNull
     private SimpleDictDto createdBy;
 
-    private OffsetDateTime rejectedAt;
-    private SimpleDictDto rejectedBy;
-    private String rejectReason;
+    private SalaryRequestReq req = new SalaryRequestReq();
+    private SalaryRequestImpl impl = null;
 
-    private OffsetDateTime implementedAt;
-    private SimpleDictDto implementedBy;
+
+    @Data
+    public static class SalaryRequestReq {
+        @NotNull
+        private BigDecimal salaryIncrease;
+
+        /**
+         * YYYYMM period. Month starts with 0. 202308 - September of 2023
+         */
+        @NotNull
+        private Integer increaseStartPeriod;
+        @NotNull
+        private String reason;
+        private String comment;
+    }
+
+    @Data
+    public static class SalaryRequestImpl {
+        /**
+         * @see SalaryRequestImplementationState
+         */
+        @NotNull
+        private Short state;
+        @NotNull
+        private BigDecimal salaryIncrease;
+
+        private OffsetDateTime implementedAt;
+        private SimpleDictDto implementedBy;
+
+        /**
+         * YYYYMM period. Month starts with 0. 202308 - September of 2023
+         */
+        @NotNull
+        private Integer increaseStartPeriod;
+        private SimpleDictDto newPosition;
+        @NotNull
+        private String reason;
+        private String comment;
+
+    }
 }

@@ -22,11 +22,26 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = ".", target = "budgetBusinessAccount", qualifiedByName = "budgetBusinessAccount")
     @Mapping(source = ".", target = "assessment", qualifiedByName = "assessment")
     @Mapping(source = ".", target = "employeeDepartment", qualifiedByName = "employeeDepartment")
+    @Mapping(source = ".", target = "employeePosition", qualifiedByName = "employeePosition")
     @Mapping(source = ".", target = "createdBy", qualifiedByName = "createdBy")
-    @Mapping(source = ".", target = "rejectedBy", qualifiedByName = "rejectedBy")
-    @Mapping(source = ".", target = "implementedBy", qualifiedByName = "implementedBy")
-    @Mapping(source = ".", target = "stat", qualifiedByName = "calculateStat")
+    @Mapping(source = "reqSalaryIncrease", target = "req.salaryIncrease")
+    @Mapping(source = "reqIncreaseStartPeriod", target = "req.increaseStartPeriod")
+    @Mapping(source = "reqReason", target = "req.reason")
+    @Mapping(source = "reqComment", target = "req.comment")
+    @Mapping(source = "implementedAt", target = "impl.implementedAt")
+    @Mapping(source = ".", target = "impl.implementedBy", qualifiedByName = "implementedBy")
+    @Mapping(source = "implSalaryIncrease", target = "impl.salaryIncrease")
+    @Mapping(source = "implIncreaseStartPeriod", target = "impl.increaseStartPeriod")
+    @Mapping(source = "implReason", target = "impl.reason")
+    @Mapping(source = "implComment", target = "impl.comment")
+    @Mapping(source = "implState", target = "impl.state")
+    @Mapping(source = ".", target = "impl.newPosition", qualifiedByName = "employeeNewPosition")
     SalaryRequestDto fromEntry(SalaryRequestView entry);
+
+    SalaryRequestClosedPeriodDto closedPeriodFromEntry(SalaryRequestClosedPeriodEntry salaryRequestClosedPeriodEntry);
+
+
+// <editor-fold desc="named helpers">
 
     @Named("employee")
     default SimpleDictDto employee(SalaryRequestView entry) {
@@ -49,28 +64,28 @@ public interface SalaryRequestMapper extends MapperBase {
         return simpleDto(entry.getEmployeeDepartmentId(), entry.getEmployeeDepartmentName());
     }
 
+    @Named("employeePosition")
+    default SimpleDictDto employeePosition(SalaryRequestView entry) {
+        return simpleDto(entry.getEmployeePositionId(), entry.getEmployeePositionName());
+    }
+
+    @Named("employeeNewPosition")
+    default SimpleDictDto employeeNewPosition(SalaryRequestView entry) {
+        return simpleDto(entry.getImplNewPosition(), entry.getImplNewPositionName());
+    }
+
     @Named("createdBy")
     default SimpleDictDto createdBy(SalaryRequestView entry) {
         return simpleDto(entry.getCreatedBy(), entry.getCreatedByDisplayName());
     }
 
-    @Named("rejectedBy")
-    default SimpleDictDto rejectedBy(SalaryRequestView entry) {
-        return simpleDto(entry.getRejectedBy(), entry.getInprgressDisplayName());
-    }
 
     @Named("implementedBy")
     default SimpleDictDto implementedBy(SalaryRequestView entry) {
         return simpleDto(entry.getImplementedBy(), entry.getImplementedDisplayName());
     }
 
-    @Named("calculateStat")
-    default int calculateStat(SalaryRequestView entry) {
-        return entry.getRejectedAt() != null ? SalaryRequestStat.REJECTED.getValue() :
-                (
-                        entry.getImplementedBy() != null ? SalaryRequestStat.IMPLEMENTED.getValue() : SalaryRequestStat.CREATED.getValue()
-                );
-    }
+// </editor-fold>
 
-    SalaryRequestClosedPeriodDto closedPeriodFromEntry(SalaryRequestClosedPeriodEntry salaryRequestClosedPeriodEntry);
+
 }

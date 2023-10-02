@@ -10,9 +10,14 @@ public class SalaryRequestView extends SalaryRequestEntry {
     private String budgetBusinessAccountName;
     private LocalDate assessmentPlannedDate;
     private String createdByDisplayName;
-    private String inprgressDisplayName;
     private String implementedDisplayName;
 
     private Integer employeeDepartmentId;
     private String employeeDepartmentName;
+
+    private Integer employeePositionId;
+    private String employeePositionName;
+
+    private String implNewPositionName;
+
 }
