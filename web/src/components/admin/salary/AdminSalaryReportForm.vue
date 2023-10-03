@@ -49,9 +49,7 @@
 <script lang="ts">
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
-import TableComponentontainer from "@/components/shared/table/TableComponentontainer";
-import {SalaryRequest, SalaryRequestReportBody, salaryRequestTypes} from "@/components/salary/salary.service";
-import {SalaryRequestFilter, SalaryRequestUpdateBody} from "@/components/admin/salary/AdminSalaryAllRequests.vue";
+import {SalaryRequestReportBody, salaryRequestTypes} from "@/components/salary/salary.service";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
@@ -78,6 +76,7 @@ export default class AdminSalaryReportForm extends Vue {
   private salaryTypes = salaryRequestTypes.map(v => {
     return {text: this.$tc(`SALARY_REQUEST_TYPE.${v}`), value: v};
   });
+
   /**
    * Lifecycle hook
    */

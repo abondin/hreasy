@@ -1,6 +1,9 @@
 <template>
   <hreasy-table :data="data" :create-new-title="$t('Создание запроса на индексацию ЗП или бонус')">
     <!--<editor-fold desc="Table columns">-->
+    <template v-slot:item.impl.increaseStartPeriod="{ item }">
+      {{ fromPeriodId(item.impl?.increaseStartPeriod) }}
+    </template>
     <template v-slot:item.createdAt="{ item }">
       {{ formatDateTime(item.createdAt) }}
     </template>
@@ -45,10 +48,9 @@
 
     <template v-slot:createFormFields>
       <admin-salary-report-form :create-body="data.createBody"></admin-salary-report-form>
-      <!-- Additional fields -->
-      <slot name="additionalFields"></slot>
-
-
+    </template>
+    <template v-slot:updateFormFields>
+      <admin-salary-request-implement-form :body="data.updateBody"></admin-salary-request-implement-form>
     </template>
 
     <template v-slot:additionalActions>
@@ -83,7 +85,8 @@ import TableComponentDataContainer, {CreateAction} from "@/components/shared/tab
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import salaryService, {
   ClosedSalaryRequestPeriod,
-  SalaryRequest,
+  SalaryRequestFullInfo,
+  SalaryRequestImplementationState,
   SalaryRequestReportBody,
   SalaryRequestType
 } from "@/components/salary/salary.service";
@@ -97,23 +100,23 @@ import {NumberUtils} from "@/components/numberutils";
 import salaryAdminService from "@/components/admin/salary/admin.salary.service";
 import AdminSalaryReportForm from "@/components/admin/salary/AdminSalaryReportForm.vue";
 import AdminSalaryAllRequestsFilter, {SalaryRequestFilter} from "@/components/admin/salary/AdminSalaryAllRequestsFilter.vue";
+import AdminSalaryRequestImplementForm, {SalaryRequestImplementBody} from "@/components/admin/salary/AdminSalaryRequestImplementForm.vue";
 
-
-export class SalaryRequestUpdateBody {
-
-}
 
 const namespace_dict = 'dict';
 
 
 @Component({
-  components: {AdminSalaryAllRequestsFilter, AdminSalaryReportForm, MyDateFormComponent, HreasyTable}
+  components: {
+    AdminSalaryRequestImplementForm,
+    AdminSalaryAllRequestsFilter, AdminSalaryReportForm, MyDateFormComponent, HreasyTable
+  }
 })
 export default class AdminSalaryAllRequests extends Vue {
   selectedPeriod = ReportPeriod.currentPeriod();
   closedPeriods: ClosedSalaryRequestPeriod[] = [];
 
-  dataLoader: () => Promise<SalaryRequest[]> = () => salaryService.getClosedSalaryRequestPeriods()
+  dataLoader: () => Promise<SalaryRequestFullInfo[]> = () => salaryService.getClosedSalaryRequestPeriods()
       .then(data => {
         this.setClosedPeriods(data);
         return data;
@@ -122,7 +125,7 @@ export default class AdminSalaryAllRequests extends Vue {
       });
 
 
-  private data = new TableComponentDataContainer<SalaryRequest, SalaryRequestUpdateBody, SalaryRequestReportBody, SalaryRequestFilter>(
+  private data = new TableComponentDataContainer<SalaryRequestFullInfo, SalaryRequestImplementBody, SalaryRequestReportBody, SalaryRequestFilter>(
       this.dataLoader,
       () =>
           [
@@ -145,11 +148,14 @@ export default class AdminSalaryAllRequests extends Vue {
               sort: DateTimeUtils.dateComparatorNullLast
             }
           ],
-      null,
+      {
+        updateItemRequest: (body) => Promise.resolve(console.log(`Update ${body}`)),
+        itemToUpdateBody: this.updateRequestBody,
+      },
       {
         createItemRequest: (body) => salaryService.reportSalaryRequest(body),
         defaultBody: () => this.defaultReportNewRequestBody(),
-      } as CreateAction<SalaryRequest, SalaryRequestReportBody>,
+      } as CreateAction<SalaryRequestFullInfo, SalaryRequestReportBody>,
       {
         deleteItemRequest: (ids) => salaryService.deleteSalaryRequest(ids)
       },
@@ -164,6 +170,15 @@ export default class AdminSalaryAllRequests extends Vue {
       type: SalaryRequestType.SALARY_INCREASE,
       increaseStartPeriod: this.selectedPeriod.periodId(),
     } as SalaryRequestReportBody;
+  }
+
+  private updateRequestBody(item: SalaryRequestFullInfo): SalaryRequestImplementBody {
+    return {
+      state: SalaryRequestImplementationState.IMPLEMENTED,
+      salaryIncrease: item.req.salaryIncrease,
+      increaseStartPeriod: item.req.increaseStartPeriod,
+      reason: ''
+    } as SalaryRequestImplementBody;
   }
 
   /**
@@ -219,6 +234,7 @@ export default class AdminSalaryAllRequests extends Vue {
 
   formatMoney = (v: string | number | null | undefined) => NumberUtils.formatMoney(v);
 
+  fromPeriodId = (v: number | null | undefined) => v && !isNaN(v) ? ReportPeriod.fromPeriodId(v) : null;
 
 }
 </script>

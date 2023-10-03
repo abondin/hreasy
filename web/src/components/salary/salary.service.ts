@@ -1,13 +1,13 @@
 import {SimpleDict} from "@/store/modules/dict";
 import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
-import {DictAdminService} from "@/components/admin/dict/dict.admin.service";
 import {WithId} from "@/components/shared/table/TableComponentDataContainer";
 
 export const enum SalaryRequestImplementationState {
     IMPLEMENTED = 1,
     REJECTED = -1
 }
+
 export const salaryRequestImplementationStates = [
     SalaryRequestImplementationState.IMPLEMENTED,
     SalaryRequestImplementationState.REJECTED
@@ -17,6 +17,7 @@ export const enum SalaryRequestType {
     SALARY_INCREASE = 1,
     BONUS = 2
 }
+
 export const salaryRequestTypes = [
     SalaryRequestType.SALARY_INCREASE,
     SalaryRequestType.BONUS
@@ -37,7 +38,7 @@ export interface SalaryRequestReportBody {
     comment: string | null;
 }
 
-export interface SalaryRequest extends WithId{
+export interface SalaryRequestFullInfo extends WithId {
     id: number;
     employee: SimpleDict;
     type: SalaryRequestType;
@@ -56,11 +57,11 @@ export interface SalaryRequest extends WithId{
         reason: string;
         comment: string | null;
     },
-    impl: {
-        implementedAt: string|null;
-        implementedBy: SimpleDict|null;
+    impl?: {
+        implementedAt: string | null;
+        implementedBy: SimpleDict | null;
         state: SalaryRequestImplementationState;
-        newPosition: SimpleDict|null;
+        newPosition: SimpleDict | null;
         salaryIncrease: number;
         increaseStartPeriod: number;
         reason: string;

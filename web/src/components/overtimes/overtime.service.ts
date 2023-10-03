@@ -77,7 +77,8 @@ export interface OvertimeReport {
 export class ReportPeriod {
 
     public static fromPeriodId(periodId: number) {
-        return new ReportPeriod(periodId / 100, periodId - periodId / 100);
+        const year = Math.floor(periodId / 100);
+        return new ReportPeriod(year, periodId - year*100);
     }
 
     /**
