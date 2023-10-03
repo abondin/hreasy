@@ -39,90 +39,12 @@
           <v-icon>mdi-chevron-right</v-icon>
         </v-btn>
       </v-col>
-
-      <v-col>
-        <v-text-field v-if="data.filter"
-                      v-model="data.filter.search"
-                      append-icon="mdi-magnify"
-                      :label="$t('Поиск')"
-                      single-line
-                      hide-details
-        ></v-text-field>
-      </v-col>
-      <v-col cols="auto">
-        <v-select
-            v-model="data.filter.stat"
-            :label="$t('Статус')"
-            :multiple="true"
-            :items="salaryStats">
-        </v-select>
-      </v-col>
-      <v-col cols="auto">
-        <v-select
-            v-model="data.filter.type"
-            :label="$t('Тип')"
-            :multiple="true"
-            :items="salaryTypes">
-        </v-select>
-      </v-col>
-      <v-col cols="auto">
-        <v-select
-            v-model="data.filter.ba"
-            item-text="name"
-            item-value="id"
-            :label="$t('Бизнес аккаунт')"
-            :multiple="true"
-            :items="allBas">
-        </v-select>
-      </v-col>
+      <admin-salary-all-requests-filter :filter="data.filter"></admin-salary-all-requests-filter>
     </template>
 
 
     <template v-slot:createFormFields>
-      <v-autocomplete
-          v-model="data.createBody.employeeId"
-          :items="allEmployees"
-          item-value="id" item-text="displayName"
-          :label="$t('Сотрудник')"
-          :rules="[v => !!v || $t('Обязательное поле')]"
-      ></v-autocomplete>
-      <v-select
-          v-model="data.createBody.type"
-          :label="$t('Тип')"
-          :rules="[v => !!v || $t('Обязательное поле')]"
-          :items="salaryTypes">
-      </v-select>
-      <v-autocomplete
-          v-model="data.createBody.budgetBusinessAccount"
-          item-value="id" item-text="name"
-          :items="allBas"
-          :label="$t('Бюджет из бизнес аккаунта')"
-          :rules="[v => !!v || $t('Обязательное поле')]"
-      ></v-autocomplete>
-      <my-date-form-component v-model="data.createBody.budgetExpectedFundingUntil"
-                              :label="$t('Планируемая дата окончания финансирования')"
-                              :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГГГ'))]"
-      ></my-date-form-component>
-
-      <v-text-field type="number"
-                    v-model="data.createBody.salaryIncrease"
-                    :rules="[v => !!v || $t('Обязательное числовое поле')]"
-                    :label="$t('Сумма в рублях')"
-      >
-      </v-text-field>
-
-      <v-textarea
-          v-model="data.createBody.reason"
-          counter="1024"
-          :rules="[v=>(v && v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024}))]"
-          :label="$t('Обоснование')">
-      </v-textarea>
-      <v-textarea
-          v-model="data.createBody.comment"
-          :rules="[v=>(!v || v.length <= 4096 || $t('Не более N символов', {n:4096}))]"
-          :label="$t('Примечание')">
-      </v-textarea>
-
+      <admin-salary-report-form :create-body="data.createBody"></admin-salary-report-form>
       <!-- Additional fields -->
       <slot name="additionalFields"></slot>
 
@@ -130,35 +52,6 @@
     </template>
 
     <template v-slot:additionalActions>
-      <!--<editor-fold desc="Implement and reject buttons">-->
-      <v-col align-self="center" cols="auto">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-              <v-btn color="success"  text :disabled="data.loading || !data.editable() || data.selectedItems.length==0"
-                     @click="()=>{}" icon>
-                <v-icon>mdi-note-check</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <span>{{ $t('Отметить как реализовано') }}</span>
-        </v-tooltip>
-      </v-col>
-      <v-col align-self="center" cols="auto">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-              <v-btn color="error"  text :disabled="data.loading || !data.editable() || data.selectedItems.length==0"
-                     @click="()=>{}" icon>
-                <v-icon>mdi-note-remove</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <span>{{ $t('Отметить как отклонённые') }}</span>
-        </v-tooltip>
-      </v-col>
-      <!--</editor-fold-->
-
       <v-col align-self="center" cols="auto" v-if="selectedPeriod">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
@@ -186,28 +79,24 @@
 
 <script lang="ts">
 import Component from "vue-class-component";
-import TableComponentDataContainer, {CreateAction, Filter} from "@/components/shared/table/TableComponentDataContainer";
+import TableComponentDataContainer, {CreateAction} from "@/components/shared/table/TableComponentDataContainer";
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import salaryService, {
   ClosedSalaryRequestPeriod,
   SalaryRequest,
-  SalaryRequestReportBody, SalaryRequestStat,
-  salaryRequestStats,
-  SalaryRequestType,
-  salaryRequestTypes
+  SalaryRequestReportBody,
+  SalaryRequestType
 } from "@/components/salary/salary.service";
-import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 import permissionService from "@/store/modules/permission.service";
 import {Vue} from "vue-property-decorator";
-import employeeService, {Employee} from "@/components/empl/employee.service";
-import {Getter} from "vuex-class";
-import {SimpleDict} from "@/store/modules/dict";
 import logger from "@/logger";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import {NumberUtils} from "@/components/numberutils";
 import salaryAdminService from "@/components/admin/salary/admin.salary.service";
+import AdminSalaryReportForm from "@/components/admin/salary/AdminSalaryReportForm.vue";
+import AdminSalaryAllRequestsFilter, {SalaryRequestFilter} from "@/components/admin/salary/AdminSalaryAllRequestsFilter.vue";
 
 
 export class SalaryRequestUpdateBody {
@@ -216,48 +105,15 @@ export class SalaryRequestUpdateBody {
 
 const namespace_dict = 'dict';
 
-export class SalaryRequestFilter extends Filter<SalaryRequest> {
-  public search = '';
-  public stat: number[] = [SalaryRequestStat.CREATED];
-  public type: number[] = [];
-  public ba: number[] = [];
-
-  applyFilter(items: SalaryRequest[]): SalaryRequest[] {
-    return items.filter((item) => {
-      let filtered = true;
-      const search = this.search.toLowerCase().trim();
-      const textFilters = TextFilterBuilder.of()
-          .splitWords(item.employee?.name)
-          .splitWords(item.createdBy?.name)
-          .ignoreCase(item.employeeDepartment?.name)
-          .ignoreCase(item?.budgetBusinessAccount.name)
-          .ignoreCase(item?.reason);
-
-      filtered = filtered && searchUtils.textFilter(this.search, textFilters);
-      filtered = filtered && searchUtils.array(this.stat, item.stat);
-      filtered = filtered && searchUtils.array(this.type, item.type);
-      filtered = filtered && searchUtils.array(this.ba, item.budgetBusinessAccount?.id);
-      return filtered;
-    });
-  }
-}
 
 @Component({
-  components: {MyDateFormComponent, HreasyTable}
+  components: {AdminSalaryAllRequestsFilter, AdminSalaryReportForm, MyDateFormComponent, HreasyTable}
 })
 export default class AdminSalaryAllRequests extends Vue {
   selectedPeriod = ReportPeriod.currentPeriod();
   closedPeriods: ClosedSalaryRequestPeriod[] = [];
 
-  private allEmployees: Employee[] = [];
-
-  @Getter("businessAccounts", {namespace: namespace_dict})
-  private allBas!: Array<SimpleDict>;
-
-  @Getter("departments", {namespace: namespace_dict})
-  private allDepartments!: Array<SimpleDict>;
-
-  dataLoader: ()=>Promise<SalaryRequest[]> = ()=>salaryService.getClosedSalaryRequestPeriods()
+  dataLoader: () => Promise<SalaryRequest[]> = () => salaryService.getClosedSalaryRequestPeriods()
       .then(data => {
         this.setClosedPeriods(data);
         return data;
@@ -272,26 +128,27 @@ export default class AdminSalaryAllRequests extends Vue {
           [
             {text: this.$tc('Сотрудник'), value: 'employee.name'},
             {text: this.$tc('Тип'), value: 'type'},
+            {text: this.$tc('Результат'), value: 'impl.state'},
             {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'},
-            {text: this.$tc('Сумма в рублях'), value: 'salaryIncrease'},
-            {text: this.$tc('Статус'), value: 'stat'},
+            {text: this.$tc('Запрошенная сумма в рублях'), value: 'req.salaryIncrease'},
+            {text: this.$tc('Реалиованная сумма в рублях'), value: 'impl.salaryIncrease'},
+            {text: this.$tc('Реализовано в периоде'), value: 'impl.increaseStartPeriod'},
+            {text: this.$tc('Новая позиция'), value: 'impl.newPosition.name'},
             {text: this.$tc('Отдел'), value: 'employeeDepartment.name'},
             {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
             {text: this.$tc('Созданно'), value: 'createdBy.name'},
             {text: this.$tc('Созданно (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
-            {text: this.$tc('Отклонено'), value: 'rejectedBy.name'},
+            {text: this.$tc('Завершено'), value: 'implementedBy.name'},
             {
-              text: this.$tc('Отклонено (время)'),
-              value: 'rejectedAt',
+              text: this.$tc('Завершено (время)'),
+              value: 'implementedAt',
               sort: DateTimeUtils.dateComparatorNullLast
-            },
-            {text: this.$tc('Реализовано'), value: 'implementedBy.name'},
-            {text: this.$tc('Реализовано (время)'), value: 'implementedAt', sort: DateTimeUtils.dateComparatorNullLast},
+            }
           ],
       null,
       {
         createItemRequest: (body) => salaryService.reportSalaryRequest(body),
-        defaultBody: () => this.defaultBody(),
+        defaultBody: () => this.defaultReportNewRequestBody(),
       } as CreateAction<SalaryRequest, SalaryRequestReportBody>,
       {
         deleteItemRequest: (ids) => salaryService.deleteSalaryRequest(ids)
@@ -302,7 +159,7 @@ export default class AdminSalaryAllRequests extends Vue {
   );
 
 
-  private defaultBody(): SalaryRequestReportBody {
+  private defaultReportNewRequestBody(): SalaryRequestReportBody {
     return {
       type: SalaryRequestType.SALARY_INCREASE,
       increaseStartPeriod: this.selectedPeriod.periodId(),
@@ -314,19 +171,6 @@ export default class AdminSalaryAllRequests extends Vue {
    */
   created() {
     logger.log('Admin salary component created');
-    return this.$nextTick()
-        .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
-        .then(() => this.$store.dispatch('dict/reloadDepartments'))
-        .then(() =>
-            employeeService.findAll().then(employees => {
-                  this.allEmployees = employees;
-                }
-            )
-        );
-  }
-
-  private validateDate(formattedDate: string, allowEmpty = true): boolean {
-    return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
   }
 
   private incrementPeriod() {
@@ -375,14 +219,6 @@ export default class AdminSalaryAllRequests extends Vue {
 
   formatMoney = (v: string | number | null | undefined) => NumberUtils.formatMoney(v);
 
-
-  salaryTypes = salaryRequestTypes.map(v => {
-    return {text: this.$tc(`SALARY_REQUEST_TYPE.${v}`), value: v};
-  });
-
-  salaryStats = salaryRequestStats.map(v => {
-    return {text: this.$tc(`SALARY_REQUEST_STAT.${v}`), value: v};
-  });
 
 }
 </script>

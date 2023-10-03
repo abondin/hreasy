@@ -4,15 +4,13 @@ import httpService from "@/components/http.service";
 import {DictAdminService} from "@/components/admin/dict/dict.admin.service";
 import {WithId} from "@/components/shared/table/TableComponentDataContainer";
 
-export const enum SalaryRequestStat {
-    CREATED = 0,
+export const enum SalaryRequestImplementationState {
     IMPLEMENTED = 1,
     REJECTED = -1
 }
-export const salaryRequestStats = [
-    SalaryRequestStat.CREATED,
-    SalaryRequestStat.IMPLEMENTED,
-    SalaryRequestStat.REJECTED
+export const salaryRequestImplementationStates = [
+    SalaryRequestImplementationState.IMPLEMENTED,
+    SalaryRequestImplementationState.REJECTED
 ];
 
 export const enum SalaryRequestType {
@@ -45,23 +43,29 @@ export interface SalaryRequest extends WithId{
     type: SalaryRequestType;
     budgetBusinessAccount: SimpleDict;
     budgetExpectedFundingUntil: string | null;
-    stat: SalaryRequestStat;
-    salaryIncrease: number;
-    /**
-     * YYYYMM period. Month starts with 0. 202308 - September of 2023
-     */
-    increaseStartPeriod: number;
-    assessment: SimpleDict | null;
-    employeeDepartment: SimpleDict;
-    reason: string;
-    comment: string | null;
     createdAt: string;
     createdBy: SimpleDict;
-    rejectedAt: string|null;
-    rejectedBy: SimpleDict|null;
-    rejectReason: string|null;
-    implementedAt: string|null;
-    implementedBy: SimpleDict|null;
+    assessment: SimpleDict | null;
+    employeeDepartment: SimpleDict;
+    req: {
+        salaryIncrease: number;
+        /**
+         * YYYYMM period. Month starts with 0. 202308 - September of 2023
+         */
+        increaseStartPeriod: number;
+        reason: string;
+        comment: string | null;
+    },
+    impl: {
+        implementedAt: string|null;
+        implementedBy: SimpleDict|null;
+        state: SalaryRequestImplementationState;
+        newPosition: SimpleDict|null;
+        salaryIncrease: number;
+        increaseStartPeriod: number;
+        reason: string;
+        comment: string | null;
+    }
 }
 
 export interface ClosedSalaryRequestPeriod {
