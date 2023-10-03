@@ -19,9 +19,7 @@ import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
 import ru.abondin.hreasy.platform.service.BaseServiceTest;
 import ru.abondin.hreasy.platform.service.notification.NotificationPersistService;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementationState;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestType;
+import ru.abondin.hreasy.platform.service.salary.dto.*;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -69,12 +67,12 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                 )
                 .expectNextMatches((dto) ->
                         dto.getBudgetBusinessAccount().getId() == ba
-                                && dto.getComment().equals(report.getComment())
+                                && dto.getReq().getComment().equals(report.getComment())
+                                && dto.getReq().getIncreaseStartPeriod().equals(report.getIncreaseStartPeriod())
                                 && dto.getType().equals(report.getType())
-                                && dto.getStat().equals(SalaryRequestImplementationState.CREATED.getValue())
                                 && dto.getCreatedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
                                 && dto.getEmployee().getId() == jensonId
-                                && dto.getIncreaseStartPeriod().equals(report.getIncreaseStartPeriod())
+                                && dto.getImpl() == null
                 ).verifyComplete();
     }
 
@@ -115,16 +113,22 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     public void testReject() {
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
         var requestId = reportDefaultRequest();
+        var rejectBody = SalaryRequestRejectBody.builder()
+                .reason("Not planned increase")
+                .comment("Very bad employee")
+                .build();
         StepVerifier
-                .create(salaryAdminRequestService.reject(ctx, requestId, "Don't like")
+                .create(salaryAdminRequestService.reject(ctx, requestId, rejectBody)
                         .flatMap(updatedId -> {
                             Assertions.assertEquals(requestId, updatedId, "Invalid ID after update");
-                            return repo.findById(updatedId);
+                            return salaryRequestService.get(ctx, updatedId);
                         })
-                ).expectNextMatches(entry ->
-                        entry.getRejectedAt() != null
-                                && entry.getRejectedBy().equals(ctx.getEmployeeInfo().getEmployeeId())
-                                && "Don't like".equals(entry.getRejectReason())
+                ).expectNextMatches(dto -> dto.getImpl()!=null
+                        && dto.getImpl().getImplementedAt() != null
+                        && dto.getImpl().getImplementedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
+                        && dto.getImpl().getComment().equals("Very bad employee")
+                        && dto.getImpl().getReason().equals("Not planned increase")
+                        && dto.getImpl().getState() == (short)-1
                 ).verifyComplete();
     }
 
@@ -133,14 +137,30 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     public void testMarkAsImplemented() {
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
         var requestId = reportDefaultRequest();
+        var implBody = SalaryRequestImplementBody.builder()
+                .salaryIncrease(BigDecimal.valueOf(1100))
+                .increaseStartPeriod(202308)
+                .newPosition(testData.position_JavaDeveloper())
+                .reason("Planned increase")
+                .comment("Very good employee")
+                .build();
         StepVerifier
-                .create(salaryAdminRequestService.markAsImplemented(ctx, requestId)
+                .create(salaryAdminRequestService.markAsImplemented(ctx, requestId, implBody)
                         .flatMap(updatedId -> {
                             Assertions.assertEquals(requestId, updatedId, "Invalid ID after update");
-                            return repo.findById(updatedId);
+                            return salaryRequestService.get(ctx, updatedId);
                         })
-                ).expectNextMatches(entry ->
-                        entry.getImplementedAt() != null && entry.getImplementedBy().equals(ctx.getEmployeeInfo().getEmployeeId())
+                ).expectNextMatches(dto ->
+                        dto.getImpl() != null
+                                && dto.getImpl().getImplementedAt() != null
+                                && dto.getImpl().getImplementedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
+                                && dto.getImpl().getComment().equals("Very good employee")
+                                && dto.getImpl().getReason().equals("Planned increase")
+                                && dto.getImpl().getState() == (short)1
+                                && dto.getImpl().getNewPosition().getId() == testData.position_JavaDeveloper()
+                                && dto.getImpl().getSalaryIncrease().compareTo(BigDecimal.valueOf(1100)) == 0
+                                && dto.getImpl().getIncreaseStartPeriod().equals(202308)
+
                 ).verifyComplete();
 
     }

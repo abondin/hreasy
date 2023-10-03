@@ -59,13 +59,10 @@ public class SalaryRequestDto {
          * @see SalaryRequestImplementationState
          */
         @NotNull
-        private Short state;
+        private short state;
+
         @NotNull
         private BigDecimal salaryIncrease;
-
-        private OffsetDateTime implementedAt;
-        private SimpleDictDto implementedBy;
-
         /**
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */
@@ -76,5 +73,7 @@ public class SalaryRequestDto {
         private String reason;
         private String comment;
 
+        private OffsetDateTime implementedAt;
+        private SimpleDictDto implementedBy;
     }
 }

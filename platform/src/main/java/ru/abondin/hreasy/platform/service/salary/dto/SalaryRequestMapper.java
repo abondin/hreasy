@@ -1,8 +1,6 @@
 package ru.abondin.hreasy.platform.service.salary.dto;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
@@ -16,6 +14,10 @@ public interface SalaryRequestMapper extends MapperBase {
 
     @Mapping(source = "createdBy", target = "createdBy")
     @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "body.salaryIncrease", target = "reqSalaryIncrease")
+    @Mapping(source = "body.increaseStartPeriod", target = "reqIncreaseStartPeriod")
+    @Mapping(source = "body.reason", target = "reqReason")
+    @Mapping(source = "body.comment", target = "reqComment")
     SalaryRequestEntry toEntry(SalaryRequestReportBody body, Integer createdBy, OffsetDateTime createdAt);
 
     @Mapping(source = ".", target = "employee", qualifiedByName = "employee")
@@ -38,8 +40,31 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = ".", target = "impl.newPosition", qualifiedByName = "employeeNewPosition")
     SalaryRequestDto fromEntry(SalaryRequestView entry);
 
+    @AfterMapping
+    default void dtoAfterMapping(@MappingTarget SalaryRequestDto dto) {
+        if (dto.getImpl() != null && dto.getImpl().getImplementedAt() == null) {
+            dto.setImpl(null);
+        }
+    }
+
     SalaryRequestClosedPeriodDto closedPeriodFromEntry(SalaryRequestClosedPeriodEntry salaryRequestClosedPeriodEntry);
 
+    @Mapping(source = "body.salaryIncrease", target = "implSalaryIncrease")
+    @Mapping(source = "body.increaseStartPeriod", target = "implIncreaseStartPeriod")
+    @Mapping(source = "body.newPosition", target = "implNewPosition")
+    @Mapping(source = "body.reason", target = "implReason")
+    @Mapping(source = "body.comment", target = "implComment")
+    @Mapping(source = "implementedAt", target = "implementedAt")
+    @Mapping(source = "implementedBy", target = "implementedBy")
+    @Mapping(constant = "1", target = "implState")
+    void applyRequestImplementBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestImplementBody body, OffsetDateTime implementedAt, Integer implementedBy);
+
+    @Mapping(source = "body.reason", target = "implReason")
+    @Mapping(source = "body.comment", target = "implComment")
+    @Mapping(source = "implementedAt", target = "implementedAt")
+    @Mapping(source = "implementedBy", target = "implementedBy")
+    @Mapping(constant = "-1", target = "implState")
+    void applyRequestRejectBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestRejectBody body, OffsetDateTime implementedAt, Integer implementedBy);
 
 // <editor-fold desc="named helpers">
 
@@ -84,7 +109,6 @@ public interface SalaryRequestMapper extends MapperBase {
     default SimpleDictDto implementedBy(SalaryRequestView entry) {
         return simpleDto(entry.getImplementedBy(), entry.getImplementedDisplayName());
     }
-
 // </editor-fold>
 
 

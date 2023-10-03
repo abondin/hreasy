@@ -2,7 +2,6 @@ package ru.abondin.hreasy.platform.service.salary;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,11 +12,14 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodRepo;
+import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestMapper;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestRejectBody;
 
 import javax.validation.constraints.NotNull;
 
@@ -44,38 +46,34 @@ public class SalaryRequestAdminService {
     }
 
     @Transactional
-    public Mono<Integer> reject(AuthContext auth, int salaryRequestId, String reason) {
+    public Mono<Integer> reject(AuthContext auth, int salaryRequestId, SalaryRequestRejectBody body) {
         log.info("Reject salary request {} by {}", salaryRequestId, auth.getUsername());
         var now = dateTimeService.now();
         return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
-                        requestRepo.findFullNotDeletedById(salaryRequestId, now))
+                        requestRepo.findById(salaryRequestId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
                 .flatMap(entry -> {
-                    if (entry.getRejectedAt() != null) {
-                        return Mono.error(new BusinessError("errors.salary_request.already_rejected", Integer.toString(salaryRequestId)));
-                    }
                     if (entry.getImplementedBy() != null) {
                         return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
                     }
-                    return requestRepo.reject(salaryRequestId, reason, now, auth.getEmployeeInfo().getEmployeeId());
+                    mapper.applyRequestRejectBody(entry, body, now, auth.getEmployeeInfo().getEmployeeId());
+                    return requestRepo.save(entry).map(SalaryRequestEntry::getId);
                 });
     }
 
     @Transactional
-    public Mono<Integer> markAsImplemented(AuthContext auth, int salaryRequestId) {
+    public Mono<Integer> markAsImplemented(AuthContext auth, int salaryRequestId, SalaryRequestImplementBody body) {
         log.info("Salary request {} marked to in progress by {}", salaryRequestId, auth.getUsername());
         var now = dateTimeService.now();
         return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
-                        requestRepo.findFullNotDeletedById(salaryRequestId, now))
+                        requestRepo.findById(salaryRequestId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
                 .flatMap(entry -> {
-                    if (entry.getRejectedAt() != null) {
-                        return Mono.error(new BusinessError("errors.salary_request.already_rejected", Integer.toString(salaryRequestId)));
-                    }
                     if (entry.getImplementedBy() != null) {
                         return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
                     }
-                    return requestRepo.markAsImplemented(salaryRequestId, now, auth.getEmployeeInfo().getEmployeeId());
+                    mapper.applyRequestImplementBody(entry, body, now, auth.getEmployeeInfo().getEmployeeId());
+                    return requestRepo.save(entry).map(SalaryRequestEntry::getId);
                 });
     }
 
