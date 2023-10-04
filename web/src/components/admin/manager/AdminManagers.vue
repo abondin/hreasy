@@ -213,6 +213,7 @@ export default class AdminManagers extends Vue {
   private updateAction(): UpdateAction<Manager, UpdateManagerBody> | null {
     return {
       updateItemRequest: (id, body) => (adminManagerService.update(id, body)),
+      itemEditable: (id, body)=>true,
       itemToUpdateBody: item =>
           ({
             responsibilityType: item.responsibilityType,

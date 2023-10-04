@@ -13,7 +13,7 @@
         <v-spacer></v-spacer>
         <v-progress-circular class="mr-2" v-if="data.loading" indeterminate></v-progress-circular>
         <v-btn @click="data.closeUpdateDialog()">{{ $t('Закрыть') }}</v-btn>
-        <v-btn @click="()=>data.submitUpdateForm()" color="primary" :disabled="data.loading">{{
+        <v-btn @click="submitUpdateForm" color="primary" :disabled="data.loading || itemReadonly()">{{
             $t('Изменить')
           }}
         </v-btn>
@@ -41,8 +41,21 @@ export default class HreasyTableUpdateForm<T extends WithId, M extends UpdateBod
   private data!: TableComponentDataContainer<T, M, C, F>;
 
   @Prop({required: false})
-  private updateTitle?: ()=>string | string | undefined;
+  private updateTitle?: () => string | string | undefined;
 
+
+  private submitUpdateForm() {
+    const form: any = this.$refs.adminUpdateForm;
+    if (form.validate()) {
+      return this.data.submitUpdateForm();
+    }
+  }
+
+  private itemReadonly() {
+    return !this.data
+        || !this.data.updateCommitAllowed()
+
+  }
 
   private print = UiConstants.print;
 }

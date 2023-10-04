@@ -1,5 +1,5 @@
 <template>
-  <v-form v-if="data.createBody">
+  <v-form ref="adminCreateForm" v-if="data.createBody">
     <v-card>
       <v-card-title>{{ print(title, $t('Создание')) }}</v-card-title>
       <v-card-text>
@@ -13,7 +13,7 @@
         <v-spacer></v-spacer>
         <v-progress-circular class="mr-2" v-if="data.loading" indeterminate></v-progress-circular>
         <v-btn @click="data.closeCreateDialog()">{{ $t('Закрыть') }}</v-btn>
-        <v-btn @click="()=>data.submitCreateForm()" color="primary" :disabled="data.loading">{{
+        <v-btn @click="submitCreateForm" color="primary" :disabled="data.loading">{{
             $t('Создать')
           }}
         </v-btn>
@@ -44,6 +44,13 @@ export default class HreasyTableCreateForm<T extends WithId, M extends UpdateBod
   private title?: ()=>string | string | undefined;
 
   private print = UiConstants.print;
+
+  private submitCreateForm() {
+    const form: any = this.$refs.adminCreateForm;
+    if (form.validate()) {
+      return this.data.submitCreateForm();
+    }
+  }
 }
 </script>
 

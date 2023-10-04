@@ -2,8 +2,25 @@ import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
 import {SalaryRequestFullInfo} from "@/components/salary/salary.service";
 
+export interface SalaryRequestImplementBody {
+    salaryIncrease: number;
+    increaseStartPeriod: number;
+    newPosition: number | null;
+    reason: string;
+    comment: string | null;
+}
+
+export interface SalaryRequestRejectBody {
+    reason: string;
+    comment: string | null;
+}
+
 export interface AdminSalaryService {
     loadAllSalaryRequests(periodId: number): Promise<Array<SalaryRequestFullInfo>>;
+
+    markAsImplemented(requestId: number, body: SalaryRequestImplementBody): Promise<number>;
+    reject(requestId: number, body: SalaryRequestRejectBody): Promise<number>;
+
 
     /**
      * Close salary requests period for editing
@@ -26,6 +43,18 @@ class RestAdminSalaryService implements AdminSalaryService {
 
     loadAllSalaryRequests(periodId: number): Promise<Array<SalaryRequestFullInfo>> {
         return httpService.get(`v1/admin/salaries/requests/${periodId}`).then(response => response.data);
+    }
+
+    markAsImplemented(requestId: number, body: SalaryRequestImplementBody): Promise<number> {
+        return httpService.put(`v1/admin/salaries/requests/${requestId}/implement`, body).then(response => {
+            return response.data;
+        });
+    }
+
+    reject(requestId: number, body: SalaryRequestRejectBody): Promise<number> {
+        return httpService.put(`v1/admin/salaries/requests/${requestId}/reject`, body).then(response => {
+            return response.data;
+        });
     }
 
     closeReportPeriod(periodId: number, comment?: string): Promise<any> {

@@ -1,5 +1,8 @@
 <template>
-  <hreasy-table :data="data" :create-new-title="$t('Создание запроса на индексацию ЗП или бонус')">
+  <hreasy-table :data="data"
+                :create-new-title="$t('Создание запроса на индексацию ЗП или бонус')"
+                :update-title="getUpdateFormTitle()"
+                :sort-by="['req.increaseStartPeriod']">
     <!--<editor-fold desc="Table columns">-->
     <template v-slot:item.impl.increaseStartPeriod="{ item }">
       {{ fromPeriodId(item.impl?.increaseStartPeriod) }}
@@ -7,17 +10,14 @@
     <template v-slot:item.createdAt="{ item }">
       {{ formatDateTime(item.createdAt) }}
     </template>
-    <template v-slot:item.rejectedAt="{ item }">
-      {{ formatDateTime(item.rejectedAt) }}
-    </template>
     <template v-slot:item.implementedAt="{ item }">
       {{ formatDateTime(item.implementedAt) }}
     </template>
     <template v-slot:item.type="{ item }">
       {{ $t(`SALARY_REQUEST_TYPE.${item.type}`) }}
     </template>
-    <template v-slot:item.stat="{ item }">
-      {{ $t(`SALARY_REQUEST_STAT.${item.stat}`) }}
+    <template v-slot:item.impl.state="{ item }">
+      {{ item.impl?.state ? $t(`SALARY_REQUEST_STAT.${item.impl.state}`) : '' }}
     </template>
     <template v-slot:item.salaryIncrease="{ item }">
       {{ formatMoney(item.salaryIncrease) }}
@@ -47,10 +47,10 @@
 
 
     <template v-slot:createFormFields>
-      <admin-salary-report-form :create-body="data.createBody"></admin-salary-report-form>
+      <admin-salary-report-form-fields :create-body="data.createBody"></admin-salary-report-form-fields>
     </template>
     <template v-slot:updateFormFields>
-      <admin-salary-request-implement-form :body="data.updateBody"></admin-salary-request-implement-form>
+      <admin-salary-request-implement-form-fields :body="data.updateBody"></admin-salary-request-implement-form-fields>
     </template>
 
     <template v-slot:additionalActions>
@@ -97,12 +97,12 @@ import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import {NumberUtils} from "@/components/numberutils";
 import salaryAdminService from "@/components/admin/salary/admin.salary.service";
-import AdminSalaryReportForm from "@/components/admin/salary/AdminSalaryReportForm.vue";
+import AdminSalaryReportFormFields from "@/components/admin/salary/AdminSalaryReportFormFields.vue";
 import AdminSalaryAllRequestsFilter, {SalaryRequestFilter} from "@/components/admin/salary/AdminSalaryAllRequestsFilter.vue";
-import AdminSalaryRequestImplementForm, {
-  SalaryRequestImplementBody,
-  SalaryRequestReportAction
-} from "@/components/admin/salary/AdminSalaryRequestImplementForm.vue";
+import AdminSalaryRequestImplementFormFields, {
+  SalaryRequestFormData,
+  SalaryRequestImplementAction
+} from "@/components/admin/salary/AdminSalaryRequestImplementFormFields.vue";
 
 
 const namespace_dict = 'dict';
@@ -110,8 +110,10 @@ const namespace_dict = 'dict';
 
 @Component({
   components: {
-    AdminSalaryRequestImplementForm,
-    AdminSalaryAllRequestsFilter, AdminSalaryReportForm, MyDateFormComponent, HreasyTable
+    AdminSalaryRequestImplementFormFields,
+    AdminSalaryReportFormFields,
+    AdminSalaryRequestImplementForm: AdminSalaryRequestImplementFormFields,
+    AdminSalaryAllRequestsFilter, AdminSalaryReportForm: AdminSalaryReportFormFields, MyDateFormComponent, HreasyTable
   }
 })
 export default class AdminSalaryAllRequests extends Vue {
@@ -127,7 +129,7 @@ export default class AdminSalaryAllRequests extends Vue {
       });
 
 
-  private data = new TableComponentDataContainer<SalaryRequestFullInfo, SalaryRequestImplementBody, SalaryRequestReportBody, SalaryRequestFilter>(
+  private data = new TableComponentDataContainer<SalaryRequestFullInfo, SalaryRequestFormData, SalaryRequestReportBody, SalaryRequestFilter>(
       this.dataLoader,
       () =>
           [
@@ -150,7 +152,7 @@ export default class AdminSalaryAllRequests extends Vue {
               sort: DateTimeUtils.dateComparatorNullLast
             }
           ],
-      new SalaryRequestReportAction(),
+      new SalaryRequestImplementAction(),
       {
         createItemRequest: (body) => salaryService.reportSalaryRequest(body),
         defaultBody: () => this.defaultReportNewRequestBody(),
@@ -216,6 +218,17 @@ export default class AdminSalaryAllRequests extends Vue {
 
   private setClosedPeriods(data: ClosedSalaryRequestPeriod[]) {
     this.closedPeriods = data;
+  }
+
+  private getUpdateFormTitle(){
+    let title = this.$tc('Реализация запроса для сотрудника');
+    if (this.data.selectedItems.length > 0){
+      title += this.data.selectedItems[0].employee.name;
+      if (this.data.selectedItems[0].impl){
+        title += ` (уже реализован)`;
+      }
+    }
+    return title;
   }
 
   formatDateTime = (v: string | undefined) => DateTimeUtils.formatDateTimeFromIso(v);

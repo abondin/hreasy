@@ -29,6 +29,7 @@ export default class DictAdminDepartments extends Vue {
           ],
       {
         updateItemRequest: (id, body) => dictAdminService.updateDepartment(id, body),
+        itemEditable: (id, body)=>true,
         itemToUpdateBody: item =>
             ({name: item.name, archived: item.archived} as DictDepartmentUpdateBody),
         createItemRequest: (body) => dictAdminService.createDepartment(body),

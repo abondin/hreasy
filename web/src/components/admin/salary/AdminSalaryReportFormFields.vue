@@ -55,12 +55,13 @@ import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import logger from "@/logger";
+import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 
 const namespace_dict = 'dict';
 @Component({
-  components: {}
+  components: {MyDateFormComponent}
 })
-export default class AdminSalaryReportForm extends Vue {
+export default class AdminSalaryReportFormFields extends Vue {
 
   @Prop({required: true})
   private createBody!: SalaryRequestReportBody;

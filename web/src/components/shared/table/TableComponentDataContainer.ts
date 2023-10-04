@@ -27,6 +27,8 @@ export interface CreateBody {
 export interface UpdateAction<T extends WithId, M extends UpdateBody> {
     updateItemRequest: (id: number, body: M) => Promise<any>,
     itemToUpdateBody: (item: T) => M,
+
+    itemEditable(itemId: number, updateBody: M): boolean;
 }
 
 export interface CreateAction<T extends WithId, C extends CreateBody> {
@@ -150,9 +152,24 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     }
 
 //<editor-fold desc="Update Actions">
+    /**
+     * Allow to apply the changes
+     * If false - update form must be readonly
+     */
+    public updateCommitAllowed(): boolean {
+        if (!this.updateAction || !this.updateBody || !this.selectedItemId) {
+            return false;
+        }
+        return this.updateAction.itemEditable(this.selectedItemId, this.updateBody);
+    }
+
+    /**
+     * Allow to open update dialog
+     */
     public updateAllowed(): boolean {
         return this.updateAction ? true : false;
     }
+
 
     get updateDialog(): boolean {
         return this._updateDialog;
@@ -167,7 +184,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     }
 
     public openUpdateDialog(item: T) {
-        if (this.updateAction) {
+        if (this.updateAction && this.updateAllowed()) {
             this.updateBody = this.updateAction.itemToUpdateBody(item);
             this.selectedItems = [item];
             this._updateDialog = true;

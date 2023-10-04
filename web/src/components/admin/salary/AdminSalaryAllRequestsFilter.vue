@@ -60,7 +60,7 @@ import logger from "@/logger";
 export class SalaryRequestFilter extends Filter<SalaryRequestFullInfo> {
   public search = '';
   public implState: number[] = [];
-  public impl: boolean[] = [false];
+  public impl: boolean[] = [];
   public type: number[] = [];
   public ba: number[] = [];
 
