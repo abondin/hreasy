@@ -86,7 +86,6 @@ import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import salaryService, {
   ClosedSalaryRequestPeriod,
   SalaryRequestFullInfo,
-  SalaryRequestImplementationState,
   SalaryRequestReportBody,
   SalaryRequestType
 } from "@/components/salary/salary.service";
@@ -100,7 +99,10 @@ import {NumberUtils} from "@/components/numberutils";
 import salaryAdminService from "@/components/admin/salary/admin.salary.service";
 import AdminSalaryReportForm from "@/components/admin/salary/AdminSalaryReportForm.vue";
 import AdminSalaryAllRequestsFilter, {SalaryRequestFilter} from "@/components/admin/salary/AdminSalaryAllRequestsFilter.vue";
-import AdminSalaryRequestImplementForm, {SalaryRequestImplementBody} from "@/components/admin/salary/AdminSalaryRequestImplementForm.vue";
+import AdminSalaryRequestImplementForm, {
+  SalaryRequestImplementBody,
+  SalaryRequestReportAction
+} from "@/components/admin/salary/AdminSalaryRequestImplementForm.vue";
 
 
 const namespace_dict = 'dict';
@@ -148,10 +150,7 @@ export default class AdminSalaryAllRequests extends Vue {
               sort: DateTimeUtils.dateComparatorNullLast
             }
           ],
-      {
-        updateItemRequest: (body) => Promise.resolve(console.log(`Update ${body}`)),
-        itemToUpdateBody: this.updateRequestBody,
-      },
+      new SalaryRequestReportAction(),
       {
         createItemRequest: (body) => salaryService.reportSalaryRequest(body),
         defaultBody: () => this.defaultReportNewRequestBody(),
@@ -170,15 +169,6 @@ export default class AdminSalaryAllRequests extends Vue {
       type: SalaryRequestType.SALARY_INCREASE,
       increaseStartPeriod: this.selectedPeriod.periodId(),
     } as SalaryRequestReportBody;
-  }
-
-  private updateRequestBody(item: SalaryRequestFullInfo): SalaryRequestImplementBody {
-    return {
-      state: SalaryRequestImplementationState.IMPLEMENTED,
-      salaryIncrease: item.req.salaryIncrease,
-      increaseStartPeriod: item.req.increaseStartPeriod,
-      reason: ''
-    } as SalaryRequestImplementBody;
   }
 
   /**

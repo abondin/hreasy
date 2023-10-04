@@ -48,6 +48,7 @@ export interface SalaryRequestFullInfo extends WithId {
     createdBy: SimpleDict;
     assessment: SimpleDict | null;
     employeeDepartment: SimpleDict;
+    employeePosition: SimpleDict;
     req: {
         salaryIncrease: number;
         /**

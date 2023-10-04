@@ -78,19 +78,26 @@ export class ReportPeriod {
 
     public static fromPeriodId(periodId: number) {
         const year = Math.floor(periodId / 100);
-        return new ReportPeriod(year, periodId - year*100);
+        return new ReportPeriod(year, periodId - year * 100);
     }
 
     /**
      * Employee works with overtimes for previous month before the salary calculation
      * (hardcoded value - 5th day of every month)
      */
-    static currentPeriod(): ReportPeriod {
+    static currentPeriod(shiftMonths?: number): ReportPeriod {
         let m = moment();
         if (m.date() < 5) {
             m = m.add(-1, "month");
         }
+        if (shiftMonths) {
+            m = m.add(shiftMonths, "month");
+        }
         return new ReportPeriod(m.year(), m.month());
+    }
+
+    static currentAndNextPeriods(): ReportPeriod[] {
+        return [this.currentPeriod(), this.currentPeriod(1), this.currentPeriod(2)];
     }
 
     constructor(private year: number, private month: number) {
@@ -100,6 +107,10 @@ export class ReportPeriod {
 
     public periodId(): number {
         return this.year * 100 + (this.month);
+    }
+
+    get id(): number {
+        return this.periodId();
     }
 
     public toString() {
