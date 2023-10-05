@@ -137,7 +137,7 @@ export default class AdminSalaryAllRequests extends Vue {
             {text: this.$tc('Сотрудник'), value: 'employee.name'},
             {text: this.$tc('Тип'), value: 'type'},
             {text: this.$tc('Результат'), value: 'impl.state'},
-            {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'},
+            {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budge\tBusinessAccount.name'},
             {text: this.$tc('Запрошенная сумма в рублях'), value: 'req.salaryIncrease'},
             {text: this.$tc('Реалиованная сумма в рублях'), value: 'impl.salaryIncrease'},
             {text: this.$tc('Реализовано в периоде'), value: 'impl.increaseStartPeriod'},

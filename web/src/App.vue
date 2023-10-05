@@ -57,10 +57,22 @@
           </v-list-item-title>
         </v-list-item>
 
+
+        <v-list-item to="/admin/salaries/requests" v-if="canAdminSalaryRequests()">
+          <v-list-item-action>
+            <v-icon>mdi-currency-rub</v-icon>
+          </v-list-item-action>
+          <v-list-item-title>
+            {{ $t('Повышения и бонусы') }}
+          </v-list-item-title>
+        </v-list-item>
+
+
+
         <v-divider></v-divider>
         <v-list-group
             no-action
-            v-if="canAdminEmployees() || canAdminProjects() || canAdminUsers() || canAdminBusinessAccounts() || canAdminArticles() || canAdminSalaryRequests"
+            v-if="canAdminEmployees() || canAdminProjects() || canAdminUsers() || canAdminBusinessAccounts() || canAdminArticles()"
         >
           <template v-slot:activator>
             <v-list-item-action>
@@ -108,14 +120,6 @@
               {{ $t('Все менеджеры') }}
             </v-list-item-title>
           </v-list-item>
-
-
-          <v-list-item to="/admin/salaries/requests" v-if="canAdminSalaryRequests()">
-            <v-list-item-title>
-              {{ $t('Повышения и бонусы') }}
-            </v-list-item-title>
-          </v-list-item>
-
         </v-list-group>
 
 
