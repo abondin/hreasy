@@ -1,13 +1,14 @@
 <template>
   <span>
+    <salary-request-short-info-component :data="item"></salary-request-short-info-component>
   <v-select
-      disabled="itemEditable()"
+       :disabled="body?.readonly"
       v-model="body.state"
       :label="$t('Решение')"
       :items="salaryStats">
   </v-select>
   <v-text-field
-      disabled="itemEditable()"
+       :disabled="body?.readonly"
       v-if="!isRejected()"
       type="number"
       v-model="body.salaryIncrease"
@@ -15,7 +16,7 @@
       :label="$t('Сумма в рублях')">
   </v-text-field>
    <v-select
-       disabled="itemEditable()"
+        :disabled="body?.readonly"
        v-if="!isRejected()"
        v-model="body.increaseStartPeriod"
        :label="$t('Исполнить в периоде')"
@@ -24,7 +25,7 @@
        item-text="toString()">
     </v-select>
   <v-autocomplete
-      disabled="itemEditable()"
+       :disabled="body?.readonly"
       v-if="!isBonus() && !isRejected()"
       v-model="body.newPosition"
       :items="allPositions.filter(p=>p.active)"
@@ -32,15 +33,15 @@
       item-text="name"
       :label="$t('Изменить позицию')"
   ></v-autocomplete>
-  <v-textarea
-      disabled="itemEditable()"
+  <v-text-field
+       :disabled="body?.readonly"
       v-model="body.reason"
       counter="1024"
       :rules="[v=>(v && v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024}))]"
       :label="$t('Обоснование')">
-  </v-textarea>
+  </v-text-field>
   <v-textarea
-      disabled="itemEditable()"
+       :disabled="body?.readonly"
       v-model="body.comment"
       :rules="[v=>(!v || v.length <= 4096 || $t('Не более N символов', {n:4096}))]"
       :label="$t('Примечание')">
@@ -51,19 +52,18 @@
 <script lang="ts">
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
-import {
-  SalaryRequestFullInfo,
-  SalaryRequestImplementationState,
-  salaryRequestImplementationStates,
-  SalaryRequestType,
-  salaryRequestTypes
-} from "@/components/salary/salary.service";
+import {SalaryIncreaseRequest, SalaryRequestType, salaryRequestTypes} from "@/components/salary/salary.service";
 import logger from "@/logger";
 import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
 import {UpdateAction} from "@/components/shared/table/TableComponentDataContainer";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
-import salaryAdminService, {SalaryRequestImplementBody} from "@/components/admin/salary/admin.salary.service";
+import salaryAdminService, {
+  SalaryRequestImplementationState,
+  salaryRequestImplementationStates,
+  SalaryRequestImplementBody
+} from "@/components/admin/salary/admin.salary.service";
+import SalaryRequestShortInfoComponent from "@/components/salary/SalaryRequestShortInfoComponent.vue";
 
 export interface SalaryRequestFormData {
   type: SalaryRequestType,
@@ -79,7 +79,7 @@ export interface SalaryRequestFormData {
   readonly: boolean;
 }
 
-export class SalaryRequestImplementAction implements UpdateAction<SalaryRequestFullInfo, SalaryRequestFormData> {
+export class SalaryRequestImplementAction implements UpdateAction<SalaryIncreaseRequest, SalaryRequestFormData> {
 
   public updateItemRequest(id: number, formData: SalaryRequestFormData) {
     if (formData.state == SalaryRequestImplementationState.REJECTED) {
@@ -103,7 +103,7 @@ export class SalaryRequestImplementAction implements UpdateAction<SalaryRequestF
     }
   }
 
-  public itemToUpdateBody(item: SalaryRequestFullInfo): SalaryRequestFormData {
+  public itemToUpdateBody(item: SalaryIncreaseRequest): SalaryRequestFormData {
     return {
       type: item.type,
       state: item.impl?.state,
@@ -123,12 +123,15 @@ export class SalaryRequestImplementAction implements UpdateAction<SalaryRequestF
 
 const namespace_dict = 'dict';
 @Component({
-  components: {}
+  components: {SalaryRequestShortInfoComponent}
 })
 export default class AdminSalaryRequestImplementFormFields extends Vue {
 
   @Prop({required: true})
   private body!: SalaryRequestFormData;
+
+  @Prop({required: true})
+  private item!: SalaryIncreaseRequest;
 
   private periodsToChoose = ReportPeriod.currentAndNextPeriods();
 
@@ -156,13 +159,10 @@ export default class AdminSalaryRequestImplementFormFields extends Vue {
     return this.body.type == SalaryRequestType.BONUS;
   }
 
-  private isStateSelected(): boolean {
-    return Boolean(this.body.state);
-  }
-
   private isRejected(): boolean {
     return this.body.state == SalaryRequestImplementationState.REJECTED;
   }
+
 
 }
 

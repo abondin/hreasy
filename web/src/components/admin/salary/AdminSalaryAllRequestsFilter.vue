@@ -49,22 +49,23 @@
 <script lang="ts">
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
-import {SalaryRequestFullInfo, salaryRequestImplementationStates, salaryRequestTypes} from "@/components/salary/salary.service";
+import {SalaryIncreaseRequest, salaryRequestTypes} from "@/components/salary/salary.service";
 import {Filter} from "@/components/shared/table/TableComponentDataContainer";
 import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import logger from "@/logger";
+import {salaryRequestImplementationStates} from "@/components/admin/salary/admin.salary.service";
 
 
-export class SalaryRequestFilter extends Filter<SalaryRequestFullInfo> {
+export class SalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
   public search = '';
   public implState: number[] = [];
   public impl: boolean[] = [];
   public type: number[] = [];
   public ba: number[] = [];
 
-  applyFilter(items: SalaryRequestFullInfo[]): SalaryRequestFullInfo[] {
+  applyFilter(items: SalaryIncreaseRequest[]): SalaryIncreaseRequest[] {
     return items.filter((item) => {
       let filtered = true;
       const search = this.search.toLowerCase().trim();

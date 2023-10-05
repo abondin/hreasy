@@ -1,6 +1,6 @@
 import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
-import {SalaryRequestFullInfo} from "@/components/salary/salary.service";
+import {SalaryIncreaseRequest} from "@/components/salary/salary.service";
 
 export interface SalaryRequestImplementBody {
     salaryIncrease: number;
@@ -15,8 +15,18 @@ export interface SalaryRequestRejectBody {
     comment: string | null;
 }
 
+export const enum SalaryRequestImplementationState {
+    IMPLEMENTED = 1,
+    REJECTED = -1
+}
+
+export const salaryRequestImplementationStates = [
+    SalaryRequestImplementationState.IMPLEMENTED,
+    SalaryRequestImplementationState.REJECTED
+];
+
 export interface AdminSalaryService {
-    loadAllSalaryRequests(periodId: number): Promise<Array<SalaryRequestFullInfo>>;
+    loadAllSalaryRequests(periodId: number): Promise<Array<SalaryIncreaseRequest>>;
 
     markAsImplemented(requestId: number, body: SalaryRequestImplementBody): Promise<number>;
     reject(requestId: number, body: SalaryRequestRejectBody): Promise<number>;
@@ -41,7 +51,7 @@ class RestAdminSalaryService implements AdminSalaryService {
     constructor(private httpService: AxiosInstance) {
     }
 
-    loadAllSalaryRequests(periodId: number): Promise<Array<SalaryRequestFullInfo>> {
+    loadAllSalaryRequests(periodId: number): Promise<Array<SalaryIncreaseRequest>> {
         return httpService.get(`v1/admin/salaries/requests/${periodId}`).then(response => response.data);
     }
 

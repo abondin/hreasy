@@ -1,17 +1,8 @@
-import {SimpleDict} from "@/store/modules/dict";
 import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
 import {WithId} from "@/components/shared/table/TableComponentDataContainer";
-
-export const enum SalaryRequestImplementationState {
-    IMPLEMENTED = 1,
-    REJECTED = -1
-}
-
-export const salaryRequestImplementationStates = [
-    SalaryRequestImplementationState.IMPLEMENTED,
-    SalaryRequestImplementationState.REJECTED
-];
+import {SimpleDict} from "@/store/modules/dict";
+import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 
 export const enum SalaryRequestType {
     SALARY_INCREASE = 1,
@@ -36,38 +27,6 @@ export interface SalaryRequestReportBody {
     assessmentId: number | null;
     reason: string;
     comment: string | null;
-}
-
-export interface SalaryRequestFullInfo extends WithId {
-    id: number;
-    employee: SimpleDict;
-    type: SalaryRequestType;
-    budgetBusinessAccount: SimpleDict;
-    budgetExpectedFundingUntil: string | null;
-    createdAt: string;
-    createdBy: SimpleDict;
-    assessment: SimpleDict | null;
-    employeeDepartment: SimpleDict;
-    employeePosition: SimpleDict;
-    req: {
-        salaryIncrease: number;
-        /**
-         * YYYYMM period. Month starts with 0. 202308 - September of 2023
-         */
-        increaseStartPeriod: number;
-        reason: string;
-        comment: string | null;
-    },
-    impl?: {
-        implementedAt: string | null;
-        implementedBy: SimpleDict | null;
-        state: SalaryRequestImplementationState;
-        newPosition: SimpleDict | null;
-        salaryIncrease: number;
-        increaseStartPeriod: number;
-        reason: string;
-        comment: string | null;
-    }
 }
 
 export interface ClosedSalaryRequestPeriod {
@@ -110,3 +69,35 @@ class RestSalaryService implements SalaryService {
 const salaryService: SalaryService = new RestSalaryService(httpService);
 
 export default salaryService;
+
+export interface SalaryIncreaseRequest extends WithId {
+    id: number;
+    employee: SimpleDict;
+    type: SalaryRequestType;
+    budgetBusinessAccount: SimpleDict;
+    budgetExpectedFundingUntil: string | null;
+    createdAt: string;
+    createdBy: SimpleDict;
+    assessment: SimpleDict | null;
+    employeeDepartment: SimpleDict;
+    employeePosition: SimpleDict;
+    req: {
+        salaryIncrease: number;
+        /**
+         * YYYYMM period. Month starts with 0. 202308 - September of 2023
+         */
+        increaseStartPeriod: number;
+        reason: string;
+        comment: string | null;
+    },
+    impl?: {
+        implementedAt: string | null;
+        implementedBy: SimpleDict | null;
+        state: SalaryRequestImplementationState;
+        newPosition: SimpleDict | null;
+        salaryIncrease: number;
+        increaseStartPeriod: number;
+        reason: string;
+        comment: string | null;
+    }
+}

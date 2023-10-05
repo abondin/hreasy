@@ -107,7 +107,7 @@ public interface SalaryRequestMapper extends MapperBase {
 
     @Named("implementedBy")
     default SimpleDictDto implementedBy(SalaryRequestView entry) {
-        return simpleDto(entry.getImplementedBy(), entry.getImplementedDisplayName());
+        return simpleDto(entry.getImplementedBy(), entry.getImplementedByDisplayName());
     }
 // </editor-fold>
 
