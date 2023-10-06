@@ -23,7 +23,6 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = ".", target = "employee", qualifiedByName = "employee")
     @Mapping(source = ".", target = "budgetBusinessAccount", qualifiedByName = "budgetBusinessAccount")
     @Mapping(source = ".", target = "assessment", qualifiedByName = "assessment")
-    @Mapping(source = ".", target = "employeeDepartment", qualifiedByName = "employeeDepartment")
     @Mapping(source = ".", target = "employeePosition", qualifiedByName = "employeePosition")
     @Mapping(source = ".", target = "createdBy", qualifiedByName = "createdBy")
     @Mapping(source = "reqSalaryIncrease", target = "req.salaryIncrease")
@@ -84,10 +83,6 @@ public interface SalaryRequestMapper extends MapperBase {
         return simpleDto(entry.getAssessmentId(), entry.getAssessmentPlannedDate() == null ? null : entry.getAssessmentPlannedDate().toString());
     }
 
-    @Named("employeeDepartment")
-    default SimpleDictDto employeeDepartment(SalaryRequestView entry) {
-        return simpleDto(entry.getEmployeeDepartmentId(), entry.getEmployeeDepartmentName());
-    }
 
     @Named("employeePosition")
     default SimpleDictDto employeePosition(SalaryRequestView entry) {

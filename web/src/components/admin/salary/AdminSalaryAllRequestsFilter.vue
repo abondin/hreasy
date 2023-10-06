@@ -58,7 +58,7 @@ import logger from "@/logger";
 import {salaryRequestImplementationStates} from "@/components/admin/salary/admin.salary.service";
 
 
-export class SalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
+export class AdminSalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
   public search = '';
   public implState: number[] = [];
   public impl: boolean[] = [];
@@ -72,7 +72,6 @@ export class SalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
       const textFilters = TextFilterBuilder.of()
           .splitWords(item.employee?.name)
           .splitWords(item.createdBy?.name)
-          .ignoreCase(item.employeeDepartment?.name)
           .ignoreCase(item?.budgetBusinessAccount.name)
           .ignoreCase(item?.req?.reason);
 
@@ -93,7 +92,7 @@ const namespace_dict = 'dict';
 export default class AdminSalaryReportForm extends Vue {
 
   @Prop({required: true})
-  private filter!: SalaryRequestFilter;
+  private filter!: AdminSalaryRequestFilter;
 
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;

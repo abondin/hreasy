@@ -61,9 +61,8 @@ public class ProjectHierarchyAccessor {
                 );
     }
 
-    public Boolean isBaOrDepartmentManager(AuthContext auth, Integer businessAccountId, Integer departmentId) {
-        return (departmentId == null || auth.getEmployeeInfo().getAccessibleDepartments().contains(departmentId))
-                || (businessAccountId == null || auth.getEmployeeInfo().getAccessibleBas().contains(businessAccountId));
+    public Boolean isBaManager(AuthContext auth, Integer businessAccountId) {
+        return businessAccountId == null || auth.getEmployeeInfo().getAccessibleBas().contains(businessAccountId);
     }
 
 

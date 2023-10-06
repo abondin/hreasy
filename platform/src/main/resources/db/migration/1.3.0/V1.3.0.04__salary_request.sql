@@ -115,7 +115,7 @@ INSERT INTO sec."role" ("role", description) VALUES
 INSERT INTO sec.perm (permission,description) VALUES
     ('report_salary_request','Report salary increase or bonus request for the employee (PM)') ON CONFLICT DO NOTHING;
 INSERT INTO sec.perm (permission,description) VALUES
-        ('approve_salary_request','Approve request (BA or department leads)') ON CONFLICT DO NOTHING;
+        ('approve_salary_request','Approve request (BA leads)') ON CONFLICT DO NOTHING;
 INSERT INTO sec.perm (permission,description) VALUES
         ('admin_salary_request','View all requests in company. Change request states') ON CONFLICT DO NOTHING;
 

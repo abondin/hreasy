@@ -26,7 +26,6 @@ public class SalaryRequestDto {
 
 
     private SimpleDictDto assessment;
-    private SimpleDictDto employeeDepartment;
     private SimpleDictDto employeePosition;
 
     @NotNull

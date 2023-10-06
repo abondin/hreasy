@@ -204,6 +204,7 @@ export default class AdminUsers extends Vue {
       {id: "hr", name: this.$tc('role.hr'), disabled: false},
       {id: "pm", name: this.$tc('role.pm'), disabled: false},
       {id: "finance", name: this.$tc('role.finance'), disabled: false},
+      {id: "salary_manager", name: this.$tc('role.salary_manager'), disabled: false},
       {id: "content_management", name: this.$tc('role.content_management'), disabled: false}
     ] as Array<RoleDict>
   }

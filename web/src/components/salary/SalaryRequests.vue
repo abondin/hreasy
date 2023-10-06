@@ -1,7 +1,6 @@
 <template>
   <hreasy-table :data="data"
                 :create-new-title="$t('Создание запроса на индексацию ЗП или бонус')"
-                :update-title="$t('Реализация запроса для сотрудника')"
                 :sort-by="['req.increaseStartPeriod']">
     <!--<editor-fold desc="Table columns">-->
     <template v-slot:item.impl.increaseStartPeriod="{ item }">
@@ -25,10 +24,6 @@
     <template v-slot:item.impl.salaryIncrease="{ item }">
       {{ formatMoney(item.impl?.salaryIncrease) }}
     </template>
-    <template v-slot:item.req.budgetExpectedFundingUntil="{ item }">
-      {{ formatDate(item.req.budgetExpectedFundingUntil) }}
-    </template>
-
     <!--</editor-fold>-->
 
     <template v-slot:filters>
@@ -46,68 +41,51 @@
           <v-icon>mdi-chevron-right</v-icon>
         </v-btn>
       </v-col>
-      <admin-salary-all-requests-filter :filter="data.filter"></admin-salary-all-requests-filter>
+      <v-col>
+        <v-text-field
+            v-model="data.filter.search"
+            append-icon="mdi-magnify"
+            :label="$t('Поиск')"
+            single-line
+            hide-details
+        ></v-text-field>
+      </v-col>
+      <v-col cols="auto">
+        <v-select
+            v-model="data.filter.type"
+            :label="$t('Тип')"
+            :multiple="true"
+            :items="salaryTypes">
+        </v-select>
+      </v-col>
     </template>
 
 
     <template v-slot:createFormFields>
-      <admin-salary-report-form-fields :create-body="data.createBody"></admin-salary-report-form-fields>
+      <salary-report-form-fields :create-body="data.createBody"></salary-report-form-fields>
     </template>
-    <template v-slot:updateFormFields>
-      <admin-salary-request-implement-form-fields :body="data.updateBody"
-                                                  :item="data.selectedItems?.length > 0 ? data.selectedItems[0]:null"></admin-salary-request-implement-form-fields>
-    </template>
-
-    <template v-slot:additionalActions>
-      <v-col align-self="center" cols="auto" v-if="selectedPeriod">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-              <v-btn v-if="!periodClosed()" link :disabled="data.loading" @click="closePeriod()"
-                     icon>
-                <v-icon>mdi-lock</v-icon>
-              </v-btn>
-              <v-btn v-if="periodClosed()" link :disabled="data.loading" @click="reopenPeriod()"
-                     icon>
-                <v-icon>mdi-lock-open</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <span>{{
-              $t(periodClosed() ? 'Переоткрыть период. Вернуть возможность вносить изменения'
-                  : 'Закрыть период. Запретить внесение изменений.')
-            }}</span>
-        </v-tooltip>
-      </v-col>
-    </template>
-
   </hreasy-table>
 </template>
 
 <script lang="ts">
 import Component from "vue-class-component";
-import TableComponentDataContainer, {CreateAction} from "@/components/shared/table/TableComponentDataContainer";
+import TableComponentDataContainer, {CreateAction, Filter} from "@/components/shared/table/TableComponentDataContainer";
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import salaryService, {
   ClosedSalaryRequestPeriod,
   SalaryIncreaseRequest,
   SalaryRequestReportBody,
-  SalaryRequestType
+  SalaryRequestType,
+  salaryRequestTypes
 } from "@/components/salary/salary.service";
-import permissionService from "@/store/modules/permission.service";
 import {Vue} from "vue-property-decorator";
 import logger from "@/logger";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
-import {NumberUtils} from "@/components/numberutils";
 import salaryAdminService from "@/components/admin/salary/admin.salary.service";
 import SalaryReportFormFields from "@/components/salary/SalaryReportFormFields.vue";
-import AdminSalaryAllRequestsFilter, {AdminSalaryRequestFilter} from "@/components/admin/salary/AdminSalaryAllRequestsFilter.vue";
-import AdminSalaryRequestImplementFormFields, {
-  SalaryRequestFormData,
-  SalaryRequestImplementAction
-} from "@/components/admin/salary/AdminSalaryRequestImplementFormFields.vue";
+import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 
 
 const namespace_dict = 'dict';
@@ -115,13 +93,10 @@ const namespace_dict = 'dict';
 
 @Component({
   components: {
-    AdminSalaryRequestImplementFormFields,
-    AdminSalaryReportFormFields: SalaryReportFormFields,
-    AdminSalaryRequestImplementForm: AdminSalaryRequestImplementFormFields,
-    AdminSalaryAllRequestsFilter, AdminSalaryReportForm: SalaryReportFormFields, MyDateFormComponent, HreasyTable
+    SalaryReportFormFields, MyDateFormComponent, HreasyTable
   }
 })
-export default class AdminSalaryAllRequests extends Vue {
+export default class SalaryRequests extends Vue {
   selectedPeriod = ReportPeriod.currentPeriod();
   closedPeriods: ClosedSalaryRequestPeriod[] = [];
 
@@ -130,11 +105,11 @@ export default class AdminSalaryAllRequests extends Vue {
         this.setClosedPeriods(data);
         return data;
       }).then(d => {
-        return salaryAdminService.loadAllSalaryRequests(this.selectedPeriod.periodId());
+        return salaryService.load(this.selectedPeriod.periodId());
       });
 
 
-  private data = new TableComponentDataContainer<SalaryIncreaseRequest, SalaryRequestFormData, SalaryRequestReportBody, AdminSalaryRequestFilter>(
+  private data = new TableComponentDataContainer<SalaryIncreaseRequest, SalaryIncreaseRequest, SalaryRequestReportBody, SalaryRequestFilter>(
       this.dataLoader,
       () =>
           [
@@ -146,7 +121,6 @@ export default class AdminSalaryAllRequests extends Vue {
             {text: this.$tc('Реалиованная сумма в рублях'), value: 'impl.salaryIncrease'},
             {text: this.$tc('Реализовано в периоде'), value: 'impl.increaseStartPeriod'},
             {text: this.$tc('Новая позиция'), value: 'impl.newPosition.name'},
-            {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
             {text: this.$tc('Созданно'), value: 'createdBy.name'},
             {text: this.$tc('Созданно (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
             {text: this.$tc('Завершено'), value: 'implementedBy.name'},
@@ -156,17 +130,15 @@ export default class AdminSalaryAllRequests extends Vue {
               sort: DateTimeUtils.dateComparatorNullLast
             }
           ],
-      new SalaryRequestImplementAction(),
+      null,
       {
         createItemRequest: (body) => salaryService.reportSalaryRequest(body),
         defaultBody: () => this.defaultReportNewRequestBody(),
       } as CreateAction<SalaryIncreaseRequest, SalaryRequestReportBody>,
-      {
-        deleteItemRequest: (ids) => salaryService.deleteSalaryRequest(ids)
-      },
-      new AdminSalaryRequestFilter(),
-      () => permissionService.canAdminSalaryRequests(),
-      false
+      null,
+      new SalaryRequestFilter(),
+      () => true,
+      true
   );
 
 
@@ -181,7 +153,7 @@ export default class AdminSalaryAllRequests extends Vue {
    * Lifecycle hook
    */
   created() {
-    logger.log('Admin salary component created');
+    logger.log('Salary increase requests table component created');
   }
 
   private incrementPeriod() {
@@ -224,13 +196,39 @@ export default class AdminSalaryAllRequests extends Vue {
     this.closedPeriods = data;
   }
 
+  private salaryTypes = salaryRequestTypes.map(v => {
+    return {text: this.$tc(`SALARY_REQUEST_TYPE.${v}`), value: v};
+  });
+
   formatDateTime = (v: string | undefined) => DateTimeUtils.formatDateTimeFromIso(v);
 
   formatDate = (v: string | undefined) => DateTimeUtils.formatFromIso(v);
 
-  formatMoney = (v: string | number | null | undefined) => v ? Number(v).toLocaleString() : '';
+  formatMoney = (v: string | number | null | undefined) => Number(v).toLocaleString();
 
   fromPeriodId = (v: number | null | undefined) => v && !isNaN(v) ? ReportPeriod.fromPeriodId(v) : null;
 }
+
+export class SalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
+  public search = '';
+  public type: number[] = [];
+
+  applyFilter(items: SalaryIncreaseRequest[]): SalaryIncreaseRequest[] {
+    return items.filter((item) => {
+      let filtered = true;
+      const search = this.search.toLowerCase().trim();
+      const textFilters = TextFilterBuilder.of()
+          .splitWords(item.employee?.name)
+          .splitWords(item.createdBy?.name)
+          .ignoreCase(item?.budgetBusinessAccount.name)
+          .ignoreCase(item?.req?.reason);
+
+      filtered = filtered && searchUtils.textFilter(this.search, textFilters);
+      filtered = filtered && searchUtils.array(this.type, item.type);
+      return filtered;
+    });
+  }
+}
+
 </script>
 

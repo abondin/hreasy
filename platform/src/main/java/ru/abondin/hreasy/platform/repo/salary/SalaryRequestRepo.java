@@ -16,8 +16,6 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
             select 
                 r.*,
                 e.display_name as employee_display_name,
-                e.department as employee_department_id,
-                dep.name as employee_department_name,
                 e.position as employee_position_id,
                 pos.name as employee_position_name,
                 ba.name as budget_business_account_name,
@@ -27,7 +25,6 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
                 newPos.name as impl_new_position_name
             from sal.salary_request r
                 left join empl.employee e on r.employee_id = e.id
-                left join dict.department dep on e.department = dep.id 
                 left join dict.position pos on e.position = pos.id 
                 left join ba.business_account ba on r.budget_business_account=ba.id
                 left join assmnt.assessment asm on r.assessment_id=asm.id
@@ -42,10 +39,14 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
 
     @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.req_increase_start_period=:period and (" +
             "r.created_by =:createdBy " +
-            "or r.budget_business_account in (:baId) " +
-            "or e.department in (:departments)" +
+            "or r.budget_business_account in (:bas)" +
             ") order by r.created_at desc")
-    Flux<SalaryRequestView> findNotDeleted(int period, int createdBy, List<Integer> bas, List<Integer> departments, OffsetDateTime now);
+    Flux<SalaryRequestView> findNotDeleted(int period, int createdBy, List<Integer> bas, OffsetDateTime now);
+
+    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.req_increase_start_period=:period and (" +
+            "r.created_by =:createdBy " +
+            ") order by r.created_at desc")
+    Flux<SalaryRequestView> findNotDeletedMy(int period, int createdBy, OffsetDateTime now);
 
 
     @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL+" and r.req_increase_start_period=:periodId order by r.created_at desc")

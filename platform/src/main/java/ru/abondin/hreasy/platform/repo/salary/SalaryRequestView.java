@@ -12,9 +12,6 @@ public class SalaryRequestView extends SalaryRequestEntry {
     private String createdByDisplayName;
     private String implementedByDisplayName;
 
-    private Integer employeeDepartmentId;
-    private String employeeDepartmentName;
-
     private Integer employeePositionId;
     private String employeePositionName;
 

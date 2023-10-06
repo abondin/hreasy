@@ -116,6 +116,22 @@ INSERT INTO empl.employee (email, display_name,
   'organization',
   now()::date
   );
+
+  INSERT INTO sec.user_role (employee_id, role) values (
+  (select id from empl.employee  where email ilike 'Husnain.Patterson@stm-labs.ru' limit 1),
+  'pm'
+  );
+  INSERT INTO sec.user_role (employee_id, role) values (
+  (select id from empl.employee  where email ilike 'Husnain.Patterson@stm-labs.ru' limit 1),
+  'finance'
+  );
+  INSERT INTO sec.employee_accessible_bas
+   (employee_id, ba_id) values (
+  (select id from empl.employee  where email ilike 'Husnain.Patterson@stm-labs.ru' limit 1),
+  (select id from ba.business_account  where name='Billing' limit 1)
+  );
+
+
 end if;
 END
 $do$;

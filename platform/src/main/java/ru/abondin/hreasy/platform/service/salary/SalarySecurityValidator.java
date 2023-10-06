@@ -17,35 +17,36 @@ import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 @RequiredArgsConstructor
 public class SalarySecurityValidator {
 
-    public enum ViewSalaryRequestMode{
+    public enum ViewSalaryRequestMode {
         /**
          * request was created by logged-in user
          */
         ONLY_MY,
         /**
-         * logged in user has role finance and has access to request's budgeting business account or request employee's department
+         * logged in user has role finance and has access to request's budgeting business account
          */
-        FROM_MY_BA_OR_DEPARTMENTS
+        FROM_MY_BAS
     }
 
     private final ProjectHierarchyAccessor projectHierarchyService;
 
     /**
-     *
      * @param auth
      * @return true
      */
     public Mono<ViewSalaryRequestMode> validateView(AuthContext auth) {
-        return Mono.defer(() ->  {
+        return Mono.defer(() -> {
             if (auth.getAuthorities().contains("approve_salary_request")) {
-                return Mono.just(ViewSalaryRequestMode.FROM_MY_BA_OR_DEPARTMENTS);
+                return Mono.just(ViewSalaryRequestMode.FROM_MY_BAS);
+            } else if (auth.getAuthorities().contains("report_salary_request")) {
+                return Mono.just(ViewSalaryRequestMode.ONLY_MY);
+            } else {
+                return Mono.error(new AccessDeniedException("Only employee with report_salary_request or approve_salary_request permissions can view salary requests"));
             }
-            return Mono.just(ViewSalaryRequestMode.ONLY_MY);
         });
     }
 
     /**
-     *
      * @param auth
      * @return true
      */
@@ -91,26 +92,26 @@ public class SalarySecurityValidator {
         });
     }
 
-    public Mono<Boolean> validateApproveSalaryRequest(AuthContext auth, Integer businessAccount, Integer department) {
-        return Mono.defer(() -> Mono.just(validateApproveSalaryRequestSync(auth, businessAccount, department))).flatMap(r -> {
+    public Mono<Boolean> validateApproveSalaryRequest(AuthContext auth, Integer businessAccount) {
+        return Mono.defer(() -> Mono.just(validateApproveSalaryRequestSync(auth, businessAccount))).flatMap(r -> {
             if (r) {
                 return Mono.just(true);
             }
             return Mono.error(new AccessDeniedException(
                     """
                             Only employee with 'approve_salary_request_globally' permission can approve any salary request.
-                            Employee with 'approve_salary_request' permission can approve salary request only if he/she is department manager of the employee
-                            or manager of the budgeting business account 
+                            Employee with 'approve_salary_request' permission can approve salary request only if he/she is
+                             manager of the budgeting business account 
                                                         """
             ));
         });
     }
 
-    private boolean validateApproveSalaryRequestSync(AuthContext auth, Integer businessAccount, Integer department) {
+    private boolean validateApproveSalaryRequestSync(AuthContext auth, Integer businessAccount) {
         if (!auth.getAuthorities().contains("approve_salary_request")) {
             return false;
         }
-        return projectHierarchyService.isBaOrDepartmentManager(auth, businessAccount, department);
+        return projectHierarchyService.isBaManager(auth, businessAccount);
     }
 
 
@@ -125,7 +126,7 @@ public class SalarySecurityValidator {
                 return Mono.just(true);
             }
             // Manager who can approve request can view it
-            return Mono.just(validateApproveSalaryRequestSync(auth, salaryRequest.getBudgetBusinessAccount(), salaryRequest.getEmployeeDepartmentId()));
+            return Mono.just(validateApproveSalaryRequestSync(auth, salaryRequest.getBudgetBusinessAccount()));
         }).flatMap(r -> {
             if (r) {
                 return Mono.just(true);

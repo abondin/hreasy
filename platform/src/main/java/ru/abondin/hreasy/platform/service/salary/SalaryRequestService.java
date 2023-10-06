@@ -19,8 +19,6 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestMapper;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -51,20 +49,21 @@ public class SalaryRequestService {
      * @return not deleted salary requests for given period filtered by logged-in permissions:
      * <ul>
      *     <li>All requests for user with "admin_salary_request" permission</li>
-     *     <li>Only if user has permission "approve_salary_request" and access to request's budgeting business account or request employee's department</>
-     *     <li>(in any ways) requests created by logged in user</li>
+     *     <li>Only if user has permission "approve_salary_request" and access to request's budgeting business account</>
+     *     <li>(if user has "report_salary_request" permission) requests created by logged in user</li>
      * </ul>
      */
     public Flux<SalaryRequestDto> findMy(AuthContext auth, int periodId) {
         var now = dateTimeService.now();
-        var authEmplInfo = auth.getEmployeeInfo();
+        var authEmpl = auth.getEmployeeInfo();
         log.debug("Get all accessible requests for period {} by {}", periodId, auth);
         return secValidator.validateView(auth)
                 .flatMapMany(v -> switch (v) {
-                    case FROM_MY_BA_OR_DEPARTMENTS -> requestRepo.findNotDeleted(
-                            periodId, authEmplInfo.getEmployeeId(), authEmplInfo.getAccessibleBas(), authEmplInfo.getAccessibleDepartments(), now);
-                    case ONLY_MY -> requestRepo.findNotDeleted(
-                            periodId, authEmplInfo.getEmployeeId(), List.of(), List.of(), now);
+                    case FROM_MY_BAS -> authEmpl.getAccessibleBas().isEmpty() ? requestRepo.findNotDeletedMy(
+                            periodId, authEmpl.getEmployeeId(), now) : requestRepo.findNotDeleted(
+                            periodId, authEmpl.getEmployeeId(), authEmpl.getAccessibleBas(), now);
+                    case ONLY_MY -> requestRepo.findNotDeletedMy(
+                            periodId, authEmpl.getEmployeeId(), now);
                 })
                 .map(mapper::fromEntry);
     }

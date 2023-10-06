@@ -71,7 +71,8 @@ frame RND as "RND BA" #FFAAFF
 [Jonas.Martin]--> [M1 ERP Integration] : employee
 
 [Percy.Gough] -[#green]> [Development] : head
-[Husnain.Patterson] -[#green]> [Billing] : head
+[Husnain.Patterson] -[#green]> [Billing] : pm
+[Husnain.Patterson] -[#green]> [Billing] : finance
 
 
 [M1 Billing] -[#gray]--> [Development]: dep

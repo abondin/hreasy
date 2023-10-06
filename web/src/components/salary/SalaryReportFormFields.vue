@@ -61,7 +61,7 @@ const namespace_dict = 'dict';
 @Component({
   components: {MyDateFormComponent}
 })
-export default class AdminSalaryReportFormFields extends Vue {
+export default class SalaryReportFormFields extends Vue {
 
   @Prop({required: true})
   private createBody!: SalaryRequestReportBody;
@@ -71,9 +71,6 @@ export default class AdminSalaryReportFormFields extends Vue {
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;
 
-  @Getter("departments", {namespace: namespace_dict})
-  private allDepartments!: Array<SimpleDict>;
-
   private salaryTypes = salaryRequestTypes.map(v => {
     return {text: this.$tc(`SALARY_REQUEST_TYPE.${v}`), value: v};
   });
@@ -82,10 +79,9 @@ export default class AdminSalaryReportFormFields extends Vue {
    * Lifecycle hook
    */
   created() {
-    logger.log('Admin salary report form created');
+    logger.log('Salary report form created');
     return this.$nextTick()
         .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
-        .then(() => this.$store.dispatch('dict/reloadDepartments'))
         .then(() =>
             employeeService.findAll().then(employees => {
                   this.allEmployees = employees;

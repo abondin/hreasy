@@ -42,10 +42,18 @@ export interface SalaryService {
     getClosedSalaryRequestPeriods(): Promise<Array<ClosedSalaryRequestPeriod>>;
 
     deleteSalaryRequest(ids: number[]): Promise<Array<any>>;
+
+    load(period: number): Promise<Array<SalaryIncreaseRequest>>;
 }
 
 class RestSalaryService implements SalaryService {
     constructor(private httpService: AxiosInstance) {
+    }
+
+    load(period: number): Promise<Array<SalaryIncreaseRequest>> {
+        return httpService.get(`v1/salaries/requests/${period}`).then(response => {
+            return response.data;
+        });
     }
 
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number> {
@@ -79,7 +87,6 @@ export interface SalaryIncreaseRequest extends WithId {
     createdAt: string;
     createdBy: SimpleDict;
     assessment: SimpleDict | null;
-    employeeDepartment: SimpleDict;
     employeePosition: SimpleDict;
     req: {
         salaryIncrease: number;

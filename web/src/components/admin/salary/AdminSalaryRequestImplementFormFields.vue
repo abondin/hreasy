@@ -2,13 +2,13 @@
   <span>
     <salary-request-short-info-component :data="item"></salary-request-short-info-component>
   <v-select
-       :disabled="body?.readonly"
+      :disabled="body?.readonly"
       v-model="body.state"
       :label="$t('Решение')"
       :items="salaryStats">
   </v-select>
   <v-text-field
-       :disabled="body?.readonly"
+      :disabled="body?.readonly"
       v-if="!isRejected()"
       type="number"
       v-model="body.salaryIncrease"
@@ -16,7 +16,7 @@
       :label="$t('Сумма в рублях')">
   </v-text-field>
    <v-select
-        :disabled="body?.readonly"
+       :disabled="body?.readonly"
        v-if="!isRejected()"
        v-model="body.increaseStartPeriod"
        :label="$t('Исполнить в периоде')"
@@ -25,7 +25,7 @@
        item-text="toString()">
     </v-select>
   <v-autocomplete
-       :disabled="body?.readonly"
+      :disabled="body?.readonly"
       v-if="!isBonus() && !isRejected()"
       v-model="body.newPosition"
       :items="allPositions.filter(p=>p.active)"
@@ -34,14 +34,14 @@
       :label="$t('Изменить позицию')"
   ></v-autocomplete>
   <v-text-field
-       :disabled="body?.readonly"
+      :disabled="body?.readonly"
       v-model="body.reason"
       counter="1024"
-      :rules="[v=>(v && v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024}))]"
+      :rules="[v=> isRejected()? (v && v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024})) : (!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
       :label="$t('Обоснование')">
   </v-text-field>
   <v-textarea
-       :disabled="body?.readonly"
+      :disabled="body?.readonly"
       v-model="body.comment"
       :rules="[v=>(!v || v.length <= 4096 || $t('Не более N символов', {n:4096}))]"
       :label="$t('Примечание')">

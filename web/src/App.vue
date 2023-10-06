@@ -58,7 +58,7 @@
         </v-list-item>
 
 
-        <v-list-item to="/admin/salaries/requests" v-if="canAdminSalaryRequests()">
+        <v-list-item :to="canAdminSalaryRequests()? '/admin/salaries/requests' : '/salaries/requests'" v-if="canReportSalaryRequest()">
           <v-list-item-action>
             <v-icon>mdi-currency-rub</v-icon>
           </v-list-item-action>
@@ -259,6 +259,10 @@ export default class App extends Vue {
 
   private canAdminSalaryRequests() {
     return permissionService.canAdminSalaryRequests();
+  }
+
+  private canReportSalaryRequest() {
+    return permissionService.canReportSalaryRequest();
   }
 
   private firstAvialableDict(): string | undefined {
