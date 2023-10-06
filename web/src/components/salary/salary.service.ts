@@ -17,15 +17,15 @@ export const salaryRequestTypes = [
 export interface SalaryRequestReportBody {
     employeeId: number;
     type: SalaryRequestType;
-    budgetBusinessAccount: number;
+    budgetBusinessAccount: number|null|undefined;
     budgetExpectedFundingUntil: string | null;
-    salaryIncrease: number;
+    salaryIncrease: number|null;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
     increaseStartPeriod: number;
     assessmentId: number | null;
-    reason: string;
+    reason: string|null;
     comment: string | null;
 }
 

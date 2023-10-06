@@ -20,6 +20,13 @@
       :label="$t('Бюджет из бизнес аккаунта')"
       :rules="[v => !!v || $t('Обязательное поле')]"
   ></v-autocomplete>
+    <v-autocomplete
+        v-if="employeeAssessments && employeeAssessments.length > 0"
+        v-model="createBody.assessmentId"
+        item-value="id" item-text="plannedDate"
+        :items="employeeAssessments"
+        :label="$t('Ассессмент')"
+    ></v-autocomplete>
   <my-date-form-component v-model="createBody.budgetExpectedFundingUntil"
                           :label="$t('Планируемая дата окончания финансирования')"
                           :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГГГ'))]"
@@ -47,7 +54,7 @@
 </template>
 
 <script lang="ts">
-import {Prop, Vue} from "vue-property-decorator";
+import {Prop, Vue, Watch} from "vue-property-decorator";
 import Component from "vue-class-component";
 import {SalaryRequestReportBody, salaryRequestTypes} from "@/components/salary/salary.service";
 import employeeService, {Employee} from "@/components/empl/employee.service";
@@ -56,6 +63,7 @@ import {SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import logger from "@/logger";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
+import assessmentService, {AssessmentBase} from "@/components/assessment/assessment.service";
 
 const namespace_dict = 'dict';
 @Component({
@@ -67,6 +75,7 @@ export default class SalaryReportFormFields extends Vue {
   private createBody!: SalaryRequestReportBody;
 
   private allEmployees: Employee[] = [];
+  private employeeAssessments: AssessmentBase[] = [];
 
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;
@@ -88,6 +97,30 @@ export default class SalaryReportFormFields extends Vue {
                 }
             )
         );
+  }
+
+  @Watch("createBody.employeeId")
+  private employeeSelected(employeeId: number) {
+    this.employeeAssessments = [];
+    const empl = this.allEmployees.find(e => e.id==employeeId);
+    if (!empl){
+      console.error(`Employee not found ${employeeId}`)
+      return ;
+    }
+    this.createBody.budgetBusinessAccount = empl.ba?.id;
+    this.createBody.salaryIncrease=null;
+    this.createBody.reason=null;
+    this.createBody.comment=null;
+    this.createBody.budgetExpectedFundingUntil=null;
+    this.createBody.assessmentId=null;
+    return assessmentService.employeeAssessments(employeeId)
+        .then(data => {
+          this.employeeAssessments = data.filter(a=>!a.createdAt);
+        })
+        .catch(err => {
+          console.error(`Unable to load assessment ${err}`);
+        })
+
   }
 
   private validateDate(formattedDate: string, allowEmpty = true): boolean {
