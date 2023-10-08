@@ -22,6 +22,8 @@ public class SalaryRequestExportDto {
 
     private String employeeProject;
     private String employeeProjectRole;
+    private OffsetDateTime createdAt;
+
     private String createdBy;
     private BigDecimal reqSalaryIncrease;
 

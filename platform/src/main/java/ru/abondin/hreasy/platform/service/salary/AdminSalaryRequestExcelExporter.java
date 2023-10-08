@@ -55,7 +55,8 @@ public class AdminSalaryRequestExcelExporter {
         try (var is = template.getInputStream()) {
             var context = new Context();
             context.putVar("requests", i18n(bundle));
-            context.putVar("exportedAt", bundle.getExportTime().toLocalDateTime());
+            context.putVar("exportedAt", bundle.getExportTime().toLocalDate());
+            context.putVar("exportedBy", bundle.getExportedBy());
             context.putVar("period", MapperBase.fromPeriodId(bundle.getPeriod()));
             JxlsHelper.getInstance().processTemplate(is, out, context);
         }
@@ -66,7 +67,9 @@ public class AdminSalaryRequestExcelExporter {
             if (r.getType() != null) {
                 r.setType(i18Helper.localize(bundle.locale, "enum.SalaryRequestType." + r.getType()));
             }
-            if (r.getImplState() != null) {
+            if (r.getImplState() == null) {
+                r.setImplState(i18Helper.localize(bundle.locale, "enum.SalaryRequestImplementationState.NIL"));
+            } else {
                 r.setImplState(i18Helper.localize(bundle.locale, "enum.SalaryRequestImplementationState." + r.getImplState()));
             }
             return r;

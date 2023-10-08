@@ -85,7 +85,7 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = "body.comment", target = "implComment")
     @Mapping(source = "implementedAt", target = "implementedAt")
     @Mapping(source = "implementedBy", target = "implementedBy")
-    @Mapping(constant = "-1", target = "implState")
+    @Mapping(constant = "2", target = "implState")
     void applyRequestRejectBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestRejectBody body, OffsetDateTime implementedAt, Integer implementedBy);
 
 // <editor-fold desc="named helpers">

@@ -41,8 +41,8 @@
 
   <v-textarea
       v-model="createBody.reason"
-      counter="1024"
-      :rules="[v=>(v && v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024}))]"
+      counter="256"
+      :rules="[v=>(v && v.length <= 256 || $t('Обязательное поле. Не более N символов', {n:256}))]"
       :label="$t('Обоснование')">
   </v-textarea>
   <v-textarea

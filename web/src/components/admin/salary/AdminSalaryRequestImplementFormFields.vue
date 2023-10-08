@@ -5,6 +5,7 @@
       :disabled="body?.readonly"
       v-model="body.state"
       :label="$t('Решение')"
+      :rules="[v => !!v || $t('Обязательное поле')]"
       :items="salaryStats">
   </v-select>
   <v-text-field
@@ -36,8 +37,8 @@
   <v-text-field
       :disabled="body?.readonly"
       v-model="body.reason"
-      counter="1024"
-      :rules="[v=> isRejected()? (v && v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024})) : (!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
+      counter="256"
+      :rules="[v=> isRejected()? (v && v.length <= 256 || $t('Обязательное поле. Не более N символов', {n:256})) : (!v || v.length <= 256 || $t('Не более N символов', {n:256}))]"
       :label="$t('Обоснование')">
   </v-text-field>
   <v-textarea
