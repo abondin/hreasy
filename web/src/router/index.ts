@@ -44,7 +44,7 @@ const routes = [
     {path: "/overtimes", component: AllOvertimes},
     {path: "/assessments", component: AssessmentShortList},
     {path: "/assessments/:employeeId", component: EmployeeAssessmentProfile, props: true},
-    {path: "/assessments/:employeeId/:assessmentId", component: AssessmentDetailedVue, props: true},
+    {path: "/assessments/:employeeId/:assessmentId", component: AssessmentDetailedVue, name: 'AssessmentDetailedVue', props: true},
     {path: "/salaries/requests", component: SalaryRequests},
     {path: "/timesheet", component: TimesheetTableComponent},
     {path: "/admin/projects", component: AdminProjects},

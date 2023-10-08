@@ -115,7 +115,7 @@ export default class SalaryReportFormFields extends Vue {
     this.createBody.assessmentId=null;
     return assessmentService.employeeAssessments(employeeId)
         .then(data => {
-          this.employeeAssessments = data.filter(a=>!a.createdAt);
+          this.employeeAssessments = data.filter(a=>!a.canceledAt);
         })
         .catch(err => {
           console.error(`Unable to load assessment ${err}`);

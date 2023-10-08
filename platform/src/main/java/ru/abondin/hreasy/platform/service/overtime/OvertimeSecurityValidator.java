@@ -60,7 +60,7 @@ public class OvertimeSecurityValidator {
     //TODO Add separate permission
     public Mono<Boolean> validateApproveOvertime(AuthContext auth, int employeeId) {
         return Mono.defer(() -> {
-            if (!auth.getAuthorities().contains("overtime_edit")) {
+            if (!auth.getAuthorities().contains("overtime_edit") || employeeId == auth.getEmployeeInfo().getEmployeeId()) {
                 return Mono.just(false);
             }
             return projectHierarchyService.isManager(auth, employeeId);
@@ -68,7 +68,7 @@ public class OvertimeSecurityValidator {
             if (r) {
                 return Mono.just(true);
             }
-            return Mono.error(new AccessDeniedException("Only user with permission overtime_edit can approve the overtime"));
+            return Mono.error(new AccessDeniedException("Only manager can approve overtime. No one can approve their overtime"));
         });
     }
 
@@ -84,7 +84,7 @@ public class OvertimeSecurityValidator {
     }
 
     // Check if user has acess to admin all overtime stuff
-    public Mono<Boolean>  validateAdminOvertime(AuthContext auth) {
+    public Mono<Boolean> validateAdminOvertime(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("overtime_admin")) {
                 return Mono.error(new AccessDeniedException("Only user with permission overtime_admin can admin overtimes"));

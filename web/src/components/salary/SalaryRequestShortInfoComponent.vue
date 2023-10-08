@@ -20,7 +20,10 @@
                 <dd>{{ data.createdBy.name }} ({{ formatDateTime(data.createdAt) }})</dd>
                 <dt class="font-weight-bold">{{ $t('Причина запроса') }}:</dt>
                 <dd>{{ data.req.reason }}</dd>
-                <dt class="font-weight-bold" v-if="data.req.comment">{{ $t('Дополнительный комментарий к запросу') }}:</dt>
+                <dt class="font-weight-bold" v-if="data.req.comment">{{
+                    $t('Дополнительный комментарий к запросу')
+                  }}:
+                </dt>
                 <dd v-if="data.req.comment">{{ data.req.comment }}</dd>
               </dl>
             </v-list-item>
@@ -30,14 +33,25 @@
           <v-list>
             <v-list-item>
               <dl>
-                <dt class="font-weight-bold" v-if="data.budgetBusinessAccount">{{ $t('Бюджет из бизнес аккаунта') }}:</dt>
+                <dt class="font-weight-bold" v-if="data.budgetBusinessAccount">{{
+                    $t('Бюджет из бизнес аккаунта')
+                  }}:
+                </dt>
                 <dd v-if="data.budgetBusinessAccount">{{ data.budgetBusinessAccount.name }}</dd>
 
-                <dt class="font-weight-bold" v-if="data.budgetExpectedFundingUntil">{{ $t('Планируемая дата окончания финансирования') }}:</dt>
+                <dt class="font-weight-bold" v-if="data.budgetExpectedFundingUntil">
+                  {{ $t('Планируемая дата окончания финансирования') }}:
+                </dt>
                 <dd v-if="data.budgetExpectedFundingUntil">{{ formatDate(data.budgetExpectedFundingUntil) }}</dd>
 
                 <dt class="font-weight-bold" v-if="data.assessment">{{ $t('Связанный ассессмент') }}:</dt>
-                <dd v-if="data.assessment">{{ data.assessment.name }}</dd>
+                <dd v-if="data.assessment">
+                  <router-link :to="{name:'AssessmentDetailedVue', params:{
+                  employeeId: data.employee.id,
+                  assessmentId: data.assessment.id
+                }}" target="_blank">{{ data.assessment.name }}
+                  </router-link>
+                </dd>
               </dl>
             </v-list-item>
           </v-list>
@@ -47,7 +61,7 @@
             <v-list-item>
               <dl>
                 <dt class="font-weight-bold">{{ $t('Решение') }}:</dt>
-                <dd v-bind:class="{'error--text':isRejected()}">{{ $t('SALARY_REQUEST_STAT.'+data.impl.state) }}</dd>
+                <dd v-bind:class="{'error--text':isRejected()}">{{ $t('SALARY_REQUEST_STAT.' + data.impl.state) }}</dd>
 
                 <dt class="font-weight-bold">{{ $t('Решение принято') }}:</dt>
                 <dd>{{ data.impl.implementedBy.name }} ({{ formatDateTime(data.impl.implementedAt) }})</dd>
@@ -55,7 +69,10 @@
                 <dt class="font-weight-bold" v-if="data.impl.salaryIncrease">{{ $t('Зафиксированная сумма') }}:</dt>
                 <dd v-if="data.impl.salaryIncrease">{{ formatMoney(data.impl.salaryIncrease) }}</dd>
 
-                <dt class="font-weight-bold" v-if="data.impl.increaseStartPeriod">{{ $t('Зафиксированная период') }}:</dt>
+                <dt class="font-weight-bold" v-if="data.impl.increaseStartPeriod">{{
+                    $t('Зафиксированная период')
+                  }}:
+                </dt>
                 <dd v-if="data.impl.increaseStartPeriod">{{ fromPeriodId(data.impl.increaseStartPeriod) }}</dd>
 
                 <dt class="font-weight-bold" v-if="data.impl.newPosition">{{ $t('Позиция') }}:</dt>
@@ -71,7 +88,10 @@
                 <dt class="font-weight-bold" v-if="data.impl.reason">{{ $t('Причина решения') }}:</dt>
                 <dd v-if="data.impl.reason">{{ data.impl.reason }}</dd>
 
-                <dt class="font-weight-bold" v-if="data.impl.comment">{{ $t('Дополнительный комментарий к решению') }}:</dt>
+                <dt class="font-weight-bold" v-if="data.impl.comment">{{
+                    $t('Дополнительный комментарий к решению')
+                  }}:
+                </dt>
                 <dd v-if="data.impl.comment">{{ data.impl.comment }}</dd>
               </dl>
             </v-list-item>

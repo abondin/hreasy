@@ -15,7 +15,7 @@ public enum SalaryRequestImplementationState {
     /**
      * When Salary Manager reject request
      */
-    REJECTED((short) -1);
+    REJECTED((short) 2);
     private final short value;
 
 }

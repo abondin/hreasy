@@ -26,7 +26,7 @@ import javax.validation.constraints.NotNull;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SalaryRequestAdminService {
+public class AdminSalaryRequestService {
     private final SalaryRequestRepo requestRepo;
 
     private final SalaryRequestClosedPeriodRepo closedPeriodRepo;

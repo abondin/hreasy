@@ -17,6 +17,7 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
                 r.*,
                 e.display_name as employee_display_name,
                 e.position as employee_position_id,
+                p.id employee_current_project_id, p.name employee_current_project_name, e.current_project_role employee_current_project_role,
                 pos.name as employee_position_name,
                 ba.name as budget_business_account_name,
                 asm.planned_date as assessment_planned_date,
@@ -25,6 +26,7 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
                 newPos.name as impl_new_position_name
             from sal.salary_request r
                 left join empl.employee e on r.employee_id = e.id
+                left join proj.project p on e.current_project=p.id
                 left join dict.position pos on e.position = pos.id 
                 left join ba.business_account ba on r.budget_business_account=ba.id
                 left join assmnt.assessment asm on r.assessment_id=asm.id

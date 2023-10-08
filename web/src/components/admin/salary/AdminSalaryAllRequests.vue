@@ -79,6 +79,29 @@
             }}</span>
         </v-tooltip>
       </v-col>
+      <v-col align-self="center" cols="auto">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="col-auto">
+              <v-btn link :disabled="exportLoading" @click="exportToExcel()" icon>
+                <v-icon>mdi-file-excel</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <p>{{ $t('Экспорт в Excel') }}</p>
+        </v-tooltip>
+        <v-snackbar
+            v-model="exportCompleted"
+            timeout="5000"
+        >
+          {{ $t('Экспорт успешно завершён. Файл скачен.') }}
+          <template v-slot:action="{ attrs }">
+            <v-btn color="blue" icon v-bind="attrs" @click="exportCompleted = false">
+              <v-icon>mdi-close-circle-outline</v-icon>
+            </v-btn>
+          </template>
+        </v-snackbar>
+      </v-col>
     </template>
 
   </hreasy-table>
@@ -100,10 +123,12 @@ import logger from "@/logger";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
-import {NumberUtils} from "@/components/numberutils";
 import salaryAdminService from "@/components/admin/salary/admin.salary.service";
+import adminSalaryService from "@/components/admin/salary/admin.salary.service";
 import SalaryReportFormFields from "@/components/salary/SalaryReportFormFields.vue";
-import AdminSalaryAllRequestsFilter, {AdminSalaryRequestFilter} from "@/components/admin/salary/AdminSalaryAllRequestsFilter.vue";
+import AdminSalaryAllRequestsFilter, {
+  AdminSalaryRequestFilter
+} from "@/components/admin/salary/AdminSalaryAllRequestsFilter.vue";
 import AdminSalaryRequestImplementFormFields, {
   SalaryRequestFormData,
   SalaryRequestImplementAction
@@ -125,6 +150,9 @@ export default class AdminSalaryAllRequests extends Vue {
   selectedPeriod = ReportPeriod.currentPeriod();
   closedPeriods: ClosedSalaryRequestPeriod[] = [];
 
+  private exportLoading = false;
+  private exportCompleted = false;
+
   dataLoader: () => Promise<SalaryIncreaseRequest[]> = () => salaryService.getClosedSalaryRequestPeriods()
       .then(data => {
         this.setClosedPeriods(data);
@@ -139,6 +167,7 @@ export default class AdminSalaryAllRequests extends Vue {
       () =>
           [
             {text: this.$tc('Сотрудник'), value: 'employee.name'},
+            {text: this.$tc('Текущий проект'), value: 'employeeCurrentProject.name'},
             {text: this.$tc('Тип'), value: 'type'},
             {text: this.$tc('Результат'), value: 'impl.state'},
             {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'},
@@ -147,8 +176,8 @@ export default class AdminSalaryAllRequests extends Vue {
             {text: this.$tc('Реализовано в периоде'), value: 'impl.increaseStartPeriod'},
             {text: this.$tc('Новая позиция'), value: 'impl.newPosition.name'},
             {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
-            {text: this.$tc('Созданно'), value: 'createdBy.name'},
-            {text: this.$tc('Созданно (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
+            {text: this.$tc('Создано'), value: 'createdBy.name'},
+            {text: this.$tc('Создано (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
             {text: this.$tc('Завершено'), value: 'implementedBy.name'},
             {
               text: this.$tc('Завершено (время)'),
@@ -182,6 +211,16 @@ export default class AdminSalaryAllRequests extends Vue {
    */
   created() {
     logger.log('Admin salary component created');
+  }
+
+  private exportToExcel() {
+    this.exportLoading = true;
+    this.exportCompleted = false;
+    adminSalaryService.export(this.selectedPeriod.periodId()).then(() => {
+      this.exportCompleted = true;
+    }).finally(() => {
+      this.exportLoading = false;
+    })
   }
 
   private incrementPeriod() {

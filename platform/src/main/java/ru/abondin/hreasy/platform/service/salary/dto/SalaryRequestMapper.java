@@ -1,13 +1,17 @@
 package ru.abondin.hreasy.platform.service.salary.dto;
 
 import org.mapstruct.*;
+import ru.abondin.hreasy.platform.repo.assessment.EmployeeAssessmentEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
 import java.time.OffsetDateTime;
+import java.time.YearMonth;
+import java.util.Locale;
 
 @Mapper(componentModel = "spring")
 public interface SalaryRequestMapper extends MapperBase {
@@ -21,6 +25,7 @@ public interface SalaryRequestMapper extends MapperBase {
     SalaryRequestEntry toEntry(SalaryRequestReportBody body, Integer createdBy, OffsetDateTime createdAt);
 
     @Mapping(source = ".", target = "employee", qualifiedByName = "employee")
+    @Mapping(source = ".", target = "employeeCurrentProject", qualifiedByName = "employeeCurrentProject")
     @Mapping(source = ".", target = "budgetBusinessAccount", qualifiedByName = "budgetBusinessAccount")
     @Mapping(source = ".", target = "assessment", qualifiedByName = "assessment")
     @Mapping(source = ".", target = "employeePosition", qualifiedByName = "employeePosition")
@@ -38,6 +43,24 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = "implState", target = "impl.state")
     @Mapping(source = ".", target = "impl.newPosition", qualifiedByName = "employeeNewPosition")
     SalaryRequestDto fromEntry(SalaryRequestView entry);
+
+    @Mapping(source = "req.salaryIncrease", target = "reqSalaryIncrease")
+    @Mapping(source = "req.reason", target = "reqReason")
+    @Mapping(source = "impl.salaryIncrease", target = "implSalaryIncrease")
+    @Mapping(source = "impl.increaseStartPeriod", target = "implIncreaseStartPeriod", qualifiedByName = "period")
+    @Mapping(source = "impl.reason", target = "implReason")
+    @Mapping(source = "impl.state", target = "implState")
+    @Mapping(source = "impl.newPosition.name", target = "implNewPosition")
+    @Mapping(source = "impl.implementedBy.name", target = "implemented")
+    @Mapping(source = "employee.name", target = "employee")
+    @Mapping(source = "employeeCurrentProject.name", target = "employeeProject")
+    @Mapping(source = "employeeCurrentProject.role", target = "employeeProjectRole")
+    @Mapping(source = "createdBy.name", target = "createdBy")
+    @Mapping(source = "employeePosition.name", target = "employeePosition")
+    @Mapping(source = "budgetBusinessAccount.name", target = "budgetBusinessAccount")
+    @Mapping(source = "assessment.name", target = "assessment")
+    SalaryRequestExportDto toExportDto(SalaryRequestDto dto);
+
 
     @AfterMapping
     default void dtoAfterMapping(@MappingTarget SalaryRequestDto dto) {
@@ -104,6 +127,17 @@ public interface SalaryRequestMapper extends MapperBase {
     default SimpleDictDto implementedBy(SalaryRequestView entry) {
         return simpleDto(entry.getImplementedBy(), entry.getImplementedByDisplayName());
     }
+
+    @Named("employeeCurrentProject")
+    default CurrentProjectDictDto currentProject(SalaryRequestView entry) {
+        return currentProjectDto(entry.getEmployeeCurrentProjectId(), entry.getEmployeeCurrentProjectName(), entry.getEmployeeCurrentProjectRole());
+    }
+
+    @Named("period")
+    default YearMonth period(Integer periodId){
+        return MapperBase.fromPeriodId(periodId);
+    }
+
 // </editor-fold>
 
 

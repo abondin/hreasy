@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS sal.salary_request (
     implemented_at timestamp with time zone NULL,
     implemented_by integer NULL REFERENCES empl.employee (id),
     -- 1 - Implemented
-    -- -1 - Rejected
+    -- 2 - Rejected
     impl_state integer NULL,
     impl_salary_increase numeric(10, 2) NULL,
     impl_increase_start_period integer null,
@@ -74,7 +74,7 @@ COMMENT ON COLUMN sal.salary_request.impl_reason IS 'Implementation changes of r
 COMMENT ON COLUMN sal.salary_request.impl_comment IS 'Optional implementation additional comment';
 COMMENT ON COLUMN sal.salary_request.impl_state IS '
 1 - Implemented
--1 - Rejected
+2 - Rejected
 ';
 
 ---------------------------------------------------
@@ -111,6 +111,8 @@ COMMENT ON COLUMN sal.salary_request_approval.deleted_by IS 'Deleted by';
 
 INSERT INTO sec."role" ("role", description) VALUES
 ('salary_manager', 'View and update salary information in the system') ON CONFLICT DO NOTHING;
+INSERT INTO sec."role" ("role", description) VALUES
+('pm_finance', 'PM with ability to report salary requests') ON CONFLICT DO NOTHING;
 
 INSERT INTO sec.perm (permission,description) VALUES
     ('report_salary_request','Report salary increase or bonus request for the employee (PM)') ON CONFLICT DO NOTHING;
@@ -123,9 +125,11 @@ INSERT INTO sec.role_perm ("role","permission") VALUES
     ('global_admin','report_salary_request'),
     ('global_admin','approve_salary_request'),
     ('global_admin','admin_salary_request'),
-    ('finance','approve_salary_request'),
     ('salary_manager','admin_salary_request'),
-    ('pm','report_salary_request')
+    ('salary_manager','approve_salary_request'),
+    ('salary_manager','report_salary_request'),
+    ('pm_finance','approve_salary_request'),
+    ('pm_finance','report_salary_request')
      ON CONFLICT DO NOTHING;
 
 

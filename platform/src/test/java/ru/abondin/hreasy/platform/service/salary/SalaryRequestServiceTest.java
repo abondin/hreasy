@@ -43,7 +43,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
 
 
     @Autowired
-    private SalaryRequestAdminService salaryAdminRequestService;
+    private AdminSalaryRequestService salaryAdminRequestService;
 
     @Autowired
     private SalaryRequestRepo repo;

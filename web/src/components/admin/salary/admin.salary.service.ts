@@ -17,7 +17,7 @@ export interface SalaryRequestRejectBody {
 
 export const enum SalaryRequestImplementationState {
     IMPLEMENTED = 1,
-    REJECTED = -1
+    REJECTED = 2
 }
 
 export const salaryRequestImplementationStates = [
@@ -45,6 +45,8 @@ export interface AdminSalaryService {
      * @param comment - optional comment
      */
     reopenReportPeriod(periodId: number, comment?: string): Promise<any>;
+
+    export(periodId: number): any;
 }
 
 class RestAdminSalaryService implements AdminSalaryService {
@@ -79,6 +81,17 @@ class RestAdminSalaryService implements AdminSalaryService {
         });
     }
 
+    export(periodId: number): Promise<void> {
+        return httpService.get(`v1/admin/salaries/requests/${periodId}/export`, {
+            responseType: 'arraybuffer',
+        }).then(response => {
+            const blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = `SalaryRequest_${periodId}.xlsx`;
+            link.click();
+        });
+    }
 
 }
 

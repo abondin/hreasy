@@ -78,6 +78,10 @@ INSERT INTO sec.user_role (employee_id, role) values (
 (select id from empl.employee  where email ilike 'Maxwell.May@stm-labs.ru' limit 1),
 'pm'
 );
+INSERT INTO sec.user_role (employee_id, role) values (
+(select id from empl.employee  where email ilike 'Maxwell.May@stm-labs.ru' limit 1),
+'pm_finance'
+);
 INSERT INTO empl.manager (employee, object_type, object_id, responsibility_type, created_at) values (
 (select id from empl.employee  where email ilike 'Maxwell.May@stm-labs.ru' limit 1),
 'project',
@@ -123,7 +127,7 @@ INSERT INTO empl.employee (email, display_name,
   );
   INSERT INTO sec.user_role (employee_id, role) values (
   (select id from empl.employee  where email ilike 'Husnain.Patterson@stm-labs.ru' limit 1),
-  'finance'
+  'pm_finance'
   );
   INSERT INTO sec.employee_accessible_bas
    (employee_id, ba_id) values (
@@ -285,6 +289,10 @@ INSERT INTO sec.user_role (employee_id, role) values (
 (select id from empl.employee  where email ilike 'Jawad.Mcghee@stm-labs.ru' limit 1),
 'pm'
 );
+INSERT INTO sec.user_role (employee_id, role) values (
+(select id from empl.employee  where email ilike 'Jawad.Mcghee@stm-labs.ru' limit 1),
+'pm_finance'
+);
 INSERT INTO empl.manager (employee, object_type, object_id, responsibility_type, created_at) values (
 (select id from empl.employee  where email ilike 'Jawad.Mcghee@stm-labs.ru' limit 1),
 'project',
@@ -375,6 +383,10 @@ now()::date
 INSERT INTO sec.user_role (employee_id, role) values (
 (select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
 'pm'
+);
+INSERT INTO sec.user_role (employee_id, role) values (
+(select id from empl.employee  where email ilike 'Kyran.Neville@stm-labs.ru' limit 1),
+'pm_finance'
 );
 end if;
 END
@@ -566,7 +578,7 @@ INSERT INTO empl.employee (email, display_name,
   null);
 INSERT INTO sec.user_role (employee_id, role) values (
 (select id from empl.employee  where email ilike 'Scrooge.McDuck@stm-labs.ru' limit 1),
-'finance'
+'pm_finance'
 );
 
 end if;

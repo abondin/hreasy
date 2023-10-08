@@ -21,6 +21,7 @@
 - Notifications
   - Upcoming vacations email
 - Download and upload Technical Profiles
+- Report, Implement and export salaries requests and bonuses
 
 
 ## Permissions and roles
@@ -93,14 +94,15 @@ and Dave's overtimes. Dave can see only his own overtimes.
 | admin_salary_request           | N                     | N                           | N                                      | View all requests in company. Change request states                                                                                                               |
 **Default permissions and roles**
 
-|role| description                                                                                                       |
-|----|-------------------------------------------------------------------------------------------------------------------|
-|global_admin| Full access                                                                                                       |
-|hr| Add/Update/Fire all employees. Admin dictionary                                                                   |
-|pm| Overtime and vacation review and update, reasign employee between managed projects                                |
-|finance| Work with business account positions and expenses. Approve salary requests on his business accounts or department |
-|salary_manager| View and update salary information in the system                                                                  |
-|content_management| Create, update and moderate articles and news                                                                     |
+| role               | description                                                                                                       |
+|--------------------|-------------------------------------------------------------------------------------------------------------------|
+| global_admin       | Full access                                                                                                       |
+| hr                 | Add/Update/Fire all employees. Admin dictionary                                                                   |
+| pm                 | Overtime and vacation review and update, reasign employee between managed projects                                |
+| pm_finance         | PM with ability to report salary requests                                |
+| finance (WIP)      | Work with business account positions and expenses. Approve salary requests on his business accounts or department |
+| salary_manager     | View and update salary information in the system                                                                  |
+| content_management | Create, update and moderate articles and news                                                                     |
 
 | permissions                   | roles                           |
 |-------------------------------|---------------------------------|
@@ -136,8 +138,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 | view_timesheet                | pm,global_admin                 |            
 | view_timesheet_summary        | pm, hr, global_admin            |            
 | report_timesheet              | pm,global_admin                 |            
-| report_salary_request         | pm,global_admin                 | 
-| approve_salary_request        | finance,global_admin            | 
+| report_salary_request         | pm_finance,global_admin         | 
+| approve_salary_request        | pm_finance,global_admin         | 
 | admin_salary_request          | salary_manager,global_admin     | 
 
 ## Assessments (Work in Progress)

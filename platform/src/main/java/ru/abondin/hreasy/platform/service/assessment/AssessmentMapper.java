@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.service.assessment;
 
-import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -17,8 +16,6 @@ import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Mapper(componentModel = "spring")
 public interface AssessmentMapper extends MapperBase {

@@ -114,6 +114,7 @@ export default class SalaryRequests extends Vue {
       () =>
           [
             {text: this.$tc('Сотрудник'), value: 'employee.name'},
+            {text: this.$tc('Текущий проект'), value: 'employeeCurrentProject.name'},
             {text: this.$tc('Тип'), value: 'type'},
             {text: this.$tc('Результат'), value: 'impl.state'},
             {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'},
@@ -121,8 +122,8 @@ export default class SalaryRequests extends Vue {
             {text: this.$tc('Реалиованная сумма в рублях'), value: 'impl.salaryIncrease'},
             {text: this.$tc('Реализовано в периоде'), value: 'impl.increaseStartPeriod'},
             {text: this.$tc('Новая позиция'), value: 'impl.newPosition.name'},
-            {text: this.$tc('Созданно'), value: 'createdBy.name'},
-            {text: this.$tc('Созданно (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
+            {text: this.$tc('Создано'), value: 'createdBy.name'},
+            {text: this.$tc('Создано (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
             {text: this.$tc('Завершено'), value: 'implementedBy.name'},
             {
               text: this.$tc('Завершено (время)'),
@@ -204,7 +205,7 @@ export default class SalaryRequests extends Vue {
 
   formatDate = (v: string | undefined) => DateTimeUtils.formatFromIso(v);
 
-  formatMoney = (v: string | number | null | undefined) => Number(v).toLocaleString();
+  formatMoney = (v: string | number | null | undefined) => v ? Number(v).toLocaleString() : '';
 
   fromPeriodId = (v: number | null | undefined) => v && !isNaN(v) ? ReportPeriod.fromPeriodId(v) : null;
 }

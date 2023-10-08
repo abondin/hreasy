@@ -7,6 +7,9 @@ import java.time.LocalDate;
 @Data
 public class SalaryRequestView extends SalaryRequestEntry {
     private String employeeDisplayName;
+    private Integer employeeCurrentProjectId;
+    private String employeeCurrentProjectName;
+    private String employeeCurrentProjectRole;
     private String budgetBusinessAccountName;
     private LocalDate assessmentPlannedDate;
     private String createdByDisplayName;

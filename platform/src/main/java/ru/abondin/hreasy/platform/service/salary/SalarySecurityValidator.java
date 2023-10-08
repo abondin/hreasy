@@ -64,6 +64,9 @@ public class SalarySecurityValidator {
         });
     }
 
+    public Mono<Boolean> validateExport(AuthContext auth) {
+        return validateViewAll(auth);
+    }
     public Mono<Boolean> validateReportSalaryRequest(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("report_salary_request")) {

@@ -3,6 +3,7 @@ import httpService from "@/components/http.service";
 import {WithId} from "@/components/shared/table/TableComponentDataContainer";
 import {SimpleDict} from "@/store/modules/dict";
 import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
+import {CurrentProjectDict} from "@/components/empl/employee.service";
 
 export const enum SalaryRequestType {
     SALARY_INCREASE = 1,
@@ -81,6 +82,7 @@ export default salaryService;
 export interface SalaryIncreaseRequest extends WithId {
     id: number;
     employee: SimpleDict;
+    employeeCurrentProject: CurrentProjectDict;
     type: SalaryRequestType;
     budgetBusinessAccount: SimpleDict;
     budgetExpectedFundingUntil: string | null;

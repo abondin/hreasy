@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.salary.dto;
 
 import lombok.Data;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import javax.validation.constraints.NotNull;
@@ -15,6 +16,9 @@ public class SalaryRequestDto {
 
     @NotNull
     private SimpleDictDto employee;
+
+    private CurrentProjectDictDto employeeCurrentProject;
+
     /**
      * @see SalaryRequestType
      */
