@@ -319,6 +319,10 @@ class VuexPermissionService implements PermissionService {
     }
 
     canApproveOvertimeReport(employeeId: number): boolean {
+        const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
+        if (securityInfo && securityInfo.employeeId == employeeId){
+            return false;
+        }
         return this.simplePermissionCheck(Permissions.ApproveOvertimes);
     }
 
