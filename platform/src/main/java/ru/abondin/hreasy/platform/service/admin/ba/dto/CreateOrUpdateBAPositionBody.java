@@ -4,17 +4,17 @@ import lombok.Data;
 import lombok.ToString;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.math.BigDecimal;
 
 @Data
 @ToString
 public class CreateOrUpdateBAPositionBody {
-    @NotNull
+    @NonNull
     private String name;
     @Nullable
     private String description;
-    @NotNull
+    @NonNull
     private BigDecimal rate;
 
     private boolean archived = false;

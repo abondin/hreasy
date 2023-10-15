@@ -1,36 +1,38 @@
 package ru.abondin.hreasy.platform.repo.salary;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.lang.NonNull;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestType;
 
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Data
+@NoArgsConstructor
 @Table("sal.salary_request")
 public class SalaryRequestEntry {
     // <editor-fold desc="Common fields">
     @Id
     private Integer id;
 
-    @NotNull
+    @NonNull
     private Integer employeeId;
     /**
      * @see SalaryRequestType
      */
-    @NotNull
+    @NonNull
     private Short type;
-    @NotNull
+    @NonNull
     private Integer budgetBusinessAccount;
     private LocalDate budgetExpectedFundingUntil;
 
-    @NotNull
+    @NonNull
     private OffsetDateTime createdAt;
-    @NotNull
+    @NonNull
 
     private Integer createdBy;
     private Integer assessmentId;
@@ -41,14 +43,14 @@ public class SalaryRequestEntry {
 
 // <editor-fold desc="Request fields">
 
-    @NotNull
+    @NonNull
     private BigDecimal reqSalaryIncrease;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
-    @NotNull
+    @NonNull
     private Integer reqIncreaseStartPeriod;
-    @NotNull
+    @NonNull
     private String reqReason;
     private String reqComment;
 // </editor-fold>
@@ -58,14 +60,14 @@ public class SalaryRequestEntry {
     private Integer implState;
     private OffsetDateTime implementedAt;
     private Integer implementedBy;
-    @NotNull
+    @NonNull
     private BigDecimal implSalaryIncrease;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
-    @NotNull
+    @NonNull
     private Integer implIncreaseStartPeriod;
-    @NotNull
+    @NonNull
     private String implReason;
     private String implComment;
     private Integer implNewPosition;

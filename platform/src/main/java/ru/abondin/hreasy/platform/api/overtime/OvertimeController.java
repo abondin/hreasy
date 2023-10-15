@@ -13,8 +13,8 @@ import ru.abondin.hreasy.platform.service.overtime.OvertimeExportService;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeService;
 import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import org.springframework.lang.NonNull;
 import java.util.Locale;
 
 @RestController()
@@ -110,7 +110,7 @@ public class OvertimeController {
     @Data
     @Valid
     public static class DeclineReportBody {
-        @NotNull(message = "Comment is required to decline overtime report")
+        @NonNull
         private String comment;
         @Nullable
         private Integer previousApprovalId;

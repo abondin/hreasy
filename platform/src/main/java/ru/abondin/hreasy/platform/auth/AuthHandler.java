@@ -97,7 +97,7 @@ public class AuthHandler {
                         securityContext -> {
                             securityContext.setAuthentication(authResult);
                             return securityContext;
-                        }).subscriberContext(ReactiveSecurityContextHolder.withAuthentication(authResult))
+                        }).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult))
         ).flatMap(securityContext -> {
             webSession.getAttributes().put(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
             return webSession.save();

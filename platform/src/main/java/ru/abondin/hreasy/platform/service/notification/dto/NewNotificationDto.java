@@ -2,14 +2,16 @@ package ru.abondin.hreasy.platform.service.notification.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import lombok.NoArgsConstructor;
+import org.springframework.lang.NonNull;
 
 /**
  * Create new notification
  */
 @Data
+@NoArgsConstructor
 public class NewNotificationDto {
-    @NotNull
+    @NonNull
     private String clientUuid;
     /**
      * Show text to show notification title

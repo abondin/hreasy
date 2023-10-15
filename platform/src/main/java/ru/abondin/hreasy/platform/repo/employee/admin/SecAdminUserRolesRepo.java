@@ -8,13 +8,13 @@ import java.util.List;
 
 public interface SecAdminUserRolesRepo {
 
-    Mono<Integer> updateRoles(int employeeId, List<String> roles);
+    Mono<Long> updateRoles(int employeeId, List<String> roles);
 
-    Mono<Integer> updateAccessibleDepartments(int employeeId, List<Integer> accessibleDepartments);
+    Mono<Long> updateAccessibleDepartments(int employeeId, List<Integer> accessibleDepartments);
 
-    Mono<Integer> updateAccessibleProjects(int employeeId, List<Integer> accessibleProjects);
+    Mono<Long> updateAccessibleProjects(int employeeId, List<Integer> accessibleProjects);
 
-    Mono<Integer> updateAccessibleBas(int employeeId, List<Integer> accessibleBas);
+    Mono<Long> updateAccessibleBas(int employeeId, List<Integer> accessibleBas);
 
-    Mono<Integer> addAccessibleProject(int employeeId, int projectId);
+    Mono<Long> addAccessibleProject(int employeeId, int projectId);
 }

@@ -21,7 +21,7 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestMapper;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestRejectBody;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +78,7 @@ public class AdminSalaryRequestService {
     }
 
     @Transactional
-    public Mono<Integer> closeSalaryRequestPeriod(AuthContext auth, @NotNull int periodId, @Nullable String comment) {
+    public Mono<Integer> closeSalaryRequestPeriod(AuthContext auth, @NonNull int periodId, @Nullable String comment) {
         log.info("Close salary request period {} by {}. Comment: {}", periodId, auth.getUsername(), comment);
         final var now = dateTimeService.now();
         return secValidator.validateCloseSalaryRequestPeriod(auth).flatMap(h -> {
@@ -98,7 +98,7 @@ public class AdminSalaryRequestService {
     }
 
     @Transactional
-    public Mono<Void> reopenSalaryRequestPeriod(AuthContext auth, @NotNull int periodId, @Nullable String comment) {
+    public Mono<Void> reopenSalaryRequestPeriod(AuthContext auth, @NonNull int periodId, @Nullable String comment) {
         log.info("Reopen salary request period {} by {}. Comment: {}", periodId, auth.getUsername(), comment);
         final var now = dateTimeService.now();
         return secValidator.validateCloseSalaryRequestPeriod(auth).

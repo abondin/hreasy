@@ -16,31 +16,31 @@ public class SecAdminUserRolesRepoImpl implements SecAdminUserRolesRepo {
     private final R2dbcEntityTemplate dbTemplate;
 
     @Override
-    public Mono<Integer> updateRoles(int employeeId, List<String> roles) {
+    public Mono<Long> updateRoles(int employeeId, List<String> roles) {
         return doDeleteAndInsert("sec.user_role", "employee_id", employeeId,
                 "role", roles);
     }
 
     @Override
-    public Mono<Integer> updateAccessibleDepartments(int employeeId, List<Integer> accessibleDepartments) {
+    public Mono<Long> updateAccessibleDepartments(int employeeId, List<Integer> accessibleDepartments) {
         return doDeleteAndInsert("sec.employee_accessible_departments", "employee_id", employeeId,
                 "department_id", accessibleDepartments);
     }
 
     @Override
-    public Mono<Integer> updateAccessibleProjects(int employeeId, List<Integer> accessibleProjects) {
+    public Mono<Long> updateAccessibleProjects(int employeeId, List<Integer> accessibleProjects) {
         return doDeleteAndInsert("sec.employee_accessible_projects", "employee_id", employeeId,
                 "project_id", accessibleProjects);
     }
 
     @Override
-    public Mono<Integer> updateAccessibleBas(int employeeId, List<Integer> accessibleBas) {
+    public Mono<Long> updateAccessibleBas(int employeeId, List<Integer> accessibleBas) {
         return doDeleteAndInsert("sec.employee_accessible_bas", "employee_id", employeeId,
                 "ba_id", accessibleBas);
     }
 
     @Override
-    public Mono<Integer> addAccessibleProject(int employeeId, int projectId) {
+    public Mono<Long> addAccessibleProject(int employeeId, int projectId) {
         return dbTemplate.getDatabaseClient().sql(
                         "insert into sec.employee_accessible_projects (employee_id, project_id)" +
                                 " values (:employee_id, :project_id)")
@@ -49,12 +49,12 @@ public class SecAdminUserRolesRepoImpl implements SecAdminUserRolesRepo {
                 .fetch().rowsUpdated();
     }
 
-    private <T> Mono<Integer> doDeleteAndInsert(String tableName,
+    private <T> Mono<Long> doDeleteAndInsert(String tableName,
                                                 String idFieldName,
                                                 int id,
                                                 String valueFieldName,
                                                 List<T> values) {
-        var inserts = new ArrayList<Mono<Integer>>();
+        var inserts = new ArrayList<Mono<Long>>();
         for (var r : values) {
             var i = dbTemplate.getDatabaseClient().sql(
                             "insert into " + tableName + " (" + idFieldName + ", " + valueFieldName + ")" +
@@ -69,6 +69,6 @@ public class SecAdminUserRolesRepoImpl implements SecAdminUserRolesRepo {
                 .bind("id", id)
                 .fetch().rowsUpdated()
                 // 2. Insert new roles
-                .then(values.isEmpty() ? Mono.just(0) : Mono.zip(inserts, (a) -> a.length));
+                .then(values.isEmpty() ? Mono.just(0l) : Mono.zip(inserts, (a) -> (long)a.length));
     }
 }

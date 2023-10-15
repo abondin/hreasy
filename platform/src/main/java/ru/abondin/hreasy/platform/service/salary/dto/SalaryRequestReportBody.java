@@ -2,7 +2,7 @@ package ru.abondin.hreasy.platform.service.salary.dto;
 
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Builder
 public class SalaryRequestReportBody {
 
-    @NotNull
+    @NonNull
     private Integer employeeId;
     /**
      * <ul>
@@ -22,22 +22,22 @@ public class SalaryRequestReportBody {
      * </ul>
      * @see SalaryRequestType
      */
-    @NotNull
+    @NonNull
     private Short type;
-    @NotNull
+    @NonNull
     private Integer budgetBusinessAccount;
     private LocalDate budgetExpectedFundingUntil;
 
-    @NotNull
+    @NonNull
     private BigDecimal salaryIncrease;
 
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
-    @NotNull
+    @NonNull
     private Integer increaseStartPeriod;
     private Integer assessmentId;
-    @NotNull
+    @NonNull
     private String reason;
     private String comment;
 }

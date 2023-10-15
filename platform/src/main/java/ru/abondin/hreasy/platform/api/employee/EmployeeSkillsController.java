@@ -14,7 +14,7 @@ import ru.abondin.hreasy.platform.service.skills.SkillService;
 import ru.abondin.hreasy.platform.service.skills.dto.SharedSkillNameDto;
 import ru.abondin.hreasy.platform.service.skills.dto.SkillDto;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 
 @RestController()
 @RequestMapping("/api/v1/employee/skills")
@@ -73,9 +73,9 @@ public class EmployeeSkillsController {
     @Data
     @ToString(of = "name")
     public static class AddSkillBody {
-        @NotNull
+        @NonNull
         private int groupId;
-        @NotNull
+        @NonNull
         private String name;
         @Nullable
         private SkillRatingBody rating;

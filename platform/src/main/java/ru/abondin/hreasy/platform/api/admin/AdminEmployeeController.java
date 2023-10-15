@@ -16,7 +16,7 @@ import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeImport
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeesWorkflowDto;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.Locale;
 
 /**

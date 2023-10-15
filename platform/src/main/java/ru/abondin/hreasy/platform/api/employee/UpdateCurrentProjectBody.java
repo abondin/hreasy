@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
+import org.springframework.lang.NonNull;
+import jakarta.validation.constraints.Null;
 
 /**
  * Update employee's current project body
@@ -15,7 +15,7 @@ import javax.validation.constraints.Null;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateCurrentProjectBody {
-    @NotNull
+    @NonNull
     private Integer id;
 
     /**

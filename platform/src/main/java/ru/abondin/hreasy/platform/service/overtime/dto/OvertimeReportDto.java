@@ -1,14 +1,16 @@
 package ru.abondin.hreasy.platform.service.overtime.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class OvertimeReportDto {
     private Integer id;
 
@@ -18,7 +20,7 @@ public class OvertimeReportDto {
      * Overtime report period in yyyymm format.
      * For example 202005 for all overtimes, reported in June
      */
-    @NotNull
+    @NonNull
     private int period;
 
     private List<OvertimeItemDto> items = new ArrayList<>();

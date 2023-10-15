@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.repo.dict;
 
 import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -10,7 +11,7 @@ import ru.abondin.hreasy.platform.repo.manager.ManagerRepo;
 import java.util.List;
 
 @Repository
-public interface DictProjectRepo extends ReactiveSortingRepository<DictProjectEntry, Integer> {
+public interface DictProjectRepo extends ReactiveSortingRepository<DictProjectEntry, Integer>, ReactiveCrudRepository<DictProjectEntry, Integer>  {
 
     String FULL_INFO_QUERY = """
             select p.*, d.name as department_name ,ba.name as ba_name
@@ -19,12 +20,12 @@ public interface DictProjectRepo extends ReactiveSortingRepository<DictProjectEn
             left join ba.business_account ba on p.ba_id=ba.id
             """;
 
-    String WITH_MANAGERS_QUERY=
+    String WITH_MANAGERS_QUERY =
             "select pr.*, mgs.managers_json from ("
-            +FULL_INFO_QUERY
-            +" ) pr left join ( "
-            + ManagerRepo.AGGREGATED_MANAGERS_BY_OBJECT
-            +") mgs on pr.id=mgs.object_id and mgs.object_type='project'";
+                    + FULL_INFO_QUERY
+                    + " ) pr left join ( "
+                    + ManagerRepo.AGGREGATED_MANAGERS_BY_OBJECT
+                    + ") mgs on pr.id=mgs.object_id and mgs.object_type='project'";
 
     @Query("select * from proj.project p order by name")
     Flux<DictProjectEntry> findAll();

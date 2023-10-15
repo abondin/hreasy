@@ -3,7 +3,7 @@ package ru.abondin.hreasy.platform.service.salary.dto;
 import lombok.Builder;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class SalaryRequestRejectBody {
-    @NotNull
+    @NonNull
     private String reason;
     private String comment;
 }

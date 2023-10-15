@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 
 /**
  * Create empty article
@@ -14,9 +14,9 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateArticleBody {
-    @NotNull
+    @NonNull
     private String name;
-    @NotNull
+    @NonNull
     private String articleGroup;
     @Nullable
     private String description;

@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.math.BigDecimal;
 
 /**
@@ -13,12 +13,12 @@ import java.math.BigDecimal;
 @Data
 @Builder
 public class SalaryRequestImplementBody {
-    @NotNull
+    @NonNull
     private BigDecimal salaryIncrease;
-    @NotNull
+    @NonNull
     private Integer increaseStartPeriod;
     private Integer newPosition;
-    @NotNull
+    @NonNull
     private String reason;
     private String comment;
 }

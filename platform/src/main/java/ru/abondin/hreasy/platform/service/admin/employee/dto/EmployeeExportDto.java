@@ -2,18 +2,20 @@ package ru.abondin.hreasy.platform.service.admin.employee.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import lombok.NoArgsConstructor;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 
 /**
  * DTO for admin_employees_template.xlsx XLSX template
  */
 @Data
+@NoArgsConstructor
 public class EmployeeExportDto {
     private String displayName;
     private LocalDate birthday;
     private String sex;
-    @NotNull
+    @NonNull
     private String email;
     private String phone;
     private String skype;

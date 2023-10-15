@@ -1,8 +1,10 @@
 package ru.abondin.hreasy.platform.service.admin.employee.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class EmployeeWithAllDetailsDto extends EmployeeAllFields {
     private Integer id;
     private String displayName;

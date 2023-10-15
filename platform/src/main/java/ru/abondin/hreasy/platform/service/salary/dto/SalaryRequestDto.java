@@ -1,10 +1,11 @@
 package ru.abondin.hreasy.platform.service.salary.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -14,7 +15,7 @@ public class SalaryRequestDto {
 
     private Integer id;
 
-    @NotNull
+    @NonNull
     private SimpleDictDto employee;
 
     private CurrentProjectDictDto employeeCurrentProject;
@@ -22,9 +23,9 @@ public class SalaryRequestDto {
     /**
      * @see SalaryRequestType
      */
-    @NotNull
+    @NonNull
     private Short type;
-    @NotNull
+    @NonNull
     private SimpleDictDto budgetBusinessAccount;
     private LocalDate budgetExpectedFundingUntil;
 
@@ -32,9 +33,9 @@ public class SalaryRequestDto {
     private SimpleDictDto assessment;
     private SimpleDictDto employeePosition;
 
-    @NotNull
+    @NonNull
     private OffsetDateTime createdAt;
-    @NotNull
+    @NonNull
     private SimpleDictDto createdBy;
 
     private SalaryRequestReq req = new SalaryRequestReq();
@@ -42,37 +43,35 @@ public class SalaryRequestDto {
 
 
     @Data
+    @NoArgsConstructor
     public static class SalaryRequestReq {
-        @NotNull
+        @NonNull
         private BigDecimal salaryIncrease;
 
         /**
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */
-        @NotNull
+        @NonNull
         private Integer increaseStartPeriod;
-        @NotNull
+        @NonNull
         private String reason;
         private String comment;
     }
 
     @Data
+    @NoArgsConstructor
     public static class SalaryRequestImpl {
         /**
          * @see SalaryRequestImplementationState
          */
-        @NotNull
         private short state;
 
-        @NotNull
         private BigDecimal salaryIncrease;
         /**
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */
-        @NotNull
         private Integer increaseStartPeriod;
         private SimpleDictDto newPosition;
-        @NotNull
         private String reason;
         private String comment;
 

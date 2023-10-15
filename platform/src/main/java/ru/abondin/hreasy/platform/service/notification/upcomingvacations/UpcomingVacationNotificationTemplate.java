@@ -13,7 +13,7 @@ import ru.abondin.hreasy.platform.config.BackgroundTasksProps;
 import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
 import ru.abondin.hreasy.platform.service.message.dto.HrEasyEmailMessage;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.util.*;
 

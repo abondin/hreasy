@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.OffsetDateTime;
 
 @Data
@@ -13,7 +13,7 @@ public class SalaryRequestApprovalEntry {
     @Id
     private Integer id;
 
-    @NotNull
+    @NonNull
     private Integer request;
 
     /**
@@ -23,7 +23,7 @@ public class SalaryRequestApprovalEntry {
      *     <li>2 - Declined</li>
      * </ul>
      */
-    @NotNull
+    @NonNull
     private Short stat;
     private String comment;
     private OffsetDateTime createdAt;

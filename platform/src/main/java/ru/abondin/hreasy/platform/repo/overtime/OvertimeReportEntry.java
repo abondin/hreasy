@@ -1,14 +1,16 @@
 package ru.abondin.hreasy.platform.repo.overtime;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.OffsetDateTime;
 
 @Data
+@NoArgsConstructor
 @Table("ovt.overtime_report")
 public class OvertimeReportEntry {
     /**
@@ -23,7 +25,7 @@ public class OvertimeReportEntry {
      * Overtime report period in yyyymm format.
      * For example 202005 for all overtimes, reported in June
      */
-    @NotNull
+    @NonNull
     private int period;
 
 

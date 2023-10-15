@@ -4,12 +4,12 @@ import lombok.Data;
 import lombok.ToString;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 
 @Data
 @ToString
 public class CreateOrUpdateBABody {
-    @NotNull
+    @NonNull
     private String name;
     @Nullable
     private String description;

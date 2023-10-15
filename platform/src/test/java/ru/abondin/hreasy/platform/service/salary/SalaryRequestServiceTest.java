@@ -131,7 +131,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                         && dto.getImpl().getImplementedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
                         && dto.getImpl().getComment().equals("Very bad employee")
                         && dto.getImpl().getReason().equals("Not planned increase")
-                        && dto.getImpl().getState() == (short) -1
+                        && dto.getImpl().getState() == (short) 2
                 ).verifyComplete();
     }
 

@@ -3,7 +3,7 @@ package ru.abondin.hreasy.platform.service.salary.dto;
 import lombok.Data;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;

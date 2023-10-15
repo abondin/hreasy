@@ -3,7 +3,7 @@ package ru.abondin.hreasy.platform.service.overtime.dto;
 import lombok.Data;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.OffsetDateTime;
 
 /**
@@ -22,22 +22,22 @@ public class OvertimeApprovalDecisionDto {
     /**
      * Approver employeeId
      */
-    @NotNull
+    @NonNull
     private int approver;
 
     /**
      * Approver displayName
      */
-    @NotNull
+    @NonNull
     private String approverDisplayName;
 
     /**
      * Approver decision
      */
-    @NotNull
+    @NonNull
     private ApprovalDecision decision = ApprovalDecision.APPROVED;
 
-    @NotNull
+    @NonNull
     private OffsetDateTime decisionTime;
 
     /**

@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.ToString;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 
 /**
@@ -15,9 +15,9 @@ import java.time.LocalDate;
 @Builder
 @ToString
 public class TimesheetQueryFilter {
-    @NotNull
+    @NonNull
     private LocalDate from;
-    @NotNull
+    @NonNull
     private LocalDate to;
 
     @Nullable

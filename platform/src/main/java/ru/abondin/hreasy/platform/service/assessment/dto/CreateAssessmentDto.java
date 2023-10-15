@@ -2,8 +2,8 @@ package ru.abondin.hreasy.platform.service.assessment.dto;
 
 import lombok.Data;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,9 +11,9 @@ import java.util.List;
 @Data
 @Valid
 public class CreateAssessmentDto {
-    @NotNull
+    @NonNull
     private LocalDate plannedDate;
 
-    @NotNull
+    @NonNull
     private List<Integer> managers = new ArrayList<>();
 }

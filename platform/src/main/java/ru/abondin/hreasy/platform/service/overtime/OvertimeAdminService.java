@@ -13,7 +13,7 @@ import ru.abondin.hreasy.platform.repo.overtime.OvertimePeriodHistoryEntry;
 import ru.abondin.hreasy.platform.repo.overtime.OvertimePeriodHistoryRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 
 import static ru.abondin.hreasy.platform.repo.overtime.OvertimePeriodHistoryEntry.ACTION_CLOSE;
 import static ru.abondin.hreasy.platform.repo.overtime.OvertimePeriodHistoryEntry.ACTION_REOPEN;
@@ -31,7 +31,7 @@ public class OvertimeAdminService {
 
 
     @Transactional
-    public Mono<Integer> closeOvertimePeriod(AuthContext auth, @NotNull int periodId, @Nullable String comment) {
+    public Mono<Integer> closeOvertimePeriod(AuthContext auth, @NonNull int periodId, @Nullable String comment) {
         log.info("Close overtime period {} by {}. Comment: {}", periodId, auth.getUsername(), comment);
         final var now = dateTimeService.now();
         return securityValidator.validateAdminOvertime(auth).flatMap((v) -> {
@@ -53,7 +53,7 @@ public class OvertimeAdminService {
     }
 
     @Transactional
-    public Mono<Void> reopenOvertimePeriod(AuthContext auth, @NotNull int periodId, @Nullable String comment) {
+    public Mono<Void> reopenOvertimePeriod(AuthContext auth, @NonNull int periodId, @Nullable String comment) {
         log.info("Reopen overtime period {} by {}. Comment: {}", periodId, auth.getUsername(), comment);
         final var now = dateTimeService.now();
         return securityValidator.validateAdminOvertime(auth).flatMap((v) -> {

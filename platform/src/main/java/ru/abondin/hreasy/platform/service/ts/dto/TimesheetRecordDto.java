@@ -2,19 +2,19 @@ package ru.abondin.hreasy.platform.service.ts.dto;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 
 @Data
 public class TimesheetRecordDto {
-    @NotNull
+    @NonNull
     private Integer id;
-    @NotNull
+    @NonNull
     private int employee;
-    @NotNull
+    @NonNull
     private int businessAccount;
     private Integer project;
-    @NotNull
+    @NonNull
     private LocalDate date;
     private short hoursSpent;
 }

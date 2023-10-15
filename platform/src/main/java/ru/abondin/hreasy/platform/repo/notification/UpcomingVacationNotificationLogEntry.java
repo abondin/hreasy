@@ -1,10 +1,11 @@
 package ru.abondin.hreasy.platform.repo.notification;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
@@ -12,20 +13,21 @@ import java.time.OffsetDateTime;
  * Log send notification event to avoid repeated delivery
  */
 @Data
+@NoArgsConstructor
 @Table("notify.upcoming_vacation_notification_log")
 public class UpcomingVacationNotificationLogEntry {
     @Id
     private int id;
 
-    @NotNull
+    @NonNull
     private int vacation;
 
     private int employee;
 
-    @NotNull
+    @NonNull
     private OffsetDateTime createdAt;
 
-    @NotNull
+    @NonNull
     private LocalDate vacationStartDate;
 
 }

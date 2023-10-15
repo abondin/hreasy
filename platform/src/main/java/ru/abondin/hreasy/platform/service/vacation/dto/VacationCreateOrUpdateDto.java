@@ -2,21 +2,23 @@ package ru.abondin.hreasy.platform.service.vacation.dto;
 
 import lombok.Data;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import lombok.NoArgsConstructor;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 
 @Data
+@NoArgsConstructor
 @Valid
 public class VacationCreateOrUpdateDto {
-    @NotNull(message = "Year is required")
+    @NonNull
     private Integer year;
-    @NotNull(message = "Start Date is required")
+    @NonNull
     private LocalDate startDate;
-    @NotNull(message = "Ent Date is required")
+    @NonNull
     private LocalDate endDate;
     private String notes;
-    @NotNull(message = "Status is required")
+    @NonNull
     private VacationDto.VacationStatus status = VacationDto.VacationStatus.PLANNED;
     private String documents;
     private Integer daysNumber;
