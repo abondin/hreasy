@@ -8,18 +8,18 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 public class SalaryRequestView extends SalaryRequestEntry {
+
     private String employeeDisplayName;
-    private Integer employeeCurrentProjectId;
-    private String employeeCurrentProjectName;
-    private String employeeCurrentProjectRole;
+
     private String budgetBusinessAccountName;
     private LocalDate assessmentPlannedDate;
     private String createdByDisplayName;
     private String implementedByDisplayName;
 
-    private Integer employeePositionId;
-    private String employeePositionName;
-
+    private Integer infoEmplPosition;
+    private String infoEmplPositionName;
+    private String infoEmplProjectName;
+    private String infoEmplBaName;
     private String implNewPositionName;
 
 }

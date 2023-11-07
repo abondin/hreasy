@@ -18,7 +18,7 @@ public interface SalaryRequestMapper extends MapperBase {
 
     @Mapping(source = "createdBy", target = "createdBy")
     @Mapping(source = "createdAt", target = "createdAt")
-    @Mapping(source = "body.salaryIncrease", target = "reqSalaryIncrease")
+    @Mapping(source = "body.increaseAmount", target = "reqIncreaseAmount")
     @Mapping(source = "body.increaseStartPeriod", target = "reqIncreaseStartPeriod")
     @Mapping(source = "body.reason", target = "reqReason")
     @Mapping(source = "body.comment", target = "reqComment")
@@ -30,25 +30,25 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = ".", target = "assessment", qualifiedByName = "assessment")
     @Mapping(source = ".", target = "employeePosition", qualifiedByName = "employeePosition")
     @Mapping(source = ".", target = "createdBy", qualifiedByName = "createdBy")
-    @Mapping(source = "reqSalaryIncrease", target = "req.salaryIncrease")
+    @Mapping(source = "reqIncreaseAmount", target = "req.increaseAmount")
     @Mapping(source = "reqIncreaseStartPeriod", target = "req.increaseStartPeriod")
     @Mapping(source = "reqReason", target = "req.reason")
     @Mapping(source = "reqComment", target = "req.comment")
     @Mapping(source = "implementedAt", target = "impl.implementedAt")
     @Mapping(source = ".", target = "impl.implementedBy", qualifiedByName = "implementedBy")
-    @Mapping(source = "implSalaryIncrease", target = "impl.salaryIncrease")
+    @Mapping(source = "implIncreaseAmount", target = "impl.increaseAmount")
     @Mapping(source = "implIncreaseStartPeriod", target = "impl.increaseStartPeriod")
-    @Mapping(source = "implReason", target = "impl.reason")
+    @Mapping(source = "implRejectReason", target = "impl.rejectReason")
     @Mapping(source = "implComment", target = "impl.comment")
     @Mapping(source = "implState", target = "impl.state")
     @Mapping(source = ".", target = "impl.newPosition", qualifiedByName = "employeeNewPosition")
     SalaryRequestDto fromEntry(SalaryRequestView entry);
 
-    @Mapping(source = "req.salaryIncrease", target = "reqSalaryIncrease")
+    @Mapping(source = "req.increaseAmount", target = "reqIncreaseAmount")
     @Mapping(source = "req.reason", target = "reqReason")
-    @Mapping(source = "impl.salaryIncrease", target = "implSalaryIncrease")
+    @Mapping(source = "impl.increaseAmount", target = "implIncreaseAmount")
     @Mapping(source = "impl.increaseStartPeriod", target = "implIncreaseStartPeriod", qualifiedByName = "period")
-    @Mapping(source = "impl.reason", target = "implReason")
+    @Mapping(source = "impl.rejectReason", target = "implRejectReason")
     @Mapping(source = "impl.state", target = "implState")
     @Mapping(source = "impl.newPosition.name", target = "implNewPosition")
     @Mapping(source = "impl.implementedBy.name", target = "implemented")
@@ -71,17 +71,16 @@ public interface SalaryRequestMapper extends MapperBase {
 
     SalaryRequestClosedPeriodDto closedPeriodFromEntry(SalaryRequestClosedPeriodEntry salaryRequestClosedPeriodEntry);
 
-    @Mapping(source = "body.salaryIncrease", target = "implSalaryIncrease")
+    @Mapping(source = "body.increaseAmount", target = "implIncreaseAmount")
     @Mapping(source = "body.increaseStartPeriod", target = "implIncreaseStartPeriod")
     @Mapping(source = "body.newPosition", target = "implNewPosition")
-    @Mapping(source = "body.reason", target = "implReason")
     @Mapping(source = "body.comment", target = "implComment")
     @Mapping(source = "implementedAt", target = "implementedAt")
     @Mapping(source = "implementedBy", target = "implementedBy")
     @Mapping(constant = "1", target = "implState")
     void applyRequestImplementBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestImplementBody body, OffsetDateTime implementedAt, Integer implementedBy);
 
-    @Mapping(source = "body.reason", target = "implReason")
+    @Mapping(source = "body.reason", target = "implRejectReason")
     @Mapping(source = "body.comment", target = "implComment")
     @Mapping(source = "implementedAt", target = "implementedAt")
     @Mapping(source = "implementedBy", target = "implementedBy")
@@ -109,7 +108,7 @@ public interface SalaryRequestMapper extends MapperBase {
 
     @Named("employeePosition")
     default SimpleDictDto employeePosition(SalaryRequestView entry) {
-        return simpleDto(entry.getEmployeePositionId(), entry.getEmployeePositionName());
+        return simpleDto(entry.getInfoEmplPosition(), entry.getInfoEmplPositionName());
     }
 
     @Named("employeeNewPosition")
@@ -130,7 +129,7 @@ public interface SalaryRequestMapper extends MapperBase {
 
     @Named("employeeCurrentProject")
     default CurrentProjectDictDto currentProject(SalaryRequestView entry) {
-        return currentProjectDto(entry.getEmployeeCurrentProjectId(), entry.getEmployeeCurrentProjectName(), entry.getEmployeeCurrentProjectRole());
+        return currentProjectDto(entry.getInfoEmplProject(), entry.getInfoEmplProjectName(), entry.getInfoEmplProjectRole());
     }
 
     @Named("period")

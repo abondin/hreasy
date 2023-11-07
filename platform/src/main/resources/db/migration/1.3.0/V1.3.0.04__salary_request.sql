@@ -20,10 +20,22 @@ CREATE TABLE IF NOT EXISTS sal.salary_request (
 ---
 --- Requested
 ---
-    req_salary_increase numeric(10, 2) NOT NULL,
+    req_increase_amount numeric(10, 2) NOT NULL,
     req_increase_start_period integer not null,
     req_reason varchar(1024) NOT NULL,
     req_comment text NULL,
+
+---
+--- Information from other tables. Populated when request creates
+---
+    info_empl_project integer null,
+    info_empl_project_role varchar(1024) null,
+    info_date_of_employment date null,
+    info_empl_ba integer null,
+    info_empl_position integer null,
+    info_current_salary_amount numeric(10, 2) NULL,
+    info_planned_salary_amount numeric(10, 2) NULL,
+    info_previous_salary_increase_text text null,
 ---
 --- Implemented
 ---
@@ -32,10 +44,12 @@ CREATE TABLE IF NOT EXISTS sal.salary_request (
     -- 1 - Implemented
     -- 2 - Rejected
     impl_state integer NULL,
-    impl_salary_increase numeric(10, 2) NULL,
+    impl_increase_amount numeric(10, 2) NULL,
+    info_salary_amount numeric(10, 2) NULL,
     impl_increase_start_period integer null,
+    impl_increase_text text null,
     impl_new_position integer NULL REFERENCES dict.position (id),
-    impl_reason varchar(1024) NULL,
+    impl_reject_reason varchar(1024) NULL,
     impl_comment text NULL
 );
 
@@ -59,18 +73,31 @@ COMMENT ON COLUMN sal.salary_request.deleted_by IS 'Deleted by';
 ---
 --- Requested
 ---
-COMMENT ON COLUMN sal.salary_request.req_salary_increase IS 'Requested increase sum';
+COMMENT ON COLUMN sal.salary_request.req_increase_amount IS 'Requested increase sum';
 COMMENT ON COLUMN sal.salary_request.req_increase_start_period IS 'Requested YYYYMM period. Month starts with 0. 202308 - September of 2023';
 COMMENT ON COLUMN sal.salary_request.req_reason IS 'Reason to raise salary';
 COMMENT ON COLUMN sal.salary_request.req_comment IS 'Optional request additional comment';
+
+---
+--- Info
+---
+COMMENT ON COLUMN sal.salary_request.info_empl_project IS 'Employee project';
+COMMENT ON COLUMN sal.salary_request.info_empl_project_role IS 'Employee project role';
+COMMENT ON COLUMN sal.salary_request.info_empl_ba IS 'Employee project business account';
+COMMENT ON COLUMN sal.salary_request.info_empl_position IS 'Employee position in official documents';
+COMMENT ON COLUMN sal.salary_request.info_current_salary_amount IS 'Current salary amount';
+COMMENT ON COLUMN sal.salary_request.info_previous_salary_increase_text IS 'Official text from ERP system';
+COMMENT ON COLUMN sal.salary_request.info_planned_salary_amount IS 'New planned salary after increase';
+
 ---
 --- Implemented
 ---
 COMMENT ON COLUMN sal.salary_request.implemented_at IS 'When the request was marked as implemented';
 COMMENT ON COLUMN sal.salary_request.implemented_by IS 'Implemented by';
-COMMENT ON COLUMN sal.salary_request.impl_salary_increase IS 'Actual implemented sum';
+COMMENT ON COLUMN sal.salary_request.impl_increase_amount IS 'Actual implemented sum';
 COMMENT ON COLUMN sal.salary_request.impl_increase_start_period IS 'Actual period to increase salary or implement bonus';
-COMMENT ON COLUMN sal.salary_request.impl_reason IS 'Implementation changes of reject reason';
+COMMENT ON COLUMN sal.salary_request.impl_increase_text IS 'Official text from ERP system';
+COMMENT ON COLUMN sal.salary_request.impl_reject_reason IS 'Reject reason';
 COMMENT ON COLUMN sal.salary_request.impl_comment IS 'Optional implementation additional comment';
 COMMENT ON COLUMN sal.salary_request.impl_state IS '
 1 - Implemented

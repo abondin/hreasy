@@ -44,7 +44,7 @@ public class SalaryRequestEntry {
 // <editor-fold desc="Request fields">
 
     @NonNull
-    private BigDecimal reqSalaryIncrease;
+    private BigDecimal reqIncreaseAmount;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
@@ -55,20 +55,34 @@ public class SalaryRequestEntry {
     private String reqComment;
 // </editor-fold>
 
+// <editor-fold desc="Info fields">
+
+    private Integer infoEmplProject;
+    private String infoEmplProjectRole;
+    private LocalDate infoDateOfEmployment;
+    private Integer infoEmplBa;
+    private Integer infoEmplPosition;
+    private BigDecimal infoCurrentSalaryAmount;
+    private BigDecimal infoPlannedSalaryAmount;
+    private String infoPreviousSalaryIncreaseText;
+// </editor-fold>
+
+
 
     // <editor-fold desc="Implementation fields">
     private Integer implState;
     private OffsetDateTime implementedAt;
     private Integer implementedBy;
     @NonNull
-    private BigDecimal implSalaryIncrease;
+    private BigDecimal implIncreaseAmount;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
     @NonNull
     private Integer implIncreaseStartPeriod;
+    private String implIncreaseText;
     @NonNull
-    private String implReason;
+    private String implRejectReason;
     private String implComment;
     private Integer implNewPosition;
 // </editor-fold>

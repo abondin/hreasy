@@ -29,7 +29,7 @@ public class SalaryRequestReportBody {
     private LocalDate budgetExpectedFundingUntil;
 
     @NonNull
-    private BigDecimal salaryIncrease;
+    private BigDecimal increaseAmount;
 
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023

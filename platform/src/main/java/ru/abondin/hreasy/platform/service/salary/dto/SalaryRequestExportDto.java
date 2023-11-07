@@ -25,13 +25,13 @@ public class SalaryRequestExportDto {
     private OffsetDateTime createdAt;
 
     private String createdBy;
-    private BigDecimal reqSalaryIncrease;
+    private BigDecimal reqIncreaseAmount;
 
     private String reqReason;
 
-    private BigDecimal implSalaryIncrease;
+    private BigDecimal implIncreaseAmount;
     private YearMonth implIncreaseStartPeriod;
-    private String implReason;
+    private String implRejectReason;
     private String implState;
     private String implNewPosition;
     private String implemented;

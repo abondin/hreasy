@@ -46,7 +46,7 @@ public class SalaryRequestDto {
     @NoArgsConstructor
     public static class SalaryRequestReq {
         @NonNull
-        private BigDecimal salaryIncrease;
+        private BigDecimal increaseAmount;
 
         /**
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
@@ -66,13 +66,13 @@ public class SalaryRequestDto {
          */
         private short state;
 
-        private BigDecimal salaryIncrease;
+        private BigDecimal increaseAmount;
         /**
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */
         private Integer increaseStartPeriod;
         private SimpleDictDto newPosition;
-        private String reason;
+        private String rejectReason;
         private String comment;
 
         private OffsetDateTime implementedAt;

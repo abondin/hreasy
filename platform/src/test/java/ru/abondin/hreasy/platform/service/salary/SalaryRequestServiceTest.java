@@ -130,7 +130,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                         && dto.getImpl().getImplementedAt() != null
                         && dto.getImpl().getImplementedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
                         && dto.getImpl().getComment().equals("Very bad employee")
-                        && dto.getImpl().getReason().equals("Not planned increase")
+                        && dto.getImpl().getRejectReason().equals("Not planned increase")
                         && dto.getImpl().getState() == (short) 2
                 ).verifyComplete();
     }
@@ -141,10 +141,9 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
         var requestId = reportDefaultRequest();
         var implBody = SalaryRequestImplementBody.builder()
-                .salaryIncrease(BigDecimal.valueOf(1100))
+                .increaseAmount(BigDecimal.valueOf(1100))
                 .increaseStartPeriod(202308)
                 .newPosition(testData.position_JavaDeveloper())
-                .reason("Planned increase")
                 .comment("Very good employee")
                 .build();
         StepVerifier
@@ -158,10 +157,9 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                                 && dto.getImpl().getImplementedAt() != null
                                 && dto.getImpl().getImplementedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
                                 && dto.getImpl().getComment().equals("Very good employee")
-                                && dto.getImpl().getReason().equals("Planned increase")
                                 && dto.getImpl().getState() == (short) 1
                                 && dto.getImpl().getNewPosition().getId() == testData.position_JavaDeveloper()
-                                && dto.getImpl().getSalaryIncrease().compareTo(BigDecimal.valueOf(1100)) == 0
+                                && dto.getImpl().getIncreaseAmount().compareTo(BigDecimal.valueOf(1100)) == 0
                                 && dto.getImpl().getIncreaseStartPeriod().equals(202308)
 
                 ).verifyComplete();
@@ -254,7 +252,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                 .budgetExpectedFundingUntil(null)
                 .budgetBusinessAccount(ba)
                 .reason("Just increase salary")
-                .salaryIncrease(BigDecimal.valueOf(1000))
+                .increaseAmount(BigDecimal.valueOf(1000))
                 .increaseStartPeriod(202308)
                 .build();
     }
