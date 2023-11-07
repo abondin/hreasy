@@ -247,13 +247,14 @@ $do$;
 
 -- QA from M1 FMS
 INSERT INTO empl.employee (email, display_name,
-  department,position,level,current_project, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
+  department,position,level,current_project,current_project_role, phone, birthday,sex,date_of_employment, office_location,ext_erp_id) select
   'Jenson.Curtis@stm-labs.ru',
   'Curtis Jenson',
   (select id from dict.department  where name='Development' limit 1),
   (select id from dict.position  where name='Automation QA' limit 1),
   (select id from dict.level  where name='Junior' limit 1),
   (select id from proj.project  where name='M1 FMS' limit 1),
+  'Lead Auto QA',
   '+79998884455',
   '1990-06-12 00:00:00.000',
   'male',

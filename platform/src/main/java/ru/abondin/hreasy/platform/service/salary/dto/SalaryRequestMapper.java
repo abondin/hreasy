@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.salary.dto;
 
 import org.mapstruct.*;
 import ru.abondin.hreasy.platform.repo.assessment.EmployeeAssessmentEntry;
+import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
@@ -16,16 +17,25 @@ import java.util.Locale;
 @Mapper(componentModel = "spring")
 public interface SalaryRequestMapper extends MapperBase {
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(source = "createdBy", target = "createdBy")
     @Mapping(source = "createdAt", target = "createdAt")
     @Mapping(source = "body.increaseAmount", target = "reqIncreaseAmount")
     @Mapping(source = "body.increaseStartPeriod", target = "reqIncreaseStartPeriod")
     @Mapping(source = "body.reason", target = "reqReason")
     @Mapping(source = "body.comment", target = "reqComment")
-    SalaryRequestEntry toEntry(SalaryRequestReportBody body, Integer createdBy, OffsetDateTime createdAt);
+    @Mapping(source = "empl.currentProjectId", target = "infoEmplProject")
+    @Mapping(source = "empl.currentProjectRole", target = "infoEmplProjectRole")
+    @Mapping(source = "empl.dateOfEmployment", target = "infoDateOfEmployment")
+    @Mapping(source = "empl.baId", target = "infoEmplBa")
+    @Mapping(source = "empl.positionId", target = "infoEmplPosition")
+    SalaryRequestEntry toEntry(SalaryRequestReportBody body,
+                               EmployeeDetailedEntry empl,
+                               Integer createdBy, OffsetDateTime createdAt);
 
     @Mapping(source = ".", target = "employee", qualifiedByName = "employee")
     @Mapping(source = ".", target = "employeeCurrentProject", qualifiedByName = "employeeCurrentProject")
+    @Mapping(source = ".", target = "employeeBusinessAccount", qualifiedByName = "employeeBusinessAccount")
     @Mapping(source = ".", target = "budgetBusinessAccount", qualifiedByName = "budgetBusinessAccount")
     @Mapping(source = ".", target = "assessment", qualifiedByName = "assessment")
     @Mapping(source = ".", target = "employeePosition", qualifiedByName = "employeePosition")
@@ -98,6 +108,11 @@ public interface SalaryRequestMapper extends MapperBase {
     default SimpleDictDto budgetBusinessAccount(SalaryRequestView entry) {
         return simpleDto(entry.getBudgetBusinessAccount(), entry.getBudgetBusinessAccountName());
     }
+    @Named("employeeBusinessAccount")
+    default SimpleDictDto employeeBusinessAccount(SalaryRequestView entry) {
+        return simpleDto(entry.getInfoEmplBa(), entry.getInfoEmplBaName());
+    }
+
 
     @Named("assessment")
     default SimpleDictDto assessment(SalaryRequestView entry) {

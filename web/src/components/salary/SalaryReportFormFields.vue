@@ -33,7 +33,7 @@
   ></my-date-form-component>
 
   <v-text-field type="number"
-                v-model="createBody.salaryIncrease"
+                v-model="createBody.increaseAmount"
                 :rules="[v => !!v || $t('Обязательное числовое поле')]"
                 :label="$t('Сумма в рублях')"
   >
@@ -108,7 +108,7 @@ export default class SalaryReportFormFields extends Vue {
       return ;
     }
     this.createBody.budgetBusinessAccount = empl.ba?.id;
-    this.createBody.salaryIncrease=null;
+    this.createBody.increaseAmount=null;
     this.createBody.reason=null;
     this.createBody.comment=null;
     this.createBody.budgetExpectedFundingUntil=null;

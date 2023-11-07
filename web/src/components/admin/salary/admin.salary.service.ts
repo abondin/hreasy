@@ -3,7 +3,7 @@ import httpService from "@/components/http.service";
 import {SalaryIncreaseRequest} from "@/components/salary/salary.service";
 
 export interface SalaryRequestImplementBody {
-    salaryIncrease: number;
+    increaseAmount: number;
     increaseStartPeriod: number;
     newPosition: number | null;
     reason: string;

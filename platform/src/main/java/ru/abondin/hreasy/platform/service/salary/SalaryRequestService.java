@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.assessment.AssessmentRepo;
+import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
@@ -35,6 +36,8 @@ public class SalaryRequestService {
     private final DateTimeService dateTimeService;
 
     private final AssessmentRepo assessmentRepo;
+
+    private final EmployeeDetailedRepo employeeRepo;
 
     public Mono<SalaryRequestDto> get(AuthContext auth, int id) {
         log.debug("Getting salary request {} by {}", id, auth);
@@ -77,7 +80,9 @@ public class SalaryRequestService {
         return secValidator.validateReportSalaryRequest(ctx)
                 // 2. Additional validation
                 .flatMap(v -> checkReportBodyConsistency(ctx, body))
-                .map(v -> mapper.toEntry(body, createdBy, now)).flatMap(entry -> {
+                // 3. Get additional information about employee
+                .flatMap(v->employeeRepo.findDetailed(body.getEmployeeId()))
+                .map(empl -> mapper.toEntry(body, empl, createdBy, now)).flatMap(entry -> {
                             // 2. Save new request to DB
                             return requestRepo.save(entry).flatMap(persisted ->
                                     // 3. Save history record

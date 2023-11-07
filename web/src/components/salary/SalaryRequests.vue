@@ -18,11 +18,11 @@
     <template v-slot:item.impl.state="{ item }">
       {{ item.impl?.state ? $t(`SALARY_REQUEST_STAT.${item.impl.state}`) : '' }}
     </template>
-    <template v-slot:item.req.salaryIncrease="{ item }">
-      {{ formatMoney(item.req.salaryIncrease) }}
+    <template v-slot:item.req.increaseAmount="{ item }">
+      {{ formatMoney(item.req.increaseAmount) }}
     </template>
-    <template v-slot:item.impl.salaryIncrease="{ item }">
-      {{ formatMoney(item.impl?.salaryIncrease) }}
+    <template v-slot:item.impl.increaseAmount="{ item }">
+      {{ formatMoney(item.impl?.increaseAmount) }}
     </template>
     <!--</editor-fold>-->
 
@@ -118,8 +118,8 @@ export default class SalaryRequests extends Vue {
             {text: this.$tc('Тип'), value: 'type'},
             {text: this.$tc('Результат'), value: 'impl.state'},
             {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'},
-            {text: this.$tc('Запрошенная сумма в рублях'), value: 'req.salaryIncrease'},
-            {text: this.$tc('Реалиованная сумма в рублях'), value: 'impl.salaryIncrease'},
+            {text: this.$tc('Запрошенная сумма в рублях'), value: 'req.increaseAmount'},
+            {text: this.$tc('Реалиованная сумма в рублях'), value: 'impl.increaseAmount'},
             {text: this.$tc('Реализовано в периоде'), value: 'impl.increaseStartPeriod'},
             {text: this.$tc('Новая позиция'), value: 'impl.newPosition.name'},
             {text: this.$tc('Создано'), value: 'createdBy.name'},

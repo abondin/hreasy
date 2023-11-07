@@ -68,14 +68,19 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                 .create(salaryRequestService.report(ctx, report)
                         .flatMap(r -> salaryRequestService.get(auth, r))
                 )
-                .expectNextMatches((dto) ->
-                        dto.getBudgetBusinessAccount().getId() == ba
-                                && dto.getReq().getComment().equals(report.getComment())
-                                && dto.getReq().getIncreaseStartPeriod().equals(report.getIncreaseStartPeriod())
-                                && dto.getType().equals(report.getType())
-                                && dto.getCreatedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
-                                && dto.getEmployee().getId() == jensonId
-                                && dto.getImpl() == null
+                .expectNextMatches((dto) -> {
+                            Assertions.assertEquals(ba, dto.getBudgetBusinessAccount().getId(), "Budgeting ba");
+                            Assertions.assertEquals(report.getComment(), dto.getReq().getComment(), "Request comment");
+                            Assertions.assertEquals(report.getIncreaseStartPeriod(), dto.getReq().getIncreaseStartPeriod(), "Request start period");
+                            Assertions.assertEquals(report.getType(), dto.getType(), "Type");
+                            Assertions.assertEquals(ctx.getEmployeeInfo().getEmployeeId(), dto.getCreatedBy().getId(), "Created by");
+                            Assertions.assertNull(dto.getImpl(), "Impl must be null");
+                            Assertions.assertEquals(jensonId, dto.getEmployee().getId(), "Employee");
+                            Assertions.assertEquals(testData.project_M1_FMS(), dto.getEmployeeCurrentProject().getId(), "Current Project");
+                            Assertions.assertEquals(testData.ba_RND(), dto.getEmployeeBusinessAccount().getId(), "Employee BA");
+                            Assertions.assertEquals(testData.position_AutomationQA(), dto.getEmployeePosition().getId(), "Employee Position");
+                            return true;
+                        }
                 ).verifyComplete();
     }
 

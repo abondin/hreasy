@@ -5,7 +5,7 @@
         $t('SALARY_REQUEST_TITLE', {
           type: $t('SALARY_REQUEST_TYPE.' + data.type).toLowerCase(),
           employee: data.employee.name,
-          amount: formatMoney(data.req.salaryIncrease),
+          amount: formatMoney(data.req.increaseAmount),
           period: fromPeriodId(data.req.increaseStartPeriod)
         })
       }}
@@ -66,8 +66,8 @@
                 <dt class="font-weight-bold">{{ $t('Решение принято') }}:</dt>
                 <dd>{{ data.impl.implementedBy.name }} ({{ formatDateTime(data.impl.implementedAt) }})</dd>
 
-                <dt class="font-weight-bold" v-if="data.impl.salaryIncrease">{{ $t('Зафиксированная сумма') }}:</dt>
-                <dd v-if="data.impl.salaryIncrease">{{ formatMoney(data.impl.salaryIncrease) }}</dd>
+                <dt class="font-weight-bold" v-if="data.impl.increaseAmount">{{ $t('Зафиксированная сумма') }}:</dt>
+                <dd v-if="data.impl.increaseAmount">{{ formatMoney(data.impl.increaseAmount) }}</dd>
 
                 <dt class="font-weight-bold" v-if="data.impl.increaseStartPeriod">{{
                     $t('Зафиксированная период')

@@ -26,6 +26,8 @@ public class EmployeeEntry {
     private String currentProjectRole;
     @Column("office_location")
     private Integer officeLocationId;
+    @Column("date_of_employment")
+    private LocalDate dateOfEmployment;
     @Column("date_of_dismissal")
     private LocalDate dateOfDismissal;
     private String email;

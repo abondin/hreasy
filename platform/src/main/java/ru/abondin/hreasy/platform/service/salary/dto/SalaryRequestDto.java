@@ -19,6 +19,8 @@ public class SalaryRequestDto {
     private SimpleDictDto employee;
 
     private CurrentProjectDictDto employeeCurrentProject;
+    private SimpleDictDto employeeBusinessAccount;
+    private SimpleDictDto employeePosition;
 
     /**
      * @see SalaryRequestType
@@ -31,7 +33,6 @@ public class SalaryRequestDto {
 
 
     private SimpleDictDto assessment;
-    private SimpleDictDto employeePosition;
 
     @NonNull
     private OffsetDateTime createdAt;

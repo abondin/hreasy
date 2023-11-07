@@ -20,7 +20,7 @@ export interface SalaryRequestReportBody {
     type: SalaryRequestType;
     budgetBusinessAccount: number|null|undefined;
     budgetExpectedFundingUntil: string | null;
-    salaryIncrease: number|null;
+    increaseAmount: number|null;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
@@ -91,7 +91,7 @@ export interface SalaryIncreaseRequest extends WithId {
     assessment: SimpleDict | null;
     employeePosition: SimpleDict;
     req: {
-        salaryIncrease: number;
+        increaseAmount: number;
         /**
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */
@@ -104,7 +104,7 @@ export interface SalaryIncreaseRequest extends WithId {
         implementedBy: SimpleDict | null;
         state: SalaryRequestImplementationState;
         newPosition: SimpleDict | null;
-        salaryIncrease: number;
+        increaseAmount: number;
         increaseStartPeriod: number;
         reason: string;
         comment: string | null;

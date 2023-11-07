@@ -19,11 +19,11 @@
     <template v-slot:item.impl.state="{ item }">
       {{ item.impl?.state ? $t(`SALARY_REQUEST_STAT.${item.impl.state}`) : '' }}
     </template>
-    <template v-slot:item.req.salaryIncrease="{ item }">
-      {{ formatMoney(item.req.salaryIncrease) }}
+    <template v-slot:item.req.increaseAmount="{ item }">
+      {{ formatMoney(item.req.increaseAmount) }}
     </template>
-    <template v-slot:item.impl.salaryIncrease="{ item }">
-      {{ formatMoney(item.impl?.salaryIncrease) }}
+    <template v-slot:item.impl.increaseAmount="{ item }">
+      {{ formatMoney(item.impl?.increaseAmount) }}
     </template>
     <template v-slot:item.req.budgetExpectedFundingUntil="{ item }">
       {{ formatDate(item.req.budgetExpectedFundingUntil) }}

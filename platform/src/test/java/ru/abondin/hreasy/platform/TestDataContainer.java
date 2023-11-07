@@ -120,4 +120,7 @@ public class TestDataContainer {
     public Integer position_JavaDeveloper(){
         return positions.get("Java Developer");
     }
+    public Integer position_AutomationQA(){
+        return positions.get("Automation QA");
+    }
 }

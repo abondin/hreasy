@@ -12,7 +12,7 @@
       :disabled="body?.readonly"
       v-if="!isRejected()"
       type="number"
-      v-model="body.salaryIncrease"
+      v-model="body.increaseAmount"
       :rules="[v => !!v || $t('Обязательное числовое поле')]"
       :label="$t('Сумма в рублях')">
   </v-text-field>
@@ -69,7 +69,7 @@ import SalaryRequestShortInfoComponent from "@/components/salary/SalaryRequestSh
 export interface SalaryRequestFormData {
   type: SalaryRequestType,
   state: SalaryRequestImplementationState | null;
-  salaryIncrease: number;
+  increaseAmount: number;
   /**
    * YYYYMM period. Month starts with 0. 202308 - September of 2023
    */
@@ -95,7 +95,7 @@ export class SalaryRequestImplementAction implements UpdateAction<SalaryIncrease
         comment: formData.comment,
         reason: formData.reason,
         increaseStartPeriod: formData.increaseStartPeriod,
-        salaryIncrease: formData.salaryIncrease,
+        increaseAmount: formData.increaseAmount,
         newPosition: formData.newPosition
       } as SalaryRequestImplementBody;
       logger.log(`Mark salary request ${id} as implemented: ${body}`);
@@ -108,7 +108,7 @@ export class SalaryRequestImplementAction implements UpdateAction<SalaryIncrease
     return {
       type: item.type,
       state: item.impl?.state,
-      salaryIncrease: item.req.salaryIncrease,
+      increaseAmount: item.req.increaseAmount,
       increaseStartPeriod: item.req.increaseStartPeriod,
       reason: '',
       newPosition: item.employeePosition?.id,
