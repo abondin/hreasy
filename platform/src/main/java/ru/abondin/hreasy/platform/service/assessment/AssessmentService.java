@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.assessment;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AssessmentService {
 
     public static final String ASSESSMENT_BASE_DIR = "assessment";
@@ -63,12 +65,14 @@ public class AssessmentService {
     }
 
     public Flux<AssessmentDto> employeeAssessments(AuthContext auth, int employeeId) {
+        log.info("Get employee assessments {} by {}", employeeId, auth.getUsername());
         return securityValidator.validateCanCreateAssessment(auth).thenMany(
                 assessmentRepo.findByEmployeeId(employeeId).map(mapper::assessmentBaseFromEntry));
     }
 
     public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(AuthContext auth, int employeeId, int assessmentId
             , FilePart file, long contentLength) {
+        log.info("Upload attachment to assessments {}:{} by {}", employeeId, assessmentId, auth.getUsername());
         return validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentId)
                 .flatMap(v -> {
                     var filename = file.filename();
