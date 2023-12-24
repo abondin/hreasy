@@ -29,7 +29,9 @@ import AdminProjectDetails from "@/components/admin/project/AdminProjectDetails.
 import AdminEmployeesImportWorkflowComponent from "@/components/admin/employee/imp/AdminEmployeesImportWorkflow.vue";
 import TimesheetTableComponent from "@/components/ts/TimesheetTableComponent.vue";
 import AdminSalaryAllRequests from "@/components/admin/salary/AdminSalaryAllRequests.vue";
-import SalaryRequests from "@/components/salary/SalaryRequests.vue";
+import SalaryRequestsMain from "@/components/salary/SalaryRequestsMain.vue";
+import SalaryRequestsIncreases from "@/components/salary/SalaryRequestsIncreases.vue";
+import SalaryRequestsBonuses from "@/components/salary/SalaryRequestsBonuses.vue";
 
 Vue.use(VueRouter)
 
@@ -44,8 +46,20 @@ const routes = [
     {path: "/overtimes", component: AllOvertimes},
     {path: "/assessments", component: AssessmentShortList},
     {path: "/assessments/:employeeId", component: EmployeeAssessmentProfile, props: true},
-    {path: "/assessments/:employeeId/:assessmentId", component: AssessmentDetailedVue, name: 'AssessmentDetailedVue', props: true},
-    {path: "/salaries/requests", component: SalaryRequests},
+    {
+        path: "/assessments/:employeeId/:assessmentId",
+        component: AssessmentDetailedVue,
+        name: 'AssessmentDetailedVue',
+        props: true
+    },
+    {
+        path: "/salaries/requests", component: SalaryRequestsMain,
+        children: [
+            {path: '', redirect: 'increases'},
+            {path: 'increases', component: SalaryRequestsIncreases},
+            {path: 'bonuses', component: SalaryRequestsBonuses}
+        ]
+    },
     {path: "/timesheet", component: TimesheetTableComponent},
     {path: "/admin/projects", component: AdminProjects},
     {path: "/admin/projects/:projectId", component: AdminProjectDetails, props: true},
@@ -54,7 +68,9 @@ const routes = [
     {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true},
     {path: "/admin/managers", component: AdminManagers},
     {path: "/admin/articles", component: AdminArticlesList},
-    {path: "/admin/salaries/requests", component: AdminSalaryAllRequests},
+    {
+        path: "/admin/salaries/requests", component: AdminSalaryAllRequests
+    },
     {
         path: "/admin/employees",
         component: AdminEmployeeAndKidsTabs,

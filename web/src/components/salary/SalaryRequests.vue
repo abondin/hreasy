@@ -1,6 +1,6 @@
 <template>
   <hreasy-table :data="data"
-                :create-new-title="$t('Создание запроса на индексацию ЗП или бонус')"
+                :create-new-title="mode=='increases' ? $t('Создание запроса на индексацию ЗП') : $t('Создание запроса на Бонус')"
                 :sort-by="['req.increaseStartPeriod']">
     <!--<editor-fold desc="Table columns">-->
     <template v-slot:item.impl.increaseStartPeriod="{ item }">
@@ -11,9 +11,6 @@
     </template>
     <template v-slot:item.implementedAt="{ item }">
       {{ formatDateTime(item.implementedAt) }}
-    </template>
-    <template v-slot:item.type="{ item }">
-      {{ $t(`SALARY_REQUEST_TYPE.${item.type}`) }}
     </template>
     <template v-slot:item.impl.state="{ item }">
       {{ item.impl?.state ? $t(`SALARY_REQUEST_STAT.${item.impl.state}`) : '' }}
@@ -50,14 +47,6 @@
             hide-details
         ></v-text-field>
       </v-col>
-      <v-col cols="auto">
-        <v-select
-            v-model="data.filter.type"
-            :label="$t('Тип')"
-            :multiple="true"
-            :items="salaryTypes">
-        </v-select>
-      </v-col>
     </template>
 
 
@@ -78,7 +67,7 @@ import salaryService, {
   SalaryRequestType,
   salaryRequestTypes
 } from "@/components/salary/salary.service";
-import {Vue} from "vue-property-decorator";
+import {Prop, Vue} from "vue-property-decorator";
 import logger from "@/logger";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
@@ -97,6 +86,10 @@ const namespace_dict = 'dict';
   }
 })
 export default class SalaryRequests extends Vue {
+
+  @Prop({default: 'increases'})
+  private mode!: 'increases' | 'bonuses';
+
   selectedPeriod = ReportPeriod.currentPeriod();
   closedPeriods: ClosedSalaryRequestPeriod[] = [];
 
@@ -105,32 +98,13 @@ export default class SalaryRequests extends Vue {
         this.setClosedPeriods(data);
         return data;
       }).then(d => {
-        return salaryService.load(this.selectedPeriod.periodId());
+        return salaryService.load(this.selectedPeriod.periodId()).then(requests => requests.filter(r => r.type == this.getSalaryRequestTypeByMode()));
       });
 
 
   private data = new TableComponentDataContainer<SalaryIncreaseRequest, SalaryIncreaseRequest, SalaryRequestReportBody, SalaryRequestFilter>(
       this.dataLoader,
-      () =>
-          [
-            {text: this.$tc('Сотрудник'), value: 'employee.name'},
-            {text: this.$tc('Текущий проект'), value: 'employeeCurrentProject.name'},
-            {text: this.$tc('Тип'), value: 'type'},
-            {text: this.$tc('Результат'), value: 'impl.state'},
-            {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'},
-            {text: this.$tc('Запрошенная сумма в рублях'), value: 'req.increaseAmount'},
-            {text: this.$tc('Реалиованная сумма в рублях'), value: 'impl.increaseAmount'},
-            {text: this.$tc('Реализовано в периоде'), value: 'impl.increaseStartPeriod'},
-            {text: this.$tc('Новая позиция'), value: 'impl.newPosition.name'},
-            {text: this.$tc('Создано'), value: 'createdBy.name'},
-            {text: this.$tc('Создано (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
-            {text: this.$tc('Завершено'), value: 'implementedBy.name'},
-            {
-              text: this.$tc('Завершено (время)'),
-              value: 'implementedAt',
-              sort: DateTimeUtils.dateComparatorNullLast
-            }
-          ],
+      this.createHeaders,
       null,
       {
         createItemRequest: (body) => salaryService.reportSalaryRequest(body),
@@ -145,7 +119,7 @@ export default class SalaryRequests extends Vue {
 
   private defaultReportNewRequestBody(): SalaryRequestReportBody {
     return {
-      type: SalaryRequestType.SALARY_INCREASE,
+      type: this.getSalaryRequestTypeByMode();
       increaseStartPeriod: this.selectedPeriod.periodId(),
     } as SalaryRequestReportBody;
   }
@@ -201,6 +175,37 @@ export default class SalaryRequests extends Vue {
     return {text: this.$tc(`SALARY_REQUEST_TYPE.${v}`), value: v};
   });
 
+  private getSalaryRequestTypeByMode() {
+    return this.mode == "increases" ? SalaryRequestType.SALARY_INCREASE : SalaryRequestType.BONUS;
+  }
+
+  private createHeaders() {
+    const headers = [];
+    headers.push({text: this.$tc('Сотрудник'), value: 'employee.name'});
+    headers.push({text: this.$tc('Текущий проект'), value: 'employeeCurrentProject.name'});
+    headers.push({text: this.$tc('Результат'), value: 'impl.state'});
+    headers.push({text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'});
+    headers.push({text: this.$tc('Запрошенная сумма в рублях'), value: 'req.increaseAmount'});
+    headers.push({text: this.$tc('Реалиованная сумма в рублях'), value: 'impl.increaseAmount'});
+    headers.push({text: this.$tc('Реализовано в периоде'), value: 'impl.increaseStartPeriod'});
+    if (this.mode == "increases") {
+      headers.push({text: this.$tc('Новая позиция'), value: 'impl.newPosition.name'});
+    }
+    headers.push({text: this.$tc('Создано'), value: 'createdBy.name'});
+    headers.push({
+      text: this.$tc('Создано (время)'),
+      value: 'createdAt',
+      sort: DateTimeUtils.dateComparatorNullLast
+    });
+    headers.push({text: this.$tc('Завершено'), value: 'implementedBy.name'});
+    headers.push({
+      text: this.$tc('Завершено (время)'),
+      value: 'implementedAt',
+      sort: DateTimeUtils.dateComparatorNullLast
+    });
+    return headers;
+  }
+
   formatDateTime = (v: string | undefined) => DateTimeUtils.formatDateTimeFromIso(v);
 
   formatDate = (v: string | undefined) => DateTimeUtils.formatFromIso(v);
@@ -212,7 +217,6 @@ export default class SalaryRequests extends Vue {
 
 export class SalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
   public search = '';
-  public type: number[] = [];
 
   applyFilter(items: SalaryIncreaseRequest[]): SalaryIncreaseRequest[] {
     return items.filter((item) => {
@@ -225,7 +229,6 @@ export class SalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
           .ignoreCase(item?.req?.reason);
 
       filtered = filtered && searchUtils.textFilter(this.search, textFilters);
-      filtered = filtered && searchUtils.array(this.type, item.type);
       return filtered;
     });
   }
