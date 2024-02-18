@@ -119,8 +119,8 @@ export default class SalaryRequests extends Vue {
 
   private defaultReportNewRequestBody(): SalaryRequestReportBody {
     return {
-      type: this.getSalaryRequestTypeByMode();
-      increaseStartPeriod: this.selectedPeriod.periodId(),
+      type: this.getSalaryRequestTypeByMode(),
+      increaseStartPeriod: this.selectedPeriod.periodId()
     } as SalaryRequestReportBody;
   }
 
