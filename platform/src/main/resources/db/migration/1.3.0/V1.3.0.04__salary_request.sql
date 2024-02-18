@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS sal.salary_request (
     -- 2 - Rejected
     impl_state integer NULL,
     impl_increase_amount numeric(10, 2) NULL,
-    info_salary_amount numeric(10, 2) NULL,
+    impl_salary_amount numeric(10, 2) NULL,
     impl_increase_start_period integer null,
     impl_increase_text text null,
     impl_new_position integer NULL REFERENCES dict.position (id),

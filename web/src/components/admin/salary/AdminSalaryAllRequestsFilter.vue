@@ -1,5 +1,13 @@
 <template>
   <v-row>
+    <v-col cols="auto">
+      <v-select
+          v-model="filter.type"
+          :label="$t('Тип')"
+          :multiple="false"
+          :items="salaryTypes">
+      </v-select>
+    </v-col>
       <v-col>
         <v-text-field v-if="filter"
                       v-model="filter.search"
@@ -11,18 +19,10 @@
       </v-col>
       <v-col cols="auto">
         <v-select
-            v-model="filter.type"
-            :label="$t('Тип')"
-            :multiple="true"
-            :items="salaryTypes">
-        </v-select>
-      </v-col>
-      <v-col cols="auto">
-        <v-select
             v-model="filter.ba"
             item-text="name"
             item-value="id"
-            :label="$t('Бизнес аккаунт')"
+            :label="$t('Бюджет из бизнес аккаунта')"
             :multiple="true"
             :items="allBas">
         </v-select>
@@ -49,7 +49,7 @@
 <script lang="ts">
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
-import {SalaryIncreaseRequest, salaryRequestTypes} from "@/components/salary/salary.service";
+import {SalaryIncreaseRequest, SalaryRequestType, salaryRequestTypes} from "@/components/salary/salary.service";
 import {Filter} from "@/components/shared/table/TableComponentDataContainer";
 import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 import {Getter} from "vuex-class";
@@ -62,7 +62,7 @@ export class AdminSalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
   public search = '';
   public implState: number[] = [];
   public impl: boolean[] = [];
-  public type: number[] = [];
+  public type: number = SalaryRequestType.SALARY_INCREASE;
   public ba: number[] = [];
 
   applyFilter(items: SalaryIncreaseRequest[]): SalaryIncreaseRequest[] {
@@ -77,7 +77,7 @@ export class AdminSalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
 
       filtered = filtered && searchUtils.textFilter(this.search, textFilters);
       filtered = filtered && searchUtils.array(this.implState, item.impl?.state);
-      filtered = filtered && searchUtils.array(this.type, item.type);
+      filtered = filtered && this.type === item.type;
       filtered = filtered && searchUtils.array(this.ba, item.budgetBusinessAccount?.id);
       filtered = filtered && searchUtils.array(this.impl, Boolean(item.impl?.implementedAt));
       return filtered;

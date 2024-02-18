@@ -111,7 +111,7 @@ export class SalaryRequestImplementAction implements UpdateAction<SalaryIncrease
       increaseAmount: item.req.increaseAmount,
       increaseStartPeriod: item.req.increaseStartPeriod,
       reason: '',
-      newPosition: item.employeePosition?.id,
+      newPosition: item.employeeInfo.position?.id,
       readonly: Boolean(item.impl)
     } as SalaryRequestFormData;
   }

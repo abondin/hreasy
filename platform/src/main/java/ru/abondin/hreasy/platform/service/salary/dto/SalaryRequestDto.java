@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.salary.dto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
+import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import org.springframework.lang.NonNull;
@@ -17,11 +18,6 @@ public class SalaryRequestDto {
 
     @NonNull
     private SimpleDictDto employee;
-
-    private CurrentProjectDictDto employeeCurrentProject;
-    private SimpleDictDto employeeBusinessAccount;
-    private SimpleDictDto employeePosition;
-
     /**
      * @see SalaryRequestType
      */
@@ -41,7 +37,7 @@ public class SalaryRequestDto {
 
     private SalaryRequestReq req = new SalaryRequestReq();
     private SalaryRequestImpl impl = null;
-
+    private EmployeeInfo employeeInfo = new EmployeeInfo();
 
     @Data
     @NoArgsConstructor
@@ -68,6 +64,7 @@ public class SalaryRequestDto {
         private short state;
 
         private BigDecimal increaseAmount;
+        private BigDecimal salaryAmount;
         /**
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */
@@ -78,5 +75,16 @@ public class SalaryRequestDto {
 
         private OffsetDateTime implementedAt;
         private SimpleDictDto implementedBy;
+    }
+
+    @Data
+    public static class EmployeeInfo {
+        private CurrentProjectDictDto currentProject;
+        private LocalDate dateOfEmployment;
+        private SimpleDictDto ba;
+        private SimpleDictDto position;
+        private BigDecimal currentSalaryAmount;
+        private BigDecimal plannedSalaryAmount;
+        private String infoPreviousSalaryIncreaseText;
     }
 }

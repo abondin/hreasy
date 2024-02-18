@@ -82,14 +82,21 @@ export default salaryService;
 export interface SalaryIncreaseRequest extends WithId {
     id: number;
     employee: SimpleDict;
-    employeeCurrentProject: CurrentProjectDict;
     type: SalaryRequestType;
     budgetBusinessAccount: SimpleDict;
     budgetExpectedFundingUntil: string | null;
     createdAt: string;
     createdBy: SimpleDict;
     assessment: SimpleDict | null;
-    employeePosition: SimpleDict;
+    employeeInfo: {
+        currentProject: CurrentProjectDict|null;
+        dateOfEmployment: string|null;
+        ba: SimpleDict|null;
+        position: SimpleDict|null;
+        currentSalaryAmount: number|null;
+        plannedSalaryAmount: number|null;
+        previousSalaryIncreaseText: string| null;
+    }
     req: {
         increaseAmount: number;
         /**
@@ -105,6 +112,7 @@ export interface SalaryIncreaseRequest extends WithId {
         state: SalaryRequestImplementationState;
         newPosition: SimpleDict | null;
         increaseAmount: number;
+        salaryAmount: number|null;
         increaseStartPeriod: number;
         reason: string;
         comment: string | null;

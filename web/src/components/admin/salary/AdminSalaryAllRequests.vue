@@ -1,20 +1,23 @@
 <template>
   <hreasy-table :data="data"
-                :create-new-title="$t('Создание запроса на индексацию ЗП или бонус')"
+                :create-new-title="createNewTitle()"
                 :update-title="$t('Реализация запроса для сотрудника')"
                 :sort-by="['req.increaseStartPeriod']">
     <!--<editor-fold desc="Table columns">-->
     <template v-slot:item.impl.increaseStartPeriod="{ item }">
       {{ fromPeriodId(item.impl?.increaseStartPeriod) }}
     </template>
+    <template v-slot:item.employeeInfo.dateOfEmployment="{ item }">
+      {{ formatDate(item.employeeInfo.dateOfEmployment) }}
+    </template>
+    <template v-slot:item.req.increaseStartPeriod="{ item }">
+      {{ fromPeriodId(item.req.increaseStartPeriod) }}
+    </template>
     <template v-slot:item.createdAt="{ item }">
       {{ formatDateTime(item.createdAt) }}
     </template>
     <template v-slot:item.implementedAt="{ item }">
       {{ formatDateTime(item.implementedAt) }}
-    </template>
-    <template v-slot:item.type="{ item }">
-      {{ $t(`SALARY_REQUEST_TYPE.${item.type}`) }}
     </template>
     <template v-slot:item.impl.state="{ item }">
       {{ item.impl?.state ? $t(`SALARY_REQUEST_STAT.${item.impl.state}`) : '' }}
@@ -24,6 +27,9 @@
     </template>
     <template v-slot:item.impl.increaseAmount="{ item }">
       {{ formatMoney(item.impl?.increaseAmount) }}
+    </template>
+    <template v-slot:item.impl.salaryAmount="{ item }">
+      {{ formatMoney(item.impl?.salaryAmount) }}
     </template>
     <template v-slot:item.req.budgetExpectedFundingUntil="{ item }">
       {{ formatDate(item.req.budgetExpectedFundingUntil) }}
@@ -167,23 +173,22 @@ export default class AdminSalaryAllRequests extends Vue {
       () =>
           [
             {text: this.$tc('Сотрудник'), value: 'employee.name'},
-            {text: this.$tc('Текущий проект'), value: 'employeeCurrentProject.name'},
-            {text: this.$tc('Тип'), value: 'type'},
-            {text: this.$tc('Результат'), value: 'impl.state'},
+            {text: this.$tc('Дата трудоустройства'), value: 'employeeInfo.dateOfEmployment'},
+            {text: this.$tc('Текущая заработная плата'), value: 'employeeInfo.currentSalaryAmount'},
+            {text: this.$tc('Предполагаемая заработная плата после повышения'), value: 'employeeInfo.plannedSalaryAmount'},
+            {text: this.$tc('Предполагаемое изменение на'), value: 'req.increaseAmount'},
+            {text: this.$tc('Месяц старта изменений'), value: 'req.increaseStartPeriod'},
+            {text: this.$tc('Должность'), value: 'employeeInfo.position.name'},
+            {text: this.$tc('Бизнес аккаунт'), value: 'employeeInfo.ba.name'},
+            {text: this.$tc('Менеджер, инициировавший пересмотр'), value: 'createdBy.name'},
             {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'},
-            {text: this.$tc('Запрошенная сумма в рублях'), value: 'req.salaryIncrease'},
-            {text: this.$tc('Реалиованная сумма в рублях'), value: 'impl.salaryIncrease'},
-            {text: this.$tc('Реализовано в периоде'), value: 'impl.increaseStartPeriod'},
-            {text: this.$tc('Новая позиция'), value: 'impl.newPosition.name'},
+            {text: this.$tc('Причины пересмотра'), value: 'req.reason'},
+            {text: this.$tc('Перспективы биллинга '), value: 'budgetExpectedFundingUntil'},
+            {text: this.$tc('Крайний реализованный пересмотр заработной платы'), value: 'employeeInfo.previousSalaryIncreaseText'},
             {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
-            {text: this.$tc('Создано'), value: 'createdBy.name'},
-            {text: this.$tc('Создано (время)'), value: 'createdAt', sort: DateTimeUtils.dateComparatorNullLast},
-            {text: this.$tc('Завершено'), value: 'implementedBy.name'},
-            {
-              text: this.$tc('Завершено (время)'),
-              value: 'implementedAt',
-              sort: DateTimeUtils.dateComparatorNullLast
-            }
+            {text: this.$tc('Итоговая сумма'), value: 'impl.salaryAmount'},
+            {text: this.$tc('Завершено'), value: 'impl.implementedBy.name'},
+            {text: this.$tc('Решение'), value: 'impl.state'},
           ],
       new SalaryRequestImplementAction(),
       {
@@ -201,8 +206,9 @@ export default class AdminSalaryAllRequests extends Vue {
 
   private defaultReportNewRequestBody(): SalaryRequestReportBody {
     return {
-      type: SalaryRequestType.SALARY_INCREASE,
+      type: this.data.filter.type,
       increaseStartPeriod: this.selectedPeriod.periodId(),
+      budgetBusinessAccount: this.data.filter.ba && this.data.filter.ba.length > 0 ? this.data.filter.ba[0] : null
     } as SalaryRequestReportBody;
   }
 
@@ -270,6 +276,9 @@ export default class AdminSalaryAllRequests extends Vue {
   formatMoney = (v: string | number | null | undefined) => v ? Number(v).toLocaleString() : '';
 
   fromPeriodId = (v: number | null | undefined) => v && !isNaN(v) ? ReportPeriod.fromPeriodId(v) : null;
+
+  createNewTitle = () => this.data.filter.type == SalaryRequestType.SALARY_INCREASE
+      ? this.$t('Создание запроса на индексацию ЗП') : this.$t('Создание запроса на бонус');
 }
 </script>
 

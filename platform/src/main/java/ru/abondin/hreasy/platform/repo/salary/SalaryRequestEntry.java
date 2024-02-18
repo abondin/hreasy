@@ -75,6 +75,7 @@ public class SalaryRequestEntry {
     private Integer implementedBy;
     @NonNull
     private BigDecimal implIncreaseAmount;
+    private BigDecimal implSalaryAmount;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
