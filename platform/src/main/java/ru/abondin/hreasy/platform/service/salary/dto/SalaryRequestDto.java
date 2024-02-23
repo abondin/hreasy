@@ -44,6 +44,7 @@ public class SalaryRequestDto {
     public static class SalaryRequestReq {
         @NonNull
         private BigDecimal increaseAmount;
+        private BigDecimal plannedSalaryAmount;
 
         /**
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
@@ -84,7 +85,6 @@ public class SalaryRequestDto {
         private SimpleDictDto ba;
         private SimpleDictDto position;
         private BigDecimal currentSalaryAmount;
-        private BigDecimal plannedSalaryAmount;
         private String infoPreviousSalaryIncreaseText;
     }
 }

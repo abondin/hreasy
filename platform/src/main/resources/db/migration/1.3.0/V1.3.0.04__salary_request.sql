@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS sal.salary_request (
 --- Requested
 ---
     req_increase_amount numeric(10, 2) NOT NULL,
+    req_planned_salary_amount numeric(10, 2) NULL,
     req_increase_start_period integer not null,
     req_reason varchar(1024) NOT NULL,
     req_comment text NULL,
@@ -34,7 +35,6 @@ CREATE TABLE IF NOT EXISTS sal.salary_request (
     info_empl_ba integer null,
     info_empl_position integer null,
     info_current_salary_amount numeric(10, 2) NULL,
-    info_planned_salary_amount numeric(10, 2) NULL,
     info_previous_salary_increase_text text null,
 ---
 --- Implemented
@@ -74,6 +74,7 @@ COMMENT ON COLUMN sal.salary_request.deleted_by IS 'Deleted by';
 --- Requested
 ---
 COMMENT ON COLUMN sal.salary_request.req_increase_amount IS 'Requested increase sum';
+COMMENT ON COLUMN sal.salary_request.req_planned_salary_amount IS 'New planned salary after increase';
 COMMENT ON COLUMN sal.salary_request.req_increase_start_period IS 'Requested YYYYMM period. Month starts with 0. 202308 - September of 2023';
 COMMENT ON COLUMN sal.salary_request.req_reason IS 'Reason to raise salary';
 COMMENT ON COLUMN sal.salary_request.req_comment IS 'Optional request additional comment';
@@ -87,7 +88,6 @@ COMMENT ON COLUMN sal.salary_request.info_empl_ba IS 'Employee project business 
 COMMENT ON COLUMN sal.salary_request.info_empl_position IS 'Employee position in official documents';
 COMMENT ON COLUMN sal.salary_request.info_current_salary_amount IS 'Current salary amount';
 COMMENT ON COLUMN sal.salary_request.info_previous_salary_increase_text IS 'Official text from ERP system';
-COMMENT ON COLUMN sal.salary_request.info_planned_salary_amount IS 'New planned salary after increase';
 
 ---
 --- Implemented

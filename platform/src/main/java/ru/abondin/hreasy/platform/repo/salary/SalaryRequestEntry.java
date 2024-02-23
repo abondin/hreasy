@@ -45,6 +45,7 @@ public class SalaryRequestEntry {
 
     @NonNull
     private BigDecimal reqIncreaseAmount;
+    private BigDecimal reqPlannedSalaryAmount;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
@@ -63,7 +64,6 @@ public class SalaryRequestEntry {
     private Integer infoEmplBa;
     private Integer infoEmplPosition;
     private BigDecimal infoCurrentSalaryAmount;
-    private BigDecimal infoPlannedSalaryAmount;
     private String infoPreviousSalaryIncreaseText;
 // </editor-fold>
 

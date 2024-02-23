@@ -21,6 +21,11 @@ export interface SalaryRequestReportBody {
     budgetBusinessAccount: number|null|undefined;
     budgetExpectedFundingUntil: string | null;
     increaseAmount: number|null;
+
+    //TODO After salary storing feature implemented populate this field automatically
+    currentSalaryAmount: number|null;
+
+    plannedSalaryAmount: number|null;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */

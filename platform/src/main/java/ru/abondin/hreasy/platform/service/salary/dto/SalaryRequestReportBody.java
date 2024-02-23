@@ -30,6 +30,9 @@ public class SalaryRequestReportBody {
 
     @NonNull
     private BigDecimal increaseAmount;
+    //TODO After salary storing feature implemented populate this field automatically
+    private BigDecimal currentSalaryAmount;
+    private BigDecimal plannedSalaryAmount;
 
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023

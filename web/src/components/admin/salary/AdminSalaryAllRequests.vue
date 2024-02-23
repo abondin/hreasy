@@ -25,6 +25,12 @@
     <template v-slot:item.req.increaseAmount="{ item }">
       {{ formatMoney(item.req.increaseAmount) }}
     </template>
+    <template v-slot:item.req.plannedSalaryAmount="{ item }">
+      {{ formatMoney(item.req.plannedSalaryAmount) }}
+    </template>
+    <template v-slot:item.employeeInfo.currentSalaryAmount="{ item }">
+      {{ formatMoney(item.employeeInfo.currentSalaryAmount) }}
+    </template>
     <template v-slot:item.impl.increaseAmount="{ item }">
       {{ formatMoney(item.impl?.increaseAmount) }}
     </template>
@@ -175,7 +181,7 @@ export default class AdminSalaryAllRequests extends Vue {
             {text: this.$tc('Сотрудник'), value: 'employee.name'},
             {text: this.$tc('Дата трудоустройства'), value: 'employeeInfo.dateOfEmployment'},
             {text: this.$tc('Текущая заработная плата'), value: 'employeeInfo.currentSalaryAmount'},
-            {text: this.$tc('Предполагаемая заработная плата после повышения'), value: 'employeeInfo.plannedSalaryAmount'},
+            {text: this.$tc('Предполагаемая заработная плата после повышения'), value: 'req.plannedSalaryAmount'},
             {text: this.$tc('Предполагаемое изменение на'), value: 'req.increaseAmount'},
             {text: this.$tc('Месяц старта изменений'), value: 'req.increaseStartPeriod'},
             {text: this.$tc('Должность'), value: 'employeeInfo.position.name'},
