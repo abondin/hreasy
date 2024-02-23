@@ -1,13 +1,5 @@
 <template>
   <v-row>
-    <v-col cols="auto">
-      <v-select
-          v-model="filter.type"
-          :label="$t('Тип')"
-          :multiple="false"
-          :items="salaryTypes">
-      </v-select>
-    </v-col>
       <v-col>
         <v-text-field v-if="filter"
                       v-model="filter.search"
@@ -96,10 +88,6 @@ export default class AdminSalaryReportForm extends Vue {
 
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;
-
-  private salaryTypes = salaryRequestTypes.map(v => {
-    return {text: this.$tc(`SALARY_REQUEST_TYPE.${v}`), value: v};
-  });
 
   private salaryStats = salaryRequestImplementationStates.map(v => {
     return {text: this.$tc(`SALARY_REQUEST_STAT.${v}`), value: v};

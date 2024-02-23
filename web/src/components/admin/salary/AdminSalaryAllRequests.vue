@@ -71,26 +71,6 @@
     </template>
 
     <template v-slot:additionalActions>
-      <v-col align-self="center" cols="auto" v-if="selectedPeriod">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-              <v-btn v-if="!periodClosed()" link :disabled="data.loading" @click="closePeriod()"
-                     icon>
-                <v-icon>mdi-lock</v-icon>
-              </v-btn>
-              <v-btn v-if="periodClosed()" link :disabled="data.loading" @click="reopenPeriod()"
-                     icon>
-                <v-icon>mdi-lock-open</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <span>{{
-              $t(periodClosed() ? 'Переоткрыть период. Вернуть возможность вносить изменения'
-                  : 'Закрыть период. Запретить внесение изменений.')
-            }}</span>
-        </v-tooltip>
-      </v-col>
       <v-col align-self="center" cols="auto">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
@@ -114,6 +94,39 @@
           </template>
         </v-snackbar>
       </v-col>
+
+      <v-spacer/>
+
+      <v-col align-self="center" cols="auto">
+        <v-select
+            v-model="data.filter.type"
+            :label="$t('Тип')"
+            :multiple="false"
+            :items="salaryTypes">
+        </v-select>
+      </v-col>
+
+      <v-col align-self="center" cols="auto" v-if="selectedPeriod">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
+              <v-btn v-if="!periodClosed()" link :disabled="data.loading" @click="closePeriod()"
+                     icon>
+                <v-icon>mdi-lock</v-icon>
+              </v-btn>
+              <v-btn v-if="periodClosed()" link :disabled="data.loading" @click="reopenPeriod()"
+                     icon>
+                <v-icon>mdi-lock-open</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <span>{{
+              $t(periodClosed() ? 'Переоткрыть период. Вернуть возможность вносить изменения'
+                  : 'Закрыть период. Запретить внесение изменений.')
+            }}</span>
+        </v-tooltip>
+      </v-col>
+
     </template>
 
   </hreasy-table>
@@ -127,7 +140,8 @@ import salaryService, {
   ClosedSalaryRequestPeriod,
   SalaryIncreaseRequest,
   SalaryRequestReportBody,
-  SalaryRequestType
+  SalaryRequestType,
+  salaryRequestTypes
 } from "@/components/salary/salary.service";
 import permissionService from "@/store/modules/permission.service";
 import {Vue} from "vue-property-decorator";
@@ -165,6 +179,9 @@ export default class AdminSalaryAllRequests extends Vue {
   private exportLoading = false;
   private exportCompleted = false;
 
+  private salaryTypes = salaryRequestTypes.map(v => {
+    return {text: this.$tc(`SALARY_REQUEST_TYPE.${v}`), value: v};
+  });
   dataLoader: () => Promise<SalaryIncreaseRequest[]> = () => salaryService.getClosedSalaryRequestPeriods()
       .then(data => {
         this.setClosedPeriods(data);
@@ -190,8 +207,10 @@ export default class AdminSalaryAllRequests extends Vue {
             {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'},
             {text: this.$tc('Причины пересмотра'), value: 'req.reason'},
             {text: this.$tc('Перспективы биллинга '), value: 'budgetExpectedFundingUntil'},
-            {text: this.$tc('Крайний реализованный пересмотр заработной платы'), value: 'employeeInfo.previousSalaryIncreaseText'},
+            //TODO After salary history storing feature implemented add this fields
+            //{text: this.$tc('Крайний реализованный пересмотр заработной платы'), value: 'employeeInfo.previousSalaryIncreaseText'},
             {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
+            {text: this.$tc('Итоговое изменение на'), value: 'impl.increaseAmount'},
             {text: this.$tc('Итоговая сумма'), value: 'impl.salaryAmount'},
             {text: this.$tc('Завершено'), value: 'impl.implementedBy.name'},
             {text: this.$tc('Решение'), value: 'impl.state'},

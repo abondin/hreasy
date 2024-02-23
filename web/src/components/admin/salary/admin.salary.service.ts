@@ -4,6 +4,8 @@ import {SalaryIncreaseRequest} from "@/components/salary/salary.service";
 
 export interface SalaryRequestImplementBody {
     increaseAmount: number;
+
+    salaryAmount: number|null;
     increaseStartPeriod: number;
     newPosition: number | null;
     reason: string;

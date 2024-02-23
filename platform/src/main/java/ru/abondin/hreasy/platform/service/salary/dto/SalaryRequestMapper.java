@@ -53,6 +53,7 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = "implementedAt", target = "impl.implementedAt")
     @Mapping(source = ".", target = "impl.implementedBy", qualifiedByName = "implementedBy")
     @Mapping(source = "implIncreaseAmount", target = "impl.increaseAmount")
+    @Mapping(source = "implSalaryAmount", target = "impl.salaryAmount")
     @Mapping(source = "implIncreaseStartPeriod", target = "impl.increaseStartPeriod")
     @Mapping(source = "implRejectReason", target = "impl.rejectReason")
     @Mapping(source = "implComment", target = "impl.comment")
@@ -61,8 +62,10 @@ public interface SalaryRequestMapper extends MapperBase {
     SalaryRequestDto fromEntry(SalaryRequestView entry);
 
     @Mapping(source = "req.increaseAmount", target = "reqIncreaseAmount")
+    @Mapping(source = "req.plannedSalaryAmount", target = "reqPlannedSalaryAmount")
     @Mapping(source = "req.reason", target = "reqReason")
     @Mapping(source = "impl.increaseAmount", target = "implIncreaseAmount")
+    @Mapping(source = "impl.salaryAmount", target = "implSalaryAmount")
     @Mapping(source = "impl.increaseStartPeriod", target = "implIncreaseStartPeriod", qualifiedByName = "period")
     @Mapping(source = "impl.rejectReason", target = "implRejectReason")
     @Mapping(source = "impl.state", target = "implState")
@@ -71,6 +74,8 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = "employee.name", target = "employee")
     @Mapping(source = "employeeInfo.currentProject.name", target = "employeeProject")
     @Mapping(source = "employeeInfo.currentProject.role", target = "employeeProjectRole")
+    @Mapping(source = "employeeInfo.ba.name", target = "employeeBusinessAccount")
+    @Mapping(source = "employeeInfo.currentSalaryAmount", target = "currentSalaryAmount")
     @Mapping(source = "createdBy.name", target = "createdBy")
     @Mapping(source = "employeeInfo.position.name", target = "employeePosition")
     @Mapping(source = "budgetBusinessAccount.name", target = "budgetBusinessAccount")
@@ -88,6 +93,7 @@ public interface SalaryRequestMapper extends MapperBase {
     SalaryRequestClosedPeriodDto closedPeriodFromEntry(SalaryRequestClosedPeriodEntry salaryRequestClosedPeriodEntry);
 
     @Mapping(source = "body.increaseAmount", target = "implIncreaseAmount")
+    @Mapping(source = "body.salaryAmount", target = "implSalaryAmount")
     @Mapping(source = "body.increaseStartPeriod", target = "implIncreaseStartPeriod")
     @Mapping(source = "body.newPosition", target = "implNewPosition")
     @Mapping(source = "body.comment", target = "implComment")

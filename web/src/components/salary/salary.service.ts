@@ -99,11 +99,11 @@ export interface SalaryIncreaseRequest extends WithId {
         ba: SimpleDict|null;
         position: SimpleDict|null;
         currentSalaryAmount: number|null;
-        plannedSalaryAmount: number|null;
         previousSalaryIncreaseText: string| null;
     }
     req: {
         increaseAmount: number;
+        plannedSalaryAmount: number|null;
         /**
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */

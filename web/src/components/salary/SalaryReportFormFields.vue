@@ -7,12 +7,6 @@
       :label="$t('Сотрудник')"
       :rules="[v => !!v || $t('Обязательное поле')]"
   ></v-autocomplete>
-  <v-select
-      v-model="createBody.type"
-      :label="$t('Тип')"
-      :rules="[v => !!v || $t('Обязательное поле')]"
-      :items="salaryTypes">
-  </v-select>
   <v-autocomplete
       v-model="createBody.budgetBusinessAccount"
       item-value="id" item-text="name"
@@ -49,12 +43,12 @@
                 :label="$t('Предполагаемая заработная плата после повышения')" >
   </v-text-field>
 
-  <v-textarea
+  <v-text-field
       v-model="createBody.reason"
       counter="256"
       :rules="[v=>(v && v.length <= 256 || $t('Обязательное поле. Не более N символов', {n:256}))]"
       :label="$t('Обоснование')">
-  </v-textarea>
+  </v-text-field>
   <v-textarea
       v-model="createBody.comment"
       :rules="[v=>(!v || v.length <= 4096 || $t('Не более N символов', {n:4096}))]"

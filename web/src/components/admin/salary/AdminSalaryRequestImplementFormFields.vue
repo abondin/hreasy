@@ -14,7 +14,14 @@
       type="number"
       v-model="body.increaseAmount"
       :rules="[v => !!v || $t('Обязательное числовое поле')]"
-      :label="$t('Сумма в рублях')">
+      :label="$t('Итоговое изменение на')">
+  </v-text-field>
+  <v-text-field
+      :disabled="body?.readonly"
+      v-if="!isRejected()"
+      type="number"
+      v-model="body.salaryAmount"
+      :label="$t('Итоговая сумма')">
   </v-text-field>
    <v-select
        :disabled="body?.readonly"
@@ -70,6 +77,8 @@ export interface SalaryRequestFormData {
   type: SalaryRequestType,
   state: SalaryRequestImplementationState | null;
   increaseAmount: number;
+
+  salaryAmount: number | null;
   /**
    * YYYYMM period. Month starts with 0. 202308 - September of 2023
    */
@@ -96,6 +105,7 @@ export class SalaryRequestImplementAction implements UpdateAction<SalaryIncrease
         reason: formData.reason,
         increaseStartPeriod: formData.increaseStartPeriod,
         increaseAmount: formData.increaseAmount,
+        salaryAmount: formData.salaryAmount,
         newPosition: formData.newPosition
       } as SalaryRequestImplementBody;
       logger.log(`Mark salary request ${id} as implemented: ${body}`);
@@ -108,10 +118,11 @@ export class SalaryRequestImplementAction implements UpdateAction<SalaryIncrease
     return {
       type: item.type,
       state: item.impl?.state,
-      increaseAmount: item.req.increaseAmount,
-      increaseStartPeriod: item.req.increaseStartPeriod,
-      reason: '',
-      newPosition: item.employeeInfo.position?.id,
+      increaseAmount: item.impl ? item.impl.increaseAmount : item.req.increaseAmount,
+      salaryAmount: item.impl ? item.impl.salaryAmount : item.req.plannedSalaryAmount,
+      increaseStartPeriod: item.impl ? item.impl.increaseStartPeriod : item.req.increaseStartPeriod,
+      reason: item.impl ? item.impl.reason : '',
+      newPosition: item.impl ? item.impl.newPosition : null,
       readonly: Boolean(item.impl)
     } as SalaryRequestFormData;
   }

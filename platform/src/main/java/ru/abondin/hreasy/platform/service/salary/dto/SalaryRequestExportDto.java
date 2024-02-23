@@ -22,14 +22,19 @@ public class SalaryRequestExportDto {
 
     private String employeeProject;
     private String employeeProjectRole;
+    private String employeeBusinessAccount;
     private OffsetDateTime createdAt;
 
     private String createdBy;
+    private BigDecimal currentSalaryAmount;
+
     private BigDecimal reqIncreaseAmount;
+    private BigDecimal reqPlannedSalaryAmount;
 
     private String reqReason;
 
     private BigDecimal implIncreaseAmount;
+    private BigDecimal implSalaryAmount;
     private YearMonth implIncreaseStartPeriod;
     private String implRejectReason;
     private String implState;

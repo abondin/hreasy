@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 public class SalaryRequestImplementBody {
     @NonNull
     private BigDecimal increaseAmount;
+    private BigDecimal salaryAmount;
     @NonNull
     private Integer increaseStartPeriod;
     private Integer newPosition;
