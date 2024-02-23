@@ -76,9 +76,9 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                             Assertions.assertEquals(ctx.getEmployeeInfo().getEmployeeId(), dto.getCreatedBy().getId(), "Created by");
                             Assertions.assertNull(dto.getImpl(), "Impl must be null");
                             Assertions.assertEquals(jensonId, dto.getEmployee().getId(), "Employee");
-                            Assertions.assertEquals(testData.project_M1_FMS(), dto.getEmployeeCurrentProject().getId(), "Current Project");
-                            Assertions.assertEquals(testData.ba_RND(), dto.getEmployeeBusinessAccount().getId(), "Employee BA");
-                            Assertions.assertEquals(testData.position_AutomationQA(), dto.getEmployeePosition().getId(), "Employee Position");
+                            Assertions.assertEquals(testData.project_M1_FMS(), dto.getEmployeeInfo().getCurrentProject().getId(), "Current Project");
+                            Assertions.assertEquals(testData.ba_RND(), dto.getEmployeeInfo().getBa().getId(), "Employee BA");
+                            Assertions.assertEquals(testData.position_AutomationQA(), dto.getEmployeeInfo().getPosition().getId(), "Employee Position");
                             return true;
                         }
                 ).verifyComplete();
