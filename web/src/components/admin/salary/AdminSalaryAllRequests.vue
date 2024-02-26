@@ -40,7 +40,6 @@
     <template v-slot:item.req.budgetExpectedFundingUntil="{ item }">
       {{ formatDate(item.req.budgetExpectedFundingUntil) }}
     </template>
-
     <!--</editor-fold>-->
 
     <template v-slot:filters>

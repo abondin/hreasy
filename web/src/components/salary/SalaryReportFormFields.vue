@@ -27,11 +27,13 @@
   ></my-date-form-component>
 
   <v-text-field type="number"
+                hide-spin-buttons
                 v-model="createBody.currentSalaryAmount"
                 :label="$t('Текущая заработная плата')"
   >
   </v-text-field>
   <v-text-field type="number"
+                hide-spin-buttons
                 v-model="createBody.increaseAmount"
                 :rules="[v => !!v || $t('Обязательное числовое поле')]"
                 :label="$t('Предполагаемое изменение на')"
@@ -39,8 +41,9 @@
   </v-text-field>
 
   <v-text-field type="number"
+                hide-spin-buttons
                 v-model="createBody.plannedSalaryAmount"
-                :label="$t('Предполагаемая заработная плата после повышения')" >
+                :label="$t('Предполагаемая заработная плата после повышения')">
   </v-text-field>
 
   <v-text-field
@@ -106,22 +109,22 @@ export default class SalaryReportFormFields extends Vue {
   @Watch("createBody.employeeId")
   private employeeSelected(employeeId: number) {
     this.employeeAssessments = [];
-    const empl = this.allEmployees.find(e => e.id==employeeId);
-    if (!empl){
+    const empl = this.allEmployees.find(e => e.id == employeeId);
+    if (!empl) {
       console.error(`Employee not found ${employeeId}`)
-      return ;
+      return;
     }
     this.createBody.budgetBusinessAccount = empl.ba?.id;
-    this.createBody.increaseAmount=null;
-    this.createBody.plannedSalaryAmount=null;
-    this.createBody.currentSalaryAmount=null;
-    this.createBody.reason=null;
-    this.createBody.comment=null;
-    this.createBody.budgetExpectedFundingUntil=null;
-    this.createBody.assessmentId=null;
+    this.createBody.increaseAmount = null;
+    this.createBody.plannedSalaryAmount = null;
+    this.createBody.currentSalaryAmount = null;
+    this.createBody.reason = null;
+    this.createBody.comment = null;
+    this.createBody.budgetExpectedFundingUntil = null;
+    this.createBody.assessmentId = null;
     return assessmentService.employeeAssessments(employeeId)
         .then(data => {
-          this.employeeAssessments = data.filter(a=>!a.canceledAt);
+          this.employeeAssessments = data.filter(a => !a.canceledAt);
         })
         .catch(err => {
           console.error(`Unable to load assessment ${err}`);

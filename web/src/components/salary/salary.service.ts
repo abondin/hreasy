@@ -18,20 +18,20 @@ export const salaryRequestTypes = [
 export interface SalaryRequestReportBody {
     employeeId: number;
     type: SalaryRequestType;
-    budgetBusinessAccount: number|null|undefined;
+    budgetBusinessAccount: number | null | undefined;
     budgetExpectedFundingUntil: string | null;
-    increaseAmount: number|null;
+    increaseAmount: number | null;
 
     //TODO After salary storing feature implemented populate this field automatically
-    currentSalaryAmount: number|null;
+    currentSalaryAmount: number | null;
 
-    plannedSalaryAmount: number|null;
+    plannedSalaryAmount: number | null;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
     increaseStartPeriod: number;
     assessmentId: number | null;
-    reason: string|null;
+    reason: string | null;
     comment: string | null;
 }
 
@@ -94,16 +94,16 @@ export interface SalaryIncreaseRequest extends WithId {
     createdBy: SimpleDict;
     assessment: SimpleDict | null;
     employeeInfo: {
-        currentProject: CurrentProjectDict|null;
-        dateOfEmployment: string|null;
-        ba: SimpleDict|null;
-        position: SimpleDict|null;
-        currentSalaryAmount: number|null;
-        previousSalaryIncreaseText: string| null;
+        currentProject: CurrentProjectDict | null;
+        dateOfEmployment: string | null;
+        ba: SimpleDict | null;
+        position: SimpleDict | null;
+        currentSalaryAmount: number | null;
+        previousSalaryIncreaseText: string | null;
     }
     req: {
         increaseAmount: number;
-        plannedSalaryAmount: number|null;
+        plannedSalaryAmount: number | null;
         /**
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */
@@ -117,9 +117,9 @@ export interface SalaryIncreaseRequest extends WithId {
         state: SalaryRequestImplementationState;
         newPosition: SimpleDict | null;
         increaseAmount: number;
-        salaryAmount: number|null;
+        salaryAmount: number | null;
         increaseStartPeriod: number;
         reason: string;
         comment: string | null;
-    }
+    };
 }
