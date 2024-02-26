@@ -91,6 +91,8 @@
               :items-per-page="data.defaultItemsPerTablePage"
               class="text-truncate"
               :single-select=true
+              :show-expand="$vuetify.breakpoint.mdAndUp"
+              single-expand
           >
             <!--<editor-fold desc="Table columns">-->
             <template v-slot:item.impl.increaseStartPeriod="{ item }">
@@ -130,6 +132,11 @@
               {{ formatDate(item.req.budgetExpectedFundingUntil) }}
             </template>
             <!--</editor-fold>-->
+            <template v-slot:expanded-item="{ headers, item }">
+              <td :colspan="headers.length">
+                <salary-request-short-info-component :data="item"></salary-request-short-info-component>
+              </td>
+            </template>
           </v-data-table>
         </v-col>
       </v-row>
@@ -172,10 +179,12 @@ import SalaryReportFormFields from "@/components/salary/SalaryReportFormFields.v
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import HreasyTableCreateForm from "@/components/shared/table/HreasyTableCreateForm.vue";
 import {DateTimeUtils} from "@/components/datetimeutils";
+import SalaryRequestShortInfoComponent from "@/components/salary/SalaryRequestShortInfoComponent.vue";
 
 
 @Component({
   components: {
+    SalaryRequestShortInfoComponent,
     AdminSalaryRequestImplementFormFields,
     SalaryReportFormFields,
     AdminSalaryAllRequestsFilter, MyDateFormComponent,
@@ -205,8 +214,7 @@ export default class SalaryRequestsMain extends Vue {
         console.log("Reload headers: " + this.data.filter.type);
         const headers = [
           {text: this.$tc('Сотрудник'), value: 'employee.name'},
-          {text: this.$tc('Дата трудоустройства'), value: 'employeeInfo.dateOfEmployment'},
-          {text: this.$tc('Текущая заработная плата'), value: 'employeeInfo.currentSalaryAmount'},
+          {text: this.$tc('Текущая заработная плата'), value: 'employeeInfo.currentSalaryAmount', width: "100px"},
         ];
         if (this.data.filter.type == SalaryRequestType.SALARY_INCREASE) {
           headers.push({
@@ -221,24 +229,18 @@ export default class SalaryRequestsMain extends Vue {
           );
         }
         headers.push(
-            {text: this.$tc('Перспективы биллинга '), value: 'budgetExpectedFundingUntil'},
             {text: this.$tc('Месяц старта изменений'), value: 'req.increaseStartPeriod'},
-            {text: this.$tc('Должность'), value: 'employeeInfo.position.name'},
             {text: this.$tc('Бизнес аккаунт'), value: 'employeeInfo.ba.name'},
             {text: this.$tc('Менеджер, инициировавший пересмотр'), value: 'createdBy.name'},
             {text: this.$tc('Бюджет из бизнес аккаунта'), value: this.value}
         );
         if (this.data.filter.type == SalaryRequestType.SALARY_INCREASE) {
           headers.push(
-              //TODO After salary history storing feature implemented add this fields
-              //{text: this.$tc('Крайний реализованный пересмотр заработной платы'), value: 'employeeInfo.previousSalaryIncreaseText'},
-              {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
               {text: this.$tc('Итоговое изменение на'), value: 'impl.increaseAmount'},
               {text: this.$tc('Итоговая сумма'), value: 'impl.salaryAmount'},
           );
         } else {
           headers.push(
-              {text: this.$tc('Планируемая дата окончания финансирования'), value: 'budgetExpectedFundingUntil'},
               {text: this.$tc('Итоговая сумма бонуса'), value: 'impl.increaseAmount'}
           );
         }
