@@ -337,6 +337,10 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
             });
     }
 
+    public reloadHeaders(){
+        this.initHeaders();
+    }
+
 
     public filteredItems(): T[] {
         return this._filter.applyFilter(this._items);

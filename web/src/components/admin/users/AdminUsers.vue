@@ -26,13 +26,13 @@
             disable-pagination>
 
           <template v-slot:item.employee.name="{ item }">
-            <v-btn text @click="openEditDialog(item)">{{ item.employee.name }}
+            <v-btn small text @click="openEditDialog(item)">{{ item.employee.name }}
             </v-btn>
           </template>
 
           <!-- Roles -->
           <template v-slot:item.roles="{ item }">
-            <v-chip small
+            <v-chip x-small
                     v-for="r in item.roles" v-bind:key="r">
               {{ getById(allRoles, r) }}
             </v-chip>

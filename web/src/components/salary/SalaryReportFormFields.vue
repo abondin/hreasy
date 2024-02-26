@@ -36,11 +36,12 @@
                 hide-spin-buttons
                 v-model="createBody.increaseAmount"
                 :rules="[v => !!v || $t('Обязательное числовое поле')]"
-                :label="$t('Предполагаемое изменение на')"
+                :label="isSalaryRequest() ? $t('Предполагаемое изменение на') :  $t('Сумма бонуса')"
   >
   </v-text-field>
 
   <v-text-field type="number"
+                v-if="isSalaryRequest()"
                 hide-spin-buttons
                 v-model="createBody.plannedSalaryAmount"
                 :label="$t('Предполагаемая заработная плата после повышения')">
@@ -63,7 +64,7 @@
 <script lang="ts">
 import {Prop, Vue, Watch} from "vue-property-decorator";
 import Component from "vue-class-component";
-import {SalaryRequestReportBody, salaryRequestTypes} from "@/components/salary/salary.service";
+import {SalaryRequestReportBody, SalaryRequestType} from "@/components/salary/salary.service";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
@@ -87,9 +88,6 @@ export default class SalaryReportFormFields extends Vue {
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;
 
-  private salaryTypes = salaryRequestTypes.map(v => {
-    return {text: this.$tc(`SALARY_REQUEST_TYPE.${v}`), value: v};
-  });
 
   /**
    * Lifecycle hook
@@ -136,6 +134,9 @@ export default class SalaryReportFormFields extends Vue {
     return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
   }
 
+  isSalaryRequest(): boolean{
+    return Boolean(this.createBody.type == SalaryRequestType.SALARY_INCREASE);
+  }
 
 }
 
