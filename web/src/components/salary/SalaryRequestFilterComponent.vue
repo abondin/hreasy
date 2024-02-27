@@ -1,32 +1,33 @@
 <template>
   <v-row>
-      <v-col>
-        <v-text-field v-if="filter"
-                      v-model="filter.search"
-                      append-icon="mdi-magnify"
-                      :label="$t('Поиск')"
-                      single-line
-                      hide-details
-        ></v-text-field>
-      </v-col>
-      <v-col cols="auto">
-        <v-select
-            v-model="filter.ba"
-            item-text="name"
-            item-value="id"
-            :label="$t('Бюджет из бизнес аккаунта')"
-            :multiple="true"
-            :items="allBas">
-        </v-select>
-      </v-col>
-      <v-col cols="auto">
-        <v-select
-            v-model="filter.impl"
-            :label="$t('Завершён')"
-            :multiple="true"
-            :items="[{value:false, text:$t('Нет')}, {value:true, text:$t('Да')}]">
-        </v-select>
-      </v-col>
+    <v-col>
+      <v-text-field v-if="filter"
+                    v-model="filter.search"
+                    append-icon="mdi-magnify"
+                    :label="$t('Поиск')"
+                    single-line
+                    hide-details
+      ></v-text-field>
+    </v-col>
+    <v-col cols="auto">
+      <v-select
+          v-model="filter.ba"
+          item-text="name"
+          item-value="id"
+          :label="$t('Бюджет из бизнес аккаунта')"
+          :multiple="true"
+          :items="allBas">
+      </v-select>
+    </v-col>
+    <v-col cols="auto">
+      <v-select
+          v-model="filter.impl"
+          :label="$t('Завершён')"
+          :multiple="true"
+          :items="[{value:false, text:$t('Нет')}, {value:true, text:$t('Да')}]">
+      </v-select>
+    </v-col>
+    <!--
       <v-col cols="auto">
         <v-select
             v-model="filter.implState"
@@ -35,13 +36,14 @@
             :items="salaryStats">
         </v-select>
       </v-col>
+      -->
   </v-row>
 </template>
 
 <script lang="ts">
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
-import {SalaryIncreaseRequest, SalaryRequestType, salaryRequestTypes} from "@/components/salary/salary.service";
+import {SalaryIncreaseRequest, SalaryRequestType} from "@/components/salary/salary.service";
 import {Filter} from "@/components/shared/table/TableComponentDataContainer";
 import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 import {Getter} from "vuex-class";
@@ -50,7 +52,7 @@ import logger from "@/logger";
 import {salaryRequestImplementationStates} from "@/components/admin/salary/admin.salary.service";
 
 
-export class AdminSalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
+export class SalaryRequestFilter extends Filter<SalaryIncreaseRequest> {
   public search = '';
   public implState: number[] = [];
   public impl: boolean[] = [];
@@ -81,10 +83,10 @@ const namespace_dict = 'dict';
 @Component({
   components: {}
 })
-export default class AdminSalaryReportForm extends Vue {
+export default class SalaryRequestFilterComponent extends Vue {
 
   @Prop({required: true})
-  private filter!: AdminSalaryRequestFilter;
+  private filter!: SalaryRequestFilter;
 
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;

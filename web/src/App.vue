@@ -58,7 +58,7 @@
         </v-list-item>
 
 
-        <v-list-item :to="canAdminSalaryRequests()? '/admin/salaries/requests' : '/salaries/requests'" v-if="canReportSalaryRequest()">
+        <v-list-item to="/salaries/requests" v-if="canReportSalaryRequest()">
           <v-list-item-action>
             <v-icon>mdi-currency-rub</v-icon>
           </v-list-item-action>
@@ -66,7 +66,6 @@
             {{ $t('Повышения и бонусы') }}
           </v-list-item-title>
         </v-list-item>
-
 
 
         <v-divider></v-divider>

@@ -60,18 +60,25 @@
 <script lang="ts">
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
-import {SalaryIncreaseRequest, SalaryRequestType, salaryRequestTypes} from "@/components/salary/salary.service";
+import {
+  SalaryIncreaseRequest,
+  SalaryRequestReportBody,
+  SalaryRequestType,
+  salaryRequestTypes
+} from "@/components/salary/salary.service";
 import logger from "@/logger";
 import {SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
-import {UpdateAction} from "@/components/shared/table/TableComponentDataContainer";
+import TableComponentDataContainer, {UpdateAction} from "@/components/shared/table/TableComponentDataContainer";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import salaryAdminService, {
   SalaryRequestImplementationState,
   salaryRequestImplementationStates,
   SalaryRequestImplementBody
 } from "@/components/admin/salary/admin.salary.service";
-import SalaryRequestShortInfoComponent from "@/components/salary/SalaryRequestShortInfoComponent.vue";
+import SalaryRequestCard from "@/components/salary/SalaryRequestCard.vue";
+import {UiConstants} from "@/components/uiconstants";
+import {SalaryRequestFilter} from "@/components/salary/SalaryRequestFilterComponent.vue";
 
 export interface SalaryRequestFormData {
   type: SalaryRequestType,
@@ -135,9 +142,34 @@ export class SalaryRequestImplementAction implements UpdateAction<SalaryIncrease
 
 const namespace_dict = 'dict';
 @Component({
-  components: {SalaryRequestShortInfoComponent}
+  components: {SalaryRequestCard}
 })
-export default class AdminSalaryRequestImplementFormFields extends Vue {
+export default class SalaryRequestImplementForm extends Vue {
+
+  @Prop({required: true})
+  private data!: TableComponentDataContainer<SalaryIncreaseRequest, SalaryRequestFormData, SalaryRequestReportBody, SalaryRequestFilter>;
+
+  @Prop({required: false})
+  private updateTitle?: () => string | string | undefined;
+
+
+  private submitForm() {
+    const form: any = this.$refs.adminUpdateForm;
+    if (form.validate()) {
+      return this.data.submitUpdateForm();
+    }
+  }
+
+  private itemReadonly() {
+    return !this.data
+        || !this.data.updateCommitAllowed()
+
+  }
+
+  private print = UiConstants.print;
+
+
+
 
   @Prop({required: true})
   private body!: SalaryRequestFormData;
