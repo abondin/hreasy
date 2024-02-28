@@ -1,28 +1,27 @@
 <template>
   <v-container>
-    <!--<editor-fold desc="Информация">-->
     <div class="row">
       <!--<editor-fold desc="Информация о сотруднике">-->
       <div class="col-lg-4 col-6">
         <div class="subtitle-1">{{ $t('Информация о сотруднике') }}</div>
         <dl class="info-dl text--primary text-wrap">
           <dt>{{ $t('ФИО') }}:</dt>
-          <dd>{{ data.employee.name }}</dd>
+          <dd>{{ item.employee.name }}</dd>
 
           <dt>{{ $t('Дата трудоустройства') }}:</dt>
-          <dd>{{ formatDate(data.employeeInfo.dateOfEmployment) }}</dd>
+          <dd>{{ formatDate(item.employeeInfo.dateOfEmployment) }}</dd>
 
-          <dt v-if="data.employeeInfo.position">{{ $t('Позиция') }}:</dt>
-          <dd v-if="data.employeeInfo.position">{{ data.employeeInfo.position.name }}</dd>
+          <dt v-if="item.employeeInfo.position">{{ $t('Позиция') }}:</dt>
+          <dd v-if="item.employeeInfo.position">{{ item.employeeInfo.position.name }}</dd>
 
           <dt>{{ $t('Текущий проект') }}:</dt>
-          <dd>{{ prettyPrintProject(data) }}</dd>
+          <dd>{{ prettyPrintProject(item) }}</dd>
 
-          <dt v-if="data.employeeInfo.ba">{{ $t('Бизнес аккаунт') }}:</dt>
-          <dd v-if="data.employeeInfo.ba">{{ data.employeeInfo.ba.name }}</dd>
+          <dt v-if="item.employeeInfo.ba">{{ $t('Бизнес аккаунт') }}:</dt>
+          <dd v-if="item.employeeInfo.ba">{{ item.employeeInfo.ba.name }}</dd>
 
-          <dt v-if="data.employeeInfo.currentSalaryAmount">{{ $t('Текущая заработная плата') }}:</dt>
-          <dd v-if="data.employeeInfo.currentSalaryAmount">{{ formatMoney(data.employeeInfo.currentSalaryAmount) }}</dd>
+          <dt v-if="item.employeeInfo.currentSalaryAmount">{{ $t('Текущая заработная плата') }}:</dt>
+          <dd v-if="item.employeeInfo.currentSalaryAmount">{{ formatMoney(item.employeeInfo.currentSalaryAmount) }}</dd>
 
         </dl>
       </div>
@@ -32,73 +31,81 @@
         <div class="subtitle-1">{{ $t('Запрос') }}</div>
         <dl class="info-dl text--primary text-wrap">
           <dt>{{ $t('Инициатор') }}:</dt>
-          <dd>{{ data.createdBy.name }} ({{ formatDateTime(data.createdAt) }})</dd>
+          <dd>{{ item.createdBy.name }} ({{ formatDate(item.createdAt) }})</dd>
 
           <dt>{{ $t('Бюджет из бизнес аккаунта') }}:</dt>
-          <dd>{{ data.budgetBusinessAccount.name }}</dd>
+          <dd>{{ item.budgetBusinessAccount.name }}</dd>
 
-          <dt v-if="data.budgetExpectedFundingUntil">{{ $t('Перспективы биллинга') }}:</dt>
-          <dd v-if="data.budgetExpectedFundingUntil">{{ data.budgetExpectedFundingUntil }}</dd>
+          <dt v-if="item.budgetExpectedFundingUntil">{{ $t('Перспективы биллинга') }}:</dt>
+          <dd v-if="item.budgetExpectedFundingUntil">{{ item.budgetExpectedFundingUntil }}</dd>
 
-          <dt v-if="data.assessment">{{ $t('Ассессмент') }}:</dt>
-          <dd v-if="data.assessment">
-            <router-link target="_blank" :to="`/assessments/${data.employee.id}/${data.assessment.id}`">
-              {{ data.assessment.name }}
+          <dt v-if="item.assessment">{{ $t('Ассессмент') }}:</dt>
+          <dd v-if="item.assessment">
+            <router-link target="_blank" :to="`/assessments/${item.employee.id}/${item.assessment.id}`">
+              {{ item.assessment.name }}
             </router-link>
           </dd>
 
-          <dt v-if="data.req.plannedSalaryAmount">{{ $t('Заработная плата после повышения') }}:</dt>
-          <dd v-if="data.req.plannedSalaryAmount">{{ formatMoney(data.req.plannedSalaryAmount) }}</dd>
+          <dt v-if="item.req.plannedSalaryAmount">{{ $t('Заработная плата после повышения') }}:</dt>
+          <dd v-if="item.req.plannedSalaryAmount">{{ formatMoney(item.req.plannedSalaryAmount) }}</dd>
 
-          <dt v-if="data.req.increaseAmount">
-            {{ data.type == SALARY_INCREASE_TYPE ? $t('Изменение на') : $t('Сумма бонуса') }}:
+          <dt v-if="item.req.increaseAmount">
+            {{ item.type == SALARY_INCREASE_TYPE ? $t('Изменение на') : $t('Сумма бонуса') }}:
           </dt>
-          <dd v-if="data.req.increaseAmount">{{ formatMoney(data.req.increaseAmount) }}</dd>
+          <dd v-if="item.req.increaseAmount">{{ formatMoney(item.req.increaseAmount) }}</dd>
+
+          <dt v-if="item.req?.increaseStartPeriod">{{ $t('Месяц старта изменений') }}:</dt>
+          <dd v-if="item.req?.increaseStartPeriod">{{ formatPeriod(item.req.increaseStartPeriod) }}</dd>
+
+
+          <dt v-if="item.req?.reason">{{ $t('Обоснование') }}:</dt>
+          <dd v-if="item.req?.reason">{{ item.req.reason }}</dd>
+
         </dl>
       </div>
       <!--</editor-fold>-->
-
       <!--<editor-fold desc="Решение">-->
       <div class="col-lg-4 col-6">
         <div class="subtitle-1">{{ $t('Решение') }}</div>
-        <dl class="info-dl text--primary text-wrap" v-if="data.impl">
-          <dt>{{ $t('Инициатор') }}:</dt>
-          <dd>{{ data.createdBy.name }} ({{ formatDateTime(data.createdAt) }})</dd>
+        <dl class="info-dl text--primary text-wrap" v-if="item.impl">
+          <dt v-if="item.impl?.state">{{ $t('Результат') }}:</dt>
+          <dd v-if="item.impl?.state">{{ $t(`SALARY_REQUEST_STAT.${item.impl.state}`) }}</dd>
 
-          <dt>{{ $t('Бюджет из бизнес аккаунта') }}:</dt>
-          <dd>{{ data.budgetBusinessAccount.name }}</dd>
+          <dt v-if="item.impl?.implementedBy">{{ $t('Принял решение') }}:</dt>
+          <dd v-if="item.impl?.implementedBy">{{ item.impl.implementedBy.name }} ({{formatDate(item.impl.implementedAt)}})</dd>
 
-          <dt v-if="data.budgetExpectedFundingUntil">{{ $t('Перспективы биллинга') }}:</dt>
-          <dd v-if="data.budgetExpectedFundingUntil">{{ data.budgetExpectedFundingUntil }}</dd>
-
-          <dt v-if="data.assessment">{{ $t('Ассессмент') }}:</dt>
-          <dd v-if="data.assessment">
-            <router-link target="_blank" :to="`/assessments/${data.employee.id}/${data.assessment.id}`">
-              {{ data.assessment.name }}
-            </router-link>
-          </dd>
-
-          <dt v-if="data.req.plannedSalaryAmount">{{ $t('Заработная плата после повышения') }}:</dt>
-          <dd v-if="data.req.plannedSalaryAmount">{{ formatMoney(data.req.plannedSalaryAmount) }}</dd>
-
-          <dt v-if="data.req.increaseAmount">
-            {{ data.type == SALARY_INCREASE_TYPE ? $t('Изменение на') : $t('Сумма бонуса') }}:
+          <dt v-if="item.impl?.increaseAmount">
+            {{ item.type == SALARY_INCREASE_TYPE ? $t('Изменение на') : $t('Сумма бонуса') }}:
           </dt>
-          <dd v-if="data.req.increaseAmount">{{ formatMoney(data.req.increaseAmount) }}</dd>
+          <dd v-if="item.impl?.increaseAmount">{{ formatMoney(item.impl.increaseAmount) }}</dd>
+
+          <dt v-if="item.impl?.salaryAmount">{{ $t('Заработная плата после повышения') }}:</dt>
+          <dd v-if="item.impl?.salaryAmount">{{ formatMoney(item.impl.salaryAmount) }}</dd>
+
+          <dt v-if="item.impl?.newPosition">{{ $t('Новая позиция') }}:</dt>
+          <dd v-if="item.impl?.newPosition">{{ item.impl.newPosition }}</dd>
+
+          <dt v-if="item.impl?.reason">{{ $t('Обоснование') }}:</dt>
+          <dd v-if="item.impl?.reason">{{ item.impl.reason }}</dd>
+
+          <dt v-if="item.impl?.increaseStartPeriod">{{ $t('Месяц старта изменений') }}:</dt>
+          <dd v-if="item.impl?.increaseStartPeriod">{{ formatPeriod(item.impl.increaseStartPeriod) }}</dd>
+
         </dl>
         <div v-else>{{ $t('На рассмотрении') }}</div>
       </div>
       <!--</editor-fold>-->
     </div>
-    <!--</editor-fold>-->
+
     <!--<editor-fold desc="Действия">-->
     <div class="row row--dense">
       <!-- Implement -->
-      <v-col align-self="center" cols="auto" v-if="canAdmin()">
+      <v-col align-self="center" cols="auto" v-if="allowImplementFunctionality()">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
             <div v-bind="tattrs" v-on="ton" class="col-auto">
-              <v-btn text color="primary" link :disabled="data.impl" @click="()=>{}" icon>
+              <v-btn text color="primary" link :disabled="Boolean(item.impl)"
+                     @click="()=>dataContainer.openImplementDialog(item)" icon>
                 <v-icon>mdi-pen</v-icon>
               </v-btn>
             </div>
@@ -109,9 +116,6 @@
     </div>
     <!--</editor-fold>-->
 
-    <!--<editor-fold desc="Реализация запроса для сотрудника">-->
-
-    <!--</editor-fold>-->
   </v-container>
 </template>
 
@@ -120,30 +124,27 @@ import {SalaryIncreaseRequest, SalaryRequestType} from "@/components/salary/sala
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
 import {DateTimeUtils} from "@/components/datetimeutils";
-import {ReportPeriod} from "@/components/overtimes/overtime.service";
-import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
+import {SalaryRequestDataContainer} from "@/components/salary/salary.data.container";
 import permissionService from "@/store/modules/permission.service";
+import {ReportPeriod} from "@/components/overtimes/overtime.service";
 
 @Component
 export default class SalaryRequestCard extends Vue {
 
   private SALARY_INCREASE_TYPE = SalaryRequestType.SALARY_INCREASE;
-  private BONUS_TYPE = SalaryRequestType.BONUS;
 
   @Prop({required: true})
-  private data!: SalaryIncreaseRequest;
+  private item!: SalaryIncreaseRequest;
 
-  formatDateTime = (v: string | undefined) => DateTimeUtils.formatDateTimeFromIso(v);
+  @Prop({required: true})
+  private dataContainer!: SalaryRequestDataContainer;
+
 
   formatDate = (v: string | undefined) => DateTimeUtils.formatFromIso(v);
 
   formatMoney = (v: string | number | null | undefined) => Number(v).toLocaleString();
 
-  fromPeriodId = (v: number | null | undefined) => v && !isNaN(v) ? ReportPeriod.fromPeriodId(v) : null;
-
-  private isRejected(): boolean {
-    return this.data.impl?.state == SalaryRequestImplementationState.REJECTED;
-  }
+  formatPeriod = (v: number) => ReportPeriod.fromPeriodId(v);
 
 
   private prettyPrintProject(item: SalaryIncreaseRequest) {
@@ -159,16 +160,8 @@ export default class SalaryRequestCard extends Vue {
     return prettyString;
   }
 
-  private canAdmin(): boolean {
-    return permissionService.canAdminSalaryRequests();
-  }
-
-  private canReport(): boolean {
-    return permissionService.canReportSalaryRequest();
-  }
-
-  private canExport(): boolean {
-    return permissionService.canAdminSalaryRequests();
+  private allowImplementFunctionality(){
+    return permissionService.canAdminSalaryRequests() && this.dataContainer?.implementAllowed();
   }
 
 

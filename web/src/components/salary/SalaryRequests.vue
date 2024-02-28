@@ -175,7 +175,7 @@
             <!--</editor-fold>-->
             <template v-slot:expanded-item="{ headers, item }">
               <td :colspan="headers.length">
-                <salary-request-card :data="item"></salary-request-card>
+                <salary-request-card :item="item" :data-container="data"></salary-request-card>
               </td>
             </template>
           </v-data-table>
@@ -192,6 +192,13 @@
         </hreasy-table-create-form>
       </v-dialog>
       <!-- </editor-fold>-->
+
+      <!--<editor-fold desc="Implement request dialog">-->
+      <v-dialog v-bind:value="data.implementDialog" :disabled="data.loading" persistent>
+        <salary-request-implement-form :data="data"></salary-request-implement-form>
+      </v-dialog>
+      <!-- </editor-fold>-->
+
     </v-container>
   </v-card>
 </template>
@@ -269,8 +276,8 @@ export default class SalaryRequests extends Vue {
       );
     }
     headers.push(
-        {text: this.$tc('Завершено'), value: 'impl.implementedBy.name'},
         {text: this.$tc('Решение'), value: 'impl.state'}
+        {text: this.$tc('Завершено'), value: 'impl.implementedBy.name'},
     );
     return headers;
   });

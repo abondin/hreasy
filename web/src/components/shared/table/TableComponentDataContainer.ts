@@ -51,7 +51,7 @@ export abstract class Filter<T extends WithId> {
 export default class TableComponentDataContainer<T extends WithId, M extends UpdateBody, C extends CreateBody, F extends Filter<T>> {
     protected _loading = false;
     private _error: string | null = null;
-    private _actionError: string | null = null;
+    protected _actionError: string | null = null;
 
     private _updateDialog = false;
 
