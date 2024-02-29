@@ -68,7 +68,7 @@ class RestSalaryService implements SalaryService {
 
     deleteSalaryRequest(ids: number[]): Promise<Array<any>> {
         return Promise.all(
-            ids.map(requestId => httpService.delete(`v1/admin/salaries/requests/${requestId}`))
+            ids.map(requestId => httpService.delete(`v1/salaries/requests/${requestId}`))
         );
     }
 

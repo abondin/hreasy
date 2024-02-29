@@ -73,16 +73,13 @@ public class SalaryRequestEntry {
     private Integer implState;
     private OffsetDateTime implementedAt;
     private Integer implementedBy;
-    @NonNull
     private BigDecimal implIncreaseAmount;
     private BigDecimal implSalaryAmount;
     /**
      * YYYYMM period. Month starts with 0. 202308 - September of 2023
      */
-    @NonNull
     private Integer implIncreaseStartPeriod;
     private String implIncreaseText;
-    @NonNull
     private String implRejectReason;
     private String implComment;
     private Integer implNewPosition;

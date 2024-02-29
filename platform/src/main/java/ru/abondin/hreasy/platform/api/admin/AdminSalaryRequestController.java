@@ -35,6 +35,12 @@ public class AdminSalaryRequestController {
         return AuthHandler.currentAuth().flatMap(auth -> exportService.export(period, auth, locale));
     }
 
+    @DeleteMapping("/{salaryRequestId}/implementation")
+    public Mono<Integer> resetImplementation(@PathVariable int salaryRequestId) {
+        return AuthHandler.currentAuth().flatMap(auth ->
+                requestAdminService.resetImplementation(auth, salaryRequestId));
+    }
+
     @PutMapping("/{salaryRequestId}/implement")
     public Mono<Integer> markAsImplemented(@PathVariable int salaryRequestId, @RequestBody SalaryRequestImplementBody body) {
         return AuthHandler.currentAuth().flatMap(auth ->

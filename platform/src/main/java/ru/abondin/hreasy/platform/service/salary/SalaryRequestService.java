@@ -72,12 +72,12 @@ public class SalaryRequestService {
     }
 
     @Transactional
-    public Mono<? extends Integer> delete(AuthContext auth, int period, int requestId) {
-        log.info("Deleting salary request {} in period {} by {}", requestId, period);
+    public Mono<? extends Integer> delete(AuthContext auth, int requestId) {
+        log.info("Deleting salary request {} by {}", requestId, auth.getUsername());
         var now = dateTimeService.now();
         var deletedBy = auth.getEmployeeInfo().getEmployeeId();
         // 1. Find entity to delete
-        return requestRepo.findFullNotDeletedById(requestId, dateTimeService.now())
+        return requestRepo.findById(requestId)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(requestId))))
                 // 2. Check that period is not closed
                 .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod())

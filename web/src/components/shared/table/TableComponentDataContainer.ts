@@ -282,6 +282,14 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this._deleteDialog;
     }
 
+    public openDeleteDialogForItem(item: T) {
+        if (this.deleteAction && this.deleteAllowed()) {
+            this.selectedItems = [item];
+            this._deleteDialog = true;
+            this._actionError = null;
+        }
+    }
+
     public openDeleteDialog() {
         if (this.deleteAction) {
             this._deleteDialog = true;

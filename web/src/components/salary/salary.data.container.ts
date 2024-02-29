@@ -21,6 +21,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
     private _exportLoading = false;
     private _exportCompleted = false;
     private readonly _implementAction: SalaryRequestImplementAction;
+    private readonly _resetImplementationAction: (item: SalaryIncreaseRequest) => Promise<any>;
 
 
     constructor(_headerLoader: () => DataTableHeader[]) {
@@ -38,12 +39,21 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
                 createItemRequest: (body) => salaryService.reportSalaryRequest(body),
                 defaultBody: () => this.defaultReportNewRequestBody(),
             } as CreateAction<SalaryIncreaseRequest, SalaryRequestReportBody>,
-            null,
+            {
+                deleteItemRequest: ids => salaryService.deleteSalaryRequest(ids)
+            },
             new SalaryRequestFilter(),
             () => permissionService.canReportSalaryRequest(),
             true
         );
         this._implementAction = new SalaryRequestImplementAction();
+        this._resetImplementationAction = (item) => {
+            logger.log("Reset implementation for {}", item);
+            this._actionError = null;
+            return adminSalaryService.resetImplementation(item.id).catch(e => {
+                this._actionError = errorUtils.shortMessage(e);
+            }).then(() => this.reloadData());
+        }
     }
 
     //<editor-fold desc="Report new request">
@@ -71,6 +81,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
     public implementAllowed(): boolean {
         return this._implementAction ? true : false;
     }
+
     get implementDialog(): boolean {
         return this._implementDialog;
     }
@@ -90,6 +101,10 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
             this._implementDialog = true;
             this._actionError = null;
         }
+    }
+
+    public resetImplementation(item: SalaryIncreaseRequest) {
+        return this._resetImplementationAction(item);
     }
 
     public closeImplementDialog() {

@@ -127,7 +127,7 @@
               :headers="data.headers"
               v-model="data.selectedItems"
               :items="data.filteredItems()"
-              sort-by="createdAt"
+              sort-by="employee.name"
               dense
               :items-per-page="data.defaultItemsPerTablePage"
               class="text-truncate"
@@ -152,7 +152,9 @@
               {{ formatDateTime(item.implementedAt) }}
             </template>
             <template v-slot:item.impl.state="{ item }">
-              {{ item.impl?.state ? $t(`SALARY_REQUEST_STAT.${item.impl.state}`) : '' }}
+              <span :class="item.impl.state == REJECTED? 'error--text': 'success--text'">{{
+                  item.impl?.state ? $t(`SALARY_REQUEST_STAT.${item.impl.state}`) : ''
+                }}</span>
             </template>
             <template v-slot:item.req.increaseAmount="{ item }">
               {{ formatMoney(item.req.increaseAmount) }}
@@ -199,6 +201,12 @@
       </v-dialog>
       <!-- </editor-fold>-->
 
+      <!--<editor-fold desc="Delete request">-->
+      <v-dialog v-bind:value="data.deleteDialog" :disabled="data.loading" persistent>
+        <hreasy-table-delete-confimration v-bind:data="data"></hreasy-table-delete-confimration>
+      </v-dialog>
+      <!-- </editor-fold>-->
+
     </v-container>
   </v-card>
 </template>
@@ -218,10 +226,13 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import SalaryRequestCard from "@/components/salary/SalaryRequestCard.vue";
 import SalaryRequestImplementForm from "@/components/salary/SalaryRequestImplementForm.vue";
 import {SalaryRequestDataContainer} from "@/components/salary/salary.data.container";
+import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTableDeleteConfimration.vue";
+import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 
 
 @Component({
   components: {
+    HreasyTableDeleteConfimration,
     SalaryRequestFilterComponent,
     SalaryRequestCard,
     SalaryRequestImplementForm,
@@ -306,6 +317,8 @@ export default class SalaryRequests extends Vue {
 
   createNewTitle = () => this.data.filter.type == SalaryRequestType.SALARY_INCREASE
       ? this.$t('Создание запроса на индексацию ЗП') : this.$t('Создание запроса на бонус');
+
+  private REJECTED = SalaryRequestImplementationState.REJECTED;
 }
 </script>
 

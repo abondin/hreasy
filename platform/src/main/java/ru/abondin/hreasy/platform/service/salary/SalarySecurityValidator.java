@@ -6,6 +6,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
 import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 
@@ -118,7 +119,7 @@ public class SalarySecurityValidator {
         return projectHierarchyService.isBaManager(auth, businessAccount);
     }
 
-    public Mono<Boolean> validateDeleteSalaryRequest(AuthContext auth, SalaryRequestView salaryRequest) {
+    public Mono<Boolean> validateDeleteSalaryRequest(AuthContext auth, SalaryRequestEntry salaryRequest) {
         return Mono.defer(() -> {
             // Manager who report the request can delete it
             if (auth.getEmployeeInfo().getEmployeeId().equals(salaryRequest.getCreatedBy())) {

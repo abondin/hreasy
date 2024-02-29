@@ -1,8 +1,8 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <div class="row">
       <!--<editor-fold desc="Информация о сотруднике">-->
-      <div class="col-lg-4 col-6">
+      <div class="col-lg-auto col-md-4">
         <div class="subtitle-1">{{ $t('Информация о сотруднике') }}</div>
         <dl class="info-dl text--primary text-wrap">
           <dt>{{ $t('ФИО') }}:</dt>
@@ -27,11 +27,11 @@
       </div>
       <!--</editor-fold>-->
       <!--<editor-fold desc="Запрос">-->
-      <div class="col-lg-4 col-6">
+      <div class="col-lg-auto col-md-4">
         <div class="subtitle-1">{{ $t('Запрос') }}</div>
         <dl class="info-dl text--primary text-wrap">
           <dt>{{ $t('Инициатор') }}:</dt>
-          <dd>{{ item.createdBy.name }} ({{ formatDate(item.createdAt) }})</dd>
+          <dd>{{ item.createdBy.name }} ({{ formatDateFromDateTime(item.createdAt) }})</dd>
 
           <dt>{{ $t('Бюджет из бизнес аккаунта') }}:</dt>
           <dd>{{ item.budgetBusinessAccount.name }}</dd>
@@ -65,14 +65,18 @@
       </div>
       <!--</editor-fold>-->
       <!--<editor-fold desc="Решение">-->
-      <div class="col-lg-4 col-6">
+      <div class="col-lg-auto col-md-4">
         <div class="subtitle-1">{{ $t('Решение') }}</div>
         <dl class="info-dl text--primary text-wrap" v-if="item.impl">
           <dt v-if="item.impl?.state">{{ $t('Результат') }}:</dt>
-          <dd v-if="item.impl?.state">{{ $t(`SALARY_REQUEST_STAT.${item.impl.state}`) }}</dd>
+          <dd v-if="item.impl?.state" :class="item.impl.state == REJECTED? 'error--text': 'success--text'">
+            {{ $t(`SALARY_REQUEST_STAT.${item.impl.state}`) }}
+          </dd>
 
           <dt v-if="item.impl?.implementedBy">{{ $t('Принял решение') }}:</dt>
-          <dd v-if="item.impl?.implementedBy">{{ item.impl.implementedBy.name }} ({{formatDate(item.impl.implementedAt)}})</dd>
+          <dd v-if="item.impl?.implementedBy">{{ item.impl.implementedBy.name }}
+            ({{ formatDateFromDateTime(item.impl.implementedAt) }})
+          </dd>
 
           <dt v-if="item.impl?.increaseAmount">
             {{ item.type == SALARY_INCREASE_TYPE ? $t('Изменение на') : $t('Сумма бонуса') }}:
@@ -83,7 +87,7 @@
           <dd v-if="item.impl?.salaryAmount">{{ formatMoney(item.impl.salaryAmount) }}</dd>
 
           <dt v-if="item.impl?.newPosition">{{ $t('Новая позиция') }}:</dt>
-          <dd v-if="item.impl?.newPosition">{{ item.impl.newPosition }}</dd>
+          <dd v-if="item.impl?.newPosition">{{ item.impl.newPosition.name }}</dd>
 
           <dt v-if="item.impl?.reason">{{ $t('Обоснование') }}:</dt>
           <dd v-if="item.impl?.reason">{{ item.impl.reason }}</dd>
@@ -104,13 +108,30 @@
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
             <div v-bind="tattrs" v-on="ton" class="col-auto">
-              <v-btn text color="primary" link :disabled="Boolean(item.impl)"
+              <v-btn v-if="item.impl" text link
+                     @click="()=>dataContainer.resetImplementation(item)" icon>
+                <v-icon>mdi-pencil-off</v-icon>
+              </v-btn>
+              <v-btn v-else text color="primary" link
                      @click="()=>dataContainer.openImplementDialog(item)" icon>
                 <v-icon>mdi-pen</v-icon>
               </v-btn>
             </div>
           </template>
-          <p>{{ $t('Реализация запроса для сотрудника') }}</p>
+          <p>{{ item.impl ? $t('Сбросить решение') : $t('Реализовать запрос') }}</p>
+        </v-tooltip>
+      </v-col>
+      <v-col align-self="center" cols="auto" v-if="allowDeleteFunctionality()">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="col-auto">
+              <v-btn text color="error" link :disabled="Boolean(item.impl)"
+                     @click="()=>dataContainer.openDeleteDialogForItem(item)" icon>
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <p>{{ $t('Удалить') }}</p>
         </v-tooltip>
       </v-col>
     </div>
@@ -127,11 +148,13 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import {SalaryRequestDataContainer} from "@/components/salary/salary.data.container";
 import permissionService from "@/store/modules/permission.service";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
+import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 
 @Component
 export default class SalaryRequestCard extends Vue {
 
   private SALARY_INCREASE_TYPE = SalaryRequestType.SALARY_INCREASE;
+  private REJECTED = SalaryRequestImplementationState.REJECTED;
 
   @Prop({required: true})
   private item!: SalaryIncreaseRequest;
@@ -139,6 +162,7 @@ export default class SalaryRequestCard extends Vue {
   @Prop({required: true})
   private dataContainer!: SalaryRequestDataContainer;
 
+  formatDateFromDateTime = (v: string | undefined) => DateTimeUtils.formatDateFromIsoDateTime(v);
 
   formatDate = (v: string | undefined) => DateTimeUtils.formatFromIso(v);
 
@@ -160,8 +184,12 @@ export default class SalaryRequestCard extends Vue {
     return prettyString;
   }
 
-  private allowImplementFunctionality(){
+  private allowImplementFunctionality() {
     return permissionService.canAdminSalaryRequests() && this.dataContainer?.implementAllowed();
+  }
+
+  private allowDeleteFunctionality() {
+    return permissionService.canReportSalaryRequest() && this.dataContainer?.deleteAllowed();
   }
 
 

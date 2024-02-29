@@ -49,6 +49,12 @@ export interface AdminSalaryService {
     reopenReportPeriod(periodId: number, comment?: string): Promise<any>;
 
     export(periodId: number): any;
+
+    /**
+     * Clear all information about salary request implementation
+     * @param id
+     */
+    resetImplementation(id: number): Promise<any>;
 }
 
 class RestAdminSalaryService implements AdminSalaryService {
@@ -70,6 +76,14 @@ class RestAdminSalaryService implements AdminSalaryService {
             return response.data;
         });
     }
+
+    resetImplementation(requestId: number): Promise<any> {
+        return httpService.delete(`v1/admin/salaries/requests/${requestId}/implementation`).then(response => {
+            return response.data;
+        });
+    }
+
+
 
     closeReportPeriod(periodId: number, comment?: string): Promise<any> {
         return httpService.post(`v1/admin/salaries/requests/periods/${periodId}/close`, {comment: comment}).then(response => {

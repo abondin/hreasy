@@ -24,9 +24,9 @@ public class SalaryRequestsController {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.report(auth, body));
     }
 
-    @DeleteMapping("/{period}/{requestId}")
-    public Mono<Integer> delete(@PathVariable int period, @PathVariable int requestId) {
-        return AuthHandler.currentAuth().flatMap(auth -> requestService.delete(auth, period, requestId));
+    @DeleteMapping("/{requestId}")
+    public Mono<Integer> delete(@PathVariable int requestId) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.delete(auth, requestId));
     }
 
     @GetMapping("/{period}")
