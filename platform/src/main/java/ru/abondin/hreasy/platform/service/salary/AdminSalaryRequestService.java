@@ -50,17 +50,18 @@ public class AdminSalaryRequestService {
         return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
                         requestRepo.findById(salaryRequestId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
-                .flatMap(entry -> {
-                    if (entry.getImplementedBy() != null) {
-                        return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
-                    }
-                    mapper.applyRequestRejectBody(entry, body, now, auth.getEmployeeInfo().getEmployeeId());
-                    return requestRepo.save(entry)
-                            .flatMap(p -> historyDomainService.persistHistory(salaryRequestId,
-                                    HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
-                                    p, now, auth.getEmployeeInfo().getEmployeeId()))
-                            .map(HistoryEntry::getEntityId);
-                });
+                .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod())
+                        .flatMap(c -> {
+                            if (entry.getImplementedBy() != null) {
+                                return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
+                            }
+                            mapper.applyRequestRejectBody(entry, body, now, auth.getEmployeeInfo().getEmployeeId());
+                            return requestRepo.save(entry)
+                                    .flatMap(p -> historyDomainService.persistHistory(salaryRequestId,
+                                            HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
+                                            p, now, auth.getEmployeeInfo().getEmployeeId()))
+                                    .map(HistoryEntry::getEntityId);
+                        }));
     }
 
     @Transactional
@@ -70,17 +71,18 @@ public class AdminSalaryRequestService {
         return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
                         requestRepo.findById(salaryRequestId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
-                .flatMap(entry -> {
-                    if (entry.getImplementedBy() != null) {
-                        return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
-                    }
-                    mapper.applyRequestImplementBody(entry, body, now, auth.getEmployeeInfo().getEmployeeId());
-                    return requestRepo.save(entry)
-                            .flatMap(p -> historyDomainService.persistHistory(salaryRequestId,
-                                    HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
-                                    p, now, auth.getEmployeeInfo().getEmployeeId()))
-                            .map(HistoryEntry::getEntityId);
-                });
+                .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod())
+                        .flatMap(c -> {
+                            if (entry.getImplementedBy() != null) {
+                                return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(salaryRequestId)));
+                            }
+                            mapper.applyRequestImplementBody(entry, body, now, auth.getEmployeeInfo().getEmployeeId());
+                            return requestRepo.save(entry)
+                                    .flatMap(p -> historyDomainService.persistHistory(salaryRequestId,
+                                            HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
+                                            p, now, auth.getEmployeeInfo().getEmployeeId()))
+                                    .map(HistoryEntry::getEntityId);
+                        }));
     }
 
     @Transactional
@@ -90,23 +92,24 @@ public class AdminSalaryRequestService {
         return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
                         requestRepo.findById(salaryRequestId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
-                .flatMap(entry -> {
-                    entry.setImplementedBy(null);
-                    entry.setImplComment(null);
-                    entry.setImplIncreaseText(null);
-                    entry.setImplIncreaseAmount(null);
-                    entry.setImplIncreaseStartPeriod(null);
-                    entry.setImplNewPosition(null);
-                    entry.setImplementedAt(null);
-                    entry.setImplRejectReason(null);
-                    entry.setImplSalaryAmount(null);
-                    entry.setImplState(null);
-                    return requestRepo.save(entry)
-                            .flatMap(p -> historyDomainService.persistHistory(salaryRequestId,
-                                    HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
-                                    p, now, auth.getEmployeeInfo().getEmployeeId()))
-                            .map(HistoryEntry::getEntityId);
-                });
+                .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod())
+                        .flatMap(c -> {
+                            entry.setImplementedBy(null);
+                            entry.setImplComment(null);
+                            entry.setImplIncreaseText(null);
+                            entry.setImplIncreaseAmount(null);
+                            entry.setImplIncreaseStartPeriod(null);
+                            entry.setImplNewPosition(null);
+                            entry.setImplementedAt(null);
+                            entry.setImplRejectReason(null);
+                            entry.setImplSalaryAmount(null);
+                            entry.setImplState(null);
+                            return requestRepo.save(entry)
+                                    .flatMap(p -> historyDomainService.persistHistory(salaryRequestId,
+                                            HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
+                                            p, now, auth.getEmployeeInfo().getEmployeeId()))
+                                    .map(HistoryEntry::getEntityId);
+                        }));
     }
 
     @Transactional
@@ -139,6 +142,13 @@ public class AdminSalaryRequestService {
                                 HistoryDomainService.HistoryEntityType.SALARY_REQUEST_CLOSED_REPORT_PERIOD,
                                 null, now, auth.getEmployeeInfo().getEmployeeId())
                 ).flatMap(h -> closedPeriodRepo.deleteById(periodId));
+    }
+
+    private Mono<Boolean> closedPeriodCheck(int periodId) {
+        return closedPeriodRepo.findById(periodId)
+                .flatMap(p -> Mono.error(new BusinessError("errors.salary_request.period_closed", Integer.toString(p.getPeriod()))))
+                .map(e -> true)
+                .defaultIfEmpty(true);
     }
 
 

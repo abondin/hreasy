@@ -152,7 +152,7 @@
               {{ formatDateTime(item.implementedAt) }}
             </template>
             <template v-slot:item.impl.state="{ item }">
-              <span :class="item.impl.state == REJECTED? 'error--text': 'success--text'">{{
+              <span v-if="item.impl" :class="item.impl.state == REJECTED? 'error--text': 'success--text'">{{
                   item.impl?.state ? $t(`SALARY_REQUEST_STAT.${item.impl.state}`) : ''
                 }}</span>
             </template>
