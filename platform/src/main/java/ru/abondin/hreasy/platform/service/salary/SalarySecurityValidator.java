@@ -67,6 +67,7 @@ public class SalarySecurityValidator {
     public Mono<Boolean> validateExport(AuthContext auth) {
         return validateViewAll(auth);
     }
+
     public Mono<Boolean> validateReportSalaryRequest(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("report_salary_request")) {
@@ -117,6 +118,28 @@ public class SalarySecurityValidator {
         return projectHierarchyService.isBaManager(auth, businessAccount);
     }
 
+    public Mono<Boolean> validateDeleteSalaryRequest(AuthContext auth, SalaryRequestView salaryRequest) {
+        return Mono.defer(() -> {
+            // Manager who report the request can delete it
+            if (auth.getEmployeeInfo().getEmployeeId().equals(salaryRequest.getCreatedBy())) {
+                return Mono.just(true);
+            }
+            // Manager who can update the request can delete it
+            if (auth.getAuthorities().contains("admin_salary_request")) {
+                return Mono.just(true);
+            }
+            return Mono.just(false);
+        }).flatMap(r -> {
+            if (r) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("""
+                    Employee can delete request which he/she created.  
+                    Employee with admin_salary_request permission can delete any salary request.
+                                        """));
+        });
+
+    }
 
     public Mono<Boolean> validateViewSalaryRequest(AuthContext auth, SalaryRequestView salaryRequest) {
         return Mono.defer(() -> {

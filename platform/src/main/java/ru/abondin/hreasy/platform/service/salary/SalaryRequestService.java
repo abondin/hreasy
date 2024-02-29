@@ -10,6 +10,7 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.assessment.AssessmentRepo;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedRepo;
+import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
@@ -51,7 +52,6 @@ public class SalaryRequestService {
      * @param periodId
      * @return not deleted salary requests for given period filtered by logged-in permissions:
      * <ul>
-     *     <li>All requests for user with "admin_salary_request" permission</li>
      *     <li>Only if user has permission "approve_salary_request" and access to request's budgeting business account</>
      *     <li>(if user has "report_salary_request" permission) requests created by logged in user</li>
      * </ul>
@@ -72,6 +72,33 @@ public class SalaryRequestService {
     }
 
     @Transactional
+    public Mono<? extends Integer> delete(AuthContext auth, int period, int requestId) {
+        log.info("Deleting salary request {} in period {} by {}", requestId, period);
+        var now = dateTimeService.now();
+        var deletedBy = auth.getEmployeeInfo().getEmployeeId();
+        // 1. Find entity to delete
+        return requestRepo.findFullNotDeletedById(requestId, dateTimeService.now())
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(requestId))))
+                // 2. Check that period is not closed
+                .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod())
+                        // 3. Validate if user has permissions to delete
+                        .flatMap(e -> secValidator.validateDeleteSalaryRequest(auth, entry)
+                                .flatMap(s -> {
+                                    // 4. Validate that request is not implemented
+                                    if (entry.getImplementedAt() != null) {
+                                        return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(requestId)));
+                                    }
+                                    // 5. Update deleted fields
+                                    entry.setDeletedAt(now);
+                                    entry.setDeletedBy(deletedBy);
+                                    return requestRepo.save(entry);
+                                }))).flatMap(deleted ->
+                        // 6. Save history
+                        historyDomainService.persistHistory(requestId, HistoryDomainService.HistoryEntityType.SALARY_REQUEST, deleted, now, deletedBy)
+                ).map(HistoryEntry::getEntityId);
+    }
+
+    @Transactional
     public Mono<Integer> report(AuthContext ctx, SalaryRequestReportBody body) {
         var now = dateTimeService.now();
         var createdBy = ctx.getEmployeeInfo().getEmployeeId();
@@ -81,7 +108,7 @@ public class SalaryRequestService {
                 // 2. Additional validation
                 .flatMap(v -> checkReportBodyConsistency(ctx, body))
                 // 3. Get additional information about employee
-                .flatMap(v->employeeRepo.findDetailed(body.getEmployeeId()))
+                .flatMap(v -> employeeRepo.findDetailed(body.getEmployeeId()))
                 .map(empl -> mapper.toEntry(body, empl, createdBy, now)).flatMap(entry -> {
                             // 2. Save new request to DB
                             return requestRepo.save(entry).flatMap(persisted ->
@@ -96,11 +123,16 @@ public class SalaryRequestService {
         // 4. TODO Send email notification
     }
 
+    private Mono<Boolean> closedPeriodCheck(int periodId) {
+        return closedPeriodRepo.findById(periodId)
+                .flatMap(p -> Mono.error(new BusinessError("errors.salary_request.period_closed", Integer.toString(p.getPeriod()))))
+                .map(e -> true)
+                .defaultIfEmpty(true);
+    }
+
     private Mono<Boolean> checkReportBodyConsistency(AuthContext ctx, SalaryRequestReportBody body) {
         // 1. Check if report period is not closed
-        var closedPeriodCheck = closedPeriodRepo.findById(body.getIncreaseStartPeriod())
-                .flatMap(p -> Mono.error(new BusinessError("errors.salary_request.period_closed", Integer.toString(p.getPeriod()))))
-                .defaultIfEmpty(true);
+        var closedPeriodCheck = closedPeriodCheck(body.getIncreaseStartPeriod());
 
 
         // 2. Check if assessment for the same employee
@@ -119,5 +151,6 @@ public class SalaryRequestService {
     public Flux<SalaryRequestClosedPeriodDto> getClosedSalaryRequestPeriods(AuthContext auth) {
         return closedPeriodRepo.findAll().map(mapper::closedPeriodFromEntry);
     }
+
 
 }

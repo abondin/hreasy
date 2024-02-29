@@ -276,8 +276,8 @@ export default class SalaryRequests extends Vue {
       );
     }
     headers.push(
-        {text: this.$tc('Решение'), value: 'impl.state'}
-        {text: this.$tc('Завершено'), value: 'impl.implementedBy.name'},
+        {text: this.$tc('Решение'), value: 'impl.state'},
+        {text: this.$tc('Завершено'), value: 'impl.implementedBy.name'}
     );
     return headers;
   });

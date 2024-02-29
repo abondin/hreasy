@@ -23,6 +23,12 @@ public class SalaryRequestsController {
     public Mono<Integer> report(@RequestBody SalaryRequestReportBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.report(auth, body));
     }
+
+    @DeleteMapping("/{period}/{requestId}")
+    public Mono<Integer> delete(@PathVariable int period, @PathVariable int requestId) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.delete(auth, period, requestId));
+    }
+
     @GetMapping("/{period}")
     public Flux<SalaryRequestDto> my(@PathVariable int period) {
         return AuthHandler.currentAuth().flatMapMany(auth -> requestService.findMy(auth, period));
