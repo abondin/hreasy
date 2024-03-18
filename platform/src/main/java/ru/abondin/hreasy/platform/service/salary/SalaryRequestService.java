@@ -11,6 +11,7 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.assessment.AssessmentRepo;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedRepo;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
+import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodRepo;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
@@ -20,6 +21,12 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDt
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestMapper;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApproveBody;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestCommentBody;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestDeclineBody;
+
+import java.time.OffsetDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +46,8 @@ public class SalaryRequestService {
     private final AssessmentRepo assessmentRepo;
 
     private final EmployeeDetailedRepo employeeRepo;
+
+    //<editor-fold desc="Common operations">
 
     public Mono<SalaryRequestDto> get(AuthContext auth, int id) {
         log.debug("Getting salary request {} by {}", id, auth);
@@ -122,6 +131,81 @@ public class SalaryRequestService {
                 );
         // 4. TODO Send email notification
     }
+    //</editor-fold>
+
+    //<editor-fold desc="Approval">
+
+    public Flux<SalaryRequestApprovalDto> findApprovals(AuthContext auth, int requestId) {
+        log.info("Get approvals for salary request {} by {}", requestId, auth.getUsername());
+        return secValidator.validateApproveSalaryRequest(auth, requestId)
+                .flatMapMany(v -> approvalRepo.findNotDeletedByRequestId(requestId, OffsetDateTime.now()).map(mapper::fromEntry));
+    }
+
+    @Transactional
+    public Mono<Integer> approve(AuthContext auth, int requestId, SalaryRequestApproveBody body) {
+        log.info("Approve salary request {} by {}", requestId, auth.getUsername());
+        return this.doProcessApprovalAction(auth, requestId, SalaryRequestApprovalDto.ApprovalActionTypes.APPROVE.getValue(), body.getComment());
+    }
+
+    @Transactional
+    public Mono<Integer> decline(AuthContext auth, int requestId, SalaryRequestDeclineBody body) {
+        log.info("Decline salary request {} by {}", requestId, auth.getUsername());
+        return this.doProcessApprovalAction(auth, requestId, SalaryRequestApprovalDto.ApprovalActionTypes.APPROVE.getValue(), body.getComment());
+    }
+
+    @Transactional
+    public Mono<Integer> comment(AuthContext auth, int requestId, SalaryRequestCommentBody body) {
+        log.info("Comment salary request {} by {}", requestId, auth.getUsername());
+        return this.doProcessApprovalAction(auth, requestId, SalaryRequestApprovalDto.ApprovalActionTypes.APPROVE.getValue(), body.getComment());
+    }
+
+    private Mono<Integer> doProcessApprovalAction(AuthContext auth, int requestId, short stat, String comment) {
+        var now = dateTimeService.now();
+        // 1. Get request
+        return requestRepo.findById(requestId)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(requestId))))
+                // 2. Validate security
+                .flatMap(entry -> secValidator.validateApproveSalaryRequest(auth, entry.getBudgetBusinessAccount())
+                        // 3. Apply action
+                        .flatMap(v -> {
+                            var approvalEntry = new SalaryRequestApprovalEntry(requestId, stat);
+                            approvalEntry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
+                            approvalEntry.setCreatedAt(now);
+                            approvalEntry.setComment(comment);
+                            approvalEntry.setStat(stat);
+                            return approvalRepo.save(approvalEntry).flatMap(persistedEntry ->
+                                    // 4. Save history
+                                    historyDomainService.persistHistory(
+                                            persistedEntry.getId(),
+                                            HistoryDomainService.HistoryEntityType.SALARY_REQUEST_APPROVAL,
+                                            persistedEntry, now, auth.getEmployeeInfo().getEmployeeId())
+                            ).map(HistoryEntry::getEntityId);
+                        }));
+
+    }
+
+    @Transactional
+    public Mono<? extends Integer> deleteApproval(AuthContext auth, int requestId, int approvalId) {
+        log.info("Deleting approval {} for salary request {} by {}", approvalId, requestId, auth.getUsername());
+        return approvalRepo.findById(approvalId)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(approvalId))))
+                .flatMap(entry -> secValidator.validateDeleteApproval(auth, entry)
+                        .flatMap(v -> {
+                            if (requestId != entry.getRequest()) {
+                                return Mono.error(new BusinessError("errors.salary_request.approval.not_for_request", Integer.toString(approvalId), Integer.toString(requestId)));
+                            }
+                            entry.setDeletedAt(OffsetDateTime.now());
+                            entry.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
+                            return approvalRepo.save(entry).flatMap(persisted -> historyDomainService.persistHistory(
+                                            persisted.getId(),
+                                            HistoryDomainService.HistoryEntityType.SALARY_REQUEST_APPROVAL,
+                                            persisted, dateTimeService.now(), auth.getEmployeeInfo().getEmployeeId())
+                                    .map(HistoryEntry::getEntityId
+                                    ));
+                        }));
+    }
+
+    //</editor-fold>
 
     private Mono<Boolean> closedPeriodCheck(int periodId) {
         return closedPeriodRepo.findById(periodId)

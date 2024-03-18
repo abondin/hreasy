@@ -20,6 +20,7 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestMapper;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestRejectBody;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +44,9 @@ public class AdminSalaryRequestService {
                 .map(mapper::fromEntry);
     }
 
+
+
+    //<editor-fold desc="Implementation">
     @Transactional
     public Mono<Integer> reject(AuthContext auth, int salaryRequestId, SalaryRequestRejectBody body) {
         log.info("Reject salary request {} by {}", salaryRequestId, auth.getUsername());
@@ -111,7 +115,9 @@ public class AdminSalaryRequestService {
                                     .map(HistoryEntry::getEntityId);
                         }));
     }
+    //</editor-fold>
 
+    //<editor-fold desc="Periods">
     @Transactional
     public Mono<Integer> closeSalaryRequestPeriod(AuthContext auth, @NonNull int periodId, @Nullable String comment) {
         log.info("Close salary request period {} by {}. Comment: {}", periodId, auth.getUsername(), comment);
@@ -150,6 +156,7 @@ public class AdminSalaryRequestService {
                 .map(e -> true)
                 .defaultIfEmpty(true);
     }
+    //</editor-fold>
 
 
 }

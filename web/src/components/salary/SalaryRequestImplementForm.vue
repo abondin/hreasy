@@ -176,7 +176,11 @@ export default class SalaryRequestImplementForm extends Vue {
   }
 
   private title() {
-    return this.isBonus() ? this.$tc('Реализация запроса на повышение') : this.$tc('Реализация запроса на бонус');
+    if (!this.data){
+      return '-';
+    }
+    return this.data.isImplemented() ? this.$tc('Отменить решение на реализацию')
+        : (this.isBonus() ? this.$tc('Реализация запроса на повышение') : this.$tc('Реализация запроса на бонус'));
   }
 
 

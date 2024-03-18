@@ -3,12 +3,14 @@ package ru.abondin.hreasy.platform.service.salary.dto;
 import org.mapstruct.*;
 import ru.abondin.hreasy.platform.repo.assessment.EmployeeAssessmentEntry;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedEntry;
+import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
 
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
@@ -108,6 +110,9 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(source = "implementedBy", target = "implementedBy")
     @Mapping(constant = "2", target = "implState")
     void applyRequestRejectBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestRejectBody body, OffsetDateTime implementedAt, Integer implementedBy);
+
+    SalaryRequestApprovalDto fromEntry(SalaryRequestApprovalEntry entry);
+
 
 // <editor-fold desc="named helpers">
 

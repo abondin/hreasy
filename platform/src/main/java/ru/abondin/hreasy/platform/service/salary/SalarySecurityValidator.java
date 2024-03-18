@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
 import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
@@ -17,6 +19,7 @@ import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 @Component
 @RequiredArgsConstructor
 public class SalarySecurityValidator {
+
 
     public enum ViewSalaryRequestMode {
         /**
@@ -111,6 +114,17 @@ public class SalarySecurityValidator {
             ));
         });
     }
+
+    public Mono<Boolean> validateDeleteApproval(AuthContext auth, SalaryRequestApprovalEntry entry) {
+        if (auth.getEmployeeInfo().getEmployeeId().equals(entry.getCreatedBy())){
+            return Mono.just(true);
+        }
+        if (auth.getAuthorities().contains("admin_salary_request")){
+            return Mono.just(true);
+        }
+        return Mono.error(new AccessDeniedException("Employee can delete request which he/she created or with admin_salary_request permission."));
+    }
+
 
     private boolean validateApproveSalaryRequestSync(AuthContext auth, Integer businessAccount) {
         if (!auth.getAuthorities().contains("approve_salary_request")) {

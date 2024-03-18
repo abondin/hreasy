@@ -103,10 +103,6 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
         }
     }
 
-    public resetImplementation(item: SalaryIncreaseRequest) {
-        return this._resetImplementationAction(item);
-    }
-
     public closeImplementDialog() {
         this.implementBody = null;
         this._implementDialog = false;
@@ -130,6 +126,10 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
         } else {
             logger.error("Unable to submit implement form without selected item");
         }
+    }
+
+    public isImplemented() {
+        return Boolean(this.selectedItems && this.selectedItems[0].impl);
     }
 
     //</editor-fold>

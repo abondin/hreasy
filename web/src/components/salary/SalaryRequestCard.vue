@@ -109,7 +109,7 @@
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
             <div v-bind="tattrs" v-on="ton" class="col-auto">
               <v-btn v-if="item.impl" text link
-                     @click="()=>dataContainer.resetImplementation(item)" icon>
+                     @click="()=>dataContainer.openImplementDialog(item)" icon>
                 <v-icon>mdi-pencil-off</v-icon>
               </v-btn>
               <v-btn v-else text color="primary" link

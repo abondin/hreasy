@@ -11,6 +11,9 @@ import ru.abondin.hreasy.platform.service.salary.SalaryRequestService;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApproveBody;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestCommentBody;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestDeclineBody;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,6 +30,31 @@ public class SalaryRequestsController {
     @DeleteMapping("/{requestId}")
     public Mono<Integer> delete(@PathVariable int requestId) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.delete(auth, requestId));
+    }
+
+    @PostMapping("/{salaryRequestId}/approvals/approve")
+    public Mono<Integer> approve(@PathVariable int requestId, @RequestBody SalaryRequestApproveBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.approve(auth, requestId, body));
+    }
+    @PostMapping("/{salaryRequestId}/approvals/decline")
+    public Mono<Integer> decline(@PathVariable int requestId, @RequestBody SalaryRequestDeclineBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.decline(auth, requestId, body));
+    }
+    @PostMapping("/{salaryRequestId}/approvals/comment")
+    public Mono<Integer> comment(@PathVariable int requestId, @RequestBody SalaryRequestCommentBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.comment(auth, requestId, body));
+    }
+
+    /**
+     * Delete own approve, decline decision or just comment
+     * @param requestId
+     * @param approvalId
+     * @return
+     * @see #approve(int, SalaryRequestApproveBody) {@link #decline(int, SalaryRequestDeclineBody)} {@link #comment(int, SalaryRequestCommentBody)}
+     */
+    @DeleteMapping("/{salaryRequestId}//approvals/{approvalId}")
+    public Mono<Integer> deleteApproval(@PathVariable int requestId, @PathVariable int approvalId) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.deleteApproval(auth, requestId, approvalId));
     }
 
     @GetMapping("/{period}")
