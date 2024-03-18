@@ -1,9 +1,8 @@
 package ru.abondin.hreasy.platform.service.salary.dto;
 
 import org.mapstruct.*;
-import ru.abondin.hreasy.platform.repo.assessment.EmployeeAssessmentEntry;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedEntry;
-import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalEntry;
+import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalView;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
@@ -14,7 +13,6 @@ import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestAppro
 
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
-import java.util.Locale;
 
 @Mapper(componentModel = "spring")
 public interface SalaryRequestMapper extends MapperBase {
@@ -111,7 +109,8 @@ public interface SalaryRequestMapper extends MapperBase {
     @Mapping(constant = "2", target = "implState")
     void applyRequestRejectBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestRejectBody body, OffsetDateTime implementedAt, Integer implementedBy);
 
-    SalaryRequestApprovalDto fromEntry(SalaryRequestApprovalEntry entry);
+    @Mapping(target = "createdBy", source = ".", qualifiedByName = "approvalCreatedBy")
+    SalaryRequestApprovalDto fromEntry(SalaryRequestApprovalView entry);
 
 
 // <editor-fold desc="named helpers">
@@ -125,6 +124,7 @@ public interface SalaryRequestMapper extends MapperBase {
     default SimpleDictDto budgetBusinessAccount(SalaryRequestView entry) {
         return simpleDto(entry.getBudgetBusinessAccount(), entry.getBudgetBusinessAccountName());
     }
+
     @Named("employeeBusinessAccount")
     default SimpleDictDto employeeBusinessAccount(SalaryRequestView entry) {
         return simpleDto(entry.getInfoEmplBa(), entry.getInfoEmplBaName());
@@ -153,6 +153,11 @@ public interface SalaryRequestMapper extends MapperBase {
         return simpleDto(entry.getCreatedBy(), entry.getCreatedByDisplayName());
     }
 
+    @Named("approvalCreatedBy")
+    default SimpleDictDto approvalCreatedBy(SalaryRequestApprovalView entry) {
+        return simpleDto(entry.getCreatedBy(), entry.getCreatedByDisplayName());
+    }
+
 
     @Named("implementedBy")
     default SimpleDictDto implementedBy(SalaryRequestView entry) {
@@ -165,7 +170,7 @@ public interface SalaryRequestMapper extends MapperBase {
     }
 
     @Named("period")
-    default YearMonth period(Integer periodId){
+    default YearMonth period(Integer periodId) {
         return MapperBase.fromPeriodId(periodId);
     }
 

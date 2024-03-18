@@ -22,9 +22,13 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestRejectBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestType;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApproveBody;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestDeclineBody;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.Locale;
 
 import static ru.abondin.hreasy.platform.TestEmployees.*;
 import static ru.abondin.hreasy.platform.service.HistoryDomainService.HistoryEntityType.SALARY_REQUEST;
@@ -171,6 +175,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
 
     }
 
+
     @Test
     public void testGetNotMyRequest() {
         var jensonId = testData.employees.get(FMS_Empl_Jenson_Curtis);
@@ -224,22 +229,59 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                 .verifyComplete();
     }
 
+    @Test
+    public void testDecline() {
+        var ctx = auth(Billing_BA_Head_Husnain_Patterson).block(MONO_DEFAULT_TIMEOUT);
+        var report = salaryRequestService.report(auth,
+                defaultRequest(testData.employees.get(Billing_Empl_Asiyah_Bob), testData.ba_Billing())
+        ).block(MONO_DEFAULT_TIMEOUT);
+
+        var declineBody = SalaryRequestDeclineBody.builder()
+                .comment("Very bad employee")
+                .build();
+
+        StepVerifier.create(salaryRequestService.decline(ctx, report, declineBody)
+                .flatMapMany(updatedId -> salaryRequestService.findApprovals(ctx, report))
+        ).expectNextMatches(dto ->
+                dto.getCreatedBy().getId() == ctx.getEmployeeInfo().getEmployeeId()
+                        && dto.getComment().equals("Very bad employee")
+                        && dto.getState() == SalaryRequestApprovalDto.ApprovalActionTypes.DECLINE.getValue()
+                        && dto.getCreatedBy().getName().toLowerCase(Locale.ROOT).contains("husnain")
+        ).verifyComplete();
+    }
+
+    @Test
+    public void testApprove() {
+        var ctx = auth(Billing_BA_Head_Husnain_Patterson).block(MONO_DEFAULT_TIMEOUT);
+        var report = salaryRequestService.report(auth,
+                defaultRequest(testData.employees.get(Billing_Empl_Asiyah_Bob), testData.ba_Billing())
+        ).block(MONO_DEFAULT_TIMEOUT);
+        StepVerifier
+                .create(salaryRequestService.approve(ctx, report, SalaryRequestApproveBody
+                        .builder()
+                        .comment("Very good employee")
+                        .build()))
+                .expectNextCount(1)
+                .verifyComplete();
+    }
+
+
+
 
     /**
      * Do not clean all database, but delete only
      * <ul>
-     *     <li>salary request</li>
      *     <li>salary request approval</li>
+     *     <li>salary request</li>
      *     <li>history messages ('salary_request', 'salary_request_approval')</li>
      *     <li>notifications messages ('salary_request')</li>
      * </ul>
-     * ,
      *
      * @return
      */
     private Mono<Void> cleanSalaryAndClosedPeriodAndNotificationsTables() {
-        return db.sql("delete from sal.salary_request").then()
-                .then(db.sql("delete from sal.salary_request_approval").then())
+        return db.sql("delete from sal.salary_request_approval").then()
+                .then(db.sql("delete from sal.salary_request").then())
                 .then(db.sql("delete from history.history where " +
                         "entity_type='" + SALARY_REQUEST.getType() + "'" +
                         " or entity_type='" + SALARY_REQUEST_APPROVAL.getType() + "'").then())
@@ -269,4 +311,6 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
         var report = defaultRequest(jensonId, ba);
         return salaryRequestService.report(ctx, report).block(MONO_DEFAULT_TIMEOUT);
     }
+
+
 }

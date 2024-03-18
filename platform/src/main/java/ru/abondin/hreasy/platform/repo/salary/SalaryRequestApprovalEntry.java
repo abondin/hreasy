@@ -1,20 +1,22 @@
 package ru.abondin.hreasy.platform.repo.salary;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-
 import org.springframework.lang.NonNull;
+
 import java.time.OffsetDateTime;
 
 @Data
-@Table("sal.salary_request")
+@Table("sal.salary_request_approval")
+@NoArgsConstructor
 public class SalaryRequestApprovalEntry {
     @Id
     private Integer id;
 
     @NonNull
-    private Integer request;
+    private Integer requestId;
 
     /**
      * <ul>
@@ -24,7 +26,7 @@ public class SalaryRequestApprovalEntry {
      * </ul>
      */
     @NonNull
-    private Short stat;
+    private Short state;
     private String comment;
     private OffsetDateTime createdAt;
     private Integer createdBy;

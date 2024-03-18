@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalEntry;
@@ -100,6 +99,17 @@ public class SalarySecurityValidator {
         });
     }
 
+    /**
+     * Check if user has permission to approve salary request
+     *
+     * <ul>
+     *     <li>user has 'admin_salary_request'</li>
+     *     <li>user has 'approve_salary_request' and is business account manager</li>
+     * </ul>
+     * @param auth
+     * @param businessAccount
+     * @return
+     */
     public Mono<Boolean> validateApproveSalaryRequest(AuthContext auth, Integer businessAccount) {
         return Mono.defer(() -> Mono.just(validateApproveSalaryRequestSync(auth, businessAccount))).flatMap(r -> {
             if (r) {
@@ -107,9 +117,7 @@ public class SalarySecurityValidator {
             }
             return Mono.error(new AccessDeniedException(
                     """
-                            Only employee with 'approve_salary_request_globally' permission can approve any salary request.
-                            Employee with 'approve_salary_request' permission can approve salary request only if he/she is
-                             manager of the budgeting business account 
+                      User can approve requests if he/she has 'admin_salary_request' or has 'approve_salary_request' and is business account manager
                                                         """
             ));
         });
@@ -126,7 +134,11 @@ public class SalarySecurityValidator {
     }
 
 
+
     private boolean validateApproveSalaryRequestSync(AuthContext auth, Integer businessAccount) {
+        if (auth.getAuthorities().contains("admin_salary_request")){
+            return true;
+        }
         if (!auth.getAuthorities().contains("approve_salary_request")) {
             return false;
         }

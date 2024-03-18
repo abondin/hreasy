@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS sal.salary_request_approval (
     -- 0 - Comment: If no decision made. Just basic comment
     -- 1 - Approved
     -- 2 - Declined
-    stat integer NOT NULL,
+    state integer NOT NULL,
     comment text NULL,
     created_at timestamp with time zone NOT NULL,
     created_by integer NOT NULL REFERENCES empl.employee (id),
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS sal.salary_request_approval (
 COMMENT ON TABLE sal.salary_request_approval IS 'Approval decision for salary request';
 COMMENT ON COLUMN sal.salary_request_approval.id IS 'Primary key';
 COMMENT ON COLUMN sal.salary_request_approval.request_id IS 'Key attribute - link to request';
-COMMENT ON COLUMN sal.salary_request_approval.stat IS 'Status of the request:
+COMMENT ON COLUMN sal.salary_request_approval.state IS 'Status of the request:
   0 - Comment: If no decision made. Just basic comment
   1 - Approved
   2 - Declined

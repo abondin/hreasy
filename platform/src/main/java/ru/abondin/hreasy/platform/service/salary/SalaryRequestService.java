@@ -137,7 +137,9 @@ public class SalaryRequestService {
 
     public Flux<SalaryRequestApprovalDto> findApprovals(AuthContext auth, int requestId) {
         log.info("Get approvals for salary request {} by {}", requestId, auth.getUsername());
-        return secValidator.validateApproveSalaryRequest(auth, requestId)
+        return requestRepo.findById(requestId)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(requestId))))
+                .flatMap(request -> secValidator.validateApproveSalaryRequest(auth, request.getBudgetBusinessAccount()))
                 .flatMapMany(v -> approvalRepo.findNotDeletedByRequestId(requestId, OffsetDateTime.now()).map(mapper::fromEntry));
     }
 
@@ -150,16 +152,16 @@ public class SalaryRequestService {
     @Transactional
     public Mono<Integer> decline(AuthContext auth, int requestId, SalaryRequestDeclineBody body) {
         log.info("Decline salary request {} by {}", requestId, auth.getUsername());
-        return this.doProcessApprovalAction(auth, requestId, SalaryRequestApprovalDto.ApprovalActionTypes.APPROVE.getValue(), body.getComment());
+        return this.doProcessApprovalAction(auth, requestId, SalaryRequestApprovalDto.ApprovalActionTypes.DECLINE.getValue(), body.getComment());
     }
 
     @Transactional
     public Mono<Integer> comment(AuthContext auth, int requestId, SalaryRequestCommentBody body) {
         log.info("Comment salary request {} by {}", requestId, auth.getUsername());
-        return this.doProcessApprovalAction(auth, requestId, SalaryRequestApprovalDto.ApprovalActionTypes.APPROVE.getValue(), body.getComment());
+        return this.doProcessApprovalAction(auth, requestId, SalaryRequestApprovalDto.ApprovalActionTypes.COMMENT.getValue(), body.getComment());
     }
 
-    private Mono<Integer> doProcessApprovalAction(AuthContext auth, int requestId, short stat, String comment) {
+    private Mono<Integer> doProcessApprovalAction(AuthContext auth, int requestId, short state, String comment) {
         var now = dateTimeService.now();
         // 1. Get request
         return requestRepo.findById(requestId)
@@ -168,11 +170,13 @@ public class SalaryRequestService {
                 .flatMap(entry -> secValidator.validateApproveSalaryRequest(auth, entry.getBudgetBusinessAccount())
                         // 3. Apply action
                         .flatMap(v -> {
-                            var approvalEntry = new SalaryRequestApprovalEntry(requestId, stat);
+                            var approvalEntry = new SalaryRequestApprovalEntry();
+                            approvalEntry.setRequestId(requestId);
+                            approvalEntry.setState(state);
                             approvalEntry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
                             approvalEntry.setCreatedAt(now);
                             approvalEntry.setComment(comment);
-                            approvalEntry.setStat(stat);
+                            ;
                             return approvalRepo.save(approvalEntry).flatMap(persistedEntry ->
                                     // 4. Save history
                                     historyDomainService.persistHistory(
@@ -191,7 +195,7 @@ public class SalaryRequestService {
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(approvalId))))
                 .flatMap(entry -> secValidator.validateDeleteApproval(auth, entry)
                         .flatMap(v -> {
-                            if (requestId != entry.getRequest()) {
+                            if (requestId != entry.getRequestId()) {
                                 return Mono.error(new BusinessError("errors.salary_request.approval.not_for_request", Integer.toString(approvalId), Integer.toString(requestId)));
                             }
                             entry.setDeletedAt(OffsetDateTime.now());

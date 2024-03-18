@@ -15,7 +15,7 @@ public class SalaryRequestApprovalDto {
      * 2 - Declined
      */
     @NonNull
-    private Short stat;
+    private Short state;
     @NonNull
     private String comment;
     private OffsetDateTime createdAt;
