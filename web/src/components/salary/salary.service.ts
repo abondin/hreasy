@@ -15,6 +15,18 @@ export const salaryRequestTypes = [
     SalaryRequestType.BONUS
 ];
 
+export const enum SalaryApprovalState {
+    COMMENT = 0,
+    APPROVE = 1,
+    DECLINE = 2
+}
+
+export const salaryApprovalStates = [
+    SalaryApprovalState.COMMENT,
+    SalaryApprovalState.APPROVE,
+    SalaryApprovalState.DECLINE
+];
+
 export interface SalaryRequestReportBody {
     employeeId: number;
     type: SalaryRequestType;
@@ -42,6 +54,18 @@ export interface ClosedSalaryRequestPeriod {
     comment: string
 }
 
+export interface SalaryRequestCommentBody {
+    comment: string | null;
+}
+
+export interface SalaryRequestApproveBody {
+    comment: string | null;
+}
+
+export interface SalaryRequestDeclineBody {
+    comment: string | null;
+}
+
 export interface SalaryService {
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number>;
 
@@ -50,6 +74,15 @@ export interface SalaryService {
     deleteSalaryRequest(ids: number[]): Promise<Array<any>>;
 
     load(period: number): Promise<Array<SalaryIncreaseRequest>>;
+
+    approve(requestId: number, body: SalaryRequestApproveBody): Promise<number>;
+
+    decline(requestId: number, body: SalaryRequestDeclineBody): Promise<number>;
+
+    comment(requestId: number, body: SalaryRequestCommentBody): Promise<number>;
+
+    deleteApproval(requestId: number, approvalId: number): Promise<number>;
+
 }
 
 class RestSalaryService implements SalaryService {
@@ -78,6 +111,21 @@ class RestSalaryService implements SalaryService {
         });
     }
 
+    approve(requestId: number, body: SalaryRequestApproveBody): Promise<number> {
+        return httpService.post(`v1/salaries/requests/${requestId}/approvals/approve`, body);
+    }
+
+    decline(requestId: number, body: SalaryRequestDeclineBody): Promise<number> {
+        return httpService.post(`v1/salaries/requests/${requestId}/approvals/decline`, body);
+    }
+
+    comment(requestId: number, body: SalaryRequestCommentBody): Promise<number> {
+        return httpService.post(`v1/salaries/requests/${requestId}/approvals/comment`, body);
+    }
+
+    deleteApproval(requestId: number, approvalId: number): Promise<number> {
+        return httpService.delete(`v1/salaries/requests/${requestId}/approvals/${approvalId}`);
+    }
 }
 
 const salaryService: SalaryService = new RestSalaryService(httpService);
@@ -122,4 +170,20 @@ export interface SalaryIncreaseRequest extends WithId {
         reason: string;
         comment: string | null;
     };
+}
+
+/**
+ * One approve, decline or comment
+ */
+export interface SalaryRequestApproval {
+    id: number;
+    /**
+     * 0 - Comment: If no decision made. Just basic comment
+     * 1 - Approved
+     * 2 - Declined
+     */
+    state: number;
+    comment: string | null;
+    createdAt: Date;
+    createdBy: SimpleDict;
 }

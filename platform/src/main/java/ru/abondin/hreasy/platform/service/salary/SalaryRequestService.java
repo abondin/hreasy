@@ -178,7 +178,7 @@ public class SalaryRequestService {
                             approvalEntry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
                             approvalEntry.setCreatedAt(now);
                             approvalEntry.setComment(comment);
-                            ;
+
                             return approvalRepo.save(approvalEntry).flatMap(persistedEntry ->
                                     // 4. Save history
                                     historyDomainService.persistHistory(

@@ -121,6 +121,7 @@
           <p>{{ item.impl ? $t('Сбросить решение') : $t('Реализовать запрос') }}</p>
         </v-tooltip>
       </v-col>
+      <!-- Delete -->
       <v-col align-self="center" cols="auto" v-if="allowDeleteFunctionality()">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
@@ -132,6 +133,21 @@
             </div>
           </template>
           <p>{{ $t('Удалить') }}</p>
+        </v-tooltip>
+      </v-col>
+
+      <!-- Approve -->
+      <v-col align-self="center" cols="auto" v-if="approveAllowed()">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <div v-bind="tattrs" v-on="ton" class="col-auto" disabled="data.loading">
+              <v-btn text link
+                     @click="()=>dataContainer.openApproveDialog(item, null)" icon>
+                <v-icon>mdi-comment</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <p>{{ $t('Согласовать / добавить комментарий') }}</p>
         </v-tooltip>
       </v-col>
     </div>
@@ -192,6 +208,9 @@ export default class SalaryRequestCard extends Vue {
     return permissionService.canReportSalaryRequest() && this.dataContainer?.deleteAllowed();
   }
 
+  private approveAllowed() {
+    return permissionService.canApproveSalaryRequest() && this.dataContainer?.approveAllowed();
+  }
 
 }
 </script>

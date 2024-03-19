@@ -201,6 +201,12 @@
       </v-dialog>
       <!-- </editor-fold>-->
 
+      <!--<editor-fold desc="Approve request">-->
+      <v-dialog v-bind:value="data.approveDialog" :disabled="data.loading" persistent>
+        <salary-request-approval-form :data="data"></salary-request-approval-form>
+      </v-dialog>
+      <!-- </editor-fold>-->
+
       <!--<editor-fold desc="Delete request">-->
       <v-dialog v-bind:value="data.deleteDialog" :disabled="data.loading" persistent>
         <hreasy-table-delete-confimration v-bind:data="data"></hreasy-table-delete-confimration>
@@ -228,10 +234,12 @@ import SalaryRequestImplementForm from "@/components/salary/SalaryRequestImpleme
 import {SalaryRequestDataContainer} from "@/components/salary/salary.data.container";
 import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTableDeleteConfimration.vue";
 import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
+import SalaryRequestApprovalForm from "@/components/salary/SalaryRequestApprovalForm.vue";
 
 
 @Component({
   components: {
+    SalaryRequestApprovalForm,
     HreasyTableDeleteConfimration,
     SalaryRequestFilterComponent,
     SalaryRequestCard,

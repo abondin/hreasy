@@ -2,6 +2,7 @@ import TableComponentDataContainer, {CreateAction} from "@/components/shared/tab
 import salaryService, {
     ClosedSalaryRequestPeriod,
     SalaryIncreaseRequest,
+    SalaryRequestApproval,
     SalaryRequestReportBody
 } from "@/components/salary/salary.service";
 import {SalaryRequestFormData, SalaryRequestImplementAction} from "@/components/salary/SalaryRequestImplementForm.vue";
@@ -12,15 +13,24 @@ import permissionService from "@/store/modules/permission.service";
 import {DataTableHeader} from "vuetify";
 import {errorUtils} from "@/components/errors";
 import logger from "@/logger";
+import {
+    SalaryRequestApproveAction,
+    SalaryRequestApproveFormData
+} from "@/components/salary/SalaryRequestApprovalForm.vue";
 
 export class SalaryRequestDataContainer extends TableComponentDataContainer<SalaryIncreaseRequest, SalaryRequestFormData, SalaryRequestReportBody, SalaryRequestFilter> {
     private _implementDialog = false;
     private _implementBody: SalaryRequestFormData | null = null;
+    private readonly _implementAction: SalaryRequestImplementAction;
+
+    private _approveDialog = false;
+    private _approveBody: SalaryRequestApproveFormData | null = null;
+    private readonly _approveAction: SalaryRequestApproveAction;
+
     private _selectedPeriod = ReportPeriod.currentPeriod();
     private _closedPeriods: ClosedSalaryRequestPeriod[] = [];
     private _exportLoading = false;
     private _exportCompleted = false;
-    private readonly _implementAction: SalaryRequestImplementAction;
 
     constructor(_headerLoader: () => DataTableHeader[]) {
         super(() => salaryService.getClosedSalaryRequestPeriods()
@@ -45,6 +55,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
             true
         );
         this._implementAction = new SalaryRequestImplementAction();
+        this._approveAction = new SalaryRequestApproveAction();
     }
 
     //<editor-fold desc="Report new request">
@@ -115,6 +126,62 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
 
     public isImplemented() {
         return Boolean(this.selectedItems && this.selectedItems[0].impl);
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Approve request">
+    /**
+     * Allow to open approve or comment request dialog
+     */
+    public approveAllowed(): boolean {
+        return this._approveAction ? true : false;
+    }
+
+    get approveDialog(): boolean {
+        return this._approveDialog;
+    }
+
+    get approveBody(): SalaryRequestApproveFormData | null {
+        return this._approveBody;
+    }
+
+    set approveBody(body: SalaryRequestApproveFormData | null) {
+        this._approveBody = body;
+    }
+
+    public openApproveDialog(item: SalaryIncreaseRequest, approval: SalaryRequestApproval | null) {
+        if (this._approveAction && this.approveAllowed()) {
+            this.approveBody = this._approveAction.itemToBody(approval);
+            this.selectedItems = [item];
+            this._approveDialog = true;
+            this._actionError = null;
+        }
+    }
+
+    public closeApproveDialog() {
+        this.approveBody = null;
+        this._approveDialog = false;
+    }
+
+    public submitApproveForm() {
+        if (this.approveBody && this._approveAction && this.selectedItemId) {
+            this._loading = true;
+            this._actionError = null;
+            this._approveAction.doApprovalAction(this.selectedItemId, this.approveBody)
+                .then(() => {
+                    this._approveDialog = false;
+                    return this.reloadData();
+                })
+                .catch(error => {
+                    this._actionError = errorUtils.shortMessage(error);
+                })
+                .finally(() => {
+                    this._loading = false;
+                });
+        } else {
+            logger.error("Unable to submit approve form without selected item");
+        }
     }
 
     //</editor-fold>
