@@ -10,9 +10,9 @@ import java.time.OffsetDateTime;
 public class SalaryRequestApprovalDto {
     private Integer id;
     /**
-     * 0 - Comment: If no decision made. Just basic comment
-     * 1 - Approved
-     * 2 - Declined
+     * 1 - Comment: If no decision made. Just basic comment
+     * 2 - Approved
+     * 3 - Declined
      */
     @NonNull
     private Short state;
@@ -22,7 +22,7 @@ public class SalaryRequestApprovalDto {
     private SimpleDictDto createdBy;
 
     public static enum ApprovalActionTypes {
-        COMMENT((short) 0), APPROVE((short) 1), DECLINE((short) 2);
+        COMMENT((short) 1), APPROVE((short) 2), DECLINE((short) 3);
         private final short value;
 
         ApprovalActionTypes(short value) {

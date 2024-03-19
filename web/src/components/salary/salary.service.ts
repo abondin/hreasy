@@ -16,9 +16,9 @@ export const salaryRequestTypes = [
 ];
 
 export const enum SalaryApprovalState {
-    COMMENT = 0,
-    APPROVE = 1,
-    DECLINE = 2
+    COMMENT = 1,
+    APPROVE = 2,
+    DECLINE = 3
 }
 
 export const salaryApprovalStates = [
@@ -177,12 +177,7 @@ export interface SalaryIncreaseRequest extends WithId {
  */
 export interface SalaryRequestApproval {
     id: number;
-    /**
-     * 0 - Comment: If no decision made. Just basic comment
-     * 1 - Approved
-     * 2 - Declined
-     */
-    state: number;
+    state: SalaryApprovalState;
     comment: string | null;
     createdAt: Date;
     createdBy: SimpleDict;

@@ -20,9 +20,9 @@ public class SalaryRequestApprovalEntry {
 
     /**
      * <ul>
-     *     <li>0 - Comment: If no decision made. Just basic comment</li>
-     *     <li>1 - Approved</li>
-     *     <li>2 - Declined</li>
+     *     <li>1 - Comment: If no decision made. Just basic comment</li>
+     *     <li>2 - Approved</li>
+     *     <li>3 - Declined</li>
      * </ul>
      */
     @NonNull

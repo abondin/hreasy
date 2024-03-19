@@ -23,9 +23,13 @@ Form to create or delete approve/decline or just comment
             :items="approvalActionDict">
         </v-select>
         <v-textarea
+            autofocus
+            tabindex="1"
             :disabled="itemReadonly()"
             v-model="data.approveBody.comment"
-            :rules="[v=> data.approveBody.action != 2 ? (v && v.length <= 4096 || $t('Обязательное поле. Не более N символов', {n:4096})) : (!v || v.length <= 4096 || $t('Не более N символов', {n:4096}))]"
+            :rules="[v=> isCommentRequired() ?
+            (v && v.length <= 4096 || $t('Обязательное поле. Не более N символов', {n:4096}))
+            : (!v || v.length <= 4096 || $t('Не более N символов', {n:4096}))]"
             :label="$t('Комментарий')">
         </v-textarea>
         <!--</editor-fold>-->
@@ -40,7 +44,7 @@ Form to create or delete approve/decline or just comment
         <v-progress-circular class="mr-2" v-if="data.loading" indeterminate></v-progress-circular>
         <v-btn @click="data.closeApproveDialog()">{{ $t('Закрыть') }}</v-btn>
         <v-btn @click="submitForm" color="primary" :disabled="data.loading || itemReadonly()">{{
-            data.approveBody.approvalId? $t('Удалить') : $t('Добавить')
+            data.approveBody.approvalId ? $t('Удалить') : $t('Добавить')
           }}
         </v-btn>
       </v-card-actions>
@@ -141,6 +145,10 @@ export default class SalaryRequestApprovalForm extends Vue {
     }
     return this.data.approveBody?.approvalId ? this.$tc('Удалить согласование/комментарий')
         : this.$tc('Добавить согласование/комментарий');
+  }
+
+  private isCommentRequired() {
+    return Boolean(this.data.approveBody?.action != SalaryApprovalState.APPROVE);
   }
 
 

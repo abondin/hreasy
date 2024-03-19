@@ -110,9 +110,9 @@ CREATE SEQUENCE IF NOT EXISTS sal.salary_request_approval_id_seq;
 CREATE TABLE IF NOT EXISTS sal.salary_request_approval (
     id integer PRIMARY KEY NOT NULL DEFAULT nextval('sal.salary_request_approval_id_seq'),
     request_id integer NOT NULL REFERENCES sal.salary_request (id),
-    -- 0 - Comment: If no decision made. Just basic comment
-    -- 1 - Approved
-    -- 2 - Declined
+    -- 1 - Comment: If no decision made. Just basic comment
+    -- 2 - Approved
+    -- 3e - Declined
     state integer NOT NULL,
     comment text NULL,
     created_at timestamp with time zone NOT NULL,
@@ -125,9 +125,9 @@ COMMENT ON TABLE sal.salary_request_approval IS 'Approval decision for salary re
 COMMENT ON COLUMN sal.salary_request_approval.id IS 'Primary key';
 COMMENT ON COLUMN sal.salary_request_approval.request_id IS 'Key attribute - link to request';
 COMMENT ON COLUMN sal.salary_request_approval.state IS 'Status of the request:
-  0 - Comment: If no decision made. Just basic comment
-  1 - Approved
-  2 - Declined
+  1 - Comment: If no decision made. Just basic comment
+  2 - Approved
+  3 - Declined
 ';
 COMMENT ON COLUMN sal.salary_request_approval.created_at IS 'Created at';
 COMMENT ON COLUMN sal.salary_request_approval.created_by IS 'Created by';
