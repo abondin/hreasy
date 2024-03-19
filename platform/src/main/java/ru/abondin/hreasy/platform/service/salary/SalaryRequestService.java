@@ -168,7 +168,9 @@ public class SalaryRequestService {
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(requestId))))
                 // 2. Validate security
                 .flatMap(entry -> secValidator.validateApproveSalaryRequest(auth, entry.getBudgetBusinessAccount())
-                        // 3. Apply action
+                        // 3. Check if report period is not closed
+                        .flatMap(v -> closedPeriodCheck(entry.getReqIncreaseStartPeriod()))
+                        // 4. Apply action
                         .flatMap(v -> {
                             var approvalEntry = new SalaryRequestApprovalEntry();
                             approvalEntry.setRequestId(requestId);

@@ -124,8 +124,8 @@
       <v-col align-self="center" cols="auto" v-if="allowDeleteFunctionality()">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="col-auto">
-              <v-btn text color="error" link :disabled="Boolean(item.impl)"
+            <div v-bind="tattrs" v-on="ton" class="col-auto" disabled="data.loading">
+              <v-btn text color="error" link
                      @click="()=>dataContainer.openDeleteDialogForItem(item)" icon>
                 <v-icon>mdi-delete</v-icon>
               </v-btn>

@@ -2,7 +2,15 @@
   <v-form ref="salaryImplementForm" v-if="data.implementBody">
     <v-card>
       <v-card-title>{{ title() }}</v-card-title>
-      <v-card-text>
+
+      <!--<editor-fold desc="Reset implementation">-->
+      <v-card-text v-if="data.implementBody.completed">
+        {{ $t('Вы уверены что хотите сбросить принятое решение по реализации?') }}
+      </v-card-text>
+      <!--</editor-fold> -->
+
+      <!--<editor-fold desc="Implementation">-->
+      <v-card-text v-else>
         <!--<editor-fold desc="Fields">-->
         <v-select
             :disabled="itemReadonly()"
@@ -58,18 +66,18 @@
             :label="$t('Примечание')">
         </v-textarea>
         <!--</editor-fold>-->
-
-        <!-- Error block -->
-        <v-alert v-if="data.actionError" type="error">
-          {{ data.actionError }}
-        </v-alert>
       </v-card-text>
+      <!--</editor-fold> -->
+      <!-- Error block -->
+      <v-alert v-if="data.actionError" type="error">
+        {{ data.actionError }}
+      </v-alert>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-progress-circular class="mr-2" v-if="data.loading" indeterminate></v-progress-circular>
         <v-btn @click="data.closeImplementDialog()">{{ $t('Закрыть') }}</v-btn>
         <v-btn @click="submitForm" color="primary" :disabled="data.loading || itemReadonly()">{{
-            $t('Реализовано')
+            data.implementBody.completed? $t('Сбросить') : $t('Реализовать')
           }}
         </v-btn>
       </v-card-actions>
@@ -106,12 +114,16 @@ export interface SalaryRequestFormData {
   newPosition: number | null;
   reason: string;
   comment: string | null;
-  readonly: boolean;
+  completed: boolean;
 }
 
 export class SalaryRequestImplementAction {
 
   public implementItemRequest(id: number, formData: SalaryRequestFormData) {
+    if (formData.completed){
+      logger.log(`Reset implementation for request ${id}`);
+      return salaryAdminService.resetImplementation(id);
+    }
     if (formData.state == SalaryRequestImplementationState.REJECTED) {
       const body = {
         comment: formData.comment,
@@ -130,7 +142,6 @@ export class SalaryRequestImplementAction {
       } as SalaryRequestImplementBody;
       logger.log(`Mark salary request ${id} as implemented: ${body}`);
       return salaryAdminService.markAsImplemented(id, body);
-
     }
   }
 
@@ -143,14 +154,9 @@ export class SalaryRequestImplementAction {
       increaseStartPeriod: item.impl ? item.impl.increaseStartPeriod : item.req.increaseStartPeriod,
       reason: item.impl ? item.impl.reason : '',
       newPosition: item.impl ? item.impl.newPosition : null,
-      readonly: Boolean(item.impl)
+      completed: Boolean(item.impl)
     } as SalaryRequestFormData;
   }
-
-  public itemEditable(itemId: number, updateBody: SalaryRequestFormData): boolean {
-    return !updateBody.readonly;
-  }
-
 }
 
 const namespace_dict = 'dict';
@@ -170,9 +176,7 @@ export default class SalaryRequestImplementForm extends Vue {
   }
 
   private itemReadonly() {
-    return !this.data
-        || !this.data.implementCommitAllowed()
-
+    return !this.data;
   }
 
   private title() {
@@ -180,7 +184,7 @@ export default class SalaryRequestImplementForm extends Vue {
       return '-';
     }
     return this.data.isImplemented() ? this.$tc('Отменить решение на реализацию')
-        : (this.isBonus() ? this.$tc('Реализация запроса на повышение') : this.$tc('Реализация запроса на бонус'));
+        : (this.isBonus() ? this.$tc('Реализация запроса на бонус') : this.$tc('Реализация запроса на повышение'));
   }
 
 

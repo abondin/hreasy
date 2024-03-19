@@ -21,8 +21,6 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
     private _exportLoading = false;
     private _exportCompleted = false;
     private readonly _implementAction: SalaryRequestImplementAction;
-    private readonly _resetImplementationAction: (item: SalaryIncreaseRequest) => Promise<any>;
-
 
     constructor(_headerLoader: () => DataTableHeader[]) {
         super(() => salaryService.getClosedSalaryRequestPeriods()
@@ -47,13 +45,6 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
             true
         );
         this._implementAction = new SalaryRequestImplementAction();
-        this._resetImplementationAction = (item) => {
-            logger.log("Reset implementation for {}", item);
-            this._actionError = null;
-            return adminSalaryService.resetImplementation(item.id).catch(e => {
-                this._actionError = errorUtils.shortMessage(e);
-            }).then(() => this.reloadData());
-        }
     }
 
     //<editor-fold desc="Report new request">
@@ -68,12 +59,6 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
     //</editor-fold>
 
     //<editor-fold desc="Implement request">
-    public implementCommitAllowed(): boolean {
-        if (!this._implementAction || !this.implementBody || !this.selectedItemId) {
-            return false;
-        }
-        return this._implementAction.itemEditable(this.selectedItemId, this.implementBody);
-    }
 
     /**
      * Allow to open update dialog
