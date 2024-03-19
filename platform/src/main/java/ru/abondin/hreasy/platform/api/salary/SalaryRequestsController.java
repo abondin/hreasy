@@ -11,6 +11,7 @@ import ru.abondin.hreasy.platform.service.salary.SalaryRequestService;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApproveBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestCommentBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestDeclineBody;
@@ -27,6 +28,11 @@ public class SalaryRequestsController {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.report(auth, body));
     }
 
+    @GetMapping("/{salaryRequestId}/approvals")
+    public Flux<SalaryRequestApprovalDto> approvals(@PathVariable int salaryRequestId) {
+        return AuthHandler.currentAuth().flatMapMany(auth -> requestService.findApprovals(auth, salaryRequestId));
+    }
+
     @DeleteMapping("/{requestId}")
     public Mono<Integer> delete(@PathVariable int requestId) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.delete(auth, requestId));
@@ -36,10 +42,12 @@ public class SalaryRequestsController {
     public Mono<Integer> approve(@PathVariable int salaryRequestId, @RequestBody SalaryRequestApproveBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.approve(auth, salaryRequestId, body));
     }
+
     @PostMapping("/{salaryRequestId}/approvals/decline")
     public Mono<Integer> decline(@PathVariable int salaryRequestId, @RequestBody SalaryRequestDeclineBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.decline(auth, salaryRequestId, body));
     }
+
     @PostMapping("/{salaryRequestId}/approvals/comment")
     public Mono<Integer> comment(@PathVariable int salaryRequestId, @RequestBody SalaryRequestCommentBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.comment(auth, salaryRequestId, body));
@@ -47,6 +55,7 @@ public class SalaryRequestsController {
 
     /**
      * Delete own approve, decline decision or just comment
+     *
      * @param salaryRequestId
      * @param approvalId
      * @return

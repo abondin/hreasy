@@ -9,12 +9,9 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.salary.AdminSalaryRequestExportService;
 import ru.abondin.hreasy.platform.service.salary.AdminSalaryRequestService;
-import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApproveBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestRejectBody;
-import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestCommentBody;
-import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestDeclineBody;
 
 import java.util.Locale;
 

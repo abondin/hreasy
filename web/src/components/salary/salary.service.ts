@@ -83,6 +83,7 @@ export interface SalaryService {
 
     deleteApproval(requestId: number, approvalId: number): Promise<number>;
 
+    getApprovals(requestId: number): Promise<Array<SalaryRequestApproval>>;
 }
 
 class RestSalaryService implements SalaryService {
@@ -125,6 +126,12 @@ class RestSalaryService implements SalaryService {
 
     deleteApproval(requestId: number, approvalId: number): Promise<number> {
         return httpService.delete(`v1/salaries/requests/${requestId}/approvals/${approvalId}`);
+    }
+
+    getApprovals(requestId: number): Promise<Array<SalaryRequestApproval>> {
+        return httpService.get(`v1/salaries/requests/${requestId}/approvals`).then(response => {
+            return response.data;
+        });
     }
 }
 
