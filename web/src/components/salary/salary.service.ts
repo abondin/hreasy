@@ -177,6 +177,7 @@ export interface SalaryIncreaseRequest extends WithId {
         reason: string;
         comment: string | null;
     };
+    approvals: SalaryRequestApproval[]
 }
 
 /**
@@ -184,6 +185,7 @@ export interface SalaryIncreaseRequest extends WithId {
  */
 export interface SalaryRequestApproval {
     id: number;
+    requestId: number;
     state: SalaryApprovalState;
     comment: string | null;
     createdAt: Date;

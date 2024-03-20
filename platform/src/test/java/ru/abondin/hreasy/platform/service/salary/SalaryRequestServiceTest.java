@@ -236,9 +236,8 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
                 defaultRequest(testData.employees.get(Billing_Empl_Asiyah_Bob), testData.ba_Billing())
         ).block(MONO_DEFAULT_TIMEOUT);
 
-        var declineBody = SalaryRequestDeclineBody.builder()
-                .comment("Very bad employee")
-                .build();
+        var declineBody = new SalaryRequestDeclineBody();
+        declineBody.setComment("Very bad employee");
 
         StepVerifier.create(salaryRequestService.decline(ctx, report, declineBody)
                 .flatMapMany(updatedId -> salaryRequestService.findApprovals(ctx, report))
@@ -256,13 +255,17 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
         var report = salaryRequestService.report(auth,
                 defaultRequest(testData.employees.get(Billing_Empl_Asiyah_Bob), testData.ba_Billing())
         ).block(MONO_DEFAULT_TIMEOUT);
+        var body = new SalaryRequestApproveBody();
+        body.setComment("Very good employee");
         StepVerifier
-                .create(salaryRequestService.approve(ctx, report, SalaryRequestApproveBody
-                        .builder()
-                        .comment("Very good employee")
-                        .build()))
+                .create(salaryRequestService.approve(ctx, report, body))
                 .expectNextCount(1)
                 .verifyComplete();
+        var approvals = salaryRequestService.get(auth, report).block(MONO_DEFAULT_TIMEOUT).getApprovals();
+        Assertions.assertEquals(1, approvals.size());
+        Assertions.assertEquals(ctx.getEmployeeInfo().getEmployeeId(), approvals.get(0).getCreatedBy().getId());
+        Assertions.assertEquals("Very good employee", approvals.get(0).getComment());
+        Assertions.assertEquals(SalaryRequestApprovalDto.ApprovalActionTypes.APPROVE.getValue(), approvals.get(0).getState());
     }
 
 

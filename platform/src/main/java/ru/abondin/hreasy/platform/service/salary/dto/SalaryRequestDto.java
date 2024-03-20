@@ -2,14 +2,16 @@ package ru.abondin.hreasy.platform.service.salary.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
-import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
-
 import org.springframework.lang.NonNull;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class SalaryRequestDto {
@@ -38,6 +40,8 @@ public class SalaryRequestDto {
     private SalaryRequestReq req = new SalaryRequestReq();
     private SalaryRequestImpl impl = null;
     private EmployeeInfo employeeInfo = new EmployeeInfo();
+
+    private List<SalaryRequestApprovalDto> approvals = new ArrayList<>();
 
     @Data
     @NoArgsConstructor

@@ -99,6 +99,14 @@
         <div v-else>{{ $t('На рассмотрении') }}</div>
       </div>
       <!--</editor-fold>-->
+
+      <!--<editor-fold desc="Согласования и комментарии">-->
+      <div class="col-lg-auto col-md-4">
+        <div class="subtitle-1">{{ $t('Согласования и комментарии') }}</div>
+        <salary-request-approval-card :request="item" :data-container="dataContainer"></salary-request-approval-card>
+      </div>
+      <!--</editor-fold>-->
+
     </div>
 
     <!--<editor-fold desc="Действия">-->
@@ -165,8 +173,11 @@ import {SalaryRequestDataContainer} from "@/components/salary/salary.data.contai
 import permissionService from "@/store/modules/permission.service";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
+import SalaryRequestApprovalCard from "@/components/salary/SalaryRequestApprovalCard.vue";
 
-@Component
+@Component({
+  components: {SalaryRequestApprovalCard}
+})
 export default class SalaryRequestCard extends Vue {
 
   private SALARY_INCREASE_TYPE = SalaryRequestType.SALARY_INCREASE;

@@ -1,14 +1,19 @@
 package ru.abondin.hreasy.platform.service.salary.dto.approval;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.NonNull;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.OffsetDateTime;
 
 @Data
+@NoArgsConstructor
 public class SalaryRequestApprovalDto {
     private Integer id;
+
+    private Integer requestId;
+
     /**
      * 1 - Comment: If no decision made. Just basic comment
      * 2 - Approved
@@ -16,12 +21,11 @@ public class SalaryRequestApprovalDto {
      */
     @NonNull
     private Short state;
-    @NonNull
     private String comment;
     private OffsetDateTime createdAt;
     private SimpleDictDto createdBy;
 
-    public static enum ApprovalActionTypes {
+    public enum ApprovalActionTypes {
         COMMENT((short) 1), APPROVE((short) 2), DECLINE((short) 3);
         private final short value;
 

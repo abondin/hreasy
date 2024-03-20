@@ -186,7 +186,7 @@
       <!--</editor-fold>-->
 
       <!--<editor-fold desc="Add new request dialog">-->
-      <v-dialog v-bind:value="data.createDialog" :disabled="data.loading" persistent>
+      <v-dialog v-bind:value="data.createDialog" :disabled="data.loading" persistent max-width="800">
         <hreasy-table-create-form v-bind:data="data" :title="createNewTitle">
           <template v-slot:fields>
             <salary-report-form-fields :create-body="data.createBody"></salary-report-form-fields>
@@ -196,19 +196,19 @@
       <!-- </editor-fold>-->
 
       <!--<editor-fold desc="Implement request dialog">-->
-      <v-dialog v-bind:value="data.implementDialog" :disabled="data.loading" persistent>
+      <v-dialog v-bind:value="data.implementDialog" :disabled="data.loading" persistent max-width="800">
         <salary-request-implement-form :data="data"></salary-request-implement-form>
       </v-dialog>
       <!-- </editor-fold>-->
 
       <!--<editor-fold desc="Approve request">-->
-      <v-dialog v-bind:value="data.approveDialog" :disabled="data.loading" persistent>
+      <v-dialog v-bind:value="data.approveDialog" :disabled="data.loading" persistent max-width="800">
         <salary-request-approval-form :data="data"></salary-request-approval-form>
       </v-dialog>
       <!-- </editor-fold>-->
 
       <!--<editor-fold desc="Delete request">-->
-      <v-dialog v-bind:value="data.deleteDialog" :disabled="data.loading" persistent>
+      <v-dialog v-bind:value="data.deleteDialog" :disabled="data.loading" persistent max-width="800">
         <hreasy-table-delete-confimration v-bind:data="data"></hreasy-table-delete-confimration>
       </v-dialog>
       <!-- </editor-fold>-->

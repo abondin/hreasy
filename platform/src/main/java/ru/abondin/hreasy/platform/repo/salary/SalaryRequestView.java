@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.repo.salary;
 
+import io.r2dbc.postgresql.codec.Json;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,5 +22,7 @@ public class SalaryRequestView extends SalaryRequestEntry {
     private String infoEmplProjectName;
     private String infoEmplBaName;
     private String implNewPositionName;
+
+    private Json approvals;
 
 }

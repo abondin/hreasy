@@ -172,3 +172,49 @@ COMMENT ON COLUMN sal.salary_request_closed_period.period IS 'Salary request per
 COMMENT ON COLUMN sal.salary_request_closed_period.comment IS 'Comment';
 COMMENT ON COLUMN sal.salary_request_closed_period.closed_at IS 'Closed at';
 COMMENT ON COLUMN sal.salary_request_closed_period.closed_by IS 'Closed by (link to employee)';
+
+
+-- Salary Request Full Information View with displayName of createdBy and Merged approvals in column as a JSON array
+create view sal.v_salary_request_full AS
+select
+                r.*,
+                e.display_name as employee_display_name,
+                p.name info_empl_project_name,
+                pos.name as info_empl_position_name,
+                ba.name as info_empl_ba_name,
+                budget_ba.name as budget_business_account_name,
+                asm.planned_date as assessment_planned_date,
+                cr.display_name as created_by_display_name,
+                im.display_name as implemented_by_display_name,
+                newPos.name as impl_new_position_name,
+                approvals.approval_data AS approvals
+            from sal.salary_request r
+                left join empl.employee e on r.employee_id = e.id
+                left join proj.project p on e.current_project=p.id
+                left join dict.position pos on e.position = pos.id
+                left join ba.business_account ba on r.budget_business_account=ba.id
+                left join ba.business_account budget_ba on r.budget_business_account=budget_ba.id
+                left join assmnt.assessment asm on r.assessment_id=asm.id
+                left join empl.employee cr on r.created_by = cr.id
+                left join empl.employee im on r.implemented_by = im.id
+                left join dict.position newPos on r.impl_new_position = newPos.id
+                LEFT JOIN
+    (
+        SELECT
+            request_id,
+            json_agg(json_build_object(
+                'id', id,
+                'requestId', request_id,
+                'state', state,
+                'comment', comment,
+                'createdAt', created_at,
+                'createdBy', json_build_object(
+                    'id', created_by,
+                     'name', (SELECT display_name as name FROM empl.employee WHERE id = created_by)
+                )
+            )) AS approval_data
+        FROM
+            sal.salary_request_approval where deleted_at is null
+        GROUP BY
+            request_id
+    ) approvals ON r.id = approvals.request_id;
