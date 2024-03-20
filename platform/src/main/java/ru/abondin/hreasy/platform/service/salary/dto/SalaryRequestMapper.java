@@ -15,6 +15,7 @@ import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestAppro
 
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
+import java.util.Comparator;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
@@ -180,7 +181,8 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
 
     @Named("approvalsFromJson")
     protected List<SalaryRequestApprovalDto> approvalsFromJson(Json json) {
-        return listFromJson(json, SalaryRequestApprovalDto.class);
+        return listFromJson(json, SalaryRequestApprovalDto.class, Comparator
+                .comparing(SalaryRequestApprovalDto::getCreatedAt).reversed());
     }
 
 // </editor-fold>

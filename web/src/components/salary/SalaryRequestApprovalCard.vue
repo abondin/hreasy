@@ -1,22 +1,25 @@
 <template>
-  <v-list two-line dense>
-    <template v-for="approval in request.approvals">
-      <v-list-item v-bind:key="approval.id">
-        <v-list-item-avatar>
+  <span>
+    <v-card flat class="d-flex flex-row pa-2" v-for="approval in request.approvals" :key="approval.id">
+        <div class="avatar">
           <v-icon :color="approval.state == 2 ? 'success' : approval.state==3? 'error':''">{{
               getIcon(approval.state)
             }}
           </v-icon>
-        </v-list-item-avatar>
-
-        <v-list-item-content>
-          <v-list-item-title>{{ approval.createdBy.name }} ({{ formatDateTime(approval.createdAt) }})
-          </v-list-item-title>
-          <v-list-item-subtitle v-if="approval.comment">{{ approval.comment }}</v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-    </template>
-  </v-list>
+        </div>
+        <div class="text">
+          <span class="username">
+            {{ approval.createdBy.name }} ({{ formatDateTime(approval.createdAt) }})
+          </span>
+          <p class="comment">{{ approval.comment }}</p>
+        </div>
+        <div class="action">
+          <v-btn x-small text icon @click="dataContainer.openApproveDialog(request, approval)">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </div>
+    </v-card>
+  </span>
 </template>
 <script lang="ts">
 import {Prop, Vue} from "vue-property-decorator";
@@ -49,3 +52,11 @@ export default class SalaryRequestCard extends Vue {
   }
 }
 </script>
+<style lang="css">
+.comment {
+  max-width: 300px;
+  max-height: 100px;
+  text-wrap: balance;
+  overflow-y: hidden;
+}
+</style>

@@ -188,6 +188,6 @@ export interface SalaryRequestApproval {
     requestId: number;
     state: SalaryApprovalState;
     comment: string | null;
-    createdAt: Date;
+    createdAt: string;
     createdBy: SimpleDict;
 }
