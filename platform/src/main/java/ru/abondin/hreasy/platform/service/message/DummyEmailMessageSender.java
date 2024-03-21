@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.service.message.dto.HrEasyEmailMessage;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Send email using smtp

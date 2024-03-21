@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,11 +16,11 @@ import java.util.List;
 @ToString
 @Builder()
 public class TimesheetReportBody {
-    public record TimesheetReportOneDay(@NotNull
+    public record TimesheetReportOneDay(@NonNull
                                         LocalDate date, short hoursSpent) {
     }
 
-    @NotNull
+    @NonNull
     private int businessAccount;
     private Integer project;
     private String comment;

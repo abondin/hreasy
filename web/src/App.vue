@@ -57,6 +57,17 @@
           </v-list-item-title>
         </v-list-item>
 
+
+        <v-list-item to="/salaries/requests" v-if="canReportSalaryRequest()">
+          <v-list-item-action>
+            <v-icon>mdi-currency-rub</v-icon>
+          </v-list-item-action>
+          <v-list-item-title>
+            {{ $t('Повышения и бонусы') }}
+          </v-list-item-title>
+        </v-list-item>
+
+
         <v-divider></v-divider>
         <v-list-group
             no-action
@@ -108,8 +119,6 @@
               {{ $t('Все менеджеры') }}
             </v-list-item-title>
           </v-list-item>
-
-
         </v-list-group>
 
 
@@ -247,6 +256,14 @@ export default class App extends Vue {
     return permissionService.canAdminArticles();
   }
 
+  private canAdminSalaryRequests() {
+    return permissionService.canAdminSalaryRequests();
+  }
+
+  private canReportSalaryRequest() {
+    return permissionService.canReportSalaryRequest();
+  }
+
   private firstAvialableDict(): string | undefined {
     if (permissionService.canAdminDictDepartments()) {
       return "departments";
@@ -267,6 +284,8 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss">
+@import '../node_modules/@fontsource/roboto/index.css';
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

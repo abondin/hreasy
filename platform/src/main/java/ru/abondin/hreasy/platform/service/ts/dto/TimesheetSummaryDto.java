@@ -3,7 +3,7 @@ package ru.abondin.hreasy.platform.service.ts.dto;
 import lombok.Builder;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,9 +23,9 @@ public class TimesheetSummaryDto {
     }
 
 
-    @NotNull
+    @NonNull
     private EmployeeShortForTimesheetSummary employee;
-    @NotNull
+    @NonNull
     private List<TimesheetDto> timesheet = new ArrayList<>();
 
     /**

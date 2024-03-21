@@ -34,6 +34,7 @@ export default class DictAdminPositions extends Vue {
           ],
       {
         updateItemRequest: (id, body) => dictAdminService.updatePosition(id, body),
+        itemEditable: (id, body)=>true,
         itemToUpdateBody: item =>
             ({name: item.name, archived: item.archived, category: item.category} as DictPositionUpdateBody),
         createItemRequest: (body) => dictAdminService.createPosition(body),

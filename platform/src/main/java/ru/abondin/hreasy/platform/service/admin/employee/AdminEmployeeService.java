@@ -38,11 +38,13 @@ public class AdminEmployeeService {
     private final static EmployeeWithAllDetailsEntry EMPTY_INSTANCE = new EmployeeWithAllDetailsEntry();
 
     public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth) {
+        log.info("Get full information for all employees by {}", auth.getUsername());
         return securityValidator.validateViewEmployeeFull(auth)
                 .flatMapMany(sec -> employeeRepo.findAllDetailed()).map(m -> mapper.fromView(m, dateTimeService.now()));
     }
 
     public Flux<EmployeeKidDto> findAllKids(AuthContext auth) {
+        log.info("Get all kids about employee by {}", auth.getUsername());
         return securityValidator.validateViewEmployeeFull(auth)
                 .flatMapMany(sec -> kidsRepo.findAllKidsWithParentInfo(dateTimeService.now())).map(m -> {
                     var result = mapper.fromEntry(m);
@@ -54,6 +56,7 @@ public class AdminEmployeeService {
     }
 
     public Mono<EmployeeWithAllDetailsDto> get(AuthContext auth, int employeeId) {
+        log.info("Get all information about employee {} by {}", employeeId, auth.getUsername());
         return securityValidator.validateViewEmployeeFull(auth)
                 .flatMap(sec -> employeeRepo.findDetailedById(employeeId)).map(m -> mapper.fromView(m, dateTimeService.now()));
     }

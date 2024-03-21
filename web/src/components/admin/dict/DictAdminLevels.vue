@@ -35,6 +35,7 @@ export default class DictAdminLevels extends Vue {
           ],
       {
         updateItemRequest: (id, body) => dictAdminService.updateLevel(id, body),
+        itemEditable: (id, body)=>true,
         itemToUpdateBody: item =>
             ({name: item.name, archived: item.archived, weight: item.weight} as DictLevelUpdateBody),
         createItemRequest: (body) => dictAdminService.createLevel(body),

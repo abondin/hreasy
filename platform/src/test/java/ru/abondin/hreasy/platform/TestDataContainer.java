@@ -34,6 +34,7 @@ public class TestDataContainer {
 
     private final Map<String, Integer> projects = new HashMap<>();
     private final Map<String, Integer> bas = new HashMap<>();
+    private final Map<String, Integer> positions = new HashMap<>();
     public final Map<String, Integer> employees = new HashMap<>();
 
 
@@ -46,8 +47,10 @@ public class TestDataContainer {
         this.projects.clear();
         this.employees.clear();
         this.bas.clear();
+        this.positions.clear();
         return simpleDicts("proj.project", projects)
                 .then(simpleDicts("ba.business_account", bas))
+                .then(simpleDicts("dict.position", positions))
                 .then(employees());
     }
 
@@ -112,5 +115,12 @@ public class TestDataContainer {
 
     public Integer ba_Billing() {
         return bas.get("Billing");
+    }
+
+    public Integer position_JavaDeveloper(){
+        return positions.get("Java Developer");
+    }
+    public Integer position_AutomationQA(){
+        return positions.get("Automation QA");
     }
 }

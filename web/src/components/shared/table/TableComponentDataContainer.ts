@@ -27,6 +27,8 @@ export interface CreateBody {
 export interface UpdateAction<T extends WithId, M extends UpdateBody> {
     updateItemRequest: (id: number, body: M) => Promise<any>,
     itemToUpdateBody: (item: T) => M,
+
+    itemEditable(itemId: number, updateBody: M): boolean;
 }
 
 export interface CreateAction<T extends WithId, C extends CreateBody> {
@@ -49,7 +51,7 @@ export abstract class Filter<T extends WithId> {
 export default class TableComponentDataContainer<T extends WithId, M extends UpdateBody, C extends CreateBody, F extends Filter<T>> {
     protected _loading = false;
     private _error: string | null = null;
-    private _actionError: string | null = null;
+    protected _actionError: string | null = null;
 
     private _updateDialog = false;
 
@@ -87,7 +89,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
                 private createAction: CreateAction<T, C> | null,
                 private deleteAction: DeleteAction<T> | null,
                 private _filter: F,
-                private _editable: ()=> boolean,
+                private _editable: () => boolean,
                 private _singleSelect: boolean = true) {
     }
 
@@ -150,9 +152,24 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     }
 
 //<editor-fold desc="Update Actions">
+    /**
+     * Allow to apply the changes
+     * If false - update form must be readonly
+     */
+    public updateCommitAllowed(): boolean {
+        if (!this.updateAction || !this.updateBody || !this.selectedItemId) {
+            return false;
+        }
+        return this.updateAction.itemEditable(this.selectedItemId, this.updateBody);
+    }
+
+    /**
+     * Allow to open update dialog
+     */
     public updateAllowed(): boolean {
         return this.updateAction ? true : false;
     }
+
 
     get updateDialog(): boolean {
         return this._updateDialog;
@@ -167,7 +184,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     }
 
     public openUpdateDialog(item: T) {
-        if (this.updateAction) {
+        if (this.updateAction && this.updateAllowed()) {
             this.updateBody = this.updateAction.itemToUpdateBody(item);
             this.selectedItems = [item];
             this._updateDialog = true;
@@ -265,6 +282,14 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this._deleteDialog;
     }
 
+    public openDeleteDialogForItem(item: T) {
+        if (this.deleteAction && this.deleteAllowed()) {
+            this.selectedItems = [item];
+            this._deleteDialog = true;
+            this._actionError = null;
+        }
+    }
+
     public openDeleteDialog() {
         if (this.deleteAction) {
             this._deleteDialog = true;
@@ -307,7 +332,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         this._error = null;
         this._loading = true;
         this._items.length = 0;
-        this._selectedItems= [];
+        this._selectedItems = [];
         return this.dataLoader()
             .then(data => {
                 this._items = data;
@@ -320,9 +345,24 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
             });
     }
 
+    public reloadHeaders(){
+        this.initHeaders();
+    }
+
 
     public filteredItems(): T[] {
         return this._filter.applyFilter(this._items);
+    }
+
+    public doInLoadingSection(action: () => Promise<any>) {
+        this._error = null;
+        this._loading = true;
+        return action().catch(error => {
+            this._error = errorUtils.shortMessage(error);
+        })
+            .finally(() => {
+                this._loading = false;
+            });
     }
 
 }

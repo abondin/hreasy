@@ -55,6 +55,18 @@ export class DateTimeUtils {
         }
     }
 
+    public static formatDateFromIsoDateTime(isoDateString: string | undefined): string {
+        if (!isoDateString) {
+            return '';
+        }
+        const d = this.dateTimeFromIsoString(isoDateString);
+        if (d.isValid()) {
+            return d.format(this.DEFAULT_DATE_PATTERN);
+        } else {
+            return '';
+        }
+    }
+
     public static formatDateTimeFromIso(isoDateTimeString: string | undefined): string {
         if (!isoDateTimeString) {
             return '';

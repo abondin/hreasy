@@ -2,24 +2,26 @@ package ru.abondin.hreasy.platform.repo.dict;
 
 import io.r2dbc.postgresql.codec.Json;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.lang.Nullable;
 import ru.abondin.hreasy.platform.service.dto.ManagerInfoDto;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Table("proj.project")
+@NoArgsConstructor
 @Data
 public class DictProjectEntry {
     @Id
     private Integer id;
 
-    @NotNull
+    @NonNull
     private String name;
 
     @Nullable
@@ -33,29 +35,31 @@ public class DictProjectEntry {
     @Nullable
     private LocalDate endDate;
 
-    @NotNull
+    @NonNull
     private Integer departmentId;
 
     @Nullable
     private Integer baId;
 
-    @NotNull
+    @NonNull
     private OffsetDateTime createdAt;
 
-    @NotNull
+    @NonNull
     private Integer createdBy;
 
     private String info;
 
 
     @Data
+    @NoArgsConstructor
     public static class ProjectFullEntry extends DictProjectEntry {
-        @NotNull
+        @NonNull
         private String departmentName;
         private String baName;
     }
 
     @Data
+    @NoArgsConstructor
     public static class ProjectFullEntryWithManagers extends ProjectFullEntry {
         private Json managersJson;
     }
@@ -67,10 +71,10 @@ public class DictProjectEntry {
         @Id
         private Integer id;
 
-        @NotNull
+        @NonNull
         private Integer projectId;
 
-        @NotNull
+        @NonNull
         private String name;
 
         @Nullable
@@ -84,16 +88,16 @@ public class DictProjectEntry {
         @Nullable
         private LocalDate endDate;
 
-        @NotNull
+        @NonNull
         private Integer departmentId;
 
         @Nullable
         private Integer baId;
 
-        @NotNull
+        @NonNull
         private OffsetDateTime updatedAt;
 
-        @NotNull
+        @NonNull
         private Integer updatedBy;
     }
 }

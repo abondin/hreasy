@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.OffsetDateTime;
 
 /**
@@ -16,17 +16,17 @@ public class OvertimeClosedPeriodDto {
      * Overtime report period in yyyymm format.
      * For example 202005 for all overtimes, reported in June
      */
-    @NotNull
+    @NonNull
     @Id
     private int period;
 
     /**
      * Link to {@link ru.abondin.hreasy.platform.repo.employee.EmployeeRepo.EmployeeShortInfoEntry}
      */
-    @NotNull
+    @NonNull
     private int closedBy;
 
-    @NotNull
+    @NonNull
     private OffsetDateTime closedAt;
 
     /**

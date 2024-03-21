@@ -13,8 +13,6 @@ import java.time.LocalDate;
 @Data
 @Table("empl.employee")
 public class EmployeeWithAllDetailsEntry extends EmployeeEntry {
-    @Column("date_of_employment")
-    private LocalDate dateOfEmployment;
     @Column("level")
     private Integer levelId;
     @Column("work_type")

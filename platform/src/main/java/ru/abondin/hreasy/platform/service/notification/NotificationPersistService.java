@@ -1,6 +1,8 @@
 package ru.abondin.hreasy.platform.service.notification;
 
 import io.r2dbc.postgresql.codec.Json;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
@@ -21,6 +23,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationPersistService {
+
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    @Getter
+    public enum NotificationCategory {
+        SALARY_REQUEST("salary_request"),
+        UPCOMING_VACATION("upcoming_vacation");
+        private final String category;
+    }
 
     private final NotificationRepo repo;
     private final DateTimeService dateTimeService;

@@ -28,6 +28,7 @@ import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
 import AdminProjectDetails from "@/components/admin/project/AdminProjectDetails.vue";
 import AdminEmployeesImportWorkflowComponent from "@/components/admin/employee/imp/AdminEmployeesImportWorkflow.vue";
 import TimesheetTableComponent from "@/components/ts/TimesheetTableComponent.vue";
+import SalaryRequests from "@/components/salary/SalaryRequests.vue";
 
 Vue.use(VueRouter)
 
@@ -42,7 +43,13 @@ const routes = [
     {path: "/overtimes", component: AllOvertimes},
     {path: "/assessments", component: AssessmentShortList},
     {path: "/assessments/:employeeId", component: EmployeeAssessmentProfile, props: true},
-    {path: "/assessments/:employeeId/:assessmentId", component: AssessmentDetailedVue, props: true},
+    {
+        path: "/assessments/:employeeId/:assessmentId",
+        component: AssessmentDetailedVue,
+        name: 'AssessmentDetailedVue',
+        props: true
+    },
+    {path: "/salaries/requests", component: SalaryRequests, name: "salariesRequests"},
     {path: "/timesheet", component: TimesheetTableComponent},
     {path: "/admin/projects", component: AdminProjects},
     {path: "/admin/projects/:projectId", component: AdminProjectDetails, props: true},

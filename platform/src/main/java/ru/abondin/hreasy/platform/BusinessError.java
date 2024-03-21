@@ -13,6 +13,11 @@ import java.util.Map;
 public class BusinessError extends RuntimeException {
 
 
+    /**
+     * Try to use methods from {@link BusinessErrorFactory} instead of directly using this constructor
+     * @param code
+     * @param localizationArgs
+     */
     public BusinessError(String code, String... localizationArgs) {
         this.code = code;
         this.localizationArgs = localizationArgs;

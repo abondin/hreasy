@@ -5,7 +5,7 @@ import lombok.ToString;
 import org.springframework.lang.Nullable;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
@@ -18,7 +18,7 @@ public class ProjectDto {
 
     private int id;
 
-    @NotNull
+    @NonNull
     private String name;
 
     @Nullable
@@ -29,7 +29,7 @@ public class ProjectDto {
     @Nullable
     private LocalDate endDate;
 
-    @NotNull
+    @NonNull
     private SimpleDictDto department;
 
     @Nullable
@@ -46,7 +46,7 @@ public class ProjectDto {
     @Data
     @ToString
     public static class CreateOrUpdateProjectDto {
-        @NotNull
+        @NonNull
         private String name;
 
         @Nullable
@@ -57,7 +57,7 @@ public class ProjectDto {
         @Nullable
         private LocalDate endDate;
 
-        @NotNull
+        @NonNull
         private Integer departmentId;
 
         @Nullable

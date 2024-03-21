@@ -35,19 +35,19 @@ public class EmployeeServiceTest extends BaseServiceTest {
 
     @Test
     public void testFindNotFired() {
-        /* We have 14 not fired employees in database*/
+        /* We have 16 not fired employees in database*/
         StepVerifier
                 .create(employeeService.findAll(auth, false))
-                .expectNextCount(14)
+                .expectNextCount(16)
                 .verifyComplete();
     }
 
     @Test
     public void testFindAllEmployees() {
-        /* We have 14 not fired employees +2 employees in database*/
+        /* We have 16 not fired employees +2 employees in database*/
         StepVerifier
                 .create(employeeService.findAll(auth, true))
-                .expectNextCount(16)
+                .expectNextCount(18)
                 .verifyComplete();
     }
 

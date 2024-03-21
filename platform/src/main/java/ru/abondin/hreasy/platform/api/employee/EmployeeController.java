@@ -14,7 +14,7 @@ import ru.abondin.hreasy.platform.service.dto.CurrentProjectRole;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 
 
 @RestController()
@@ -78,7 +78,7 @@ public class EmployeeController {
     @Operation(summary = "Update telegram account for employee")
     @PutMapping("/{employeeId}/telegram")
     @ResponseBody
-    public Mono<Integer> updateTelegram(@PathVariable int employeeId, @NotNull @RequestBody EmployeeUpdateTelegramBody body) {
+    public Mono<Integer> updateTelegram(@PathVariable int employeeId, @NonNull @RequestBody EmployeeUpdateTelegramBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> adminEmployeeService.updateTelegram(auth, employeeId, body));
     }
 

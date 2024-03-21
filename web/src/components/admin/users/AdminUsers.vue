@@ -26,13 +26,13 @@
             disable-pagination>
 
           <template v-slot:item.employee.name="{ item }">
-            <v-btn text @click="openEditDialog(item)">{{ item.employee.name }}
+            <v-btn small text @click="openEditDialog(item)">{{ item.employee.name }}
             </v-btn>
           </template>
 
           <!-- Roles -->
           <template v-slot:item.roles="{ item }">
-            <v-chip small
+            <v-chip x-small
                     v-for="r in item.roles" v-bind:key="r">
               {{ getById(allRoles, r) }}
             </v-chip>
@@ -203,7 +203,8 @@ export default class AdminUsers extends Vue {
       {id: "global_admin", name: this.$tc('role.global_admin'), disabled: true},
       {id: "hr", name: this.$tc('role.hr'), disabled: false},
       {id: "pm", name: this.$tc('role.pm'), disabled: false},
-      {id: "finance", name: this.$tc('role.finance'), disabled: false},
+      {id: "pm_finance", name: this.$tc('role.pm_finance'), disabled: false},
+      {id: "salary_manager", name: this.$tc('role.salary_manager'), disabled: false},
       {id: "content_management", name: this.$tc('role.content_management'), disabled: false}
     ] as Array<RoleDict>
   }

@@ -43,6 +43,7 @@ export default class DictAdminOfficeLocations extends Vue {
           ],
       {
         updateItemRequest: (id, body) => (dictAdminService.updateOfficeLocation(id, body)),
+        itemEditable: (id, body)=>true,
         itemToUpdateBody: item =>
             ({
               name: item.name,

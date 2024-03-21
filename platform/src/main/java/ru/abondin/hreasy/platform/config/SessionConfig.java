@@ -21,7 +21,7 @@ public class SessionConfig {
     ReactiveSessionRepository<MapSession> reactiveSessionRepository(HrEasySecurityProps sessionProps) {
         var sessionRepository = new ReactiveMapSessionRepository(new ConcurrentHashMap<>());
         sessionRepository.setDefaultMaxInactiveInterval(
-                (int) sessionProps.getMaxInactiveInterval().getSeconds());
+                sessionProps.getMaxInactiveInterval());
         return sessionRepository;
     }
 

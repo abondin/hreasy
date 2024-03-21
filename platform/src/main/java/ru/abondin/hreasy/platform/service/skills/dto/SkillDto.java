@@ -1,21 +1,23 @@
 package ru.abondin.hreasy.platform.service.skills.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 
 /**
  * Employee skill
  */
 @Data
+@NoArgsConstructor
 public class SkillDto {
 
     /**
      * Programming language, framework, foreign languages, etc.
      */
-    @NotNull
+    @NonNull
     private SimpleDictDto group;
 
     private Integer id;
@@ -23,7 +25,7 @@ public class SkillDto {
     /**
      * Java, Spring, French, etc
      */
-    @NotNull
+    @NonNull
     private String name;
 
     @Nullable

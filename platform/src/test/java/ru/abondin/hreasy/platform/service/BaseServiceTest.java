@@ -27,6 +27,7 @@ public abstract class BaseServiceTest {
 
     protected AuthContext auth;
 
+
     protected void initEmployeesDataAndLogin() {
         if (securityProps.getMasterPassword().isBlank()) {
             Assertions.fail("No master password found");

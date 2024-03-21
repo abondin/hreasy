@@ -72,7 +72,7 @@ export class SearchUtils {
 
     public array<T>(array: Array<T | null> | undefined, objectFieldInp: T | null | undefined): boolean {
         return (!array || array.length == 0) || (
-            objectFieldInp ? array.indexOf(objectFieldInp) >= 0 : array.indexOf(null) >= 0
+            (objectFieldInp!=null && objectFieldInp!=undefined) ? array.indexOf(objectFieldInp) >= 0 : array.indexOf(null) >= 0
         )
     }
 

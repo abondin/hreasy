@@ -1,5 +1,6 @@
 import store from "@/store";
 import {SecurityInfo} from "@/store/modules/auth";
+import logger from "@/logger";
 
 export enum Permissions {
     /**
@@ -88,6 +89,21 @@ export enum Permissions {
      * Create/update and moderate articles and news
      */
     EditArticles = "edit_articles",
+
+    /**
+     * View all salaries requests
+     */
+    AdminSalaryRequests = "admin_salary_request",
+
+    /**
+     * Report salary request. View own requests
+     */
+    ReportSalaryRequest = "report_salary_request",
+
+    /**
+     * Approve or decline salary request
+     */
+    ApproveSalaryRequest = "approve_salary_request",
 
     /**
      * View employee all fields including personal
@@ -204,6 +220,12 @@ interface PermissionService {
 
     canAdminArticles(): boolean;
 
+    canAdminSalaryRequests(): boolean;
+
+    canReportSalaryRequest(): boolean;
+
+    canApproveSalaryRequest(ba: number): boolean;
+
     /**
      * Check if given user can download employee's tech profiles
      * @param employeeId
@@ -305,6 +327,10 @@ class VuexPermissionService implements PermissionService {
     }
 
     canApproveOvertimeReport(employeeId: number): boolean {
+        const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
+        if (securityInfo && securityInfo.employeeId == employeeId) {
+            return false;
+        }
         return this.simplePermissionCheck(Permissions.ApproveOvertimes);
     }
 
@@ -338,6 +364,18 @@ class VuexPermissionService implements PermissionService {
 
     canAdminArticles(): boolean {
         return this.simplePermissionCheck(Permissions.EditArticles);
+    }
+
+    canAdminSalaryRequests(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminSalaryRequests);
+    }
+
+    canReportSalaryRequest(): boolean {
+        return this.simplePermissionCheck(Permissions.ReportSalaryRequest);
+    }
+
+    canApproveSalaryRequest(ba: number): boolean {
+        return this.canAdminSalaryRequests() || this.permissionCheckWithAccessToBa(Permissions.ApproveSalaryRequest, ba);
     }
 
     canUploadTechProfiles(employeeId: number): boolean {
@@ -387,6 +425,14 @@ class VuexPermissionService implements PermissionService {
     private simplePermissionCheck(permission: Permissions) {
         const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
         return securityInfo && securityInfo.authorities && securityInfo.authorities.indexOf(permission) >= 0;
+    }
+
+    private permissionCheckWithAccessToBa(permission: Permissions, ba: number): boolean {
+        const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
+        logger.error(`simplePermissionCheckOrCurrentEmployee ${securityInfo.accessibleBas}`);
+        return securityInfo && securityInfo.authorities &&
+            securityInfo.authorities.indexOf(permission) >= 0
+            && securityInfo.accessibleBas?.indexOf(ba) >= 0;
     }
 
     private simplePermissionCheckOrCurrentEmployee(permission: Permissions, employeeId: number): boolean {

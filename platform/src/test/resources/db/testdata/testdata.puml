@@ -10,7 +10,7 @@ legend
 yellow actor - employee
 blue actor - project manager
 green actor - head of department or business account
-gold actor - global admin with all grants
+gold actor - global admin and head leads
 end legend
 
 actor "Haiden.Spooner"
@@ -29,14 +29,20 @@ actor "Jonas.Martin"
 actor "Shaan.Pitts" #gold
 actor Toby.Barrow #gold
 actor Maysa.Sheppard #gold
+actor Salary.Gold #gold
+actor Scrooge.McDuck #gold
 
 Shaan.Pitts .u-() global
+Salary.Gold .u-() global
+Maysa.Sheppard .d-() global
 Toby.Barrow .d-() global
-Maysa.Sheppard .l-() global
+Scrooge.McDuck .u-() global
 
 Shaan.Pitts-.>Shaan.Pitts:Global Admin\nNo manager objects\nEmployee of no projects
 Toby.Barrow-.>Toby.Barrow:Technical Lead of the whole company\nNo manager objects\nEmployee of no projects
 Maysa.Sheppard-.>Maysa.Sheppard:HR\nNo manager objects\nEmployee of no projects
+Salary.Gold -.-> Salary.Gold:Salary manager.
+Scrooge.McDuck -.-> Scrooge.McDuck:Finance director.
 
 folder "M1 Billing"
 folder "M1 FMS"
@@ -65,7 +71,8 @@ frame RND as "RND BA" #FFAAFF
 [Jonas.Martin]--> [M1 ERP Integration] : employee
 
 [Percy.Gough] -[#green]> [Development] : head
-[Husnain.Patterson] -[#green]> [Billing] : head
+[Husnain.Patterson] -[#green]> [Billing] : pm
+[Husnain.Patterson] -[#green]> [Billing] : finance
 
 
 [M1 Billing] -[#gray]--> [Development]: dep

@@ -38,6 +38,7 @@ public class AdminEmployeeExportService {
 
 
     public Mono<Resource> export(AuthContext auth, EmployeeExportFilter filter, Locale locale) {
+        log.info("Export all employees by {}", auth.getUsername());
         final OffsetDateTime now = dateTimeService.now();
         // 1. Load all dictionaries
         return Mono.zip(

@@ -1,13 +1,14 @@
 package ru.abondin.hreasy.platform.repo.dict;
 
 import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
-public interface DictPositionRepo extends ReactiveSortingRepository<DictPositionEntry, Integer> {
+public interface DictPositionRepo extends ReactiveSortingRepository<DictPositionEntry, Integer>, ReactiveCrudRepository<DictPositionEntry, Integer>  {
     
     @Query("select * from dict.position where name=:name")
     Mono<DictPositionEntry> findByName(String name);

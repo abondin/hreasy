@@ -51,6 +51,7 @@ public class OvertimeService {
      */
     @Transactional
     public Mono<OvertimeReportDto> addItem(int employeeId, int periodId, NewOvertimeItemDto newItem, AuthContext auth) {
+        log.info("Add item {} to employee {} overtime report in period {} by {}", newItem, employeeId, periodId, auth.getUsername());
         // 0. Validate auth
         return securityValidator.validateEditOvertimeItem(auth, employeeId)
                 .then(validatePeriodNotClosed(periodId))
@@ -84,6 +85,7 @@ public class OvertimeService {
      */
     @Transactional
     public Mono<OvertimeReportDto> deleteItem(int employeeId, int periodId, int itemId, AuthContext auth) {
+        log.info("Delete item {}:{} from overtime report in period {} by {}",  employeeId, periodId, auth.getUsername());
         // 0. Validate auth
         return securityValidator.validateEditOvertimeItem(auth, employeeId)
                 .then(validatePeriodNotClosed(periodId)).then(

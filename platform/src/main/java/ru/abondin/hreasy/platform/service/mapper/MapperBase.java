@@ -5,6 +5,7 @@ import org.apache.logging.log4j.util.Strings;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Arrays;
@@ -13,6 +14,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public interface MapperBase {
+
+
+    static YearMonth fromPeriodId(Integer periodId){
+        if (periodId == null){
+            return null;
+        }
+        return YearMonth.of(periodId / 100, periodId % 100 + 1);
+    }
 
     DateTimeFormatter DATE_FORMATTER=DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
 

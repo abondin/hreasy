@@ -1,14 +1,16 @@
 package ru.abondin.hreasy.platform.repo.ts;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Data
+@NoArgsConstructor
 @Table("ts.timesheet_record")
 public class TimesheetRecordEntry {
     @Id
@@ -16,13 +18,11 @@ public class TimesheetRecordEntry {
     private Integer employee;
     private int businessAccount;
     private Integer project;
-    @NotNull
     private LocalDate date;
     private short hoursSpent;
 
     private String comment;
 
-    @NotNull
     private OffsetDateTime updatedAt;
     private int updatedBy;
 }

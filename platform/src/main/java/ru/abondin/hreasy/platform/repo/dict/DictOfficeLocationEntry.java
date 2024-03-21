@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.OffsetDateTime;
 
 
@@ -15,7 +15,7 @@ public class DictOfficeLocationEntry {
     @Id
     private Integer id;
 
-    @NotNull
+    @NonNull
     private String name;
 
     @Nullable

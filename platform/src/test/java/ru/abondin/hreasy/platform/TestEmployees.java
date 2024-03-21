@@ -184,4 +184,13 @@ public class TestEmployees {
      * Global admin
      */
     public static String Admin_Shaan_Pitts = "Shaan.Pitts";
+    /**
+     * Salary Manager
+     */
+    public static String Salary_Manager_Salary_Gold = "Salary.Gold";
+
+    /**
+     * Finance Director
+     */
+    public static String Finance_Scrooge_McDuck = "Scrooge.McDuck";
 }

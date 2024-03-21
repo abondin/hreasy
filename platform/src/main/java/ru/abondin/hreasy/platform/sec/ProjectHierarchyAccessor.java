@@ -61,6 +61,10 @@ public class ProjectHierarchyAccessor {
                 );
     }
 
+    public Boolean isBaManager(AuthContext auth, Integer businessAccountId) {
+        return businessAccountId == null || auth.getEmployeeInfo().getAccessibleBas().contains(businessAccountId);
+    }
+
 
     /**
      * @param managerAuth

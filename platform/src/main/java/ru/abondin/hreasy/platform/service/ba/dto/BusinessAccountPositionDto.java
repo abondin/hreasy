@@ -1,20 +1,22 @@
 package ru.abondin.hreasy.platform.service.ba.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 
 /**
  * Business account position that generates profit
  */
 @Data
+@NoArgsConstructor
 public class BusinessAccountPositionDto {
-    @NotNull
+    @NonNull
     private Integer id;
-    @NotNull
+    @NonNull
     private int businessAccount;
-    @NotNull
+    @NonNull
     private String name;
     @Nullable
     private String description;

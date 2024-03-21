@@ -67,8 +67,8 @@ public class GlobalWebErrorsHandler implements ErrorWebExceptionHandler, ServerA
             response.setStatusCode(HttpStatus.FORBIDDEN);
             errorDto = new BusinessErrorDto("errors.access.denied", i18Helper.localize("errors.access.denied"), new HashMap<>());
         } else if (ex instanceof ResponseStatusException be) {
-            log.warn("Response status error: {} - {}", be.getStatus(), be.getReason());
-            response.setStatusCode(be.getStatus());
+            log.warn("Response status error: {} - {}", be.getStatusCode(), be.getReason());
+            response.setStatusCode(be.getStatusCode());
             errorDto = new BusinessErrorDto("errors.response.not.found", i18Helper.localize("errors.response.not.found"), new HashMap<>());
         } else {
             log.error("Unknown error", ex);

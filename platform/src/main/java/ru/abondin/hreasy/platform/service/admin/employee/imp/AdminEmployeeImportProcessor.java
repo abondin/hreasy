@@ -19,7 +19,7 @@ import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportProcessSt
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

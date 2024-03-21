@@ -9,6 +9,7 @@ import ru.abondin.hreasy.platform.BusinessError;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -21,14 +22,20 @@ public abstract class MapperBaseWithJsonSupport implements MapperBase {
     @Autowired
     protected ObjectMapper jsonMapper;
 
-    protected <T> List<T> listFromJson(Json json, Class<T> type) {
+    protected <T> List<T> listFromJson(Json json, Class<T> type){
+        return listFromJson(json, type, null);
+    }
+    protected <T> List<T> listFromJson(Json json, Class<T> type, Comparator<T> comparator) {
         if (json == null) {
             return new ArrayList<>();
         }
         try {
-            return jsonMapper.readerForListOf(type).<List<T>>readValue(json.asString()).stream()
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+            var stream = jsonMapper.readerForListOf(type).<List<T>>readValue(json.asString()).stream()
+                    .filter(Objects::nonNull);
+            if (comparator!=null) {
+                stream = stream.sorted(comparator);
+            }
+            return stream.collect(Collectors.toList());
         } catch (IOException e) {
             log.error("Unable to serialize json", e);
             throw new BusinessError("error.json.serialization");

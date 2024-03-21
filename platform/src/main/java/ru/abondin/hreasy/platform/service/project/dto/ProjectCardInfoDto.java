@@ -5,7 +5,7 @@ import org.springframework.lang.Nullable;
 import ru.abondin.hreasy.platform.service.dto.ManagerInfoDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
-import javax.validation.constraints.NotNull;
+import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
 public class ProjectCardInfoDto {
     private int id;
 
-    @NotNull
+    @NonNull
     private String name;
 
     @Nullable
@@ -25,7 +25,7 @@ public class ProjectCardInfoDto {
     @Nullable
     private LocalDate endDate;
 
-    @NotNull
+    @NonNull
     private SimpleDictDto department;
 
     @Nullable
