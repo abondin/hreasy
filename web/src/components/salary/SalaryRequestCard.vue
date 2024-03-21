@@ -2,7 +2,7 @@
   <v-container fluid>
     <div class="row">
       <!--<editor-fold desc="Информация о сотруднике">-->
-      <div class="col-lg-auto col-md-4">
+      <div class="col-xl-3 col-lg-auto">
         <div class="subtitle-1">{{ $t('Информация о сотруднике') }}</div>
         <dl class="info-dl text--primary text-wrap">
           <dt>{{ $t('ФИО') }}:</dt>
@@ -27,8 +27,23 @@
       </div>
       <!--</editor-fold>-->
       <!--<editor-fold desc="Запрос">-->
-      <div class="col-lg-auto col-md-4">
-        <div class="subtitle-1">{{ $t('Запрос') }}</div>
+      <div class="col-xl-3 col-lg-auto">
+        <div class="subtitle-1 column-title">
+          {{ $t('Запрос') }}
+          <div class="btn-group" v-if="allowDeleteFunctionality()">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                <div v-bind="tattrs" v-on="ton" disabled="data.loading">
+                  <v-btn x-small text color="error" link
+                         @click="()=>dataContainer.openDeleteDialogForItem(item)" icon>
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+                </div>
+              </template>
+              <p>{{ $t('Удалить') }}</p>
+            </v-tooltip>
+          </div>
+        </div>
         <dl class="info-dl text--primary text-wrap">
           <dt>{{ $t('Инициатор') }}:</dt>
           <dd>{{ item.createdBy.name }} ({{ formatDateFromDateTime(item.createdAt) }})</dd>
@@ -57,16 +72,37 @@
           <dt v-if="item.req?.increaseStartPeriod">{{ $t('Месяц старта изменений') }}:</dt>
           <dd v-if="item.req?.increaseStartPeriod">{{ formatPeriod(item.req.increaseStartPeriod) }}</dd>
 
-
           <dt v-if="item.req?.reason">{{ $t('Обоснование') }}:</dt>
           <dd v-if="item.req?.reason">{{ item.req.reason }}</dd>
+
+          <dt v-if="item.req?.comment">{{ $t('Примечание') }}:</dt>
+          <dd v-if="item.req?.comment">{{ item.req.comment }}</dd>
 
         </dl>
       </div>
       <!--</editor-fold>-->
       <!--<editor-fold desc="Решение">-->
-      <div class="col-lg-auto col-md-4">
-        <div class="subtitle-1">{{ $t('Решение') }}</div>
+      <div class="col-xl-3 col-lg-6">
+        <div class="subtitle-1 column-title">
+          {{ $t('Решение') }}
+          <div class="btn-group" v-if="allowImplementFunctionality()">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                <div v-bind="tattrs" v-on="ton">
+                  <v-btn x-small v-if="item.impl" text link
+                         @click="()=>dataContainer.openImplementDialog(item)" icon>
+                    <v-icon>mdi-pencil-off</v-icon>
+                  </v-btn>
+                  <v-btn v-else x-small text color="primary" link
+                         @click="()=>dataContainer.openImplementDialog(item)" icon>
+                    <v-icon>mdi-pen-plus</v-icon>
+                  </v-btn>
+                </div>
+              </template>
+              <p>{{ item.impl ? $t('Сбросить решение') : $t('Реализовать запрос') }}</p>
+            </v-tooltip>
+          </div>
+        </div>
         <dl class="info-dl text--primary text-wrap" v-if="item.impl">
           <dt v-if="item.impl?.state">{{ $t('Результат') }}:</dt>
           <dd v-if="item.impl?.state" :class="item.impl.state == REJECTED? 'error--text': 'success--text'">
@@ -89,11 +125,16 @@
           <dt v-if="item.impl?.newPosition">{{ $t('Новая позиция') }}:</dt>
           <dd v-if="item.impl?.newPosition">{{ item.impl.newPosition.name }}</dd>
 
-          <dt v-if="item.impl?.reason">{{ $t('Обоснование') }}:</dt>
-          <dd v-if="item.impl?.reason">{{ item.impl.reason }}</dd>
+
+          <dt v-if="item.impl?.rejectReason">{{ $t('Обоснование отказа') }}:</dt>
+          <dd v-if="item.impl?.rejectReason">{{ item.impl.rejectReason }}</dd>
 
           <dt v-if="item.impl?.increaseStartPeriod">{{ $t('Месяц старта изменений') }}:</dt>
           <dd v-if="item.impl?.increaseStartPeriod">{{ formatPeriod(item.impl.increaseStartPeriod) }}</dd>
+
+          <dt v-if="item.impl?.comment">{{ $t('Примечание') }}:</dt>
+          <dd v-if="item.impl?.comment">{{ item.impl.comment }}</dd>
+
 
         </dl>
         <div v-else>{{ $t('На рассмотрении') }}</div>
@@ -101,71 +142,56 @@
       <!--</editor-fold>-->
 
       <!--<editor-fold desc="Согласования и комментарии">-->
-      <div class="col-lg-auto col-md-4">
-        <div class="subtitle-1">{{ $t('Согласования и комментарии') }}</div>
+      <div class="col-xl-3 col-lg-auto" v-if="approveAllowed(item)">
+        <div class="subtitle-1 column-title">
+          {{ $t('Согласования и комментарии') }}
+          <div class="btn-group">
+            <!-- Добавить комментарии -->
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                <div v-bind="tattrs" v-on="ton">
+                  <v-btn x-small text icon @click="comment(item)">
+                    <v-icon>mdi-comment</v-icon>
+                  </v-btn>
+                </div>
+              </template>
+              {{ $t('Добавить комментарий') }}
+            </v-tooltip>
+            <!-- Согласовать -->
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                <div v-bind="tattrs" v-on="ton">
+                  <v-btn color="success" x-small text icon @click="approve(item)">
+                    <v-icon>mdi-checkbox-marked-circle</v-icon>
+                  </v-btn>
+                </div>
+              </template>
+              {{ $t('Согласовать') }}
+            </v-tooltip>
+            <!-- Отклонить -->
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                <div v-bind="tattrs" v-on="ton">
+                  <v-btn color="error" x-small text icon @click="decline(item)">
+                    <v-icon>mdi-alert-circle</v-icon>
+                  </v-btn>
+                </div>
+              </template>
+              {{ $t('Отклонить') }}
+            </v-tooltip>
+          </div>
+        </div>
         <salary-request-approval-card :request="item" :data-container="dataContainer"></salary-request-approval-card>
       </div>
       <!--</editor-fold>-->
 
     </div>
 
-    <!--<editor-fold desc="Действия">-->
-    <div class="row row--dense">
-      <!-- Implement -->
-      <v-col align-self="center" cols="auto" v-if="allowImplementFunctionality()">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="col-auto">
-              <v-btn v-if="item.impl" text link
-                     @click="()=>dataContainer.openImplementDialog(item)" icon>
-                <v-icon>mdi-pencil-off</v-icon>
-              </v-btn>
-              <v-btn v-else text color="primary" link
-                     @click="()=>dataContainer.openImplementDialog(item)" icon>
-                <v-icon>mdi-pen</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <p>{{ item.impl ? $t('Сбросить решение') : $t('Реализовать запрос') }}</p>
-        </v-tooltip>
-      </v-col>
-      <!-- Delete -->
-      <v-col align-self="center" cols="auto" v-if="allowDeleteFunctionality()">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="col-auto" disabled="data.loading">
-              <v-btn text color="error" link
-                     @click="()=>dataContainer.openDeleteDialogForItem(item)" icon>
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <p>{{ $t('Удалить') }}</p>
-        </v-tooltip>
-      </v-col>
-
-      <!-- Approve -->
-      <v-col align-self="center" cols="auto" v-if="approveAllowed()">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <div v-bind="tattrs" v-on="ton" class="col-auto" disabled="data.loading">
-              <v-btn text link
-                     @click="()=>dataContainer.openApproveDialog(item, null)" icon>
-                <v-icon>mdi-comment</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <p>{{ $t('Согласовать / добавить комментарий') }}</p>
-        </v-tooltip>
-      </v-col>
-    </div>
-    <!--</editor-fold>-->
-
   </v-container>
 </template>
 
 <script lang="ts">
-import {SalaryIncreaseRequest, SalaryRequestType} from "@/components/salary/salary.service";
+import {SalaryApprovalState, SalaryIncreaseRequest, SalaryRequestType} from "@/components/salary/salary.service";
 import {Prop, Vue} from "vue-property-decorator";
 import Component from "vue-class-component";
 import {DateTimeUtils} from "@/components/datetimeutils";
@@ -219,10 +245,21 @@ export default class SalaryRequestCard extends Vue {
     return permissionService.canReportSalaryRequest() && this.dataContainer?.deleteAllowed();
   }
 
-  private approveAllowed() {
-    return permissionService.canApproveSalaryRequest() && this.dataContainer?.approveAllowed();
+  private approveAllowed(item: SalaryIncreaseRequest) {
+    return permissionService.canApproveSalaryRequest(item?.budgetBusinessAccount?.id) && this.dataContainer?.approveAllowed();
   }
 
+  private approve(item: SalaryIncreaseRequest) {
+    this.dataContainer.openApproveDialog(item, null, SalaryApprovalState.APPROVE);
+  }
+
+  private decline(item: SalaryIncreaseRequest) {
+    this.dataContainer.openApproveDialog(item, null, SalaryApprovalState.DECLINE);
+  }
+
+  private comment(item: SalaryIncreaseRequest) {
+    this.dataContainer.openApproveDialog(item, null, SalaryApprovalState.COMMENT);
+  }
 }
 </script>
 
@@ -235,6 +272,7 @@ export default class SalaryRequestCard extends Vue {
 
   > dt {
     font-weight: bolder;
+    max-width: 200px;
     grid-column-start: 1;
   }
 
@@ -242,6 +280,20 @@ export default class SalaryRequestCard extends Vue {
     grid-column-start: 2;
     margin-left: 10px;
   }
+}
+
+.column-title {
+  display: flex;
+  justify-content: space-between;
+}
+
+.column-title .btn-group {
+  display: flex;
+  opacity: 0.7;
+}
+
+.column-title:hover .btn-group {
+  opacity: 1;
 }
 
 </style>

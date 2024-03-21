@@ -15,9 +15,22 @@
           <v-btn-toggle v-model="data.filter.type" color="primary" group>
             <v-btn :value=1 class="mr-0">
               {{ $t('Повышения') }}
+              <v-tooltip top>
+                <template v-slot:activator="{ on, attrs }">
+                  <span v-on="on" v-bind="attrs" class="text-caption">({{ increasesCountMsg() }})</span>
+                </template>
+                {{ $t('Реализовано/Всего') }}
+              </v-tooltip>
             </v-btn>
             <v-btn :value=2 class="ml-0">
               {{ $t('Бонусы') }}
+              <v-tooltip top>
+                <template v-slot:activator="{ on, attrs }">
+                  <span v-on="on" v-bind="attrs" class="text-caption">({{ bonusCountMsg() }})</span>
+                </template>
+                {{ $t('Реализовано/Всего') }}
+              </v-tooltip>
+
             </v-btn>
           </v-btn-toggle>
         </v-col>
@@ -235,6 +248,7 @@ import {SalaryRequestDataContainer} from "@/components/salary/salary.data.contai
 import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTableDeleteConfimration.vue";
 import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 import SalaryRequestApprovalForm from "@/components/salary/SalaryRequestApprovalForm.vue";
+import {DataTableHeader} from "vuetify";
 
 
 @Component({
@@ -251,25 +265,17 @@ import SalaryRequestApprovalForm from "@/components/salary/SalaryRequestApproval
 })
 export default class SalaryRequests extends Vue {
   private data = new SalaryRequestDataContainer(() => {
-    const headers = [
-      {text: this.$tc('Сотрудник'), value: 'employee.name'},
-      {
-        text: this.$tc('Текущая заработная плата'),
-        value: 'employeeInfo.currentSalaryAmount',
-        width: "150px",
-        class: "text-wrap"
-      },
+    const headers: DataTableHeader[] = [
+      {text: this.$tc('Сотрудник'), value: 'employee.name'}
     ];
     if (this.data.filter.type == SalaryRequestType.SALARY_INCREASE) {
-      headers.push({
-            text: this.$tc('Предполагаемая заработная плата после повышения'),
-            value: 'req.plannedSalaryAmount', width: "150px", class: "text-wrap"
-          }, {
+      headers.push(
+          {
             text: this.$tc('Предполагаемое изменение на'),
             value: 'req.increaseAmount',
             width: "150px",
             class: "text-wrap"
-          },
+          }
       );
     } else {
       headers.push({
@@ -281,7 +287,6 @@ export default class SalaryRequests extends Vue {
       );
     }
     headers.push(
-        {text: this.$tc('Месяц старта изменений'), value: 'req.increaseStartPeriod'},
         {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name'}
     );
     if (this.data.filter.type == SalaryRequestType.SALARY_INCREASE) {
@@ -295,8 +300,7 @@ export default class SalaryRequests extends Vue {
       );
     }
     headers.push(
-        {text: this.$tc('Решение'), value: 'impl.state'},
-        {text: this.$tc('Завершено'), value: 'impl.implementedBy.name'}
+        {text: this.$tc('Решение'), value: 'impl.state'}
     );
     return headers;
   });
@@ -314,6 +318,16 @@ export default class SalaryRequests extends Vue {
     this.data.reloadHeaders();
   }
 
+  private bonusCountMsg(): string {
+    return this.data.items.filter(i => i.type == SalaryRequestType.BONUS && i.impl).length
+        + "/" +
+        this.data.items.filter(i => (i.type == SalaryRequestType.BONUS)).length;
+  }
+  private increasesCountMsg(): string {
+    return this.data.items.filter(i => i.type == SalaryRequestType.SALARY_INCREASE && i.impl).length
+        + "/" +
+        this.data.items.filter(i => (i.type == SalaryRequestType.SALARY_INCREASE)).length;
+  }
 
   formatDateTime = (v: string | undefined) => DateTimeUtils.formatDateTimeFromIso(v);
 

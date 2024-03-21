@@ -65,7 +65,7 @@ public class SalaryRequestService {
      *     <li>(if user has "report_salary_request" permission) requests created by logged in user</li>
      * </ul>
      */
-    public Flux<SalaryRequestDto> findMy(AuthContext auth, int periodId) {
+    public Flux<SalaryRequestDto> find(AuthContext auth, int periodId) {
         var now = dateTimeService.now();
         var authEmpl = auth.getEmployeeInfo();
         log.debug("Get all accessible requests for period {} by {}", periodId, auth);

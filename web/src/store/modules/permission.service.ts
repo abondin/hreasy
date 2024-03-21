@@ -1,5 +1,6 @@
 import store from "@/store";
 import {SecurityInfo} from "@/store/modules/auth";
+import logger from "@/logger";
 
 export enum Permissions {
     /**
@@ -223,7 +224,7 @@ interface PermissionService {
 
     canReportSalaryRequest(): boolean;
 
-    canApproveSalaryRequest(): boolean;
+    canApproveSalaryRequest(ba: number): boolean;
 
     /**
      * Check if given user can download employee's tech profiles
@@ -327,7 +328,7 @@ class VuexPermissionService implements PermissionService {
 
     canApproveOvertimeReport(employeeId: number): boolean {
         const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
-        if (securityInfo && securityInfo.employeeId == employeeId){
+        if (securityInfo && securityInfo.employeeId == employeeId) {
             return false;
         }
         return this.simplePermissionCheck(Permissions.ApproveOvertimes);
@@ -365,7 +366,7 @@ class VuexPermissionService implements PermissionService {
         return this.simplePermissionCheck(Permissions.EditArticles);
     }
 
-    canAdminSalaryRequests(): boolean{
+    canAdminSalaryRequests(): boolean {
         return this.simplePermissionCheck(Permissions.AdminSalaryRequests);
     }
 
@@ -373,8 +374,8 @@ class VuexPermissionService implements PermissionService {
         return this.simplePermissionCheck(Permissions.ReportSalaryRequest);
     }
 
-    canApproveSalaryRequest(): boolean {
-        return this.simplePermissionCheck(Permissions.ApproveSalaryRequest);
+    canApproveSalaryRequest(ba: number): boolean {
+        return this.canAdminSalaryRequests() || this.permissionCheckWithAccessToBa(Permissions.ApproveSalaryRequest, ba);
     }
 
     canUploadTechProfiles(employeeId: number): boolean {
@@ -424,6 +425,14 @@ class VuexPermissionService implements PermissionService {
     private simplePermissionCheck(permission: Permissions) {
         const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
         return securityInfo && securityInfo.authorities && securityInfo.authorities.indexOf(permission) >= 0;
+    }
+
+    private permissionCheckWithAccessToBa(permission: Permissions, ba: number): boolean {
+        const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
+        logger.error(`simplePermissionCheckOrCurrentEmployee ${securityInfo.accessibleBas}`);
+        return securityInfo && securityInfo.authorities &&
+            securityInfo.authorities.indexOf(permission) >= 0
+            && securityInfo.accessibleBas?.indexOf(ba) >= 0;
     }
 
     private simplePermissionCheckOrCurrentEmployee(permission: Permissions, employeeId: number): boolean {

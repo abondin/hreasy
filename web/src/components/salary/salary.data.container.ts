@@ -1,6 +1,6 @@
 import TableComponentDataContainer, {CreateAction} from "@/components/shared/table/TableComponentDataContainer";
 import salaryService, {
-    ClosedSalaryRequestPeriod,
+    ClosedSalaryRequestPeriod, SalaryApprovalState,
     SalaryIncreaseRequest,
     SalaryRequestApproval,
     SalaryRequestReportBody
@@ -125,7 +125,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
     }
 
     public isImplemented() {
-        return Boolean(this.selectedItems && this.selectedItems[0].impl);
+        return Boolean(this.selectedItems && this.selectedItems.length>0 && this.selectedItems[0].impl);
     }
 
     //</editor-fold>
@@ -150,9 +150,9 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
         this._approveBody = body;
     }
 
-    public openApproveDialog(item: SalaryIncreaseRequest, approval: SalaryRequestApproval | null) {
+    public openApproveDialog(item: SalaryIncreaseRequest, approval: SalaryRequestApproval | null, action?: SalaryApprovalState) {
         if (this._approveAction && this.approveAllowed()) {
-            this.approveBody = this._approveAction.itemToBody(approval);
+            this.approveBody = this._approveAction.itemToBody(approval, action);
             this.selectedItems = [item];
             this._approveDialog = true;
             this._actionError = null;

@@ -174,7 +174,7 @@ export interface SalaryIncreaseRequest extends WithId {
         increaseAmount: number;
         salaryAmount: number | null;
         increaseStartPeriod: number;
-        reason: string;
+        rejectReason: string;
         comment: string | null;
     };
     approvals: SalaryRequestApproval[]

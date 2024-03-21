@@ -26,7 +26,7 @@ export class CurrentUser {
 }
 
 export class EmployeeShortInfo {
-    constructor(public employeeId: number) {
+    constructor(public employeeId: number, public accessibleBas: number[]) {
     }
 }
 

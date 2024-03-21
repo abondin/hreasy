@@ -98,10 +98,10 @@ export class SalaryRequestApproveAction {
     }
   }
 
-  public itemToBody(item: SalaryRequestApproval | null): SalaryRequestApproveFormData {
+  public itemToBody(item: SalaryRequestApproval | null, action?: SalaryApprovalState): SalaryRequestApproveFormData {
     if (item == null) {
       return {
-        action: SalaryApprovalState.COMMENT,
+        action: action||SalaryApprovalState.COMMENT,
         comment: null,
         approvalId: null
       } as SalaryRequestApproveFormData;

@@ -20,7 +20,8 @@ export const state: AuthState = {
 export interface SecurityInfo {
     username: string,
     authorities: string[],
-    employeeId: number
+    employeeId: number,
+    accessibleBas: number[]
 }
 
 export const actions: ActionTree<AuthState, RootState> = {
@@ -99,7 +100,8 @@ export const getters: GetterTree<AuthState, RootState> = {
             return {
                 username: state.currentUser.username,
                 authorities: state.currentUser.authorities,
-                employeeId: state.currentUser.employee.employeeId
+                employeeId: state.currentUser.employee.employeeId,
+                accessibleBas: state.currentUser.employee.accessibleBas
             };
         }
         return null;

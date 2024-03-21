@@ -1,17 +1,17 @@
 <template>
   <span>
-    <v-card flat class="d-flex flex-row" v-for="approval in request.approvals" :key="approval.id">
+    <v-card flat class="d-flex flex-row approval-card" v-for="approval in request.approvals" :key="approval.id">
         <div class="mr-2">
-          <v-icon :color="approval.state == 2 ? 'success' : approval.state==3? 'error':''">{{
+          <v-icon x-small :color="approval.state == 2 ? 'success' : approval.state==3? 'error':''">{{
               getIcon(approval.state)
             }}
           </v-icon>
         </div>
         <div>
-          {{ approval.createdBy.name }} ({{ formatDateTime(approval.createdAt) }}):
+          {{ approval.createdBy.name }} <span class="text-caption">({{ formatDateTime(approval.createdAt) }})</span><span v-if="approval.comment">:</span>
           <p class="comment text-caption">{{ approval.comment }}</p>
         </div>
-        <div class="action ml-2">
+        <div class="ml-2 action">
           <v-btn x-small text icon @click="dataContainer.openApproveDialog(request, approval)">
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -57,5 +57,11 @@ export default class SalaryRequestCard extends Vue {
   max-height: 100px;
   text-wrap: balance;
   overflow-y: hidden;
+}
+.approval-card:hover .action {
+  visibility: visible;
+}
+.approval-card .action {
+  visibility: hidden;
 }
 </style>

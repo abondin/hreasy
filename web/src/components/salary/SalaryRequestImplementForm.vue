@@ -13,6 +13,7 @@
       <v-card-text v-else>
         <!--<editor-fold desc="Fields">-->
         <v-select
+            autofocus
             :disabled="itemReadonly()"
             v-model="data.implementBody.state"
             :label="$t('Решение')"
@@ -53,16 +54,17 @@
             :label="$t('Изменить позицию')"
         ></v-autocomplete>
         <v-text-field
+            v-if="isRejected()"
             :disabled="itemReadonly()"
-            v-model="data.implementBody.reason"
+            v-model="data.implementBody.rejectReason"
             counter="256"
-            :rules="[v=> isRejected()? (v && v.length <= 256 || $t('Обязательное поле. Не более N символов', {n:256})) : (!v || v.length <= 256 || $t('Не более N символов', {n:256}))]"
-            :label="$t('Обоснование')">
+            :rules="[v=> v && v.length <= 128 || $t('Обязательное поле. Не более N символов', {n:128})]"
+            :label="$t('Обоснование отказа')">
         </v-text-field>
         <v-textarea
             :disabled="itemReadonly()"
             v-model="data.implementBody.comment"
-            :rules="[v=>(!v || v.length <= 4096 || $t('Не более N символов', {n:4096}))]"
+            :rules="[v=>(!v || v.length <= 256 || $t('Не более N символов', {n:256}))]"
             :label="$t('Примечание')">
         </v-textarea>
         <!--</editor-fold>-->
@@ -112,7 +114,7 @@ export interface SalaryRequestFormData {
    */
   increaseStartPeriod: number;
   newPosition: number | null;
-  reason: string;
+  rejectReason: string;
   comment: string | null;
   completed: boolean;
 }
@@ -127,14 +129,13 @@ export class SalaryRequestImplementAction {
     if (formData.state == SalaryRequestImplementationState.REJECTED) {
       const body = {
         comment: formData.comment,
-        reason: formData.reason
+        reason: formData.rejectReason
       };
       logger.log(`Reject salary request ${id}: ${body}`);
       return salaryAdminService.reject(id, body);
     } else {
       const body = {
         comment: formData.comment,
-        reason: formData.reason,
         increaseStartPeriod: formData.increaseStartPeriod,
         increaseAmount: formData.increaseAmount,
         salaryAmount: formData.salaryAmount,
@@ -152,7 +153,7 @@ export class SalaryRequestImplementAction {
       increaseAmount: item.impl ? item.impl.increaseAmount : item.req.increaseAmount,
       salaryAmount: item.impl ? item.impl.salaryAmount : item.req.plannedSalaryAmount,
       increaseStartPeriod: item.impl ? item.impl.increaseStartPeriod : item.req.increaseStartPeriod,
-      reason: item.impl ? item.impl.reason : '',
+      rejectReason: item.impl ? item.impl.rejectReason : '',
       newPosition: item.impl ? item.impl.newPosition : null,
       completed: Boolean(item.impl)
     } as SalaryRequestFormData;

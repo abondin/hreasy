@@ -67,8 +67,8 @@ public class SalaryRequestsController {
     }
 
     @GetMapping("/{period}")
-    public Flux<SalaryRequestDto> my(@PathVariable int period) {
-        return AuthHandler.currentAuth().flatMapMany(auth -> requestService.findMy(auth, period));
+    public Flux<SalaryRequestDto> find(@PathVariable int period) {
+        return AuthHandler.currentAuth().flatMapMany(auth -> requestService.find(auth, period));
     }
 
     @GetMapping("/{period}/{requestId}")
