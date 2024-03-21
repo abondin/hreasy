@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
@@ -53,7 +54,7 @@ public class AdminSalaryRequestService {
         var now = dateTimeService.now();
         return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
                         requestRepo.findById(salaryRequestId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(salaryRequestId))
                 .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod())
                         .flatMap(c -> {
                             if (entry.getImplementedBy() != null) {
@@ -74,7 +75,7 @@ public class AdminSalaryRequestService {
         var now = dateTimeService.now();
         return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
                         requestRepo.findById(salaryRequestId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(salaryRequestId))
                 .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod())
                         .flatMap(c -> {
                             if (entry.getImplementedBy() != null) {
@@ -90,12 +91,12 @@ public class AdminSalaryRequestService {
     }
 
     @Transactional
-    public Mono<? extends Integer> resetImplementation(AuthContext auth, int salaryRequestId) {
+    public Mono<Integer> resetImplementation(AuthContext auth, int salaryRequestId) {
         log.info("Reset implementation information for salary request {} by {}", salaryRequestId, auth.getUsername());
         var now = dateTimeService.now();
         return secValidator.validateAdminSalaryRequest(auth).flatMap(v ->
                         requestRepo.findById(salaryRequestId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(salaryRequestId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(salaryRequestId))
                 .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod())
                         .flatMap(c -> {
                             entry.setImplementedBy(null);

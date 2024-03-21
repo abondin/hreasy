@@ -84,7 +84,7 @@ public class AdminManagerService {
     }
 
     @Transactional
-    public Mono<? extends Void> delete(AuthContext auth, int managerId) {
+    public Mono<Void> delete(AuthContext auth, int managerId) {
         var deletedAt = dateTimeService.now();
         log.info("Deleting manager link {} by {}", managerId, auth.getUsername());
         return securityValidator.validateAdminManagers(auth)

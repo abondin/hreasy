@@ -140,7 +140,7 @@ public class AssessmentService {
                 .flatMap(v -> assessmentRepo.updateCompletedBy(assessmentId, auth.getEmployeeInfo().getEmployeeId(), now));
     }
 
-    public Mono<? extends DeleteAssessmentAttachmentResponse> deleteAttachment(AuthContext auth, int employeeId, int assessmentId, String filename) {
+    public Mono<DeleteAssessmentAttachmentResponse> deleteAttachment(AuthContext auth, int employeeId, int assessmentId, String filename) {
         return validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentId)
                 .flatMap(v -> fileStorage.toRecycleBin(getAssessmentAttachmentFolder(employeeId, assessmentId), filename))
                 .map(deleted -> new DeleteAssessmentAttachmentResponse(deleted));

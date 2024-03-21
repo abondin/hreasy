@@ -38,7 +38,7 @@ import static ru.abondin.hreasy.platform.service.HistoryDomainService.HistoryEnt
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @Slf4j
-public class SalaryRequestServiceTest extends BaseServiceTest {
+class SalaryRequestServiceTest extends BaseServiceTest {
 
     private final static Duration MONO_DEFAULT_TIMEOUT = Duration.ofSeconds(3);
 
@@ -63,7 +63,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     }
 
     @Test
-    public void testReportRequest() {
+    void testReportRequest() {
         var jensonId = testData.employees.get(FMS_Empl_Jenson_Curtis);
         var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
         var ba = testData.ba_RND();
@@ -89,7 +89,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     }
 
     @Test
-    public void testReportNoPermissionRequest() {
+    void testReportNoPermissionRequest() {
         var jensonId = testData.employees.get(FMS_Empl_Jenson_Curtis);
         var ctx = auth(FMS_Empl_Jenson_Curtis).block(MONO_DEFAULT_TIMEOUT);
         var ba = testData.ba_RND();
@@ -102,7 +102,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     }
 
     @Test
-    public void testReportClosedPeriod() {
+    void testReportClosedPeriod() {
         var jensonId = testData.employees.get(FMS_Empl_Jenson_Curtis);
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
 
@@ -122,7 +122,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     }
 
     @Test
-    public void testReject() {
+    void testReject() {
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
         var requestId = reportDefaultRequest();
         var rejectBody = SalaryRequestRejectBody.builder()
@@ -146,7 +146,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
 
 
     @Test
-    public void testMarkAsImplemented() {
+    void testMarkAsImplemented() {
         var ctx = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
         var requestId = reportDefaultRequest();
         var implBody = SalaryRequestImplementBody.builder()
@@ -177,7 +177,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
 
 
     @Test
-    public void testGetNotMyRequest() {
+    void testGetNotMyRequest() {
         var jensonId = testData.employees.get(FMS_Empl_Jenson_Curtis);
         var ctxJawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
         var ba = testData.ba_RND();
@@ -193,7 +193,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
 
 
     @Test
-    public void testGetFromOtherBas() {
+    void testGetFromOtherBas() {
         var jensonId = testData.employees.get(FMS_Empl_Jenson_Curtis);
         var ctxMaxwell = auth(TestEmployees.Billing_Manager_Maxwell_May).block(MONO_DEFAULT_TIMEOUT);
         var billingBa = testData.ba_Billing();
@@ -207,7 +207,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     }
 
     @Test
-    public void testFindInBa() {
+    void testFindInBa() {
         // report in RND
         var jensonId = testData.employees.get(FMS_Empl_Jenson_Curtis);
         var auth = auth(Multiprojet_Manager_Kyran_Neville).block(MONO_DEFAULT_TIMEOUT);
@@ -224,13 +224,13 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
         /**
          * Check that only request from RND account retrieved
          */
-        StepVerifier.create(salaryRequestService.findMy(auth, 202308))
+        StepVerifier.create(salaryRequestService.find(auth, 202308))
                 .expectNextCount(1)
                 .verifyComplete();
     }
 
     @Test
-    public void testDecline() {
+    void testDecline() {
         var ctx = auth(Billing_BA_Head_Husnain_Patterson).block(MONO_DEFAULT_TIMEOUT);
         var report = salaryRequestService.report(auth,
                 defaultRequest(testData.employees.get(Billing_Empl_Asiyah_Bob), testData.ba_Billing())
@@ -250,7 +250,7 @@ public class SalaryRequestServiceTest extends BaseServiceTest {
     }
 
     @Test
-    public void testApprove() {
+    void testApprove() {
         var ctx = auth(Billing_BA_Head_Husnain_Patterson).block(MONO_DEFAULT_TIMEOUT);
         var report = salaryRequestService.report(auth,
                 defaultRequest(testData.employees.get(Billing_Empl_Asiyah_Bob), testData.ba_Billing())

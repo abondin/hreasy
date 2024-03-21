@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.assessment.AssessmentRepo;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedRepo;
@@ -52,7 +53,7 @@ public class SalaryRequestService {
     public Mono<SalaryRequestDto> get(AuthContext auth, int id) {
         log.debug("Getting salary request {} by {}", id, auth);
         return requestRepo.findFullNotDeletedById(id, dateTimeService.now())
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(id))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(id))
                 .flatMap(entry -> secValidator.validateViewSalaryRequest(auth, entry).map(v -> mapper.fromEntry(entry)));
     }
 
@@ -81,13 +82,13 @@ public class SalaryRequestService {
     }
 
     @Transactional
-    public Mono<? extends Integer> delete(AuthContext auth, int requestId) {
+    public Mono<Integer> delete(AuthContext auth, int requestId) {
         log.info("Deleting salary request {} by {}", requestId, auth.getUsername());
         var now = dateTimeService.now();
         var deletedBy = auth.getEmployeeInfo().getEmployeeId();
         // 1. Find entity to delete
         return requestRepo.findById(requestId)
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(requestId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(requestId))
                 // 2. Check that period is not closed
                 .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod())
                         // 3. Validate if user has permissions to delete
@@ -138,7 +139,7 @@ public class SalaryRequestService {
     public Flux<SalaryRequestApprovalDto> findApprovals(AuthContext auth, int requestId) {
         log.info("Get approvals for salary request {} by {}", requestId, auth.getUsername());
         return requestRepo.findById(requestId)
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(requestId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(requestId))
                 .flatMap(request -> secValidator.validateApproveSalaryRequest(auth, request.getBudgetBusinessAccount()))
                 .flatMapMany(v -> approvalRepo.findNotDeletedByRequestId(requestId, OffsetDateTime.now()).map(mapper::fromEntry));
     }
@@ -165,7 +166,7 @@ public class SalaryRequestService {
         var now = dateTimeService.now();
         // 1. Get request
         return requestRepo.findById(requestId)
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(requestId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(requestId))
                 // 2. Validate security
                 .flatMap(entry -> secValidator.validateApproveSalaryRequest(auth, entry.getBudgetBusinessAccount())
                         // 3. Check if report period is not closed
@@ -191,10 +192,10 @@ public class SalaryRequestService {
     }
 
     @Transactional
-    public Mono<? extends Integer> deleteApproval(AuthContext auth, int requestId, int approvalId) {
+    public Mono<Integer> deleteApproval(AuthContext auth, int requestId, int approvalId) {
         log.info("Deleting approval {} for salary request {} by {}", approvalId, requestId, auth.getUsername());
         return approvalRepo.findById(approvalId)
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(approvalId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(approvalId))
                 .flatMap(entry -> secValidator.validateDeleteApproval(auth, entry)
                         .flatMap(v -> {
                             if (requestId != entry.getRequestId()) {
@@ -228,10 +229,10 @@ public class SalaryRequestService {
         // 2. Check if assessment for the same employee
         var assessmentCorrect = body.getAssessmentId() == null ? Mono.defer(() -> Mono.just(true)) :
                 assessmentRepo.findById(body.getAssessmentId())
-                        .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(body.getAssessmentId()))))
+                        .switchIfEmpty(BusinessErrorFactory.entityNotFound(body.getAssessmentId()))
                         .flatMap(assessment -> {
                             if (assessment.getEmployee() == null || !assessment.getEmployee().equals(body.getEmployeeId())) {
-                                return Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(body.getAssessmentId())));
+                                return BusinessErrorFactory.entityNotFound(body.getAssessmentId());
                             }
                             return Mono.just(true);
                         });

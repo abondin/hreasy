@@ -34,8 +34,8 @@
     "vuex-class": "^0.3.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.16",
-    "@babel/eslint-parser": "^7.12.16",
+    "@babel/core": "^7.23.2",
+    "@babel/eslint-parser": "^7.23.2",
     "@mdi/font": "^7.2.96",
     "@mdi/js": "^7.2.96",
     "@types/jest": "^27.0.1",
