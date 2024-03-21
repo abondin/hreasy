@@ -40,7 +40,7 @@
                   </v-btn>
                 </div>
               </template>
-              <p>{{ $t('Удалить') }}</p>
+              <p>{{ $t('Удалить запрос') }}</p>
             </v-tooltip>
           </div>
         </div>
@@ -90,16 +90,22 @@
               <template v-slot:activator="{ on: ton, attrs: tattrs}">
                 <div v-bind="tattrs" v-on="ton">
                   <v-btn x-small v-if="item.impl" text link
-                         @click="()=>dataContainer.openImplementDialog(item)" icon>
+                         @click="deleteImpl(item)" icon>
                     <v-icon>mdi-pencil-off</v-icon>
                   </v-btn>
-                  <v-btn v-else x-small text color="primary" link
-                         @click="()=>dataContainer.openImplementDialog(item)" icon>
-                    <v-icon>mdi-pen-plus</v-icon>
-                  </v-btn>
+                  <div v-else>
+                    <v-btn x-small text link
+                           @click="impl(item)" icon>
+                      <v-icon>mdi-pen-plus</v-icon>
+                    </v-btn>
+                    <v-btn x-small text color="error" link
+                           @click="rejectImpl(item)" icon>
+                      <v-icon>mdi-pen-minus</v-icon>
+                    </v-btn>
+                  </div>
                 </div>
               </template>
-              <p>{{ item.impl ? $t('Сбросить решение') : $t('Реализовать запрос') }}</p>
+              <p>{{ item.impl ? $t('Сбросить решение') : $t('Реализовать или отклонить запрос') }}</p>
             </v-tooltip>
           </div>
         </div>
@@ -259,6 +265,18 @@ export default class SalaryRequestCard extends Vue {
 
   private comment(item: SalaryIncreaseRequest) {
     this.dataContainer.openApproveDialog(item, null, SalaryApprovalState.COMMENT);
+  }
+
+  private deleteImpl(item: SalaryIncreaseRequest) {
+    this.dataContainer.openImplementDialog(item);
+  }
+
+  private impl(item: SalaryIncreaseRequest) {
+    this.dataContainer.openImplementDialog(item, SalaryRequestImplementationState.IMPLEMENTED);
+  }
+
+  private rejectImpl(item: SalaryIncreaseRequest) {
+    this.dataContainer.openImplementDialog(item, SalaryRequestImplementationState.REJECTED);
   }
 }
 </script>

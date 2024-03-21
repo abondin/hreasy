@@ -7,7 +7,7 @@ import salaryService, {
 } from "@/components/salary/salary.service";
 import {SalaryRequestFormData, SalaryRequestImplementAction} from "@/components/salary/SalaryRequestImplementForm.vue";
 import {SalaryRequestFilter} from "@/components/salary/SalaryRequestFilterComponent.vue";
-import adminSalaryService from "@/components/admin/salary/admin.salary.service";
+import adminSalaryService, {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import permissionService from "@/store/modules/permission.service";
 import {DataTableHeader} from "vuetify";
@@ -90,9 +90,9 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
         this._implementBody = body;
     }
 
-    public openImplementDialog(item: SalaryIncreaseRequest) {
+    public openImplementDialog(item: SalaryIncreaseRequest, state?: SalaryRequestImplementationState) {
         if (this._implementAction && this.implementAllowed()) {
-            this.implementBody = this._implementAction.itemToBody(item);
+            this.implementBody = this._implementAction.itemToBody(item, state);
             this.selectedItems = [item];
             this._implementDialog = true;
             this._actionError = null;

@@ -146,10 +146,10 @@ export class SalaryRequestImplementAction {
     }
   }
 
-  public itemToBody(item: SalaryIncreaseRequest): SalaryRequestFormData {
+  public itemToBody(item: SalaryIncreaseRequest, state?: SalaryRequestImplementationState): SalaryRequestFormData {
     return {
       type: item.type,
-      state: item.impl?.state,
+      state: item.impl? item.impl.state : state,
       increaseAmount: item.impl ? item.impl.increaseAmount : item.req.increaseAmount,
       salaryAmount: item.impl ? item.impl.salaryAmount : item.req.plannedSalaryAmount,
       increaseStartPeriod: item.impl ? item.impl.increaseStartPeriod : item.req.increaseStartPeriod,
