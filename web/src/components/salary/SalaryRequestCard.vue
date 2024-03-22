@@ -86,27 +86,37 @@
         <div class="subtitle-1 column-title">
           {{ $t('Решение') }}
           <div class="btn-group" v-if="allowImplementFunctionality()">
-            <v-tooltip bottom>
+            <v-tooltip bottom v-if="item.impl">
               <template v-slot:activator="{ on: ton, attrs: tattrs}">
                 <div v-bind="tattrs" v-on="ton">
-                  <v-btn x-small v-if="item.impl" text link
+                  <v-btn x-small text link
                          @click="deleteImpl(item)" icon>
                     <v-icon>mdi-pencil-off</v-icon>
                   </v-btn>
-                  <div v-else>
-                    <v-btn x-small text link
-                           @click="impl(item)" icon>
-                      <v-icon>mdi-pen-plus</v-icon>
-                    </v-btn>
-                    <v-btn x-small text color="error" link
-                           @click="rejectImpl(item)" icon>
-                      <v-icon>mdi-pen-minus</v-icon>
-                    </v-btn>
-                  </div>
                 </div>
               </template>
-              <p>{{ item.impl ? $t('Сбросить решение') : $t('Реализовать или отклонить запрос') }}</p>
+              <p>{{ $t('Сбросить решение') }}</p>
             </v-tooltip>
+            <div v-else>
+              <v-tooltip>
+                <template v-slot:activator="{ on: ion, attrs: iattrs}">
+                  <v-btn x-small text link color="success" v-bind="iattrs" v-on="ion"
+                         @click="impl(item)" icon>
+                    <v-icon>mdi-pen-plus</v-icon>
+                  </v-btn>
+                </template>
+                <p>{{ $t('Реализовать запрос') }}</p>
+              </v-tooltip>
+              <v-tooltip>
+                <template v-slot:activator="{ on: ron, attrs: rattrs}">
+                  <v-btn x-small text color="error" link v-bind="rattrs" v-on="ron"
+                         @click="rejectImpl(item)" icon>
+                    <v-icon>mdi-pen-minus</v-icon>
+                  </v-btn>
+                </template>
+                <p>{{ $t('Отклонить запрос') }}</p>
+              </v-tooltip>
+            </div>
           </div>
         </div>
         <dl class="info-dl text--primary text-wrap" v-if="item.impl">
