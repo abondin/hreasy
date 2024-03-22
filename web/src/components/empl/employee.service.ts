@@ -71,7 +71,7 @@ class RestEmployeeService implements EmployeeService {
     }
 
     updateCurrentProject(employeeId: number, projectId: number | null, roleOnProject: string | null): Promise<number> {
-        return httpService.put(`v1/employee/${employeeId}/currentProject/`,
+        return httpService.put(`v1/employee/${employeeId}/currentProject`,
             {
                 id: projectId,
                 role: roleOnProject
