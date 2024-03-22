@@ -14,13 +14,16 @@ import org.springframework.stereotype.Component;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestExportDto;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestType;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.OffsetDateTime;
-import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +34,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class AdminSalaryRequestExcelExporter {
-
 
 
     @Value("${classpath:jxls/admin_salary_requests_template.xlsx}")
@@ -46,7 +48,7 @@ public class AdminSalaryRequestExcelExporter {
         private String exportedBy;
         private Integer period;
         private OffsetDateTime exportTime;
-        private List<SalaryRequestExportDto> requests;
+        private List<SalaryRequestExportDto> requests = new ArrayList<>();
         private Locale locale;
     }
 
@@ -54,7 +56,8 @@ public class AdminSalaryRequestExcelExporter {
     public void exportSalaryRequests(AdminSalaryRequestExportBundle bundle, OutputStream out) throws IOException {
         try (var is = template.getInputStream()) {
             var context = new Context();
-            context.putVar("requests", i18n(bundle));
+            context.putVar("requests", i18n(bundle.locale, bundle.requests, r -> SalaryRequestType.SALARY_INCREASE.getValue() == r.getTypeValue()));
+            context.putVar("bonuses", i18n(bundle.locale, bundle.requests, r -> SalaryRequestType.BONUS.getValue() == r.getTypeValue()));
             context.putVar("exportedAt", bundle.getExportTime().toLocalDate());
             context.putVar("exportedBy", bundle.getExportedBy());
             context.putVar("period", MapperBase.fromPeriodId(bundle.getPeriod()));
@@ -62,15 +65,13 @@ public class AdminSalaryRequestExcelExporter {
         }
     }
 
-    private List<SalaryRequestExportDto> i18n(AdminSalaryRequestExportBundle bundle) {
-        return bundle.getRequests().stream().map(r -> {
-            if (r.getType() != null) {
-                r.setType(i18Helper.localize(bundle.locale, "enum.SalaryRequestType." + r.getType()));
-            }
+    private List<SalaryRequestExportDto> i18n(Locale locale, Collection<SalaryRequestExportDto> requests, Predicate<SalaryRequestExportDto> filter) {
+        return requests.stream().filter(filter).map(r -> {
+            r.setType(i18Helper.localize(locale, "enum.SalaryRequestType." + r.getType()));
             if (r.getImplState() == null) {
-                r.setImplState(i18Helper.localize(bundle.locale, "enum.SalaryRequestImplementationState.NIL"));
+                r.setImplState(i18Helper.localize(locale, "enum.SalaryRequestImplementationState.NIL"));
             } else {
-                r.setImplState(i18Helper.localize(bundle.locale, "enum.SalaryRequestImplementationState." + r.getImplState()));
+                r.setImplState(i18Helper.localize(locale, "enum.SalaryRequestImplementationState." + r.getImplState()));
             }
             return r;
         }).collect(Collectors.toList());

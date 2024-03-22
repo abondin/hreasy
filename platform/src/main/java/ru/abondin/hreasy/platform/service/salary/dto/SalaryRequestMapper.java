@@ -85,6 +85,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "employeeInfo.position.name", target = "employeePosition")
     @Mapping(source = "budgetBusinessAccount.name", target = "budgetBusinessAccount")
     @Mapping(source = "assessment.name", target = "assessment")
+    @Mapping(source = "type", target = "typeValue")
     public abstract SalaryRequestExportDto toExportDto(SalaryRequestDto dto);
 
 

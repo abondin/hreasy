@@ -1,18 +1,17 @@
 package ru.abondin.hreasy.platform.service.salary.dto;
 
 import lombok.Data;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
-import org.springframework.lang.NonNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.Year;
 import java.time.YearMonth;
 
 @Data
 public class SalaryRequestExportDto {
+
     private String employee;
+    private Short typeValue;
     private String type;
     private String budgetBusinessAccount;
     private LocalDate budgetExpectedFundingUntil;

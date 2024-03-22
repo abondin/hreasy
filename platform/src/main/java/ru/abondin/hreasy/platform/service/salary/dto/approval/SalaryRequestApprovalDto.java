@@ -1,7 +1,6 @@
 package ru.abondin.hreasy.platform.service.salary.dto.approval;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.lang.NonNull;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
@@ -25,25 +24,10 @@ public class SalaryRequestApprovalDto {
     private OffsetDateTime createdAt;
     private SimpleDictDto createdBy;
 
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    @Getter
     public enum ApprovalActionTypes {
         COMMENT((short) 1), APPROVE((short) 2), DECLINE((short) 3);
         private final short value;
-
-        ApprovalActionTypes(short value) {
-            this.value = value;
-        }
-
-        public short getValue() {
-            return this.value;
-        }
-
-        public static ApprovalActionTypes fromValue(short value) {
-            for (ApprovalActionTypes type : ApprovalActionTypes.values()) {
-                if (type.getValue() == value) {
-                    return type;
-                }
-            }
-            throw new UnsupportedOperationException("Unsupported value: " + value);
-        }
     }
 }
