@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.api.overtime;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -108,6 +109,7 @@ public class OvertimeController {
     }
 
     @Data
+    @NoArgsConstructor
     @Valid
     public static class DeclineReportBody {
         @NonNull

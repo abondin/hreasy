@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.api.employee;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -71,6 +72,7 @@ public class EmployeeSkillsController {
 
 
     @Data
+    @NoArgsConstructor
     @ToString(of = "name")
     public static class AddSkillBody {
         @NonNull
