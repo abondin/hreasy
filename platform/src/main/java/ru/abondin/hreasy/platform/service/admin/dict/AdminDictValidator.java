@@ -25,6 +25,15 @@ public class AdminDictValidator {
         });
     }
 
+    public Mono<Boolean> validateAdminOrganizations(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("admin_organization")) {
+                return Mono.error(new AccessDeniedException("Only user with permission admin_organizations can admin organizations"));
+            }
+            return Mono.just(true);
+        });
+    }
+
     public Mono<Boolean> validateAdminLevel(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("admin_level")) {

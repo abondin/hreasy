@@ -19,9 +19,22 @@ export interface DictLevel {
     archived: boolean
 }
 
+export interface DictOrganization {
+    id: number,
+    name: string,
+    description: string | undefined,
+    archived: boolean
+}
+
 export interface DictLevelUpdateBody {
     name: string,
     weight: number | undefined,
+    archived: boolean
+}
+
+export interface DictOrganizationUpdateBody {
+    name: string,
+    description: string | undefined,
     archived: boolean
 }
 
@@ -78,6 +91,12 @@ export interface DictAdminService {
     createOfficeLocation(body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation>;
 
     updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation>;
+
+    loadOrganizations(): Promise<Array<DictOrganization>>;
+
+    createOrganization(body: DictOrganizationUpdateBody): Promise<DictOrganization>;
+
+    updateOrganization(id: number, body: DictOrganizationUpdateBody): Promise<DictOrganization>;
 }
 
 class RestDictAdminService implements DictAdminService {
@@ -100,6 +119,10 @@ class RestDictAdminService implements DictAdminService {
         return httpService.post("v1/admin/dict/positions", body);
     }
 
+    createOrganization(body: DictOrganizationUpdateBody): Promise<DictOrganization> {
+        return httpService.post("v1/admin/dict/organizations", body);
+    }
+
     loadDepartments(): Promise<Array<DictDepartment>> {
         return httpService.get("v1/admin/dict/departments").then(response => response.data);
     }
@@ -116,6 +139,10 @@ class RestDictAdminService implements DictAdminService {
         return httpService.get("v1/admin/dict/positions").then(response => response.data);
     }
 
+    loadOrganizations(): Promise<Array<DictOrganization>> {
+        return httpService.get("v1/admin/dict/organizations").then(response => response.data);
+    }
+
     updateDepartment(id: number, body: DictDepartmentUpdateBody): Promise<DictDepartment> {
         return httpService.put(`v1/admin/dict/departments/${id}`, body);
     }
@@ -130,6 +157,10 @@ class RestDictAdminService implements DictAdminService {
 
     updatePosition(id: number, body: DictPositionUpdateBody): Promise<DictPosition> {
         return httpService.put(`v1/admin/dict/positions/${id}`, body);
+    }
+
+    updateOrganization(id: number, body: DictOrganizationUpdateBody): Promise<DictOrganization> {
+        return httpService.put(`v1/admin/dict/organizations/${id}`, body);
     }
 }
 

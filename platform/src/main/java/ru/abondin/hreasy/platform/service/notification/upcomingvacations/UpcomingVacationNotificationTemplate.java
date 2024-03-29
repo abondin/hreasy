@@ -57,7 +57,7 @@ public class UpcomingVacationNotificationTemplate {
         log.info("Creating email message from {}", context);
         var uuid = UUID.randomUUID().toString();
         var message = new HrEasyEmailMessage();
-        message.setTitle(i18n.localize("notification.template.upcoming-vacation.title"));
+        message.setTitle(i18n.localize("notification.template.upcoming-vacation.title", context.getEmployeeDisplayName()));
         message.setBody(processTemplate(context));
         message.setClientUuid(uuid);
         message.setAttachments(Map.of(i18n.localize("notification.template.upcoming-vacation.docname"), upcomingDocument));

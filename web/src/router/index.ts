@@ -29,6 +29,7 @@ import AdminProjectDetails from "@/components/admin/project/AdminProjectDetails.
 import AdminEmployeesImportWorkflowComponent from "@/components/admin/employee/imp/AdminEmployeesImportWorkflow.vue";
 import TimesheetTableComponent from "@/components/ts/TimesheetTableComponent.vue";
 import SalaryRequests from "@/components/salary/SalaryRequests.vue";
+import DictAdminOrganizations from "@/components/admin/dict/DictAdminOrganizations.vue";
 
 Vue.use(VueRouter)
 
@@ -72,7 +73,8 @@ const routes = [
         path: "/admin/dicts",
         component: DictAdminMain,
         children: [
-            {path: '', redirect: {name: "admin_dict_departments"}},
+            {path: '', redirect: {name: "admin_dict_organizations"}},
+            {name: "admin_dict_organizations", path: "organizations", component: DictAdminOrganizations},
             {name: "admin_dict_departments", path: "departments", component: DictAdminDepartments},
             {path: "positions", component: DictAdminPositions},
             {path: "office_locations", component: DictAdminOfficeLocations},

@@ -2,14 +2,17 @@ package ru.abondin.hreasy.platform.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.r2dbc.spi.R2dbcException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.r2dbc.BadSqlGrammarException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -70,6 +73,10 @@ public class GlobalWebErrorsHandler implements ErrorWebExceptionHandler, ServerA
             log.warn("Response status error: {} - {}", be.getStatusCode(), be.getReason());
             response.setStatusCode(be.getStatusCode());
             errorDto = new BusinessErrorDto("errors.response.not.found", i18Helper.localize("errors.response.not.found"), new HashMap<>());
+        } else if (ex instanceof DataAccessException) {
+            log.error("Database error", ex);
+            response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
+            errorDto = new BusinessErrorDto("errors.data_access", i18Helper.localize("errors.data_access"), new HashMap<>());
         } else {
             log.error("Unknown error", ex);
             response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);

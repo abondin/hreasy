@@ -22,6 +22,7 @@ public class DictService {
     private final DictProjectRepo projectRepo;
     private final DateTimeService dateTimeService;
     private final DepartmentRepo departmentRepo;
+    private final DictOrganizationRepo organizationRepo;
     private final DictPositionRepo positionRepo;
     private final DictLevelRepo levelRepo;
     private final DictOfficeLocationRepo officeLocationRepo;
@@ -30,6 +31,7 @@ public class DictService {
 
 
     public Flux<ProjectDictDto> findProjects(AuthContext auth) {
+        log.trace("Get all projects {}", auth.getUsername());
         var now = dateTimeService.now().toLocalDate();
         return projectRepo
                 .findAll()
@@ -40,7 +42,21 @@ public class DictService {
                 });
     }
 
+    public Flux<SimpleDictDto> findOrganizations(AuthContext auth) {
+        log.trace("Get all organizations {}", auth.getUsername());
+        return organizationRepo
+                .findAll()
+                .map(e -> {
+                    var dto = new SimpleDictDto();
+                    dto.setId(e.getId());
+                    dto.setName(e.getName());
+                    dto.setActive(!e.isArchived());
+                    return dto;
+                });
+    }
+
     public Flux<SimpleDictDto> findDepartments(AuthContext auth) {
+        log.trace("Get all departments {}", auth.getUsername());
         return departmentRepo
                 .findNotArchived()
                 .map(e -> {
@@ -53,6 +69,7 @@ public class DictService {
     }
 
     public Flux<SimpleDictDto> findPositions(AuthContext auth) {
+        log.trace("Get all positions {}", auth.getUsername());
         return positionRepo
                 .findNotArchived()
                 .map(e -> {
@@ -65,6 +82,7 @@ public class DictService {
     }
 
     public Flux<SimpleDictDto> findLevels(AuthContext auth) {
+        log.trace("Get all levels {}", auth.getUsername());
         return levelRepo
                 .findNotArchived()
                 .map(e -> {
@@ -77,6 +95,7 @@ public class DictService {
     }
 
     public Flux<SimpleDictDto> findOfficeLocations(AuthContext auth) {
+        log.trace("Get all office locations {}", auth.getUsername());
         return officeLocationRepo
                 .findNotArchived()
                 .map(e -> {

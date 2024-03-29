@@ -8,6 +8,7 @@ import ru.abondin.hreasy.platform.service.skills.dto.RatingsMapper;
 @Table("empl.v_employee_detailed")
 public class EmployeeDetailedEntry extends EmployeeEntry {
     private String departmentName;
+    private String organizationName;
     private String positionName;
     private String positionCategory;
     private String levelName;
