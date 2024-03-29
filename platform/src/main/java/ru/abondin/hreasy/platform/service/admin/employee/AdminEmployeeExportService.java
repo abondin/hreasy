@@ -48,6 +48,7 @@ public class AdminEmployeeExportService {
                 , dictService.findLevels(auth).collectList()
                 , dictService.findOfficeLocations(auth).collectList()
                 , dictService.findPositions(auth).collectList()
+                , dictService.findOrganizations(auth).collectList()
         ).flatMap(tupple -> {
             var projects = fromDicts(tupple.getT1());
             var bas = fromDicts(tupple.getT2());
@@ -55,6 +56,7 @@ public class AdminEmployeeExportService {
             var levels = fromDicts(tupple.getT4());
             var officeLocations = fromDicts(tupple.getT5());
             var positions = fromDicts(tupple.getT6());
+            var organizations = fromDicts(tupple.getT7());
             // 2. Load all employees (include fired)
             return employeeService.findAll(auth)
                     // 3. Filter employees. //TODO Move to database?
@@ -64,6 +66,7 @@ public class AdminEmployeeExportService {
                         emplExp.setCurrentProject(e.getCurrentProjectId() == null ? null : projects.get(e.getCurrentProjectId()));
                         emplExp.setCurrentProjectRole(e.getCurrentProjectRole());
                         emplExp.setDepartment(departments.get(e.getDepartmentId()));
+                        emplExp.setOrganization(organizations.get(e.getOrganizationId()));
                         emplExp.setBa(bas.get(e.getBaId()));
                         emplExp.setPosition(positions.get(e.getPositionId()));
                         emplExp.setLevel(levels.get(e.getLevelId()));

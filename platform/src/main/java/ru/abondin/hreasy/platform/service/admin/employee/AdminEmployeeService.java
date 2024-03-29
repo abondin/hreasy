@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.api.employee.UpdateCurrentProjectBody;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeHistoryRepo;
@@ -27,6 +28,9 @@ import java.time.Period;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminEmployeeService {
+
+    private static final EmployeeWithAllDetailsEntry EMPTY_INSTANCE = new EmployeeWithAllDetailsEntry();
+
     private final DateTimeService dateTimeService;
     private final EmployeeWithAllDetailsRepo employeeRepo;
     private final EmployeeHistoryRepo historyRepo;
@@ -34,8 +38,6 @@ public class AdminEmployeeService {
     private final EmployeeAllFieldsMapper mapper;
     private final EmployeeKidRepo kidsRepo;
 
-
-    private final static EmployeeWithAllDetailsEntry EMPTY_INSTANCE = new EmployeeWithAllDetailsEntry();
 
     public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth) {
         log.info("Get full information for all employees by {}", auth.getUsername());
@@ -83,7 +85,7 @@ public class AdminEmployeeService {
         log.info("Create new employee {} kid {} by {}", employeeId, body, auth.getUsername());
         return securityValidator.validateEditEmployee(auth)
                 .flatMap(s -> employeeRepo.findById(employeeId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(employeeId))
                 .flatMap(employee -> {
                     var kid = new EmployeeKidEntry();
                     kid.setBirthday(body.getBirthday());
@@ -96,12 +98,11 @@ public class AdminEmployeeService {
     @Transactional
     public Mono<Integer> updateKid(AuthContext auth, int employeeId, int kidId, CreateOrUpdateEmployeeKidBody body) {
         log.info("Update employee {} kid {}: {} by {}", employeeId, kidId, body, auth.getUsername());
-        var now = dateTimeService.now();
         return securityValidator.validateEditEmployee(auth)
                 .flatMap(s -> employeeRepo.findById(employeeId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(employeeId))
                 .flatMap(s -> kidsRepo.findById(kidId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(kidId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(kidId))
                 .flatMap(kidEntry -> {
                     if (employeeId != kidEntry.getParent()) {
                         return Mono.error(new BusinessError("errors.entity.invalid.parent", Integer.toString(kidId),
@@ -119,7 +120,7 @@ public class AdminEmployeeService {
         var now = dateTimeService.now();
         return securityValidator.validateEditEmployee(auth)
                 .flatMap(s -> employeeRepo.findById(employeeId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(employeeId))
                 .flatMap(entry -> {
                     if (!entry.getEmail().equals(body.getEmail())) {
                         return Mono.error(new BusinessError("errors.emailupdate.unsupported", entry.getEmail(), body.getEmail()));

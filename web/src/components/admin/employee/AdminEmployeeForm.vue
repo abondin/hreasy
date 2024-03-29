@@ -59,8 +59,16 @@
               </v-text-field>
             </v-col>
             <!--</editor-fold>-->
-            <!--<editor-fold desc="3 row (departmentId, currentProjectId, currentProjectRole)">-->
-            <v-col cols=4>
+            <!--<editor-fold desc="3 row (organization, departmentId, currentProjectId, currentProjectRole)">-->
+            <v-col cols=3>
+              <v-autocomplete v-model="employeeForm.organizationId"
+                              :items="allOrganizationsWithCurrent"
+                              item-value="id"
+                              item-text="name"
+                              :label="$t('Организация')"
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols=3>
               <v-autocomplete v-model="employeeForm.departmentId"
                               :items="allDepartmentsWithCurrent"
                               item-value="id"
@@ -69,7 +77,7 @@
               ></v-autocomplete>
             </v-col>
 
-            <v-col cols=4>
+            <v-col cols=3>
               <v-autocomplete v-model="employeeForm.currentProjectId"
                               :items="allProjectsWithCurrent"
                               item-value="id"
@@ -77,7 +85,7 @@
                               :label="$t('Текущий проект')"
               ></v-autocomplete>
             </v-col>
-            <v-col cols=4>
+            <v-col cols=3>
               <v-text-field v-model="employeeForm.currentProjectRole"
                             :counter="64"
                             :rules="[v=>(!v || v.length <= 64 || $t('Не более N символов', {n:64}))]"
@@ -272,14 +280,14 @@ import {SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
 /**
- * 33 fields from EmployeeWithAllDetails
+ * 34 fields from EmployeeWithAllDetails
  *  + isNew
  *  - displayName
  *  - documentFull
  *  - active
  *  - skills
  * ------------------
- * Expected field counts: 29
+ * Expected field counts: 30
  */
 class employeeForm {
   public isNew = true;
@@ -288,6 +296,7 @@ class employeeForm {
   currentProjectRole: string | null = null;
   displayName: string | null = null;
   departmentId: number | null = null;
+  organizationId: number | null = null;
   birthday: string | null = null;
   sex: string | null = null;
   email: string | null = null;
@@ -326,7 +335,10 @@ export default class AdminEmployeeForm extends Vue {
 
   @Prop({required: true})
   private allDepartments!: Array<SimpleDict>;
+  @Prop({required: true})
+  private allOrganizations!: Array<SimpleDict>;
   private allDepartmentsWithCurrent: Array<SimpleDict> = [];
+  private allOrganizationsWithCurrent: Array<SimpleDict> = [];
 
   @Prop({required: true})
   private allProjects!: Array<SimpleDict>;
@@ -374,6 +386,7 @@ export default class AdminEmployeeForm extends Vue {
     this.employeeForm.children = null;
     this.employeeForm.cityOfResidence = null;
     this.employeeForm.departmentId = null;
+    this.employeeForm.organizationId = null;
     this.employeeForm.documentIssuedBy = null;
     this.employeeForm.documentIssuedDate = null;
     this.employeeForm.documentNumber = null;
@@ -408,6 +421,7 @@ export default class AdminEmployeeForm extends Vue {
       this.employeeForm.children = this.input.children || null;
       this.employeeForm.cityOfResidence = this.input.cityOfResidence || null;
       this.employeeForm.departmentId = this.input.departmentId || null;
+      this.employeeForm.organizationId = this.input.organizationId || null;
       this.employeeForm.documentIssuedBy = this.input.documentIssuedBy || null;
       this.employeeForm.documentIssuedDate = this.input.documentIssuedDate || null;
       this.employeeForm.documentNumber = this.input.documentNumber || null;
@@ -428,6 +442,7 @@ export default class AdminEmployeeForm extends Vue {
     }
 
     this.allDepartmentsWithCurrent = this.withCurrent(this.allDepartments, this.employeeForm.departmentId);
+    this.allOrganizationsWithCurrent = this.withCurrent(this.allOrganizations, this.employeeForm.organizationId);
     this.allProjectsWithCurrent = this.withCurrent(this.allProjects, this.employeeForm.currentProjectId);
     this.allLevelsWithCurrent = this.withCurrent(this.allLevels, this.employeeForm.levelId);
     this.allOfficeLocationsWithCurrent = this.withCurrent(this.allOfficeLocations, this.employeeForm.officeLocationId);

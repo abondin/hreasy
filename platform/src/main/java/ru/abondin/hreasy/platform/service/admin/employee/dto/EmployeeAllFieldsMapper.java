@@ -48,6 +48,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
 
 
     @Mapping(target = "position", ignore = true)
+    @Mapping(target = "organization", ignore = true)
     @Mapping(target = "level", ignore = true)
     @Mapping(target = "officeLocation", ignore = true)
     @Mapping(target = "department", ignore = true)

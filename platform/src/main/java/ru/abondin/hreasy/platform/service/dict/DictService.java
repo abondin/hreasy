@@ -22,7 +22,7 @@ public class DictService {
     private final DictProjectRepo projectRepo;
     private final DateTimeService dateTimeService;
     private final DepartmentRepo departmentRepo;
-    private final DepartmentRepo organizationRepo;
+    private final DictOrganizationRepo organizationRepo;
     private final DictPositionRepo positionRepo;
     private final DictLevelRepo levelRepo;
     private final DictOfficeLocationRepo officeLocationRepo;

@@ -13,6 +13,7 @@ public class CreateOrUpdateEmployeeBody extends EmployeeAllFields {
     private Integer currentProjectId;
     private String currentProjectRole;
     private Integer positionId;
+    private Integer organizationId;
     private Integer officeLocationId;
     private String extErpId;
 

@@ -112,6 +112,9 @@
           <template v-slot:item.departmentId="{ item }">
             {{ getById(allDepartments, item.departmentId) }}
           </template>
+          <template v-slot:item.organisationId="{ item }">
+            {{ getById(allOrganizations, item.organizationId) }}
+          </template>
 
           <template v-slot:item.positionId="{ item }">
             {{ getById(allPositions, item.positionId) }}
@@ -155,6 +158,7 @@
           <admin-employee-form
               v-bind:input="selectedItem"
               :all-departments="allDepartments"
+              :all-organizations="allOrganizations"
               :all-levels="allLevels"
               :all-office-locations="allOfficeLocations"
               :all-positions="allPositions"
@@ -212,6 +216,9 @@ export default class AdminEmployees extends Vue {
   @Getter("departments", {namespace: namespace_dict})
   private allDepartments!: Array<SimpleDict>;
 
+  @Getter("organizations", {namespace: namespace_dict})
+  private allOrganizations!: Array<SimpleDict>;
+
   @Getter("projects", {namespace: namespace_dict})
   private allProjects!: Array<SimpleDict>;
 
@@ -239,6 +246,7 @@ export default class AdminEmployees extends Vue {
         .then(() => this.$store.dispatch('dict/reloadProjects'))
         .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
         .then(() => this.$store.dispatch('dict/reloadDepartments'))
+        .then(() => this.$store.dispatch('dict/reloadOrganizations'))
         .then(() => this.$store.dispatch('dict/reloadPositions'))
         .then(() => this.$store.dispatch('dict/reloadLevels'))
         .then(() => this.$store.dispatch('dict/reloadOfficeLocations'))
@@ -307,25 +315,26 @@ export default class AdminEmployees extends Vue {
 
   private reloadHeaders() {
     this.headers.length = 0;
-    this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 280});
-    this.headers.push({text: this.$tc('Email'), value: 'email', width: 280});
-    this.headers.push({text: this.$tc('Текущий проект'), value: 'currentProjectId', width: 280});
-    this.headers.push({text: this.$tc('Бизнес Аккаунт'), value: 'baId', width: 280});
+    this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 250});
+    this.headers.push({text: this.$tc('Email'), value: 'email', width: 250});
+    this.headers.push({text: this.$tc('Текущий проект'), value: 'currentProjectId', width: 200});
+    this.headers.push({text: this.$tc('Бизнес Аккаунт'), value: 'baId', width: 150});
     this.headers.push({text: this.$tc('Телефон'), value: 'phone', width: 150});
-    this.headers.push({text: this.$tc('Skype'), value: 'skype', width: 150});
     this.headers.push({text: this.$tc('Telegram'), value: 'telegram', width: 150});
     this.headers.push({
       text: this.$tc('Дата трудоустройства'),
       value: 'dateOfEmployment',
-      width: 150,
+      width: 100,
       sort: DateTimeUtils.dateComparatorNullLast
     });
     this.headers.push({
       text: this.$tc('День рождения'),
       value: 'birthday',
-      width: 150,
+      width: 100,
       sort: DateTimeUtils.dateComparatorNullLast
     });
+    this.headers.push({text: this.$tc('Организация'), value: 'organizationId', width: 150});
+    this.headers.push({text: this.$tc('Подразделение'), value: 'departmentId', width: 300});
     this.headers.push({text: this.$tc('Позиция'), value: 'positionId', width: 280});
     this.headers.push({text: this.$tc('Уровень экспертизы'), value: 'levelId', width: 150});
     this.headers.push({text: this.$tc('Рабочее место'), value: 'officeLocationId', width: 280});
@@ -335,12 +344,12 @@ export default class AdminEmployees extends Vue {
     this.headers.push({text: this.$tc('ФИО супруга/супруги'), value: 'spouseName', width: 280});
     this.headers.push({text: this.$tc('Рабочий день'), value: 'workDay', width: 100});
     this.headers.push({text: this.$tc('Место работы'), value: 'workType', width: 150});
-    this.headers.push({text: this.$tc('Подразделение'), value: 'departmentId', width: 300});
     this.headers.push({text: this.$tc('Город проживания'), value: 'cityOfResidence', width: 250});
     this.headers.push({text: this.$tc('Дети'), value: 'children', width: 280});
     this.headers.push({text: this.$tc('Семейный статус'), value: 'familyStatus', width: 150});
     this.headers.push({text: this.$tc('Загранпаспорт'), value: 'foreignPassport', width: 150});
     this.headers.push({text: this.$tc('Уровень английского'), value: 'englishLevel', width: 280});
+    this.headers.push({text: this.$tc('Skype'), value: 'skype', width: 150});
     this.headers.push({
       text: this.$tc('Дата увольнения'),
       value: 'dateOfDismissal',
