@@ -112,7 +112,7 @@
           <template v-slot:item.departmentId="{ item }">
             {{ getById(allDepartments, item.departmentId) }}
           </template>
-          <template v-slot:item.organisationId="{ item }">
+          <template v-slot:item.organizationId="{ item }">
             {{ getById(allOrganizations, item.organizationId) }}
           </template>
 

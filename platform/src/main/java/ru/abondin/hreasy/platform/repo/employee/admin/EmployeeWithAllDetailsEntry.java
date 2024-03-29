@@ -13,6 +13,9 @@ import java.time.LocalDate;
 @Data
 @Table("empl.employee")
 public class EmployeeWithAllDetailsEntry extends EmployeeEntry {
+    @Column("organization")
+    private Integer organizationId;
+
     @Column("level")
     private Integer levelId;
     @Column("work_type")

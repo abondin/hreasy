@@ -63,6 +63,7 @@
             <v-col cols=3>
               <v-autocomplete v-model="employeeForm.organizationId"
                               :items="allOrganizationsWithCurrent"
+                              clearable
                               item-value="id"
                               item-text="name"
                               :label="$t('Организация')"

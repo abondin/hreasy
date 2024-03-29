@@ -32,7 +32,7 @@ import java.util.UUID;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @ContextConfiguration(initializers = {PostgreSQLTestContainerContextInitializer.class})
 @Slf4j
-public class UpcomingTemplateMessageEmailTest extends BaseServiceTest {
+class UpcomingTemplateMessageEmailTest extends BaseServiceTest {
 
     @Autowired
     private EmailMessageSender sender;
@@ -44,12 +44,12 @@ public class UpcomingTemplateMessageEmailTest extends BaseServiceTest {
     private DateTimeService dateTimeService;
 
     @BeforeEach
-    private void before() {
+    public void before() {
         initEmployeesDataAndLogin();
     }
 
     @Test
-    public void testSimpleEmail() {
+    void testSimpleEmail() {
         var context = new UpcomingVacationNotificationTemplate.UpcomingVacationContext();
         context.setDaysNumber(14);
         context.setStartDate(dateTimeService.now().toLocalDate().plusDays(10));
