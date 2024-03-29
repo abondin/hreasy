@@ -39,6 +39,14 @@ public class DictController {
                 auth -> dictService.findDepartments(auth));
     }
 
+    @Operation(summary = "All organizations")
+    @GetMapping("/organizations")
+    @ResponseBody
+    public Flux<SimpleDictDto> organizations() {
+        return AuthHandler.currentAuth().flatMapMany(
+                auth -> dictService.findOrganizations(auth));
+    }
+
     @Operation(summary = "All employee positions (developer, QA, ect)")
     @GetMapping("/positions")
     @ResponseBody

@@ -135,6 +135,8 @@ export enum Permissions {
      */
     AdminDictLevels = "admin_level",
 
+    AdminDictOrganizations = "admin_organization",
+
     /**
      * Only user with permission admin_department can admin position
      */
@@ -247,6 +249,8 @@ interface PermissionService {
      * Check if given user has grants to CRUD operations on employees levels
      */
     canAdminDictLevels(): boolean;
+
+    canAdminDictOrganizations(): boolean;
 
     /**
      * Check if given user has grants to CRUD operations on employees positions
@@ -392,6 +396,10 @@ class VuexPermissionService implements PermissionService {
 
     canAdminDictLevels(): boolean {
         return this.simplePermissionCheck(Permissions.AdminDictLevels);
+    }
+
+    canAdminDictOrganizations(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminDictOrganizations);
     }
 
     canAdminDictPositions(): boolean {

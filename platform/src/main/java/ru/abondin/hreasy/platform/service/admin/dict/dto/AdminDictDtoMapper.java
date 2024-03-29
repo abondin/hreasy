@@ -3,15 +3,14 @@ package ru.abondin.hreasy.platform.service.admin.dict.dto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.abondin.hreasy.platform.repo.dict.*;
-import ru.abondin.hreasy.platform.service.dict.dto.DepartmentDto;
-import ru.abondin.hreasy.platform.service.dict.dto.DictLevelDto;
-import ru.abondin.hreasy.platform.service.dict.dto.DictOfficeLocationDto;
-import ru.abondin.hreasy.platform.service.dict.dto.DictPositionDto;
+import ru.abondin.hreasy.platform.service.dict.dto.*;
 
 @Mapper(componentModel = "spring")
-public interface AdminDictDtoMapper  {
+public interface AdminDictDtoMapper {
 
     DictOfficeLocationEntry toEntry(CreateOrUpdateOfficeLocationBody dto);
+
+    DictOrganizationEntry toEntry(CreateOrUpdateOrganizationBody dto);
 
     DepartmentEntry toEntry(CreateOrUpdateDepartmentBody dto);
 
@@ -22,6 +21,10 @@ public interface AdminDictDtoMapper  {
     @Mapping(source = "id", target = "officeLocationId")
     @Mapping(target = "id", ignore = true)
     DictOfficeLocationLogEntry toHistory(DictOfficeLocationEntry entry);
+
+    @Mapping(source = "id", target = "organizationId")
+    @Mapping(target = "id", ignore = true)
+    DictOrganizationLogEntry toHistory(DictOrganizationEntry entry);
 
     @Mapping(source = "id", target = "departmentId")
     @Mapping(target = "id", ignore = true)
@@ -36,6 +39,8 @@ public interface AdminDictDtoMapper  {
     DictPositionLogEntry toHistory(DictPositionEntry entry);
 
     DictOfficeLocationDto fromEntry(DictOfficeLocationEntry entry);
+
+    DictOrganizationDto fromEntry(DictOrganizationEntry entry);
 
     DepartmentDto fromEntry(DepartmentEntry entry);
 

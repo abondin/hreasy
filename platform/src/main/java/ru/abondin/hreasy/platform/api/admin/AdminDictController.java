@@ -7,18 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
-import ru.abondin.hreasy.platform.service.admin.dict.AdminDepartmentService;
-import ru.abondin.hreasy.platform.service.admin.dict.AdminDictLevelService;
-import ru.abondin.hreasy.platform.service.admin.dict.AdminDictOfficeLocationService;
-import ru.abondin.hreasy.platform.service.admin.dict.AdminDictPositionService;
-import ru.abondin.hreasy.platform.service.admin.dict.dto.CreateOrUpdateDepartmentBody;
-import ru.abondin.hreasy.platform.service.admin.dict.dto.CreateOrUpdateLevelBody;
-import ru.abondin.hreasy.platform.service.admin.dict.dto.CreateOrUpdateOfficeLocationBody;
-import ru.abondin.hreasy.platform.service.admin.dict.dto.CreateOrUpdatePositionBody;
-import ru.abondin.hreasy.platform.service.dict.dto.DepartmentDto;
-import ru.abondin.hreasy.platform.service.dict.dto.DictLevelDto;
-import ru.abondin.hreasy.platform.service.dict.dto.DictOfficeLocationDto;
-import ru.abondin.hreasy.platform.service.dict.dto.DictPositionDto;
+import ru.abondin.hreasy.platform.service.admin.dict.*;
+import ru.abondin.hreasy.platform.service.admin.dict.dto.*;
+import ru.abondin.hreasy.platform.service.dict.dto.*;
 
 @RestController()
 @RequestMapping("/api/v1/admin/dict")
@@ -29,20 +20,19 @@ public class AdminDictController {
     private final AdminDepartmentService departments;
     private final AdminDictLevelService levels;
     private final AdminDictPositionService positions;
+    private final AdminDictOrganizationService organizations;
     private final AdminDictOfficeLocationService officeLocations;
 
     // ------------ Department CRUD
     @Operation(summary = "All departments")
     @GetMapping("/departments")
-    @ResponseBody
     public Flux<DepartmentDto> departments() {
         return AuthHandler.currentAuth().flatMapMany(
-                auth -> departments.findAll(auth));
+                departments::findAll);
     }
 
     @Operation(summary = "Create department")
     @PostMapping("/departments")
-    @ResponseBody
     public Mono<DepartmentDto> createDepartment(@RequestBody CreateOrUpdateDepartmentBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> departments.create(auth, body));
@@ -50,24 +40,44 @@ public class AdminDictController {
 
     @Operation(summary = "Update department")
     @PutMapping("/departments/{id}")
-    @ResponseBody
     public Mono<DepartmentDto> updateDepartment(@PathVariable int id, @RequestBody CreateOrUpdateDepartmentBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> departments.update(auth, id, body));
     }
 
+    // ------------ Organization CRUD
+    @Operation(summary = "All organizations")
+    @GetMapping("/organizations")
+    public Flux<DictOrganizationDto> organizations() {
+        return AuthHandler.currentAuth().flatMapMany(
+                organizations::findAll);
+    }
+
+    @Operation(summary = "Create organization")
+    @PostMapping("/organizations")
+    public Mono<DictOrganizationDto> createPosition(@RequestBody CreateOrUpdateOrganizationBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> organizations.create(auth, body));
+    }
+
+    @Operation(summary = "Update organization")
+    @PutMapping("/organizations/{id}")
+    public Mono<DictOrganizationDto> updatePosition(@PathVariable int id, @RequestBody CreateOrUpdateOrganizationBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> organizations.update(auth, id, body));
+    }
+
+
     // ------------ Position CRUD
     @Operation(summary = "All positions")
     @GetMapping("/positions")
-    @ResponseBody
     public Flux<DictPositionDto> positions() {
         return AuthHandler.currentAuth().flatMapMany(
-                auth -> positions.findAll(auth));
+                positions::findAll);
     }
 
     @Operation(summary = "Create position")
     @PostMapping("/positions")
-    @ResponseBody
     public Mono<DictPositionDto> createPosition(@RequestBody CreateOrUpdatePositionBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> positions.create(auth, body));
@@ -75,7 +85,6 @@ public class AdminDictController {
 
     @Operation(summary = "Update position")
     @PutMapping("/positions/{id}")
-    @ResponseBody
     public Mono<DictPositionDto> updatePosition(@PathVariable int id, @RequestBody CreateOrUpdatePositionBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> positions.update(auth, id, body));
@@ -84,15 +93,13 @@ public class AdminDictController {
     // ------------ Level CRUD
     @Operation(summary = "All levels")
     @GetMapping("/levels")
-    @ResponseBody
     public Flux<DictLevelDto> levels() {
         return AuthHandler.currentAuth().flatMapMany(
-                auth -> levels.findAll(auth));
+                levels::findAll);
     }
 
     @Operation(summary = "Create level")
     @PostMapping("/levels")
-    @ResponseBody
     public Mono<DictLevelDto> createLevel(@RequestBody CreateOrUpdateLevelBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> levels.create(auth, body));
@@ -100,7 +107,7 @@ public class AdminDictController {
 
     @Operation(summary = "Update level")
     @PutMapping("/levels/{id}")
-    @ResponseBody
+    
     public Mono<DictLevelDto> updateLevel(@PathVariable int id, @RequestBody CreateOrUpdateLevelBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> levels.update(auth, id, body));
@@ -109,15 +116,13 @@ public class AdminDictController {
     // ------------ Office Location CRUD
     @Operation(summary = "All office locations")
     @GetMapping("/office_locations")
-    @ResponseBody
     public Flux<DictOfficeLocationDto> officeLocations() {
         return AuthHandler.currentAuth().flatMapMany(
-                auth -> officeLocations.findAll(auth));
+                officeLocations::findAll);
     }
 
     @Operation(summary = "Create level")
     @PostMapping("/office_locations")
-    @ResponseBody
     public Mono<DictOfficeLocationDto> createOfficeLocation(@RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.create(auth, body));
@@ -125,7 +130,6 @@ public class AdminDictController {
 
     @Operation(summary = "Update level")
     @PutMapping("/office_locations/{id}")
-    @ResponseBody
     public Mono<DictOfficeLocationDto> updateOfficeLocation(@PathVariable int id, @RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.update(auth, id, body));
