@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.service.assessment.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import jakarta.validation.Valid;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@AllArgsConstructor
 @Valid
 public class CreateAssessmentDto {
     @NonNull
