@@ -94,10 +94,9 @@ public class DictProjectEntry {
         @Nullable
         private Integer baId;
 
-        @NonNull
         private OffsetDateTime updatedAt;
 
-        @NonNull
+
         private Integer updatedBy;
     }
 }

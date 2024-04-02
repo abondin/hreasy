@@ -38,13 +38,12 @@ public class ProjectAdminService {
         var entry = mapper.fromDto(newProject);
         entry.setCreatedAt(now);
         entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-        var history = mapper.historyEntry(employeeId, now, entry);
         return securityValidator.validateCreateProject(auth).flatMap(s ->
                 // 1. Save project
                 repo.save(entry).flatMap(savedProject -> {
+                    var history = mapper.historyEntry(employeeId, now, savedProject);
                     //2. Save history
                     var projectId = savedProject.getId();
-                    history.setProjectId(projectId);
                     return historyRepo.save(history).flatMap((h) ->
                             //3. Save entry
                             adminUserRolesRepo.addAccessibleProject(employeeId, projectId)
