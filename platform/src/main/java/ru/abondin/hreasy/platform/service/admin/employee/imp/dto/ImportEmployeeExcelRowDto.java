@@ -47,6 +47,7 @@ public class ImportEmployeeExcelRowDto {
     private DataProperty<LocalDate> documentIssuedDate = new DataProperty<>();
     private DataProperty<String> documentIssuedBy = new DataProperty<>();
     private DataProperty<String> registrationAddress = new DataProperty<>();
+    private DataProperty<SimpleDictDto> organization = new DataProperty<>();
 
     public int getErrorCount() {
         return (int) allProperties().filter(p -> p.getError() != null).count();
@@ -66,6 +67,7 @@ public class ImportEmployeeExcelRowDto {
                 externalErpId,
                 phone,
                 department,
+                organization,
                 position,
                 dateOfEmployment,
                 dateOfDismissal,

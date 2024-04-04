@@ -72,7 +72,8 @@ public class AdminEmployeeImportProcessor {
                                 .flatMap(fromExcel -> {
                                     // 2. Load required dictionaries
                                     return Mono.zip(dictService.findPositions(auth)
-                                                    .collectList(), dictService.findDepartments(auth).collectList())
+                                                    .collectList(), dictService.findDepartments(auth).collectList(),
+                                                    dictService.findOrganizations(auth).collectList())
                                             .flatMap(dicts -> {
                                                 // 3. Load employees
                                                 return emplRepo.findByEmailsInLowerCase(
@@ -81,7 +82,7 @@ public class AdminEmployeeImportProcessor {
                                                                 .collect(Collectors.toSet())
                                                 ).collectList().map(employees -> {
                                                             // 4. Merge excel with existing employees and find the diff
-                                                            merge(fromExcel, new ImportContext(employees, dicts.getT1(), dicts.getT2(), locale));
+                                                            merge(fromExcel, new ImportContext(employees, dicts.getT1(), dicts.getT2(), dicts.getT3(), locale));
                                                             return fromExcel;
                                                         }
                                                 );
@@ -116,9 +117,14 @@ public class AdminEmployeeImportProcessor {
                 = e -> e.getPositionId() == null ? null :
                 context.positions.stream().filter(d -> d.getId() == e.getPositionId()).findFirst().orElse(null);
 
+        Function<EmployeeWithAllDetailsEntry, SimpleDictDto> currentEmployeeOrganizationMapper
+                = e -> e.getOrganizationId() == null ? null :
+                context.organizations.stream().filter(d -> d.getId() == e.getOrganizationId()).findFirst().orElse(null);
+
 
         apply(excelRow.getBirthday(), existingEmpl, EmployeeWithAllDetailsEntry::getBirthday, context, this::applyLocalDate);
         apply(excelRow.getDepartment(), existingEmpl, currentEmployeeDepartmentMapper, context, (p, c) -> applyDict(p, c, c.departments));
+        apply(excelRow.getOrganization(), existingEmpl, currentEmployeeOrganizationMapper, context, (p, c) -> applyDict(p, c, c.organizations));
         apply(excelRow.getPosition(), existingEmpl, currentEmployeePositionMapper, context, (p, c) -> applyDict(p, c, c.positions));
         apply(excelRow.getDisplayName(), existingEmpl, EmployeeWithAllDetailsEntry::getDisplayName, context, this::applyStringWithTrim);
         apply(excelRow.getDateOfDismissal(), existingEmpl, EmployeeWithAllDetailsEntry::getDateOfDismissal, context, this::applyLocalDate);
@@ -175,7 +181,7 @@ public class AdminEmployeeImportProcessor {
 
 
     private record ImportContext(List<EmployeeWithAllDetailsEntry> employees, List<SimpleDictDto> positions,
-                                 List<SimpleDictDto> departments, Locale locale) {
+                                 List<SimpleDictDto> departments, List<SimpleDictDto> organizations, Locale locale) {
     }
 
     @Data

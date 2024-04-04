@@ -29,18 +29,19 @@ public class EmployeeImportConfig {
         private String displayName = "B";
         private String externalErpId = "H";
         private String email = "R";
-        private String phone = "AI";
-        private String department = "AJ";
-        private String position = "AK";
-        private String dateOfEmployment = "AL";
-        private String dateOfDismissal = "AM";
-        private String birthday = "AO";
-        private String sex = "AP";
-        private String documentSeries = "AR";
-        private String documentNumber = "AS";
-        private String documentIssuedDate = "AT";
-        private String documentIssuedBy = "AU";
-        private String registrationAddress = "AW";
+        private String phone = "AJ";
+        private String department = "AK";
+        private String position = "AL";
+        private String dateOfEmployment = "AM";
+        private String dateOfDismissal = "AN";
+        private String birthday = "AP";
+        private String sex = "AQ";
+        private String documentSeries = "AS";
+        private String documentNumber = "AT";
+        private String documentIssuedDate = "AU";
+        private String documentIssuedBy = "AV";
+        private String registrationAddress = "AX";
+        private String organization = "BF";
     }
 
 }

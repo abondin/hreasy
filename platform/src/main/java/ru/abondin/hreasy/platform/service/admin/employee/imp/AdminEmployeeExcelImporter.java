@@ -109,6 +109,7 @@ public class AdminEmployeeExcelImporter {
         addSimpleMapping(reader, config, "phone", config.getColumns().getPhone(), false);
         addSimpleMapping(reader, config, "sex", config.getColumns().getSex(), false);
         addSimpleMapping(reader, config, "registrationAddress", config.getColumns().getRegistrationAddress(), false);
+        addSimpleMapping(reader, config, "organization", config.getColumns().getOrganization(), false);
         addSimpleMapping(reader, config, "position", config.getColumns().getPosition(), false);
         addSimpleMapping(reader, config, "dateOfEmployment", config.getColumns().getDateOfEmployment(), false);
         addSimpleMapping(reader, config, "dateOfDismissal", config.getColumns().getDateOfDismissal(), false);

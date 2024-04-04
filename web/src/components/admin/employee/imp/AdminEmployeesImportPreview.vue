@@ -133,30 +133,34 @@ export default class AdminEmployeesImportPreview extends Vue {
 
   private reloadHeaders() {
     this.headers.length = 0;
-    this.headers.push({text: this.$tc('Строка'), value: 'rowNumber', width: 20});
+    this.headers.push({text: this.$tc('Строка'), value: 'rowNumber', width: 15});
     this.headers.push({text: this.$tc('Email'), value: 'email', width: 280});
     this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 280, format: 'string'});
     this.headers.push({text: this.$tc('Телефон'), value: 'phone', width: 150, format: 'string'});
     this.headers.push({
       text: this.$tc('Дата трудоустройства'),
       value: 'dateOfEmployment',
-      width: 150,
+      width: 50,
+      class: "text-wrap",
       sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
     });
     this.headers.push({
       text: this.$tc('Дата увольнения'),
       value: 'dateOfDismissal',
-      width: 150,
+      class: "text-wrap",
+      width: 50,
       sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
     });
     this.headers.push({
       text: this.$tc('День рождения'),
       value: 'birthday',
-      width: 150,
+      class: "text-wrap",
+      width: 50,
       sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
     });
     this.headers.push({text: this.$tc('Позиция'), value: 'position', width: 200, format: 'dict'});
     this.headers.push({text: this.$tc('Подразделение'), value: 'department', width: 300, format: 'dict'});
+    this.headers.push({text: this.$tc('Организация'), value: 'organization', width: 300, format: 'dict'});
     this.headers.push({
       text: this.$tc('IMPORT_CONFIG.documentSeries'),
       value: 'documentSeries',

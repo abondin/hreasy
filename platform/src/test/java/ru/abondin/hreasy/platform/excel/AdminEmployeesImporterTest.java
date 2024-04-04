@@ -62,6 +62,7 @@ public class AdminEmployeesImporterTest {
                     assertEqualsStr("13.08.2019", empl.getDocumentIssuedDate());
                     assertEqualsStr("ГУ МВД России", empl.getDocumentIssuedBy());
                     assertEqualsStr("РОССИЯ, 602222, Лучший город на свете, супер улица", empl.getRegistrationAddress());
+                    assertEqualsStr("STM", empl.getOrganization());
                 })
                 .assertNext((empl) -> {
                     // Кнотт Амара Юрьевна
@@ -80,6 +81,7 @@ public class AdminEmployeesImporterTest {
                     assertEqualsStr("14.02.2018", empl.getDocumentIssuedDate());
                     assertEqualsStr("ГУ МВД России по Нижегородской области", empl.getDocumentIssuedBy());
                     Assertions.assertNull(empl.getRegistrationAddress().getRaw());
+                    Assertions.assertNull(empl.getOrganization().getRaw());
                 })
                 .assertNext((empl) -> {
                     // Бобов Асиях Петрович
@@ -98,6 +100,7 @@ public class AdminEmployeesImporterTest {
                     assertEqualsStr("20.09.2022", empl.getDocumentIssuedDate());
                     assertEqualsStr("ГУ МВД России по Нижегородской области", empl.getDocumentIssuedBy());
                     assertEqualsStr("РОССИЯ, 602222, Лучший город на свете, супер улица", empl.getRegistrationAddress());
+                    assertEqualsStr("STM Labs", empl.getOrganization());
                 })
                 .verifyComplete();
     }
@@ -117,11 +120,13 @@ public class AdminEmployeesImporterTest {
         config.getColumns().setDocumentIssuedDate("AR");
         config.getColumns().setDocumentIssuedBy("AS");
         config.getColumns().setRegistrationAddress("AU");
+        config.getColumns().setOrganization("BA");
         return config;
     }
 
 
     private void assertEqualsStr(String expected, ImportEmployeeExcelRowDto.DataProperty<?> property) {
+        Assertions.assertNotNull(property.getRaw(), "Excpected value "+expected+" but not null");
         Assertions.assertEquals(expected, property.getRaw().trim());
     }
 }
