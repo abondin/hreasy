@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.platform.service.admin.employee.imp;
+package ru.abondin.hreasy.platform.service.admin.imp;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,27 +18,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Create or update employees from external excel file
+ * Create or update dtos from external excel file
  */
-@Component
-@RequiredArgsConstructor
 @Slf4j
-public class AdminEmployeeExcelImporter {
+public abstract class ExcelImporter<R, C extends ExcelImportConfig> {
 
-    private final String tableBeanName = "employees";
-    private final String tableItemBeanName = "employee";
+    protected abstract String getTableBeanName();
+    protected abstract String getTableItemBeanName();
 
 
-    public Flux<ImportEmployeeExcelRowDto> importEmployees(EmployeeImportConfig config, InputStream file) {
+    public Flux<R> importEmployees(C config, InputStream file) {
         var beans = new HashMap<String, Object>();
-        var employees = new ArrayList<ImportEmployeeExcelRowDto>();
-        beans.put(tableBeanName, employees);
+        var items = new ArrayList<ImportEmployeeExcelRowDto>();
+        beans.put(getTableBeanName(), items);
         XLSReadStatus status = null;
         try {
             status = configureReader(config)
                     .read(file, beans);
         } catch (IOException | InvalidFormatException e) {
-            log.error("Unable to import employees", e);
+            log.error("Unable to import from excel", e);
             Flux.error(new BusinessError("errors.import.unexpectedError"));
         }
         if (!status.isStatusOK()) {
@@ -46,15 +44,16 @@ public class AdminEmployeeExcelImporter {
         }
         // validate that email is properly set
         // add row number to simplify
-        for (var i = 0; i < employees.size(); i++) {
-            var e = employees.get(i);
+        for (var i = 0; i < items.size(); i++) {
+            var e = items.get(i);
             e.setRowNumber(i + config.getTableStartRow());
             if (StringUtils.isBlank(e.getEmail())) {
                 return Flux.error(new BusinessError("errors.import.emailNotSet", Integer.toString(e.getRowNumber()), config.getColumns().getEmail()));
             }
         }
-        return Flux.fromIterable(employees);
+        return Flux.fromIterable(items);
     }
+
 
 
     private XLSReader configureReader(EmployeeImportConfig config) {

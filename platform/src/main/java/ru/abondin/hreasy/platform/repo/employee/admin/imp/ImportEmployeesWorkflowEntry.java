@@ -13,11 +13,14 @@ import java.time.OffsetDateTime;
 @Table("empl.import_workflow")
 public class ImportEmployeesWorkflowEntry {
 
-    public static int STATE_CREATED=0;
-    public static int STATE_FILE_UPLOADED=1;
-    public static int STATE_CONFIGURATION_SET=2;
-    public static int STATE_CHANGES_APPLIED=3;
-    public static int STATE_ABORTED=-1;
+    public static int STATE_CREATED = 0;
+    public static int STATE_FILE_UPLOADED = 1;
+    public static int STATE_CONFIGURATION_SET = 2;
+    public static int STATE_CHANGES_APPLIED = 3;
+    public static int STATE_ABORTED = -1;
+
+    public static short WF_TYPE_EMPLOYEE = 1;
+    public static short WF_TYPE_KIDS = 2;
 
 
     @Id
@@ -34,18 +37,25 @@ public class ImportEmployeesWorkflowEntry {
     private Integer configSetBy;
 
     private int state = 0;
+    /**
+     * 1 - employee, 2 - kids
+     */
+    private short wfType;
+
 
     private String filename;
     private Long fileContentLength;
 
     /**
      * Configuration to import data from file
+     *
      * @See EmployeeImportConfig
      */
     private Json config;
 
     /**
      * Imported data
+     *
      * @see ImportEmployeeExcelRowDto
      */
     private Json importedRows;
