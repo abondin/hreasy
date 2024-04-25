@@ -15,7 +15,7 @@ import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntr
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportProcessStats;
+import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportProcessStats;
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
@@ -67,7 +67,7 @@ public class AdminEmployeeImportProcessor {
                     }
                 }).flatMap(excelStream ->
                         // 1. Parse the Excel
-                        importer.importEmployees(config, excelStream)
+                        importer.importFromFile(config, excelStream)
                                 .collectList()
                                 .flatMap(fromExcel -> {
                                     // 2. Load required dictionaries
@@ -187,7 +187,7 @@ public class AdminEmployeeImportProcessor {
     @Data
     public static class ImportProcessingResult {
         private final List<ImportEmployeeExcelRowDto> rows;
-        private final ImportProcessStats stats;
+        private final ExcelImportProcessStats stats;
 
         public ImportProcessingResult(List<ImportEmployeeExcelRowDto> rows) {
             this.rows = rows;
@@ -205,7 +205,7 @@ public class AdminEmployeeImportProcessor {
                     updatedItems++;
                 }
             }
-            this.stats = new ImportProcessStats(processedRows, errors, newItems, updatedItems);
+            this.stats = new ExcelImportProcessStats(processedRows, errors, newItems, updatedItems);
         }
     }
 

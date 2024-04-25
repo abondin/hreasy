@@ -14,7 +14,8 @@ import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeImportService;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeesWorkflowDto;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
+import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportWorkflowDto;
 
 import jakarta.validation.Valid;
 import java.util.Locale;
@@ -81,12 +82,12 @@ public class AdminEmployeeController {
 
 
     @PostMapping("/import")
-    public Mono<ImportEmployeesWorkflowDto> getActiveOrStartNewImportProcess() {
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> getActiveOrStartNewImportProcess() {
         return AuthHandler.currentAuth().flatMap(auth -> importService.getActiveOrStartNewImportProcess(auth));
     }
 
     @PostMapping("/import/{processId}/file")
-    public Mono<ImportEmployeesWorkflowDto> uploadExcelFile(
+    public Mono<ExcelImportWorkflowDto> uploadExcelFile(
             @PathVariable Integer processId,
             @RequestPart("file") Mono<FilePart> multipartFile,
             @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength
@@ -99,19 +100,19 @@ public class AdminEmployeeController {
     }
 
     @PostMapping("/import/{processId}/config")
-    public Mono<ImportEmployeesWorkflowDto> applyConfigAndPreview(@PathVariable Integer processId,
-                                                                  @RequestBody EmployeeImportConfig config,
-                                                                  Locale locale) {
+    public Mono<ExcelImportWorkflowDto> applyConfigAndPreview(@PathVariable Integer processId,
+                                                              @RequestBody EmployeeImportConfig config,
+                                                              Locale locale) {
         return AuthHandler.currentAuth().flatMap(auth -> importService.applyConfigAndPreview(auth, processId, config, locale));
     }
 
     @PostMapping("/import/{processId}/commit")
-    public Mono<ImportEmployeesWorkflowDto> commit(@PathVariable Integer processId) {
+    public Mono<ExcelImportWorkflowDto> commit(@PathVariable Integer processId) {
         return AuthHandler.currentAuth().flatMap(auth -> importService.commit(auth, processId));
     }
 
     @PostMapping("/import/{processId}/abort")
-    public Mono<ImportEmployeesWorkflowDto> abort(@PathVariable Integer processId) {
+    public Mono<ExcelImportWorkflowDto> abort(@PathVariable Integer processId) {
         return AuthHandler.currentAuth().flatMap(auth -> importService.abort(auth, processId));
     }
 }

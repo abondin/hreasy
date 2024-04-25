@@ -5,6 +5,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportEmployeesWorkflowEntry;
+import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportProcessStats;
+import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportWorkflowDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBaseWithJsonSupport;
 
 import java.util.List;
@@ -19,14 +21,14 @@ public abstract class EmployeeImportMapper extends MapperBaseWithJsonSupport {
         return data == null ? null : Json.of(toJsonStr(data, true));
     }
 
-    public Json stats(ImportProcessStats stats) {
+    public Json stats(ExcelImportProcessStats stats) {
         return stats == null ? null : Json.of(toJsonStr(stats, true));
     }
 
     @Mapping(target = "config", qualifiedByName = "importEmployeeConfig", source = "config")
     @Mapping(target = "importedRows", qualifiedByName = "importedRows", source = "importedRows")
     @Mapping(target = "importProcessStats", qualifiedByName = "importProcessStats", source = "importProcessStats")
-    public abstract ImportEmployeesWorkflowDto fromEntry(ImportEmployeesWorkflowEntry entry);
+    public abstract ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto> fromEntry(ImportEmployeesWorkflowEntry entry);
 
     @Named("importEmployeeConfig")
     protected EmployeeImportConfig importEmployeeConfig(Json config) {
@@ -39,7 +41,7 @@ public abstract class EmployeeImportMapper extends MapperBaseWithJsonSupport {
     }
 
     @Named("importProcessStats")
-    protected ImportProcessStats importProcessStats(Json data) {
-        return fromJson(data, ImportProcessStats.class);
+    protected ExcelImportProcessStats importProcessStats(Json data) {
+        return fromJson(data, ExcelImportProcessStats.class);
     }
 }

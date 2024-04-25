@@ -17,7 +17,8 @@ import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportMapper;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeesWorkflowDto;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
+import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportWorkflowDto;
 
 import java.io.File;
 import java.util.Locale;
@@ -56,7 +57,7 @@ public class AdminEmployeeImportService {
      * @return not completed or canceled process initiated by this user or start new import process
      */
     @Transactional
-    public Mono<ImportEmployeesWorkflowDto> getActiveOrStartNewImportProcess(AuthContext auth) {
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> getActiveOrStartNewImportProcess(AuthContext auth) {
         log.info("Get active or start new import employee process by {}", auth.getUsername());
         return validator.validateImportEmployee(auth).flatMap(f -> workflowRepo.get(auth.getEmployeeInfo().getEmployeeId())
                 .switchIfEmpty(workflowRepo.save(defaultImportConfig(auth)))
@@ -67,10 +68,10 @@ public class AdminEmployeeImportService {
      * Second step in import process - upload file to process
      */
     @Transactional
-    public Mono<ImportEmployeesWorkflowDto> uploadImportFile(AuthContext auth,
-                                                             int processId,
-                                                             FilePart filePart,
-                                                             long contentLength) {
+    public Mono<ExcelImportWorkflowDto> uploadImportFile(AuthContext auth,
+                                                         int processId,
+                                                         FilePart filePart,
+                                                         long contentLength) {
         log.info("Upload {} to {} import process by {}", filePart.filename(), processId, auth.getUsername());
         return validator.validateImportEmployee(auth)
                 .flatMap(v -> workflowRepo.findById(processId))
@@ -99,7 +100,7 @@ public class AdminEmployeeImportService {
      * @return
      */
     @Transactional
-    public Mono<ImportEmployeesWorkflowDto> applyConfigAndPreview(AuthContext auth, Integer processId, EmployeeImportConfig config, Locale locale) {
+    public Mono<ExcelImportWorkflowDto> applyConfigAndPreview(AuthContext auth, Integer processId, EmployeeImportConfig config, Locale locale) {
         log.info("Apply configuration for {} import process by {}", processId, auth.getUsername());
         return validator.validateImportEmployee(auth)
                 // 1. Get import workflow in the database
@@ -126,7 +127,7 @@ public class AdminEmployeeImportService {
     }
 
     @Transactional
-    public Mono<ImportEmployeesWorkflowDto> commit(AuthContext auth, Integer processId) {
+    public Mono<ExcelImportWorkflowDto> commit(AuthContext auth, Integer processId) {
         log.info("Commit import process {} by {}", processId, auth.getUsername());
         var now = dateTimeService.now();
         return validator.validateImportEmployee(auth)
@@ -154,7 +155,7 @@ public class AdminEmployeeImportService {
     }
 
     @Transactional
-    public Mono<ImportEmployeesWorkflowDto> abort(AuthContext auth, Integer processId) {
+    public Mono<ExcelImportWorkflowDto> abort(AuthContext auth, Integer processId) {
         log.info("Abort import process {} by {}", processId, auth.getUsername());
         return validator.validateImportEmployee(auth)
                 // 1. Get import workflow in the database

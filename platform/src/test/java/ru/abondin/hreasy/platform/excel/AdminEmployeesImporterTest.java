@@ -43,7 +43,7 @@ public class AdminEmployeesImporterTest {
 
     @Test
     public void testExcelImportRuntimeTemplate() throws Exception {
-        StepVerifier.create(importer.importEmployees(employeesToImportConfig(), new ClassPathResource("excel/employees-to-import.xlsx")
+        StepVerifier.create(importer.importFromFile(employeesToImportConfig(), new ClassPathResource("excel/employees-to-import.xlsx")
                         .getInputStream()))
                 .assertNext((empl) -> {
                     // Хайден Спуннер
