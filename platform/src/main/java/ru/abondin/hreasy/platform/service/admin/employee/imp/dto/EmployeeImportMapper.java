@@ -5,29 +5,17 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportWorkflowEntry;
-import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportProcessStats;
-import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowDto;
-import ru.abondin.hreasy.platform.service.mapper.MapperBaseWithJsonSupport;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.*;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public abstract class EmployeeImportMapper extends MapperBaseWithJsonSupport {
-    public Json impCfg(EmployeeImportConfig config) {
-        return config == null ? null : Json.of(toJsonStr(config, true));
-    }
-
-    public Json importedRows(List<ImportEmployeeExcelRowDto> data) {
-        return data == null ? null : Json.of(toJsonStr(data, true));
-    }
-
-    public Json stats(ExcelImportProcessStats stats) {
-        return stats == null ? null : Json.of(toJsonStr(stats, true));
-    }
+public abstract class EmployeeImportMapper extends ExcelImportMapperBase<EmployeeImportConfig, ImportEmployeeExcelRowDto> {
 
     @Mapping(target = "config", qualifiedByName = "importEmployeeConfig", source = "config")
-    @Mapping(target = "importedRows", qualifiedByName = "importedRows", source = "importedRows")
+    @Mapping(target = "importedRows", qualifiedByName = "importedRowsFromJson", source = "importedRows")
     @Mapping(target = "importProcessStats", qualifiedByName = "importProcessStats", source = "importProcessStats")
+    @Override
     public abstract ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto> fromEntry(ImportWorkflowEntry entry);
 
     @Named("importEmployeeConfig")
@@ -35,8 +23,9 @@ public abstract class EmployeeImportMapper extends MapperBaseWithJsonSupport {
         return fromJson(config, EmployeeImportConfig.class);
     }
 
-    @Named("importedRows")
-    public List<ImportEmployeeExcelRowDto> importedRows(Json data) {
+    @Named("importedRowsFromJson")
+    @Override
+    public List<ImportEmployeeExcelRowDto> importedRowsFromJson(Json data) {
         return listFromJson(data, ImportEmployeeExcelRowDto.class);
     }
 

@@ -3,20 +3,20 @@ package ru.abondin.hreasy.platform.service.admin.employee.imp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.CreateOrUpdateEmployeeBody;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeAllFieldsMapper;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
+import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportCommitter;
 
 import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class AdminEmployeeImportCommitter {
+public class AdminEmployeeImportCommitter implements ExcelImportCommitter<ImportEmployeeExcelRowDto> {
     private final AdminEmployeeService employeeService;
     private final EmployeeAllFieldsMapper mapper;
 
@@ -26,7 +26,7 @@ public class AdminEmployeeImportCommitter {
      * @param row
      * @return number of updates (actually 1 or 0 if skipped)
      */
-    @Transactional()
+    @Override
     public Mono<Integer> commitRow(AuthContext ctx, ImportEmployeeExcelRowDto row, Integer processId) {
         return Mono.defer(() -> {
                     // Return skip status if no cells require update
@@ -39,8 +39,8 @@ public class AdminEmployeeImportCommitter {
                                 .flatMap(body -> row.isNew() ? employeeService.create(ctx, body) : employeeService.update(ctx, row.getEmployeeId(), body))
                                 .doOnError(e -> {
                                     log.error("Unable to commit employee " + row.getEmail(), e);
-                                }).map(id->1 // Show that row was updated
-                                        );
+                                }).map(id -> 1 // Show that row was updated
+                                );
                     }
                 }
         );

@@ -2,8 +2,8 @@ package ru.abondin.hreasy.platform.service.admin.imp;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,42 +14,25 @@ import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportWorkflowEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportWorkflowRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
-import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeImportCommitter;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeImportProcessor;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportMapper;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
-import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowDto;
-import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowType;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.*;
 
 import java.io.File;
 import java.util.Locale;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
-public class ExcelImportService {
-
-    public static String getImportEmployeeFolder(int employeeId, short wfType) {
+public abstract class ExcelImportServiceBase<C extends ExcelImportConfig, R extends ExcelImportRowDto> {
+    public static String getImportFolder(int employeeId, short wfType) {
         return ExcelImportWorkflowType.fromWfType(wfType).getDefaultBaseDir() + File.separator + employeeId;
     }
 
-    private final AdminEmployeeImportProcessor importProcessor;
+    protected final HrEasyCommonProps props;
 
-    private final HrEasyCommonProps props;
-
-    private final ImportWorkflowRepo workflowRepo;
-
-    private final AdminEmployeeImportCommitter committer;
-    private final DateTimeService dateTimeService;
-
-    private final EmployeeImportMapper importMapper;
-
+    protected final ImportWorkflowRepo workflowRepo;
 
     private final FileStorage fileStorage;
 
-    private final AdminSecurityValidator validator;
+    private final DateTimeService dateTimeService;
 
 
     /**
@@ -59,27 +42,29 @@ public class ExcelImportService {
      * @return not completed or canceled process initiated by this user or start new import process
      */
     @Transactional
-    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> getActiveOrStartNewImportProcess(AuthContext auth, ExcelImportWorkflowType wfType) {
+    public Mono<ExcelImportWorkflowDto<C, R>> getActiveOrStartNewImportProcess(AuthContext auth, ExcelImportWorkflowType wfType) {
         log.info("Get active or start new import process of type {} by {}", wfType, auth.getUsername());
-        return validator.validateImportEmployee(auth).flatMap(f -> workflowRepo.get(auth.getEmployeeInfo().getEmployeeId(), wfType.getWfType())
-                .switchIfEmpty(workflowRepo.save(defaultImportConfig(auth, wfType)))
-                .map(importMapper::fromEntry));
+        return validateImport(auth).flatMap(f -> workflowRepo.get(auth.getEmployeeInfo().getEmployeeId(), wfType.getWfType())
+                .switchIfEmpty(workflowRepo.save(defaultImportConfig(auth, wfType.getWfType())))
+                .map(getMapper()::fromEntry));
     }
+
 
     /**
      * Second step in import process - upload file to process
      */
     @Transactional
-    public Mono<ExcelImportWorkflowDto> uploadImportFile(AuthContext auth,
-                                                         int processId,
-                                                         FilePart filePart,
-                                                         long contentLength) {
+    public Mono<ExcelImportWorkflowDto<C, R>> uploadImportFile(AuthContext auth,
+                                                               int processId,
+                                                               FilePart filePart,
+                                                               long contentLength) {
         log.info("Upload {} to {} import process by {}", filePart.filename(), processId, auth.getUsername());
-        return validator.validateImportEmployee(auth)
+        return validateImport(auth)
                 .flatMap(v -> workflowRepo.findById(processId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
-                .flatMap(entry -> fileStorage.uploadFile(getImportEmployeeFolder(auth.getEmployeeInfo().getEmployeeId(), entry.getWfType()),
-                                Integer.toString(processId), filePart, contentLength)
+                .flatMap(entry -> fileStorage.uploadFile(getImportFolder(auth.getEmployeeInfo().getEmployeeId(), entry.getWfType()),
+                                Integer.toString(processId),
+                                filePart, contentLength)
                         .then(Mono.defer(() -> {
                             entry.setFilename(filePart.filename());
                             entry.setFileContentLength(contentLength);
@@ -88,11 +73,10 @@ public class ExcelImportService {
                             entry.setImportProcessStats(null);
                             entry.setConfigSetAt(null);
                             entry.setConfigSetBy(null);
-                            entry.setConfig(importMapper.impCfg(new EmployeeImportConfig()));
+                            entry.setConfig(getMapper().impCfg(defaultConfigEntry()));
                             return workflowRepo.save(entry);
-                        }))).map(importMapper::fromEntry);
+                        }))).map(getMapper()::fromEntry);
     }
-
 
     /**
      * Third step - apply configuration and preview results
@@ -102,38 +86,39 @@ public class ExcelImportService {
      * @param config
      * @return
      */
+
     @Transactional
-    public Mono<ExcelImportWorkflowDto> applyConfigAndPreview(AuthContext auth, Integer processId, EmployeeImportConfig config, Locale locale) {
+    public Mono<ExcelImportWorkflowDto<C, R>> applyConfigAndPreview(AuthContext auth, Integer processId, C config, Locale locale) {
         log.info("Apply configuration for {} import process by {}", processId, auth.getUsername());
-        return validator.validateImportEmployee(auth)
+        return validateImport(auth)
                 // 1. Get import workflow in the database
                 .flatMap(v -> workflowRepo.findById(processId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
                 // 2. Read the Excel file, stored at file system on previous step
                 .flatMap(entry -> fileStorage.streamFile
-                                (getImportEmployeeFolder(auth.getEmployeeInfo().getEmployeeId(), entry.getWfType()), Integer.toString(processId))
+                                (getImportFolder(auth.getEmployeeInfo().getEmployeeId(), entry.getWfType()), Integer.toString(processId))
                         .flatMap(file ->
                                 // 3. Process file
-                                importProcessor.applyConfigAndParseExcelFile(auth, config, file, locale)
+                                processFile(auth, config, locale, entry, file)
                                         // 4. Update information in the database
                                         .flatMap(processingResult -> {
-                                            entry.setConfig(importMapper.impCfg(config));
-                                            entry.setImportedRows(importMapper.importedRows(processingResult.getRows()));
-                                            entry.setImportProcessStats(importMapper.stats(processingResult.getStats()));
+                                            entry.setConfig(getMapper().impCfg(config));
+                                            entry.setImportedRows(getMapper().importedRowsToJson(processingResult.getRows()));
+                                            entry.setImportProcessStats(getMapper().stats(processingResult.getStats()));
                                             entry.setState(ImportWorkflowEntry.STATE_CONFIGURATION_SET);
                                             entry.setConfigSetBy(auth.getEmployeeInfo().getEmployeeId());
                                             entry.setConfigSetAt(dateTimeService.now());
                                             return workflowRepo.save(entry);
-                                        }).map(importMapper::fromEntry)
+                                        }).map(getMapper()::fromEntry)
                         )
                 );
     }
 
     @Transactional
-    public Mono<ExcelImportWorkflowDto> commit(AuthContext auth, Integer processId) {
+    public Mono<ExcelImportWorkflowDto<C, R>> commit(AuthContext auth, Integer processId) {
         log.info("Commit import process {} by {}", processId, auth.getUsername());
         var now = dateTimeService.now();
-        return validator.validateImportEmployee(auth)
+        return validateImport(auth)
                 // 1. Get import workflow in the database
                 .flatMap(v -> workflowRepo.findById(processId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
@@ -143,8 +128,8 @@ public class ExcelImportService {
                     if (entry.getConfigSetAt() == null || now.minus(props.getExcelImport().getImportConfigTtl()).isAfter(entry.getConfigSetAt())) {
                         return Mono.error(new BusinessError("errors.import.configuration_exprired"));
                     }
-                    return Flux.fromIterable(importMapper.importedRows(entry.getImportedRows()))
-                            .flatMap(row -> committer.commitRow(auth, row, processId))
+                    return Flux.fromIterable(getMapper().importedRowsFromJson(entry.getImportedRows()))
+                            .flatMap(row -> getCommitter().commitRow(auth, row, processId))
                             .reduce(0, ((sum, updated) -> sum + updated))
                             .flatMap(updates -> {
                                 log.info("Import process {} completed. Number of updates in database - {}", processId, updates);
@@ -153,14 +138,13 @@ public class ExcelImportService {
                                 entry.setState(ImportWorkflowEntry.STATE_CHANGES_APPLIED);
                                 return workflowRepo.save(entry);
                             });
-                }).map(importMapper::fromEntry);
-
+                }).map(getMapper()::fromEntry);
     }
 
     @Transactional
     public Mono<ExcelImportWorkflowDto> abort(AuthContext auth, Integer processId) {
         log.info("Abort import process {} by {}", processId, auth.getUsername());
-        return validator.validateImportEmployee(auth)
+        return validateImport(auth)
                 // 1. Get import workflow in the database
                 .flatMap(v -> workflowRepo.findById(processId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
@@ -170,18 +154,27 @@ public class ExcelImportService {
                     entry.setCompletedBy(auth.getEmployeeInfo().getEmployeeId());
                     entry.setCompletedAt(dateTimeService.now());
                     return workflowRepo.save(entry);
-                }).map(importMapper::fromEntry);
+                }).map(getMapper()::fromEntry);
     }
 
-    private ImportWorkflowEntry defaultImportConfig(AuthContext auth, ExcelImportWorkflowType wfType) {
+
+    protected ImportWorkflowEntry defaultImportConfig(AuthContext auth, short wfType) {
         var entry = new ImportWorkflowEntry();
         entry.setState(ImportWorkflowEntry.STATE_CREATED);
-        entry.setWfType(wfType.getWfType());
-        entry.setConfig(importMapper.impCfg(new EmployeeImportConfig()));
+        entry.setConfig(getMapper().impCfg(defaultConfigEntry()));
+        entry.setWfType(wfType);
         entry.setCreatedAt(dateTimeService.now());
         entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
         return entry;
     }
 
+    protected abstract Mono<Boolean> validateImport(AuthContext auth);
 
+    protected abstract C defaultConfigEntry();
+
+    protected abstract Mono<ExcelImportProcessingResult<R>> processFile(AuthContext auth, C config, Locale locale, ImportWorkflowEntry entry, Resource file);
+
+    protected abstract ExcelImportMapperBase<C, R> getMapper();
+
+    protected abstract ExcelImportCommitter<R> getCommitter();
 }
