@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
 
 @Data
 @Table("empl.import_workflow")
-public class ImportEmployeesWorkflowEntry {
+public class ImportWorkflowEntry {
 
     public static int STATE_CREATED = 0;
     public static int STATE_FILE_UPLOADED = 1;

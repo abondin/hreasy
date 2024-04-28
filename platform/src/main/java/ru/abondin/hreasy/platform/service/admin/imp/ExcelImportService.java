@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.platform.service.admin.employee.imp;
+package ru.abondin.hreasy.platform.service.admin.imp;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +15,8 @@ import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportWorkflowRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeImportCommitter;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeImportProcessor;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportMapper;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
@@ -27,11 +29,10 @@ import java.util.Locale;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AdminEmployeeImportService {
-    public static final String IMPORT_EMPLOYEE_BASE_DIR = "employee_import";
+public class ExcelImportService {
 
-    public static String getImportEmployeeFolder(int employeeId) {
-        return IMPORT_EMPLOYEE_BASE_DIR + File.separator + employeeId;
+    public static String getImportEmployeeFolder(int employeeId, short wfType) {
+        return ExcelImportWorkflowType.fromWfType(wfType).getDefaultBaseDir() + File.separator + employeeId;
     }
 
     private final AdminEmployeeImportProcessor importProcessor;
@@ -61,7 +62,7 @@ public class AdminEmployeeImportService {
     public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> getActiveOrStartNewImportProcess(AuthContext auth, ExcelImportWorkflowType wfType) {
         log.info("Get active or start new import process of type {} by {}", wfType, auth.getUsername());
         return validator.validateImportEmployee(auth).flatMap(f -> workflowRepo.get(auth.getEmployeeInfo().getEmployeeId(), wfType.getWfType())
-                .switchIfEmpty(workflowRepo.save(defaultImportConfig(auth)))
+                .switchIfEmpty(workflowRepo.save(defaultImportConfig(auth, wfType)))
                 .map(importMapper::fromEntry));
     }
 
@@ -77,7 +78,8 @@ public class AdminEmployeeImportService {
         return validator.validateImportEmployee(auth)
                 .flatMap(v -> workflowRepo.findById(processId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
-                .flatMap(entry -> fileStorage.uploadFile(getImportEmployeeFolder(auth.getEmployeeInfo().getEmployeeId()), Integer.toString(processId), filePart, contentLength)
+                .flatMap(entry -> fileStorage.uploadFile(getImportEmployeeFolder(auth.getEmployeeInfo().getEmployeeId(), entry.getWfType()),
+                                Integer.toString(processId), filePart, contentLength)
                         .then(Mono.defer(() -> {
                             entry.setFilename(filePart.filename());
                             entry.setFileContentLength(contentLength);
@@ -100,9 +102,8 @@ public class AdminEmployeeImportService {
      * @param config
      * @return
      */
-
     @Transactional
-    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> applyConfigAndPreview(AuthContext auth, Integer processId, EmployeeImportConfig config, Locale locale) {
+    public Mono<ExcelImportWorkflowDto> applyConfigAndPreview(AuthContext auth, Integer processId, EmployeeImportConfig config, Locale locale) {
         log.info("Apply configuration for {} import process by {}", processId, auth.getUsername());
         return validator.validateImportEmployee(auth)
                 // 1. Get import workflow in the database
@@ -110,7 +111,7 @@ public class AdminEmployeeImportService {
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
                 // 2. Read the Excel file, stored at file system on previous step
                 .flatMap(entry -> fileStorage.streamFile
-                                (getImportEmployeeFolder(auth.getEmployeeInfo().getEmployeeId()), Integer.toString(processId))
+                                (getImportEmployeeFolder(auth.getEmployeeInfo().getEmployeeId(), entry.getWfType()), Integer.toString(processId))
                         .flatMap(file ->
                                 // 3. Process file
                                 importProcessor.applyConfigAndParseExcelFile(auth, config, file, locale)
@@ -172,9 +173,10 @@ public class AdminEmployeeImportService {
                 }).map(importMapper::fromEntry);
     }
 
-    private ImportWorkflowEntry defaultImportConfig(AuthContext auth) {
+    private ImportWorkflowEntry defaultImportConfig(AuthContext auth, ExcelImportWorkflowType wfType) {
         var entry = new ImportWorkflowEntry();
         entry.setState(ImportWorkflowEntry.STATE_CREATED);
+        entry.setWfType(wfType.getWfType());
         entry.setConfig(importMapper.impCfg(new EmployeeImportConfig()));
         entry.setCreatedAt(dateTimeService.now());
         entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());

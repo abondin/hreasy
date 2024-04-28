@@ -121,9 +121,9 @@ public class AdminEmployeeImportProcessor {
 
 
         processorUtils.apply(excelRow.getBirthday(), existingEmpl, EmployeeWithAllDetailsEntry::getBirthday, processorUtils::applyLocalDate);
-        processorUtils.apply(excelRow.getDepartment(), existingEmpl, currentEmployeeDepartmentMapper, (p) -> processorUtils.applyDict(p, context, departments));
-        processorUtils.apply(excelRow.getOrganization(), existingEmpl, currentEmployeeOrganizationMapper, (p) -> processorUtils.applyDict(p, context, organizations));
-        processorUtils.apply(excelRow.getPosition(), existingEmpl, currentEmployeePositionMapper, (p) -> processorUtils.applyDict(p, context, positions));
+        processorUtils.apply(excelRow.getDepartment(), existingEmpl, currentEmployeeDepartmentMapper, p -> processorUtils.applyDict(p, context, departments));
+        processorUtils.apply(excelRow.getOrganization(), existingEmpl, currentEmployeeOrganizationMapper, p -> processorUtils.applyDict(p, context, organizations));
+        processorUtils.apply(excelRow.getPosition(), existingEmpl, currentEmployeePositionMapper, p -> processorUtils.applyDict(p, context, positions));
         processorUtils.apply(excelRow.getDisplayName(), existingEmpl, EmployeeWithAllDetailsEntry::getDisplayName, processorUtils::applyStringWithTrim);
         processorUtils.apply(excelRow.getDateOfDismissal(), existingEmpl, EmployeeWithAllDetailsEntry::getDateOfDismissal, processorUtils::applyLocalDate);
         processorUtils.apply(excelRow.getDateOfEmployment(), existingEmpl, EmployeeWithAllDetailsEntry::getDateOfEmployment, processorUtils::applyLocalDate);

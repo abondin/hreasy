@@ -18,6 +18,8 @@ import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeE
 import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowDto;
 
 import jakarta.validation.Valid;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowType;
+
 import java.util.Locale;
 
 /**
@@ -37,7 +39,7 @@ public class AdminEmployeeController {
 
     @GetMapping
     public Flux<EmployeeWithAllDetailsDto> all() {
-        return AuthHandler.currentAuth().flatMapMany(auth -> employeeService.findAll(auth));
+        return AuthHandler.currentAuth().flatMapMany(employeeService::findAll);
     }
 
     @GetMapping("/{employeeId}")
@@ -67,7 +69,7 @@ public class AdminEmployeeController {
 
     @GetMapping("/kids")
     public Flux<EmployeeKidDto> allKids() {
-        return AuthHandler.currentAuth().flatMapMany(auth -> employeeService.findAllKids(auth));
+        return AuthHandler.currentAuth().flatMapMany(employeeService::findAllKids);
     }
 
     @PostMapping("/{employeeId}/kids")
@@ -83,7 +85,7 @@ public class AdminEmployeeController {
 
     @PostMapping("/import")
     public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> getActiveOrStartNewImportProcess() {
-        return AuthHandler.currentAuth().flatMap(auth -> importService.getActiveOrStartNewImportProcess(auth));
+        return AuthHandler.currentAuth().flatMap(auth -> importService.getActiveOrStartNewImportProcess(auth, ExcelImportWorkflowType.EMPLOYEE));
     }
 
     @PostMapping("/import/{processId}/file")
