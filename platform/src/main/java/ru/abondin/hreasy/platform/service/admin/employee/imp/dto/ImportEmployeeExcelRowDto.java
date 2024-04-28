@@ -2,7 +2,7 @@ package ru.abondin.hreasy.platform.service.admin.employee.imp.dto;
 
 
 import lombok.Data;
-import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportRowDto;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportRowDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.LocalDate;

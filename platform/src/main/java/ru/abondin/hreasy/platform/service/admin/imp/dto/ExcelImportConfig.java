@@ -1,7 +1,8 @@
-package ru.abondin.hreasy.platform.service.admin.imp;
+package ru.abondin.hreasy.platform.service.admin.imp.dto;
 
 /**
  * Base class for excel import configuration
+ * used in {@link ru.abondin.hreasy.platform.service.admin.imp.ExcelImporter}
  */
 public interface ExcelImportConfig {
 

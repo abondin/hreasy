@@ -18,7 +18,7 @@ import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportMapper;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
-import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportWorkflowDto;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowDto;
 
 import java.io.File;
 import java.util.Locale;
@@ -137,7 +137,7 @@ public class AdminEmployeeImportService {
                 // 2. Process each row one by one
                 .flatMap(entry -> {
                     // 3. Check that import process configuration is up-to-date
-                    if (entry.getConfigSetAt() == null || now.minus(props.getImportEmployee().getImportConfigTtl()).isAfter(entry.getConfigSetAt())) {
+                    if (entry.getConfigSetAt() == null || now.minus(props.getExcelImport().getImportConfigTtl()).isAfter(entry.getConfigSetAt())) {
                         return Mono.error(new BusinessError("errors.import.configuration_exprired"));
                     }
                     return Flux.fromIterable(importMapper.importedRows(entry.getImportedRows()))

@@ -15,7 +15,7 @@ import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeImportService;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
-import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportWorkflowDto;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowDto;
 
 import jakarta.validation.Valid;
 import java.util.Locale;

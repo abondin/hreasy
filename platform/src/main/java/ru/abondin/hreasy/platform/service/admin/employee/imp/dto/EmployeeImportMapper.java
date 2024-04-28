@@ -5,8 +5,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportEmployeesWorkflowEntry;
-import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportProcessStats;
-import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportWorkflowDto;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportProcessStats;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBaseWithJsonSupport;
 
 import java.util.List;

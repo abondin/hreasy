@@ -1,7 +1,7 @@
 package ru.abondin.hreasy.platform.service.admin.employee.imp.dto;
 
 import lombok.Data;
-import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportConfig;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportConfig;
 
 /**
  * Configuration to parse EXCEL file with employees
