@@ -6,7 +6,6 @@ import org.apache.poi.ss.util.CellReference;
 import org.jxls.reader.*;
 import reactor.core.publisher.Flux;
 import ru.abondin.hreasy.platform.BusinessError;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
 import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportConfig;
 import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportRowDto;
@@ -23,6 +22,7 @@ import java.util.HashMap;
 public abstract class ExcelImporter<C extends ExcelImportConfig, R extends ExcelImportRowDto> {
 
     protected abstract String getTableBeanName();
+
     protected abstract String getTableItemBeanName();
 
 
@@ -47,7 +47,7 @@ public abstract class ExcelImporter<C extends ExcelImportConfig, R extends Excel
             var e = items.get(i);
             e.setRowNumber(i + config.getTableStartRow());
             var error = validateMandatoryFields(config, e);
-            if (error != null){
+            if (error != null) {
                 return Flux.error(error);
             }
         }
@@ -102,7 +102,7 @@ public abstract class ExcelImporter<C extends ExcelImportConfig, R extends Excel
 
     protected abstract void applyRowConfigMappings(C config, SimpleBlockReaderImpl reader);
 
-    protected void addSimpleMapping(SimpleBlockReader reader, EmployeeImportConfig config, String property, String column, boolean keyProp) {
+    protected void addSimpleMapping(SimpleBlockReader reader, C config, String property, String column, boolean keyProp) {
         if (column == null) {
             return;
         }

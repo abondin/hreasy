@@ -11,8 +11,6 @@ import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeAllFieldsMa
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
 import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportCommitter;
 
-import java.util.function.Consumer;
-
 @RequiredArgsConstructor
 @Slf4j
 @Service
@@ -37,9 +35,9 @@ public class AdminEmployeeImportCommitter implements ExcelImportCommitter<Import
                         return createOrUpdateBody(ctx, row, processId)
                                 // 2. Commit changes in database
                                 .flatMap(body -> row.isNew() ? employeeService.create(ctx, body) : employeeService.update(ctx, row.getEmployeeId(), body))
-                                .doOnError(e -> {
-                                    log.error("Unable to commit employee " + row.getEmail(), e);
-                                }).map(id -> 1 // Show that row was updated
+                                .doOnError(e ->
+                                        log.error("Unable to commit employee " + row.getEmail(), e)
+                                ).map(id -> 1 // Show that row was updated
                                 );
                     }
                 }
@@ -49,7 +47,7 @@ public class AdminEmployeeImportCommitter implements ExcelImportCommitter<Import
     private Mono<CreateOrUpdateEmployeeBody> createOrUpdateBody(AuthContext ctx, ImportEmployeeExcelRowDto row, Integer processId) {
         return (row.isNew() ? Mono.just(new CreateOrUpdateEmployeeBody()) :
                 employeeService.get(ctx, row.getEmployeeId())
-                        .map(entry -> mapper.createOrUpdateBodyFromEntry(entry))
+                        .map(mapper::createOrUpdateBodyFromEntry)
         ).map(body -> {
             body.setImportProcessId(processId);
             body.setEmail(row.getEmail());
@@ -70,12 +68,4 @@ public class AdminEmployeeImportCommitter implements ExcelImportCommitter<Import
             return body;
         });
     }
-
-    private <T> void apply(ImportEmployeeExcelRowDto.DataProperty<T> cell, Consumer<T> setter) {
-        if (cell.isUpdated()) {
-            setter.accept(cell.getImportedValue());
-        }
-    }
-
-
 }

@@ -10,6 +10,7 @@ import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
 import java.time.OffsetDateTime;
+import java.time.Period;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,6 +23,8 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
     void populateFromBody(@MappingTarget EmployeeWithAllDetailsEntry entry, CreateOrUpdateEmployeeBody dto);
 
     CreateOrUpdateEmployeeBody createOrUpdateBodyFromEntry(EmployeeWithAllDetailsDto entry);
+
+    CreateOrUpdateEmployeeKidBody createOrUpdateBodyFromEntry(EmployeeKidDto entry);
 
     default EmployeeHistoryEntry history(EmployeeWithAllDetailsEntry persisted, Integer createdBy, OffsetDateTime createdAt) {
         var history = historyBase(persisted);
@@ -72,14 +75,15 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
         return result;
     }
 
-    /**
-     * Do not forget to calculate age manually
-     *
-     * @param m
-     * @return
-     */
     @Mapping(target = "parent", source = ".", qualifiedByName = "kidParent")
-    EmployeeKidDto fromEntry(EmployeeKidView m);
+    @Mapping(target = "age", qualifiedByName = "age")
+    EmployeeKidDto fromEntry(EmployeeKidView kid, @Context OffsetDateTime now);
+
+    @Named("age")
+    default Integer age(EmployeeKidView kid, @Context OffsetDateTime now) {
+        return kid.getBirthday() == null ? null :
+                Period.between(kid.getBirthday(), now.toLocalDate()).getYears();
+    }
 
 
     @Named("kidParent")
@@ -101,10 +105,9 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
                         entry.getDocumentNumber(),
                         entry.getDocumentIssuedBy(),
                         Optional.ofNullable(entry.getDocumentIssuedDate()).map(d -> d.format(DATE_FORMATTER)).orElse(null))
-                .filter(s -> StringUtils.isNotBlank(s))
+                .filter(StringUtils::isNotBlank)
                 .collect(Collectors.joining(" "));
     }
-
 
 
 }

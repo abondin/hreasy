@@ -22,7 +22,6 @@ import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
 
 import java.time.OffsetDateTime;
-import java.time.Period;
 
 @Service
 @RequiredArgsConstructor
@@ -47,15 +46,19 @@ public class AdminEmployeeService {
 
     public Flux<EmployeeKidDto> findAllKids(AuthContext auth) {
         log.info("Get all kids about employee by {}", auth.getUsername());
+        var now = dateTimeService.now();
         return securityValidator.validateViewEmployeeFull(auth)
-                .flatMapMany(sec -> kidsRepo.findAllKidsWithParentInfo(dateTimeService.now())).map(m -> {
-                    var result = mapper.fromEntry(m);
-                    result.setAge(m.getBirthday() == null ? null :
-                            Period.between(m.getBirthday(), dateTimeService.now().toLocalDate()).getYears()
-                    );
-                    return result;
-                });
+                .flatMapMany(sec -> kidsRepo.findAllKidsWithParentInfo(now))
+                .map(m -> mapper.fromEntry(m, now));
     }
+
+    public Mono<EmployeeKidDto> getKid(AuthContext auth, Integer employeeId, Integer employeeKidId) {
+        log.debug("Get kid by id {} by {}", employeeKidId, auth.getUsername());
+        return securityValidator.validateViewEmployeeFull(auth)
+                .flatMap(sec -> kidsRepo.getFullInfo(employeeId, employeeKidId))
+                .map(m -> mapper.fromEntry(m, dateTimeService.now()));
+    }
+
 
     public Mono<EmployeeWithAllDetailsDto> get(AuthContext auth, int employeeId) {
         log.info("Get all information about employee {} by {}", employeeId, auth.getUsername());
