@@ -70,7 +70,10 @@
           <span>{{ item.rowNumber }}</span>
           <v-tooltip right v-if="item.errorCount>0">
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" x-small class="error ml-1 pa-2"><v-icon x-small color="white">mdi-flash-alert</v-icon> {{ item.errorCount }}</v-chip>
+              <v-chip v-on="on" x-small class="error ml-1 pa-2">
+                <v-icon x-small color="white">mdi-flash-alert</v-icon>
+                {{ item.errorCount }}
+              </v-chip>
             </template>
             {{ $t('Количество ошибок при разборе строки документа') }}
           </v-tooltip>
@@ -98,12 +101,9 @@ import Component from "vue-class-component";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import {UiConstants} from "@/components/uiconstants";
 import {Prop} from "vue-property-decorator";
-import {
-  ExcelRowDataProperty,
-  ImportEmployeeExcelRows,
-  ImportWorkflow
-} from "@/components/admin/employee/imp/admin.employee.import.service";
+import {ImportEmployeeExcelRows} from "@/components/admin/employee/imp/admin.employee.import.service";
 import ImportPreviewTableCell from "@/components/admin/employee/imp/ImportPreviewTableCell.vue";
+import {ExcelRowDataProperty, ImportConfig, ImportExcelRow, ImportWorkflow} from "@/components/admin/imp/import.base";
 
 class Filter {
   public search = '';
@@ -115,11 +115,12 @@ interface ImportPreviewDataHeader<T = any> extends DataTableHeader<T> {
 }
 
 @Component({components: {ImportPreviewTableCell}})
-export default class AdminEmployeesImportPreview extends Vue {
+export default class AdminEmployeesImportPreview<C extends ImportConfig, R extends ImportExcelRow>
+    extends Vue {
   headers: ImportPreviewDataHeader[] = [];
 
   @Prop({required: true})
-  workflow!: ImportWorkflow;
+  workflow!: ImportWorkflow<C, R>;
 
   private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 

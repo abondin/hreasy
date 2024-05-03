@@ -92,7 +92,7 @@ public class AdminEmployeeController {
     }
 
     @PostMapping("/import/{processId}/file")
-    public Mono<ExcelImportWorkflowDto> uploadExcelFile(
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> uploadExcelFile(
             @PathVariable Integer processId,
             @RequestPart("file") Mono<FilePart> multipartFile,
             @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength
@@ -105,19 +105,19 @@ public class AdminEmployeeController {
     }
 
     @PostMapping("/import/{processId}/config")
-    public Mono<ExcelImportWorkflowDto> applyConfigAndPreview(@PathVariable Integer processId,
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> applyConfigAndPreview(@PathVariable Integer processId,
                                                               @RequestBody EmployeeImportConfig config,
                                                               Locale locale) {
         return AuthHandler.currentAuth().flatMap(auth -> importService.applyConfigAndPreview(auth, processId, config, locale));
     }
 
     @PostMapping("/import/{processId}/commit")
-    public Mono<ExcelImportWorkflowDto> commit(@PathVariable Integer processId) {
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> commit(@PathVariable Integer processId) {
         return AuthHandler.currentAuth().flatMap(auth -> importService.commit(auth, processId));
     }
 
     @PostMapping("/import/{processId}/abort")
-    public Mono<ExcelImportWorkflowDto> abort(@PathVariable Integer processId) {
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> abort(@PathVariable Integer processId) {
         return AuthHandler.currentAuth().flatMap(auth -> importService.abort(auth, processId));
     }
 

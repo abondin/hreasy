@@ -1,33 +1,17 @@
 import httpService from "../../../http.service";
-import {AxiosInstance, AxiosResponse} from "axios";
+import {
+    ExcelRowDataProperty,
+    ImportConfig,
+    ImportExcelRow,
+    ImportService,
+    RestImportService
+} from "@/components/admin/imp/import.base";
 
 
-/**
- * Import workflow with all configuration and data changes
- */
-export interface ImportWorkflow {
-    id: number,
-    /**
-     * <ul>
-     *     <li>0 - created</li>
-     *     <li>1 - file uploaded</li>
-     *     <li>2 - configuration set</li>
-     *     <li>3 - changes applied</li>
-     *     <li>-1 - aborted</>
-     * </ul>
-     */
-    state: number,
-    config: EmployeeImportConfig | null,
-    filename: string | null,
-    importedRows: ImportEmployeeExcelRows[],
-    importProcessStats: ImportProcessStats
-}
-
-export interface EmployeeImportConfig {
-    sheetNumber: number,
-    tableStartRow: number,
+export interface EmployeeImportConfig extends ImportConfig {
     columns: EmployeeImportConfigColumns
 }
+
 
 /**
  * 15 fields supported at the moment
@@ -50,9 +34,7 @@ export interface EmployeeImportConfigColumns {
     registrationAddress: string | null
 }
 
-export interface ImportEmployeeExcelRows {
-    new: boolean,
-    errorCount: number,
+export interface ImportEmployeeExcelRows extends ImportExcelRow {
     email: string,
     employeeId: number | null,
     displayName: ExcelRowDataProperty<string>,
@@ -68,81 +50,11 @@ export interface ImportEmployeeExcelRows {
     documentNumber: ExcelRowDataProperty<string>,
     documentIssuedDate: ExcelRowDataProperty<string>,
     documentIssuedBy: ExcelRowDataProperty<string>,
-    registrationAddress: ExcelRowDataProperty<string>,
-
-    updatedCellsCount: number
+    registrationAddress: ExcelRowDataProperty<string>
 }
 
-export interface ExcelRowDataProperty<T> {
-    currentValue: T | null,
-    importedValue: T | null,
-    raw: string | null,
-    error: string | null,
-    updated: false
-}
-
-export interface ImportProcessStats {
-    processedRows: number,
-    errors: number,
-    newItems: number,
-    updatedItems: number
-}
-
-export interface AdminEmployeeImportService {
-    getActiveOrStartNewImportProcess(): Promise<ImportWorkflow>;
-
-    getUploadImportFileUrl(processId: number): string;
-
-    applyConfigAndPreview(processId: number, config: EmployeeImportConfig): Promise<ImportWorkflow>;
-
-    commit(processId: number): Promise<ImportWorkflow>;
-
-    cancel(processId: number): Promise<ImportWorkflow>;
-
-}
-
-
-class RestAdminEmployeeImportService implements AdminEmployeeImportService {
-    constructor(private httpService: AxiosInstance) {
-    }
-
-    getActiveOrStartNewImportProcess(): Promise<ImportWorkflow> {
-        return httpService.post(`v1/admin/employees/import`)
-            .then((response: AxiosResponse<ImportWorkflow>) => {
-                return response.data;
-            });
-    }
-
-    getUploadImportFileUrl(processId: number): string {
-        return `${httpService.defaults.baseURL}v1/admin/employees/import/${processId}/file`;
-    }
-
-    applyConfigAndPreview(processId: number, config: EmployeeImportConfig): Promise<ImportWorkflow> {
-        return httpService.post(`v1/admin/employees/import/${processId}/config`, config)
-            .then((response: AxiosResponse<ImportWorkflow>) => {
-                return response.data;
-            });
-    }
-
-    cancel(processId: number): Promise<ImportWorkflow> {
-        return httpService.post(`v1/admin/employees/import/${processId}/cancel`)
-            .then((response: AxiosResponse<ImportWorkflow>) => {
-                return response.data;
-            });
-    }
-
-    commit(processId: number): Promise<ImportWorkflow> {
-        return httpService.post(`v1/admin/employees/import/${processId}/commit`)
-            .then((response: AxiosResponse<ImportWorkflow>) => {
-                return response.data;
-            });
-    }
-
-
-}
-
-
-const adminEmployeeImportService: AdminEmployeeImportService = new RestAdminEmployeeImportService(httpService);
+const adminEmployeeImportService: ImportService<EmployeeImportConfig, ImportEmployeeExcelRows>
+    = new RestImportService<EmployeeImportConfig, ImportEmployeeExcelRows>(httpService, 'v1/admin/employees/import');
 
 export default adminEmployeeImportService;
 

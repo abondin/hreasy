@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
 import ru.abondin.hreasy.platform.repo.employee.admin.imp.ImportWorkflowEntry;
@@ -61,7 +62,7 @@ public abstract class ExcelImportServiceBase<C extends ExcelImportConfig, R exte
         log.info("Upload {} to {} import process by {}", filePart.filename(), processId, auth.getUsername());
         return validateImport(auth)
                 .flatMap(v -> workflowRepo.findById(processId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(processId))
                 .flatMap(entry -> fileStorage.uploadFile(getImportFolder(auth.getEmployeeInfo().getEmployeeId(), entry.getWfType()),
                                 Integer.toString(processId),
                                 filePart, contentLength)
@@ -93,7 +94,7 @@ public abstract class ExcelImportServiceBase<C extends ExcelImportConfig, R exte
         return validateImport(auth)
                 // 1. Get import workflow in the database
                 .flatMap(v -> workflowRepo.findById(processId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(processId))
                 // 2. Read the Excel file, stored at file system on previous step
                 .flatMap(entry -> fileStorage.streamFile
                                 (getImportFolder(auth.getEmployeeInfo().getEmployeeId(), entry.getWfType()), Integer.toString(processId))
@@ -121,7 +122,7 @@ public abstract class ExcelImportServiceBase<C extends ExcelImportConfig, R exte
         return validateImport(auth)
                 // 1. Get import workflow in the database
                 .flatMap(v -> workflowRepo.findById(processId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(processId))
                 // 2. Process each row one by one
                 .flatMap(entry -> {
                     // 3. Check that import process configuration is up-to-date
@@ -142,12 +143,12 @@ public abstract class ExcelImportServiceBase<C extends ExcelImportConfig, R exte
     }
 
     @Transactional
-    public Mono<ExcelImportWorkflowDto> abort(AuthContext auth, Integer processId) {
+    public Mono<ExcelImportWorkflowDto<C, R>> abort(AuthContext auth, Integer processId) {
         log.info("Abort import process {} by {}", processId, auth.getUsername());
         return validateImport(auth)
                 // 1. Get import workflow in the database
                 .flatMap(v -> workflowRepo.findById(processId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(processId))))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(processId))
                 // 2. Process each row one by one
                 .flatMap(entry -> {
                     entry.setState(ImportWorkflowEntry.STATE_ABORTED);

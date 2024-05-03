@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.admin.employee.kids.imp.dto;
 
 import lombok.Data;
 import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportRowDto;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.LocalDate;
 import java.util.stream.Stream;
@@ -28,7 +29,7 @@ public class ImportEmployeeKidExcelRowDto extends ExcelImportRowDto {
      * If kid found in database
      */
     private Integer employeeKidId;
-    private Integer parentId;
+    private SimpleDictDto parent;
 
     private DataProperty<LocalDate> birthday = new DataProperty<>();
 

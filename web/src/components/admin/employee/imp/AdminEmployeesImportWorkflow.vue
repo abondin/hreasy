@@ -90,23 +90,23 @@
 import Vue from 'vue'
 import Component from 'vue-class-component';
 import adminEmployeeImportService, {
-  EmployeeImportConfig,
-  ImportWorkflow
+  EmployeeImportConfig, ImportEmployeeExcelRows
 } from "@/components/admin/employee/imp/admin.employee.import.service";
 import {errorUtils} from "@/components/errors";
 import MyFileUploader from "@/components/shared/MyFileUploader.vue";
 import AdminEmployeesImportConfigForm from "@/components/admin/employee/imp/AdminEmployeesImportConfigForm.vue";
 import AdminEmployeesImportPreview from "@/components/admin/employee/imp/AdminEmployeesImportPreview.vue";
+import {ImportConfig, ImportExcelRow, ImportWorkflow} from "@/components/admin/imp/import.base";
 
 
 @Component({
   components: {AdminEmployeesImportPreview, AdminEmployeesImportConfigForm, 'file-upload': MyFileUploader}
 })
-export default class AdminEmployeesImportWorkflowComponent extends Vue {
+export default class AdminEmployeesImportWorkflowComponent<C extends ImportConfig, R extends ImportExcelRow> extends Vue {
   loading = false;
   step: 1 | 2 | 3 | 4 = 1;
   config: EmployeeImportConfig = this.defaultConfig();
-  workflow: ImportWorkflow | null = null;
+  workflow: ImportWorkflow<EmployeeImportConfig, ImportEmployeeExcelRows> | null = null;
   error: string | null = null;
   applyDialog = false;
 
@@ -170,7 +170,7 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
     );
   }
 
-  private refreshStep(workflow: ImportWorkflow) {
+  private refreshStep(workflow: ImportWorkflow<EmployeeImportConfig, ImportEmployeeExcelRows>) {
     this.step = Math.max(1, workflow.state + 1) as (1 | 2 | 3 | 4);
   }
 

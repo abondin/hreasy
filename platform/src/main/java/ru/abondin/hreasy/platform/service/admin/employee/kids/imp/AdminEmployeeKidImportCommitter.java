@@ -34,10 +34,9 @@ public class AdminEmployeeKidImportCommitter implements ExcelImportCommitter<Imp
                         // 1. Prepare body to update
                         return createOrUpdateBody(ctx, row, processId)
                                 // 2. Commit changes in database
-                                .flatMap(body -> row.isNew() ? employeeService.createNewKid(ctx, row.getEmployeeKidId(), body) : employeeService.updateKid(ctx, row.getParentId(), row.getEmployeeKidId(), body))
-                                .doOnError(e -> {
-                                    log.error("Unable to commit employee {} kid {}", row.getParentId(), row.getDisplayName(), e);
-                                }).map(id -> 1 // Show that row was updated
+                                .flatMap(body -> row.isNew() ? employeeService.createNewKid(ctx, row.getEmployeeKidId(), body) : employeeService.updateKid(ctx, row.getParent().getId(), row.getEmployeeKidId(), body))
+                                .doOnError(e -> log.error("Unable to commit employee {} kid {}", row.getParent(), row.getDisplayName(), e))
+                                .map(id -> 1 // Show that row was updated
                                 );
                     }
                 }
@@ -46,17 +45,15 @@ public class AdminEmployeeKidImportCommitter implements ExcelImportCommitter<Imp
 
     private Mono<CreateOrUpdateEmployeeKidBody> createOrUpdateBody(AuthContext ctx, ImportEmployeeKidExcelRowDto row, Integer processId) {
         return (row.isNew() ? Mono.just(new CreateOrUpdateEmployeeKidBody()) :
-                employeeService.getKid(ctx, row.getParentId(), row.getEmployeeKidId())
-                        .map(entry -> mapper.createOrUpdateBodyFromEntry(entry))
+                employeeService.getKid(ctx, row.getParent().getId(), row.getEmployeeKidId())
+                        .map(mapper::createOrUpdateBodyFromEntry)
         ).map(body -> {
             body.setImportProcessId(processId);
             body.setDisplayName(row.getDisplayName());
-            apply(row.getBirthday(), v -> body.setBirthday(v));
+            apply(row.getBirthday(), body::setBirthday);
             return body;
         });
     }
-
-
 
 
 }

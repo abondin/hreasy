@@ -19,7 +19,7 @@ public interface EmployeeKidRepo extends ReactiveCrudRepository<EmployeeKidEntry
             " as parent_not_dismissed" +
             " from empl.kids k left join empl.employee e on k.parent=e.id";
 
-    @Query(BASE_QUERY + " order by k.displayName")
+    @Query(BASE_QUERY + " order by k.name")
     Flux<EmployeeKidView> findAllKidsWithParentInfo(@Param("now") OffsetDateTime now);
 
     @Query(BASE_QUERY + " where k.parent=:employeeId and k.id=:employeeKidId")

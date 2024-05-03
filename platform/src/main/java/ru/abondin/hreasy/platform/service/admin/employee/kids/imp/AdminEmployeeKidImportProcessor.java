@@ -18,6 +18,7 @@ import ru.abondin.hreasy.platform.service.admin.employee.kids.imp.dto.ImportEmpl
 import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportProcessorUtils;
 import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportContext;
 import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportProcessingResult;
+import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.io.IOException;
 import java.util.List;
@@ -100,7 +101,7 @@ public class AdminEmployeeKidImportProcessor {
                 e.getEmail().trim().toLowerCase(context.locale())
                         .equals(trimmedParentEmailInLowerCase)).findFirst().orElseThrow(() -> new BusinessError("errors.import.kids.parent.notFound", trimmedParentEmailInLowerCase));
 
-        excelRow.setParentId(existingParentEmployee.getId());
+        excelRow.setParent(new SimpleDictDto(existingParentEmployee.getId(), existingParentEmployee.getDisplayName()));
 
         var trimmedDisplayName = excelRow.getDisplayName().toLowerCase(context.locale()).trim();
         var existingKid = context.entries().stream().filter(e ->

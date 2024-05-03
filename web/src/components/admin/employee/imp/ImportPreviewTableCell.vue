@@ -6,7 +6,7 @@
       <template v-slot:activator="{ on }">
         <span v-on="on" class="error--text">
           <v-icon class="error--text" x-small>mdi-alert</v-icon>
-          {{ $t('Ошибка') }} ({{cell.raw}})
+          {{ $t('Ошибка') }} ({{ cell.raw }})
         </span>
       </template>
       {{ cell.error }}.
@@ -27,10 +27,10 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
-import {ExcelRowDataProperty} from "@/components/admin/employee/imp/admin.employee.import.service";
 import {Prop} from "vue-property-decorator";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import {SimpleDict} from "@/store/modules/dict";
+import {ExcelRowDataProperty} from "@/components/admin/imp/import.base";
 
 
 @Component({
