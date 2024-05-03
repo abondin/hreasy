@@ -2,7 +2,6 @@ package ru.abondin.hreasy.platform.service.admin.employee.kids.imp;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -65,19 +64,13 @@ public class AdminEmployeeKidImportProcessor {
                                                         .collect(Collectors.toSet())
                                         ).collectList().flatMap(employees ->
                                                 // 3. Load existing kids
-                                                kidsRepo.findByParentEmailAndDisplayNameInLowerCase(
-                                                        fromExcel.stream().map(
-                                                                        e -> Pair.of(
-                                                                                e.getParentEmail().trim().toLowerCase(locale),
-                                                                                e.getDisplayName().trim().toLowerCase(locale)))
-                                                                .collect(Collectors.toSet())
-                                                        , dateTimeService.now()
-                                                ).collectList().map(kids -> {
-                                                            // 4. Merge excel with existing employees and find the diff
-                                                            merge(fromExcel, new ExcelImportContext<>(kids, locale), employees);
-                                                            return fromExcel;
-                                                        }
-                                                )
+                                                kidsRepo.findAllKidsWithParentInfo(dateTimeService.now())
+                                                        .collectList().map(kids -> {
+                                                                    // 4. Merge excel with existing employees and find the diff
+                                                                    merge(fromExcel, new ExcelImportContext<>(kids, locale), employees);
+                                                                    return fromExcel;
+                                                                }
+                                                        )
 
                                         )))
                 .map(ExcelImportProcessingResult::new);
@@ -100,7 +93,9 @@ public class AdminEmployeeKidImportProcessor {
 
         var existingParentEmployee = employees.stream().filter(e ->
                 e.getEmail().trim().toLowerCase(context.locale())
-                        .equals(trimmedParentEmailInLowerCase)).findFirst().orElseThrow(() -> new BusinessError("errors.import.kids.parent.notFound", trimmedParentEmailInLowerCase));
+                        .equals(trimmedParentEmailInLowerCase)).findFirst().orElseThrow(
+                                () -> new BusinessError("errors.import.kids.parent.notFound", trimmedParentEmailInLowerCase,
+                                        Integer.toString(excelRow.getRowNumber())));
 
         excelRow.setParent(new SimpleDictDto(existingParentEmployee.getId(), existingParentEmployee.getDisplayName()));
 

@@ -69,7 +69,7 @@ const routes = [
             {path: 'list', component: AdminEmployees},
             {path: 'kids', component: AdminEmployeeKids},
             {path: 'import', component: AdminEmployeesImportWorkflowComponent},
-            {path: 'kids/import', component: AdminEmployeesKidsImportWorkflowComponent}
+            {path: 'kids-import', component: AdminEmployeesKidsImportWorkflowComponent}
         ]
     },
     {
