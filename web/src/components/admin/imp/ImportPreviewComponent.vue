@@ -114,7 +114,7 @@ export interface ImportPreviewDataHeader<T = any> extends DataTableHeader<T> {
 }
 
 @Component({components: {ImportPreviewTableCell}})
-export default class AdminEmployeesImportPreview<C extends ImportConfig, R extends ImportExcelRow>
+export default class ImportPreviewComponent<C extends ImportConfig, R extends ImportExcelRow>
     extends Vue {
   headers: ImportPreviewDataHeader[] = [];
 

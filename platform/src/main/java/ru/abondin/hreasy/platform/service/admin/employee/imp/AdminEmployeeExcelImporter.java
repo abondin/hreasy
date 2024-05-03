@@ -23,6 +23,12 @@ public class AdminEmployeeExcelImporter extends ExcelImporter<EmployeeImportConf
     private final String tableBeanName = "employees";
     private final String tableItemBeanName = "employee";
 
+
+    @Override
+    protected Class<ImportEmployeeExcelRowDto> getRowClass() {
+        return ImportEmployeeExcelRowDto.class;
+    }
+
     @Override
     protected BusinessError validateMandatoryFields(EmployeeImportConfig config, ImportEmployeeExcelRowDto row) {
         if (StringUtils.isBlank(row.getEmail())) {

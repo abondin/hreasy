@@ -6,7 +6,6 @@ import org.apache.poi.ss.util.CellReference;
 import org.jxls.reader.*;
 import reactor.core.publisher.Flux;
 import ru.abondin.hreasy.platform.BusinessError;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
 import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportConfig;
 import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportRowDto;
 
@@ -21,10 +20,23 @@ import java.util.HashMap;
 @Slf4j
 public abstract class ExcelImporter<C extends ExcelImportConfig, R extends ExcelImportRowDto> {
 
+    /**
+     * Accept column name in letter format (AN) or column number format (40)
+     *
+     * @param column
+     * @return
+     */
+    public static int getColumnIndex(String column) {
+        try {
+            return Integer.parseInt(column) - 1;
+        } catch (NumberFormatException ex) {
+            return CellReference.convertColStringToIndex(column);
+        }
+    }
+
     protected abstract String getTableBeanName();
 
     protected abstract String getTableItemBeanName();
-
 
     public Flux<R> importFromFile(C config, InputStream file) {
         var beans = new HashMap<String, Object>();
@@ -56,6 +68,7 @@ public abstract class ExcelImporter<C extends ExcelImportConfig, R extends Excel
 
     protected abstract BusinessError validateMandatoryFields(C config, R row);
 
+    protected abstract Class<R> getRowClass();
 
     private XLSReader configureReader(C config) {
         var reader = new XLSReaderImpl();
@@ -79,7 +92,7 @@ public abstract class ExcelImporter<C extends ExcelImportConfig, R extends Excel
         loopBlock.setEndRow(config.getTableStartRow() - 1);
         loopBlock.setItems(getTableBeanName());
         loopBlock.setVar(getTableItemBeanName());
-        loopBlock.setVarType(ImportEmployeeExcelRowDto.class);
+        loopBlock.setVarType(getRowClass());
 
         var breakCondition = new SimpleSectionCheck();
         var rowCheck = new OffsetRowCheckImpl();
@@ -115,20 +128,6 @@ public abstract class ExcelImporter<C extends ExcelImportConfig, R extends Excel
         mapping.setNullAllowed(!keyProp);
         mapping.setType(String.class.getCanonicalName());
         reader.addMapping(mapping);
-    }
-
-    /**
-     * Accept column name in letter format (AN) or column number format (40)
-     *
-     * @param column
-     * @return
-     */
-    public static int getColumnIndex(String column) {
-        try {
-            return Integer.parseInt(column) - 1;
-        } catch (NumberFormatException ex) {
-            return CellReference.convertColStringToIndex(column);
-        }
     }
 
 

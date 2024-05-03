@@ -43,4 +43,9 @@ public class AdminEmployeeKidsExcelImporter extends ExcelImporter<EmployeeKidImp
         addSimpleMapping(reader, config, "displayName", config.getColumns().getDisplayName(), true);
         addSimpleMapping(reader, config, "birthday", config.getColumns().getBirthday(), false);
     }
+
+    @Override
+    protected Class<ImportEmployeeKidExcelRowDto> getRowClass() {
+        return ImportEmployeeKidExcelRowDto.class;
+    }
 }

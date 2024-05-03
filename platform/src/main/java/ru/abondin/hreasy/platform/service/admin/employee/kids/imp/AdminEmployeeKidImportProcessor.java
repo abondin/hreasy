@@ -7,12 +7,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
-import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidView;
+import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.admin.employee.kids.imp.dto.EmployeeKidImportConfig;
 import ru.abondin.hreasy.platform.service.admin.employee.kids.imp.dto.ImportEmployeeKidExcelRowDto;
 import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportProcessorUtils;
@@ -37,7 +37,7 @@ public class AdminEmployeeKidImportProcessor {
     private final AdminEmployeeKidsExcelImporter importer;
     private final EmployeeKidRepo kidsRepo;
     private final EmployeeWithAllDetailsRepo emplRepo;
-    private final I18Helper i18n;
+    private final DateTimeService dateTimeService;
 
     private final ExcelImportProcessorUtils processorUtils;
 
@@ -71,6 +71,7 @@ public class AdminEmployeeKidImportProcessor {
                                                                                 e.getParentEmail().trim().toLowerCase(locale),
                                                                                 e.getDisplayName().trim().toLowerCase(locale)))
                                                                 .collect(Collectors.toSet())
+                                                        , dateTimeService.now()
                                                 ).collectList().map(kids -> {
                                                             // 4. Merge excel with existing employees and find the diff
                                                             merge(fromExcel, new ExcelImportContext<>(kids, locale), employees);

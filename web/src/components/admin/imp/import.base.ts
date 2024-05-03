@@ -69,7 +69,7 @@ export interface ImportService<C extends ImportConfig, R extends ImportExcelRow>
 
     getUploadImportFileUrl(processId: number): string;
 
-    applyConfigAndPreview(processId: number, config: EmployeeImportConfig): Promise<ImportWorkflow<C, R>>;
+    applyConfigAndPreview(processId: number, config: C): Promise<ImportWorkflow<C, R>>;
 
     commit(processId: number): Promise<ImportWorkflow<C, R>>;
 
@@ -91,7 +91,7 @@ export class RestImportService<C extends ImportConfig, R extends ImportExcelRow>
         return `${httpService.defaults.baseURL}${this.baseUrl}/${processId}/file`;
     }
 
-    applyConfigAndPreview(processId: number, config: EmployeeImportConfig): Promise<ImportWorkflow<C, R>> {
+    applyConfigAndPreview(processId: number, config: C): Promise<ImportWorkflow<C, R>> {
         return httpService.post(`${this.baseUrl}/${processId}/config`, config)
             .then((response: AxiosResponse<ImportWorkflow<C, R>>) => {
                 return response.data;

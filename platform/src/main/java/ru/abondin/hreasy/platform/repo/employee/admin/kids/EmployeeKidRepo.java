@@ -23,9 +23,13 @@ public interface EmployeeKidRepo extends ReactiveCrudRepository<EmployeeKidEntry
     Flux<EmployeeKidView> findAllKidsWithParentInfo(@Param("now") OffsetDateTime now);
 
     @Query(BASE_QUERY + " where k.parent=:employeeId and k.id=:employeeKidId")
-    Mono<EmployeeKidView> getFullInfo(@Param("employeeId") Integer employeeId, @Param("employeeKidId") Integer employeeKidId);
+    Mono<EmployeeKidView> getFullInfo(@Param("employeeId") Integer employeeId,
+                                      @Param("employeeKidId") Integer employeeKidId,
+                                      @Param("now") OffsetDateTime now);
 
     @Query(BASE_QUERY + " where (e.email,k.displayName) in (:parentEmailKidDisplayNamePairs)")
-    Flux<EmployeeKidView> findByParentEmailAndDisplayNameInLowerCase(@Param("parentEmailKidDisplayNamePairs") Set<Pair<String, String>> parentEmailKidDisplayNamePairs);
+    Flux<EmployeeKidView> findByParentEmailAndDisplayNameInLowerCase(
+            @Param("parentEmailKidDisplayNamePairs") Set<Pair<String, String>> parentEmailKidDisplayNamePairs,
+            @Param("now") OffsetDateTime now);
 }
 

@@ -1,89 +1,9 @@
-<!-- Employees short info table-->
 <template>
-  <div>
-    <v-skeleton-loader v-if="loading" class="mx-auto" type="card"></v-skeleton-loader>
-    <v-stepper v-model="step" v-else-if="workflow">
-      <v-stepper-header>
-        <v-stepper-step step="1" editable>
-          {{ $t('Загрузка файла') }}
-        </v-stepper-step>
-        <v-stepper-step step="2" editable>
-          {{ $t('Конфигурация') }}
-        </v-stepper-step>
-        <v-stepper-step step="3" editable>
-          {{ $t('Предпросмотр') }}
-        </v-stepper-step>
-      </v-stepper-header>
-      <v-stepper-items>
-        <v-alert v-if="error" class="error">{{ error }}</v-alert>
-        <!--<editor-fold desc="File uploader">-->
-        <v-stepper-content step="1">
-          <div class="text-center font-weight-bold" v-if="workflow.filename">
-            {{ $t('Выбранный файл') }}: {{ workflow.filename }}
-          </div>
-          <file-upload
-              :file-id="'process-'+workflow.id"
-              :post-action="getUploadImportFileUrl()"
-              @close="uploadComplete"
-          ></file-upload>
-        </v-stepper-content>
-        <!--</editor-fold>-->
-        <!--<editor-fold desc="Configuration">-->
-        <v-stepper-content step="2" class="pa-0">
-          <import-config-form :config="config" @back="step=1" @apply="updateConfig()">
-          </import-config-form>
-        </v-stepper-content>
-        <!--</editor-fold>-->
-        <!--<editor-fold desc="Preview">-->
-        <v-stepper-content step="3" class="pa-0">
-          <admin-employees-import-preview :workflow="workflow" v-if="workflow.importedRows"
-                                          @back="step=2" @apply="applyChanges()"></admin-employees-import-preview>
-          <v-alert v-else type="warning">
-            {{ $t('Не удалось корректно обратотать файл. Загрузите другой или измените конфигурацию') }}
-          </v-alert>
-        </v-stepper-content>
-        <!--</editor-fold>-->
-        <!--<editor-fold desc="Success">-->
-        <v-stepper-content step="4">
-          <v-alert type="success">
-            {{ $t('Изменения успешно применились!') }}
-          </v-alert>
-        </v-stepper-content>
-
-        <!--</editor-fold>-->
-      </v-stepper-items>
-      <!--<editor-fold desc="Actions buttons">-->
-      <v-card-actions>
-        <v-btn v-if="step>1 && step < 4" @click="goBack()">
-          <v-icon>mdi-arrow-left</v-icon>
-          {{ $t('Назад') }}
-        </v-btn>
-        <v-spacer></v-spacer>
-        <v-btn v-if="step>1 || workflow.state>0" @click="apply()" :class="{primary:step==3}">
-          {{ step == 3 ? $t('Применить') : (step == 4 ? $t('Закрыть') : $t('Далее')) }}
-          <v-icon v-if="step!=4 && step!=3">mdi-arrow-right</v-icon>
-        </v-btn>
-      </v-card-actions>
-      <!--</editor-fold>-->
-    </v-stepper>
-
-    <!--<editor-fold desc="Apply Dialog">-->
-    <v-dialog v-model="applyDialog" width="500">
-      <v-card>
-        <v-card-title primary-title>{{ $t('Применение изменений в системе') }}</v-card-title>
-
-        <v-card-text>
-          {{ $t('Вы проверили все вносимые изменения и готовы применить их?') }}
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn text @click="applyDialog = false">{{ $t('Нет') }}</v-btn>
-          <v-btn color="primary" @click="commit()">{{ $t('Да') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!--</editor-fold>-->
-  </div>
+  <import-workflow-component :on-complete-action="onCompleteAction" :import-service="importService"
+                             :default-config-provider="defaultConfigProvider"
+                             :preview-filter-function="previewFilterFunction"
+                             :preview-headers-loader="previewHeadersLoader"
+  />
 </template>
 
 
@@ -94,96 +14,23 @@ import adminEmployeeImportService, {
   EmployeeImportConfig,
   ImportEmployeeExcelRows
 } from "@/components/admin/employee/imp/admin.employee.import.service";
-import {errorUtils} from "@/components/errors";
-import MyFileUploader from "@/components/shared/MyFileUploader.vue";
-import AdminEmployeesImportPreview from "@/components/admin/employee/imp/AdminEmployeesImportPreview.vue";
-import {ImportConfig, ImportExcelRow, ImportWorkflow} from "@/components/admin/imp/import.base";
-import ImportConfigForm from "@/components/admin/imp/ImportConfigForm.vue";
+import ImportWorkflowComponent from "@/components/admin/imp/ImportWorkflowComponent.vue";
+import {DateTimeUtils} from "@/components/datetimeutils";
+import {ImportPreviewDataHeader, ImportPreviewFilter} from "@/components/admin/imp/ImportPreviewComponent.vue";
 
 
 @Component({
-  components: {AdminEmployeesImportPreview, ImportConfigForm, 'file-upload': MyFileUploader}
+  components: {ImportWorkflowComponent}
 })
-export default class AdminEmployeesImportWorkflowComponent<C extends ImportConfig, R extends ImportExcelRow> extends Vue {
-  loading = false;
-  step: 1 | 2 | 3 | 4 = 1;
-  config: EmployeeImportConfig = this.defaultConfig();
-  workflow: ImportWorkflow<EmployeeImportConfig, ImportEmployeeExcelRows> | null = null;
-  error: string | null = null;
-  applyDialog = false;
+export default class AdminEmployeesImportWorkflowComponent extends Vue {
 
-  /**
-   * Lifecycle hook
-   */
-  created() {
-    this.fetchData();
+  private importService = adminEmployeeImportService;
+
+  onCompleteAction() {
+    this.$router.push('/admin/employees');
   }
 
-  private fetchData() {
-    return this.wrapServerRequest(
-        adminEmployeeImportService.getActiveOrStartNewImportProcess().then(data => {
-          this.workflow = data;
-          this.config = data.config || this.defaultConfig();
-          this.refreshStep(this.workflow)
-        }));
-  }
-
-  private getUploadImportFileUrl() {
-    return adminEmployeeImportService.getUploadImportFileUrl(this.workflow!.id);
-  }
-
-  private apply() {
-    switch (this.step) {
-      case 1:
-        this.uploadComplete();
-        break;
-      case 2:
-        this.applyConfig()
-        break;
-      case 3:
-        this.applyDialog = true;
-        break;
-      case 4:
-        this.$router.push('/admin/employees');
-    }
-  }
-
-  private uploadComplete() {
-    return this.fetchData();
-  }
-
-  private applyConfig() {
-    return this.wrapServerRequest(adminEmployeeImportService
-        .applyConfigAndPreview(this.workflow!.id, this.config!)
-        .then(data => {
-          this.workflow = data;
-          this.refreshStep(this.workflow);
-        }));
-  }
-
-  private commit() {
-    this.applyDialog = false;
-    return this.wrapServerRequest(
-        adminEmployeeImportService.commit(this.workflow!.id)
-            .then(data => {
-              this.workflow = data;
-              this.refreshStep(this.workflow);
-            })
-    );
-  }
-
-  private refreshStep(workflow: ImportWorkflow<EmployeeImportConfig, ImportEmployeeExcelRows>) {
-    this.step = Math.max(1, workflow.state + 1) as (1 | 2 | 3 | 4);
-  }
-
-  private goBack() {
-    if (this.step > 0) {
-      this.error = null;
-      this.step = (this.step - 1) as (1 | 2 | 3 | 4);
-    }
-  }
-
-  defaultConfig(): EmployeeImportConfig {
+  defaultConfigProvider(): EmployeeImportConfig {
     return {
       sheetNumber: 1,
       tableStartRow: 11,
@@ -207,13 +54,94 @@ export default class AdminEmployeesImportWorkflowComponent<C extends ImportConfi
     }
   }
 
-  private wrapServerRequest<T>(request: Promise<T>): Promise<string | T> {
-    this.loading = true;
-    this.error = null;
-    return request
-        .catch((er: any) => this.error = errorUtils.shortMessage(er))
-        .finally(() => this.loading = false);
+
+  private previewHeadersLoader() {
+    const headers: ImportPreviewDataHeader[] = [];
+    headers.push({text: this.$tc('Строка'), value: 'rowNumber', width: 15});
+    headers.push({text: this.$tc('Email'), value: 'email', width: 280});
+    headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 280, format: 'string'});
+    headers.push({text: this.$tc('Телефон'), value: 'phone', width: 150, format: 'string'});
+    headers.push({
+      text: this.$tc('Дата трудоустройства'),
+      value: 'dateOfEmployment',
+      width: 50,
+      class: "text-wrap",
+      sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
+    });
+    headers.push({
+      text: this.$tc('Дата увольнения'),
+      value: 'dateOfDismissal',
+      class: "text-wrap",
+      width: 50,
+      sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
+    });
+    headers.push({
+      text: this.$tc('День рождения'),
+      value: 'birthday',
+      class: "text-wrap",
+      width: 50,
+      sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
+    });
+    headers.push({text: this.$tc('Позиция'), value: 'position', width: 200, format: 'dict'});
+    headers.push({text: this.$tc('Подразделение'), value: 'department', width: 300, format: 'dict'});
+    headers.push({text: this.$tc('Организация'), value: 'organization', width: 300, format: 'dict'});
+    headers.push({
+      text: this.$tc('IMPORT_CONFIG.documentSeries'),
+      value: 'documentSeries',
+      width: 35,
+      format: 'string'
+    });
+    headers.push({
+      text: this.$tc('IMPORT_CONFIG.documentNumber'),
+      value: 'documentNumber',
+      width: 34,
+      format: 'string'
+    });
+    headers.push({
+      text: this.$tc('IMPORT_CONFIG.documentIssuedDate'),
+      value: 'documentIssuedDate',
+      width: 100,
+      format: 'date'
+    });
+    headers.push({
+      text: this.$tc('IMPORT_CONFIG.documentIssuedBy'),
+      value: 'documentIssuedBy',
+      width: 150,
+      format: 'string'
+    });
+    headers.push({
+      text: this.$tc('Адрес по регистрации'),
+      value: 'registrationAddress',
+      width: 500,
+      format: 'string'
+    });
+    headers.push({
+      text: this.$tc('Идентификатор во внешней ERP системе'),
+      value: 'externalErpId',
+      width: 150,
+      format: 'string'
+    });
+    headers.push({text: this.$tc('Пол'), value: 'sex', width: 100, format: 'string'});
+    return headers;
   }
+
+  private previewFilterFunction(items: ImportEmployeeExcelRows[], filter: ImportPreviewFilter) {
+    return items.filter((item) => {
+      let result = true
+      if (filter.hideNotUpdatedWithoutErrors) {
+        result = result && (item.updatedCellsCount > 0 || item.errorCount > 0);
+      }
+      if (filter.search && filter.search.trim().length > 0) {
+        const search = filter.search.trim().toLowerCase();
+        result = result && (
+            (item.displayName?.importedValue && item.displayName.importedValue.toLowerCase().indexOf(search) >= 0)
+            || (item.email && item.email.toLowerCase().indexOf(search) >= 0)
+        ) as boolean;
+      }
+      return result;
+    });
+  }
+
 }
 </script>
 

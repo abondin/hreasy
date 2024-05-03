@@ -55,7 +55,7 @@ public class AdminEmployeeService {
     public Mono<EmployeeKidDto> getKid(AuthContext auth, Integer employeeId, Integer employeeKidId) {
         log.debug("Get kid by id {} by {}", employeeKidId, auth.getUsername());
         return securityValidator.validateViewEmployeeFull(auth)
-                .flatMap(sec -> kidsRepo.getFullInfo(employeeId, employeeKidId))
+                .flatMap(sec -> kidsRepo.getFullInfo(employeeId, employeeKidId, dateTimeService.now()))
                 .map(m -> mapper.fromEntry(m, dateTimeService.now()));
     }
 
