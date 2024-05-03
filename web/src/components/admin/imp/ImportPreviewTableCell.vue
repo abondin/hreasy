@@ -59,6 +59,6 @@ export default class ImportPreviewTableCell<T> extends Vue {
 </script>
 
 <style lang="scss">
-@import 'import.scss';
+@import 'import';
 
 </style>

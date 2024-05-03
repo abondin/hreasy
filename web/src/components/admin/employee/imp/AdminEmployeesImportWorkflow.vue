@@ -30,8 +30,8 @@
         <!--</editor-fold>-->
         <!--<editor-fold desc="Configuration">-->
         <v-stepper-content step="2" class="pa-0">
-          <admin-employees-import-config-form :config="config" @back="step=1" @apply="updateConfig()">
-          </admin-employees-import-config-form>
+          <import-config-form :config="config" @back="step=1" @apply="updateConfig()">
+          </import-config-form>
         </v-stepper-content>
         <!--</editor-fold>-->
         <!--<editor-fold desc="Preview">-->
@@ -76,7 +76,8 @@
           {{ $t('Вы проверили все вносимые изменения и готовы применить их?') }}
         </v-card-text>
         <v-card-actions>
-          <v-spacer></v-spacer><v-btn text @click="applyDialog = false">{{ $t('Нет') }}</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn text @click="applyDialog = false">{{ $t('Нет') }}</v-btn>
           <v-btn color="primary" @click="commit()">{{ $t('Да') }}</v-btn>
         </v-card-actions>
       </v-card>
@@ -90,17 +91,18 @@
 import Vue from 'vue'
 import Component from 'vue-class-component';
 import adminEmployeeImportService, {
-  EmployeeImportConfig, ImportEmployeeExcelRows
+  EmployeeImportConfig,
+  ImportEmployeeExcelRows
 } from "@/components/admin/employee/imp/admin.employee.import.service";
 import {errorUtils} from "@/components/errors";
 import MyFileUploader from "@/components/shared/MyFileUploader.vue";
-import AdminEmployeesImportConfigForm from "@/components/admin/employee/imp/AdminEmployeesImportConfigForm.vue";
 import AdminEmployeesImportPreview from "@/components/admin/employee/imp/AdminEmployeesImportPreview.vue";
 import {ImportConfig, ImportExcelRow, ImportWorkflow} from "@/components/admin/imp/import.base";
+import ImportConfigForm from "@/components/admin/imp/ImportConfigForm.vue";
 
 
 @Component({
-  components: {AdminEmployeesImportPreview, AdminEmployeesImportConfigForm, 'file-upload': MyFileUploader}
+  components: {AdminEmployeesImportPreview, ImportConfigForm, 'file-upload': MyFileUploader}
 })
 export default class AdminEmployeesImportWorkflowComponent<C extends ImportConfig, R extends ImportExcelRow> extends Vue {
   loading = false;
@@ -186,21 +188,21 @@ export default class AdminEmployeesImportWorkflowComponent<C extends ImportConfi
       sheetNumber: 1,
       tableStartRow: 11,
       columns: {
-        displayName : 'B',
-        externalErpId : 'H',
-        email : 'R',
-        phone : 'AI',
-        department : 'AJ',
-        position : 'AK',
-        dateOfEmployment : 'AL',
-        dateOfDismissal : 'AM',
-        birthday : 'AO',
-        sex : 'AP',
-        documentSeries : 'AR',
-        documentNumber : 'AS',
-        documentIssuedDate : 'AT',
-        documentIssuedBy : 'AU',
-        registrationAddress : 'AW'
+        displayName: 'B',
+        externalErpId: 'H',
+        email: 'R',
+        phone: 'AI',
+        department: 'AJ',
+        position: 'AK',
+        dateOfEmployment: 'AL',
+        dateOfDismissal: 'AM',
+        birthday: 'AO',
+        sex: 'AP',
+        documentSeries: 'AR',
+        documentNumber: 'AS',
+        documentIssuedDate: 'AT',
+        documentIssuedBy: 'AU',
+        registrationAddress: 'AW'
       }
     }
   }

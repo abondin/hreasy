@@ -76,9 +76,9 @@ import {Prop} from "vue-property-decorator";
 @Component({
   components: {}
 })
-export default class AdminEmployeesImportConfigForm extends Vue {
+export default class ImportConfigForm<C extends EmployeeImportConfig> extends Vue {
   @Prop({required: true})
-  config!: EmployeeImportConfig;
+  config!: C;
 }
 </script>
 
