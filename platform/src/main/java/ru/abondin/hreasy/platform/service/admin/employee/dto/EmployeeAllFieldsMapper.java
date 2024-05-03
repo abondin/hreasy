@@ -76,7 +76,7 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
     }
 
     @Mapping(target = "parent", source = ".", qualifiedByName = "kidParent")
-    @Mapping(target = "age", qualifiedByName = "age")
+    @Mapping(target = "age", qualifiedByName = "age", source = ".")
     EmployeeKidDto fromEntry(EmployeeKidView kid, @Context OffsetDateTime now);
 
     @Named("age")

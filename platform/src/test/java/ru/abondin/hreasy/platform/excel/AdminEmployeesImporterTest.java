@@ -126,7 +126,7 @@ public class AdminEmployeesImporterTest {
 
 
     private void assertEqualsStr(String expected, ImportEmployeeExcelRowDto.DataProperty<?> property) {
-        Assertions.assertNotNull(property.getRaw(), "Excpected value "+expected+" but not null");
+        Assertions.assertNotNull(property.getRaw(), "Expected value "+expected+" but not null");
         Assertions.assertEquals(expected, property.getRaw().trim());
     }
 }

@@ -11,8 +11,6 @@ import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeAllFieldsMa
 import ru.abondin.hreasy.platform.service.admin.employee.kids.imp.dto.ImportEmployeeKidExcelRowDto;
 import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportCommitter;
 
-import java.util.function.Consumer;
-
 @RequiredArgsConstructor
 @Slf4j
 @Service
@@ -36,9 +34,9 @@ public class AdminEmployeeKidImportCommitter implements ExcelImportCommitter<Imp
                         // 1. Prepare body to update
                         return createOrUpdateBody(ctx, row, processId)
                                 // 2. Commit changes in database
-                                .flatMap(body -> row.isNew() ? employeeService.createNewKid(ctx, row.getEmployeeKidId(), body) : employeeService.updateKid(ctx, row.getEmployeeId(), row.getEmployeeKidId(), body))
+                                .flatMap(body -> row.isNew() ? employeeService.createNewKid(ctx, row.getEmployeeKidId(), body) : employeeService.updateKid(ctx, row.getParentId(), row.getEmployeeKidId(), body))
                                 .doOnError(e -> {
-                                    log.error("Unable to commit employee {} kid {}", row.getEmployeeId(), row.getDisplayName(), e);
+                                    log.error("Unable to commit employee {} kid {}", row.getParentId(), row.getDisplayName(), e);
                                 }).map(id -> 1 // Show that row was updated
                                 );
                     }
@@ -48,7 +46,7 @@ public class AdminEmployeeKidImportCommitter implements ExcelImportCommitter<Imp
 
     private Mono<CreateOrUpdateEmployeeKidBody> createOrUpdateBody(AuthContext ctx, ImportEmployeeKidExcelRowDto row, Integer processId) {
         return (row.isNew() ? Mono.just(new CreateOrUpdateEmployeeKidBody()) :
-                employeeService.getKid(ctx, row.getEmployeeId(), row.getEmployeeKidId())
+                employeeService.getKid(ctx, row.getParentId(), row.getEmployeeKidId())
                         .map(entry -> mapper.createOrUpdateBodyFromEntry(entry))
         ).map(body -> {
             body.setImportProcessId(processId);

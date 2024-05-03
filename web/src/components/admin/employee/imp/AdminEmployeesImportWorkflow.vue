@@ -91,7 +91,7 @@ import Vue from 'vue'
 import Component from 'vue-class-component';
 import adminEmployeeImportService, {
   EmployeeImportConfig,
-  ImportEmployeesWorkflow
+  ImportWorkflow
 } from "@/components/admin/employee/imp/admin.employee.import.service";
 import {errorUtils} from "@/components/errors";
 import MyFileUploader from "@/components/shared/MyFileUploader.vue";
@@ -106,7 +106,7 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
   loading = false;
   step: 1 | 2 | 3 | 4 = 1;
   config: EmployeeImportConfig = this.defaultConfig();
-  workflow: ImportEmployeesWorkflow | null = null;
+  workflow: ImportWorkflow | null = null;
   error: string | null = null;
   applyDialog = false;
 
@@ -170,7 +170,7 @@ export default class AdminEmployeesImportWorkflowComponent extends Vue {
     );
   }
 
-  private refreshStep(workflow: ImportEmployeesWorkflow) {
+  private refreshStep(workflow: ImportWorkflow) {
     this.step = Math.max(1, workflow.state + 1) as (1 | 2 | 3 | 4);
   }
 

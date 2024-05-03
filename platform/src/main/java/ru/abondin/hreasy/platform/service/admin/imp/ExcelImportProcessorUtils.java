@@ -31,11 +31,20 @@ public class ExcelImportProcessorUtils {
         this.formatter = DateTimeFormatter.ofPattern(props.getExcelImport().getDateFormat());
     }
 
+    /**
+     *
+     * @param prop
+     * @param existingEntry
+     * @param existingProp
+     * @param mapper
+     * @param <T> - DataProperty type (String, Integer, LocalDate, SimpleDict, etc)
+     * @param <E>
+     */
     public <T, E> void apply(ExcelImportRowDto.DataProperty<T> prop,
-                             Optional<E> existingEmployee,
-                             Function<E, T> existingEmployeeProp,
+                             Optional<E> existingEntry,
+                             Function<E, T> existingProp,
                              Consumer<ExcelImportRowDto.DataProperty<T>> mapper) {
-        prop.setCurrentValue(existingEmployee.map(existingEmployeeProp).orElse(null));
+        prop.setCurrentValue(existingEntry.map(existingProp).orElse(null));
         if (prop.getRaw() != null) {
             mapper.accept(prop);
         }
@@ -64,6 +73,7 @@ public class ExcelImportProcessorUtils {
             prop.setError(i18n.localize("errors.import.invalid_date_format", props.getExcelImport().getDateFormat()));
         }
     }
+
 
     public void applyStringWithTrim(ExcelImportRowDto.DataProperty<String> prop) {
         prop.setImportedValue(prop.getRaw().trim());

@@ -3,9 +3,9 @@ import {AxiosInstance, AxiosResponse} from "axios";
 
 
 /**
- * Import employees workflow with all configuration and data changes
+ * Import workflow with all configuration and data changes
  */
-export interface ImportEmployeesWorkflow {
+export interface ImportWorkflow {
     id: number,
     /**
      * <ul>
@@ -89,15 +89,15 @@ export interface ImportProcessStats {
 }
 
 export interface AdminEmployeeImportService {
-    getActiveOrStartNewImportProcess(): Promise<ImportEmployeesWorkflow>;
+    getActiveOrStartNewImportProcess(): Promise<ImportWorkflow>;
 
     getUploadImportFileUrl(processId: number): string;
 
-    applyConfigAndPreview(processId: number, config: EmployeeImportConfig): Promise<ImportEmployeesWorkflow>;
+    applyConfigAndPreview(processId: number, config: EmployeeImportConfig): Promise<ImportWorkflow>;
 
-    commit(processId: number): Promise<ImportEmployeesWorkflow>;
+    commit(processId: number): Promise<ImportWorkflow>;
 
-    cancel(processId: number): Promise<ImportEmployeesWorkflow>;
+    cancel(processId: number): Promise<ImportWorkflow>;
 
 }
 
@@ -106,9 +106,9 @@ class RestAdminEmployeeImportService implements AdminEmployeeImportService {
     constructor(private httpService: AxiosInstance) {
     }
 
-    getActiveOrStartNewImportProcess(): Promise<ImportEmployeesWorkflow> {
+    getActiveOrStartNewImportProcess(): Promise<ImportWorkflow> {
         return httpService.post(`v1/admin/employees/import`)
-            .then((response: AxiosResponse<ImportEmployeesWorkflow>) => {
+            .then((response: AxiosResponse<ImportWorkflow>) => {
                 return response.data;
             });
     }
@@ -117,23 +117,23 @@ class RestAdminEmployeeImportService implements AdminEmployeeImportService {
         return `${httpService.defaults.baseURL}v1/admin/employees/import/${processId}/file`;
     }
 
-    applyConfigAndPreview(processId: number, config: EmployeeImportConfig): Promise<ImportEmployeesWorkflow> {
+    applyConfigAndPreview(processId: number, config: EmployeeImportConfig): Promise<ImportWorkflow> {
         return httpService.post(`v1/admin/employees/import/${processId}/config`, config)
-            .then((response: AxiosResponse<ImportEmployeesWorkflow>) => {
+            .then((response: AxiosResponse<ImportWorkflow>) => {
                 return response.data;
             });
     }
 
-    cancel(processId: number): Promise<ImportEmployeesWorkflow> {
+    cancel(processId: number): Promise<ImportWorkflow> {
         return httpService.post(`v1/admin/employees/import/${processId}/cancel`)
-            .then((response: AxiosResponse<ImportEmployeesWorkflow>) => {
+            .then((response: AxiosResponse<ImportWorkflow>) => {
                 return response.data;
             });
     }
 
-    commit(processId: number): Promise<ImportEmployeesWorkflow> {
+    commit(processId: number): Promise<ImportWorkflow> {
         return httpService.post(`v1/admin/employees/import/${processId}/commit`)
-            .then((response: AxiosResponse<ImportEmployeesWorkflow>) => {
+            .then((response: AxiosResponse<ImportWorkflow>) => {
                 return response.data;
             });
     }

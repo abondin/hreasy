@@ -28,7 +28,7 @@ public class ImportEmployeeKidExcelRowDto extends ExcelImportRowDto {
      * If kid found in database
      */
     private Integer employeeKidId;
-    private Integer employeeId;
+    private Integer parentId;
 
     private DataProperty<LocalDate> birthday = new DataProperty<>();
 

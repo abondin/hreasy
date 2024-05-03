@@ -101,7 +101,7 @@ import {Prop} from "vue-property-decorator";
 import {
   ExcelRowDataProperty,
   ImportEmployeeExcelRows,
-  ImportEmployeesWorkflow
+  ImportWorkflow
 } from "@/components/admin/employee/imp/admin.employee.import.service";
 import ImportPreviewTableCell from "@/components/admin/employee/imp/ImportPreviewTableCell.vue";
 
@@ -119,7 +119,7 @@ export default class AdminEmployeesImportPreview extends Vue {
   headers: ImportPreviewDataHeader[] = [];
 
   @Prop({required: true})
-  workflow!: ImportEmployeesWorkflow;
+  workflow!: ImportWorkflow;
 
   private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
