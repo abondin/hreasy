@@ -12,7 +12,7 @@
           <p class="comment text-caption">{{ approval.comment }}</p>
         </div>
         <div class="ml-2 action">
-          <v-btn x-small text icon @click="dataContainer.openApproveDialog(request, approval)">
+          <v-btn x-small text icon @click="dataContainer.openApproveDialog(request, approval)" v-if="approvalActionsAllowed(request)">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </div>
@@ -48,6 +48,10 @@ export default class SalaryRequestCard extends Vue {
 
   private formatDateTime(date: string): string | undefined {
     return DateTimeUtils.formatDateTimeFromIso(date);
+  }
+
+  private approvalActionsAllowed(request: SalaryIncreaseRequest) {
+    return !this.dataContainer.periodClosed() && !request.impl;
   }
 }
 </script>

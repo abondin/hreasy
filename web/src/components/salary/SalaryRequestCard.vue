@@ -117,7 +117,8 @@
         <div class="subtitle-1 text-decoration-underline column-title">
           {{ $t('Согласования и комментарии') }}
         </div>
-        <salary-request-approval-card :request="item" :data-container="dataContainer"></salary-request-approval-card>
+        <salary-request-approval-card v-if="item.approvals?.length>0" :request="item" :data-container="dataContainer"></salary-request-approval-card>
+        <div v-else>{{$t('Добавьте первый комментарий или согласование')}}</div>
       </div>
       <!--</editor-fold>-->
 

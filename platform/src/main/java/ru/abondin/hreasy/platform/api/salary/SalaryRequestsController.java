@@ -80,6 +80,6 @@ public class SalaryRequestsController {
     @GetMapping("/periods")
     public Flux<SalaryRequestClosedPeriodDto> getClosedPeriods() {
         return AuthHandler.currentAuth().flatMapMany(auth ->
-                requestService.getClosedSalaryRequestPeriods(auth));
+                requestService.getClosedSalaryRequestPeriods());
     }
 }

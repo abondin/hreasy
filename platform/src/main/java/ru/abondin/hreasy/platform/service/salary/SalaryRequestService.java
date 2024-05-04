@@ -12,10 +12,7 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.assessment.AssessmentRepo;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedRepo;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
-import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalEntry;
-import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalRepo;
-import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodRepo;
-import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
+import ru.abondin.hreasy.platform.repo.salary.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDto;
@@ -116,19 +113,18 @@ public class SalaryRequestService {
         // 1. Validate if logged-in user has permissions to report new salary request
         return secValidator.validateReportSalaryRequest(ctx)
                 // 2. Additional validation
-                .flatMap(v -> checkReportBodyConsistency(ctx, body))
+                .flatMap(v -> checkReportBodyConsistency(body))
                 // 3. Get additional information about employee
                 .flatMap(v -> employeeRepo.findDetailed(body.getEmployeeId()))
-                .map(empl -> mapper.toEntry(body, empl, createdBy, now)).flatMap(entry -> {
-                            // 2. Save new request to DB
-                            return requestRepo.save(entry).flatMap(persisted ->
-                                    // 3. Save history record
-                                    historyDomainService.persistHistory(persisted.getId(),
-                                                    HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
-                                                    persisted, now, createdBy)
-                                            .map(h -> persisted.getId())
-                            );
-                        }
+                .map(empl -> mapper.toEntry(body, empl, createdBy, now)).flatMap(entry ->
+                        // 2. Save new request to DB
+                        requestRepo.save(entry).flatMap(persisted ->
+                                // 3. Save history record
+                                historyDomainService.persistHistory(persisted.getId(),
+                                                HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
+                                                persisted, now, createdBy)
+                                        .map(h -> persisted.getId()))
+
                 );
         // 4. TODO Send email notification
     }
@@ -170,7 +166,7 @@ public class SalaryRequestService {
                 // 2. Validate security
                 .flatMap(entry -> secValidator.validateApproveSalaryRequest(auth, entry.getBudgetBusinessAccount())
                         // 3. Check if report period is not closed
-                        .flatMap(v -> closedPeriodCheck(entry.getReqIncreaseStartPeriod()))
+                        .flatMap(v -> checkApprovalActionAllowed(entry))
                         // 4. Apply action
                         .flatMap(v -> {
                             var approvalEntry = new SalaryRequestApprovalEntry();
@@ -194,22 +190,31 @@ public class SalaryRequestService {
     @Transactional
     public Mono<Integer> deleteApproval(AuthContext auth, int requestId, int approvalId) {
         log.info("Deleting approval {} for salary request {} by {}", approvalId, requestId, auth.getUsername());
+        // 1. Find approval
         return approvalRepo.findById(approvalId)
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound(approvalId))
-                .flatMap(entry -> secValidator.validateDeleteApproval(auth, entry)
-                        .flatMap(v -> {
-                            if (requestId != entry.getRequestId()) {
-                                return Mono.error(new BusinessError("errors.salary_request.approval.not_for_request", Integer.toString(approvalId), Integer.toString(requestId)));
-                            }
-                            entry.setDeletedAt(OffsetDateTime.now());
-                            entry.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
-                            return approvalRepo.save(entry).flatMap(persisted -> historyDomainService.persistHistory(
-                                            persisted.getId(),
-                                            HistoryDomainService.HistoryEntityType.SALARY_REQUEST_APPROVAL,
-                                            persisted, dateTimeService.now(), auth.getEmployeeInfo().getEmployeeId())
-                                    .map(HistoryEntry::getEntityId
-                                    ));
-                        }));
+                .flatMap(approvalEntry ->
+                        // 2. Check if user can delete approval
+                        secValidator.validateDeleteApproval(auth, approvalEntry)
+                                // 3. Find approval request
+                                .flatMap(v -> requestRepo.findById(requestId).switchIfEmpty(BusinessErrorFactory.entityNotFound(requestId))
+                                        // 4. Check if period is not closed
+                                        .flatMap(this::checkApprovalActionAllowed))
+                                .flatMap(v -> {
+                                    // 5. Check that approval is related to given request
+                                    if (requestId != approvalEntry.getRequestId()) {
+                                        return Mono.error(new BusinessError("errors.salary_request.approval.not_for_request", Integer.toString(approvalId), Integer.toString(requestId)));
+                                    }
+                                    // 6. Update approval in db
+                                    approvalEntry.setDeletedAt(OffsetDateTime.now());
+                                    approvalEntry.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
+                                    return approvalRepo.save(approvalEntry).flatMap(persisted -> historyDomainService.persistHistory(
+                                                    persisted.getId(),
+                                                    HistoryDomainService.HistoryEntityType.SALARY_REQUEST_APPROVAL,
+                                                    persisted, dateTimeService.now(), auth.getEmployeeInfo().getEmployeeId())
+                                            .map(HistoryEntry::getEntityId
+                                            ));
+                                }));
     }
 
     //</editor-fold>
@@ -221,7 +226,7 @@ public class SalaryRequestService {
                 .defaultIfEmpty(true);
     }
 
-    private Mono<Boolean> checkReportBodyConsistency(AuthContext ctx, SalaryRequestReportBody body) {
+    private Mono<Boolean> checkReportBodyConsistency(SalaryRequestReportBody body) {
         // 1. Check if report period is not closed
         var closedPeriodCheck = closedPeriodCheck(body.getIncreaseStartPeriod());
 
@@ -239,7 +244,17 @@ public class SalaryRequestService {
         return closedPeriodCheck.flatMap(v -> assessmentCorrect);
     }
 
-    public Flux<SalaryRequestClosedPeriodDto> getClosedSalaryRequestPeriods(AuthContext auth) {
+    private Mono<Boolean> checkApprovalActionAllowed(SalaryRequestEntry entry) {
+        // 1. Check if report period is not closed
+        var closedPeriodCheck = closedPeriodCheck(entry.getReqIncreaseStartPeriod());
+        // 2. Check that request is not implemented
+        var implementedCheck = Mono.defer(() -> entry.getImplementedAt() == null
+                ? Mono.just(true)
+                : Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(entry.getId()))));
+        return closedPeriodCheck.flatMap(v -> implementedCheck);
+    }
+
+    public Flux<SalaryRequestClosedPeriodDto> getClosedSalaryRequestPeriods() {
         return closedPeriodRepo.findAll().map(mapper::closedPeriodFromEntry);
     }
 
