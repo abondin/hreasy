@@ -55,6 +55,7 @@ public class AdminEmployeeImportCommitter implements ExcelImportCommitter<Import
             apply(row.getExternalErpId(), v -> body.setExtErpId(v));
             apply(row.getPhone(), v -> body.setPhone(v));
             apply(row.getDepartment(), v -> body.setDepartmentId(v.getId()));
+            apply(row.getOrganization(), v -> body.setOrganizationId(v.getId()));
             apply(row.getPosition(), v -> body.setPositionId(v.getId()));
             apply(row.getDateOfEmployment(), v -> body.setDateOfEmployment(v));
             apply(row.getDateOfDismissal(), v -> body.setDateOfDismissal(v));
