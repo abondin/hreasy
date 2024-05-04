@@ -51,21 +51,21 @@ public class AdminEmployeeImportCommitter implements ExcelImportCommitter<Import
         ).map(body -> {
             body.setImportProcessId(processId);
             body.setEmail(row.getEmail());
-            apply(row.getDisplayName(), v -> body.setDisplayName(v));
-            apply(row.getExternalErpId(), v -> body.setExtErpId(v));
-            apply(row.getPhone(), v -> body.setPhone(v));
+            apply(row.getDisplayName(), body::setDisplayName);
+            apply(row.getExternalErpId(), body::setExtErpId);
+            apply(row.getPhone(), body::setPhone);
             apply(row.getDepartment(), v -> body.setDepartmentId(v.getId()));
             apply(row.getOrganization(), v -> body.setOrganizationId(v.getId()));
             apply(row.getPosition(), v -> body.setPositionId(v.getId()));
-            apply(row.getDateOfEmployment(), v -> body.setDateOfEmployment(v));
-            apply(row.getDateOfDismissal(), v -> body.setDateOfDismissal(v));
-            apply(row.getBirthday(), v -> body.setBirthday(v));
-            apply(row.getSex(), v -> body.setSex(v));
-            apply(row.getDocumentSeries(), v -> body.setDocumentSeries(v));
-            apply(row.getDocumentNumber(), v -> body.setDocumentNumber(v));
-            apply(row.getDocumentIssuedDate(), v -> body.setDocumentIssuedDate(v));
-            apply(row.getDocumentIssuedBy(), v -> body.setDocumentIssuedBy(v));
-            apply(row.getRegistrationAddress(), v -> body.setRegistrationAddress(v));
+            apply(row.getDateOfEmployment(), body::setDateOfEmployment);
+            apply(row.getDateOfDismissal(), body::setDateOfDismissal);
+            apply(row.getBirthday(), body::setBirthday);
+            apply(row.getSex(), body::setSex);
+            apply(row.getDocumentSeries(), body::setDocumentSeries);
+            apply(row.getDocumentNumber(), body::setDocumentNumber);
+            apply(row.getDocumentIssuedDate(), body::setDocumentIssuedDate);
+            apply(row.getDocumentIssuedBy(), body::setDocumentIssuedBy);
+            apply(row.getRegistrationAddress(), body::setRegistrationAddress);
             return body;
         });
     }

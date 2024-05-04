@@ -1,4 +1,3 @@
-<!-- All vacations table-->
 <template>
   <div>
     <v-card>

@@ -2,8 +2,8 @@
   <v-container fluid>
     <div class="row">
       <!--<editor-fold desc="Информация о сотруднике">-->
-      <div class="col-xl-3 col-lg-auto">
-        <div class="subtitle-1">{{ $t('Информация о сотруднике') }}</div>
+      <div class="col-lg-6 col-md-auto">
+        <div class="subtitle-1 text-decoration-underline column-title">{{ $t('Информация о сотруднике') }}</div>
         <dl class="info-dl text--primary text-wrap">
           <dt>{{ $t('ФИО') }}:</dt>
           <dd>{{ item.employee.name }}</dd>
@@ -27,22 +27,9 @@
       </div>
       <!--</editor-fold>-->
       <!--<editor-fold desc="Запрос">-->
-      <div class="col-xl-3 col-lg-auto">
-        <div class="subtitle-1 column-title">
+      <div class="col-lg-6 col-md-auto">
+        <div class="subtitle-1 text-decoration-underline column-title">
           {{ $t('Запрос') }}
-          <div class="btn-group" v-if="allowDeleteFunctionality()">
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                <div v-bind="tattrs" v-on="ton" disabled="data.loading">
-                  <v-btn x-small text color="error" link
-                         @click="()=>dataContainer.openDeleteDialogForItem(item)" icon>
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
-                </div>
-              </template>
-              <p>{{ $t('Удалить запрос') }}</p>
-            </v-tooltip>
-          </div>
         </div>
         <dl class="info-dl text--primary text-wrap">
           <dt>{{ $t('Инициатор') }}:</dt>
@@ -81,43 +68,11 @@
         </dl>
       </div>
       <!--</editor-fold>-->
+
       <!--<editor-fold desc="Решение">-->
-      <div class="col-xl-3 col-lg-6">
-        <div class="subtitle-1 column-title">
+      <div class="col-lg-6 col-md-auto">
+        <div class="subtitle-1 text-decoration-underline column-title">
           {{ $t('Решение') }}
-          <div class="btn-group" v-if="allowImplementFunctionality()">
-            <v-tooltip bottom v-if="item.impl">
-              <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                <div v-bind="tattrs" v-on="ton">
-                  <v-btn x-small text link
-                         @click="deleteImpl(item)" icon>
-                    <v-icon>mdi-pencil-off</v-icon>
-                  </v-btn>
-                </div>
-              </template>
-              <p>{{ $t('Сбросить решение') }}</p>
-            </v-tooltip>
-            <div v-else>
-              <v-tooltip>
-                <template v-slot:activator="{ on: ion, attrs: iattrs}">
-                  <v-btn x-small text link color="success" v-bind="iattrs" v-on="ion"
-                         @click="impl(item)" icon>
-                    <v-icon>mdi-pen-plus</v-icon>
-                  </v-btn>
-                </template>
-                <p>{{ $t('Реализовать запрос') }}</p>
-              </v-tooltip>
-              <v-tooltip>
-                <template v-slot:activator="{ on: ron, attrs: rattrs}">
-                  <v-btn x-small text color="error" link v-bind="rattrs" v-on="ron"
-                         @click="rejectImpl(item)" icon>
-                    <v-icon>mdi-pen-minus</v-icon>
-                  </v-btn>
-                </template>
-                <p>{{ $t('Отклонить запрос') }}</p>
-              </v-tooltip>
-            </div>
-          </div>
         </div>
         <dl class="info-dl text--primary text-wrap" v-if="item.impl">
           <dt v-if="item.impl?.state">{{ $t('Результат') }}:</dt>
@@ -158,48 +113,79 @@
       <!--</editor-fold>-->
 
       <!--<editor-fold desc="Согласования и комментарии">-->
-      <div class="col-xl-3 col-lg-auto" v-if="approveAllowed(item)">
-        <div class="subtitle-1 column-title">
+      <div class="col-lg-6 col-md-auto">
+        <div class="subtitle-1 text-decoration-underline column-title">
           {{ $t('Согласования и комментарии') }}
-          <div class="btn-group">
-            <!-- Добавить комментарии -->
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                <div v-bind="tattrs" v-on="ton">
-                  <v-btn x-small text icon @click="comment(item)">
-                    <v-icon>mdi-comment</v-icon>
-                  </v-btn>
-                </div>
-              </template>
-              {{ $t('Добавить комментарий') }}
-            </v-tooltip>
-            <!-- Согласовать -->
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                <div v-bind="tattrs" v-on="ton">
-                  <v-btn color="success" x-small text icon @click="approve(item)">
-                    <v-icon>mdi-checkbox-marked-circle</v-icon>
-                  </v-btn>
-                </div>
-              </template>
-              {{ $t('Согласовать') }}
-            </v-tooltip>
-            <!-- Отклонить -->
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                <div v-bind="tattrs" v-on="ton">
-                  <v-btn color="error" x-small text icon @click="decline(item)">
-                    <v-icon>mdi-alert-circle</v-icon>
-                  </v-btn>
-                </div>
-              </template>
-              {{ $t('Отклонить') }}
-            </v-tooltip>
-          </div>
         </div>
         <salary-request-approval-card :request="item" :data-container="dataContainer"></salary-request-approval-card>
       </div>
       <!--</editor-fold>-->
+
+      <!--<editor-fold desc="Действия">-->
+      <div class="col-xl-12 col-lg-12">
+        <div class="subtitle-1 text-decoration-underline column-actions">
+          {{ $t('Действия') }}
+          <!-- Implement -->
+          <v-tooltip bottom v-if="allowImplementFunctionality()">
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <div v-bind="tattrs" v-on="ton" class="ml-2">
+                <v-btn-toggle dense v-if="item.impl">
+                  <v-btn @click="deleteImpl(item)" icon :disabled="implActionDisabled()">
+                    <v-icon>mdi-pencil-off</v-icon>
+                  </v-btn>
+                </v-btn-toggle>
+                <v-btn-toggle dense v-else>
+                  <v-btn @click="impl(item)" icon :disabled="implActionDisabled()">
+                    <v-icon>mdi-pen-plus</v-icon>
+                  </v-btn>
+                  <v-btn @click="rejectImpl(item)" icon :disabled="implActionDisabled()">
+                    <v-icon color="error">mdi-pen-minus</v-icon>
+                  </v-btn>
+                </v-btn-toggle>
+              </div>
+            </template>
+            <p>{{ item.impl ? $t('Сбросить решение') : $t('Реализовать или отклонить запрос') }}</p>
+          </v-tooltip>
+
+          <!-- Comments -->
+          <v-tooltip bottom v-if="approveAllowed(item)">
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <div v-bind="tattrs" v-on="ton" class="ml-2">
+                <v-btn-toggle dense>
+                  <v-btn icon @click="approve(item)" :disabled="commentActionDisabled(item)">
+                    <v-icon color="success">mdi-checkbox-marked-circle</v-icon>
+                  </v-btn>
+                  <v-btn text icon @click="decline(item)" :disabled="commentActionDisabled(item)">
+                    <v-icon color="error">mdi-alert-circle</v-icon>
+                  </v-btn>
+                  <v-btn icon @click="comment(item)" :disabled="commentActionDisabled(item)">
+                    <v-icon>mdi-comment</v-icon>
+                  </v-btn>
+                </v-btn-toggle>
+              </div>
+            </template>
+            <p>{{ $t('Согласовать, отклонить или оставить комментарий') }}</p>
+          </v-tooltip>
+
+          <!-- Delete request -->
+          <v-tooltip bottom v-if="allowDeleteFunctionality()">
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <div v-bind="tattrs" v-on="ton" class="ml-2">
+                <v-btn-toggle dense>
+                  <v-btn :disabled="deleteActionDisabled()"
+                      @click="()=>dataContainer.openDeleteDialogForItem(item)" icon>
+                    <v-icon color="error">mdi-close</v-icon>
+                  </v-btn>
+                </v-btn-toggle>
+              </div>
+            </template>
+            <p>{{ $t('Удалить запрос') }}</p>
+          </v-tooltip>
+
+        </div>
+      </div>
+      <!--</editor-fold>-->
+
 
     </div>
 
@@ -288,6 +274,16 @@ export default class SalaryRequestCard extends Vue {
   private rejectImpl(item: SalaryIncreaseRequest) {
     this.dataContainer.openImplementDialog(item, SalaryRequestImplementationState.REJECTED);
   }
+
+  private commentActionDisabled(item: SalaryIncreaseRequest) {
+    return this.dataContainer.periodClosed() || item.impl;
+  }
+  private implActionDisabled() {
+    return this.dataContainer.periodClosed();
+  }
+  private deleteActionDisabled() {
+    return this.dataContainer.periodClosed();
+  }
 }
 </script>
 
@@ -315,13 +311,9 @@ export default class SalaryRequestCard extends Vue {
   justify-content: space-between;
 }
 
-.column-title .btn-group {
+.column-actions {
   display: flex;
-  opacity: 0.7;
-}
-
-.column-title:hover .btn-group {
-  opacity: 1;
+  justify-content: start;
 }
 
 </style>
