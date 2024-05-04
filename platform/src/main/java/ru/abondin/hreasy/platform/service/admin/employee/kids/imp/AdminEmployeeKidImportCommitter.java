@@ -34,7 +34,7 @@ public class AdminEmployeeKidImportCommitter implements ExcelImportCommitter<Imp
                         // 1. Prepare body to update
                         return createOrUpdateBody(ctx, row, processId)
                                 // 2. Commit changes in database
-                                .flatMap(body -> row.isNew() ? employeeService.createNewKid(ctx, row.getEmployeeKidId(), body) : employeeService.updateKid(ctx, row.getParent().getId(), row.getEmployeeKidId(), body))
+                                .flatMap(body -> row.isNew() ? employeeService.createNewKid(ctx, row.getParent().getId(), body) : employeeService.updateKid(ctx, row.getParent().getId(), row.getEmployeeKidId(), body))
                                 .doOnError(e -> log.error("Unable to commit employee {} kid {}", row.getParent(), row.getDisplayName(), e))
                                 .map(id -> 1 // Show that row was updated
                                 );

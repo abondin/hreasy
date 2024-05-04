@@ -139,71 +139,7 @@ export default class ImportPreviewComponent<C extends ImportConfig, R extends Im
 
   private reloadHeaders() {
     this.headers.length = 0;
-    this.headers.push({text: this.$tc('Строка'), value: 'rowNumber', width: 15});
-    this.headers.push({text: this.$tc('Email'), value: 'email', width: 280});
-    this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 280, format: 'string'});
-    this.headers.push({text: this.$tc('Телефон'), value: 'phone', width: 150, format: 'string'});
-    this.headers.push({
-      text: this.$tc('Дата трудоустройства'),
-      value: 'dateOfEmployment',
-      width: 50,
-      class: "text-wrap",
-      sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
-    });
-    this.headers.push({
-      text: this.$tc('Дата увольнения'),
-      value: 'dateOfDismissal',
-      class: "text-wrap",
-      width: 50,
-      sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
-    });
-    this.headers.push({
-      text: this.$tc('День рождения'),
-      value: 'birthday',
-      class: "text-wrap",
-      width: 50,
-      sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
-    });
-    this.headers.push({text: this.$tc('Позиция'), value: 'position', width: 200, format: 'dict'});
-    this.headers.push({text: this.$tc('Подразделение'), value: 'department', width: 300, format: 'dict'});
-    this.headers.push({text: this.$tc('Организация'), value: 'organization', width: 300, format: 'dict'});
-    this.headers.push({
-      text: this.$tc('IMPORT_CONFIG.documentSeries'),
-      value: 'documentSeries',
-      width: 35,
-      format: 'string'
-    });
-    this.headers.push({
-      text: this.$tc('IMPORT_CONFIG.documentNumber'),
-      value: 'documentNumber',
-      width: 34,
-      format: 'string'
-    });
-    this.headers.push({
-      text: this.$tc('IMPORT_CONFIG.documentIssuedDate'),
-      value: 'documentIssuedDate',
-      width: 100,
-      format: 'date'
-    });
-    this.headers.push({
-      text: this.$tc('IMPORT_CONFIG.documentIssuedBy'),
-      value: 'documentIssuedBy',
-      width: 150,
-      format: 'string'
-    });
-    this.headers.push({
-      text: this.$tc('Адрес по регистрации'),
-      value: 'registrationAddress',
-      width: 500,
-      format: 'string'
-    });
-    this.headers.push({
-      text: this.$tc('Идентификатор во внешней ERP системе'),
-      value: 'externalErpId',
-      width: 150,
-      format: 'string'
-    });
-    this.headers.push({text: this.$tc('Пол'), value: 'sex', width: 100, format: 'string'});
+    this.headers.push(...this.headersLoader());
   }
 
 

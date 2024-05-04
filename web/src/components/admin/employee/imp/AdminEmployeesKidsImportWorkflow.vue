@@ -46,7 +46,7 @@ export default class AdminEmployeesKidsImportWorkflowComponent extends Vue {
   private previewHeadersLoader() {
     const headers: ImportPreviewDataHeader[] = [];
     headers.push({text: this.$tc('Строка'), value: 'rowNumber', width: 15});
-    headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 280, format: 'string'});
+    headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 280});
     headers.push({
       text: this.$tc('День рождения'),
       value: 'birthday',
@@ -54,7 +54,7 @@ export default class AdminEmployeesKidsImportWorkflowComponent extends Vue {
       width: 50,
       sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
     });
-    headers.push({text: this.$tc('Сотрудник'), value: 'parent', width: 200, format: 'dict'});
+    headers.push({text: this.$tc('Сотрудник'), value: 'parent.name', width: 200});
     return headers;
   }
 
