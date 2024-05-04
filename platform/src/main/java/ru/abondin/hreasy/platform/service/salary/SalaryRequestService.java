@@ -87,7 +87,7 @@ public class SalaryRequestService {
         return requestRepo.findById(requestId)
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound(requestId))
                 // 2. Check that period is not closed
-                .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod())
+                .flatMap(entry -> checkDeleteActionAllowed(entry)
                         // 3. Validate if user has permissions to delete
                         .flatMap(e -> secValidator.validateDeleteSalaryRequest(auth, entry)
                                 .flatMap(s -> {
@@ -245,6 +245,11 @@ public class SalaryRequestService {
     }
 
     private Mono<Boolean> checkApprovalActionAllowed(SalaryRequestEntry entry) {
+        // 1. Allow even if request is marked as implemented
+        return closedPeriodCheck(entry.getReqIncreaseStartPeriod());
+    }
+
+    private Mono<Boolean> checkDeleteActionAllowed(SalaryRequestEntry entry) {
         // 1. Check if report period is not closed
         var closedPeriodCheck = closedPeriodCheck(entry.getReqIncreaseStartPeriod());
         // 2. Check that request is not implemented

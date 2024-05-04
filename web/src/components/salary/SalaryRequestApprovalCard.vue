@@ -51,7 +51,7 @@ export default class SalaryRequestCard extends Vue {
   }
 
   private approvalActionsAllowed(request: SalaryIncreaseRequest) {
-    return !this.dataContainer.periodClosed() && !request.impl;
+    return !this.dataContainer.periodClosed();
   }
 }
 </script>

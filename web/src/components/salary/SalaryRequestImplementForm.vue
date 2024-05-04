@@ -57,7 +57,7 @@
             v-if="isRejected()"
             :disabled="itemReadonly()"
             v-model="data.implementBody.rejectReason"
-            counter="256"
+            counter="128"
             :rules="[v=> v && v.length <= 128 || $t('Обязательное поле. Не более N символов', {n:128})]"
             :label="$t('Обоснование отказа')">
         </v-text-field>

@@ -2,7 +2,7 @@
   <v-container fluid>
     <div class="row">
       <!--<editor-fold desc="Информация о сотруднике">-->
-      <div class="col-lg-6 col-md-auto">
+      <div class="col-md-auto">
         <div class="subtitle-1 text-decoration-underline column-title">{{ $t('Информация о сотруднике') }}</div>
         <dl class="info-dl text--primary text-wrap">
           <dt>{{ $t('ФИО') }}:</dt>
@@ -27,7 +27,7 @@
       </div>
       <!--</editor-fold>-->
       <!--<editor-fold desc="Запрос">-->
-      <div class="col-lg-6 col-md-auto">
+      <div class="col-md-auto">
         <div class="subtitle-1 text-decoration-underline column-title">
           {{ $t('Запрос') }}
         </div>
@@ -70,7 +70,7 @@
       <!--</editor-fold>-->
 
       <!--<editor-fold desc="Решение">-->
-      <div class="col-lg-6 col-md-auto">
+      <div class=" col-md-auto">
         <div class="subtitle-1 text-decoration-underline column-title">
           {{ $t('Решение') }}
         </div>
@@ -113,7 +113,7 @@
       <!--</editor-fold>-->
 
       <!--<editor-fold desc="Согласования и комментарии">-->
-      <div class="col-lg-6 col-md-auto">
+      <div class="col-md-auto">
         <div class="subtitle-1 text-decoration-underline column-title">
           {{ $t('Согласования и комментарии') }}
         </div>
@@ -277,13 +277,13 @@ export default class SalaryRequestCard extends Vue {
   }
 
   private commentActionDisabled(item: SalaryIncreaseRequest) {
-    return this.dataContainer.periodClosed() || item.impl;
+    return this.dataContainer.periodClosed();
   }
   private implActionDisabled() {
     return this.dataContainer.periodClosed();
   }
   private deleteActionDisabled() {
-    return this.dataContainer.periodClosed();
+    return this.dataContainer.periodClosed() || this.item.impl;
   }
 }
 </script>
@@ -304,6 +304,7 @@ export default class SalaryRequestCard extends Vue {
   > dd {
     grid-column-start: 2;
     margin-left: 10px;
+    max-width: 400px;
   }
 }
 
