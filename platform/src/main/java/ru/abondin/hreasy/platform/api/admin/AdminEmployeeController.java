@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.api.admin;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -14,9 +15,13 @@ import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.AdminEmployeeImportService;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.EmployeeImportConfig;
-import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeesWorkflowDto;
+import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
+import ru.abondin.hreasy.platform.service.admin.employee.kids.imp.AdminEmployeeKidImportService;
+import ru.abondin.hreasy.platform.service.admin.employee.kids.imp.dto.EmployeeKidImportConfig;
+import ru.abondin.hreasy.platform.service.admin.employee.kids.imp.dto.ImportEmployeeKidExcelRowDto;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowDto;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowType;
 
-import jakarta.validation.Valid;
 import java.util.Locale;
 
 /**
@@ -32,11 +37,12 @@ public class AdminEmployeeController {
     private final AdminEmployeeExportService exportService;
 
     private final AdminEmployeeImportService importService;
+    private final AdminEmployeeKidImportService kidsImportService;
 
 
     @GetMapping
     public Flux<EmployeeWithAllDetailsDto> all() {
-        return AuthHandler.currentAuth().flatMapMany(auth -> employeeService.findAll(auth));
+        return AuthHandler.currentAuth().flatMapMany(employeeService::findAll);
     }
 
     @GetMapping("/{employeeId}")
@@ -66,7 +72,7 @@ public class AdminEmployeeController {
 
     @GetMapping("/kids")
     public Flux<EmployeeKidDto> allKids() {
-        return AuthHandler.currentAuth().flatMapMany(auth -> employeeService.findAllKids(auth));
+        return AuthHandler.currentAuth().flatMapMany(employeeService::findAllKids);
     }
 
     @PostMapping("/{employeeId}/kids")
@@ -81,12 +87,12 @@ public class AdminEmployeeController {
 
 
     @PostMapping("/import")
-    public Mono<ImportEmployeesWorkflowDto> getActiveOrStartNewImportProcess() {
-        return AuthHandler.currentAuth().flatMap(auth -> importService.getActiveOrStartNewImportProcess(auth));
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> getActiveOrStartNewImportProcess() {
+        return AuthHandler.currentAuth().flatMap(auth -> importService.getActiveOrStartNewImportProcess(auth, ExcelImportWorkflowType.EMPLOYEE));
     }
 
     @PostMapping("/import/{processId}/file")
-    public Mono<ImportEmployeesWorkflowDto> uploadExcelFile(
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> uploadExcelFile(
             @PathVariable Integer processId,
             @RequestPart("file") Mono<FilePart> multipartFile,
             @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength
@@ -99,19 +105,56 @@ public class AdminEmployeeController {
     }
 
     @PostMapping("/import/{processId}/config")
-    public Mono<ImportEmployeesWorkflowDto> applyConfigAndPreview(@PathVariable Integer processId,
-                                                                  @RequestBody EmployeeImportConfig config,
-                                                                  Locale locale) {
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> applyConfigAndPreview(@PathVariable Integer processId,
+                                                              @RequestBody EmployeeImportConfig config,
+                                                              Locale locale) {
         return AuthHandler.currentAuth().flatMap(auth -> importService.applyConfigAndPreview(auth, processId, config, locale));
     }
 
     @PostMapping("/import/{processId}/commit")
-    public Mono<ImportEmployeesWorkflowDto> commit(@PathVariable Integer processId) {
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> commit(@PathVariable Integer processId) {
         return AuthHandler.currentAuth().flatMap(auth -> importService.commit(auth, processId));
     }
 
     @PostMapping("/import/{processId}/abort")
-    public Mono<ImportEmployeesWorkflowDto> abort(@PathVariable Integer processId) {
+    public Mono<ExcelImportWorkflowDto<EmployeeImportConfig, ImportEmployeeExcelRowDto>> abort(@PathVariable Integer processId) {
         return AuthHandler.currentAuth().flatMap(auth -> importService.abort(auth, processId));
+    }
+
+
+    @PostMapping("/kids/import")
+    public Mono<ExcelImportWorkflowDto<EmployeeKidImportConfig, ImportEmployeeKidExcelRowDto>> getActiveOrStartNewImportKidsProcess() {
+        return AuthHandler.currentAuth().flatMap(auth -> kidsImportService.getActiveOrStartNewImportProcess(auth, ExcelImportWorkflowType.KIDS));
+    }
+
+
+    @PostMapping("/kids/import/{processId}/file")
+    public Mono<ExcelImportWorkflowDto> uploadKidsExcelFile(
+            @PathVariable Integer processId,
+            @RequestPart("file") Mono<FilePart> multipartFile,
+            @RequestHeader(value = HttpHeaders.CONTENT_LENGTH, required = true) long contentLength
+    ) {
+        return AuthHandler.currentAuth().flatMap(auth ->
+                multipartFile.flatMap(filePart -> kidsImportService.uploadImportFile(auth,
+                        processId,
+                        filePart,
+                        contentLength)));
+    }
+
+    @PostMapping("/kids/import/{processId}/config")
+    public Mono<ExcelImportWorkflowDto> applyKidsConfigAndPreview(@PathVariable Integer processId,
+                                                                  @RequestBody EmployeeKidImportConfig config,
+                                                                  Locale locale) {
+        return AuthHandler.currentAuth().flatMap(auth -> kidsImportService.applyConfigAndPreview(auth, processId, config, locale));
+    }
+
+    @PostMapping("/kids/import/{processId}/commit")
+    public Mono<ExcelImportWorkflowDto> commitKids(@PathVariable Integer processId) {
+        return AuthHandler.currentAuth().flatMap(auth -> kidsImportService.commit(auth, processId));
+    }
+
+    @PostMapping("/kids/import/{processId}/abort")
+    public Mono<ExcelImportWorkflowDto> abortKids(@PathVariable Integer processId) {
+        return AuthHandler.currentAuth().flatMap(auth -> kidsImportService.abort(auth, processId));
     }
 }

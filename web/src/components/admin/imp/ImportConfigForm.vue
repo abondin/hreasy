@@ -1,4 +1,3 @@
-<!-- Employees short info table-->
 <template>
   <v-card>
     <v-card-text>
@@ -39,7 +38,7 @@
           </v-row>
         </v-container>
         <v-subheader>
-          {{ $t('Названия (анлгийские буквы) или порядковые номера столбцов') }}
+          {{ $t('Названия (английские буквы) или порядковые номера столбцов') }}
           <v-tooltip right>
             <template v-slot:activator="{ on }">
               <v-icon small class="ml-1" v-on="on">mdi-help-circle</v-icon>
@@ -77,9 +76,9 @@ import {Prop} from "vue-property-decorator";
 @Component({
   components: {}
 })
-export default class AdminEmployeesImportConfigForm extends Vue {
+export default class ImportConfigForm<C extends EmployeeImportConfig> extends Vue {
   @Prop({required: true})
-  config!: EmployeeImportConfig;
+  config!: C;
 }
 </script>
 

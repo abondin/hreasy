@@ -30,6 +30,8 @@ import AdminEmployeesImportWorkflowComponent from "@/components/admin/employee/i
 import TimesheetTableComponent from "@/components/ts/TimesheetTableComponent.vue";
 import SalaryRequests from "@/components/salary/SalaryRequests.vue";
 import DictAdminOrganizations from "@/components/admin/dict/DictAdminOrganizations.vue";
+import AdminEmployeesKidsImportWorkflowComponent
+    from "@/components/admin/employee/imp/AdminEmployeesKidsImportWorkflow.vue";
 
 Vue.use(VueRouter)
 
@@ -66,7 +68,8 @@ const routes = [
             {path: '', redirect: 'list'},
             {path: 'list', component: AdminEmployees},
             {path: 'kids', component: AdminEmployeeKids},
-            {path: 'import', component: AdminEmployeesImportWorkflowComponent}
+            {path: 'import', component: AdminEmployeesImportWorkflowComponent},
+            {path: 'kids-import', component: AdminEmployeesKidsImportWorkflowComponent}
         ]
     },
     {

@@ -1,21 +1,18 @@
 package ru.abondin.hreasy.platform.service.admin.employee.imp.dto;
 
 import lombok.Data;
+import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportConfig;
 
 /**
  * Configuration to parse EXCEL file with employees
  */
 @Data
-public class EmployeeImportConfig {
+public class EmployeeImportConfig implements ExcelImportConfig {
 
-    /**
-     * 1 - first sheet
-     */
+
     private int sheetNumber = 1;
 
-    /**
-     * First row with actual employee data (not header)
-     */
+
     private int tableStartRow = 11;
 
     private EmployeeImportConfigColumns columns = new EmployeeImportConfigColumns();

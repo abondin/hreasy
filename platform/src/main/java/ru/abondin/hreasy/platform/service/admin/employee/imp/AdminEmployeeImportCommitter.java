@@ -3,20 +3,18 @@ package ru.abondin.hreasy.platform.service.admin.employee.imp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.CreateOrUpdateEmployeeBody;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeAllFieldsMapper;
 import ru.abondin.hreasy.platform.service.admin.employee.imp.dto.ImportEmployeeExcelRowDto;
-
-import java.util.function.Consumer;
+import ru.abondin.hreasy.platform.service.admin.imp.ExcelImportCommitter;
 
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class AdminEmployeeImportCommitter {
+public class AdminEmployeeImportCommitter implements ExcelImportCommitter<ImportEmployeeExcelRowDto> {
     private final AdminEmployeeService employeeService;
     private final EmployeeAllFieldsMapper mapper;
 
@@ -26,7 +24,7 @@ public class AdminEmployeeImportCommitter {
      * @param row
      * @return number of updates (actually 1 or 0 if skipped)
      */
-    @Transactional()
+    @Override
     public Mono<Integer> commitRow(AuthContext ctx, ImportEmployeeExcelRowDto row, Integer processId) {
         return Mono.defer(() -> {
                     // Return skip status if no cells require update
@@ -37,10 +35,10 @@ public class AdminEmployeeImportCommitter {
                         return createOrUpdateBody(ctx, row, processId)
                                 // 2. Commit changes in database
                                 .flatMap(body -> row.isNew() ? employeeService.create(ctx, body) : employeeService.update(ctx, row.getEmployeeId(), body))
-                                .doOnError(e -> {
-                                    log.error("Unable to commit employee " + row.getEmail(), e);
-                                }).map(id->1 // Show that row was updated
-                                        );
+                                .doOnError(e ->
+                                        log.error("Unable to commit employee " + row.getEmail(), e)
+                                ).map(id -> 1 // Show that row was updated
+                                );
                     }
                 }
         );
@@ -49,7 +47,7 @@ public class AdminEmployeeImportCommitter {
     private Mono<CreateOrUpdateEmployeeBody> createOrUpdateBody(AuthContext ctx, ImportEmployeeExcelRowDto row, Integer processId) {
         return (row.isNew() ? Mono.just(new CreateOrUpdateEmployeeBody()) :
                 employeeService.get(ctx, row.getEmployeeId())
-                        .map(entry -> mapper.createOrUpdateBodyFromEntry(entry))
+                        .map(mapper::createOrUpdateBodyFromEntry)
         ).map(body -> {
             body.setImportProcessId(processId);
             body.setEmail(row.getEmail());
@@ -57,6 +55,7 @@ public class AdminEmployeeImportCommitter {
             apply(row.getExternalErpId(), v -> body.setExtErpId(v));
             apply(row.getPhone(), v -> body.setPhone(v));
             apply(row.getDepartment(), v -> body.setDepartmentId(v.getId()));
+            apply(row.getOrganization(), v -> body.setOrganizationId(v.getId()));
             apply(row.getPosition(), v -> body.setPositionId(v.getId()));
             apply(row.getDateOfEmployment(), v -> body.setDateOfEmployment(v));
             apply(row.getDateOfDismissal(), v -> body.setDateOfDismissal(v));
@@ -70,12 +69,4 @@ public class AdminEmployeeImportCommitter {
             return body;
         });
     }
-
-    private <T> void apply(ImportEmployeeExcelRowDto.DataProperty<T> cell, Consumer<T> setter) {
-        if (cell.isUpdated()) {
-            setter.accept(cell.getImportedValue());
-        }
-    }
-
-
 }

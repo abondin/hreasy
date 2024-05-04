@@ -1,4 +1,3 @@
-<!-- Employees admin table -->
 <template>
   <v-card>
     <v-card-title>
@@ -20,19 +19,19 @@
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <v-chip v-on="on" label dense class="mr-2">
-                {{ $t('Новых сотрудников') }}: {{ workflow.importProcessStats.newItems }}
+                {{ $t('Новых записей') }}: {{ workflow.importProcessStats.newItems }}
               </v-chip>
             </template>
-            {{ $t('Количество новых сотрудников, которые будут добавлены в систему') }}
+            {{ $t('Количество новых записей, которые будут добавлены в систему') }}
           </v-tooltip>
 
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <v-chip v-on="on" label dense class="mr-2">
-                {{ $t('Сотрудников с изменениями') }}: {{ workflow.importProcessStats.updatedItems }}
+                {{ $t('Записей с изменениями') }}: {{ workflow.importProcessStats.updatedItems }}
               </v-chip>
             </template>
-            {{ $t('Количество сотрудников, которые будут обновлены в системе') }}
+            {{ $t('Количество записей, которые будут обновлены в системе') }}
           </v-tooltip>
         </v-row>
         <!--</editor-fold>-->
@@ -70,7 +69,10 @@
           <span>{{ item.rowNumber }}</span>
           <v-tooltip right v-if="item.errorCount>0">
             <template v-slot:activator="{ on }">
-              <v-chip v-on="on" x-small class="error ml-1 pa-2"><v-icon x-small color="white">mdi-flash-alert</v-icon> {{ item.errorCount }}</v-chip>
+              <v-chip v-on="on" x-small class="error ml-1 pa-2">
+                <v-icon x-small color="white">mdi-flash-alert</v-icon>
+                {{ item.errorCount }}
+              </v-chip>
             </template>
             {{ $t('Количество ошибок при разборе строки документа') }}
           </v-tooltip>
@@ -98,32 +100,36 @@ import Component from "vue-class-component";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import {UiConstants} from "@/components/uiconstants";
 import {Prop} from "vue-property-decorator";
-import {
-  ExcelRowDataProperty,
-  ImportEmployeeExcelRows,
-  ImportEmployeesWorkflow
-} from "@/components/admin/employee/imp/admin.employee.import.service";
-import ImportPreviewTableCell from "@/components/admin/employee/imp/ImportPreviewTableCell.vue";
+import {ImportEmployeeExcelRows} from "@/components/admin/employee/imp/admin.employee.import.service";
+import ImportPreviewTableCell from "@/components/admin/imp/ImportPreviewTableCell.vue";
+import {ExcelRowDataProperty, ImportConfig, ImportExcelRow, ImportWorkflow} from "@/components/admin/imp/import.base";
 
-class Filter {
+export class ImportPreviewFilter {
   public search = '';
   public hideNotUpdatedWithoutErrors = true;
 }
 
-interface ImportPreviewDataHeader<T = any> extends DataTableHeader<T> {
+export interface ImportPreviewDataHeader<T = any> extends DataTableHeader<T> {
   format?: string
 }
 
 @Component({components: {ImportPreviewTableCell}})
-export default class AdminEmployeesImportPreview extends Vue {
+export default class ImportPreviewComponent<C extends ImportConfig, R extends ImportExcelRow>
+    extends Vue {
   headers: ImportPreviewDataHeader[] = [];
 
   @Prop({required: true})
-  workflow!: ImportEmployeesWorkflow;
+  workflow!: ImportWorkflow<C, R>;
+
+  @Prop({required: true})
+  headersLoader!: () => ImportPreviewDataHeader[];
+
+  @Prop({required: true})
+  filterFunction!: (rows: R[], filter: ImportPreviewFilter) => R[];
 
   private defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
-  private filter = new Filter();
+  private filter = new ImportPreviewFilter();
 
 
   created() {
@@ -133,71 +139,7 @@ export default class AdminEmployeesImportPreview extends Vue {
 
   private reloadHeaders() {
     this.headers.length = 0;
-    this.headers.push({text: this.$tc('Строка'), value: 'rowNumber', width: 15});
-    this.headers.push({text: this.$tc('Email'), value: 'email', width: 280});
-    this.headers.push({text: this.$tc('ФИО'), value: 'displayName', width: 280, format: 'string'});
-    this.headers.push({text: this.$tc('Телефон'), value: 'phone', width: 150, format: 'string'});
-    this.headers.push({
-      text: this.$tc('Дата трудоустройства'),
-      value: 'dateOfEmployment',
-      width: 50,
-      class: "text-wrap",
-      sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
-    });
-    this.headers.push({
-      text: this.$tc('Дата увольнения'),
-      value: 'dateOfDismissal',
-      class: "text-wrap",
-      width: 50,
-      sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
-    });
-    this.headers.push({
-      text: this.$tc('День рождения'),
-      value: 'birthday',
-      class: "text-wrap",
-      width: 50,
-      sort: DateTimeUtils.dateComparatorNullLast, format: 'date'
-    });
-    this.headers.push({text: this.$tc('Позиция'), value: 'position', width: 200, format: 'dict'});
-    this.headers.push({text: this.$tc('Подразделение'), value: 'department', width: 300, format: 'dict'});
-    this.headers.push({text: this.$tc('Организация'), value: 'organization', width: 300, format: 'dict'});
-    this.headers.push({
-      text: this.$tc('IMPORT_CONFIG.documentSeries'),
-      value: 'documentSeries',
-      width: 35,
-      format: 'string'
-    });
-    this.headers.push({
-      text: this.$tc('IMPORT_CONFIG.documentNumber'),
-      value: 'documentNumber',
-      width: 34,
-      format: 'string'
-    });
-    this.headers.push({
-      text: this.$tc('IMPORT_CONFIG.documentIssuedDate'),
-      value: 'documentIssuedDate',
-      width: 100,
-      format: 'date'
-    });
-    this.headers.push({
-      text: this.$tc('IMPORT_CONFIG.documentIssuedBy'),
-      value: 'documentIssuedBy',
-      width: 150,
-      format: 'string'
-    });
-    this.headers.push({
-      text: this.$tc('Адрес по регистрации'),
-      value: 'registrationAddress',
-      width: 500,
-      format: 'string'
-    });
-    this.headers.push({
-      text: this.$tc('Идентификатор во внешней ERP системе'),
-      value: 'externalErpId',
-      width: 150,
-      format: 'string'
-    });
-    this.headers.push({text: this.$tc('Пол'), value: 'sex', width: 100, format: 'string'});
+    this.headers.push(...this.headersLoader());
   }
 
 

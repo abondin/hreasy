@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.admin.employee.dto;
 
 import lombok.Data;
+import org.springframework.lang.Nullable;
 
 import java.time.LocalDate;
 
@@ -8,4 +9,7 @@ import java.time.LocalDate;
 public class CreateOrUpdateEmployeeKidBody {
     private String displayName;
     private LocalDate birthday;
+
+    @Nullable
+    private Integer importProcessId;
 }
