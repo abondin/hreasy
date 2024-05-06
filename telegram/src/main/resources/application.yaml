@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: "HR Easy Telegram Bot"
+
+hreasy:
+  telegram:
+    botUsername: hreasy_stm
+    botToken: "6442506530:AAFJltxvdVEhAgPl8d6FGS7QBNfANIjpTYk"

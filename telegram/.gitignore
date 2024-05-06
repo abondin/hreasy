@@ -1,3 +1,6 @@
+# File with sensitive data
+/src/main/resources/application-stm.yaml
+
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
