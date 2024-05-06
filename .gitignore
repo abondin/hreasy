@@ -1,3 +1,6 @@
+Telegram file test database
+/hreasy_stm
+
 ### STS ###
 .apt_generated
 .classpath
@@ -23,3 +26,4 @@ build/
 
 ### VS Code ###
 .vscode/
+
