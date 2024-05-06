@@ -1,5 +1,8 @@
 # File with sensitive data
 /src/main/resources/application-stm.yaml
+# Telegram file test database
+/hreasy_stm
+
 
 HELP.md
 target/
