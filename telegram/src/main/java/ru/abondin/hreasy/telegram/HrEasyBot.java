@@ -11,13 +11,16 @@ import org.telegram.abilitybots.api.objects.Privacy;
 @Slf4j
 public class HrEasyBot extends AbilityBot {
 
+    private final long creatorId;
+
     protected HrEasyBot(HrEasyBotProps props) {
         super(props.getBotToken(), props.getBotUsername());
+        this.creatorId = props.getBotCreator();
     }
 
     @Override
     public long creatorId() {
-        return 1l;
+        return creatorId;
     }
 
 
@@ -34,26 +37,28 @@ public class HrEasyBot extends AbilityBot {
                 .input(0)
                 .locality(Locality.USER)
                 .privacy(Privacy.PUBLIC)
-                .action(ctx -> {
-                    try {
-                        Thread.sleep(10000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    silent.send("Welcome", ctx.chatId());
-                })
+                .enableStats()
+                .action(ctx ->
+                        silent.send("Welcome", ctx.chatId())
+                )
                 .build();
     }
 
 
     public Ability help() {
         return Ability.builder()
+                .flag(update -> {
+                    log.info("Check flags for {}", update);
+                    return true;
+                })
                 .name("help")
                 .info("Help")
                 .input(0)
                 .locality(Locality.USER)
                 .privacy(Privacy.PUBLIC)
-                .action(ctx -> silent.send("Help me!!", ctx.chatId()))
+                .action(ctx -> {
+                    silent.send("Help me!!", ctx.chatId());
+                })
                 .build();
     }
 

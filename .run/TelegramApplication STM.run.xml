@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="TelegramApplication STM" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="ru.abondin.hreasy.telegram.TelegramApplication" />
+    <module name="telegram" />
+    <option name="VM_PARAMETERS" value="-Dspring.profiles.active=stm -Duser.country=RU -Duser.language=ru" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="ru.abondin.hreasy.telegram.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

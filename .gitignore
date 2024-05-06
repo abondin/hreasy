@@ -1,3 +1,7 @@
+# Telegram file test database
+/hreasy_stm
+/hreasy_stm.*
+
 ### STS ###
 .apt_generated
 .classpath

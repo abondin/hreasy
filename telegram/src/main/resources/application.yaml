@@ -4,5 +4,6 @@ spring:
 
 hreasy:
   telegram:
-    botUsername: <not_defined>
-    botToken: "<not_defined>"
+    bot-username: "<not_defined>"
+    bot-token: "<not_defined>"
+    bot-creator: 1
