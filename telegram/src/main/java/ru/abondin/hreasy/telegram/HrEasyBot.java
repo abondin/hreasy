@@ -3,9 +3,14 @@ package ru.abondin.hreasy.telegram;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.abilitybots.api.bot.AbilityBot;
+import org.telegram.abilitybots.api.db.DBContext;
 import org.telegram.abilitybots.api.objects.Ability;
 import org.telegram.abilitybots.api.objects.Locality;
 import org.telegram.abilitybots.api.objects.Privacy;
+import ru.abondin.hreasy.telegram.abilities.MyProfileAbilityFactory;
+import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
+import ru.abondin.hreasy.telegram.conf.I18Helper;
+import ru.abondin.hreasy.telegram.abilities.StartMenuAbilityFactory;
 
 @Component
 @Slf4j
@@ -13,9 +18,18 @@ public class HrEasyBot extends AbilityBot {
 
     private final long creatorId;
 
-    protected HrEasyBot(HrEasyBotProps props) {
-        super(props.getBotToken(), props.getBotUsername());
+
+    private final I18Helper i18;
+    private final StartMenuAbilityFactory startMenuAction;
+    private final MyProfileAbilityFactory myProfileAbilityFactory;
+    protected HrEasyBot(HrEasyBotProps props, DBContext db, I18Helper i18
+            , StartMenuAbilityFactory startMenuAction
+            , MyProfileAbilityFactory myProfileAbilityFactory) {
+        super(props.getBotToken(), props.getBotUsername(), db);
         this.creatorId = props.getBotCreator();
+        this.i18 = i18;
+        this.startMenuAction = startMenuAction;
+        this.myProfileAbilityFactory = myProfileAbilityFactory;
     }
 
     @Override
@@ -31,17 +45,11 @@ public class HrEasyBot extends AbilityBot {
     }
 
     public Ability start() {
-        return Ability.builder()
-                .name("start")
-                .info("Start!")
-                .input(0)
-                .locality(Locality.USER)
-                .privacy(Privacy.PUBLIC)
-                .enableStats()
-                .action(ctx ->
-                        silent.send("Welcome", ctx.chatId())
-                )
-                .build();
+        return startMenuAction.create(this);
+    }
+
+    public Ability myProfile() {
+        return myProfileAbilityFactory.create(this);
     }
 
 
@@ -57,7 +65,7 @@ public class HrEasyBot extends AbilityBot {
                 .locality(Locality.USER)
                 .privacy(Privacy.PUBLIC)
                 .action(ctx -> {
-                    silent.send("Help me!!", ctx.chatId());
+                    silent().send("Help me!!", ctx.chatId());
                 })
                 .build();
     }
