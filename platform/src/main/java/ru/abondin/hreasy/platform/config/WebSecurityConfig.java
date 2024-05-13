@@ -11,6 +11,7 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.DelegatingReactiveAuthenticationManager;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
+import ru.abondin.hreasy.platform.sec.UserDetailsWithEmployeeInfo;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -78,19 +80,28 @@ public class WebSecurityConfig {
                                                   GlobalWebErrorsHandler errorHandler
     ) {
         return http
-                .authorizeExchange()
-                .pathMatchers(
-                        "/api/v1/login",
-                        "/api/v1/logout",
-                        "/api/v1/fs/**",
-                        "/actuator/**",
-                        "/favicon.ico").permitAll()
-                .anyExchange().authenticated()
-                .and()
-                .csrf().disable()
+                .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.
+                        // Allow some methods without any authentication
+                                pathMatchers(
+                                "/api/v1/login",
+                                "/api/v1/logout",
+                                "/api/v1/fs/**",
+                                "/actuator/**",
+                                "/favicon.ico").permitAll()
+                        // Allow api methods for web interface only for Users, logged in web
+                        .pathMatchers("/api/**")
+                        .access((auth, ctx) ->
+                                auth.map(a -> a.getPrincipal() instanceof UserDetailsWithEmployeeInfo)
+                                        .map(AuthorizationDecision::new))
+                        // Allow internal api for telegram bot only for requests from bot service
+                        // TODO: remove after telegram bot is fully implemented
+                )
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(securityContextRepository)
-                .exceptionHandling().accessDeniedHandler(errorHandler).authenticationEntryPoint(errorHandler)
-                .and().build();
+                .exceptionHandling(exSpec -> exSpec
+                        .accessDeniedHandler(errorHandler)
+                        .authenticationEntryPoint(errorHandler))
+                .build();
     }
 
 
