@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.repo.employee;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.r2dbc.repository.Query;
@@ -12,6 +13,9 @@ import ru.abondin.hreasy.platform.repo.employee.admin.UserSecurityInfoEntry;
 
 @Repository
 public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Integer>, EmployeeDetailedRepo {
+    @Query("select id, email from empl.employee where trim(telegram) ilike (:telegram)")
+    Mono<EmployeeTelegramBinding> findEmailByTelegramAccount(String telegram);
+
     @Query("select id from empl.employee where trim(email) ilike (:email)")
     Mono<EmployeeShortInfoEntry> findIdByEmail(String email);
 
@@ -59,5 +63,13 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
         @Column("current_project")
         private Integer currentProjectId;
 
+    }
+
+    @Data
+    class EmployeeTelegramBinding{
+        @Id
+        private Integer id;
+        @NotNull
+        private String email;
     }
 }

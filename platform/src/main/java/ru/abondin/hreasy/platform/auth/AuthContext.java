@@ -84,10 +84,7 @@ public class AuthContext {
     @AllArgsConstructor
     public enum LoginType {
         LDAP((short) 1), INTERNAL((short) 2), MASTER_PASSWORD((short) 3),
-        /**
-         * for example request from telegram bot service
-         */
-        INTERNAL_SERVICE((short) 4);
+        TELEGRAM_BOT_SERVICE((short) 4);
         @Getter
         private final short value;
 

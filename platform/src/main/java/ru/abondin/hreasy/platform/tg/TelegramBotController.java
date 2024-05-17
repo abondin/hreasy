@@ -13,7 +13,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
  * Static Markdown articles (news for example)
  */
 @RestController()
-@RequestMapping("/internal/api/v1")
+@RequestMapping("/telegram/api/v1")
 @RequiredArgsConstructor
 @Slf4j
 public class TelegramBotController {

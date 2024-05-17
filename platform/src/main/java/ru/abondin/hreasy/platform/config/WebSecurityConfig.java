@@ -14,6 +14,7 @@ import org.springframework.security.authentication.DelegatingReactiveAuthenticat
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
@@ -23,8 +24,9 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
+import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
-import ru.abondin.hreasy.platform.config.internal.JwtServerAuthenticationConverter;
+import ru.abondin.hreasy.platform.config.internal.TelegramJwtAuthenticationConverter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -144,10 +146,9 @@ public class WebSecurityConfig {
             ServerHttpSecurity http,
             GlobalWebErrorsHandler errorHandler,
             ServerSecurityContextRepository securityContextRepository,
-            ReactiveAuthenticationManager authenticationManager,
-            JwtServerAuthenticationConverter jwtServerAuthenticationConverter
+            TelegramJwtAuthenticationConverter telegramJwtAuthenticationConverter
     ) {
-        return http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/internal/**"))
+        return http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/telegram/**"))
                 .authorizeExchange(exchanges -> exchanges.anyExchange().authenticated())
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
@@ -157,22 +158,30 @@ public class WebSecurityConfig {
                 .exceptionHandling(exSpec -> exSpec
                         .accessDeniedHandler(errorHandler)
                         .authenticationEntryPoint(errorHandler))
-                .addFilterAt(internalJwtAuthenticationWebFilter(
+                .addFilterAt(telegramAuthenticationWebFilter(
                         securityContextRepository,
-                        authenticationManager,
-                        jwtServerAuthenticationConverter
+                        telegramJwtAuthenticationConverter
                 ), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
 
-    private AuthenticationWebFilter internalJwtAuthenticationWebFilter(
+    private AuthenticationWebFilter telegramAuthenticationWebFilter(
             ServerSecurityContextRepository securityContextRepository,
-            ReactiveAuthenticationManager authenticationManager,
-            JwtServerAuthenticationConverter jwtServerAuthenticationConverter) {
-        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(authenticationManager);
+            TelegramJwtAuthenticationConverter jwtServerAuthenticationConverter) {
+        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(telegramAuthenticationManager());
         authenticationWebFilter.setServerAuthenticationConverter(jwtServerAuthenticationConverter);
         authenticationWebFilter.setSecurityContextRepository(securityContextRepository);
         return authenticationWebFilter;
+    }
+
+    private ReactiveAuthenticationManager telegramAuthenticationManager() {
+        return new ReactiveAuthenticationManager() {
+            @Override
+            public Mono<Authentication> authenticate(Authentication authentication) {
+                //All validations are done in TelegramJwtAuthenticationConverter
+                return Mono.defer(() -> Mono.just(authentication));
+            }
+        };
     }
 
     // endregion

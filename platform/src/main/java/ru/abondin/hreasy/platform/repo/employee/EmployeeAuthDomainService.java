@@ -16,6 +16,11 @@ public class EmployeeAuthDomainService {
     private final EmployeeRepo employeeRepo;
     private final SecPasswdRepo passwdRepo;
 
+    public Mono<String> findEmailByTelegramAccount(String telegramAccount) {
+        return employeeRepo.findEmailByTelegramAccount(telegramAccount)
+                .map(EmployeeRepo.EmployeeTelegramBinding::getEmail);
+    }
+
     public Mono<EmployeeAuthInfoEntry> findIdByEmail(String email) {
         return employeeRepo.findIdByEmail(email).flatMap(empl -> {
             var entry = new EmployeeAuthInfoEntry();
