@@ -6,21 +6,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.format.Formatter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.DelegatingReactiveAuthenticationManager;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
-import ru.abondin.hreasy.platform.sec.UserDetailsWithEmployeeInfo;
+import ru.abondin.hreasy.platform.config.internal.JwtServerAuthenticationConverter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -33,20 +37,21 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    @Autowired(required = false)
-    @Qualifier("ldapAuthenticationManager")
-    private ReactiveAuthenticationManager ldapAuthenticationManager;
-
-    @Autowired(required = false)
-    @Qualifier("masterPasswordAuthenticationManager")
-    private ReactiveAuthenticationManager masterPasswordAuthenticationManager;
-
-    @Autowired(required = false)
-    @Qualifier("internalPasswordAuthenticationManager")
-    private ReactiveAuthenticationManager internalPasswordAuthenticationManager;
 
     @Bean
-    ReactiveAuthenticationManager authenticationManager() {
+    ReactiveAuthenticationManager authenticationManager(
+            @Autowired(required = false)
+            @Qualifier("ldapAuthenticationManager")
+            ReactiveAuthenticationManager ldapAuthenticationManager,
+
+            @Autowired(required = false)
+            @Qualifier("masterPasswordAuthenticationManager")
+            ReactiveAuthenticationManager masterPasswordAuthenticationManager,
+
+            @Autowired(required = false)
+            @Qualifier("internalPasswordAuthenticationManager")
+            ReactiveAuthenticationManager internalPasswordAuthenticationManager
+    ) {
         var authenticationManagers = new ArrayList<ReactiveAuthenticationManager>();
         log.info("Collecting authentication managers...");
         Assert.isTrue(!(internalPasswordAuthenticationManager != null && ldapAuthenticationManager != null),
@@ -75,6 +80,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    @Order(2)
     SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
                                                   ServerSecurityContextRepository securityContextRepository,
                                                   GlobalWebErrorsHandler errorHandler
@@ -90,11 +96,7 @@ public class WebSecurityConfig {
                                 "/favicon.ico").permitAll()
                         // Allow api methods for web interface only for Users, logged in web
                         .pathMatchers("/api/**")
-                        .access((auth, ctx) ->
-                                auth.map(a -> a.getPrincipal() instanceof UserDetailsWithEmployeeInfo)
-                                        .map(AuthorizationDecision::new))
-                        // Allow internal api for telegram bot only for requests from bot service
-                        // TODO: remove after telegram bot is fully implemented
+                        .authenticated()
                 )
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(securityContextRepository)
@@ -127,6 +129,53 @@ public class WebSecurityConfig {
             registry.addFormatter(new LocalDateFormatter());
         }
     }
+
+    // region Internal API
+
+    /**
+     * Isolated authentication manager for internal api
+     *
+     * @param http
+     * @return
+     */
+    @Bean
+    @Order(1)
+    public SecurityWebFilterChain internalApiSecurityWebFilterChain(
+            ServerHttpSecurity http,
+            GlobalWebErrorsHandler errorHandler,
+            ServerSecurityContextRepository securityContextRepository,
+            ReactiveAuthenticationManager authenticationManager,
+            JwtServerAuthenticationConverter jwtServerAuthenticationConverter
+    ) {
+        return http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/internal/**"))
+                .authorizeExchange(exchanges -> exchanges.anyExchange().authenticated())
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .anonymous(ServerHttpSecurity.AnonymousSpec::disable)
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                .exceptionHandling(exSpec -> exSpec
+                        .accessDeniedHandler(errorHandler)
+                        .authenticationEntryPoint(errorHandler))
+                .addFilterAt(internalJwtAuthenticationWebFilter(
+                        securityContextRepository,
+                        authenticationManager,
+                        jwtServerAuthenticationConverter
+                ), SecurityWebFiltersOrder.AUTHENTICATION)
+                .build();
+    }
+
+    private AuthenticationWebFilter internalJwtAuthenticationWebFilter(
+            ServerSecurityContextRepository securityContextRepository,
+            ReactiveAuthenticationManager authenticationManager,
+            JwtServerAuthenticationConverter jwtServerAuthenticationConverter) {
+        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(authenticationManager);
+        authenticationWebFilter.setServerAuthenticationConverter(jwtServerAuthenticationConverter);
+        authenticationWebFilter.setSecurityContextRepository(securityContextRepository);
+        return authenticationWebFilter;
+    }
+
+    // endregion
 
 }
 

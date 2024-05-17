@@ -31,6 +31,7 @@ hreasy:
     sec:
       cors-allowed-origins: http://localhost:8080
       master-password: qwe123
+      internal-services-certificate: ./fake.pem
   background:
     default_buffer_size: 100
     upcoming-vacation:

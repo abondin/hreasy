@@ -5,9 +5,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import ru.abondin.hreasy.platform.auth.DbAuthoritiesPopulator;
+import ru.abondin.hreasy.platform.auth.EmployeeBasedUserDetailsService;
 import ru.abondin.hreasy.platform.auth.InternalPasswordAuthenticationProvider;
-import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 
 /**
  * @see InternalPasswordAuthenticationProvider
@@ -18,11 +17,8 @@ import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 public class AuthInternalPasswordConf {
     @Bean("internalPasswordAuthenticationManager")
     ReactiveAuthenticationManager masterPasswordAuthenticationManager(
-            final DbAuthoritiesPopulator authoritiesPopulator,
-            final EmployeeAuthDomainService employeeAuthDomainService
+            final EmployeeBasedUserDetailsService userDetailsService
     ) {
-        return new InternalPasswordAuthenticationProvider(
-                authoritiesPopulator, employeeAuthDomainService
-        );
+        return new InternalPasswordAuthenticationProvider(userDetailsService);
     }
 }

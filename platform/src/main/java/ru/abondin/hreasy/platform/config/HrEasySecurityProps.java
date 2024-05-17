@@ -42,4 +42,7 @@ public class HrEasySecurityProps {
      * Auth every user with the secret master password
      */
     private String masterPassword = "";
+
+    private String internalServicesSecret = "hreasy-secret-for-jwt-tokens-for-internal-microsevices-comminications";
+
 }
