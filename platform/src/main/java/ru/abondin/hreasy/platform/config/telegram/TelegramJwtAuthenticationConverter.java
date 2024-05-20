@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.platform.config.internal;
+package ru.abondin.hreasy.platform.config.telegram;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,7 @@ public class TelegramJwtAuthenticationConverter implements ServerAuthenticationC
                 return Mono.empty();
             }
             return employeeAuthDomainService.findEmailByTelegramAccount(telegramAccount).flatMap(email ->
-                    userDetailsService.findByUsername(email, AuthContext.LoginType.TELEGRAM_BOT_SERVICE)
+                    userDetailsService.findNotDismissedByUsername(email, AuthContext.LoginType.TELEGRAM_BOT_SERVICE)
                             .map(userDetails -> new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities())));
         }
         return Mono.empty();

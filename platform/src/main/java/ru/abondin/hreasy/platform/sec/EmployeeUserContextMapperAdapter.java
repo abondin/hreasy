@@ -37,7 +37,7 @@ public class EmployeeUserContextMapperAdapter implements UserDetailsContextMappe
     public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<? extends GrantedAuthority> authorities) {
         var user = delegate.mapUserFromContext(ctx, username, authorities);
         // FIXME One more block operation to support NOT reactive Spring API
-        var employeeAuthInfoEntry = employeeAuthDomainService.findIdByEmail(username).block(MAX_WAIT);
+        var employeeAuthInfoEntry = employeeAuthDomainService.findNotDismissedByUsername(username).block(MAX_WAIT);
         if (employeeAuthInfoEntry == null) {
             throw new BusinessError("errors.no.employee.found", username);
         }

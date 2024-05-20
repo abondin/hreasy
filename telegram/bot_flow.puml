@@ -2,40 +2,28 @@
 'https://plantuml.com/ru/activity-diagram-beta
 start
 
-:/start;
-
-partition  "Authorization" {
-    if (has token in local cache) then (yes)
-    else (no)
-        :get user token for given account in HR Easy;
-        #lightgreen:if (user found by telegram account) then (yes)
-        #lightgreen:if (account is confirmed) then (no)
-            split
-            #lightgreen:start confirmation process in HR Easy;
-            split again
-            :print confirmation instruction;
-            end split
-            end
-        endif
-        else (no)
-          :print
-          "User in HR Easy not found for
-           this telegram account.
-           Please contact HR";
-           end
-        endif
-    endif
-}
 
 partition "Available flows" {
     fork
         :Start instructions;
     fork again
-        :My information;
-    fork again
         :Update Password;
     fork again
-        :Check vacations;
+        :generate JWT token with user telegram account;
+        :REST API method with "Authorization Bearer" header;
+        fork
+           : /my-info Information about me;
+        fork again
+           :/vacations Check vacations;
+        end fork
+        if (HTTP Result) then (200 OK)
+            : Print the information;
+        else
+            :401 User not found by given telegram account
+            422 Business Error
+            403 Forbidden;
+            stop
+        end if
     end fork
 }
 

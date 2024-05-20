@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.repo.sec.SecPasswdEntry;
 import ru.abondin.hreasy.platform.repo.sec.SecPasswdRepo;
+import ru.abondin.hreasy.platform.service.DateTimeService;
+
+import java.time.OffsetDateTime;
 
 /**
  * Simple aggregation for basic {@link EmployeeRepo} methods to provide security information for given employee
@@ -15,14 +18,15 @@ public class EmployeeAuthDomainService {
 
     private final EmployeeRepo employeeRepo;
     private final SecPasswdRepo passwdRepo;
+    private final DateTimeService dateTimeService;
 
     public Mono<String> findEmailByTelegramAccount(String telegramAccount) {
         return employeeRepo.findEmailByTelegramAccount(telegramAccount)
                 .map(EmployeeRepo.EmployeeTelegramBinding::getEmail);
     }
 
-    public Mono<EmployeeAuthInfoEntry> findIdByEmail(String email) {
-        return employeeRepo.findIdByEmail(email).flatMap(empl -> {
+    public Mono<EmployeeAuthInfoEntry> findNotDismissedByUsername(String email) {
+        return employeeRepo.findNotDismissedIdByEmail(email, dateTimeService.now()).flatMap(empl -> {
             var entry = new EmployeeAuthInfoEntry();
             entry.setId(empl.getId());
             entry.setDepartmentId(empl.getDepartmentId());

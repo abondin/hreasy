@@ -16,27 +16,24 @@ public class EmployeeBasedUserDetailsService {
     private final DbAuthoritiesPopulator authoritiesPopulator;
     private final EmployeeAuthDomainService employeeAuthDomainService;
 
-    public Mono<UserDetails> findByUsername(String username, AuthContext.LoginType loginType) {
-        return employeeAuthDomainService.findIdByEmail(username)
+    public Mono<UserDetails> findNotDismissedByUsername(String username, AuthContext.LoginType loginType) {
+        return employeeAuthDomainService.findNotDismissedByUsername(username)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", username)))
                 .flatMap(
                         employeeAuthInfoEntry ->
                                 authoritiesPopulator.getGrantedAuthorities(username).collectList()
                                         .map(
-                                                authorities -> {
-                                                    var user = new UserDetailsWithEmployeeInfo(new User(
-                                                            username,
-                                                            "",
-                                                            authorities),
-                                                            employeeAuthInfoEntry.getId(),
-                                                            employeeAuthInfoEntry.getDepartmentId(),
-                                                            employeeAuthInfoEntry.getCurrentProjectId(),
-                                                            employeeAuthInfoEntry.getAccessibleDepartments(),
-                                                            employeeAuthInfoEntry.getAccessibleBas(),
-                                                            employeeAuthInfoEntry.getAccessibleProjects(),
-                                                            loginType.getValue());
-                                                    return user;
-                                                }
+                                                authorities -> new UserDetailsWithEmployeeInfo(new User(
+                                                        username,
+                                                        "",
+                                                        authorities),
+                                                        employeeAuthInfoEntry.getId(),
+                                                        employeeAuthInfoEntry.getDepartmentId(),
+                                                        employeeAuthInfoEntry.getCurrentProjectId(),
+                                                        employeeAuthInfoEntry.getAccessibleDepartments(),
+                                                        employeeAuthInfoEntry.getAccessibleBas(),
+                                                        employeeAuthInfoEntry.getAccessibleProjects(),
+                                                        loginType.getValue())
                                         )
                 );
     }

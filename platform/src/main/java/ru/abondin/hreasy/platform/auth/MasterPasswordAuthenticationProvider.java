@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
@@ -31,7 +30,7 @@ public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticat
             // Move control to default LDAP provider
             return Mono.empty();
         }
-        return userDetailsService.findByUsername(username, AuthContext.LoginType.MASTER_PASSWORD)
+        return userDetailsService.findNotDismissedByUsername(username, AuthContext.LoginType.MASTER_PASSWORD)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", username)))
                 .map(user -> {
                     var result = new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());

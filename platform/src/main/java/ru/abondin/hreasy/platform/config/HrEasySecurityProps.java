@@ -43,6 +43,6 @@ public class HrEasySecurityProps {
      */
     private String masterPassword = "";
 
-    private String internalServicesSecret = "hreasy-secret-for-jwt-tokens-for-internal-microsevices-comminications";
+    private String telegramJwtSecret = "hreasy-secret-for-jwt-tokens-for-internal-microsevices-comminications";
 
 }

@@ -26,7 +26,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
-import ru.abondin.hreasy.platform.config.internal.TelegramJwtAuthenticationConverter;
+import ru.abondin.hreasy.platform.config.telegram.TelegramJwtAuthenticationConverter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
