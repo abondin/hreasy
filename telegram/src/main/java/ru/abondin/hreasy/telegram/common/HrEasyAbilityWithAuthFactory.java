@@ -2,13 +2,17 @@ package ru.abondin.hreasy.telegram.common;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.telegram.abilitybots.api.db.DBContext;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.telegram.abilitybots.api.objects.Ability;
 import org.telegram.abilitybots.api.objects.Locality;
 import org.telegram.abilitybots.api.objects.MessageContext;
 import org.telegram.abilitybots.api.objects.Privacy;
+import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.telegram.HrEasyBot;
 import ru.abondin.hreasy.telegram.conf.I18Helper;
+import ru.abondin.hreasy.telegram.conf.JwtUtil;
+
+import java.time.Duration;
 
 /**
  * Check HR Easy JWT token in bot database.
@@ -17,9 +21,9 @@ import ru.abondin.hreasy.telegram.conf.I18Helper;
 @RequiredArgsConstructor
 @Slf4j
 public abstract class HrEasyAbilityWithAuthFactory implements HrEasyAbilityFactory {
-    private final String ACCESS_TOKENS_KEY = "hrEasyAccessTokens";
-    private final I18Helper i18n;
-    private final DBContext db;
+    protected final I18Helper i18n;
+    protected final WebClient webClient;
+    protected final JwtUtil jwtUtil;
 
     public Ability create(HrEasyBot bot) {
         return Ability.builder()
@@ -29,25 +33,15 @@ public abstract class HrEasyAbilityWithAuthFactory implements HrEasyAbilityFacto
                 .locality(Locality.USER)
                 .privacy(Privacy.PUBLIC)
                 .enableStats()
-                .action(ctx -> checkTokenAndDoAction(bot, ctx))
+                .action(ctx -> prepareTokenAndDoAction(bot, webClient, ctx))
                 .build();
     }
 
-    private void checkTokenAndDoAction(HrEasyBot bot, MessageContext ctx) {
-        db.<String, String>getMap(ACCESS_TOKENS_KEY).compute(ctx.user().getUserName(), (k, v) -> {
-            String token;
-            if (v == null) {
-                log.debug("Trying to auth user {}", ctx.user().getUserName());
-                token = "newToken-" + ctx.user().getUserName() + "-" + System.currentTimeMillis();
-            } else {
-                token = v;
-            }
-            doAction(bot, ctx, token);
-            return token;
-        });
+    private void prepareTokenAndDoAction(HrEasyBot bot, WebClient webClient, MessageContext ctx) {
+        jwtUtil.putJwtTokenToContext(ctx).flatMap(c -> doAction(bot, ctx)).block(Duration.ofSeconds(20));
     }
 
-    protected abstract void doAction(HrEasyBot bot, MessageContext ctx, String accessToken);
+    protected abstract <T> Mono<T> doAction(HrEasyBot bot, MessageContext ctx);
 
 
 }

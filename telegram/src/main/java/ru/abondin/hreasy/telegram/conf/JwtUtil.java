@@ -3,6 +3,9 @@ package ru.abondin.hreasy.telegram.conf;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
+import org.telegram.abilitybots.api.objects.MessageContext;
+import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -15,15 +18,29 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
+    private static final String CONTEXT_USER_KEY = "context-user-jwt-token";
+
     private final SecretKey secretKey;
     private final Duration tokenExperiation;
 
     public JwtUtil(HrEasyBotProps props) {
-        this.secretKey = Keys.hmacShaKeyFor(props.getSecurity().getJwtTokenSecret().getBytes(StandardCharsets.UTF_8));
-        this.tokenExperiation = props.getSecurity().getJwtTokenExpiration();
+        this.secretKey = Keys.hmacShaKeyFor(props.getPlatform().getJwtTokenSecret().getBytes(StandardCharsets.UTF_8));
+        this.tokenExperiation = props.getPlatform().getJwtTokenExpiration();
     }
 
-    public String generateToken(String username) {
+    public Mono<Context> putJwtTokenToContext(MessageContext ctx) {
+        return Mono.deferContextual(Mono::just)
+                .map(c -> Context.of(CONTEXT_USER_KEY, generateToken(ctx.user().getUserName())));
+    }
+
+    public Mono<String> getJwtTokenFromContext(){
+        return Mono.deferContextual(Mono::just)
+                .flatMap(ctx -> Mono.justOrEmpty(ctx.getOrEmpty(CONTEXT_USER_KEY)));
+    }
+
+
+
+    private String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
         return createToken(claims, username);
     }

@@ -1,18 +1,20 @@
 package ru.abondin.hreasy.telegram.abilities;
 
 import org.springframework.stereotype.Component;
-import org.telegram.abilitybots.api.db.DBContext;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.telegram.abilitybots.api.objects.MessageContext;
+import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.telegram.HrEasyBot;
 import ru.abondin.hreasy.telegram.common.HrEasyAbilityWithAuthFactory;
 import ru.abondin.hreasy.telegram.conf.I18Helper;
+import ru.abondin.hreasy.telegram.conf.JwtUtil;
 
 @Component
 public class MyProfileAbilityFactory extends HrEasyAbilityWithAuthFactory {
     public static final String MY_PROFILE_COMMAND = "my_profile";
 
-    public MyProfileAbilityFactory(I18Helper i18n, DBContext db) {
-        super(i18n, db);
+    public MyProfileAbilityFactory(I18Helper i18n, WebClient webClient, JwtUtil jwtUtil) {
+        super(i18n, webClient, jwtUtil);
     }
 
     @Override
@@ -21,7 +23,14 @@ public class MyProfileAbilityFactory extends HrEasyAbilityWithAuthFactory {
     }
 
     @Override
-    protected void doAction(HrEasyBot bot, MessageContext ctx, String accessToken) {
-        bot.silent().send("Hello user with access token " + accessToken, ctx.chatId());
+    protected Mono<Void> doAction(HrEasyBot bot, MessageContext ctx) {
+        return webClient
+                .get()
+                .uri("/api/v1/test")
+                .retrieve().bodyToMono(String.class)
+                .map(response -> {
+                    bot.silent().send(response, ctx.chatId());
+                    return null;
+                });
     }
 }
