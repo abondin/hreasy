@@ -9,6 +9,8 @@ import ru.abondin.hreasy.telegram.common.HrEasyAbilityWithAuthFactory;
 import ru.abondin.hreasy.telegram.conf.I18Helper;
 import ru.abondin.hreasy.telegram.conf.JwtUtil;
 
+import java.time.Duration;
+
 @Component
 public class MyProfileAbilityFactory extends HrEasyAbilityWithAuthFactory {
     public static final String MY_PROFILE_COMMAND = "my_profile";
@@ -27,7 +29,11 @@ public class MyProfileAbilityFactory extends HrEasyAbilityWithAuthFactory {
         return webClient
                 .get()
                 .uri("/api/v1/test")
-                .retrieve().bodyToMono(String.class)
+                .retrieve()
+                .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(10))
+                .doOnError(err -> defaultErrorHandling(bot, ctx, err))
+                .contextWrite(jwtUtil.jwtContext(ctx))
                 .map(response -> {
                     bot.silent().send(response, ctx.chatId());
                     return null;

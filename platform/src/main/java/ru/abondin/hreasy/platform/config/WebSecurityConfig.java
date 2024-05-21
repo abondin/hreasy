@@ -14,7 +14,6 @@ import org.springframework.security.authentication.DelegatingReactiveAuthenticat
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
@@ -175,13 +174,10 @@ public class WebSecurityConfig {
     }
 
     private ReactiveAuthenticationManager telegramAuthenticationManager() {
-        return new ReactiveAuthenticationManager() {
-            @Override
-            public Mono<Authentication> authenticate(Authentication authentication) {
-                //All validations are done in TelegramJwtAuthenticationConverter
-                return Mono.defer(() -> Mono.just(authentication));
-            }
-        };
+        return authentication ->
+                // Do nothing here.
+                // The TelegramJwtAuthenticationConverter handles all validations.
+                Mono.defer(() -> Mono.just(authentication));
     }
 
     // endregion

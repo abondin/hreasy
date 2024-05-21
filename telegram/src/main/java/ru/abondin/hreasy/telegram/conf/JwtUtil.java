@@ -21,23 +21,20 @@ public class JwtUtil {
     private static final String CONTEXT_USER_KEY = "context-user-jwt-token";
 
     private final SecretKey secretKey;
-    private final Duration tokenExperiation;
+    private final Duration tokenExperation;
 
     public JwtUtil(HrEasyBotProps props) {
         this.secretKey = Keys.hmacShaKeyFor(props.getPlatform().getJwtTokenSecret().getBytes(StandardCharsets.UTF_8));
-        this.tokenExperiation = props.getPlatform().getJwtTokenExpiration();
+        this.tokenExperation = props.getPlatform().getJwtTokenExpiration();
     }
 
-    public Mono<Context> putJwtTokenToContext(MessageContext ctx) {
-        return Mono.deferContextual(Mono::just)
-                .map(c -> Context.of(CONTEXT_USER_KEY, generateToken(ctx.user().getUserName())));
+    public Context jwtContext(MessageContext ctx) {
+        return Context.of(CONTEXT_USER_KEY, generateToken(ctx.user().getUserName()));
     }
 
-    public Mono<String> getJwtTokenFromContext(){
-        return Mono.deferContextual(Mono::just)
-                .flatMap(ctx -> Mono.justOrEmpty(ctx.getOrEmpty(CONTEXT_USER_KEY)));
+    public Mono<String> getJwtTokenFromContext() {
+        return Mono.deferContextual(ctx -> Mono.justOrEmpty(ctx.getOrEmpty(CONTEXT_USER_KEY)));
     }
-
 
 
     private String generateToken(String username) {
@@ -47,7 +44,7 @@ public class JwtUtil {
 
     private String createToken(Map<String, Object> claims, String subject) {
         var now = OffsetDateTime.now();
-        var expiredAt = now.plus(tokenExperiation);
+        var expiredAt = now.plus(tokenExperation);
         return Jwts
                 .builder()
                 .claims(claims)

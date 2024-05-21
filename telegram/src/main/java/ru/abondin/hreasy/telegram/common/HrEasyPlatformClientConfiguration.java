@@ -25,12 +25,12 @@ public class HrEasyPlatformClientConfiguration {
     private ExchangeFilterFunction authorizationHeaderFilter(JwtUtil jwtUtil) {
         return ExchangeFilterFunction.ofRequestProcessor(clientRequest ->
                 jwtUtil.getJwtTokenFromContext()
-                        .map(token -> {
-                            return ClientRequest.from(clientRequest)
-                                    .header("Authorization", "Bearer " + token)
-                                    .build();
-                        })
+                        .map(token ->
+                                ClientRequest.from(clientRequest)
+                                        .header("Authorization", "Bearer " + token)
+                                        .build())
                         .switchIfEmpty(Mono.error(() -> new RuntimeException("Cannot get telegram account")))
         );
     }
+
 }
