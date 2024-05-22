@@ -24,6 +24,5 @@ public class HrEasyBotProps {
         private Duration jwtTokenExpiration = Duration.ofMinutes(5);
 
         private String baseUrl = "http://localhost:8081/telegram/";
-
     }
 }

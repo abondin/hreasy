@@ -11,8 +11,6 @@ import org.telegram.abilitybots.api.objects.MessageContext;
 import org.telegram.abilitybots.api.objects.Privacy;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.telegram.HrEasyBot;
-import ru.abondin.hreasy.telegram.conf.I18Helper;
-import ru.abondin.hreasy.telegram.conf.JwtUtil;
 
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
@@ -27,6 +25,7 @@ public abstract class HrEasyAbilityWithAuthFactory implements HrEasyAbilityFacto
     protected final I18Helper i18n;
     protected final WebClient webClient;
     protected final JwtUtil jwtUtil;
+    protected final ResponseTemplateProcessor templateStorage;
 
     public Ability create(HrEasyBot bot) {
         return Ability.builder()

@@ -45,7 +45,7 @@ public class HrEasyFileStorageProperties {
     /**
      * Default upload content size limit in bytes
      */
-    private long defaultUploadContentSizeLimitBytes = 10 * 1024 * 1024;
+    private long defaultUploadContentSizeLimitBytes = (10 * 1024 * 1024);
 
     /**
      * Default maximum number of files in one directory

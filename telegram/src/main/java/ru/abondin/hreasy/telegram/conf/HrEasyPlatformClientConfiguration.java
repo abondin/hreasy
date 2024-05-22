@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.telegram.common;
+package ru.abondin.hreasy.telegram.conf;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -6,8 +6,7 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
-import ru.abondin.hreasy.telegram.conf.JwtUtil;
+import ru.abondin.hreasy.telegram.common.JwtUtil;
 
 @Configuration
 public class HrEasyPlatformClientConfiguration {

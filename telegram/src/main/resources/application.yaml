@@ -1,6 +1,11 @@
 spring:
   application:
     name: "HR Easy Telegram Bot"
+  thymeleaf:
+    prefix: classpath:/responses/
+    suffix: .md
+    cache: false
+    mode: TEXT
 
 hreasy:
   telegram:

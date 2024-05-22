@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
+import ru.abondin.hreasy.platform.service.EmployeeService;
+import ru.abondin.hreasy.platform.tg.dto.TgMapper;
+import ru.abondin.hreasy.platform.tg.dto.TgMyProfileDto;
 
 /**
  * Static Markdown articles (news for example)
@@ -17,13 +20,14 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 @RequiredArgsConstructor
 @Slf4j
 public class TelegramBotController {
+    private final EmployeeService emplService;
+    private final TgMapper mapper;
 
-    @Operation(summary = "Get all articles with content. Exclude archived and moderated")
-    @GetMapping(value = "test")
-    public Mono<String> checkConnection() {
-        return AuthHandler.currentAuth().map(authContext -> {
-            log.info("Testing telegram bot API with {}", authContext);
-            return "Hello " + authContext.getUsername();
-        });
+    @Operation(summary = "Get my information")
+    @GetMapping(value = "my-profile")
+    public Mono<TgMyProfileDto> myProfile() {
+        return AuthHandler.currentAuth().flatMap(auth ->
+                        emplService.find(auth.getEmployeeInfo().getEmployeeId(), auth))
+                .map(mapper::myProfile);
     }
 }

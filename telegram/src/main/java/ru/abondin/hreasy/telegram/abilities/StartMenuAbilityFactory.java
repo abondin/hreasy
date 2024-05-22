@@ -11,7 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.abondin.hreasy.telegram.HrEasyBot;
 import ru.abondin.hreasy.telegram.common.HrEasyAbilityFactory;
-import ru.abondin.hreasy.telegram.conf.I18Helper;
+import ru.abondin.hreasy.telegram.common.I18Helper;
 
 import java.util.List;
 import java.util.function.Consumer;

@@ -9,7 +9,7 @@ import org.telegram.abilitybots.api.objects.Privacy;
 import ru.abondin.hreasy.telegram.abilities.MyProfileAbilityFactory;
 import ru.abondin.hreasy.telegram.abilities.StartMenuAbilityFactory;
 import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
-import ru.abondin.hreasy.telegram.conf.I18Helper;
+import ru.abondin.hreasy.telegram.common.I18Helper;
 
 @Component
 @Slf4j

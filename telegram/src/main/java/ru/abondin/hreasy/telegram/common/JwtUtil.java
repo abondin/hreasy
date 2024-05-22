@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.telegram.conf;
+package ru.abondin.hreasy.telegram.common;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.abilitybots.api.objects.MessageContext;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
+import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;

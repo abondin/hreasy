@@ -1,4 +1,4 @@
-package ru.abondin.hreasy.telegram.conf;
+package ru.abondin.hreasy.telegram.common;
 
 import java.util.Locale;
 
