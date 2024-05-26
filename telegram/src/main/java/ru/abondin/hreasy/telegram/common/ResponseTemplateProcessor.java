@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.TemplateSpec;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.thymeleaf.templatemode.TemplateMode;
 
 import java.util.function.Consumer;
 
@@ -24,7 +26,8 @@ public class ResponseTemplateProcessor {
         log.debug("Process template {}", templateName);
         var context = defaultContext();
         contextPopulator.accept(context);
-        return templateEngine.process(templateName, context);
+        var templateSpec = new TemplateSpec(templateName, TemplateMode.TEXT);
+        return templateEngine.process(templateSpec, context);
     }
 
     private Context defaultContext() {
