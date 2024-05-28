@@ -166,19 +166,6 @@ public class AdminEmployeeService {
                 });
     }
 
-    @Transactional
-    public Mono<Integer> confirmTelegramBotAccount(AuthContext auth, int employeeId, String telegramAccount) {
-        var now = dateTimeService.now();
-        log.info("Confirm telegram account {} for employee {} by {}", telegramAccount, employeeId, auth.getUsername());
-        return securityValidator.validateConfirmTelegramAccount(auth, employeeId, telegramAccount)
-                .flatMap(s -> employeeRepo.findById(employeeId))
-                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
-                .flatMap(entry -> {
-                    entry.setTelegramConfirmedAt(now);
-                    return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry, null);
-                });
-    }
-
 
     private Mono<Integer> doUpdateFromBody(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry, CreateOrUpdateEmployeeBody body) {
         mapper.populateFromBody(entry, body);

@@ -19,7 +19,7 @@ import ru.abondin.hreasy.platform.tg.dto.TgMyProfileDto;
 @Slf4j
 public class TelegramBotController {
     private final EmployeeService emplService;
-    private final TelegramBotConfirmService confirmService;
+    private final TelegramConfirmService confirmService;
     private final TgMapper mapper;
 
     @Operation(summary = "Send employee's telegram account confirmation email")
@@ -29,12 +29,6 @@ public class TelegramBotController {
                 confirmService.sendConfirmationLink(auth));
     }
 
-    @Operation(summary = "Confirm employee's telegram account")
-    @PostMapping(value = "confirm/complete/{confirmationCode}")
-    public Mono<Integer> confirmTelegramAccount(@PathVariable String confirmationCode) {
-        return AuthHandler.currentAuth().flatMap(auth ->
-                confirmService.confirm(auth, confirmationCode));
-    }
 
     @Operation(summary = "Get my information")
     @GetMapping(value = "my-profile")

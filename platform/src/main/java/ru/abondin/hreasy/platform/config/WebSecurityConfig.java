@@ -94,7 +94,8 @@ public class WebSecurityConfig {
                                 "/api/v1/logout",
                                 "/api/v1/fs/**",
                                 "/actuator/**",
-                                "/favicon.ico").permitAll()
+                                "/favicon.ico",
+                                "/api/v1/telegram/confirm/**").permitAll()
                         // Allow api methods for web interface only for Users, logged in web
                         .pathMatchers("/api/**")
                         .authenticated()

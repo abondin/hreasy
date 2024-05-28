@@ -24,7 +24,7 @@ public class EmployeeBasedUserDetailsService {
     }
 
     public Mono<UserDetails> findForTelegram(String username, String telegramAccount){
-        return findNotDismissedByUsername(username, AuthContext.LoginType.MASTER_PASSWORD, telegramAccount);
+        return findNotDismissedByUsername(username, AuthContext.LoginType.TELEGRAM_BOT_SERVICE, telegramAccount);
     }
 
     private Mono<UserDetails> findNotDismissedByUsername(String username, AuthContext.LoginType loginType, String telegramName) {

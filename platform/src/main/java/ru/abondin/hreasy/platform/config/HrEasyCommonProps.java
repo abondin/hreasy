@@ -33,7 +33,7 @@ public class HrEasyCommonProps {
      */
     private String defaultEmailFrom;
 
-    private URI webBaseUrl = URI.create("http://192.168.0.1:8000");
+    private URI webBaseUrl = URI.create("http://127.0.0.1:8080");
 
     private final ExcelImportProps excelImport = new ExcelImportProps();
     private final TelegramConfirmationProps telegramConfirmation = new TelegramConfirmationProps();
@@ -47,6 +47,6 @@ public class HrEasyCommonProps {
     @Data
     public static class TelegramConfirmationProps {
         private Duration linkedExpirationDuration = Duration.ofMinutes(10);
-        private Duration linkGenerationInterval = Duration.ofMinutes(3);
+        private Duration linkGenerationInterval = Duration.ofMinutes(2);
     }
 }

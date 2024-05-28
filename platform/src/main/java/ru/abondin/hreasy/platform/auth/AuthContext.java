@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.auth;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.lang.Nullable;
 
@@ -19,7 +20,7 @@ public class AuthContext {
     private String username;
     private String email;
     private Collection<String> authorities = new ArrayList<>();
-    @Nullable
+    @NotNull
     private EmployeeInfo employeeInfo;
 
     @Data

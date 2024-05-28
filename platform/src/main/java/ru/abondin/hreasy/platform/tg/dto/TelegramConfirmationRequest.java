@@ -11,4 +11,6 @@ import java.time.OffsetDateTime;
 public class TelegramConfirmationRequest {
     private final OffsetDateTime createdAt;
     private final String confirmationCode;
+    private final String telegramAccount;
+    private final int employeeId;
 }
