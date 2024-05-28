@@ -17,6 +17,6 @@ public class InternalPasswordAuthenticationProvider extends AbstractUserDetailsR
 
     @Override
     protected Mono<UserDetails> retrieveUser(String username) {
-        return userDetailsService.findNotDismissedByUsername(username, AuthContext.LoginType.INTERNAL);
+        return userDetailsService.findInternal(username);
     }
 }

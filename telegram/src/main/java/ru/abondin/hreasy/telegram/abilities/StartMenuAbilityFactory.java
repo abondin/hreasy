@@ -1,11 +1,11 @@
 package ru.abondin.hreasy.telegram.abilities;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.telegram.abilitybots.api.objects.Ability;
-import org.telegram.abilitybots.api.objects.Locality;
-import org.telegram.abilitybots.api.objects.MessageContext;
-import org.telegram.abilitybots.api.objects.Privacy;
+import org.telegram.abilitybots.api.objects.*;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class StartMenuAbilityFactory implements HrEasyAbilityFactory {
     private final I18Helper i18n;
 
@@ -29,7 +30,9 @@ public class StartMenuAbilityFactory implements HrEasyAbilityFactory {
                 .locality(Locality.USER)
                 .privacy(Privacy.PUBLIC)
                 .enableStats()
-                .action(action(bot)).build();
+                .action(action(bot))
+                .reply((b,upd)-> log.info("Reply to start menu {}", upd), Flag.CALLBACK_QUERY)
+                .build();
     }
 
     @Override
@@ -38,7 +41,7 @@ public class StartMenuAbilityFactory implements HrEasyAbilityFactory {
     }
 
     public Consumer<MessageContext> action(HrEasyBot bot) {
-        return (ctx) -> {
+        return ctx -> {
             SendMessage message = SendMessage // Create a message object
                     .builder()
                     .chatId(ctx.chatId())
@@ -69,5 +72,6 @@ public class StartMenuAbilityFactory implements HrEasyAbilityFactory {
             bot.silent().execute(message);
         };
     }
+
 
 }

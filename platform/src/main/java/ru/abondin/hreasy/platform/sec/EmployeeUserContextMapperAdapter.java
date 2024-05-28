@@ -48,6 +48,7 @@ public class EmployeeUserContextMapperAdapter implements UserDetailsContextMappe
                 employeeAuthInfoEntry.getAccessibleDepartments(),
                 employeeAuthInfoEntry.getAccessibleBas(),
                 employeeAuthInfoEntry.getAccessibleProjects(),
-                AuthContext.LoginType.LDAP.getValue());
+                AuthContext.LoginType.LDAP.getValue(),
+                null);
     }
 }

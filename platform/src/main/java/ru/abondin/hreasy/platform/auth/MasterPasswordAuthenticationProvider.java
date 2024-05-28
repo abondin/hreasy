@@ -30,7 +30,7 @@ public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticat
             // Move control to default LDAP provider
             return Mono.empty();
         }
-        return userDetailsService.findNotDismissedByUsername(username, AuthContext.LoginType.MASTER_PASSWORD)
+        return userDetailsService.findForMasterPassword(username)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", username)))
                 .map(user -> {
                     var result = new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());

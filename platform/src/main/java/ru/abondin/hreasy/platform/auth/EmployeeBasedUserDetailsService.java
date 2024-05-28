@@ -16,7 +16,18 @@ public class EmployeeBasedUserDetailsService {
     private final DbAuthoritiesPopulator authoritiesPopulator;
     private final EmployeeAuthDomainService employeeAuthDomainService;
 
-    public Mono<UserDetails> findNotDismissedByUsername(String username, AuthContext.LoginType loginType) {
+    public Mono<UserDetails> findInternal(String username){
+        return findNotDismissedByUsername(username, AuthContext.LoginType.INTERNAL, null);
+    }
+    public Mono<UserDetails> findForMasterPassword(String username){
+        return findNotDismissedByUsername(username, AuthContext.LoginType.MASTER_PASSWORD, null);
+    }
+
+    public Mono<UserDetails> findForTelegram(String username, String telegramAccount){
+        return findNotDismissedByUsername(username, AuthContext.LoginType.MASTER_PASSWORD, telegramAccount);
+    }
+
+    private Mono<UserDetails> findNotDismissedByUsername(String username, AuthContext.LoginType loginType, String telegramName) {
         return employeeAuthDomainService.findNotDismissedByUsername(username)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", username)))
                 .flatMap(
@@ -33,8 +44,11 @@ public class EmployeeBasedUserDetailsService {
                                                         employeeAuthInfoEntry.getAccessibleDepartments(),
                                                         employeeAuthInfoEntry.getAccessibleBas(),
                                                         employeeAuthInfoEntry.getAccessibleProjects(),
-                                                        loginType.getValue())
+                                                        loginType.getValue(),
+                                                        telegramName)
                                         )
                 );
     }
+
+
 }

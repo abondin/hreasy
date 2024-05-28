@@ -53,9 +53,11 @@ public class UserDetailsWithEmployeeInfo implements UserDetails {
      * 1 - LDAP,
      * 2 - INTERNAL,
      * 3 - Master password (only in developer environment)
-     * 4 - Internal service communication
+     * 4 - Telegram bot communication
      */
     private Short loggedInType;
+
+    private String telegramAccount;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

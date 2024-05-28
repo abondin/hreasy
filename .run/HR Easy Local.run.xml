@@ -1,5 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="HR Easy Local" type="Application" factoryName="Application">
+    <envs>
+      <env name="SPRING_MAIL_HOST" value="192.168.10.11" />
+      <env name="HREASY_COMMON_WEB-BASE-URL" value="https://hr.stm.local" />
+    </envs>
     <option name="MAIN_CLASS_NAME" value="ru.abondin.hreasy.platform.HreasyPlatformApplication" />
     <module name="platform" />
     <option name="VM_PARAMETERS" value="-Dspring.profiles.active=dev -Duser.country=RU -Duser.language=ru" />

@@ -3,9 +3,7 @@ package ru.abondin.hreasy.platform.tg;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.EmployeeService;
@@ -21,7 +19,22 @@ import ru.abondin.hreasy.platform.tg.dto.TgMyProfileDto;
 @Slf4j
 public class TelegramBotController {
     private final EmployeeService emplService;
+    private final TelegramBotConfirmService confirmService;
     private final TgMapper mapper;
+
+    @Operation(summary = "Send employee's telegram account confirmation email")
+    @PostMapping(value = "confirm/start")
+    public Mono<String> sendConfirmationLink() {
+        return AuthHandler.currentAuth().flatMap(auth ->
+                confirmService.sendConfirmationLink(auth));
+    }
+
+    @Operation(summary = "Confirm employee's telegram account")
+    @PostMapping(value = "confirm/complete/{confirmationCode}")
+    public Mono<Integer> confirmTelegramAccount(@PathVariable String confirmationCode) {
+        return AuthHandler.currentAuth().flatMap(auth ->
+                confirmService.confirm(auth, confirmationCode));
+    }
 
     @Operation(summary = "Get my information")
     @GetMapping(value = "my-profile")

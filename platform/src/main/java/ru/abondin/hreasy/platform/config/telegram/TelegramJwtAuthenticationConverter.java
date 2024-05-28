@@ -8,7 +8,6 @@ import org.springframework.security.web.server.authentication.ServerAuthenticati
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.auth.EmployeeBasedUserDetailsService;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
 
@@ -40,7 +39,7 @@ public class TelegramJwtAuthenticationConverter implements ServerAuthenticationC
                 return Mono.empty();
             }
             return employeeAuthDomainService.findEmailByTelegramAccount(telegramAccount).flatMap(email ->
-                    userDetailsService.findNotDismissedByUsername(email, AuthContext.LoginType.TELEGRAM_BOT_SERVICE)
+                    userDetailsService.findForTelegram(email, telegramAccount)
                             .map(userDetails -> new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities())));
         }
         return Mono.empty();

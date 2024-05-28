@@ -6,6 +6,7 @@ import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.objects.Ability;
 import org.telegram.abilitybots.api.objects.Locality;
 import org.telegram.abilitybots.api.objects.Privacy;
+import ru.abondin.hreasy.telegram.abilities.ConfirmAccountAbilityFactory;
 import ru.abondin.hreasy.telegram.abilities.MyProfileAbilityFactory;
 import ru.abondin.hreasy.telegram.abilities.StartMenuAbilityFactory;
 import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
@@ -21,15 +22,17 @@ public class HrEasyBot extends AbilityBot {
     private final I18Helper i18;
     private final StartMenuAbilityFactory startMenuAction;
     private final MyProfileAbilityFactory myProfileAbilityFactory;
+    private final ConfirmAccountAbilityFactory confirmAccountAbilityFactory;
 
     protected HrEasyBot(HrEasyBotProps props, I18Helper i18
             , StartMenuAbilityFactory startMenuAction
-            , MyProfileAbilityFactory myProfileAbilityFactory) {
+            , MyProfileAbilityFactory myProfileAbilityFactory, ConfirmAccountAbilityFactory confirmAccountAbilityFactory) {
         super(props.getBotToken(), props.getBotUsername());
         this.creatorId = props.getBotCreator();
         this.i18 = i18;
         this.startMenuAction = startMenuAction;
         this.myProfileAbilityFactory = myProfileAbilityFactory;
+        this.confirmAccountAbilityFactory = confirmAccountAbilityFactory;
     }
 
     @Override
@@ -50,6 +53,10 @@ public class HrEasyBot extends AbilityBot {
 
     public Ability myProfile() {
         return myProfileAbilityFactory.create(this);
+    }
+
+    public Ability confirmAccount() {
+        return confirmAccountAbilityFactory.create(this);
     }
 
 

@@ -64,9 +64,16 @@ public class AuthContext {
          * 1 - LDAP,
          * 2 - INTERNAL,
          * 3 - Master password (only in developer environment)
+         * 4 - Telegram Bot
          */
         @Nullable
         private Short loggedInType;
+
+        /**
+         * Populates only if request comes from telegram bot
+         */
+        @Nullable
+        private String telegramAccount;
 
 
         public EmployeeInfo(EmployeeInfo employeeInfo) {
@@ -76,7 +83,8 @@ public class AuthContext {
                     employeeInfo.getAccessibleDepartments(),
                     employeeInfo.getAccessibleBas(),
                     employeeInfo.getAccessibleProjects(),
-                    employeeInfo.getLoggedInType());
+                    employeeInfo.getLoggedInType(),
+                    employeeInfo.getTelegramAccount());
         }
     }
 

@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.net.URI;
 import java.time.Duration;
 
 @Configuration
@@ -32,11 +33,20 @@ public class HrEasyCommonProps {
      */
     private String defaultEmailFrom;
 
-    private ExcelImportProps excelImport = new ExcelImportProps();
+    private URI webBaseUrl = URI.create("http://192.168.0.1:8000");
+
+    private final ExcelImportProps excelImport = new ExcelImportProps();
+    private final TelegramConfirmationProps telegramConfirmation = new TelegramConfirmationProps();
 
     @Data
     public static class ExcelImportProps {
         private String dateFormat = "dd.MM.yyyy";
         private Duration importConfigTtl = Duration.ofHours(3);
+    }
+
+    @Data
+    public static class TelegramConfirmationProps {
+        private Duration linkedExpirationDuration = Duration.ofMinutes(10);
+        private Duration linkGenerationInterval = Duration.ofMinutes(3);
     }
 }

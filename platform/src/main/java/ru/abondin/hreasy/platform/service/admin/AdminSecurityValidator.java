@@ -194,4 +194,13 @@ public class AdminSecurityValidator {
         });
     }
 
+    public Mono<Boolean> validateConfirmTelegramAccount(AuthContext auth, int employeeId, String telegramAccount) {
+        return Mono.defer(() -> {
+            // Allow to update my own project
+            if (employeeId == auth.getEmployeeInfo().getEmployeeId()) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only logged in user can confirm the telegram account"));
+        });
+    }
 }

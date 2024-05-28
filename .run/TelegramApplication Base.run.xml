@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="TelegramApplication STM" type="Application" factoryName="Application">
+  <configuration default="false" name="TelegramApplication Base" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="ru.abondin.hreasy.telegram.TelegramApplication" />
     <module name="telegram" />
-    <option name="VM_PARAMETERS" value="-Dspring.profiles.active=stm -Duser.country=RU -Duser.language=ru" />
+    <option name="VM_PARAMETERS" value="-Dspring.profiles.active=stm -Duser.country=RU -Duser.language=ru -Dhreasy.telegram.bot_username= -Dhreasy.telegram.bot_token=" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="ru.abondin.hreasy.telegram.common.*" />

@@ -7,6 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Data
 @Table("empl.employee")
@@ -34,4 +35,5 @@ public class EmployeeEntry {
     private String phone;
     private String skype;
     private String telegram;
+    private OffsetDateTime telegramConfirmedAt;
 }
