@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.repo.employee;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -15,7 +16,7 @@ import java.time.OffsetDateTime;
 
 @Repository
 public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Integer>, EmployeeDetailedRepo {
-    @Query("select id, email from empl.employee where trim(telegram) ilike (:telegram)")
+    @Query("select id, email, telegram_confirmed_at from empl.employee where trim(telegram) ilike (:telegram)")
     Mono<EmployeeTelegramBinding> findEmailByTelegramAccount(String telegram);
 
     @Query("""
@@ -75,5 +76,7 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
         private Integer id;
         @NotNull
         private String email;
+        @Nullable
+        private OffsetDateTime telegramConfirmedAt;
     }
 }

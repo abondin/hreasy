@@ -3,7 +3,10 @@ package ru.abondin.hreasy.platform.tg;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.EmployeeService;
@@ -25,8 +28,7 @@ public class TelegramBotController {
     @Operation(summary = "Send employee's telegram account confirmation email")
     @PostMapping(value = "confirm/start")
     public Mono<String> sendConfirmationLink() {
-        return AuthHandler.currentAuth().flatMap(auth ->
-                confirmService.sendConfirmationLink(auth));
+        return AuthHandler.currentAuth().flatMap(confirmService::sendConfirmationLink);
     }
 
 

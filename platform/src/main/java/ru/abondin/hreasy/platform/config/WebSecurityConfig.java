@@ -149,7 +149,11 @@ public class WebSecurityConfig {
             TelegramJwtAuthenticationConverter telegramJwtAuthenticationConverter
     ) {
         return http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/telegram/**"))
-                .authorizeExchange(exchanges -> exchanges.anyExchange().authenticated())
+                .authorizeExchange(exchanges ->
+                        exchanges.pathMatchers("/telegram/api/v1/confirm/start")
+                                .authenticated()
+                                .anyExchange().hasAuthority(TelegramJwtAuthenticationConverter.TELEGRAM_CONFIRMED_RESERVED_AUTHORITY)
+                )
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)

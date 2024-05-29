@@ -22,6 +22,7 @@ import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -128,6 +129,10 @@ public class AdminEmployeeService {
                     if (!entry.getEmail().equals(body.getEmail())) {
                         return Mono.error(new BusinessError("errors.emailupdate.unsupported", entry.getEmail(), body.getEmail()));
                     }
+                    // Reset telegram validation if account changed
+                    if (!Objects.equals(entry.getTelegram(), body.getTelegram())) {
+                        entry.setTelegramConfirmedAt(null);
+                    }
                     return doUpdateFromBody(auth.getEmployeeInfo().getEmployeeId(), now, entry, body);
                 });
     }
@@ -141,6 +146,7 @@ public class AdminEmployeeService {
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
                 .flatMap(entry -> {
                     entry.setTelegram(body.getTelegram());
+                    entry.setTelegramConfirmedAt(null);
                     return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry, null);
                 });
     }

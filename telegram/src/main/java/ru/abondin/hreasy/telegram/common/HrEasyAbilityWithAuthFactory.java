@@ -50,15 +50,16 @@ public abstract class HrEasyAbilityWithAuthFactory implements HrEasyAbilityFacto
         log.error("Error on ability {}", name(), ex);
         if (ex instanceof WebClientResponseException webError) {
             if (webError.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
-                bot.silent().sendMd(i18n.localize("hreasy.platform.error.unauthorized", ctx.user().getUserName()), ctx.chatId());
+                bot.silent().sendMd(i18n.localize("hreasy.platform.error.unauthorized",
+                        ctx.user().getUserName()), ctx.chatId());
             } else if (webError.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
                 bot.silent().sendMd(i18n.localize("hreasy.platform.error.forbidden", ctx.user().getUserName()), ctx.chatId());
             } else if (webError.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
                 try {
                     var error = webError.getResponseBodyAs(BusinessErrorDto.class);
-                    bot.silent().sendMd(i18n.localize("hreasy.platform.error.business_error", error.getMessage()), ctx.chatId());
+                    bot.silent().send(i18n.localize("hreasy.platform.error.business_error", error.getMessage()), ctx.chatId());
                 } catch (Exception e) {
-                    bot.silent().sendMd(i18n.localize("hreasy.platform.error.unprocessable_business_error"), ctx.chatId());
+                    bot.silent().send(i18n.localize("hreasy.platform.error.unprocessable_business_error"), ctx.chatId());
                 }
             } else {
                 bot.silent().sendMd(i18n.localize("hreasy.platform.error.server_error"), ctx.chatId());

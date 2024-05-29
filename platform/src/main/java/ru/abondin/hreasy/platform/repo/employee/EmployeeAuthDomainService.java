@@ -16,13 +16,20 @@ import java.time.OffsetDateTime;
 @RequiredArgsConstructor
 public class EmployeeAuthDomainService {
 
+    public record TelegramToEmailBinding(
+            String email,
+            String telegramAccount,
+            boolean telegramConfirmed
+    ) {
+    }
+
     private final EmployeeRepo employeeRepo;
     private final SecPasswdRepo passwdRepo;
     private final DateTimeService dateTimeService;
 
-    public Mono<String> findEmailByTelegramAccount(String telegramAccount) {
+    public Mono<TelegramToEmailBinding> findEmailByTelegramAccount(String telegramAccount, boolean onlyConfirmed) {
         return employeeRepo.findEmailByTelegramAccount(telegramAccount)
-                .map(EmployeeRepo.EmployeeTelegramBinding::getEmail);
+                .map(b -> new TelegramToEmailBinding(b.getEmail(), telegramAccount, b.getTelegramConfirmedAt() != null && b.getTelegramConfirmedAt().isAfter(OffsetDateTime.now())));
     }
 
     public Mono<EmployeeAuthInfoEntry> findNotDismissedByUsername(String email) {

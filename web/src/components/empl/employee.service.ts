@@ -81,7 +81,7 @@ class RestEmployeeService implements EmployeeService {
     }
 
     updateTelegram(employeeId: number, updateTelegramBody: UpdateTelegramBody): Promise<number> {
-        return httpService.put(`v1/employee/${employeeId}/telegram/`, updateTelegramBody).then(response => {
+        return httpService.put(`v1/employee/${employeeId}/telegram`, updateTelegramBody).then(response => {
             return response.data;
         });
 

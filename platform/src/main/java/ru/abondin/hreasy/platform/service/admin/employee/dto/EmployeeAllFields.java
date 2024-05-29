@@ -36,5 +36,4 @@ public class EmployeeAllFields {
     private String spouseName;
     private String children;
     private LocalDate dateOfDismissal;
-
 }
