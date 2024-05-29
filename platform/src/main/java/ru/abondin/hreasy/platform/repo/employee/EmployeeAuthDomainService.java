@@ -29,7 +29,8 @@ public class EmployeeAuthDomainService {
 
     public Mono<TelegramToEmailBinding> findEmailByTelegramAccount(String telegramAccount, boolean onlyConfirmed) {
         return employeeRepo.findEmailByTelegramAccount(telegramAccount)
-                .map(b -> new TelegramToEmailBinding(b.getEmail(), telegramAccount, b.getTelegramConfirmedAt() != null && b.getTelegramConfirmedAt().isAfter(OffsetDateTime.now())));
+                .map(b -> new TelegramToEmailBinding(b.getEmail(), telegramAccount,
+                        b.getTelegramConfirmedAt() != null && b.getTelegramConfirmedAt().isBefore(OffsetDateTime.now())));
     }
 
     public Mono<EmployeeAuthInfoEntry> findNotDismissedByUsername(String email) {

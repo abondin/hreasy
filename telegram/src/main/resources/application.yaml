@@ -12,3 +12,7 @@ hreasy:
     bot-username: "not_defined"
     bot-token: "not_defined"
     bot-creator: 1
+
+logging:
+  level:
+    ru.abondin: DEBUG

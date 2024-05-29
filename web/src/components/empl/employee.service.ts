@@ -22,6 +22,8 @@ export interface Employee {
     officeLocation: Dict,
     email: string,
     telegram?: string,
+
+    telegramConfirmedAt: string,
     hasAvatar: boolean,
     skills: Skill[]
 }

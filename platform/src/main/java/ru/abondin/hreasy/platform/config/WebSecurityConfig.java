@@ -182,7 +182,10 @@ public class WebSecurityConfig {
         return authentication ->
                 // Do nothing here.
                 // The TelegramJwtAuthenticationConverter handles all validations.
-                Mono.defer(() -> Mono.just(authentication));
+                Mono.defer(() -> {
+                    log.info("Telegram authentication: {}", authentication.getPrincipal());
+                    return Mono.just(authentication);
+                });
     }
 
     // endregion

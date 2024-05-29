@@ -5,7 +5,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.telegram.abilitybots.api.objects.MessageContext;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.telegram.HrEasyBot;
-import ru.abondin.hreasy.telegram.abilities.dto.MyProfileDto;
 import ru.abondin.hreasy.telegram.common.HrEasyAbilityWithAuthFactory;
 import ru.abondin.hreasy.telegram.common.I18Helper;
 import ru.abondin.hreasy.telegram.common.JwtUtil;
@@ -36,9 +35,11 @@ public class ConfirmAccountAbilityFactory extends HrEasyAbilityWithAuthFactory {
                 .bodyToMono(String.class)
                 .timeout(Duration.ofSeconds(10))
                 .doOnError(err -> defaultErrorHandling(bot, ctx, err))
+                .onErrorComplete()
                 .contextWrite(jwtUtil.jwtContext(ctx))
                 .map(response -> {
-                    var markdown = templateStorage.process(name(), c->{});
+                    var markdown = templateStorage.process(name(), c -> {
+                    });
                     bot.silent().sendMd(markdown
                             , ctx.chatId());
                     return "OK";

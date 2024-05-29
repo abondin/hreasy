@@ -11,8 +11,6 @@ import ru.abondin.hreasy.telegram.common.I18Helper;
 import ru.abondin.hreasy.telegram.common.JwtUtil;
 import ru.abondin.hreasy.telegram.common.ResponseTemplateProcessor;
 
-import java.time.Duration;
-
 @Component
 public class MyProfileAbilityFactory extends HrEasyAbilityWithAuthFactory {
     public static final String MY_PROFILE_COMMAND = "my_profile";
@@ -29,15 +27,8 @@ public class MyProfileAbilityFactory extends HrEasyAbilityWithAuthFactory {
 
     @Override
     protected Mono<String> doAction(HrEasyBot bot, MessageContext ctx) {
-        return webClient
-                .get()
-                .uri("/api/v1/my-profile")
-                .retrieve()
-                .bodyToMono(MyProfileDto.class)
-                .timeout(Duration.ofSeconds(10))
-                .doOnError(err -> defaultErrorHandling(bot, ctx, err))
-                .contextWrite(jwtUtil.jwtContext(ctx))
-                .map(response -> {
+        return retrieveInfoFromHrEasy(bot, ctx, "/api/v1/my-profile", MyProfileDto.class,
+                response -> {
                     var markdown = templateStorage.process(name(), c -> {
                         c.setVariable("e", response);
                     });

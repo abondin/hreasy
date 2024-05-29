@@ -71,42 +71,46 @@ public class TelegramConfirmService {
      * @return
      */
     public Mono<String> sendConfirmationLink(AuthContext auth) {
-        log.info("New telegram account confirmation is requested by {}:{}", auth.getUsername(), auth.getEmployeeInfo().getTelegramAccount());
-        if (auth.getEmployeeInfo().getLoggedInType() != AuthContext.LoginType.TELEGRAM_BOT_SERVICE.getValue()) {
-            return Mono.error(new AccessDeniedException("Only telegram bot service can send confirmation link"));
-        }
-        var now = dateTimeService.now();
-        var key = getRequestKey(auth);
-        var confirmationRequest = TelegramConfirmationRequest
-                .builder()
-                .createdAt(now)
-                .telegramAccount(auth.getEmployeeInfo().getTelegramAccount())
-                .employeeId(auth.getEmployeeInfo().getEmployeeId())
-                .confirmationCode(UUID.randomUUID().toString()).build();
-        synchronized (generatedLinksCache) {
-            var lastLinkGenerated = generatedLinksCache.get(key);
-            if (lastLinkGenerated != null &&
-                    Duration.between(lastLinkGenerated.getCreatedAt(), now)
-                            .compareTo(props.getTelegramConfirmation().getLinkGenerationInterval()) < 0) {
-                return Mono.error(new BusinessError("errors.telegram_confirmation.prev_link_active", String.valueOf(props.getTelegramConfirmation().getLinkGenerationInterval().toMinutes())));
+        return Mono.defer(() -> {
+            log.info("New telegram account confirmation is requested by {}:{}", auth.getUsername(), auth.getEmployeeInfo().getTelegramAccount());
+            if (auth.getEmployeeInfo().getLoggedInType() != AuthContext.LoginType.TELEGRAM_BOT_SERVICE.getValue()) {
+                return Mono.error(new AccessDeniedException("Only telegram bot service can send confirmation link"));
             }
-            log.info("Putting new telegram confirmation request {} - {}", key, confirmationRequest.getConfirmationCode());
-            generatedLinksCache.put(key, confirmationRequest);
-        }
-        var mail = buildMail(auth, confirmationRequest);
-        return emailMessageSender.sendMessage(mail);
+            var now = dateTimeService.now();
+            var key = getRequestKey(auth);
+            var confirmationRequest = TelegramConfirmationRequest
+                    .builder()
+                    .createdAt(now)
+                    .telegramAccount(auth.getEmployeeInfo().getTelegramAccount())
+                    .employeeId(auth.getEmployeeInfo().getEmployeeId())
+                    .confirmationCode(UUID.randomUUID().toString()).build();
+            synchronized (generatedLinksCache) {
+                var lastLinkGenerated = generatedLinksCache.get(key);
+                if (lastLinkGenerated != null &&
+                        Duration.between(lastLinkGenerated.getCreatedAt(), now)
+                                .compareTo(props.getTelegramConfirmation().getLinkGenerationInterval()) < 0) {
+                    return Mono.error(new BusinessError("errors.telegram_confirmation.prev_link_active", String.valueOf(props.getTelegramConfirmation().getLinkGenerationInterval().toMinutes())));
+                }
+                log.info("Putting new telegram confirmation request {} - {}", key, confirmationRequest.getConfirmationCode());
+                generatedLinksCache.put(key, confirmationRequest);
+            }
+            var mail = buildMail(auth, confirmationRequest);
+            return emailMessageSender.sendMessage(mail);
+        });
     }
 
 
     @Transactional
     public Mono<Integer> confirm(int employeeId, String telegramAccount, String confirmationCode) {
-        log.info("Complete telegram account {} for employee {} by the code {}", employeeId, telegramAccount, confirmationCode);
+        log.info("Complete telegram account confirmation process {} for employee {} by the code {}", employeeId, telegramAccount, confirmationCode);
         var now = dateTimeService.now();
         synchronized (generatedLinksCache) {
-            var expectedLink = generatedLinksCache.remove(getRequestKey(employeeId, telegramAccount));
+            var linkKey = getRequestKey(employeeId, telegramAccount);
+            var expectedLink = generatedLinksCache.get(linkKey);
             if (expectedLink == null || !expectedLink.getConfirmationCode().equals(confirmationCode)) {
                 return Mono.error(new BusinessError("errors.telegram_confirmation.invalid_code"));
             }
+            generatedLinksCache.remove(linkKey);
             if (Duration.between(expectedLink.getCreatedAt(), now)
                     .compareTo(props.getTelegramConfirmation().getLinkedExpirationDuration()) > 0) {
                 return Mono.error(new BusinessError("errors.telegram_confirmation.expired"));

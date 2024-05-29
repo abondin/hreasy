@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.abondin.hreasy.platform.service.skills.dto.SkillDto;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +26,7 @@ public class EmployeeDto {
     private SimpleDictDto ba;
     private String email;
     private String telegram;
+    private OffsetDateTime telegramConfirmedAt;
     private boolean hasAvatar;
     private List<SkillDto> skills = new ArrayList<>();
 }
