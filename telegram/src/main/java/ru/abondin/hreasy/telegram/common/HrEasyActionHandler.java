@@ -5,16 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.telegram.abilitybots.api.objects.Ability;
-import org.telegram.abilitybots.api.objects.Locality;
-import org.telegram.abilitybots.api.objects.MessageContext;
-import org.telegram.abilitybots.api.objects.Privacy;
+import org.telegram.abilitybots.api.bot.BaseAbilityBot;
 import reactor.core.publisher.Mono;
-import ru.abondin.hreasy.telegram.HrEasyBot;
+import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
 
 /**
  * Check HR Easy JWT token in bot database.
@@ -22,40 +18,25 @@ import java.util.function.Function;
  */
 @RequiredArgsConstructor
 @Slf4j
-public abstract class HrEasyAbilityWithAuthFactory implements HrEasyAbilityFactory {
+public abstract class HrEasyActionHandler {
     protected final I18Helper i18n;
     protected final WebClient webClient;
     protected final JwtUtil jwtUtil;
     protected final ResponseTemplateProcessor templateStorage;
+    protected final HrEasyBotProps props;
 
-    public Ability create(HrEasyBot bot) {
-        return Ability.builder()
-                .name(name())
-                .info(name())
-                .input(0)
-                .locality(Locality.USER)
-                .privacy(Privacy.PUBLIC)
-                .enableStats()
-                .action(ctx -> prepareTokenAndDoAction(bot, ctx))
-                .build();
+    public record HrEasyMessageContext(String accountName, long chatId) {
     }
 
-    private void prepareTokenAndDoAction(HrEasyBot bot, MessageContext ctx) {
-        log.info("Performing {} by {} in chat", name(), ctx.user(), ctx.chatId());
-        doAction(bot, ctx).block(Duration.ofSeconds(20));
-    }
-
-    protected abstract <T> Mono<T> doAction(HrEasyBot bot, MessageContext ctx);
-
-    protected void defaultErrorHandling(HrEasyBot bot, MessageContext ctx, Throwable ex) {
+    protected void defaultErrorHandling(BaseAbilityBot bot, HrEasyMessageContext ctx, Throwable ex) {
         if (ex instanceof WebClientResponseException webError) {
             if (webError.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
-                log.debug("User {} unauthorized", ctx.user().getUserName());
+                log.debug("User {} unauthorized", ctx.accountName());
                 bot.silent().send(i18n.localize("hreasy.platform.error.unauthorized",
-                        ctx.user().getUserName()), ctx.chatId());
+                        ctx.accountName()), ctx.chatId());
             } else if (webError.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
-                log.debug("User {} forbidden or account not confirmed", ctx.user().getUserName());
-                bot.silent().send(i18n.localize("hreasy.platform.error.forbidden", ctx.user().getUserName()), ctx.chatId());
+                log.debug("User {} forbidden or account not confirmed", ctx.accountName());
+                bot.silent().send(i18n.localize("hreasy.platform.error.forbidden", ctx.accountName()), ctx.chatId());
             } else if (webError.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
                 try {
                     var error = webError.getResponseBodyAs(BusinessErrorDto.class);
@@ -78,17 +59,16 @@ public abstract class HrEasyAbilityWithAuthFactory implements HrEasyAbilityFacto
         }
     }
 
-    protected <T> Mono<String> retrieveInfoFromHrEasy(HrEasyBot bot, MessageContext ctx, String uri, Class<T> resultType, Function<T, String> handler) {
+    protected <T> Mono<T> retrieveInfoFromHrEasy(BaseAbilityBot bot, HrEasyMessageContext ctx, String uri, Class<T> resultType) {
         return webClient
                 .get()
                 .uri(uri)
                 .retrieve()
                 .bodyToMono(resultType)
                 .timeout(Duration.ofSeconds(10))
-                .contextWrite(jwtUtil.jwtContext(ctx))
+                .contextWrite(jwtUtil.jwtContext(ctx.accountName()))
                 .doOnError(err -> defaultErrorHandling(bot, ctx, err))
-                .onErrorComplete()
-                .map(handler);
+                .onErrorComplete();
     }
 
 }

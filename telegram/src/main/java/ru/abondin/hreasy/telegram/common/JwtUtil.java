@@ -29,8 +29,8 @@ public class JwtUtil {
         this.tokenExperation = props.getPlatform().getJwtTokenExpiration();
     }
 
-    public Context jwtContext(MessageContext ctx) {
-        return Context.of(CONTEXT_USER_KEY, generateToken(ctx.user().getUserName()));
+    public Context jwtContext(String accountName) {
+        return Context.of(CONTEXT_USER_KEY, generateToken(accountName));
     }
 
     public Mono<String> getJwtTokenFromContext() {
@@ -38,9 +38,9 @@ public class JwtUtil {
     }
 
 
-    private String generateToken(String username) {
+    private String generateToken(String accountName) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        return createToken(claims, accountName);
     }
 
     private String createToken(Map<String, Object> claims, String subject) {

@@ -14,6 +14,9 @@ public class HrEasyBotProps {
     private String botUsername = "BOT_NAME_IS_NOT_DEFINED";
     private String botToken = "BOT_TOKEN_IS_NOT_DEFINED";
     private long botCreator = 1;
+
+    private Duration defaultBotActionTimeout = Duration.ofSeconds(10);
+
     private Platform platform = new Platform();
 
     @Data

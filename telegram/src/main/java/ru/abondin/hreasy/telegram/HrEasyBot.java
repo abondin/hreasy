@@ -6,11 +6,11 @@ import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.objects.Ability;
 import org.telegram.abilitybots.api.objects.Locality;
 import org.telegram.abilitybots.api.objects.Privacy;
-import ru.abondin.hreasy.telegram.abilities.ConfirmAccountAbilityFactory;
-import ru.abondin.hreasy.telegram.abilities.MyProfileAbilityFactory;
+import ru.abondin.hreasy.telegram.abilities.ConfirmAccountActionHandler;
 import ru.abondin.hreasy.telegram.abilities.StartMenuAbilityFactory;
-import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
+import ru.abondin.hreasy.telegram.common.HrEasyActionHandler;
 import ru.abondin.hreasy.telegram.common.I18Helper;
+import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 
 @Component
 @Slf4j
@@ -21,18 +21,16 @@ public class HrEasyBot extends AbilityBot {
 
     private final I18Helper i18;
     private final StartMenuAbilityFactory startMenuAction;
-    private final MyProfileAbilityFactory myProfileAbilityFactory;
-    private final ConfirmAccountAbilityFactory confirmAccountAbilityFactory;
+    private final ConfirmAccountActionHandler confirmAccountActionHandler;
 
     protected HrEasyBot(HrEasyBotProps props, I18Helper i18
             , StartMenuAbilityFactory startMenuAction
-            , MyProfileAbilityFactory myProfileAbilityFactory, ConfirmAccountAbilityFactory confirmAccountAbilityFactory) {
+            , ConfirmAccountActionHandler confirmAccountAbilityFactory) {
         super(props.getBotToken(), props.getBotUsername());
         this.creatorId = props.getBotCreator();
         this.i18 = i18;
         this.startMenuAction = startMenuAction;
-        this.myProfileAbilityFactory = myProfileAbilityFactory;
-        this.confirmAccountAbilityFactory = confirmAccountAbilityFactory;
+        this.confirmAccountActionHandler = confirmAccountAbilityFactory;
     }
 
     @Override
@@ -51,12 +49,17 @@ public class HrEasyBot extends AbilityBot {
         return startMenuAction.create(this);
     }
 
-    public Ability myProfile() {
-        return myProfileAbilityFactory.create(this);
-    }
 
     public Ability confirmAccount() {
-        return confirmAccountAbilityFactory.create(this);
+        return Ability.builder()
+                .name("confirm_account")
+                .info("Confirm Account in HR Easy")
+                .input(0)
+                .locality(Locality.USER)
+                .privacy(Privacy.PUBLIC)
+                .enableStats()
+                .action(ctx -> confirmAccountActionHandler.handle(this, new HrEasyActionHandler.HrEasyMessageContext(ctx.user().getUserName(), ctx.chatId())))
+                .build();
     }
 
 
