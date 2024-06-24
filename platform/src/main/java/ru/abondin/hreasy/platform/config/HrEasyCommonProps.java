@@ -36,7 +36,6 @@ public class HrEasyCommonProps {
     private URI webBaseUrl = URI.create("http://127.0.0.1:8080");
 
     private final ExcelImportProps excelImport = new ExcelImportProps();
-    private final TelegramConfirmationProps telegramConfirmation = new TelegramConfirmationProps();
 
     @Data
     public static class ExcelImportProps {
@@ -44,9 +43,4 @@ public class HrEasyCommonProps {
         private Duration importConfigTtl = Duration.ofHours(3);
     }
 
-    @Data
-    public static class TelegramConfirmationProps {
-        private Duration linkedExpirationDuration = Duration.ofMinutes(10);
-        private Duration linkGenerationInterval = Duration.ofMinutes(2);
-    }
 }

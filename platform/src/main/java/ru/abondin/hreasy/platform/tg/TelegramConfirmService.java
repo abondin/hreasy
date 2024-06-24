@@ -14,6 +14,7 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
+import ru.abondin.hreasy.platform.config.HrEasyTelegramBotProps;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeHistoryRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
@@ -49,6 +50,7 @@ public class TelegramConfirmService {
     private final EmailMessageSender emailMessageSender;
     private final DateTimeService dateTimeService;
     private final HrEasyCommonProps props;
+    private final HrEasyTelegramBotProps telegramProps;
     private final I18Helper i18n;
     private final TemplateEngine templateEngine;
     private final Map<String, TelegramConfirmationRequest> generatedLinksCache = Collections.synchronizedMap(new HashMap<>());
@@ -88,13 +90,21 @@ public class TelegramConfirmService {
                 var lastLinkGenerated = generatedLinksCache.get(key);
                 if (lastLinkGenerated != null &&
                         Duration.between(lastLinkGenerated.getCreatedAt(), now)
-                                .compareTo(props.getTelegramConfirmation().getLinkGenerationInterval()) < 0) {
-                    return Mono.error(new BusinessError("errors.telegram_confirmation.prev_link_active", String.valueOf(props.getTelegramConfirmation().getLinkGenerationInterval().toMinutes())));
+                                .compareTo(telegramProps.getLinkGenerationInterval()) < 0) {
+                    return Mono.error(new BusinessError("errors.telegram_confirmation.prev_link_active", String.valueOf(telegramProps.getLinkGenerationInterval().toMinutes())));
                 }
                 log.info("Putting new telegram confirmation request {} - {}", key, confirmationRequest.getConfirmationCode());
                 generatedLinksCache.put(key, confirmationRequest);
             }
-            var mail = buildMail(auth, confirmationRequest);
+            var linkUrl = UriComponentsBuilder.fromUri(props.getWebBaseUrl())
+                    .path(CONFIRMATION_URL)
+                    .pathSegment(String.valueOf(confirmationRequest.getEmployeeId())
+                            , confirmationRequest.getTelegramAccount()
+                            , confirmationRequest.getConfirmationCode())
+                    .encode()
+                    .build();
+            log.info("Sending confirmation telegram link for {}: {}", auth.getUsername(), linkUrl);
+            var mail = buildMail(auth, linkUrl.toUriString());
             return emailMessageSender.sendMessage(mail);
         });
     }
@@ -112,7 +122,7 @@ public class TelegramConfirmService {
             }
             generatedLinksCache.remove(linkKey);
             if (Duration.between(expectedLink.getCreatedAt(), now)
-                    .compareTo(props.getTelegramConfirmation().getLinkedExpirationDuration()) > 0) {
+                    .compareTo(telegramProps.getLinkedExpirationDuration()) > 0) {
                 return Mono.error(new BusinessError("errors.telegram_confirmation.expired"));
             }
         }
@@ -124,21 +134,14 @@ public class TelegramConfirmService {
                 });
     }
 
-    private HrEasyEmailMessage buildMail(AuthContext auth, TelegramConfirmationRequest confirmationRequest) {
+    private HrEasyEmailMessage buildMail(AuthContext auth, String linkUrl) {
         var mail = new HrEasyEmailMessage();
         mail.setTo(Arrays.asList(auth.getEmail()));
         mail.setFrom(props.getDefaultEmailFrom());
         mail.setTitle(i18n.localize("telegram_confirmation.email.title"));
         mail.setClientUuid(UUID.randomUUID().toString());
         var bodyContext = new Context();
-        var linkUrl = UriComponentsBuilder.fromUri(props.getWebBaseUrl())
-                .path(CONFIRMATION_URL)
-                .pathSegment(String.valueOf(confirmationRequest.getEmployeeId())
-                        , confirmationRequest.getTelegramAccount()
-                        , confirmationRequest.getConfirmationCode())
-                .encode()
-                .build();
-        bodyContext.setVariable("url", linkUrl.toUriString());
+        bodyContext.setVariable("url", linkUrl);
         bodyContext.setVariable("accountName", auth.getEmployeeInfo().getTelegramAccount());
         mail.setBody(templateEngine.process("telegramconfirmation.html", bodyContext));
         return mail;

@@ -8,7 +8,6 @@ import org.telegram.abilitybots.api.objects.Flag;
 import org.telegram.abilitybots.api.objects.Locality;
 import org.telegram.abilitybots.api.objects.Privacy;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.telegram.HrEasyBot;
 import ru.abondin.hreasy.telegram.common.HrEasyActionHandler;
 import ru.abondin.hreasy.telegram.common.I18Helper;
@@ -18,23 +17,30 @@ import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 
 @Component
 @Slf4j
-public class StartMenuAbilityFactory extends HrEasyActionHandler {
+public class StartMenuAbilityActionHandler extends HrEasyActionHandler {
     private final StartMenuInlineKeyboardBuilder keyboardBuilder;
-    private final MyProfileActionHandler actionHandler;
+    private final MyProfileActionHandler myProfileActionHandler;
+    private final FindEmployeeActionHandler findEmployeeActionHandler;
 
-    public StartMenuAbilityFactory(I18Helper i18n, WebClient webClient, JwtUtil jwtUtil,
-                                   ResponseTemplateProcessor templateStorage,
-                                   HrEasyBotProps props,
-                                   StartMenuInlineKeyboardBuilder keyboardBuilder, MyProfileActionHandler actionHandler) {
+    public StartMenuAbilityActionHandler(I18Helper i18n, WebClient webClient, JwtUtil jwtUtil,
+                                         ResponseTemplateProcessor templateStorage,
+                                         HrEasyBotProps props,
+                                         StartMenuInlineKeyboardBuilder keyboardBuilder, MyProfileActionHandler myProfileActionHandler,
+                                         FindEmployeeActionHandler findEmployeeActionHandler) {
         super(i18n, webClient, jwtUtil, templateStorage, props);
         this.keyboardBuilder = keyboardBuilder;
-        this.actionHandler = actionHandler;
+        this.myProfileActionHandler = myProfileActionHandler;
+        this.findEmployeeActionHandler = findEmployeeActionHandler;
     }
 
+    @Override
+    public String commandName() {
+        return "start";
+    }
 
     public Ability create(HrEasyBot bot) {
         return Ability.builder()
-                .name("start")
+                .name(commandName())
                 .info("Start")
                 .input(0)
                 .locality(Locality.USER)
@@ -55,9 +61,10 @@ public class StartMenuAbilityFactory extends HrEasyActionHandler {
                         var callbackQuery = upd.getCallbackQuery();
                         switch (callbackQuery.getData()) {
                             case "/my_profile":
-                                actionHandler.handle(b, new HrEasyMessageContext(callbackQuery.getFrom().getUserName()
-                                        , callbackQuery.getMessage().getChatId()));
+                                myProfileActionHandler.handle(b, hrEasyMessageContext(callbackQuery));
                                 break;
+                            case "/find":
+                                findEmployeeActionHandler.replySendForceReply(b, hrEasyMessageContext(callbackQuery));
                             default:
                                 bot.silent().send(i18n.localize("bot.start.menu.unknown_callback", upd.getCallbackQuery().getData()), upd.getMessage().getChatId());
                         }

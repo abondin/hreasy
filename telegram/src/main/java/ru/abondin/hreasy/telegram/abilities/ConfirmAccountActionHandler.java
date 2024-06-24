@@ -9,8 +9,6 @@ import ru.abondin.hreasy.telegram.common.JwtUtil;
 import ru.abondin.hreasy.telegram.common.ResponseTemplateProcessor;
 import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 
-import java.time.Duration;
-
 @Service
 public class ConfirmAccountActionHandler extends HrEasyActionHandler {
 
@@ -20,21 +18,23 @@ public class ConfirmAccountActionHandler extends HrEasyActionHandler {
     }
 
     public void handle(BaseAbilityBot bot, HrEasyMessageContext ctx) {
-        webClient
+        var request = webClient
                 .post()
                 .uri("/api/v1/confirm/start")
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(10))
-                .onErrorComplete()
-                .doOnError(err -> defaultErrorHandling(bot, ctx, err))
-                .contextWrite(jwtUtil.jwtContext(ctx.accountName()))
                 .map(response -> {
                     var markdown = templateStorage.process("confirm_account", c -> {
                     });
                     bot.silent().sendMd(markdown
                             , ctx.chatId());
                     return "OK";
-                }).block(props.getDefaultBotActionTimeout());
+                });
+        execHttpSync(request, bot, ctx);
+    }
+
+    @Override
+    public String commandName() {
+        return "confirm_account";
     }
 }

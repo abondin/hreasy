@@ -16,3 +16,5 @@ hreasy:
 logging:
   level:
     ru.abondin: DEBUG
+    org:
+      telegram: DEBUG

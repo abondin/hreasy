@@ -4,13 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.abilitybots.api.objects.Ability;
+import org.telegram.abilitybots.api.objects.Flag;
 import org.telegram.abilitybots.api.objects.Locality;
 import org.telegram.abilitybots.api.objects.Privacy;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.abondin.hreasy.telegram.abilities.ConfirmAccountActionHandler;
-import ru.abondin.hreasy.telegram.abilities.StartMenuAbilityFactory;
+import ru.abondin.hreasy.telegram.abilities.FindEmployeeActionHandler;
+import ru.abondin.hreasy.telegram.abilities.MyProfileActionHandler;
+import ru.abondin.hreasy.telegram.abilities.StartMenuAbilityActionHandler;
 import ru.abondin.hreasy.telegram.common.HrEasyActionHandler;
-import ru.abondin.hreasy.telegram.common.I18Helper;
 import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
+
+import java.util.function.Predicate;
 
 @Component
 @Slf4j
@@ -19,18 +24,20 @@ public class HrEasyBot extends AbilityBot {
     private final long creatorId;
 
 
-    private final I18Helper i18;
-    private final StartMenuAbilityFactory startMenuAction;
+    private final StartMenuAbilityActionHandler startMenuAction;
     private final ConfirmAccountActionHandler confirmAccountActionHandler;
+    private final MyProfileActionHandler myProfileActionHandler;
+    private final FindEmployeeActionHandler findEmployeeActionHandler;
 
-    protected HrEasyBot(HrEasyBotProps props, I18Helper i18
-            , StartMenuAbilityFactory startMenuAction
-            , ConfirmAccountActionHandler confirmAccountAbilityFactory) {
+    protected HrEasyBot(HrEasyBotProps props
+            , StartMenuAbilityActionHandler startMenuAction
+            , ConfirmAccountActionHandler confirmAccountAbilityFactory, MyProfileActionHandler myProfileActionHandler, FindEmployeeActionHandler findEmployeeActionHandler) {
         super(props.getBotToken(), props.getBotUsername());
         this.creatorId = props.getBotCreator();
-        this.i18 = i18;
         this.startMenuAction = startMenuAction;
         this.confirmAccountActionHandler = confirmAccountAbilityFactory;
+        this.myProfileActionHandler = myProfileActionHandler;
+        this.findEmployeeActionHandler = findEmployeeActionHandler;
     }
 
     @Override
@@ -52,33 +59,52 @@ public class HrEasyBot extends AbilityBot {
 
     public Ability confirmAccount() {
         return Ability.builder()
-                .name("confirm_account")
+                .name(confirmAccountActionHandler.commandName())
                 .info("Confirm Account in HR Easy")
                 .input(0)
                 .locality(Locality.USER)
                 .privacy(Privacy.PUBLIC)
                 .enableStats()
-                .action(ctx -> confirmAccountActionHandler.handle(this, new HrEasyActionHandler.HrEasyMessageContext(ctx.user().getUserName(), ctx.chatId())))
+                .action(ctx -> confirmAccountActionHandler.handle(this, HrEasyActionHandler.hrEasyMessageContext(ctx)))
                 .build();
     }
 
-
-    public Ability help() {
+    public Ability find() {
         return Ability.builder()
-                .flag(update -> {
-                    log.info("Check flags for {}", update);
-                    return true;
-                })
-                .name("help")
-                .info("Help")
+                .name(findEmployeeActionHandler.commandName())
+                .info("Find Employees")
                 .input(0)
                 .locality(Locality.USER)
                 .privacy(Privacy.PUBLIC)
+                .enableStats()
                 .action(ctx -> {
-                    silent().send("Help me!!", ctx.chatId());
+                    if (ctx.arguments() == null || ctx.arguments().length == 0) {
+                        findEmployeeActionHandler.replySendForceReply(this, HrEasyActionHandler.hrEasyMessageContext(ctx));
+                    } else {
+                        findEmployeeActionHandler.handleReply(this, String.join(" ", ctx.arguments())
+                                , HrEasyActionHandler.hrEasyMessageContext(ctx));
+                    }
                 })
+                .reply((b, upd) -> findEmployeeActionHandler
+                                .handleReply(b, upd.getMessage().getText(), HrEasyActionHandler.hrEasyMessageContext(upd))
+                        , Flag.MESSAGE, Flag.TEXT, Flag.REPLY, isReplyToBot(), findEmployeeActionHandler.isReplyToCommand())
+                .build();
+    }
+
+    public Ability myProfile() {
+        return Ability.builder()
+                .name(myProfileActionHandler.commandName())
+                .info("My Profile")
+                .input(0)
+                .locality(Locality.USER)
+                .privacy(Privacy.PUBLIC)
+                .enableStats()
+                .action(ctx -> myProfileActionHandler.handle(this, HrEasyActionHandler.hrEasyMessageContext(ctx)))
                 .build();
     }
 
 
+    private Predicate<Update> isReplyToBot() {
+        return upd -> upd.getMessage().getReplyToMessage().getFrom().getUserName().equalsIgnoreCase(getBotUsername());
+    }
 }

@@ -15,7 +15,7 @@ public class HrEasyBotProps {
     private String botToken = "BOT_TOKEN_IS_NOT_DEFINED";
     private long botCreator = 1;
 
-    private Duration defaultBotActionTimeout = Duration.ofSeconds(10);
+    private Duration defaultBotActionTimeout = Duration.ofSeconds(30);
 
     private Platform platform = new Platform();
 
@@ -27,5 +27,10 @@ public class HrEasyBotProps {
         private Duration jwtTokenExpiration = Duration.ofMinutes(5);
 
         private String baseUrl = "http://localhost:8081/telegram/";
+
+        private String webInterfaceUrl = "https://hr.stm.local";
+
+        // Must be less than defaultBotActionTimeout
+        private Duration httpRequestTimeout = Duration.ofSeconds(10);
     }
 }

@@ -3,17 +3,16 @@ package ru.abondin.hreasy.platform.tg;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.EmployeeService;
 import ru.abondin.hreasy.platform.service.admin.manager.AdminManagerService;
 import ru.abondin.hreasy.platform.service.vacation.VacationService;
-import ru.abondin.hreasy.platform.tg.dto.TgMapper;
-import ru.abondin.hreasy.platform.tg.dto.TgMyProfileDto;
+import ru.abondin.hreasy.platform.tg.dto.*;
+
+import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Static Markdown articles (news for example)
@@ -27,6 +26,7 @@ public class TelegramBotController {
     private final VacationService vacationService;
     private final AdminManagerService managerService;
     private final TelegramConfirmService confirmService;
+    private final TelegramFindEmployeesService findEmployeesService;
     private final TgMapper mapper;
 
     @Operation(summary = "Send employee's telegram account confirmation email")
@@ -38,7 +38,7 @@ public class TelegramBotController {
 
     @Operation(summary = "Get my information")
     @GetMapping(value = "my-profile")
-    public Mono<TgMyProfileDto> myProfile() {
+    public Mono<TgMyProfileResponse> myProfile() {
         return AuthHandler.currentAuth().flatMap(auth ->
                 // 1. Load employee
                 emplService.find(auth.getEmployeeInfo().getEmployeeId(), auth)
@@ -46,7 +46,7 @@ public class TelegramBotController {
                         // 2. Load upcoming vacations
                         .flatMap(employee ->
                                 vacationService.currentOrFutureVacations(employee.getId(), auth)
-                                        .map(v -> new TgMyProfileDto.VacationDto(v.getStartDate(), v.getEndDate()))
+                                        .map(v -> new VacationDto(v.getStartDate(), v.getEndDate()))
                                         .collectList()
                                         .flatMap(vacations -> {
                                             employee.setUpcomingVacations(vacations);
@@ -64,4 +64,13 @@ public class TelegramBotController {
                                             }
                                         })));
     }
+
+    @Operation(summary = "Find one or more employees by email or display name")
+    @PostMapping(value = "employee/find")
+    public Mono<FindEmployeeResponse> find(@RequestBody FindEmployeeRequest query, Locale locale) {
+        return AuthHandler.currentAuth().flatMap(auth -> findEmployeesService.find(auth, query
+                , Optional.ofNullable(locale).orElse(Locale.getDefault())));
+    }
+
+
 }

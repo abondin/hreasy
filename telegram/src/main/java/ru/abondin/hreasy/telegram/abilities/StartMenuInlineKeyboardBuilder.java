@@ -16,15 +16,15 @@ public class StartMenuInlineKeyboardBuilder {
     public InlineKeyboardMarkup startMenu() {
         return InlineKeyboardMarkup
                 .builder()
+                .keyboardRow(List.of(InlineKeyboardButton
+                        .builder()
+                        .text(i18n.localize("bot.start.menu.FIND_EMPLOYEE"))
+                        .callbackData("/find")
+                        .build()
+                ))
                 .keyboardRow(
                         List.of(
                                 InlineKeyboardButton
-                                        .builder()
-                                        .switchInlineQuery("/my_profile")
-                                        .text(i18n.localize("bot.start.menu.CHANGE_PASSWORD"))
-                                        .callbackData("change_password")
-                                        .build()
-                                , InlineKeyboardButton
                                         .builder()
                                         .text(i18n.localize("bot.start.menu.MY_PROFILE"))
                                         .callbackData("/my_profile")
