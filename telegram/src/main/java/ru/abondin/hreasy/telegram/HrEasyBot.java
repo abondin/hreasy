@@ -88,6 +88,7 @@ public class HrEasyBot extends AbilityBot {
                 .reply((b, upd) -> findEmployeeActionHandler
                                 .handleReply(b, upd.getMessage().getText(), HrEasyActionHandler.hrEasyMessageContext(upd))
                         , Flag.MESSAGE, Flag.TEXT, Flag.REPLY, isReplyToBot(), findEmployeeActionHandler.isReplyToCommand())
+                .reply((b, upd) -> findEmployeeActionHandler.handleCallback(b, upd), Flag.CALLBACK_QUERY)
                 .build();
     }
 

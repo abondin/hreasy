@@ -18,6 +18,11 @@ import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 @Component
 @Slf4j
 public class StartMenuAbilityActionHandler extends HrEasyActionHandler {
+
+    public static String menuKey(String command) {
+        return "/start_menu/" + command;
+    }
+
     private final StartMenuInlineKeyboardBuilder keyboardBuilder;
     private final MyProfileActionHandler myProfileActionHandler;
     private final FindEmployeeActionHandler findEmployeeActionHandler;
@@ -56,17 +61,12 @@ public class StartMenuAbilityActionHandler extends HrEasyActionHandler {
                     bot.silent().execute(message);
                 })
                 .reply((b, upd) -> {
-                    log.info("Reply to start menu {}", upd);
                     if (upd.getCallbackQuery() != null) {
                         var callbackQuery = upd.getCallbackQuery();
-                        switch (callbackQuery.getData()) {
-                            case "/my_profile":
-                                myProfileActionHandler.handle(b, hrEasyMessageContext(callbackQuery));
-                                break;
-                            case "/find":
-                                findEmployeeActionHandler.replySendForceReply(b, hrEasyMessageContext(callbackQuery));
-                            default:
-                                bot.silent().send(i18n.localize("bot.start.menu.unknown_callback", upd.getCallbackQuery().getData()), upd.getMessage().getChatId());
+                        if (menuKey(myProfileActionHandler.commandName()).equals(callbackQuery.getData())) {
+                            myProfileActionHandler.handle(b, hrEasyMessageContext(callbackQuery));
+                        } else if (menuKey(findEmployeeActionHandler.commandName()).equals(callbackQuery.getData())) {
+                            findEmployeeActionHandler.replySendForceReply(b, hrEasyMessageContext(callbackQuery));
                         }
                     }
                 }, Flag.CALLBACK_QUERY)

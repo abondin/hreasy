@@ -22,7 +22,9 @@ public class FindEmployeeResponse {
         private final String officeLocation;
         private final Integer projectId;
         private final String projectName;
-        private final List<VacationDto> upcomingVacations;
+        private final String projectRole;
+        @Setter
+        private List<VacationDto> upcomingVacations;
         @Setter
         private int score;
     }

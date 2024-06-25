@@ -1,6 +1,6 @@
 Добро пожаловать [[${e.displayName}]]
 
-• Ваш проект: [[${e.projectName}]]
+• Ваш проект: [[${e.projectName != null ? e.projectName : '-'}]]
 • Ваши менеджеры: [[${e.projectManagers}]]
 
 Предстоящие отпуска: 

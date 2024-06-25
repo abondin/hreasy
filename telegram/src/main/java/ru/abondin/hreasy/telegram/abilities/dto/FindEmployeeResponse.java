@@ -11,7 +11,7 @@ public class FindEmployeeResponse {
 
 
     public record EmployeeDto(int id, String displayName, String email, String telegram, String officeLocation,
-                              String projectName,
+                              String projectName, String projectRole,
                               List<VacationDto> upcomingVacations, int score) {
     }
 

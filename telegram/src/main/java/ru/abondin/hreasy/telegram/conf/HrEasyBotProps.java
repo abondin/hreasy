@@ -16,6 +16,7 @@ public class HrEasyBotProps {
     private long botCreator = 1;
 
     private Duration defaultBotActionTimeout = Duration.ofSeconds(30);
+    private int defaultFetchSize=5;
 
     private Platform platform = new Platform();
 
