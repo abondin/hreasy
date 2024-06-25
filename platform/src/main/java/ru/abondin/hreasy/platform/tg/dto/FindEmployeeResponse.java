@@ -19,6 +19,7 @@ public class FindEmployeeResponse {
         private final String displayName;
         private final String email;
         private final String telegram;
+        private final boolean telegramConfirmed;
         private final String officeLocation;
         private final Integer projectId;
         private final String projectName;

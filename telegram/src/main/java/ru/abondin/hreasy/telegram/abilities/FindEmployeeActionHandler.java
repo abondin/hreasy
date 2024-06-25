@@ -62,18 +62,22 @@ public class FindEmployeeActionHandler extends HrEasyActionHandler {
     private void employeeSelection(FindEmployeeResponse res, BaseAbilityBot bot, HrEasyMessageContext ctx) {
         var inlineBuilder = InlineKeyboardMarkup
                 .builder();
+        var text = i18n.localize("bot.find.response.select");
+        if (res.isHasMore()) {
+            text += "\n\n" + i18n.localize("bot.find.response.select_more");
+        }
         res.getEmployees().forEach(e ->
                 inlineBuilder
                         .keyboardRow(List.of(InlineKeyboardButton
                                 .builder()
-                                .text(e.displayName() + " (" + e.email()+ ")")
+                                .text(e.displayName() + " (" + e.email() + ")")
                                 .callbackData("/find/id " + e.id())
                                 .build()))
         );
         var message = SendMessage // Create a message object
                 .builder()
                 .chatId(ctx.chatId())
-                .text(i18n.localize("bot.find.response.select"))
+                .text(text)
                 .replyMarkup(inlineBuilder.build())
                 .build();
         bot.silent().execute(message);

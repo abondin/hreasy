@@ -20,6 +20,7 @@ public interface TgMapper {
     @Mapping(target = "score", ignore = true)
     @Mapping(target = "upcomingVacations", ignore = true)
     @Mapping(target = "telegram", expression = "java(ru.abondin.hreasy.platform.tg.TelegramLinkNormalizer.normalizeTelegramLink(employeeDto.getTelegram()))")
+    @Mapping(target = "telegramConfirmed", expression = "java(employeeDto.getTelegramConfirmedAt() != null)")
     FindEmployeeResponse.EmployeeDto toFindEmployeeResponseEmployee(EmployeeDto employeeDto);
 
 }

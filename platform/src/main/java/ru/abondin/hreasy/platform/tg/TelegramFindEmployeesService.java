@@ -59,6 +59,12 @@ public class TelegramFindEmployeesService {
         if (StringUtils.isNotBlank(employee.getTelegram())) {
             props.add(employee.getTelegram().toLowerCase(locale));
         }
+        if (StringUtils.isNotBlank(employee.getProjectName())) {
+            props.add(employee.getProjectName().toLowerCase(locale));
+        }
+        if (StringUtils.isNotBlank(employee.getProjectRole())) {
+            props.add(employee.getProjectRole().toLowerCase(locale));
+        }
         return props;
     }
 

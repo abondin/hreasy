@@ -19,7 +19,7 @@ public class StartMenuInlineKeyboardBuilder {
                 .keyboardRow(List.of(InlineKeyboardButton
                         .builder()
                         .text(i18n.localize("bot.start.menu.FIND_EMPLOYEE"))
-                        .callbackData(FindEmployeeActionHandler.COMMAND_NAME)
+                        .callbackData(StartMenuAbilityActionHandler.menuKey(FindEmployeeActionHandler.COMMAND_NAME))
                         .build()
                 ))
                 .keyboardRow(
@@ -28,11 +28,6 @@ public class StartMenuInlineKeyboardBuilder {
                                         .builder()
                                         .text(i18n.localize("bot.start.menu.MY_PROFILE"))
                                         .callbackData(StartMenuAbilityActionHandler.menuKey(MyProfileActionHandler.COMMAND_NAME))
-                                        .build()
-                                , InlineKeyboardButton
-                                        .builder()
-                                        .text(i18n.localize("bot.start.menu.ABOUT"))
-                                        .callbackData("about_bot")
                                         .build()
                         )
                 )
