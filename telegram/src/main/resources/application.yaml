@@ -12,6 +12,8 @@ hreasy:
     bot-username: "not_defined"
     bot-token: "not_defined"
     bot-creator: 1
+    platform:
+      base_url: "http://localhost:8081/telegram/"
 
 logging:
   level:
