@@ -78,7 +78,8 @@ public class AuthHandler {
                     withEmployeeInfo.getAccessibleDepartments(),
                     withEmployeeInfo.getAccessibleBas(),
                     withEmployeeInfo.getAccessibleProjects(),
-                    withEmployeeInfo.getLoggedInType());
+                    withEmployeeInfo.getLoggedInType(),
+                    withEmployeeInfo.getTelegramAccount());
         } else {
             employee = null;
         }

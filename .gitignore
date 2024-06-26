@@ -1,3 +1,7 @@
+# Telegram file test database
+/hreasy_stm
+/hreasy_stm.*
+
 ### STS ###
 .apt_generated
 .classpath
@@ -23,3 +27,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+/hreasy_stm_bot
+/hreasy_stm_bot.wal.0

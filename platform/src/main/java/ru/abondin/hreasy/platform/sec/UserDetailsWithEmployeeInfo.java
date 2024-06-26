@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.sec;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString(of = {"employeeId", "loggedInType", "telegramAccount"})
 public class UserDetailsWithEmployeeInfo implements UserDetails {
     private UserDetails delegate;
     private Integer employeeId;
@@ -53,8 +55,11 @@ public class UserDetailsWithEmployeeInfo implements UserDetails {
      * 1 - LDAP,
      * 2 - INTERNAL,
      * 3 - Master password (only in developer environment)
+     * 4 - Telegram bot communication
      */
     private Short loggedInType;
+
+    private String telegramAccount;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

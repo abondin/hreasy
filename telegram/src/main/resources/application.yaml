@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: "HR Easy Telegram Bot"
+  thymeleaf:
+    prefix: classpath:/responses/
+    suffix: .md
+    cache: false
+    mode: TEXT
+
+hreasy:
+  telegram:
+    bot-username: "not_defined"
+    bot-token: "not_defined"
+    bot-creator: 1
+    platform:
+      base_url: "http://localhost:8081/telegram/"
+
+logging:
+  level:
+    ru.abondin: DEBUG
+    org:
+      telegram: DEBUG

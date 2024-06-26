@@ -193,5 +193,4 @@ public class AdminSecurityValidator {
                     " update_current_project_global can update the current project"));
         });
     }
-
 }

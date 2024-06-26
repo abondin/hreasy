@@ -34,10 +34,13 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
 
     # Build with Maven
-    - name: Build with Maven
+    - name: Build Platform
       run: mvn -B package --file platform/pom.xml
-      
-    # Generate unit test report
+
+    - name: Build Telegram Bot
+      run: mvn -B package --file telegram/pom.xml
+
+    # Generate Platform unit test report
     - name: Publish Test Report
       if: ${{ always() }}
       uses: mikepenz/action-junit-report@v2
@@ -45,12 +48,18 @@ jobs:
         report_paths: '**/target/surefire-reports/TEST-*.xml'
 
     # Build Docker
-    - name: Build and push docker
+    - name: Build and push docker platform
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
         GITHUB_NAME: ${{ secrets.GITHUBNAME }}
       run: mvn -B jib:build -Dimage='docker.io/abondin/hreasyplatform' -Djib.to.auth.username=${GITHUB_NAME} -Djib.to.auth.password=${GITHUB_TOKEN} --file platform/pom.xml
- 
+
+    - name: Build and push docker telegram bot
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+        GITHUB_NAME: ${{ secrets.GITHUBNAME }}
+      run: mvn -B jib:build -Dimage='docker.io/abondin/hreasytelegram' -Djib.to.auth.username=${GITHUB_NAME} -Djib.to.auth.password=${GITHUB_TOKEN} --file telegram/pom.xml
+
    
   build-web:
     # The type of runner that the job will run on

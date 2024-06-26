@@ -43,6 +43,10 @@
                    @click.stop="openUpdateTelegramDialog=true" icon x-small>
               <v-icon small>edit</v-icon>
             </v-btn>
+            <v-chip v-if="employee.telegramConfirmedAt"
+                    class="ml-2" color="success" outlined x-small>
+              {{ $t('Подтвержден') }}
+            </v-chip>
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>

@@ -32,6 +32,7 @@ import SalaryRequests from "@/components/salary/SalaryRequests.vue";
 import DictAdminOrganizations from "@/components/admin/dict/DictAdminOrganizations.vue";
 import AdminEmployeesKidsImportWorkflowComponent
     from "@/components/admin/employee/imp/AdminEmployeesKidsImportWorkflow.vue";
+import TelegramConfirmationPage from "@/components/telegram/TelegramConfirmationPage.vue";
 
 Vue.use(VueRouter)
 
@@ -40,6 +41,7 @@ const routes = [
     {path: "/404", component: PageNotFoundComponent},
     {path: "*", redirect: "/404"},
     {path: "/login", component: Login},
+    {name: "TelegramConfirmationPage", path: "/telegram/confirm/:employeeId/:telegramAccount/:confirmationCode", component: TelegramConfirmationPage, props: true},
     {name: "employees", path: "/employees", component: Employees},
     {name: 'employeeProfile', path: "/profile/main", component: EmployeeProfile, props: true},
     {path: "/vacations", component: VacationsList},
@@ -92,7 +94,7 @@ const router = new VueRouter({
 })
 
 const authGuard: NavigationGuard = (to, from, next) => {
-    if (to.path == '/login') {
+    if (to.path == '/login' || to.name == 'TelegramConfirmationPage') {
         next();
         return;
     }

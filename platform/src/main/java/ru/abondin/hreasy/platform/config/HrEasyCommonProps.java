@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.net.URI;
 import java.time.Duration;
 
 @Configuration
@@ -32,11 +33,14 @@ public class HrEasyCommonProps {
      */
     private String defaultEmailFrom;
 
-    private ExcelImportProps excelImport = new ExcelImportProps();
+    private URI webBaseUrl = URI.create("http://127.0.0.1:8080");
+
+    private final ExcelImportProps excelImport = new ExcelImportProps();
 
     @Data
     public static class ExcelImportProps {
         private String dateFormat = "dd.MM.yyyy";
         private Duration importConfigTtl = Duration.ofHours(3);
     }
+
 }

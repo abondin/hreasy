@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.WebSession;
@@ -70,8 +69,8 @@ public class AuthController {
      */
     private String emailFromUserName(String username) {
         var result = username;
-        if (Strings.isNotBlank(props.getDefaultEmailSuffix())
-                && Strings.isNotBlank(username) && !username.contains("@")) {
+        if (StringUtils.isNotBlank(props.getDefaultEmailSuffix())
+                && StringUtils.isNotBlank(username) && !username.contains("@")) {
             result = username + props.getDefaultEmailSuffix();
         }
         return StringUtils.trimToEmpty(result).toLowerCase(Locale.ROOT);

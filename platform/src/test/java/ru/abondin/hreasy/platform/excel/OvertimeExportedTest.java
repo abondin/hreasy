@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
-public class OvertimeExportedTest {
+class OvertimeExportedTest {
 
     private final List<String> firstNames = Arrays.asList(
             "Иван", "Василий", "Александр", "Сергей", "Валерий", "Никита"
@@ -57,7 +57,7 @@ public class OvertimeExportedTest {
                     projects.get((int) (Math.random() * projects.size()))
                     , null, null, null
                     , lastname + "." + firstame + "@company.org"
-                    , null,  false, new ArrayList<>());
+                    , null,  null, false, new ArrayList<>());
             employees.add(employee);
 
             var report = new OvertimeEmployeeSummary();
@@ -84,7 +84,7 @@ public class OvertimeExportedTest {
 
     @Test
     @Disabled("Nothing to tests yet. It is only to play with apache poi")
-    public void testSummary() throws Exception {
+    void testSummary() throws Exception {
         log.info("Export test overtimes to target/overtimes_out.xlsx");
         try (var fileOut = new FileOutputStream("target/overtimes_out.xlsx")) {
             exporter.exportReportForPeriod(bundle, fileOut);

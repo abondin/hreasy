@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.auth;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.lang.Nullable;
 
@@ -14,12 +15,12 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(of="username")
+@ToString(of = "username")
 public class AuthContext {
     private String username;
     private String email;
     private Collection<String> authorities = new ArrayList<>();
-    @Nullable
+    @NotNull
     private EmployeeInfo employeeInfo;
 
     @Data
@@ -64,9 +65,16 @@ public class AuthContext {
          * 1 - LDAP,
          * 2 - INTERNAL,
          * 3 - Master password (only in developer environment)
+         * 4 - Telegram Bot
          */
         @Nullable
         private Short loggedInType;
+
+        /**
+         * Populates only if request comes from telegram bot
+         */
+        @Nullable
+        private String telegramAccount;
 
 
         public EmployeeInfo(EmployeeInfo employeeInfo) {
@@ -76,14 +84,16 @@ public class AuthContext {
                     employeeInfo.getAccessibleDepartments(),
                     employeeInfo.getAccessibleBas(),
                     employeeInfo.getAccessibleProjects(),
-                    employeeInfo.getLoggedInType());
+                    employeeInfo.getLoggedInType(),
+                    employeeInfo.getTelegramAccount());
         }
     }
 
 
     @AllArgsConstructor
     public enum LoginType {
-        LDAP((short) 1), INTERNAL((short) 2), MASTER_PASSWORD((short) 3);
+        LDAP((short) 1), INTERNAL((short) 2), MASTER_PASSWORD((short) 3),
+        TELEGRAM_BOT_SERVICE((short) 4);
         @Getter
         private final short value;
 

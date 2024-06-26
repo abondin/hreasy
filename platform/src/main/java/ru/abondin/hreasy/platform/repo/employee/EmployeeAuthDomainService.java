@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.repo.sec.SecPasswdEntry;
 import ru.abondin.hreasy.platform.repo.sec.SecPasswdRepo;
+import ru.abondin.hreasy.platform.service.DateTimeService;
+
+import java.time.OffsetDateTime;
 
 /**
  * Simple aggregation for basic {@link EmployeeRepo} methods to provide security information for given employee
@@ -13,11 +16,25 @@ import ru.abondin.hreasy.platform.repo.sec.SecPasswdRepo;
 @RequiredArgsConstructor
 public class EmployeeAuthDomainService {
 
+    public record TelegramToEmailBinding(
+            String email,
+            String telegramAccount,
+            boolean telegramConfirmed
+    ) {
+    }
+
     private final EmployeeRepo employeeRepo;
     private final SecPasswdRepo passwdRepo;
+    private final DateTimeService dateTimeService;
 
-    public Mono<EmployeeAuthInfoEntry> findIdByEmail(String email) {
-        return employeeRepo.findIdByEmail(email).flatMap(empl -> {
+    public Mono<TelegramToEmailBinding> findEmailByTelegramAccount(String telegramAccount, boolean onlyConfirmed) {
+        return employeeRepo.findEmailByTelegramAccount(telegramAccount)
+                .map(b -> new TelegramToEmailBinding(b.getEmail(), telegramAccount,
+                        b.getTelegramConfirmedAt() != null && b.getTelegramConfirmedAt().isBefore(OffsetDateTime.now())));
+    }
+
+    public Mono<EmployeeAuthInfoEntry> findNotDismissedByUsername(String email) {
+        return employeeRepo.findNotDismissedIdByEmail(email, dateTimeService.now()).flatMap(empl -> {
             var entry = new EmployeeAuthInfoEntry();
             entry.setId(empl.getId());
             entry.setDepartmentId(empl.getDepartmentId());

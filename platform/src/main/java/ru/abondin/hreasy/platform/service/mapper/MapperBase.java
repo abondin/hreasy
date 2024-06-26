@@ -1,7 +1,6 @@
 package ru.abondin.hreasy.platform.service.mapper;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
@@ -16,14 +15,14 @@ import java.util.stream.Stream;
 public interface MapperBase {
 
 
-    static YearMonth fromPeriodId(Integer periodId){
-        if (periodId == null){
+    static YearMonth fromPeriodId(Integer periodId) {
+        if (periodId == null) {
             return null;
         }
         return YearMonth.of(periodId / 100, periodId % 100 + 1);
     }
 
-    DateTimeFormatter DATE_FORMATTER=DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
+    DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
 
     default SimpleDictDto simpleDto(Integer id, String name) {
         return id == null ? null : new SimpleDictDto(id, name);
@@ -46,7 +45,7 @@ public interface MapperBase {
 
     default Stream<String> splitToStream(String commaSeparatedStrings) {
         return Arrays.stream(
-                Strings.isBlank(commaSeparatedStrings) ? new String[0] :
+                StringUtils.isBlank(commaSeparatedStrings) ? new String[0] :
                         StringUtils.split(commaSeparatedStrings, ','));
     }
 }

@@ -6,12 +6,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.config.HrEasySecurityProps;
-import ru.abondin.hreasy.platform.repo.employee.EmployeeAuthDomainService;
-import ru.abondin.hreasy.platform.sec.UserDetailsWithEmployeeInfo;
 
 /**
  * For development purposes only.
@@ -21,8 +18,7 @@ import ru.abondin.hreasy.platform.sec.UserDetailsWithEmployeeInfo;
 @Slf4j
 public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticationManager {
     private final HrEasySecurityProps securityProps;
-    private final DbAuthoritiesPopulator authoritiesPopulator;
-    private final EmployeeAuthDomainService employeeAuthDomainService;
+    private final EmployeeBasedUserDetailsService userDetailsService;
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
@@ -34,31 +30,15 @@ public class MasterPasswordAuthenticationProvider implements ReactiveAuthenticat
             // Move control to default LDAP provider
             return Mono.empty();
         }
-        return employeeAuthDomainService.findIdByEmail(username)
+        return userDetailsService.findForMasterPassword(username)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", username)))
-                .flatMap(
-                        employeeAuthInfoEntry ->
-                                authoritiesPopulator.getGrantedAuthorities(username).collectList()
-                                        .map(
-                                                authorities -> {
-                                                    var user = new UserDetailsWithEmployeeInfo(new User(
-                                                            username,
-                                                            "",
-                                                            authorities),
-                                                            employeeAuthInfoEntry.getId(),
-                                                            employeeAuthInfoEntry.getDepartmentId(),
-                                                            employeeAuthInfoEntry.getCurrentProjectId(),
-                                                            employeeAuthInfoEntry.getAccessibleDepartments(),
-                                                            employeeAuthInfoEntry.getAccessibleBas(),
-                                                            employeeAuthInfoEntry.getAccessibleProjects(),
-                                                            AuthContext.LoginType.MASTER_PASSWORD.getValue());
-                                                    var result = new UsernamePasswordAuthenticationToken(user, password, authorities);
-                                                    result.setDetails(inputAuth.getDetails());
-                                                    result.eraseCredentials();
-                                                    return result;
-                                                }
-                                        )
-                );
+                .map(user -> {
+                    var result = new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
+                    result.setDetails(inputAuth.getDetails());
+                    result.eraseCredentials();
+                    return result;
+                });
+
     }
 
 }
