@@ -29,6 +29,8 @@ services:
       HREASY_DB_DATABASE: hr
       HREASY_WEB_SEC_MASTER-PASSWORD: qwe123
       HREASY_BACKGROUND_UPCOMING-VACATION_JOB-ENABLED: 'false'
+      HREASY_COMMON_DEFAULT-EMAIL-FROM: hreasy@company.org
+      HREASY_COMMON_WEB-BASE-URL: http://localhost:8080
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
       JAVA_TOOL_OPTIONS: -Duser.country=RU -Duser.language=ru -Duser.timezone=Europe/Moscow
     depends_on:
@@ -49,6 +51,24 @@ services:
     ports:
       - 8080:80
     container_name: hreasyweb
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+  hreasytg:
+    image: docker.io/abondin/hreasytelegram:latest
+    restart: unless-stopped
+    depends_on:
+      - hreasyplatform
+    container_name: hreasytg
+    environment:
+      HREASY_TELEGRAM_BOT_USERNAME: <MY_SUPER_BOT>
+      HREASY_TELEGRAM_BOT_TOKEN: <BOT TOKEN>
+      HREASY_TELEGRAM_BOT_CREATOR: <MY TELEGRAM USER ID>
+      HREASY_TELEGRAM_PLATFORM_BASE-URL: 'http://localhost:8081/telegram/'
+      HREASY_TELEGRAM_PLATFORM_WEB-INTERFACE-URL: 'https://localhost:8080'
+      JAVA_TOOL_OPTIONS: -Duser.country=RU -Duser.language=ru -Duser.timezone=Europe/Moscow
     logging:
       driver: "json-file"
       options:
