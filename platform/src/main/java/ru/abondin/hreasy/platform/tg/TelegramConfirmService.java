@@ -37,7 +37,7 @@ import java.util.*;
  *   <li>Forming a confirmation link containing the UUID.</li>
  *   <li>Sending the confirmation link to the user's email based on employeeId.</li>
  *   <li>Ensuring the confirmation link is valid for only 10 minutes.</li>
- *   <li>Enforcing a minimum interval of 3 minutes between link generation requests for the same employeeId and telegramName.</li>
+ *   <li>Enforcing a minimum interval of 2 minutes between link generation requests for the same employeeId and telegramName.</li>
  * </ul>
  */
 @Service

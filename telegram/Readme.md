@@ -40,3 +40,7 @@ hreasy:
     platform:
       base_url: "<URL TO HR EASY BACKEND>/telegram/"
 ```
+
+## Auth and confirmation process in technical details
+
+![Architecture](../.docs/Telegram_auth_and_confirm.drawio.png "Architecture")

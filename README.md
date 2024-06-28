@@ -23,6 +23,10 @@
 - Download and upload Technical Profiles
 - Report, Implement and export salaries requests and bonuses
 
+## Architecture overview
+
+![Components Diagram](./.docs/Components_Diagram.drawio.png "Components Diagram")
+
 ## Telegram Bot
 
 [Telegram Boot](./telegram/Readme.md) can be also configured as additional user interaction interface with HR Easy Platfrom 
