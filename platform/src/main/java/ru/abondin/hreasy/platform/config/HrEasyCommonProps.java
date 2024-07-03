@@ -28,6 +28,8 @@ public class HrEasyCommonProps {
     private String defaultCalendarType = "default";
     private String defaultCalendarRegion = "RU";
 
+    private int maxSupportRequestsInHour=5;
+
     /**
      * Default system account to send information via email
      */
