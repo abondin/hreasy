@@ -11,21 +11,21 @@
 
 <p>Добрый день! </p>
 <p>
-    От сотрудника ${employee.displayName} поступил запрос.
-    <ul>
-        <li>Идентификатор запрос: ${requestId}</li>
-        <li>Данные для обратной связи:
-            <ul>
-                <li>Почта: <a href="mailto:${employee.email}">employee.email</a></li>
-                <li>Telegram Account: <a href="https://t.me/:${employee.telegram}">employee.telegram</a></li>
-            </ul>
-        </li>
-    </ul>
+    От сотрудника <span th:text="${employeeDisplayName}"></span> поступил запрос.
+<ul>
+    <li>Идентификатор запроса: <span th:text="${requestId}">${requestId}</span></li>
+    <li>Данные для обратной связи:
+        <ul>
+            <li>Почта: <a th:href="'mailto:'+${employeeEmail}" th:text="${employeeEmail}"></a></li>
+            <li th:if="${employeeTelegramLink != null}">Telegram Account: <a href="${employeeTelegramLink}">${employeeTelegram}</a>
+            </li>
+        </ul>
+    </li>
+</ul>
 </p>
 <hr>
 
-<p>
-    ${request.message}
+<p th:text="${requestMessage}">
 </p>
 
 <hr>

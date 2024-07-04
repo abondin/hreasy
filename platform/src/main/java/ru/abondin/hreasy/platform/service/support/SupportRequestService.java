@@ -15,22 +15,20 @@ import ru.abondin.hreasy.platform.config.HrEasyCommonProps;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
-import ru.abondin.hreasy.platform.repo.suport.SupportRequestGroupEntry;
 import ru.abondin.hreasy.platform.repo.suport.SupportRequestGroupRepository;
 import ru.abondin.hreasy.platform.repo.suport.SupportRequestRepository;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
+import ru.abondin.hreasy.platform.service.RateLimiter;
 import ru.abondin.hreasy.platform.service.message.EmailMessageSender;
 import ru.abondin.hreasy.platform.service.message.dto.HrEasyEmailMessage;
 import ru.abondin.hreasy.platform.service.support.dto.NewSupportRequestDto;
 import ru.abondin.hreasy.platform.service.support.dto.SupportGroupConfiguration;
 import ru.abondin.hreasy.platform.service.support.dto.SupportRequestMapper;
+import ru.abondin.hreasy.platform.tg.TelegramLinkNormalizer;
 
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static ru.abondin.hreasy.platform.service.HistoryDomainService.HistoryEntityType.SUPPORT_REQUEST;
 
@@ -48,40 +46,19 @@ public class SupportRequestService {
     private final HrEasyCommonProps props;
     private final I18Helper i18n;
     private final EmployeeRepo employeeRepo;
+    private final RateLimiter rateLimiter;
 
-    private final ConcurrentHashMap<Integer, ConcurrentLinkedQueue<OffsetDateTime>> requestTimestampsRateLimiterCache = new ConcurrentHashMap<>();
 
-    @Transactional
+    @Transactional()
     public Mono<Integer> createSupportRequest(AuthContext auth, int sourceType, NewSupportRequestDto request) {
         log.info("New support request from {} to {} group", auth.getUsername(), request.getGroup());
         var now = dateTimeService.now();
         var employeeId = auth.getEmployeeInfo().getEmployeeId();
-
-        // Step 0: Everyone can request support, no additional permission validation required
-        return checkRequestRateLimit(employeeId, now)
-                .flatMap(v -> saveSupportRequest(employeeId, sourceType, now, request))
-                .flatMap(requestId -> processSupportRequest(requestId, auth, request, employeeId));
+        return rateLimiter.checkSupportRequestRateLimit(employeeId, now)
+                .flatMap(v -> getConfiguration(request))
+                .flatMap(conf -> saveSupportRequest(employeeId, sourceType, now, request)
+                        .flatMap(requestId -> fetchEmployeeAndSendEmail(requestId, conf, request, employeeId)));
     }
-
-
-    private Mono<Boolean> checkRequestRateLimit(Integer employeeId, OffsetDateTime now) {
-        var timestamps = requestTimestampsRateLimiterCache.computeIfAbsent(employeeId, k -> new ConcurrentLinkedQueue<>());
-        synchronized (timestamps) {
-            // Remove timestamps older than 1 hour
-            while (!timestamps.isEmpty() && ChronoUnit.HOURS.between(timestamps.peek(), now) >= 1) {
-                timestamps.poll();
-            }
-
-            if (timestamps.size() >= props.getMaxSupportRequestsInHour()) {
-                return Mono.error(new BusinessError("errors.support.request.rate_limit_exceeded", Integer.toString(props.getMaxSupportRequestsInHour())));
-            }
-
-            timestamps.add(now);
-        }
-
-        return Mono.just(true);
-    }
-
 
     private Mono<Integer> saveSupportRequest(Integer employeeId, int sourceType, OffsetDateTime now, NewSupportRequestDto request) {
         var supportRequest = mapper.fromNewRequest(employeeId, sourceType, now, request);
@@ -90,31 +67,27 @@ public class SupportRequestService {
                 .map(HistoryEntry::getEntityId);
     }
 
-    private Mono<Integer> processSupportRequest(Integer requestId, AuthContext auth, NewSupportRequestDto request, Integer employeeId) {
+    private Mono<SupportGroupConfiguration> getConfiguration(NewSupportRequestDto request) {
         return groupRepository.findById(request.getGroup())
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound("RequestGroup", request.getGroup()))
-                .flatMap(group -> validateGroupConfiguration(group, request.getGroup()))
-                .flatMap(configuration -> fetchEmployeeAndSendEmail(auth, requestId, configuration, request, employeeId));
+                .flatMap(group -> {
+                    var configuration = mapper.groupConfiguration(group.getConfiguration());
+                    if (configuration == null || configuration.getEmails().isEmpty()) {
+                        return Mono.error(new BusinessError("errors.support.request.group_not_configured", request.getGroup()));
+                    }
+                    return Mono.just(configuration);
+                });
     }
 
-    private Mono<SupportGroupConfiguration> validateGroupConfiguration(SupportRequestGroupEntry group, String groupId) {
-        var configuration = mapper.groupConfiguration(group.getConfiguration());
-        if (configuration == null || configuration.getEmails().isEmpty()) {
-            return Mono.error(new BusinessError("errors.support.request.group_not_configured", groupId));
-        }
-        return Mono.just(configuration);
-    }
-
-    private Mono<Integer> fetchEmployeeAndSendEmail(AuthContext auth, Integer requestId, SupportGroupConfiguration configuration, NewSupportRequestDto request, Integer employeeId) {
+    private Mono<Integer> fetchEmployeeAndSendEmail(Integer requestId, SupportGroupConfiguration configuration, NewSupportRequestDto request, Integer employeeId) {
         return employeeRepo.findById(employeeId)
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound("Employee", employeeId))
-                .flatMap(employee -> emailMessageSender.sendMessage(buildMail(auth, requestId, configuration, employee, request))
+                .flatMap(employee -> emailMessageSender.sendMessage(buildMail(requestId, configuration, employee, request))
                         .map(mail -> requestId));
     }
 
 
-    private HrEasyEmailMessage buildMail(AuthContext auth,
-                                         int requestId,
+    private HrEasyEmailMessage buildMail(int requestId,
                                          SupportGroupConfiguration configuration,
                                          EmployeeEntry employee,
                                          NewSupportRequestDto request) {
@@ -124,9 +97,12 @@ public class SupportRequestService {
         mail.setTitle(i18n.localize("support.request.mail.title", employee.getDisplayName()));
         mail.setClientUuid(UUID.randomUUID().toString());
         var bodyContext = new Context();
-        bodyContext.setVariable("request", request);
+        bodyContext.setVariable("requestMessage", request.getMessage());
         bodyContext.setVariable("requestId", requestId);
-        bodyContext.setVariable("employee", employee);
+        bodyContext.setVariable("employeeDisplayName", employee.getDisplayName());
+        bodyContext.setVariable("employeeEmail", employee.getEmail());
+        bodyContext.setVariable("employeeTelegram", TelegramLinkNormalizer.extractAccountName(employee.getTelegram()));
+        bodyContext.setVariable("employeeTelegramLink", TelegramLinkNormalizer.normalizeTelegramLink(employee.getTelegram()));
         mail.setBody(templateEngine.process("supportrequest.html", bodyContext));
         return mail;
     }

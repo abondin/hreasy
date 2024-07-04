@@ -25,7 +25,7 @@ public class DummyEmailMessageSender implements EmailMessageSender {
 
     @Override
     public Mono<String> sendMessage(HrEasyEmailMessage message) {
-        log.info("Send message to dummy channel {}", message);
+        log.info("Send message to dummy channel {}:\n{}", message, message.getBody());
         return Mono.just(message.getClientUuid());
     }
 }

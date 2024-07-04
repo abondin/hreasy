@@ -22,9 +22,9 @@ public class TestFixedDataTimeConfig {
         @Override
         public OffsetDateTime now() {
             if (time == null) {
-                throw new RuntimeException("Time for Text Fixed Date Time Service must be initialized manually");
+                return super.now();
             }
-            return super.now();
+            return time;
         }
 
         public void init(OffsetDateTime now) {

@@ -11,6 +11,7 @@ import java.time.OffsetDateTime;
 @Mapper(componentModel = "spring")
 public abstract class SupportRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "employeeId", target = "createdBy")
+    @Mapping(source = "employeeId", target = "employeeId")
     @Mapping(source = "now", target = "createdAt")
     @Mapping(source = "sourceType", target = "sourceType")
     @Mapping(source = "requestDto.group", target = "supportGroup")

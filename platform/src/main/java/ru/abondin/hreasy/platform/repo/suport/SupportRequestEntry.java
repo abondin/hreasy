@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @Table(name = "support_request", schema = "support")
@@ -19,7 +19,7 @@ public class SupportRequestEntry {
     private Long employeeId;
 
     @Column("support_group")
-    private Long supportGroupId;
+    private String supportGroup;
 
     @Column("source_type")
     private Integer sourceType;
@@ -28,14 +28,14 @@ public class SupportRequestEntry {
     private String message;
 
     @Column("created_at")
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Column("created_by")
-    private Long createdBy;
+    private Integer createdBy;
 
     @Column("deleted_at")
-    private LocalDateTime deletedAt;
+    private OffsetDateTime deletedAt;
 
     @Column("deleted_by")
-    private Long deletedBy;
+    private Integer deletedBy;
 }
