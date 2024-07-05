@@ -1,11 +1,11 @@
-import {SimpleDict} from "@/store/modules/dict";
 import {Vacation} from "@/components/vacations/vacation.service";
 import {DateTimeUtils} from "@/components/datetimeutils";
+import {CurrentProjectDict} from "@/components/empl/employee.service";
 
 export class EmployeeVacationSummary {
     public employee: number;
     public employeeDisplayName: string;
-    public employeeCurrentProject: SimpleDict;
+    public employeeCurrentProject: CurrentProjectDict;
     public year: number;
 
     public upcomingVacation: Vacation | null = null;

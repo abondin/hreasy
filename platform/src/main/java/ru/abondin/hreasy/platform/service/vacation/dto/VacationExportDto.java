@@ -11,6 +11,7 @@ import java.time.LocalDate;
 public class VacationExportDto {
     private String employeeDisplayName;
     private String employeeCurrentProject;
+    private String employeeCurrentProjectRole;
     private int year;
     private LocalDate startDate;
     private LocalDate endDate;

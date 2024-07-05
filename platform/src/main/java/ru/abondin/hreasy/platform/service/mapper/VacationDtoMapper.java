@@ -4,6 +4,8 @@ import org.mapstruct.*;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationView;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
+import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.*;
 
@@ -40,6 +42,7 @@ public interface VacationDtoMapper extends MapperBase {
     VacationEntry.VacationHistoryEntry history(VacationEntry v);
 
     @Mapping(target = "employeeCurrentProject", source = "employeeCurrentProject.name")
+    @Mapping(target = "employeeCurrentProjectRole", source = "employeeCurrentProject.role")
     @Mapping(target = "status", qualifiedByName = "vacationStatus")
     VacationExportDto toExportProjection(VacationDto vacation, @Context I18Helper helper, @Context Locale locale);
 
@@ -60,8 +63,8 @@ public interface VacationDtoMapper extends MapperBase {
     }
 
     @Named("employeeCurrentProject")
-    default SimpleDictDto employeeCurrentProject(VacationView entry) {
-        return simpleDto(entry.getEmployeeCurrentProject(), entry.getEmployeeCurrentProjectName());
+    default CurrentProjectDictDto employeeCurrentProject(VacationView entry) {
+        return currentProjectDto(entry.getEmployeeCurrentProject(), entry.getEmployeeCurrentProjectName(), entry.getEmployeeCurrentProjectRole());
     }
 
 
