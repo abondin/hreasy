@@ -6,6 +6,7 @@
       <v-tabs v-model="selectedTab">
         <v-tab>{{ $t('Все отпуска') }}</v-tab>
         <v-tab>{{ $t('Сводная по сотрудникам') }}</v-tab>
+        <v-tab>{{ $t('Календарь') }}</v-tab>
       </v-tabs>
 
       <!-- Filter Area -->
@@ -207,6 +208,12 @@
             </template>
           </v-data-table>
         </v-tab-item>
+
+        <!-- Calendar -->
+        <v-tab-item>
+          <vacations-calendar
+              :vacations="filteredItems()" :year="selectedYear"></vacations-calendar>
+        </v-tab-item>
       </v-tabs-items>
 
       <v-dialog v-model="vacationDialog">
@@ -245,6 +252,8 @@ import {
 } from "@/components/vacations/employeeVacationSummaryService";
 import {Watch} from "vue-property-decorator";
 import dictService from "@/store/modules/dict.service";
+import VacationsCalendar from "@/components/vacations/VacationsCalendar.vue";
+import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 
 const namespace = 'dict';
 
@@ -257,7 +266,7 @@ class Filter {
 
 @Component({
   name: 'VacationsList',
-  components: {MyDateRangeComponent, VacationEditForm}
+  components: {VacationsCalendar, MyDateRangeComponent, VacationEditForm}
 })
 export default class VacationsListComponent extends Vue {
   headers: DataTableHeader[] = [];
@@ -341,17 +350,18 @@ export default class VacationsListComponent extends Vue {
   private filteredItems() {
     return this.vacations.filter(item => {
       let filtered = true;
-      if (this.filter.search) {
-        filtered = filtered && item.employeeDisplayName.toLowerCase().indexOf(this.filter.search.toLowerCase()) >= 0;
-      }
-      if (this.filter.selectedStatuses.length > 0) {
-        filtered = filtered && this.filter.selectedStatuses.indexOf(item.status) >= 0;
-      }
-      if (this.filter.selectedProjects.length > 0) {
-        const project = item.employeeCurrentProject;
-        filtered = filtered && project && this.filter.selectedProjects.indexOf(project.id) >= 0;
-      }
+      // Current project
+      filtered = filtered && searchUtils.array(this.filter.selectedProjects, item.employeeCurrentProject?.id);
+      // Status
+      filtered = filtered && searchUtils.array(this.filter.selectedStatuses, item.status);
 
+      const textFilters = TextFilterBuilder.of()
+          // Display name
+          .splitWords(item.employeeDisplayName)
+          // Project role
+          .ignoreCase(item.employeeCurrentProject?.role);
+
+      filtered = filtered && searchUtils.textFilter(this.filter.search, textFilters);
       filtered = filtered && this.inDateRange(item);
 
       return filtered;
