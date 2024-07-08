@@ -1,6 +1,7 @@
 import httpService from "../http.service";
 import {AxiosInstance} from "axios";
-import {SimpleDict} from "@/store/modules/dict";
+import {ProjectDictDto, SimpleDict} from "@/store/modules/dict";
+import {CurrentProjectDict} from "@/components/empl/employee.service";
 
 export interface EmployeeVacationShort {
     id: number,
@@ -14,7 +15,7 @@ export interface Vacation {
     id: number,
     employee: number,
     employeeDisplayName: string,
-    employeeCurrentProject: SimpleDict,
+    employeeCurrentProject: CurrentProjectDict,
     year: number,
     startDate: string,
     endDate: string,

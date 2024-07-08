@@ -12,6 +12,10 @@
   },
   "dependencies": {
     "@fontsource/roboto": "^5.0.8",
+    "@fullcalendar/core": "^6.1.14",
+    "@fullcalendar/daygrid": "^6.1.14",
+    "@fullcalendar/multimonth": "^6.1.14",
+    "@fullcalendar/vue": "^6.1.14",
     "@types/markdown-it": "^12.0.1",
     "@types/punycode": "^2.1.0",
     "@types/vue2-editor": "^2.6.1",

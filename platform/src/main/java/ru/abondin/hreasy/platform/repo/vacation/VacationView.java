@@ -8,4 +8,5 @@ public class VacationView extends VacationEntry {
     private String employeeEmail;
     private Integer employeeCurrentProject;
     private String employeeCurrentProjectName;
+    private String employeeCurrentProjectRole;
 }

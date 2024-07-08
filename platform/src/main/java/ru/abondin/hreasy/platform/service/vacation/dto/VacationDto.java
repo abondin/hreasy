@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ru.abondin.hreasy.platform.BusinessError;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -14,7 +14,7 @@ public class VacationDto {
     private int id;
     private int employee;
     private String employeeDisplayName;
-    private SimpleDictDto employeeCurrentProject;
+    private CurrentProjectDictDto employeeCurrentProject;
     private int year;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -45,7 +45,7 @@ public class VacationDto {
                     .orElseThrow(() -> new BusinessError("errors.unsupported.vacation.status", Integer.toString(statusId)));
         }
 
-        public static boolean isActive(int statusId){
+        public static boolean isActive(int statusId) {
             return statusId == 0 || statusId == 1;
         }
     }
