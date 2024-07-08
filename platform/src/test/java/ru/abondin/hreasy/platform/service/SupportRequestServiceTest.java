@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service;
 
 import io.r2dbc.postgresql.codec.Json;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ import ru.abondin.hreasy.platform.service.support.SupportRequestService;
 import ru.abondin.hreasy.platform.service.support.dto.NewSupportRequestDto;
 
 import java.time.OffsetDateTime;
+
+import static ru.abondin.hreasy.platform.service.support.dto.NewSupportRequestDto.SOURCE_TYPE_TELEGRAM;
 
 @ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -65,24 +68,36 @@ class SupportRequestServiceTest extends BaseServiceTest {
         var request = new NewSupportRequestDto();
         request.setGroup(defaultGroup);
         request.setMessage("Hello world");
+        request.setCategory("Licensing and activation issues");
         var test = service.createSupportRequest(auth, 1, request);
         StepVerifier
                 .create(test).expectNextCount(1).verifyComplete();
         var checkNothingCreatedIn = requestRepository.findAll();
         StepVerifier.create(checkNothingCreatedIn)
-                .expectNextCount(1).verifyComplete();
+                .expectNextMatches(e -> {
+                    try {
+                        Assertions.assertEquals("Licensing and activation issues", e.getCategory());
+                        Assertions.assertEquals("Hello world", e.getMessage());
+                        Assertions.assertEquals(defaultGroup, e.getSupportGroup());
+                        Assertions.assertEquals(auth.getEmployeeInfo().getEmployeeId(), e.getEmployeeId().intValue());
+                    } catch (AssertionError ex) {
+                        log.error("Assertion error", ex);
+                        return false;
+                    }
+                    return true;
+                }).verifyComplete();
     }
 
     @Test
     void testRateLimit() {
-        int allowedRequestCnt=props.getMaxSupportRequestsInHour();
+        int allowedRequestCnt = props.getMaxSupportRequestsInHour();
         Mono<?> test = null;
         dateTimeService.init(OffsetDateTime.now().minusHours(2));
-        for (int i = 1; i <= allowedRequestCnt*2; i++) {
+        for (int i = 1; i <= allowedRequestCnt * 2; i++) {
             var request = new NewSupportRequestDto();
             request.setGroup(defaultGroup);
             request.setMessage("Rate limit stress: " + i);
-            var mono = service.createSupportRequest(auth, 1, request).doOnNext((a) -> {
+            var mono = service.createSupportRequest(auth, SOURCE_TYPE_TELEGRAM, request).doOnNext((a) -> {
                 dateTimeService.init(dateTimeService.now().plusMinutes(5));
             });
             test = test == null ? mono : test.then(mono);
@@ -100,14 +115,14 @@ class SupportRequestServiceTest extends BaseServiceTest {
         var request = new NewSupportRequestDto();
         request.setGroup(defaultGroup);
         request.setMessage("Rate limit stress after delay ");
-        test = service.createSupportRequest(auth, 1, request);
+        test = service.createSupportRequest(auth, SOURCE_TYPE_TELEGRAM, request);
         StepVerifier
                 .create(test)
                 .expectNextCount(1)
                 .verifyComplete();
         // Verify that 6 requests now
         StepVerifier.create(requestRepository.findAll())
-                .expectNextCount(allowedRequestCnt).verifyComplete();
+                .expectNextCount(allowedRequestCnt+1).verifyComplete();
     }
 
 
@@ -116,7 +131,7 @@ class SupportRequestServiceTest extends BaseServiceTest {
         var request = new NewSupportRequestDto();
         request.setGroup("test_group_not_exists");
         request.setMessage("Hello world");
-        var test = service.createSupportRequest(auth, 1, request);
+        var test = service.createSupportRequest(auth, SOURCE_TYPE_TELEGRAM, request);
         StepVerifier
                 .create(test)
                 .expectErrorMatches(e -> e instanceof BusinessError &&

@@ -10,6 +10,9 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.EmployeeService;
 import ru.abondin.hreasy.platform.service.admin.manager.AdminManagerService;
+import ru.abondin.hreasy.platform.service.support.SupportRequestService;
+import ru.abondin.hreasy.platform.service.support.dto.NewSupportRequestDto;
+import ru.abondin.hreasy.platform.service.support.dto.SupportRequestGroupDto;
 import ru.abondin.hreasy.platform.service.vacation.VacationService;
 import ru.abondin.hreasy.platform.tg.dto.*;
 
@@ -31,6 +34,7 @@ public class TelegramBotController {
     private final TelegramConfirmService confirmService;
     private final TelegramFindEmployeesService findEmployeesService;
     private final TgMapper mapper;
+    private final SupportRequestService supportRequestService;
 
     @Operation(summary = "Send employee's telegram account confirmation email")
     @PostMapping(value = "confirm/start")
@@ -82,6 +86,18 @@ public class TelegramBotController {
                 }));
     }
 
+    @Operation(description = "Get all not deleted support request groups")
+    @GetMapping("support/request/groups")
+    public Flux<SupportRequestGroupDto> supportRequestGroups() {
+        return AuthHandler.currentAuth().flatMapMany(supportRequestService::groups);
+    }
+
+    @Operation(description = "Get all not deleted support request groups")
+    @PostMapping("support/request")
+    public Mono<Integer> postNewSupportRequest(@RequestBody NewSupportRequestDto request) {
+        return AuthHandler.currentAuth().flatMap(auth ->
+                supportRequestService.createSupportRequest(auth, NewSupportRequestDto.SOURCE_TYPE_TELEGRAM, request));
+    }
 
     private Mono<FindEmployeeResponse.EmployeeDto> addUpcomingVacations(FindEmployeeResponse.EmployeeDto employee, AuthContext auth) {
         return vacationService.currentOrFutureVacations(employee.getId(), auth)

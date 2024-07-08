@@ -16,13 +16,16 @@ public class SupportRequestEntry {
     private Integer id;
 
     @Column("employee_id")
-    private Long employeeId;
+    private Integer employeeId;
 
     @Column("support_group")
     private String supportGroup;
 
     @Column("source_type")
     private Integer sourceType;
+
+    @Column("category")
+    private String category;
 
     @Column("message")
     private String message;

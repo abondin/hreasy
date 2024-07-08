@@ -29,7 +29,7 @@ public abstract class HrEasyActionHandler {
 
     protected final I18Helper i18n;
     protected final WebClient webClient;
-    protected final JwtUtil jwtUtil;
+    protected final HttpRequestHelper httpHelper;
     protected final ResponseTemplateProcessor templateStorage;
     protected final HrEasyBotProps props;
 
@@ -64,57 +64,7 @@ public abstract class HrEasyActionHandler {
 
     }
 
-    protected void defaultErrorHandling(BaseAbilityBot bot, HrEasyMessageContext ctx, Throwable ex) {
-        if (ex instanceof WebClientResponseException webError) {
-            if (webError.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
-                log.debug("User {} unauthorized", ctx.accountName());
-                bot.silent().sendMd(i18n.localize("hreasy.platform.error.unauthorized",
-                        ctx.accountName(), props.getPlatform().getWebInterfaceUrl()), ctx.chatId());
-            } else if (webError.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
-                log.debug("User {} forbidden or account not confirmed", ctx.accountName());
-                bot.silent().send(i18n.localize("hreasy.platform.error.forbidden", ctx.accountName()), ctx.chatId());
-            } else if (webError.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
-                try {
-                    var error = webError.getResponseBodyAs(BusinessErrorDto.class);
-                    log.debug("Business error: {}", error);
-                    bot.silent().send(i18n.localize("hreasy.platform.error.business_error", error.getMessage()), ctx.chatId());
-                } catch (Exception e) {
-                    log.error("Unprocessable business error", e);
-                    bot.silent().send(i18n.localize("hreasy.platform.error.unprocessable_business_error"), ctx.chatId());
-                }
-            } else {
-                log.error("Unhandled client error", ex);
-                bot.silent().send(i18n.localize("hreasy.platform.error.server_error"), ctx.chatId());
-            }
-        } else if (ex instanceof TimeoutException) {
-            log.error("Connection to HR Easy timeout");
-            bot.silent().send(i18n.localize("hreasy.platform.error.connection_timeout"), ctx.chatId());
-        } else {
-            log.error("Unhandled error", ex);
-            bot.silent().send(i18n.localize("hreasy.platform.error.unhandled"), ctx.chatId());
-        }
-    }
 
-
-    /**
-     * Execute HTTP request to HR Easy.
-     * <ul>
-     * <li>Add JWT token to request</li>
-     * <li>Add default error handling</li>
-     * <li>Block to synchronous code</li>
-     * </ul>
-     *
-     * @param mono
-     * @param bot
-     * @param ctx
-     * @return
-     */
-    protected <T> T execHttpSync(Mono<T> mono, BaseAbilityBot bot, HrEasyMessageContext ctx) {
-        return mono.timeout(props.getPlatform().getHttpRequestTimeout())
-                .contextWrite(jwtUtil.jwtContext(ctx.accountName()))
-                .doOnError(err -> defaultErrorHandling(bot, ctx, err))
-                .onErrorComplete().block(props.getDefaultBotActionTimeout());
-    }
 
     protected String replyPrefix(String command) {
         return REPLY_PREFIX + command + ": ";

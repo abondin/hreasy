@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.BusinessErrorFactory;
@@ -24,6 +25,7 @@ import ru.abondin.hreasy.platform.service.message.EmailMessageSender;
 import ru.abondin.hreasy.platform.service.message.dto.HrEasyEmailMessage;
 import ru.abondin.hreasy.platform.service.support.dto.NewSupportRequestDto;
 import ru.abondin.hreasy.platform.service.support.dto.SupportGroupConfiguration;
+import ru.abondin.hreasy.platform.service.support.dto.SupportRequestGroupDto;
 import ru.abondin.hreasy.platform.service.support.dto.SupportRequestMapper;
 import ru.abondin.hreasy.platform.tg.TelegramLinkNormalizer;
 
@@ -58,6 +60,12 @@ public class SupportRequestService {
                 .flatMap(v -> getConfiguration(request))
                 .flatMap(conf -> saveSupportRequest(employeeId, sourceType, now, request)
                         .flatMap(requestId -> fetchEmployeeAndSendEmail(requestId, conf, request, employeeId)));
+    }
+
+    @Transactional(readOnly = true)
+    public Flux<SupportRequestGroupDto> groups(AuthContext authContext) {
+        log.trace("Getting support request groups by {}", authContext.getUsername());
+        return groupRepository.findNotDeleted().map(mapper::fromEntry);
     }
 
     private Mono<Integer> saveSupportRequest(Integer employeeId, int sourceType, OffsetDateTime now, NewSupportRequestDto request) {

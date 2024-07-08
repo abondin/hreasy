@@ -9,11 +9,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import ru.abondin.hreasy.telegram.abilities.dto.FindEmployeeRequest;
-import ru.abondin.hreasy.telegram.abilities.dto.FindEmployeeResponse;
+import ru.abondin.hreasy.telegram.abilities.dto.TgFindEmployeeRequest;
+import ru.abondin.hreasy.telegram.abilities.dto.TgFindEmployeeResponse;
 import ru.abondin.hreasy.telegram.common.HrEasyActionHandler;
+import ru.abondin.hreasy.telegram.common.HttpRequestHelper;
 import ru.abondin.hreasy.telegram.common.I18Helper;
-import ru.abondin.hreasy.telegram.common.JwtUtil;
 import ru.abondin.hreasy.telegram.common.ResponseTemplateProcessor;
 import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 
@@ -26,9 +26,9 @@ import java.util.List;
 @Slf4j
 public class FindEmployeeActionHandler extends HrEasyActionHandler {
 
-    public FindEmployeeActionHandler(I18Helper i18n, WebClient webClient, JwtUtil jwtUtil, ResponseTemplateProcessor templateStorage,
+    public FindEmployeeActionHandler(I18Helper i18n, WebClient webClient, HttpRequestHelper httpHelper, ResponseTemplateProcessor templateStorage,
                                      HrEasyBotProps props) {
-        super(i18n, webClient, jwtUtil, templateStorage, props);
+        super(i18n, webClient, httpHelper, templateStorage, props);
     }
 
     public static final String COMMAND_NAME = "find";
@@ -39,9 +39,9 @@ public class FindEmployeeActionHandler extends HrEasyActionHandler {
                 .post()
                 .uri("/api/v1/employee/find")
                 .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(new FindEmployeeRequest(queryMessage, props.getDefaultFetchSize()))
+                .bodyValue(new TgFindEmployeeRequest(queryMessage, props.getDefaultFetchSize()))
                 .retrieve()
-                .bodyToMono(FindEmployeeResponse.class)
+                .bodyToMono(TgFindEmployeeResponse.class)
                 .map(res -> {
                     if (res.getEmployees().isEmpty()) {
                         var message = templateStorage.process("find_employees_not_found", c -> {
@@ -55,11 +55,11 @@ public class FindEmployeeActionHandler extends HrEasyActionHandler {
                     }
                     return "OK";
                 });
-        execHttpSync(request, bot, ctx);
+        httpHelper.execHttpSync(request, bot, ctx);
     }
 
 
-    private void employeeSelection(FindEmployeeResponse res, BaseAbilityBot bot, HrEasyMessageContext ctx) {
+    private void employeeSelection(TgFindEmployeeResponse res, BaseAbilityBot bot, HrEasyMessageContext ctx) {
         var inlineBuilder = InlineKeyboardMarkup
                 .builder();
         var text = i18n.localize("bot.find.response.select");
@@ -117,12 +117,12 @@ public class FindEmployeeActionHandler extends HrEasyActionHandler {
                 .uri("/api/v1/employee/find/" + id)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(FindEmployeeResponse.EmployeeDto.class)
+                .bodyToMono(TgFindEmployeeResponse.EmployeeDto.class)
                 .map(e -> {
                     var message = templateStorage.process("find_employees_details", c -> c.setVariable("e", e));
                     b.silent().send(message, ctx.chatId());
                     return "OK";
                 });
-        execHttpSync(request, b, ctx);
+        httpHelper.execHttpSync(request, b, ctx);
     }
 }

@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.telegram.abilitybots.api.bot.BaseAbilityBot;
 import ru.abondin.hreasy.telegram.common.HrEasyActionHandler;
+import ru.abondin.hreasy.telegram.common.HttpRequestHelper;
 import ru.abondin.hreasy.telegram.common.I18Helper;
-import ru.abondin.hreasy.telegram.common.JwtUtil;
 import ru.abondin.hreasy.telegram.common.ResponseTemplateProcessor;
 import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 
@@ -13,8 +13,8 @@ import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 public class ConfirmAccountActionHandler extends HrEasyActionHandler {
 
 
-    public ConfirmAccountActionHandler(I18Helper i18n, WebClient webClient, JwtUtil jwtUtil, ResponseTemplateProcessor templateStorage, HrEasyBotProps props) {
-        super(i18n, webClient, jwtUtil, templateStorage, props);
+    public ConfirmAccountActionHandler(I18Helper i18n, WebClient webClient, HttpRequestHelper httpHelper, ResponseTemplateProcessor templateStorage, HrEasyBotProps props) {
+        super(i18n, webClient, httpHelper, templateStorage, props);
     }
 
     public void handle(BaseAbilityBot bot, HrEasyMessageContext ctx) {
@@ -30,7 +30,8 @@ public class ConfirmAccountActionHandler extends HrEasyActionHandler {
                             , ctx.chatId());
                     return "OK";
                 });
-        execHttpSync(request, bot, ctx);
+        bot.silent().send(i18n.localize("bot.support.sending"), ctx.chatId());
+        httpHelper.execHttpSync(request, bot, ctx);
     }
 
     @Override

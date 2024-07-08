@@ -9,10 +9,7 @@ import org.telegram.abilitybots.api.objects.Locality;
 import org.telegram.abilitybots.api.objects.Privacy;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.abondin.hreasy.telegram.HrEasyBot;
-import ru.abondin.hreasy.telegram.common.HrEasyActionHandler;
-import ru.abondin.hreasy.telegram.common.I18Helper;
-import ru.abondin.hreasy.telegram.common.JwtUtil;
-import ru.abondin.hreasy.telegram.common.ResponseTemplateProcessor;
+import ru.abondin.hreasy.telegram.common.*;
 import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 
 @Component
@@ -26,16 +23,18 @@ public class StartMenuAbilityActionHandler extends HrEasyActionHandler {
     private final StartMenuInlineKeyboardBuilder keyboardBuilder;
     private final MyProfileActionHandler myProfileActionHandler;
     private final FindEmployeeActionHandler findEmployeeActionHandler;
+    private final SupportActionHandler supportRequestActionHandler;
 
-    public StartMenuAbilityActionHandler(I18Helper i18n, WebClient webClient, JwtUtil jwtUtil,
+    public StartMenuAbilityActionHandler(I18Helper i18n, WebClient webClient,  HttpRequestHelper httpHelper,
                                          ResponseTemplateProcessor templateStorage,
                                          HrEasyBotProps props,
                                          StartMenuInlineKeyboardBuilder keyboardBuilder, MyProfileActionHandler myProfileActionHandler,
-                                         FindEmployeeActionHandler findEmployeeActionHandler) {
-        super(i18n, webClient, jwtUtil, templateStorage, props);
+                                         FindEmployeeActionHandler findEmployeeActionHandler, SupportActionHandler supportRequestActionHandler) {
+        super(i18n, webClient, httpHelper, templateStorage, props);
         this.keyboardBuilder = keyboardBuilder;
         this.myProfileActionHandler = myProfileActionHandler;
         this.findEmployeeActionHandler = findEmployeeActionHandler;
+        this.supportRequestActionHandler = supportRequestActionHandler;
     }
 
     @Override
@@ -67,6 +66,8 @@ public class StartMenuAbilityActionHandler extends HrEasyActionHandler {
                             myProfileActionHandler.handle(b, hrEasyMessageContext(callbackQuery));
                         } else if (menuKey(findEmployeeActionHandler.commandName()).equals(callbackQuery.getData())) {
                             findEmployeeActionHandler.replySendForceReply(b, hrEasyMessageContext(callbackQuery));
+                        } else if (menuKey(supportRequestActionHandler.commandName()).equals(callbackQuery.getData())) {
+                            supportRequestActionHandler.startSupportRequestSession(b, hrEasyMessageContext(callbackQuery));
                         }
                     }
                 }, Flag.CALLBACK_QUERY)
