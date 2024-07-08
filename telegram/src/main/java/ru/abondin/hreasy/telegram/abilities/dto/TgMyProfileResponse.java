@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class MyProfileResponse {
+public class TgMyProfileResponse {
     private String displayName;
     private String projectName;
     private List<String> projectManagers = new ArrayList<>();
-    private List<VacationDto> upcomingVacations = new ArrayList<>();
+    private List<TgVacationDto> upcomingVacations = new ArrayList<>();
 
 }

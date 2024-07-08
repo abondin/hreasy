@@ -8,10 +8,7 @@ import org.telegram.abilitybots.api.objects.Flag;
 import org.telegram.abilitybots.api.objects.Locality;
 import org.telegram.abilitybots.api.objects.Privacy;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import ru.abondin.hreasy.telegram.abilities.ConfirmAccountActionHandler;
-import ru.abondin.hreasy.telegram.abilities.FindEmployeeActionHandler;
-import ru.abondin.hreasy.telegram.abilities.MyProfileActionHandler;
-import ru.abondin.hreasy.telegram.abilities.StartMenuAbilityActionHandler;
+import ru.abondin.hreasy.telegram.abilities.*;
 import ru.abondin.hreasy.telegram.common.HrEasyActionHandler;
 import ru.abondin.hreasy.telegram.conf.HrEasyBotProps;
 
@@ -28,16 +25,18 @@ public class HrEasyBot extends AbilityBot {
     private final ConfirmAccountActionHandler confirmAccountActionHandler;
     private final MyProfileActionHandler myProfileActionHandler;
     private final FindEmployeeActionHandler findEmployeeActionHandler;
+    private final SupportActionHandler supportActionHandler;
 
     protected HrEasyBot(HrEasyBotProps props
             , StartMenuAbilityActionHandler startMenuAction
-            , ConfirmAccountActionHandler confirmAccountAbilityFactory, MyProfileActionHandler myProfileActionHandler, FindEmployeeActionHandler findEmployeeActionHandler) {
+            , ConfirmAccountActionHandler confirmAccountAbilityFactory, MyProfileActionHandler myProfileActionHandler, FindEmployeeActionHandler findEmployeeActionHandler, SupportActionHandler supportActionHandler) {
         super(props.getBotToken(), props.getBotUsername());
         this.creatorId = props.getBotCreator();
         this.startMenuAction = startMenuAction;
         this.confirmAccountActionHandler = confirmAccountAbilityFactory;
         this.myProfileActionHandler = myProfileActionHandler;
         this.findEmployeeActionHandler = findEmployeeActionHandler;
+        this.supportActionHandler = supportActionHandler;
     }
 
     @Override
@@ -101,6 +100,24 @@ public class HrEasyBot extends AbilityBot {
                 .privacy(Privacy.PUBLIC)
                 .enableStats()
                 .action(ctx -> myProfileActionHandler.handle(this, HrEasyActionHandler.hrEasyMessageContext(ctx)))
+                .build();
+    }
+
+    public Ability support() {
+        return Ability.builder()
+                .name(supportActionHandler.commandName())
+                .info("Request for the support")
+                .input(0)
+                .locality(Locality.USER)
+                .privacy(Privacy.PUBLIC)
+                .enableStats()
+                .action(ctx ->
+                        supportActionHandler.startSupportRequestSession(this, HrEasyActionHandler.hrEasyMessageContext(ctx))
+                )
+                .reply((b, upd) -> supportActionHandler
+                                .handleReply(b, HrEasyActionHandler.hrEasyMessageContext(upd), upd.getMessage().getText())
+                        , Flag.MESSAGE, Flag.TEXT, Flag.REPLY, isReplyToBot(), supportActionHandler.isReplyToCommand())
+                .reply((b, upd) -> supportActionHandler.handleCallback(b, upd), Flag.CALLBACK_QUERY)
                 .build();
     }
 

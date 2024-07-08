@@ -6,14 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class FindEmployeeResponse {
+public class TgFindEmployeeResponse {
     private List<EmployeeDto> employees = new ArrayList<>();
     private boolean hasMore = false;
 
 
     public record EmployeeDto(int id, String displayName, String email, String telegram, boolean telegramConfirmed, String officeLocation,
                               String projectName, String projectRole,
-                              List<VacationDto> upcomingVacations, int score) {
+                              List<TgVacationDto> upcomingVacations, int score) {
     }
 
 }

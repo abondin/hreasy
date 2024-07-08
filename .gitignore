@@ -1,6 +1,8 @@
 # Telegram file test database
 /hreasy_stm
 /hreasy_stm.*
+/hreasy_test
+/hreasy_test*
 
 ### STS ###
 .apt_generated

@@ -5,7 +5,7 @@
 1. **Profile Configuration:**
     - Employee or admin sets up the Telegram account in their profile within the HR Easy web interface.
 2. **Initiate Chat:**
-    - The employee starts a chat with the Telegram bot and sends a "/confirm_me" request.
+    - The employee starts a chat with the Telegram bot and sends a "/confirm_account" request.
 3. **Email Confirmation:**
     - HR Easy sends a confirmation URL to the employee's working email, which is set in HR Easy.
 4. **Open Confirmation Link:**
@@ -24,8 +24,26 @@
 - **my_profile**
    - Provides basic information about yourself.
 
-- **confirm_me**
+- **confirm_account**
    - Initiates the Telegram account confirmation process.
+
+- **support**
+    - Post new support request
+  
+**NOTE:** To post new request you have to manually create support groups in database.
+SQL example:
+```sql
+INSERT INTO "support".support_request_group
+("key", display_name, description, "configuration", created_at, created_by, deleted_at, deleted_by)
+VALUES (
+  'IT',
+  'IT Department',
+  'Any questions with hardware and software',
+  '{"emails": ["Alexander.Bondin@hreasy.ru"],
+   "categories": ["Hardware", "Software", "Accounts"]}'::jsonb,
+    '2024-07-08 12:09:05.415',
+     5, NULL, NULL);
+```
 
 ## Setup from the scratch
 

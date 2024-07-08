@@ -22,6 +22,12 @@ public class StartMenuInlineKeyboardBuilder {
                         .callbackData(StartMenuAbilityActionHandler.menuKey(FindEmployeeActionHandler.COMMAND_NAME))
                         .build()
                 ))
+                .keyboardRow(List.of(InlineKeyboardButton
+                        .builder()
+                        .text(i18n.localize("bot.start.menu.SUPPORT"))
+                        .callbackData(StartMenuAbilityActionHandler.menuKey(SupportActionHandler.COMMAND_NAME))
+                        .build()
+                ))
                 .keyboardRow(
                         List.of(
                                 InlineKeyboardButton
