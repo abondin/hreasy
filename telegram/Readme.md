@@ -29,6 +29,21 @@
 
 - **support**
     - Post new support request
+  
+**NOTE:** To post new request you have to manually create support groups in database.
+SQL example:
+```sql
+INSERT INTO "support".support_request_group
+("key", display_name, description, "configuration", created_at, created_by, deleted_at, deleted_by)
+VALUES (
+  'IT',
+  'IT Department',
+  'Any questions with hardware and software',
+  '{"emails": ["Alexander.Bondin@hreasy.ru"],
+   "categories": ["Hardware", "Software", "Accounts"]}'::jsonb,
+    '2024-07-08 12:09:05.415',
+     5, NULL, NULL);
+```
 
 ## Setup from the scratch
 
