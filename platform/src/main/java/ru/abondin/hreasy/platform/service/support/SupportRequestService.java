@@ -53,7 +53,7 @@ public class SupportRequestService {
 
     @Transactional()
     public Mono<Integer> createSupportRequest(AuthContext auth, int sourceType, NewSupportRequestDto request) {
-        log.info("New support request from {} to {} group", auth.getUsername(), request.getGroup());
+        log.info("New support request from {} to {}. Category: {}", auth.getUsername(), request.getGroup(), request.getCategory());
         var now = dateTimeService.now();
         var employeeId = auth.getEmployeeInfo().getEmployeeId();
         return rateLimiter.checkSupportRequestRateLimit(employeeId, now)

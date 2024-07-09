@@ -36,7 +36,7 @@ public class SupportDataStorage {
         List<TgSupportRequestGroupDto> result;
         if (bot.db().contains(DB_GROUPS_CACHE_KEY)) {
             Tuple2<OffsetDateTime, List<TgSupportRequestGroupDto>> cache = (Tuple2<OffsetDateTime, List<TgSupportRequestGroupDto>>) bot.db().getVar(DB_GROUPS_CACHE_KEY).get();
-            if (cache.getT1().isBefore(OffsetDateTime.now())) {
+            if (cache.getT1().isAfter(OffsetDateTime.now())) {
                 log.debug("Returning all support request groups from the cache");
                 return cache.getT2();
             }

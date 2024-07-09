@@ -107,7 +107,7 @@ public class SupportActionHandler extends HrEasyActionHandler {
         log.info("Selected group {} for session {}:{}", groupKey, ctx.accountName(), ctx.chatId());
         var message = dataStorage.doInSession(bot, ctx, session -> {
             var group = dataStorage.group(bot, ctx, groupKey);
-            session.setGroup(group);
+            session.setGroup(group, i18n.localize("bot.support.group.category.other"));
             return SendMessage
                     .builder()
                     .chatId(ctx.chatId())
@@ -119,14 +119,14 @@ public class SupportActionHandler extends HrEasyActionHandler {
     }
 
 
-    private void setCategoryAndAskRequestText(BaseAbilityBot bot, HrEasyMessageContext ctx, String category) {
-        log.info("Selected category {} for session {}:{}", category, ctx.accountName(), ctx.chatId());
+    private void setCategoryAndAskRequestText(BaseAbilityBot bot, HrEasyMessageContext ctx, String categoryUuid) {
+        log.info("Selected categoryUuid {} for session {}:{}", categoryUuid, ctx.accountName(), ctx.chatId());
         dataStorage.doInSession(bot, ctx, session -> {
                     if (session.getGroup() == null) {
                         bot.silent().send(i18n.localize("bot.support.no_session"), ctx.chatId());
                         throw new IllegalArgumentException("Group for chat " + ctx.chatId() + " not set");
                     }
-                    session.setCategory(category);
+                    session.setCategoryUuid(categoryUuid);
                     return null;
                 }
         );
@@ -140,7 +140,7 @@ public class SupportActionHandler extends HrEasyActionHandler {
             bot.silent().send(i18n.localize("bot.support.no_session"), ctx.chatId());
             throw new IllegalArgumentException("Group for chat " + ctx.chatId() + " not set");
         }
-        if (session.getCategory() == null) {
+        if (session.getCategoryUuid() == null) {
             bot.silent().send(i18n.localize("bot.support.no_session"), ctx.chatId());
             throw new IllegalArgumentException("Group for chat " + ctx.chatId() + " not set");
         }

@@ -31,19 +31,13 @@ public class SupportGroupsMenuInlineKeyboardBuilder {
     }
 
     public InlineKeyboardMarkup categories(SupportRequestSession session) {
-        var rows = session.getGroup().getConfiguration().getCategories().stream().map(category -> List.of(
+        var rows = session.getCategoriesCache().stream().map(category -> List.of(
                         InlineKeyboardButton.builder()
-                                .text(category)
-                                .callbackData(SupportActionHandler.categorySelected(category))
+                                .text(category.getT2())
+                                .callbackData(SupportActionHandler.categorySelected(category.getT1()))
                                 .build()
                 )
         ).collect(Collectors.toList());
-        rows.add(List.of(
-                InlineKeyboardButton.builder()
-                        .text(i18n.localize("bot.support.group.category.other"))
-                        .callbackData(SupportActionHandler.categorySelected("other"))
-                        .build()
-        ));
         return InlineKeyboardMarkup
                 .builder()
                 .keyboard(rows)
