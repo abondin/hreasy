@@ -92,6 +92,12 @@ public class TelegramBotController {
         return AuthHandler.currentAuth().flatMapMany(supportRequestService::groups);
     }
 
+    /**
+     * Support Group CRUD API is not implemented.
+     * Please populate <b>support.support_request_group</b> manually in SQL Editor.
+     * @param request
+     * @return
+     */
     @Operation(description = "Get all not deleted support request groups")
     @PostMapping("support/request")
     public Mono<Integer> postNewSupportRequest(@RequestBody NewSupportRequestDto request) {

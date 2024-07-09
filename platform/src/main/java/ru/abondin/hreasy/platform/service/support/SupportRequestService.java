@@ -106,6 +106,7 @@ public class SupportRequestService {
         mail.setClientUuid(UUID.randomUUID().toString());
         var bodyContext = new Context();
         bodyContext.setVariable("requestMessage", request.getMessage());
+        bodyContext.setVariable("requestCategory", request.getCategory());
         bodyContext.setVariable("requestId", requestId);
         bodyContext.setVariable("employeeDisplayName", employee.getDisplayName());
         bodyContext.setVariable("employeeEmail", employee.getEmail());
