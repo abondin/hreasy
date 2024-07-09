@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS udr.registry (
 	"name" varchar(255) not NULL,
 	owner_id integer NOT NULL REFERENCES empl.employee (id),
 	description text null,
-	employeeFields varchar(255)[] not null default ARRAY['displayName', 'currentProject.name'],
-	customFields jsonb not null default '[]'::jsonb,
+	employee_fields varchar(255)[] not null default ARRAY['displayName', 'currentProject.name'],
+	custom_fields jsonb not null default '[]'::jsonb,
 	created_at timestamp with time zone not null,
 	created_by integer NULL REFERENCES empl.employee (id),
 	deleted_at timestamp with time zone null,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS udr.registry_employee (
 	id integer PRIMARY KEY NOT NULL DEFAULT nextval('udr.REGISTRY_ID_SEQ'),
 	employee_id integer NOT NULL REFERENCES empl.employee (id),
     active boolean not null default true,
-    customFieldsValues jsonb not null default '[]'::jsonb
+    custom_fields_values jsonb not null default '[]'::jsonb
 );
 
 CREATE SEQUENCE IF NOT EXISTS udr.REGISTRY_ACCESS_ID_SEQ;
@@ -36,8 +36,26 @@ COMMENT ON COLUMN udr.registry.id IS 'Unique identifier of the registry';
 COMMENT ON COLUMN udr.registry.name IS 'Name of the registry';
 COMMENT ON COLUMN udr.registry.owner_id IS 'ID of the registry owner';
 COMMENT ON COLUMN udr.registry.description IS 'Description of the registry';
-COMMENT ON COLUMN udr.registry.employeeFields IS 'List of standard employee fields in the registry';
-COMMENT ON COLUMN udr.registry.customFields IS 'List of custom fields in the registry';
+COMMENT ON COLUMN udr.registry.employee_fields IS 'List of standard employee fields in the registry';
+COMMENT ON COLUMN udr.registry.custom_fields IS 'List of custom fields in the registry. Example:
+[
+  {
+    "key": "category",
+    "type": "dict",
+    "dicts": [
+      "Java",
+      "React",
+      "DevOps"
+    ],
+    "displayName": "Category"
+  },
+  {
+    "key": "comment",
+    "type": "text",
+    "displayName": "Comment"
+  }
+]
+';
 COMMENT ON COLUMN udr.registry.created_at IS 'Timestamp when the registry was created';
 COMMENT ON COLUMN udr.registry.created_by IS 'ID of the employee who created the registry';
 COMMENT ON COLUMN udr.registry.deleted_at IS 'Timestamp when the registry was deleted';
@@ -47,7 +65,7 @@ COMMENT ON TABLE udr.registry_employee IS 'User-Defined Registry Employees: Mapp
 COMMENT ON COLUMN udr.registry_employee.id IS 'Unique identifier of the registry employee entry';
 COMMENT ON COLUMN udr.registry_employee.employee_id IS 'ID of the employee mapped to the registry';
 COMMENT ON COLUMN udr.registry_employee.active IS 'Flag indicating if the employee is active in the registry';
-COMMENT ON COLUMN udr.registry_employee.customFieldsValues IS 'Custom field values specific to the employee in the registry';
+COMMENT ON COLUMN udr.registry_employee.custom_fields_values IS 'Custom field values specific to the employee in the registry';
 
 COMMENT ON TABLE udr.registry_access IS 'User-Defined Registry Access: Access control for user registries';
 COMMENT ON COLUMN udr.registry_access.id IS 'Unique identifier of the registry access entry';
