@@ -24,7 +24,6 @@ import ru.abondin.hreasy.platform.service.RateLimiter;
 import ru.abondin.hreasy.platform.service.message.EmailMessageSender;
 import ru.abondin.hreasy.platform.service.message.dto.HrEasyEmailMessage;
 import ru.abondin.hreasy.platform.service.support.dto.NewSupportRequestDto;
-import ru.abondin.hreasy.platform.service.support.dto.SupportGroupConfiguration;
 import ru.abondin.hreasy.platform.service.support.dto.SupportRequestGroupDto;
 import ru.abondin.hreasy.platform.service.support.dto.SupportRequestMapper;
 import ru.abondin.hreasy.platform.tg.TelegramLinkNormalizer;
@@ -57,9 +56,9 @@ public class SupportRequestService {
         var now = dateTimeService.now();
         var employeeId = auth.getEmployeeInfo().getEmployeeId();
         return rateLimiter.checkSupportRequestRateLimit(employeeId, now)
-                .flatMap(v -> getConfiguration(request))
-                .flatMap(conf -> saveSupportRequest(employeeId, sourceType, now, request)
-                        .flatMap(requestId -> fetchEmployeeAndSendEmail(requestId, conf, request, employeeId)));
+                .flatMap(v -> getGroup(request))
+                .flatMap(group -> saveSupportRequest(employeeId, sourceType, now, request)
+                        .flatMap(requestId -> fetchEmployeeAndSendEmail(requestId, group, request, employeeId)));
     }
 
     @Transactional(readOnly = true)
@@ -75,39 +74,39 @@ public class SupportRequestService {
                 .map(HistoryEntry::getEntityId);
     }
 
-    private Mono<SupportGroupConfiguration> getConfiguration(NewSupportRequestDto request) {
+    private Mono<SupportRequestGroupDto> getGroup(NewSupportRequestDto request) {
         return groupRepository.findById(request.getGroup())
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound("RequestGroup", request.getGroup()))
-                .flatMap(group -> {
-                    var configuration = mapper.groupConfiguration(group.getConfiguration());
-                    if (configuration == null || configuration.getEmails().isEmpty()) {
-                        return Mono.error(new BusinessError("errors.support.request.group_not_configured", request.getGroup()));
-                    }
-                    return Mono.just(configuration);
-                });
+                .map(mapper::fromEntry);
     }
 
-    private Mono<Integer> fetchEmployeeAndSendEmail(Integer requestId, SupportGroupConfiguration configuration, NewSupportRequestDto request, Integer employeeId) {
+    private Mono<Integer> fetchEmployeeAndSendEmail(Integer requestId,
+                                                    SupportRequestGroupDto group,
+                                                    NewSupportRequestDto request,
+                                                    Integer employeeId) {
         return employeeRepo.findById(employeeId)
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound("Employee", employeeId))
-                .flatMap(employee -> emailMessageSender.sendMessage(buildMail(requestId, configuration, employee, request))
+                .flatMap(employee -> emailMessageSender.sendMessage(buildMail(requestId, group, employee, request))
                         .map(mail -> requestId));
     }
 
 
     private HrEasyEmailMessage buildMail(int requestId,
-                                         SupportGroupConfiguration configuration,
+                                         SupportRequestGroupDto group,
                                          EmployeeEntry employee,
                                          NewSupportRequestDto request) {
+        if (group.getConfiguration() == null || group.getConfiguration().getEmails().isEmpty()) {
+            throw new BusinessError("errors.support.request.group_cont_configured", group.getKey());
+        }
         var mail = new HrEasyEmailMessage();
-        mail.setTo(configuration.getEmails());
+        mail.setTo(group.getConfiguration().getEmails());
         mail.setFrom(props.getDefaultEmailFrom());
         mail.setTitle(i18n.localize("support.request.mail.title", employee.getDisplayName()));
         mail.setClientUuid(UUID.randomUUID().toString());
         var bodyContext = new Context();
         bodyContext.setVariable("requestMessage", request.getMessage());
         bodyContext.setVariable("requestCategory", request.getCategory());
-        bodyContext.setVariable("requestGroup", request.getGroup());
+        bodyContext.setVariable("requestGroup", group.getDisplayName());
         bodyContext.setVariable("requestId", requestId);
         bodyContext.setVariable("employeeDisplayName", employee.getDisplayName());
         bodyContext.setVariable("employeeEmail", employee.getEmail());

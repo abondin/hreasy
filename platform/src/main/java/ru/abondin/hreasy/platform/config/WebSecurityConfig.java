@@ -23,9 +23,9 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
-import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
 import ru.abondin.hreasy.platform.config.telegram.TelegramJwtAuthenticationConverter;
+import ru.abondin.hreasy.platform.tg.TgAuthLogService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -146,7 +146,8 @@ public class WebSecurityConfig {
             ServerHttpSecurity http,
             GlobalWebErrorsHandler errorHandler,
             ServerSecurityContextRepository securityContextRepository,
-            TelegramJwtAuthenticationConverter telegramJwtAuthenticationConverter
+            TelegramJwtAuthenticationConverter telegramJwtAuthenticationConverter,
+            TgAuthLogService tgAuthLogService
     ) {
         return http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/telegram/**"))
                 .authorizeExchange(exchanges ->
@@ -164,28 +165,25 @@ public class WebSecurityConfig {
                         .authenticationEntryPoint(errorHandler))
                 .addFilterAt(telegramAuthenticationWebFilter(
                         securityContextRepository,
-                        telegramJwtAuthenticationConverter
+                        telegramJwtAuthenticationConverter,
+                        tgAuthLogService
                 ), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
 
     private AuthenticationWebFilter telegramAuthenticationWebFilter(
             ServerSecurityContextRepository securityContextRepository,
-            TelegramJwtAuthenticationConverter jwtServerAuthenticationConverter) {
-        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(telegramAuthenticationManager());
+            TelegramJwtAuthenticationConverter jwtServerAuthenticationConverter,
+            TgAuthLogService tgAuthLogService) {
+        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(telegramAuthenticationManager(tgAuthLogService));
         authenticationWebFilter.setServerAuthenticationConverter(jwtServerAuthenticationConverter);
         authenticationWebFilter.setSecurityContextRepository(securityContextRepository);
         return authenticationWebFilter;
     }
 
-    private ReactiveAuthenticationManager telegramAuthenticationManager() {
+    private ReactiveAuthenticationManager telegramAuthenticationManager(TgAuthLogService tgAuthLogService) {
         return authentication ->
-                // Do nothing here.
-                // The TelegramJwtAuthenticationConverter handles all validations.
-                Mono.defer(() -> {
-                    log.info("Telegram authentication: {}", authentication.getPrincipal());
-                    return Mono.just(authentication);
-                });
+                tgAuthLogService.log(authentication).thenReturn(authentication);
     }
 
     // endregion

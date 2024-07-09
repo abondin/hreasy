@@ -23,16 +23,16 @@ public class HttpRequestHelper {
     protected void defaultErrorHandling(BaseAbilityBot bot, HrEasyActionHandler.HrEasyMessageContext ctx, Throwable ex) {
         if (ex instanceof WebClientResponseException webError) {
             if (webError.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
-                log.debug("User {} unauthorized", ctx.accountName());
+                log.info("User {} unauthorized", ctx.accountName());
                 bot.silent().sendMd(i18n.localize("hreasy.platform.error.unauthorized",
                         ctx.accountName(), props.getPlatform().getWebInterfaceUrl()), ctx.chatId());
             } else if (webError.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
-                log.debug("User {} forbidden or account not confirmed", ctx.accountName());
+                log.info("User {} forbidden or account not confirmed", ctx.accountName());
                 bot.silent().send(i18n.localize("hreasy.platform.error.forbidden", ctx.accountName()), ctx.chatId());
             } else if (webError.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
                 try {
                     var error = webError.getResponseBodyAs(BusinessErrorDto.class);
-                    log.debug("Business error: {}", error);
+                    log.info("Business error: {}", error);
                     bot.silent().send(i18n.localize("hreasy.platform.error.business_error", error.getMessage()), ctx.chatId());
                 } catch (Exception e) {
                     log.error("Unprocessable business error", e);
@@ -49,6 +49,7 @@ public class HttpRequestHelper {
             log.error("Unhandled error", ex);
             bot.silent().send(i18n.localize("hreasy.platform.error.unhandled"), ctx.chatId());
         }
+        throw new RuntimeException("Unable to execute the request to the server", ex);
     }
 
 
@@ -69,6 +70,6 @@ public class HttpRequestHelper {
         return mono.timeout(props.getPlatform().getHttpRequestTimeout())
                 .contextWrite(jwtUtil.jwtContext(ctx.accountName()))
                 .doOnError(err -> defaultErrorHandling(bot, ctx, err))
-                .onErrorComplete().block(props.getDefaultBotActionTimeout());
+                .block(props.getDefaultBotActionTimeout());
     }
 }
