@@ -107,6 +107,7 @@ public class SupportRequestService {
         var bodyContext = new Context();
         bodyContext.setVariable("requestMessage", request.getMessage());
         bodyContext.setVariable("requestCategory", request.getCategory());
+        bodyContext.setVariable("requestGroup", request.getGroup());
         bodyContext.setVariable("requestId", requestId);
         bodyContext.setVariable("employeeDisplayName", employee.getDisplayName());
         bodyContext.setVariable("employeeEmail", employee.getEmail());

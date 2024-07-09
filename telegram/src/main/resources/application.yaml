@@ -22,4 +22,4 @@ logging:
   level:
     ru.abondin: DEBUG
     org:
-      telegram: DEBUG
+      telegram: WARN

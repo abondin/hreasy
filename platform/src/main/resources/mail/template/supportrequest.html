@@ -14,12 +14,12 @@
     От сотрудника<span th:text="${employeeDisplayName}"></span> поступил запрос.
 <ul>
     <li>Идентификатор запроса: <span th:text="${requestId}">${requestId}</span></li>
+    <li>Группа: <span th:text="${requestGroup}?:'-'">-</span></li>
     <li>Категория: <span th:text="${requestCategory}?:'-'">-</span></li>
     <li>Данные для обратной связи:
         <ul>
-            <li>Почта: <a th:href="'mailto:'+${employeeEmail}" th:text="${employeeEmail}"></a></li>
-            <li th:if="${employeeTelegramLink != null}">Telegram Account: <a href="${employeeTelegramLink}">${employeeTelegram}</a>
-            </li>
+            <li>Почта: <a th:href="'mailto:'+${employeeEmail}" th:text="${employeeEmail}">mail</a></li>
+            <li th:if="${employeeTelegramLink!=null}">Telegram Account: <a th:href="${employeeTelegramLink}" th:text="${employeeTelegram}">telegram</a></li>
         </ul>
     </li>
 </ul>
