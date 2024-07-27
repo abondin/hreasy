@@ -13,7 +13,7 @@ import java.util.List;
 @Slf4j
 public abstract class UdrMapper extends MapperBaseWithJsonSupport {
     @Mapping(target = "customFields", source = ".", qualifiedByName = "customFields")
-    public abstract UdrDto toDto(UdrEntry udr);
+    public abstract JuniorDto toDto(UdrEntry udr);
 
     @Named("customFields")
     protected List<UdrCustomFieldConf> customFields(UdrEntry entry) {

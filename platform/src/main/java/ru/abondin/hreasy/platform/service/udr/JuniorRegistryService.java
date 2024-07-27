@@ -11,13 +11,13 @@ import ru.abondin.hreasy.platform.repo.udr.UdrAccessRepo;
 import ru.abondin.hreasy.platform.repo.udr.UdrEmployeeRepo;
 import ru.abondin.hreasy.platform.repo.udr.UdrRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
-import ru.abondin.hreasy.platform.service.udr.dto.UdrDto;
+import ru.abondin.hreasy.platform.service.udr.dto.JuniorDto;
 import ru.abondin.hreasy.platform.service.udr.dto.UdrMapper;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UdrService {
+public class JuniorRegistryService {
 
     private final DateTimeService dateTimeService;
     private final EmployeeRepo employeeRepo;
@@ -27,7 +27,7 @@ public class UdrService {
     private final UdrSecurityValidator securityValidator;
     private final UdrMapper mapper;
 
-    public Mono<UdrDto> getUdr(AuthContext auth, int id) {
+    public Mono<JuniorDto> getUdr(AuthContext auth, int id) {
         log.info("Get UDR {} by {}", id, auth.getUsername());
         // 1. Validate if user have access to open UDR
         return securityValidator.validateViewUdr(auth, id)
