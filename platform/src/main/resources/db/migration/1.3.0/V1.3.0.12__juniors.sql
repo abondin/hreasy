@@ -7,12 +7,13 @@ CREATE TABLE IF NOT EXISTS udr.junior_registry (
 	created_at timestamp with time zone not null,
 	created_by integer NULL REFERENCES empl.employee (id),
     graduated_at timestamp with time zone null,
-   	graduated_by integer REFERENCES empl.employee (id)
+   	graduated_by integer REFERENCES empl.employee (id),
+   	graduated_comment text not null,
 );
 
-CREATE SEQUENCE IF NOT EXISTS udr.REGISTRY_REPORT_ID_SEQ;
+CREATE SEQUENCE IF NOT EXISTS udr.JUNIOR_REPORT_ID_SEQ;
 CREATE TABLE IF NOT EXISTS udr.junior_report (
-	id integer PRIMARY KEY NOT NULL DEFAULT nextval('udr.REGISTRY_REPORT_ID_SEQ'),
+	id integer PRIMARY KEY NOT NULL DEFAULT nextval('udr.JUNIOR_REPORT_ID_SEQ'),
 	junior_id integer NOT NULL REFERENCES empl.employee (id),
     progress integer not null,
     comment text not null,
@@ -30,6 +31,7 @@ COMMENT ON COLUMN udr.junior_registry.created_at IS 'Timestamp of junior employe
 COMMENT ON COLUMN udr.junior_registry.created_by IS 'ID of the user who registered the junior employee';
 COMMENT ON COLUMN udr.junior_registry.graduated_at IS 'Timestamp of junior employee graduation (optional)';
 COMMENT ON COLUMN udr.junior_registry.graduated_by IS 'ID of the user who approved junior employee graduation (optional)';
+COMMENT ON COLUMN udr.junior_registry.graduated_comment IS 'Comment when graduated';
 COMMENT ON COLUMN udr.junior_registry.deleted_at IS 'Timestamp of junior employee deletion (optional)';
 COMMENT ON COLUMN udr.junior_registry.deleted_by IS 'ID of the user who deleted junior employee record (optional)';
 
