@@ -12,5 +12,9 @@ public class JuniorView extends JuniorEntry {
     private String graduatedByDisplayName;
     private String budgetingAccountName;
 
+    private Integer currentProjectId;
+    private String currentProjectName;
+    private String currentProjectRole;
+
     private Json reports;
 }

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS udr.junior_registry (
 	created_by integer NULL REFERENCES empl.employee (id),
     graduated_at timestamp with time zone null,
    	graduated_by integer REFERENCES empl.employee (id),
-   	graduated_comment text not null,
+   	graduated_comment text null
 );
 
 CREATE SEQUENCE IF NOT EXISTS udr.JUNIOR_REPORT_ID_SEQ;
@@ -32,8 +32,6 @@ COMMENT ON COLUMN udr.junior_registry.created_by IS 'ID of the user who register
 COMMENT ON COLUMN udr.junior_registry.graduated_at IS 'Timestamp of junior employee graduation (optional)';
 COMMENT ON COLUMN udr.junior_registry.graduated_by IS 'ID of the user who approved junior employee graduation (optional)';
 COMMENT ON COLUMN udr.junior_registry.graduated_comment IS 'Comment when graduated';
-COMMENT ON COLUMN udr.junior_registry.deleted_at IS 'Timestamp of junior employee deletion (optional)';
-COMMENT ON COLUMN udr.junior_registry.deleted_by IS 'ID of the user who deleted junior employee record (optional)';
 
 COMMENT ON TABLE udr.junior_report IS 'Junior employee reports';
 
@@ -52,8 +50,7 @@ COMMENT ON COLUMN udr.junior_report.deleted_by IS 'ID of the user who deleted th
 -- Permission
 INSERT INTO sec.perm (permission,description) VALUES
 	 ('admin_junior_reg','View and modify any record in juniors registry'),
-	 ('view_junior_reg_ba','View junior records of ba'),
-	 ('access_junior_reg','Has access to junior registry. See only juniors if mentor or was mentor'),
+	 ('access_junior_reg','Has access to junior registry. See only juniors if mentor or was mentor')
 	 on conflict do nothing;
 INSERT INTO sec."role" ("role", description) VALUES
 ('mentor', 'Can be assigned as mentor for junior employee') ON CONFLICT DO NOTHING;
@@ -64,8 +61,7 @@ INSERT INTO sec.role_perm (role,permission) VALUES
 	 ('hr','access_junior_reg'),
 	 ('hr','admin_junior_reg'),
 	 ('pm','access_junior_reg'),
-	 ('pm','view_junior_reg_ba')
-	 ('mentor','access_junior_reg'),
+	 ('mentor','access_junior_reg')
 	  on conflict do nothing;
 
 COMMENT ON COLUMN history.history.entity_type IS '
