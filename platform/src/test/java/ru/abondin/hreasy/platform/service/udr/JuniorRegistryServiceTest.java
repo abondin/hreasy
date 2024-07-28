@@ -98,11 +98,12 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
         this.auth = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
         var juniorEmployeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
         var body = new AddToJuniorRegistryBody();
+        body.setJuniorId(juniorEmployeeId);
         body.setMentorId(testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee));
         body.setBudgetingAccount(testData.ba_RND());
         body.setRole("Java Developer");
         StepVerifier
-                .create(service.addToRegistry(auth, juniorEmployeeId, body))
+                .create(service.addToRegistry(auth, body))
                 .expectNext(juniorEmployeeId)
                 .verifyComplete();
 

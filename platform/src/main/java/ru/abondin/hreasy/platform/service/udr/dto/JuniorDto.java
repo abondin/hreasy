@@ -4,7 +4,6 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
-import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.OffsetDateTime;
@@ -31,6 +30,11 @@ public class JuniorDto {
     private Graduation graduation;
     private List<JuniorReportDto> reports = new ArrayList<>();
 
+    public int getId() {
+        return junior.getId();
+    }
+
     public record Graduation(OffsetDateTime graduatedAt, SimpleDictDto graduatedBy, String comment) {
     }
+
 }

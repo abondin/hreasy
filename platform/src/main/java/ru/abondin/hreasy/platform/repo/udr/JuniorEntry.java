@@ -34,6 +34,10 @@ public class JuniorEntry implements Persistable<Integer> {
     private Integer graduatedBy;
     private String graduatedComment;
 
+    private OffsetDateTime deletedAt;
+    private Integer deletedBy;
+
+
     @Nullable
     @Override
     public Integer getId() {

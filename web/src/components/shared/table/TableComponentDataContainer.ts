@@ -47,6 +47,10 @@ export abstract class Filter<T extends WithId> {
 
 /**
  * Data container for table component. Encapsulate business logic
+ * <T> - items type
+ * <M> - update item DTO that sends to the backend
+ * <C> - create item DTO that sends to the backend
+ * <F> - filter type
  */
 export default class TableComponentDataContainer<T extends WithId, M extends UpdateBody, C extends CreateBody, F extends Filter<T>> {
     protected _loading = false;

@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.udr.dto;
 import io.r2dbc.postgresql.codec.Json;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 import ru.abondin.hreasy.platform.repo.udr.JuniorEntry;
@@ -34,6 +35,10 @@ public abstract class JuniorReportMapper extends MapperBaseWithJsonSupport {
     @Mapping(target = "graduatedBy", ignore = true)
     @Mapping(target = "graduatedComment", ignore = true)
     public abstract JuniorEntry toEntry(int juniorEmployeeId, AddToJuniorRegistryBody body, Integer createdBy, OffsetDateTime now);
+
+    @Mapping(target = "new", constant = "false")
+    public abstract void apply(@MappingTarget JuniorEntry entry, UpdateJuniorRegistryBody body);
+
 
     @Named("budgetingAccount")
     protected SimpleDictDto budgetingAccount(JuniorView view) {

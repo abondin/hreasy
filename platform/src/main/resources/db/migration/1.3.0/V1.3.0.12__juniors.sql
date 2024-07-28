@@ -5,7 +5,9 @@ CREATE TABLE IF NOT EXISTS udr.junior_registry (
 	mentor_id integer REFERENCES empl.employee (id),
 	budgeting_account integer REFERENCES ba.business_account(id),
 	created_at timestamp with time zone not null,
-	created_by integer NULL REFERENCES empl.employee (id),
+	created_by integer NOT NULL REFERENCES empl.employee (id),
+	deleted_at timestamp with time zone null,
+	deleted_by integer NULL REFERENCES empl.employee (id),
     graduated_at timestamp with time zone null,
    	graduated_by integer REFERENCES empl.employee (id),
    	graduated_comment text null
@@ -29,6 +31,8 @@ COMMENT ON COLUMN udr.junior_registry.mentor_id IS 'Mentor ID for the junior emp
 COMMENT ON COLUMN udr.junior_registry.budgeting_account IS 'Budgeting account ID';
 COMMENT ON COLUMN udr.junior_registry.created_at IS 'Timestamp of junior employee registration';
 COMMENT ON COLUMN udr.junior_registry.created_by IS 'ID of the user who registered the junior employee';
+COMMENT ON COLUMN udr.junior_registry.deleted_at IS 'Timestamp of junior employee removal from registry';
+COMMENT ON COLUMN udr.junior_registry.deleted_by IS 'ID of the user who remove the junior from registry';
 COMMENT ON COLUMN udr.junior_registry.graduated_at IS 'Timestamp of junior employee graduation (optional)';
 COMMENT ON COLUMN udr.junior_registry.graduated_by IS 'ID of the user who approved junior employee graduation (optional)';
 COMMENT ON COLUMN udr.junior_registry.graduated_comment IS 'Comment when graduated';

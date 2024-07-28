@@ -116,6 +116,12 @@ export enum Permissions {
     CreateAssessments = "create_assessment",
 
     /**
+     * View and modify any record in juniors registry
+     */
+    AdminJuniorRegistry = "admin_junior_reg",
+
+
+    /**
      * Only logged in user or user with permission techprofile_download can download tech profile
      */
     DownloadTechProfiles = "techprofile_download",
@@ -227,6 +233,8 @@ interface PermissionService {
     canReportSalaryRequest(): boolean;
 
     canApproveSalaryRequest(ba: number): boolean;
+
+    canAdminJuniorRegistry(): boolean;
 
     /**
      * Check if given user can download employee's tech profiles
@@ -380,6 +388,10 @@ class VuexPermissionService implements PermissionService {
 
     canApproveSalaryRequest(ba: number): boolean {
         return this.canAdminSalaryRequests() || this.permissionCheckWithAccessToBa(Permissions.ApproveSalaryRequest, ba);
+    }
+
+    canAdminJuniorRegistry(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminJuniorRegistry)
     }
 
     canUploadTechProfiles(employeeId: number): boolean {
