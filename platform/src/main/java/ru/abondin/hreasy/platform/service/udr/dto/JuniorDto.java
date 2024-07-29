@@ -9,6 +9,7 @@ import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Data
@@ -17,6 +18,7 @@ public class JuniorDto {
     @NotNull
     private SimpleDictDto juniorEmpl;
     private LocalDate juniorDateOfEmployment;
+    private Integer juniorInCompanyMonths;
     @Nullable
     private SimpleDictDto mentor;
     @NotNull
@@ -32,7 +34,11 @@ public class JuniorDto {
     @Nullable
     private Graduation graduation;
     private List<JuniorReportDto> reports = new ArrayList<>();
-    
+
+    public JuniorReportDto getLatestReport() {
+        return reports.stream().sorted(Comparator.comparing(JuniorReportDto::getCreatedAt).reversed()).findFirst().orElse(null);
+    }
+
     public record Graduation(OffsetDateTime graduatedAt, SimpleDictDto graduatedBy, String comment) {
     }
 

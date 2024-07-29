@@ -43,6 +43,7 @@ export interface JuniorGraduation {
 
 export interface JuniorReport {
     id: number;
+    progress: JuniorProgressType,
     name: string;
     createdAt: Date;
     createdBy: SimpleDict;
@@ -51,6 +52,7 @@ export interface JuniorReport {
 
 export interface JuniorDto extends WithId {
     juniorEmpl: SimpleDict;
+    juniorInCompanyMonths: number|null,
     mentor?: SimpleDict;
     role: string;
     currentProject?: CurrentProjectDict;
@@ -59,6 +61,7 @@ export interface JuniorDto extends WithId {
     createdBy: SimpleDict;
     graduation?: JuniorGraduation;
     reports: JuniorReport[];
+    latestReport: JuniorReport;
 }
 
 

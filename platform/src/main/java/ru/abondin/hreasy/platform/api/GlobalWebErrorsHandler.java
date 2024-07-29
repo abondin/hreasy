@@ -61,10 +61,10 @@ public class GlobalWebErrorsHandler implements ErrorWebExceptionHandler, ServerA
             errorDto = new BusinessErrorDto(be.getCode(),
                     i18Helper.localize(be.getCode(), be.getLocalizationArgs()), be.getAttrs());
             log.debug("Business error: {}", errorDto);
-        } else if (ex instanceof BadCredentialsException be) {
+        } else if (ex instanceof BadCredentialsException) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             errorDto = new BusinessErrorDto("errors.bad.credentials", i18Helper.localize("errors.bad.credentials"), new HashMap<>());
-        } else if (ex instanceof AuthenticationException be) {
+        } else if (ex instanceof AuthenticationException) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             errorDto = new BusinessErrorDto("errors.not.authenticated", i18Helper.localize("errors.not.authenticated"), new HashMap<>());
         } else if (ex instanceof AccessDeniedException be) {
