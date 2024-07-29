@@ -6,6 +6,7 @@ import lombok.Data;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 public class JuniorDto {
     @NotNull
     private SimpleDictDto junior;
+    private LocalDate juniorDateOfEmployment;
     @Nullable
     private SimpleDictDto mentor;
     @NotNull

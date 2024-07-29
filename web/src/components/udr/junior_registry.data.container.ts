@@ -1,12 +1,12 @@
-import TableComponentDataContainer, {Filter} from "@/components/shared/table/TableComponentDataContainer";
-import juniorService, {
-    AddToJuniorRegistryBody,
-    JuniorDto,
-    UpdateJuniorRegistryBody
-} from "@/components/udr/udr.service";
+import TableComponentDataContainer, {
+    CreateAction,
+    Filter,
+    UpdateAction
+} from "@/components/shared/table/TableComponentDataContainer";
+import juniorService, {AddJuniorRegistryBody, JuniorDto, UpdateJuniorRegistryBody} from "@/components/udr/udr.service";
 import {DataTableHeader} from "vuetify";
 import permissionService from "@/store/modules/permission.service";
-import adminSalaryService from "@/components/admin/salary/admin.salary.service";
+import {DataContainerWithExcelExportSupport} from "@/components/shared/table/DataContainerWithExcelExportSupport";
 
 export class JuniorTableFilter extends Filter<JuniorDto> {
     applyFilter(items: JuniorDto[]): JuniorDto[] {
@@ -15,21 +15,16 @@ export class JuniorTableFilter extends Filter<JuniorDto> {
 
 }
 
-export class JuniorRegistryDataContainer extends TableComponentDataContainer<JuniorDto, UpdateJuniorRegistryBody, AddToJuniorRegistryBody, JuniorTableFilter> {
+export class JuniorRegistryDataContainer extends TableComponentDataContainer<JuniorDto, UpdateJuniorRegistryBody, AddJuniorRegistryBody, JuniorTableFilter>
+    implements DataContainerWithExcelExportSupport {
     private _exportLoading = false;
     private _exportCompleted = false;
-    constructor(_headerLoader: () => DataTableHeader[]) {
+
+    constructor(_headerLoader: () => DataTableHeader[], _addOrUpdateAction = new AddOrUpdateJuniorActionHandler()) {
         super(() => juniorService.juniors(),
             _headerLoader,
-            {
-                updateItemRequest: (id, body) => juniorService.updateInRegistry(id, body),
-                itemToUpdateBody: (item) => this.itemToUpdateBody(item),
-                itemEditable: (itemId: number, updateBody: UpdateJuniorRegistryBody) => true,
-            },
-            {
-                createItemRequest: (body) => juniorService.addToRegistry(body),
-                defaultBody: () => this.defaultNewRecordBody()
-            },
+            _addOrUpdateAction,
+            _addOrUpdateAction,
             {
                 deleteItemRequest: (ids) => juniorService.deleteFromRegistry(ids)
             },
@@ -39,15 +34,36 @@ export class JuniorRegistryDataContainer extends TableComponentDataContainer<Jun
         )
     }
 
-    private itemToUpdateBody(item: JuniorDto): UpdateJuniorRegistryBody {
-        return {
-            mentorId: item.mentor?.id || null,
-            budgetingAccount: item.budgetingAccount?.id || null,
-            role: item.role
-        };
+    public canExport(): boolean {
+        return permissionService.canAdminJuniorRegistry();
     }
 
-    private defaultNewRecordBody(): AddToJuniorRegistryBody {
+    public confirmExportCompleted() {
+        this._exportCompleted = true;
+    }
+
+    public exportToExcel() {
+        this._exportLoading = true;
+        this._exportCompleted = false;
+        return juniorService.export().then(() => {
+            this._exportCompleted = true;
+        }).finally(() => {
+            this._exportLoading = false;
+        })
+    }
+
+    get exportCompleted() {
+        return this._exportCompleted;
+    }
+
+}
+
+export class AddOrUpdateJuniorActionHandler implements CreateAction<JuniorDto, AddJuniorRegistryBody>, UpdateAction<JuniorDto, UpdateJuniorRegistryBody> {
+    createItemRequest(body: AddJuniorRegistryBody): Promise<any> {
+        return juniorService.addToRegistry(body);
+    }
+
+    defaultBody(): AddJuniorRegistryBody {
         return {
             juniorId: null,
             mentorId: null,
@@ -56,17 +72,20 @@ export class JuniorRegistryDataContainer extends TableComponentDataContainer<Jun
         }
     }
 
-    public canExport(): boolean {
-        return permissionService.canAdminJuniorRegistry();
+    itemToUpdateBody(item: JuniorDto): UpdateJuniorRegistryBody {
+        return {
+            mentorId: item.mentor?.id || null,
+            budgetingAccount: item.budgetingAccount?.id || null,
+            role: item.role
+        };
     }
 
-    public exportToExcel() {
-        this._exportLoading = true;
-        this._exportCompleted = false;
-        juniorService.export().then(() => {
-            this._exportCompleted = true;
-        }).finally(() => {
-            this._exportLoading = false;
-        })
+    updateItemRequest(id: number, body: UpdateJuniorRegistryBody): Promise<any> {
+        return juniorService.updateInRegistry(id, body)
     }
+
+    itemEditable(itemId: number, updateBody: UpdateJuniorRegistryBody): boolean {
+        return true;
+    }
+
 }

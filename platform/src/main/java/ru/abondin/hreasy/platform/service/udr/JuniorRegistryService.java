@@ -31,19 +31,21 @@ public class JuniorRegistryService {
 
     @Transactional
     public Flux<JuniorDto> juniors(AuthContext authContext) {
+        var now = dateTimeService.now();
         return securityValidator
                 .get(authContext)
                 .flatMapMany(mode -> {
                             switch (mode) {
                                 case ALL:
                                     log.debug("Get all juniors by {}", authContext.getUsername());
-                                    return juniorRepo.findAllDetailed();
+                                    return juniorRepo.findAllDetailed(now);
                                 case MY:
                                     log.debug("Get own juniors by {}", authContext.getUsername());
                                     return juniorRepo.findAllByBaProjectOrMentorSafe(
                                             authContext.getEmployeeInfo().getAccessibleBas(),
                                             authContext.getEmployeeInfo().getAccessibleProjects(),
-                                            authContext.getEmployeeInfo().getEmployeeId());
+                                            authContext.getEmployeeInfo().getEmployeeId(),
+                                            now);
                                 default:
                                     throw new IllegalStateException("Unexpected value: " + mode);
                             }

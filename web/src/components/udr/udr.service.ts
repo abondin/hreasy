@@ -2,7 +2,7 @@ import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
 import {SimpleDict} from "@/store/modules/dict";
 import {CurrentProjectDict} from "@/components/empl/employee.service";
-import {WithId} from "@/components/shared/table/TableComponentDataContainer";
+import {CreateBody, UpdateBody, WithId} from "@/components/shared/table/TableComponentDataContainer";
 import {DateTimeUtils} from "@/components/datetimeutils";
 
 export const enum JuniorProgressType {
@@ -20,16 +20,17 @@ export const juniorProgressTypes = [
     JuniorProgressType.GOOD_PROGRESS
 ];
 
-export interface AddToJuniorRegistryBody {
-    juniorId: number | null,
+
+export interface UpdateJuniorRegistryBody extends UpdateBody{
     mentorId: number | null;
-    role: string | null;
+    role: string;
     budgetingAccount: number | null;
 }
 
-export interface UpdateJuniorRegistryBody {
+export interface AddJuniorRegistryBody extends CreateBody{
+    juniorId: number | null,
     mentorId: number | null;
-    role: string;
+    role: string | null;
     budgetingAccount: number | null;
 }
 
@@ -62,7 +63,7 @@ export interface JuniorDto extends WithId {
 
 
 export interface JuniorRegistryService {
-    addToRegistry(body: AddToJuniorRegistryBody): Promise<number>;
+    addToRegistry(body: AddJuniorRegistryBody): Promise<number>;
 
     updateInRegistry(juniorEmployeeId: number, body: UpdateJuniorRegistryBody): Promise<number>;
 
@@ -83,7 +84,7 @@ class RestJuniorRegistryService implements JuniorRegistryService {
         });
     }
 
-    addToRegistry(body: AddToJuniorRegistryBody): Promise<number> {
+    addToRegistry(body: AddJuniorRegistryBody): Promise<number> {
         return httpService.post(`v1/udr/juniors`, body).then(response => {
             return response.data;
         });
