@@ -10,11 +10,12 @@ import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.repo.udr.JuniorRepo;
+import ru.abondin.hreasy.platform.repo.udr.JuniorReportRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.udr.dto.AddToJuniorRegistryBody;
 import ru.abondin.hreasy.platform.service.udr.dto.JuniorDto;
-import ru.abondin.hreasy.platform.service.udr.dto.JuniorReportMapper;
+import ru.abondin.hreasy.platform.service.udr.dto.JuniorRegistryMapper;
 import ru.abondin.hreasy.platform.service.udr.dto.UpdateJuniorRegistryBody;
 
 @Slf4j
@@ -22,10 +23,12 @@ import ru.abondin.hreasy.platform.service.udr.dto.UpdateJuniorRegistryBody;
 @RequiredArgsConstructor
 public class JuniorRegistryService {
 
+    public static final String JUNIOR_LOG_ENTITY_TYPE = "Junior";
     private final DateTimeService dateTimeService;
     private final JuniorRepo juniorRepo;
+    private final JuniorReportRepo repoRepo;
     private final JuniorSecurityValidator securityValidator;
-    private final JuniorReportMapper mapper;
+    private final JuniorRegistryMapper mapper;
     private final HistoryDomainService history;
 
 
@@ -55,39 +58,46 @@ public class JuniorRegistryService {
 
     @Transactional
     public Mono<Integer> addToRegistry(AuthContext auth, AddToJuniorRegistryBody body) {
-        log.info("Adding {} to junior registry by {}", body.getJuniorId(), auth.getUsername());
+        log.info("Adding {} to junior registry by {}", body.getJuniorEmplId(), auth.getUsername());
         var now = dateTimeService.now();
         return securityValidator
                 .add(auth)
-                .flatMap(r -> juniorRepo.save(mapper.toEntry(body.getJuniorId(), body, auth.getEmployeeInfo().getEmployeeId(), now)))
+                .flatMap(v -> juniorRepo.save(mapper.toEntry(body, auth.getEmployeeInfo().getEmployeeId(), now)))
                 .flatMap(entry -> history.persistHistory(entry.getId(), HistoryDomainService.HistoryEntityType.JUNIOR_REGISTRY, entry, now
                         , auth.getEmployeeInfo().getEmployeeId()))
                 .map(HistoryEntry::getEntityId);
     }
 
     @Transactional
-    public Mono<Integer> delete(AuthContext auth, int junior) {
-        log.info("Removing junior {} from registry by {}", junior, auth.getUsername());
+    public Mono<Integer> delete(AuthContext auth, int registryId) {
+        log.info("Removing junior registry {} by {}", registryId, auth.getUsername());
         var now = dateTimeService.now();
-        return juniorRepo.findById(junior)
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound("Junior", junior))
+        // 1. Find junior in registry
+        return juniorRepo.findById(registryId)
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(JUNIOR_LOG_ENTITY_TYPE, registryId))
+                // 2. Validate if can delete
                 .flatMap(entry -> securityValidator.delete(auth, entry)
                         .flatMap(v -> {
                             entry.setDeletedAt(now);
                             entry.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
-                            entry.setNew(false);
-                            return juniorRepo.save(entry)
-                                    .flatMap(updated -> history.persistHistory(updated.getId(), HistoryDomainService.HistoryEntityType.JUNIOR_REGISTRY, updated, now, auth.getEmployeeInfo().getEmployeeId()))
-                                    .map(HistoryEntry::getEntityId);
+                            // 3. Delete all reports
+                            return repoRepo.markAllAsDeleted(registryId, auth.getEmployeeInfo().getEmployeeId(), now)
+                                    .then(
+                                            // 4. Mark as deleted
+                                            juniorRepo.save(entry)
+                                                    // 5. Update history
+                                                    .flatMap(updated -> history.persistHistory(updated.getId(), HistoryDomainService.HistoryEntityType.JUNIOR_REGISTRY, updated, now, auth.getEmployeeInfo().getEmployeeId()))
+                                                    .map(HistoryEntry::getEntityId)
+                                    );
                         }));
     }
 
     @Transactional
-    public Mono<Integer> update(AuthContext auth, int junior, UpdateJuniorRegistryBody body) {
-        log.info("Updating junior {} in registry by {}", junior, auth.getUsername());
+    public Mono<Integer> update(AuthContext auth, int registryId, UpdateJuniorRegistryBody body) {
+        log.info("Updating junior registry {} by {}", registryId, auth.getUsername());
         var now = dateTimeService.now();
-        return juniorRepo.findById(junior)
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound("Junior", junior))
+        return juniorRepo.findById(registryId)
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(JUNIOR_LOG_ENTITY_TYPE, registryId))
                 .flatMap(entry -> securityValidator.update(auth, entry)
                         .flatMap(v -> {
                             mapper.apply(entry, body);

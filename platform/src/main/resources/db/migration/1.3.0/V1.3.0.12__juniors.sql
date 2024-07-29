@@ -1,6 +1,8 @@
 CREATE schema if not exists udr;
+CREATE SEQUENCE IF NOT EXISTS udr.JUNIOR_REGISTRY_ID_SEQ;
 CREATE TABLE IF NOT EXISTS udr.junior_registry (
-	junior_id integer PRIMARY KEY NOT NULL REFERENCES empl.employee (id),
+	id integer PRIMARY KEY NOT NULL DEFAULT nextval('udr.JUNIOR_REGISTRY_ID_SEQ'),
+	junior_empl_id integer NOT NULL REFERENCES empl.employee (id),
 	role VARCHAR(1024) NOT NULL,
 	mentor_id integer REFERENCES empl.employee (id),
 	budgeting_account integer REFERENCES ba.business_account(id),
@@ -12,6 +14,7 @@ CREATE TABLE IF NOT EXISTS udr.junior_registry (
    	graduated_by integer REFERENCES empl.employee (id),
    	graduated_comment text null
 );
+CREATE UNIQUE INDEX junior_registry_unique ON udr.junior_registry (junior_empl_id) WHERE (deleted_at is null);
 
 CREATE SEQUENCE IF NOT EXISTS udr.JUNIOR_REPORT_ID_SEQ;
 CREATE TABLE IF NOT EXISTS udr.junior_report (
@@ -25,7 +28,8 @@ CREATE TABLE IF NOT EXISTS udr.junior_report (
    	deleted_by integer REFERENCES empl.employee (id)
 );
 COMMENT ON TABLE udr.junior_registry IS 'Registry for junior employees';
-COMMENT ON COLUMN udr.junior_registry.junior_id IS 'Unique identifier for junior employee';
+COMMENT ON COLUMN udr.junior_registry.id IS 'Unique identifier of registry record';
+COMMENT ON COLUMN udr.junior_registry.junior_empl_id IS 'Unique identifier for junior employee';
 COMMENT ON COLUMN udr.junior_registry.role IS 'Junior employee role like Java Backend';
 COMMENT ON COLUMN udr.junior_registry.mentor_id IS 'Mentor ID for the junior employee';
 COMMENT ON COLUMN udr.junior_registry.budgeting_account IS 'Budgeting account ID';

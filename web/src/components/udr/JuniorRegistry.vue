@@ -42,7 +42,7 @@ import HreasyTableExportToExcelAction from "@/components/shared/table/HreasyTabl
 export default class JuniorRegistry extends Vue {
   private data = new JuniorRegistryDataContainer(() => {
     const headers: DataTableHeader[] = [
-      {text: this.$tc('Молодой специалист'), value: 'junior.name'}
+      {text: this.$tc('Молодой специалист'), value: 'juniorEmpl.name'}
     ];
     return headers;
   });

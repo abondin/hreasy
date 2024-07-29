@@ -48,11 +48,11 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
 
     @Test
     void testGetAll() {
-        var junId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
+        var junEmployeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
         var mentorId = testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee);
         var reporterId = testData.employees.get(TestEmployees.FMS_Empl_Ammara_Knott);
         this.auth = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
-        buildJunior(junId, mentorId).block(MONO_DEFAULT_TIMEOUT);
+        var junId = buildJunior(junEmployeeId, mentorId).block(MONO_DEFAULT_TIMEOUT).getId();
 
         this.auth = auth(TestEmployees.FMS_Empl_Ammara_Knott).block(MONO_DEFAULT_TIMEOUT);
         buildReport(junId).block(MONO_DEFAULT_TIMEOUT);
@@ -61,7 +61,7 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
         StepVerifier
                 .create(service.juniors(auth))
                 .expectNextMatches(dto -> {
-                    Assertions.assertEquals(junId, dto.getJunior().getId());
+                    Assertions.assertEquals(junEmployeeId, dto.getJuniorEmpl().getId());
                     Assertions.assertEquals(mentorId, dto.getMentor().getId());
                     Assertions.assertEquals(1, dto.getReports().size());
                     Assertions.assertEquals(reporterId, dto.getReports().get(0).getCreatedBy().getId());
@@ -72,13 +72,13 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
 
     @Test
     void testGetBa() {
-        var junRndId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
-        var junBillingId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var junEmplRndId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
+        var junEmplBillingId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
         var mentorId = testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee);
         this.auth = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
-        buildJunior(junRndId, mentorId).block(MONO_DEFAULT_TIMEOUT);
+        buildJunior(junEmplRndId, mentorId).block(MONO_DEFAULT_TIMEOUT);
         var junBillingEntry = new JuniorEntry();
-        junBillingEntry.setJuniorId(junBillingId);
+        junBillingEntry.setJuniorEmplId(junEmplBillingId);
         junBillingEntry.setMentorId(mentorId);
         junBillingEntry.setBudgetingAccount(testData.ba_Billing());
         junBillingEntry.setCreatedAt(dateTimeService.now());
@@ -89,7 +89,7 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
         this.auth = auth(TestEmployees.Billing_BA_Head_Husnain_Patterson).block(MONO_DEFAULT_TIMEOUT);
         StepVerifier
                 .create(service.juniors(auth))
-                .expectNextMatches(dto -> dto.getJunior().getId() == junBillingId)
+                .expectNextMatches(dto -> dto.getJuniorEmpl().getId() == junEmplBillingId)
                 .verifyComplete();
     }
 
@@ -98,16 +98,13 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
         this.auth = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
         var juniorEmployeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
         var body = new AddToJuniorRegistryBody();
-        body.setJuniorId(juniorEmployeeId);
+        body.setJuniorEmplId(juniorEmployeeId);
         body.setMentorId(testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee));
         body.setBudgetingAccount(testData.ba_RND());
         body.setRole("Java Developer");
-        StepVerifier
-                .create(service.addToRegistry(auth, body))
-                .expectNext(juniorEmployeeId)
-                .verifyComplete();
-
-        var jun = juniorRepo.findById(juniorEmployeeId).block(MONO_DEFAULT_TIMEOUT);
+        var created = service.addToRegistry(auth, body).block(MONO_DEFAULT_TIMEOUT);
+        var jun = juniorRepo.findById(created).block(MONO_DEFAULT_TIMEOUT);
+        Assertions.assertEquals(juniorEmployeeId, jun.getJuniorEmplId());
         Assertions.assertEquals(body.getMentorId(), jun.getMentorId());
         Assertions.assertEquals(body.getBudgetingAccount(), jun.getBudgetingAccount());
         Assertions.assertEquals(body.getRole(), jun.getRole());
@@ -121,7 +118,7 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
 
     private Mono<JuniorEntry> buildJunior(int juniorId, Integer mentorId) {
         var entry = new JuniorEntry();
-        entry.setJuniorId(juniorId);
+        entry.setJuniorEmplId(juniorId);
         entry.setMentorId(mentorId);
         entry.setBudgetingAccount(testData.ba_RND());
         entry.setCreatedAt(dateTimeService.now());

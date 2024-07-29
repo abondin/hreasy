@@ -32,4 +32,7 @@ public class BusinessErrorFactory {
                 : Mono.error(new BusinessError("errors.entity_of_type.not.found", type, id));
     }
 
+    public static <T> Mono<T> entityAlreadyExists(String entityType, int entityId) {
+        return Mono.error(new BusinessError("errors.entity.already_exists", entityType, Integer.toString(entityId)));
+    }
 }

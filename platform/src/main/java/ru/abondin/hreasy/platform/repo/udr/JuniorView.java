@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Data
 public class JuniorView extends JuniorEntry {
 
-    private String juniorDisplayName;
+    private String juniorEmplDisplayName;
     private LocalDate juniorDateOfEmployment;
     private String mentorDisplayName;
     private String createdByDisplayName;

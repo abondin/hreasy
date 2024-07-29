@@ -13,16 +13,8 @@
           :items="allProjects.filter(p=>p.active)"
           :label="$tc('Проекты')"
       ></v-autocomplete>
-      <v-combobox
-          @input.native="e => roleOnProject = e.target.value"
-          :label="$t('Позиция на проекте')"
-          :items="currentProjectsRoles()"
-          clearable
-          :multiple="false"
-          :menu-props="{closeOnClick: true, closeOnContentClick:true}"
-          :rules="[v=>(!v || v.length <= 64 || $t('Не более N символов', {n:64}))]"
-          v-model="roleOnProject">
-      </v-combobox>
+      <role-combobox v-model="roleOnProject" :all-current-project-roles="allCurrentProjectRoles">
+      </role-combobox>
       <div class="error" v-if="error">{{ error }}</div>
     </v-card-text>
     <v-card-actions>
@@ -51,10 +43,13 @@ import employeeService, {Employee} from "./employee.service";
 import {Getter} from "vuex-class";
 import {CurrentProjectRole, SimpleDict} from "@/store/modules/dict";
 import Component from "vue-class-component";
+import RoleCombobox from "@/components/shared/RoleCombobox.vue";
 
 const namespace = 'dict';
 
-@Component({})
+@Component({
+  components: {RoleCombobox}
+})
 export default class EmployeeUpdateCurrentProject extends Vue {
   @Prop({required: true})
   employee!: Employee;
@@ -101,7 +96,7 @@ export default class EmployeeUpdateCurrentProject extends Vue {
     employeeService.updateCurrentProject(this.employee.id, this.selectedProject, this.roleOnProject)
         .then(() => {
           // Update current project roles dictionary if new value added
-          if (this.roleOnProject && this.currentProjectsRoles().indexOf(this.roleOnProject) < 0) {
+          if (this.roleOnProject && this.allCurrentProjectRoles.map(r => r.value).indexOf(this.roleOnProject) < 0) {
             this.$nextTick(() => {
               this.$store.dispatch('dict/reloadCurrentProjectRoles');
             });
@@ -116,9 +111,6 @@ export default class EmployeeUpdateCurrentProject extends Vue {
     this.$emit("cancel");
   }
 
-  private currentProjectsRoles() {
-    return this.allCurrentProjectRoles.map(r => r.value);
-  }
 }
 </script>
 

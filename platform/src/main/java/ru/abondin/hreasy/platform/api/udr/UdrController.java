@@ -31,16 +31,16 @@ public class UdrController {
         return AuthHandler.currentAuth().flatMap(auth -> service.addToRegistry(auth, body));
     }
 
-    @PutMapping("/juniors/{juniorEmployeeId}")
+    @PutMapping("/juniors/{registryId}")
     @Operation(summary = "Update junior registry record")
-    public Mono<Integer> updateJunior(@PathVariable Integer juniorEmployeeId, @RequestBody UpdateJuniorRegistryBody body) {
-        return AuthHandler.currentAuth().flatMap(auth -> service.update(auth, juniorEmployeeId, body));
+    public Mono<Integer> updateJunior(@PathVariable int registryId, @RequestBody UpdateJuniorRegistryBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.update(auth, registryId, body));
     }
 
-    @DeleteMapping("/juniors/{juniorEmployeeId}")
+    @DeleteMapping("/juniors/{registryId}")
     @Operation(summary = "Delete junior from registry")
-    public Mono<Integer> updateJunior(@PathVariable Integer juniorEmployeeId) {
-        return AuthHandler.currentAuth().flatMap(auth -> service.delete(auth, juniorEmployeeId));
+    public Mono<Integer> deleteJuniorFromRegistry(@PathVariable int registryId) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.delete(auth, registryId));
     }
 
 }

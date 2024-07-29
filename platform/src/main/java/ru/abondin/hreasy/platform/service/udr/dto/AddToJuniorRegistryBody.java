@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class AddToJuniorRegistryBody {
-    private int juniorId;
+    private int juniorEmplId;
     private Integer mentorId;
     private String role;
     private Integer budgetingAccount;

@@ -2,7 +2,7 @@
   <span>
   <v-autocomplete
       v-if="mode=='add'"
-      v-model="createOrUpdateBody.juniorId"
+      v-model="createOrUpdateBody.juniorEmplId"
       :items="allEmployees"
       item-value="id" item-text="displayName"
       :label="$t('Молодой специалист')"
@@ -20,12 +20,7 @@
       :items="allBas"
       :label="$t('Бюджет из бизнес аккаунта')"
   ></v-autocomplete>
-  <v-text-field
-      v-model="createOrUpdateBody.role"
-      counter="256"
-      :rules="[v=>(v && v.length <= 256 || $t('Обязательное поле. Не более N символов', {n:256}))]"
-      :label="$t('Обоснование')">
-  </v-text-field>
+    <role-combobox :all-current-project-roles="allCurrentProjectRoles" v-model="createOrUpdateBody.role"></role-combobox>
   </span>
 </template>
 
@@ -34,15 +29,16 @@ import {Prop, Vue, Watch} from "vue-property-decorator";
 import Component from "vue-class-component";
 import employeeService, {Employee} from "@/components/empl/employee.service";
 import {Getter} from "vuex-class";
-import {SimpleDict} from "@/store/modules/dict";
+import {CurrentProjectRole, SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import logger from "@/logger";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import {AddJuniorRegistryBody, UpdateJuniorRegistryBody} from "@/components/udr/udr.service";
+import RoleCombobox from "@/components/shared/RoleCombobox.vue";
 
 const namespace_dict = 'dict';
 @Component({
-  components: {MyDateFormComponent}
+  components: {RoleCombobox, MyDateFormComponent}
 })
 export default class JuniorAddUpdateFormFields extends Vue {
 
@@ -57,14 +53,17 @@ export default class JuniorAddUpdateFormFields extends Vue {
   @Getter("businessAccounts", {namespace: namespace_dict})
   private allBas!: Array<SimpleDict>;
 
+  @Getter("currentProjectRoles", {namespace: namespace_dict})
+  private allCurrentProjectRoles!: Array<CurrentProjectRole>;
+
 
   /**
    * Lifecycle hook
    */
   created() {
     logger.log('Add/Update junior form created');
-    return this.$nextTick()
-        .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'))
+    this.$store.dispatch('dict/reloadBusinessAccounts')
+        .then(() => this.$store.dispatch('dict/reloadCurrentProjectRoles'))
         .then(() =>
             employeeService.findAll().then(employees => {
                   this.allEmployees = employees;
@@ -73,7 +72,7 @@ export default class JuniorAddUpdateFormFields extends Vue {
         );
   }
 
-  @Watch("createOrUpdateBody.juniorId")
+  @Watch("createOrUpdateBody.juniorEmplId")
   private juniorSelected(junId: number) {
     const jun = this.allEmployees.find(e => e.id == junId);
     if (!jun) {

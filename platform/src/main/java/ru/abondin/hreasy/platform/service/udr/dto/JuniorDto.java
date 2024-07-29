@@ -13,8 +13,9 @@ import java.util.List;
 
 @Data
 public class JuniorDto {
+    private int id;
     @NotNull
-    private SimpleDictDto junior;
+    private SimpleDictDto juniorEmpl;
     private LocalDate juniorDateOfEmployment;
     @Nullable
     private SimpleDictDto mentor;
@@ -31,11 +32,7 @@ public class JuniorDto {
     @Nullable
     private Graduation graduation;
     private List<JuniorReportDto> reports = new ArrayList<>();
-
-    public int getId() {
-        return junior.getId();
-    }
-
+    
     public record Graduation(OffsetDateTime graduatedAt, SimpleDictDto graduatedBy, String comment) {
     }
 

@@ -28,7 +28,7 @@ export interface UpdateJuniorRegistryBody extends UpdateBody{
 }
 
 export interface AddJuniorRegistryBody extends CreateBody{
-    juniorId: number | null,
+    juniorEmplId: number | null,
     mentorId: number | null;
     role: string | null;
     budgetingAccount: number | null;
@@ -50,7 +50,7 @@ export interface JuniorReport {
 }
 
 export interface JuniorDto extends WithId {
-    junior: SimpleDict;
+    juniorEmpl: SimpleDict;
     mentor?: SimpleDict;
     role: string;
     currentProject?: CurrentProjectDict;
@@ -65,7 +65,7 @@ export interface JuniorDto extends WithId {
 export interface JuniorRegistryService {
     addToRegistry(body: AddJuniorRegistryBody): Promise<number>;
 
-    updateInRegistry(juniorEmployeeId: number, body: UpdateJuniorRegistryBody): Promise<number>;
+    updateInRegistry(juniorRegistyId: number, body: UpdateJuniorRegistryBody): Promise<number>;
 
     deleteFromRegistry(ids: number[]): Promise<Array<number>>;
 
@@ -90,8 +90,8 @@ class RestJuniorRegistryService implements JuniorRegistryService {
         });
     }
 
-    updateInRegistry(juniorEmployeeId: number, body: UpdateJuniorRegistryBody): Promise<number> {
-        return httpService.put(`v1/udr/juniors/${juniorEmployeeId}`, body).then(response => {
+    updateInRegistry(juniorRegistyId: number, body: UpdateJuniorRegistryBody): Promise<number> {
+        return httpService.put(`v1/udr/juniors/${juniorRegistyId}`, body).then(response => {
             return response.data;
         });
     }

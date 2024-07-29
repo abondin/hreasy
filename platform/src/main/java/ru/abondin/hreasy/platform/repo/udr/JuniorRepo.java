@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer> {
     String BASE_VIEW_QUERY = """
-                select j.*, je.display_name as junior_display_name,
+                select j.*, je.display_name as junior_empl_display_name,
                         je.date_of_employment as junior_date_of_employment,
                         mentor.display_name as mentor_display_name,
                         created.display_name as created_by_display_name,
@@ -30,11 +30,11 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
                                 )
                             FROM udr.junior_report report
                             INNER JOIN empl.employee created ON report.created_by = created.id
-                            WHERE report.junior_id = j.junior_id
+                            WHERE report.junior_id = j.id
                             AND report.deleted_at IS NULL
                          ) AS reports
                 from udr.junior_registry j
-                left join empl.employee je on j.junior_id = je.id
+                left join empl.employee je on j.junior_empl_id = je.id
                 left join empl.employee mentor on j.mentor_id = mentor.id
                 left join empl.employee created on j.created_by = created.id
                 left join empl.employee graduated on j.graduated_by = graduated.id
@@ -45,7 +45,7 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
             """;
     String MENTOR_FILTER = """
             j.mentor_id is not null and (j.mentor_id = :mentorId or exists(
-                select 1 from udr.junior_report jr where jr.junior_id = j.junior_id and jr.created_by = :mentorId and 
+                select 1 from udr.junior_report jr where jr.junior_id = j.id and jr.created_by = :mentorId and 
                 (jr.deleted_at is null or jr.deleted_at>=:now) 
             ))
             """;

@@ -65,7 +65,7 @@ export class AddOrUpdateJuniorActionHandler implements CreateAction<JuniorDto, A
 
     defaultBody(): AddJuniorRegistryBody {
         return {
-            juniorId: null,
+            juniorEmplId: null,
             mentorId: null,
             budgetingAccount: null,
             role: null

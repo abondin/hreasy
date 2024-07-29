@@ -5,7 +5,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
-import org.springframework.stereotype.Component;
 import ru.abondin.hreasy.platform.repo.udr.JuniorEntry;
 import ru.abondin.hreasy.platform.repo.udr.JuniorView;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
@@ -16,27 +15,25 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public abstract class JuniorReportMapper extends MapperBaseWithJsonSupport {
+public abstract class JuniorRegistryMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = ".", target = "budgetingAccount", qualifiedByName = "budgetingAccount")
     @Mapping(source = ".", target = "currentProject", qualifiedByName = "currentProject")
-    @Mapping(source = ".", target = "junior", qualifiedByName = "junior")
+    @Mapping(source = ".", target = "juniorEmpl", qualifiedByName = "junior")
     @Mapping(source = ".", target = "mentor", qualifiedByName = "mentor")
     @Mapping(source = ".", target = "createdBy", qualifiedByName = "createdBy")
     @Mapping(source = ".", target = "graduation", qualifiedByName = "graduation")
     @Mapping(source = "reports", target = "reports", qualifiedByName = "reports")
     public abstract JuniorDto toDto(JuniorView view);
 
-    @Mapping(source = "juniorEmployeeId", target = "juniorId")
+    @Mapping(source = "body.juniorEmplId", target = "juniorEmplId")
     @Mapping(source = "body", target = ".")
     @Mapping(source = "createdBy", target = "createdBy")
     @Mapping(source = "now", target = "createdAt")
-    @Mapping(target = "new", constant = "true")
     @Mapping(target = "graduatedAt", ignore = true)
     @Mapping(target = "graduatedBy", ignore = true)
     @Mapping(target = "graduatedComment", ignore = true)
-    public abstract JuniorEntry toEntry(int juniorEmployeeId, AddToJuniorRegistryBody body, Integer createdBy, OffsetDateTime now);
+    public abstract JuniorEntry toEntry(AddToJuniorRegistryBody body, Integer createdBy, OffsetDateTime now);
 
-    @Mapping(target = "new", constant = "false")
     public abstract void apply(@MappingTarget JuniorEntry entry, UpdateJuniorRegistryBody body);
 
 
@@ -52,7 +49,7 @@ public abstract class JuniorReportMapper extends MapperBaseWithJsonSupport {
 
     @Named("junior")
     protected SimpleDictDto junior(JuniorView view) {
-        return simpleDto(view.getJuniorId(), view.getJuniorDisplayName());
+        return simpleDto(view.getJuniorEmplId(), view.getJuniorEmplDisplayName());
     }
 
     @Named("mentor")
