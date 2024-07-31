@@ -167,6 +167,10 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this.updateAction.itemEditable(this.selectedItemId, this.updateBody);
     }
 
+    public actionOnClickAllowed(): boolean{
+        return this.updateAllowed();
+    }
+
     /**
      * Allow to open update dialog
      */
@@ -185,6 +189,11 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
     set updateBody(body: M | null) {
         this._updateBody = body;
+    }
+
+
+    public clickOnRowAction(item: T){
+        return this.openUpdateDialog(item);
     }
 
     public openUpdateDialog(item: T) {
@@ -278,6 +287,11 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 //</editor-fold>
 
 //<editor-fold desc="Delete Actions">
+
+    public showSelectCheckbox(): boolean{
+        return this.deleteAllowed();
+    }
+
     public deleteAllowed(): boolean {
         return this.deleteAction ? true : false;
     }

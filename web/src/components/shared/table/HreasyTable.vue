@@ -72,10 +72,10 @@
             dense
             :items-per-page="data.defaultItemsPerTablePage"
             class="text-truncate"
-            :class="{'table-cursor': data.updateAllowed()}"
-            :show-select="data.deleteAllowed()"
+            :class="{'table-cursor': data.actionOnClickAllowed()}"
+            :show-select="data.showSelectCheckbox()"
             :single-select="data.singleSelect"
-            @click:row="(v)=>data.openUpdateDialog(v)"
+            @click:row="(v)=>data.clickOnRowAction(v)"
         >
           <!-- Some magic from stackoverflow to allow override item-* slots for custom column rendering -->
           <template v-for="(_, slot) in $scopedSlots" v-slot:[slot]="props">

@@ -8,7 +8,7 @@ Form to create or delete approve/decline or just comment
 
       <!--<editor-fold desc="Delete approval">-->
       <v-card-text v-if="data.approveBody.approvalId">
-        {{ $t('Вы уверены что хотите удалить согласование/комментарий?') }}
+        {{ $t('Вы уверены, что хотите удалить согласование/комментарий?') }}
       </v-card-text>
       <!--</editor-fold> -->
 

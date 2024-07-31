@@ -8,10 +8,6 @@
       <junior-add-update-form-fields :create-or-update-body="data.createBody"
                                      mode="add"></junior-add-update-form-fields>
     </template>
-    <template v-slot:updateFormFields>
-      <junior-add-update-form-fields :create-or-update-body="data.updateBody"
-                                     mode="update"></junior-add-update-form-fields>
-    </template>
     <template v-slot:[`item.progress`]="{ item }">
       <span v-for="report in item.reports" v-bind:key="report.id">
         <span v-if="report.progress == 1"><v-icon color="error">mdi-arrow-bottom-left</v-icon></span>
@@ -31,13 +27,12 @@
 import Component from "vue-class-component";
 import {Vue} from "vue-property-decorator";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
-import logger from "@/logger";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import HreasyTableCreateForm from "@/components/shared/table/HreasyTableCreateForm.vue";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTableDeleteConfimration.vue";
 import {DataTableHeader} from "vuetify";
-import {JuniorRegistryDataContainer} from "@/components/udr/junior_registry.data.container";
+import {JuniorRegistryDataContainer} from "@/components/udr/junior-registry.data.container";
 import JuniorAddUpdateFormFields from "@/components/udr/JuniorAddUpdateFormFields.vue";
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import HreasyTableExportToExcelAction from "@/components/shared/table/HreasyTableExportToExcelAction.vue";
@@ -55,26 +50,30 @@ import HreasyTableExportToExcelAction from "@/components/shared/table/HreasyTabl
 })
 export default class JuniorRegistry extends Vue {
   private data = new JuniorRegistryDataContainer(() => {
-    const headers: DataTableHeader[] = [
-      {text: this.$tc('Молодой специалист'), value: 'juniorEmpl.name'},
-      {text: this.$tc('Ментор'), value: 'mentor.name'},
-      {text: this.$tc('Роль'), value: 'role'},
-      {text: this.$tc('Бюджет'), value: 'budgetingAccount.name'},
-      {text: this.$tc('Текущий проект'), value: 'currentProject.name'},
-      {text: this.$tc('Месяцев в компании'), value: 'juniorInCompanyMonths'},
-      {text: this.$tc('Прогресс'), value: 'progress'},
-      {text: this.$tc('Последний срез (Когда)'), value: 'latestReport.createdAt'},
-      {text: this.$tc('Последний срез (Кто)'), value: 'latestReport.createdBy.name'},
-      {text: this.$tc('Последний срез (Комментарий)'), value: 'latestReport.comment'}
-    ];
-    return headers;
-  });
+        const headers: DataTableHeader[] = [
+          {text: this.$tc('Молодой специалист'), value: 'juniorEmpl.name'},
+          {text: this.$tc('Ментор'), value: 'mentor.name'},
+          {text: this.$tc('Роль'), value: 'role'},
+          {text: this.$tc('Бюджет'), value: 'budgetingAccount.name'},
+          {text: this.$tc('Текущий проект'), value: 'currentProject.name'},
+          {text: this.$tc('Месяцев в компании'), value: 'juniorInCompanyMonths'},
+          {text: this.$tc('Прогресс'), value: 'progress'},
+          {text: this.$tc('Последний срез (Когда)'), value: 'latestReport.createdAt'},
+          {text: this.$tc('Последний срез (Кто)'), value: 'latestReport.createdBy.name'},
+          {text: this.$tc('Последний срез (Комментарий)'), value: 'latestReport.comment'}
+        ];
+        return headers;
+      },
+      (item) => {
+        if (item?.id) {
+          this.$router.push(`/juniors/${item.id}`);
+        }
+      });
 
   /**
    * Lifecycle hook
    */
   created() {
-    logger.log('Junior registry component created');
     this.data.init();
   }
 

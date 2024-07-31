@@ -26,13 +26,13 @@ public class JuniorRegistryService {
     public static final String JUNIOR_LOG_ENTITY_TYPE = "Junior";
     private final DateTimeService dateTimeService;
     private final JuniorRepo juniorRepo;
-    private final JuniorReportRepo repoRepo;
+    private final JuniorReportRepo reportRepo;
     private final JuniorSecurityValidator securityValidator;
     private final JuniorRegistryMapper mapper;
     private final HistoryDomainService history;
 
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Flux<JuniorDto> juniors(AuthContext authContext) {
         var now = dateTimeService.now();
         return securityValidator
@@ -54,6 +54,32 @@ public class JuniorRegistryService {
                             }
                         }
                 ).map(mapper::toDto);
+    }
+
+
+    @Transactional(readOnly = true)
+    public Mono<JuniorDto> juniorDetailed(AuthContext auth, int registryId) {
+        log.debug("Get junior details {} by {}", registryId, auth.getUsername());
+        var now = dateTimeService.now();
+        return securityValidator
+                .get(auth)
+                .flatMap(mode -> {
+                            switch (mode) {
+                                case ALL:
+                                    return juniorRepo.findDetailed(registryId, now);
+                                case MY:
+                                    return juniorRepo.findDetailedByBaProjectOrMentorSafe(
+                                            registryId,
+                                            auth.getEmployeeInfo().getAccessibleBas(),
+                                            auth.getEmployeeInfo().getAccessibleProjects(),
+                                            auth.getEmployeeInfo().getEmployeeId(),
+                                            now);
+                                default:
+                                    throw new IllegalStateException("Unexpected value: " + mode);
+                            }
+                        }
+                ).switchIfEmpty(BusinessErrorFactory.entityNotFound(JUNIOR_LOG_ENTITY_TYPE, registryId))
+                .map(mapper::toDto);
     }
 
     @Transactional
@@ -81,7 +107,7 @@ public class JuniorRegistryService {
                             entry.setDeletedAt(now);
                             entry.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
                             // 3. Delete all reports
-                            return repoRepo.markAllAsDeleted(registryId, auth.getEmployeeInfo().getEmployeeId(), now)
+                            return reportRepo.markAllAsDeleted(registryId, auth.getEmployeeInfo().getEmployeeId(), now)
                                     .then(
                                             // 4. Mark as deleted
                                             juniorRepo.save(entry)
@@ -106,4 +132,6 @@ public class JuniorRegistryService {
                                     .map(HistoryEntry::getEntityId);
                         }));
     }
+
+
 }

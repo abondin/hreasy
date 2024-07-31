@@ -1,5 +1,5 @@
 <template>
-  <span>
+  <span v-if="createOrUpdateBody">
   <v-autocomplete
       v-if="mode=='add'"
       v-model="createOrUpdateBody.juniorEmplId"
@@ -10,12 +10,14 @@
   ></v-autocomplete>
   <v-autocomplete
       v-model="createOrUpdateBody.mentorId"
+      clearable
       :items="allEmployees"
       item-value="id" item-text="displayName"
       :label="$t('Ментор')"
   ></v-autocomplete>
   <v-autocomplete
       v-model="createOrUpdateBody.budgetingAccount"
+      clearable
       item-value="id" item-text="name"
       :items="allBas"
       :label="$t('Бюджет из бизнес аккаунта')"
@@ -61,7 +63,6 @@ export default class JuniorAddUpdateFormFields extends Vue {
    * Lifecycle hook
    */
   created() {
-    logger.log('Add/Update junior form created');
     this.$store.dispatch('dict/reloadBusinessAccounts')
         .then(() => this.$store.dispatch('dict/reloadCurrentProjectRoles'))
         .then(() =>

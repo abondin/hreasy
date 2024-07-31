@@ -25,6 +25,12 @@ public class UdrController {
         return AuthHandler.currentAuth().flatMapMany(service::juniors);
     }
 
+    @GetMapping("/juniors/{registryId}")
+    @Operation(summary = "Get juniors list")
+    public Mono<JuniorDto> juniorDetailed(@PathVariable int registryId) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.juniorDetailed(auth, registryId));
+    }
+
     @PostMapping("/juniors")
     @Operation(summary = "Add junior to registry")
     public Mono<Integer> addToRegistry(@RequestBody AddToJuniorRegistryBody body) {

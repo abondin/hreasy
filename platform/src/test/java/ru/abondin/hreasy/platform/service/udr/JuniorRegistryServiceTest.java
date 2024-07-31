@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.TestEmployees;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 import ru.abondin.hreasy.platform.repo.udr.JuniorEntry;
@@ -91,6 +92,34 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
                 .create(service.juniors(auth))
                 .expectNextMatches(dto -> dto.getJuniorEmpl().getId() == junEmplBillingId)
                 .verifyComplete();
+    }
+
+    @Test
+    void testGetOneBa() {
+        var junEmplRndId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
+        var junEmplBillingId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var mentorId = testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee);
+        this.auth = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
+        var rndRegistryId = buildJunior(junEmplRndId, mentorId).map(JuniorEntry::getId).block(MONO_DEFAULT_TIMEOUT);
+        var junBillingEntry = new JuniorEntry();
+        junBillingEntry.setJuniorEmplId(junEmplBillingId);
+        junBillingEntry.setMentorId(mentorId);
+        junBillingEntry.setBudgetingAccount(testData.ba_Billing());
+        junBillingEntry.setCreatedAt(dateTimeService.now());
+        junBillingEntry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
+        junBillingEntry.setRole("Java Developer");
+        var billingRegistryId = juniorRepo.save(junBillingEntry).map(JuniorEntry::getId).block(MONO_DEFAULT_TIMEOUT);
+
+        this.auth = auth(TestEmployees.Billing_BA_Head_Husnain_Patterson).block(MONO_DEFAULT_TIMEOUT);
+        StepVerifier
+                .create(service.juniorDetailed(auth, billingRegistryId))
+                .expectNextMatches(dto -> dto.getJuniorEmpl().getId() == junEmplBillingId)
+                .verifyComplete();
+
+        StepVerifier
+                .create(service.juniorDetailed(auth, rndRegistryId))
+                .expectErrorMatches(error -> error instanceof BusinessError && ((BusinessError) error).getCode().equals("errors.entity_of_type.not.found"))
+                .verify(MONO_DEFAULT_TIMEOUT);
     }
 
     @Test

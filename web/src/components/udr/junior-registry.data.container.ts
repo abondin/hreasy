@@ -1,8 +1,4 @@
-import TableComponentDataContainer, {
-    CreateAction,
-    Filter,
-    UpdateAction
-} from "@/components/shared/table/TableComponentDataContainer";
+import TableComponentDataContainer, {CreateAction, Filter} from "@/components/shared/table/TableComponentDataContainer";
 import juniorService, {AddJuniorRegistryBody, JuniorDto, UpdateJuniorRegistryBody} from "@/components/udr/udr.service";
 import {DataTableHeader} from "vuetify";
 import permissionService from "@/store/modules/permission.service";
@@ -20,18 +16,20 @@ export class JuniorRegistryDataContainer extends TableComponentDataContainer<Jun
     private _exportLoading = false;
     private _exportCompleted = false;
 
-    constructor(_headerLoader: () => DataTableHeader[], _addOrUpdateAction = new AddOrUpdateJuniorActionHandler()) {
+    constructor(_headerLoader: () => DataTableHeader[], private _clickOnRowAction: (item: JuniorDto) => any, _addAction = new AddJuniorActionHandler()) {
         super(() => juniorService.juniors(),
             _headerLoader,
-            _addOrUpdateAction,
-            _addOrUpdateAction,
-            {
-                deleteItemRequest: (ids) => juniorService.deleteFromRegistry(ids)
-            },
+            null,
+            _addAction,
+            null,
             new JuniorTableFilter(),
             () => true,
             true
         )
+    }
+
+    clickOnRowAction(item: JuniorDto): void {
+        return this._clickOnRowAction(item);
     }
 
     public canExport(): boolean {
@@ -52,13 +50,18 @@ export class JuniorRegistryDataContainer extends TableComponentDataContainer<Jun
         })
     }
 
+
     get exportCompleted() {
         return this._exportCompleted;
     }
+    public actionOnClickAllowed(): boolean{
+        return true;
+    }
+
 
 }
 
-export class AddOrUpdateJuniorActionHandler implements CreateAction<JuniorDto, AddJuniorRegistryBody>, UpdateAction<JuniorDto, UpdateJuniorRegistryBody> {
+export class AddJuniorActionHandler implements CreateAction<JuniorDto, AddJuniorRegistryBody> {
     createItemRequest(body: AddJuniorRegistryBody): Promise<any> {
         return juniorService.addToRegistry(body);
     }
@@ -79,13 +82,4 @@ export class AddOrUpdateJuniorActionHandler implements CreateAction<JuniorDto, A
             role: item.role
         };
     }
-
-    updateItemRequest(id: number, body: UpdateJuniorRegistryBody): Promise<any> {
-        return juniorService.updateInRegistry(id, body)
-    }
-
-    itemEditable(itemId: number, updateBody: UpdateJuniorRegistryBody): boolean {
-        return true;
-    }
-
 }

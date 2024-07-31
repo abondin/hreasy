@@ -21,13 +21,13 @@ export const juniorProgressTypes = [
 ];
 
 
-export interface UpdateJuniorRegistryBody extends UpdateBody{
+export interface UpdateJuniorRegistryBody extends UpdateBody {
     mentorId: number | null;
     role: string;
     budgetingAccount: number | null;
 }
 
-export interface AddJuniorRegistryBody extends CreateBody{
+export interface AddJuniorRegistryBody extends CreateBody {
     juniorEmplId: number | null,
     mentorId: number | null;
     role: string | null;
@@ -52,12 +52,13 @@ export interface JuniorReport {
 
 export interface JuniorDto extends WithId {
     juniorEmpl: SimpleDict;
-    juniorInCompanyMonths: number|null,
+    juniorDateOfEmployment: string,
+    juniorInCompanyMonths: number | null,
     mentor?: SimpleDict;
     role: string;
     currentProject?: CurrentProjectDict;
     budgetingAccount?: SimpleDict;
-    createdAt: Date;
+    createdAt: string;
     createdBy: SimpleDict;
     graduation?: JuniorGraduation;
     reports: JuniorReport[];
@@ -70,11 +71,13 @@ export interface JuniorRegistryService {
 
     updateInRegistry(juniorRegistyId: number, body: UpdateJuniorRegistryBody): Promise<number>;
 
-    deleteFromRegistry(ids: number[]): Promise<Array<number>>;
+    deleteFromRegistry(id: number): Promise<number>;
 
     juniors(): Promise<Array<JuniorDto>>;
 
     export(): Promise<any>;
+
+    juniorDetails(juniorRegistryId: number): Promise<JuniorDto>;
 }
 
 class RestJuniorRegistryService implements JuniorRegistryService {
@@ -83,6 +86,12 @@ class RestJuniorRegistryService implements JuniorRegistryService {
 
     juniors(): Promise<Array<JuniorDto>> {
         return httpService.get(`v1/udr/juniors`).then(response => {
+            return response.data;
+        });
+    }
+
+    juniorDetails(juniorRegistryId: number): Promise<JuniorDto> {
+        return httpService.get(`v1/udr/juniors/${juniorRegistryId}`).then(response => {
             return response.data;
         });
     }
@@ -100,12 +109,10 @@ class RestJuniorRegistryService implements JuniorRegistryService {
     }
 
 
-    deleteFromRegistry(ids: number[]): Promise<Array<number>> {
-        return Promise.all(
-            ids.map(id => httpService.delete(`v1/udr/juniors/${id}`).then(response => {
-                return response.data;
-            }))
-        );
+    deleteFromRegistry(id: number): Promise<number> {
+        return httpService.delete(`v1/udr/juniors/${id}`).then(response => {
+            return response.data;
+        });
     }
 
     export(): Promise<any> {

@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -61,6 +62,9 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
     @Query(BASE_VIEW_QUERY)
     Flux<JuniorView> findAllDetailed(OffsetDateTime now);
 
+    @Query(BASE_VIEW_QUERY + " and (j.id = :juniorRegistryId)")
+    Mono<JuniorView> findDetailed(int juniorRegistryId, OffsetDateTime now);
+
 
     /**
      * Use findAllByBaProjectOrMentorSafe to avoid SQL errors
@@ -79,7 +83,7 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
                                                        List<Integer> accessibleProjects,
                                                        int mentorId,
                                                        OffsetDateTime now
-                                            );
+    );
 
     default Flux<JuniorView> findAllByBaProjectOrMentorSafe(List<Integer> accessibleBas,
                                                             List<Integer> accessibleProjects,
@@ -92,4 +96,33 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
         );
     }
 
+
+    /**
+     * Use findAllByBaProjectOrMentorSafe to avoid SQL errors
+     *
+     * @param accessibleBas
+     * @param accessibleProjects
+     * @param mentorId
+     * @return
+     */
+    @Query(BASE_VIEW_QUERY + " and (" +
+            " (" + PROJECTS_FILTER + ")" +
+            " or (" + BAS_FILTER + ")" +
+            " or (" + MENTOR_FILTER + ")" +
+            ") and j.id = :juniorRegistryId")
+    Mono<JuniorView> notSafeFindDetailedByBaProjectOrMentor(int juniorRegistryId,
+                                                            List<Integer> accessibleBas,
+                                                            List<Integer> accessibleProjects,
+                                                            int mentorId,
+                                                            OffsetDateTime now
+    );
+
+    default Mono<JuniorView> findDetailedByBaProjectOrMentorSafe(int juniorRegistryId, List<Integer> accessibleBas, List<Integer> accessibleProjects, Integer mentorId, OffsetDateTime now) {
+        return notSafeFindDetailedByBaProjectOrMentor(
+                juniorRegistryId,
+                CollectionUtils.isEmpty(accessibleBas) ? Arrays.asList(Integer.MIN_VALUE) : accessibleBas,
+                CollectionUtils.isEmpty(accessibleProjects) ? Arrays.asList(Integer.MIN_VALUE) : accessibleProjects,
+                mentorId, now
+        );
+    }
 }

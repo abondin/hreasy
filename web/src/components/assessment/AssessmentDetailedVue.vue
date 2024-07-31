@@ -105,7 +105,7 @@
 
             <v-card-text>
               <p>
-                {{ $t('Вы уверены что хотите удалить вложение?') }}
+                {{ $t('Вы уверены, что хотите удалить вложение?') }}
               </p>
               {{ attachmentToDelete }}
               <v-alert v-if="deleteAttachmentError" class="error">{{ deleteAttachmentError }}</v-alert>
@@ -132,7 +132,7 @@
 
             <v-card-text>
               <p>
-                {{ $t('Вы уверены что хотите отменить ассессмент?') }}
+                {{ $t('Вы уверены, что хотите отменить ассессмент?') }}
               </p>
               <v-alert v-if="cancelAssessmentError" class="error">{{ cancelAssessmentError }}</v-alert>
             </v-card-text>
