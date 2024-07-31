@@ -23,7 +23,7 @@
                     <v-btn @click="data.openGraduateDialog()"
                            v-bind="tattrs" v-on="ton" class="col-auto" color="success"
                            :disabled="false" icon>
-                      <v-icon>mdi-diamond</v-icon>
+                      <v-icon>mdi-school</v-icon>
                     </v-btn>
                   </template>
                   <span>{{ $t('Закончить обучение') }}</span>
