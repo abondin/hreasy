@@ -36,6 +36,11 @@ public abstract class JuniorRegistryMapper extends MapperBaseWithJsonSupport {
 
     public abstract void apply(@MappingTarget JuniorEntry entry, UpdateJuniorRegistryBody body);
 
+    @Mapping(source = "body.comment", target = "graduatedComment")
+    @Mapping(source = "now", target = "graduatedAt")
+    @Mapping(source = "employeeId", target = "graduatedBy")
+    public abstract void apply(@MappingTarget JuniorEntry entry, GraduateJuniorBody body, int employeeId, OffsetDateTime now);
+
 
     @Named("budgetingAccount")
     protected SimpleDictDto budgetingAccount(JuniorView view) {

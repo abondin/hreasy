@@ -26,6 +26,9 @@ export interface UpdateJuniorRegistryBody extends UpdateBody {
     role: string;
     budgetingAccount: number | null;
 }
+export interface GraduateBody{
+    comment: string|null;
+}
 
 export interface AddJuniorRegistryBody extends CreateBody {
     juniorEmplId: number | null,
@@ -78,6 +81,8 @@ export interface JuniorRegistryService {
     export(): Promise<any>;
 
     juniorDetails(juniorRegistryId: number): Promise<JuniorDto>;
+
+    graduate(juniorRegistyId: number, body: GraduateBody | null): Promise<number>;
 }
 
 class RestJuniorRegistryService implements JuniorRegistryService {
@@ -111,6 +116,12 @@ class RestJuniorRegistryService implements JuniorRegistryService {
 
     deleteFromRegistry(id: number): Promise<number> {
         return httpService.delete(`v1/udr/juniors/${id}`).then(response => {
+            return response.data;
+        });
+    }
+
+    graduate(juniorRegistyId: number, body: GraduateBody | null): Promise<number> {
+        return httpService.put(`v1/udr/juniors/${juniorRegistyId}/graduate`, body).then(response => {
             return response.data;
         });
     }

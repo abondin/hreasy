@@ -69,9 +69,7 @@ export default class InDialogForm<T> extends Vue {
   private submit() {
     const form: any = this.$refs[this.formRef];
     if (form.validate()) {
-      return this.data.submit().then(() => {
-        this.$emit('submit');
-      });
+      return this.data.submit(() => this.$emit('submit'));
     }
   }
 

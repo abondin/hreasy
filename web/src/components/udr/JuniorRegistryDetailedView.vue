@@ -20,6 +20,16 @@
                 <v-spacer></v-spacer>
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                    <v-btn @click="data.openGraduateDialog()"
+                           v-bind="tattrs" v-on="ton" class="col-auto" color="success"
+                           :disabled="false" icon>
+                      <v-icon>mdi-diamond</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>{{ $t('Закончить обучение') }}</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on: ton, attrs: tattrs}">
                     <v-btn @click="data.openUpdateDialog()"
                            v-bind="tattrs" v-on="ton" class="col-auto" color="primary"
                            :disabled="false" icon>
@@ -61,7 +71,7 @@
 
           <!-- Dialogs -->
           <in-dialog-form size="lg" form-ref="updateForm" :data="data.updateDialogAction"
-                          :title="()=>data.item.juniorEmpl.name + ': ' + $t('Редактирование записи в реестре')"
+                          :title="()=>data.item.juniorEmpl.name + ': ' + $t('редактирование записи в реестре')"
                           :submit-button-text="$t('Применить')" v-on:submit="fetchData">
             <template v-slot:fields>
               <junior-add-update-form-fields mode="update" :create-or-update-body="data.updateDialogAction.formData">
@@ -69,10 +79,21 @@
             </template>
           </in-dialog-form>
           <in-dialog-form size="lg" form-ref="deleteForm" :data="data.deleteDialogAction"
-                          :title="()=>data.item.juniorEmpl.name + ': ' + $t('Удаление')"
+                          :title="()=>data.item.juniorEmpl.name + ': ' + $t('удаление')"
                           :submit-button-text="$t('Удалить')" v-on:submit="navigateRegistry">
             <template v-slot:fields>
               <p>{{ $t('Вы уверены, что хотите удалить запись?') }}</p>
+            </template>
+          </in-dialog-form>
+          <in-dialog-form v-if="data.graduateDialogAction.formData" size="lg" form-ref="graduateForm" :data="data.graduateDialogAction"
+                          :title="()=>data.item.juniorEmpl.name + ': ' + $t('закончить обучение?')"
+                          :submit-button-text="$t('Применить')" v-on:submit="fetchData">
+            <template v-slot:fields>
+              <v-textarea
+                  v-model="data.graduateDialogAction.formData.comment"
+                  :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
+                  :label="$t('Описание')">
+              </v-textarea>
             </template>
           </in-dialog-form>
         </v-card-text>

@@ -9,14 +9,14 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
+import ru.abondin.hreasy.platform.repo.udr.JuniorEntry;
 import ru.abondin.hreasy.platform.repo.udr.JuniorRepo;
 import ru.abondin.hreasy.platform.repo.udr.JuniorReportRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
-import ru.abondin.hreasy.platform.service.udr.dto.AddToJuniorRegistryBody;
-import ru.abondin.hreasy.platform.service.udr.dto.JuniorDto;
-import ru.abondin.hreasy.platform.service.udr.dto.JuniorRegistryMapper;
-import ru.abondin.hreasy.platform.service.udr.dto.UpdateJuniorRegistryBody;
+import ru.abondin.hreasy.platform.service.udr.dto.*;
+
+import java.util.function.Consumer;
 
 @Slf4j
 @Service
@@ -121,12 +121,23 @@ public class JuniorRegistryService {
     @Transactional
     public Mono<Integer> update(AuthContext auth, int registryId, UpdateJuniorRegistryBody body) {
         log.info("Updating junior registry {} by {}", registryId, auth.getUsername());
+        return doUpdate(auth, registryId, entry -> mapper.apply(entry, body));
+    }
+
+    @Transactional
+    public Mono<Integer> graduate(AuthContext auth, int registryId, GraduateJuniorBody body) {
+        log.info("Graduating junior {} by {}", registryId, auth.getUsername());
+        return doUpdate(auth, registryId, entry -> mapper.apply(entry, body, auth.getEmployeeInfo().getEmployeeId(), dateTimeService.now()));
+    }
+
+
+    private Mono<Integer> doUpdate(AuthContext auth, int registryId, Consumer<JuniorEntry> changesApplier) {
         var now = dateTimeService.now();
         return juniorRepo.findById(registryId)
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound(JUNIOR_LOG_ENTITY_TYPE, registryId))
                 .flatMap(entry -> securityValidator.update(auth, entry)
                         .flatMap(v -> {
-                            mapper.apply(entry, body);
+                            changesApplier.accept(entry);
                             return juniorRepo.save(entry)
                                     .flatMap(updated -> history.persistHistory(updated.getId(), HistoryDomainService.HistoryEntityType.JUNIOR_REGISTRY, updated, now, auth.getEmployeeInfo().getEmployeeId()))
                                     .map(HistoryEntry::getEntityId);

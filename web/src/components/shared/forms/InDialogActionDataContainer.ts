@@ -19,7 +19,7 @@ export class InDialogActionDataContainer<T> {
         return this._formData;
     }
 
-    public openDialog(itemId: number|null, formData: T|null) {
+    public openDialog(itemId: number | null, formData: T | null) {
         this._formData = formData;
         this._itemId = itemId;
         this.dialog = true;
@@ -27,11 +27,14 @@ export class InDialogActionDataContainer<T> {
         this.loading = false;
     }
 
-    public submit() : Promise<any> {
+    public submit(successHandler?: () => any): Promise<any> {
         this.loading = true;
         this.error = null;
         return this.submitAction(this._itemId, this._formData).then(() => {
             this.close()
+            if (successHandler) {
+                successHandler();
+            }
         }).catch((error: any) => {
             this.error = errorUtils.shortMessage(error);
             this.loading = false;

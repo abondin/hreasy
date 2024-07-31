@@ -16,7 +16,7 @@
         <v-list-item-content>
           <v-list-item-title>
             {{ $t('Элемент не найден') }} "<strong>{{ roleSearch }}</strong>"
-            {{ $t('Нажмите') }} <kbd>enter</kbd> {{ $t('чтобы создать.') }}
+            {{ $t('Нажмите') }} <kbd>enter</kbd> {{ $t('чтобы создать') }}.
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
