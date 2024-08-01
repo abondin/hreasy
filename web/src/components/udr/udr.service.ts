@@ -83,6 +83,8 @@ export interface JuniorRegistryService {
     juniorDetails(juniorRegistryId: number): Promise<JuniorDto>;
 
     graduate(juniorRegistyId: number, body: GraduateBody | null): Promise<number>;
+
+    cancelGraduation(id: number): Promise<any> | Promise<number>;
 }
 
 class RestJuniorRegistryService implements JuniorRegistryService {
@@ -122,6 +124,12 @@ class RestJuniorRegistryService implements JuniorRegistryService {
 
     graduate(juniorRegistyId: number, body: GraduateBody | null): Promise<number> {
         return httpService.put(`v1/udr/juniors/${juniorRegistyId}/graduate`, body).then(response => {
+            return response.data;
+        });
+    }
+
+    cancelGraduation(id: number): Promise<any> | Promise<number> {
+        return httpService.delete(`v1/udr/juniors/${id}/graduate`).then(response => {
             return response.data;
         });
     }

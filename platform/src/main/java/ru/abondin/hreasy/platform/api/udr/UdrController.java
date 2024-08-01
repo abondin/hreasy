@@ -55,4 +55,10 @@ public class UdrController {
         return AuthHandler.currentAuth().flatMap(auth -> service.delete(auth, registryId));
     }
 
+    @DeleteMapping("/juniors/{registryId}/graduate")
+    @Operation(summary = "Cancel junior graduation")
+    public Mono<Integer> cancelGraduation(@PathVariable int registryId) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.cancelGraduation(auth, registryId));
+    }
+
 }

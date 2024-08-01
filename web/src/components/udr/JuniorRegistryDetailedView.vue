@@ -20,7 +20,7 @@
                 <v-spacer></v-spacer>
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                    <v-btn @click="data.openGraduateDialog()"
+                    <v-btn @click="data.openGraduateDialog(Boolean(data.item.graduation))"
                            v-bind="tattrs" v-on="ton" class="col-auto" color="success"
                            :disabled="false" icon>
                       <v-icon>mdi-school</v-icon>
@@ -85,15 +85,20 @@
               <p>{{ $t('Вы уверены, что хотите удалить запись?') }}</p>
             </template>
           </in-dialog-form>
-          <in-dialog-form v-if="data.graduateDialogAction.formData" size="lg" form-ref="graduateForm" :data="data.graduateDialogAction"
-                          :title="()=>data.item.juniorEmpl.name + ': ' + $t('закончить обучение?')"
+          <in-dialog-form v-if="data.graduateDialogAction" size="lg" form-ref="graduateForm"
+                          :data="data.graduateDialogAction"
+                          :title="()=>data.item.juniorEmpl.name + ': ' +(data.item.graduation? $t('отменить') : $t('закончить обучение?'))"
                           :submit-button-text="$t('Применить')" v-on:submit="fetchData">
             <template v-slot:fields>
+              <span v-if="!data.item.graduation">
               <v-textarea
+                  v-if="data.graduateDialogAction.formData"
                   v-model="data.graduateDialogAction.formData.comment"
                   :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
                   :label="$t('Описание')">
               </v-textarea>
+              </span>
+              <p v-else>{{ $t('Вы уверены, что хотите отменить решение об окончании обучения?') }}</p>
             </template>
           </in-dialog-form>
         </v-card-text>

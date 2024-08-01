@@ -3,10 +3,29 @@ import juniorService, {AddJuniorRegistryBody, JuniorDto, UpdateJuniorRegistryBod
 import {DataTableHeader} from "vuetify";
 import permissionService from "@/store/modules/permission.service";
 import {DataContainerWithExcelExportSupport} from "@/components/shared/table/DataContainerWithExcelExportSupport";
+import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 
 export class JuniorTableFilter extends Filter<JuniorDto> {
+    public search = '';
+    public onlyNotGraduated = true;
+
     applyFilter(items: JuniorDto[]): JuniorDto[] {
-        return items;
+        return items.filter((item) => {
+            let filtered = true;
+            const search = this.search.toLowerCase().trim();
+            const textFilters = TextFilterBuilder.of()
+                .splitWords(item.juniorEmpl?.name)
+                .splitWords(item.mentor?.name)
+                .ignoreCase(item?.latestReport?.createdBy?.name)
+                .ignoreCase(item?.role);
+
+            filtered = filtered && searchUtils.textFilter(this.search, textFilters);
+            if (this.onlyNotGraduated) {
+                filtered = filtered && Boolean(!item.graduation);
+            }
+            return filtered;
+        });
+
     }
 
 }
@@ -54,7 +73,8 @@ export class JuniorRegistryDataContainer extends TableComponentDataContainer<Jun
     get exportCompleted() {
         return this._exportCompleted;
     }
-    public actionOnClickAllowed(): boolean{
+
+    public actionOnClickAllowed(): boolean {
         return true;
     }
 

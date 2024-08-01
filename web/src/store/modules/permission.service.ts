@@ -120,6 +120,7 @@ export enum Permissions {
      */
     AdminJuniorRegistry = "admin_junior_reg",
 
+    AccessJuniorRegistry = "access_junior_reg",
 
     /**
      * Only logged in user or user with permission techprofile_download can download tech profile
@@ -165,7 +166,7 @@ export enum Permissions {
     /**
      * Admin managers of departments, business accounts and projects
      */
-    AdminManagers = "admin_managers",
+    AdminManagers = "admin_managers"
 
 }
 
@@ -233,6 +234,8 @@ interface PermissionService {
     canReportSalaryRequest(): boolean;
 
     canApproveSalaryRequest(ba: number): boolean;
+
+    canAccessJuniorsRegistry(): boolean;
 
     canAdminJuniorRegistry(): boolean;
 
@@ -393,6 +396,10 @@ class VuexPermissionService implements PermissionService {
     canAdminJuniorRegistry(): boolean {
         return this.simplePermissionCheck(Permissions.AdminJuniorRegistry)
     }
+    canAccessJuniorsRegistry(): boolean {
+        return this.simplePermissionCheck(Permissions.AccessJuniorRegistry)
+    }
+
 
     canUploadTechProfiles(employeeId: number): boolean {
         return this.simplePermissionCheckOrCurrentEmployee(Permissions.UploadTechProfiles, employeeId);

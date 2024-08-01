@@ -46,6 +46,7 @@ public class JuniorRegistryService {
                                     log.debug("Get own juniors by {}", authContext.getUsername());
                                     return juniorRepo.findAllByBaProjectOrMentorSafe(
                                             authContext.getEmployeeInfo().getAccessibleBas(),
+                                            authContext.getEmployeeInfo().getAccessibleDepartments(),
                                             authContext.getEmployeeInfo().getAccessibleProjects(),
                                             authContext.getEmployeeInfo().getEmployeeId(),
                                             now);
@@ -71,6 +72,7 @@ public class JuniorRegistryService {
                                     return juniorRepo.findDetailedByBaProjectOrMentorSafe(
                                             registryId,
                                             auth.getEmployeeInfo().getAccessibleBas(),
+                                            auth.getEmployeeInfo().getAccessibleDepartments(),
                                             auth.getEmployeeInfo().getAccessibleProjects(),
                                             auth.getEmployeeInfo().getEmployeeId(),
                                             now);
@@ -128,6 +130,16 @@ public class JuniorRegistryService {
     public Mono<Integer> graduate(AuthContext auth, int registryId, GraduateJuniorBody body) {
         log.info("Graduating junior {} by {}", registryId, auth.getUsername());
         return doUpdate(auth, registryId, entry -> mapper.apply(entry, body, auth.getEmployeeInfo().getEmployeeId(), dateTimeService.now()));
+    }
+
+    @Transactional
+    public Mono<Integer> cancelGraduation(AuthContext auth, int registryId) {
+        log.info("Cancel graduation for junior {} by {}", registryId, auth.getUsername());
+        return doUpdate(auth, registryId, entry -> {
+            entry.setGraduatedAt(null);
+            entry.setGraduatedBy(null);
+            entry.setGraduatedComment(null);
+        });
     }
 
 

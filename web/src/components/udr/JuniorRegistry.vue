@@ -1,6 +1,25 @@
 <template>
   <hreasy-table :data="data" :create-new-title="$t('Добавление в реестр')"
                 :update-title="$t('Обновление записи в реестре')">
+    <template v-slot:filters>
+      <v-col>
+        <v-text-field v-if="data.filter"
+                      v-model="data.filter.search"
+                      append-icon="mdi-magnify"
+                      :label="$t('Поиск')"
+                      single-line
+                      hide-details
+        ></v-text-field>
+      </v-col>
+
+      <v-col cols="auto">
+        <v-select
+            v-model="data.filter.onlyNotGraduated"
+            :label="$t('Скрыть закончивших обучение')"
+            :items="[{value:false, text:$t('Нет')}, {value:true, text:$t('Да')}]">
+        </v-select>
+      </v-col>
+    </template>
     <template v-slot:additionalActions>
       <hreasy-table-export-to-excel-action :data=data></hreasy-table-export-to-excel-action>
     </template>

@@ -1,4 +1,5 @@
 import {errorUtils} from "@/components/errors";
+import logger from "@/logger";
 
 /**
  * Wrapper for item action in dialog.

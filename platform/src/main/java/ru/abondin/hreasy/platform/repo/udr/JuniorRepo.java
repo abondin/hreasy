@@ -58,6 +58,9 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
             j.budgeting_account in (:accessibleBas)
             or project.ba_id in (:accessibleBas)
             """;
+    String DEPARTMENT_FILTER = """
+            je.department in (:accessibleDepartments)
+            """;
 
     @Query(BASE_VIEW_QUERY)
     Flux<JuniorView> findAllDetailed(OffsetDateTime now);
@@ -76,21 +79,25 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
      */
     @Query(BASE_VIEW_QUERY + " and (" +
             " (" + PROJECTS_FILTER + ")" +
+            " or (" + DEPARTMENT_FILTER + ")" +
             " or (" + BAS_FILTER + ")" +
             " or (" + MENTOR_FILTER + ")" +
             ")")
     Flux<JuniorView> notSafeFindAllByBaProjectOrMentor(List<Integer> accessibleBas,
+                                                       List<Integer> accessibleDepartments,
                                                        List<Integer> accessibleProjects,
                                                        int mentorId,
                                                        OffsetDateTime now
     );
 
     default Flux<JuniorView> findAllByBaProjectOrMentorSafe(List<Integer> accessibleBas,
+                                                            List<Integer> accessibleDepartments,
                                                             List<Integer> accessibleProjects,
                                                             int mentorId,
                                                             OffsetDateTime now) {
         return notSafeFindAllByBaProjectOrMentor(
                 CollectionUtils.isEmpty(accessibleBas) ? Arrays.asList(Integer.MIN_VALUE) : accessibleBas,
+                CollectionUtils.isEmpty(accessibleDepartments) ? Arrays.asList(Integer.MIN_VALUE) : accessibleDepartments,
                 CollectionUtils.isEmpty(accessibleProjects) ? Arrays.asList(Integer.MIN_VALUE) : accessibleProjects,
                 mentorId, now
         );
@@ -107,20 +114,28 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
      */
     @Query(BASE_VIEW_QUERY + " and (" +
             " (" + PROJECTS_FILTER + ")" +
+            " or (" + DEPARTMENT_FILTER + ")" +
             " or (" + BAS_FILTER + ")" +
             " or (" + MENTOR_FILTER + ")" +
             ") and j.id = :juniorRegistryId")
     Mono<JuniorView> notSafeFindDetailedByBaProjectOrMentor(int juniorRegistryId,
                                                             List<Integer> accessibleBas,
                                                             List<Integer> accessibleProjects,
+                                                            List<Integer> accessibleDepartments,
                                                             int mentorId,
                                                             OffsetDateTime now
     );
 
-    default Mono<JuniorView> findDetailedByBaProjectOrMentorSafe(int juniorRegistryId, List<Integer> accessibleBas, List<Integer> accessibleProjects, Integer mentorId, OffsetDateTime now) {
+    default Mono<JuniorView> findDetailedByBaProjectOrMentorSafe(int juniorRegistryId,
+                                                                 List<Integer> accessibleBas,
+                                                                 List<Integer> accessibleDepartments,
+                                                                 List<Integer> accessibleProjects,
+                                                                 Integer mentorId,
+                                                                 OffsetDateTime now) {
         return notSafeFindDetailedByBaProjectOrMentor(
                 juniorRegistryId,
                 CollectionUtils.isEmpty(accessibleBas) ? Arrays.asList(Integer.MIN_VALUE) : accessibleBas,
+                CollectionUtils.isEmpty(accessibleDepartments) ? Arrays.asList(Integer.MIN_VALUE) : accessibleDepartments,
                 CollectionUtils.isEmpty(accessibleProjects) ? Arrays.asList(Integer.MIN_VALUE) : accessibleProjects,
                 mentorId, now
         );
