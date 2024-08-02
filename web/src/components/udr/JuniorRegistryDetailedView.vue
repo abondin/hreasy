@@ -12,62 +12,42 @@
       / {{ data.item.juniorEmpl.name }}
       <!-- General information and actions -->
       <v-card class="mt-5" :loading="fetchLoading">
+        <v-card-title>
+          <span>{{ data.item.juniorEmpl.name }}</span>
+          <v-spacer></v-spacer>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <v-btn @click="data.openGraduateDialog(Boolean(data.item.graduation))"
+                     v-bind="tattrs" v-on="ton" class="col-auto" color="success"
+                     :disabled="false" icon>
+                <v-icon>mdi-school</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ $t('Закончить обучение') }}</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <v-btn @click="data.openUpdateDialog()"
+                     v-bind="tattrs" v-on="ton" class="col-auto" color="primary"
+                     :disabled="false" icon>
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ $t('Редактировать') }}</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: ton, attrs: tattrs}">
+              <v-btn @click="data.openDeleteDialog()"
+                     v-bind="tattrs" v-on="ton" class="col-auto" color="error"
+                     :disabled="false" icon>
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ $t('Удалить') }}</span>
+          </v-tooltip>
+        </v-card-title>
         <v-card-text>
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title class="title d-flex">
-                <span>{{ data.item.juniorEmpl.name }}</span>
-                <v-spacer></v-spacer>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                    <v-btn @click="data.openGraduateDialog(Boolean(data.item.graduation))"
-                           v-bind="tattrs" v-on="ton" class="col-auto" color="success"
-                           :disabled="false" icon>
-                      <v-icon>mdi-school</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>{{ $t('Закончить обучение') }}</span>
-                </v-tooltip>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                    <v-btn @click="data.openUpdateDialog()"
-                           v-bind="tattrs" v-on="ton" class="col-auto" color="primary"
-                           :disabled="false" icon>
-                      <v-icon>mdi-pencil</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>{{ $t('Редактировать') }}</span>
-                </v-tooltip>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                    <v-btn @click="data.openDeleteDialog()"
-                           v-bind="tattrs" v-on="ton" class="col-auto" color="error"
-                           :disabled="false" icon>
-                      <v-icon>mdi-delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>{{ $t('Удалить') }}</span>
-                </v-tooltip>
-
-              </v-list-item-title>
-              <v-list-item-subtitle>{{ $t('Дата трудоуйства') }} :
-                {{ formatDate(data.item.juniorDateOfEmployment) }} ({{ $tc('months', data.item.juniorInCompanyMonths) }}
-                {{ $t('в компании') }})
-              </v-list-item-subtitle>
-              <v-list-item-subtitle>{{ $t('Ментор') }} :
-                {{ data.item.mentor?.name || $t('Нет') }}
-              </v-list-item-subtitle>
-              <v-list-item-subtitle>{{ $t('Роль') }} :
-                {{ data.item.role || $t('Нет') }}
-              </v-list-item-subtitle>
-              <v-list-item-subtitle>{{ $t('Бюджет') }} :
-                {{ data.item.budgetingAccount?.name || $t('Нет') }}
-              </v-list-item-subtitle>
-              <v-list-item-subtitle>{{ $t('Текущий проект') }} :
-                {{ data.item.currentProject?.name || $t('Нет') }}
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
+          <junior-info-view v-if="data?.item" :item="data.item"></junior-info-view>
 
           <!-- Dialogs -->
           <in-dialog-form size="lg" form-ref="updateForm" :data="data.updateDialogAction"
@@ -118,10 +98,11 @@ import {errorUtils} from "@/components/errors";
 import {JuniorDetailDataContainer} from "@/components/udr/junior-details.data.container";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import JuniorAddUpdateFormFields from "@/components/udr/JuniorAddUpdateFormFields.vue";
+import JuniorInfoView from "@/components/udr/JuniorInfoView.vue";
 
 
 @Component({
-  components: {JuniorAddUpdateFormFields, InDialogForm}
+  components: {JuniorInfoView, JuniorAddUpdateFormFields, InDialogForm}
 })
 export default class JuniorRegistryDetailedView extends Vue {
 
