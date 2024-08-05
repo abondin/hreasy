@@ -8,10 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.udr.JuniorRegistryService;
-import ru.abondin.hreasy.platform.service.udr.dto.AddToJuniorRegistryBody;
-import ru.abondin.hreasy.platform.service.udr.dto.GraduateJuniorBody;
-import ru.abondin.hreasy.platform.service.udr.dto.JuniorDto;
-import ru.abondin.hreasy.platform.service.udr.dto.UpdateJuniorRegistryBody;
+import ru.abondin.hreasy.platform.service.udr.dto.*;
 
 @RestController()
 @RequestMapping("/api/v1/udr")
@@ -43,6 +40,7 @@ public class UdrController {
     public Mono<Integer> updateJunior(@PathVariable int registryId, @RequestBody UpdateJuniorRegistryBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> service.update(auth, registryId, body));
     }
+
     @PutMapping("/juniors/{registryId}/graduate")
     @Operation(summary = "Graduate junior")
     public Mono<Integer> graduateJunior(@PathVariable int registryId, @RequestBody GraduateJuniorBody body) {
@@ -60,5 +58,18 @@ public class UdrController {
     public Mono<Integer> cancelGraduation(@PathVariable int registryId) {
         return AuthHandler.currentAuth().flatMap(auth -> service.cancelGraduation(auth, registryId));
     }
+
+    @PostMapping("/juniors/{registryId}/report")
+    @Operation(summary = "Add junior report")
+    public Mono<Integer> addJuniorReport(@PathVariable int registryId, @RequestBody AddJuniorReportBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.addJuniorReport(auth, registryId, body));
+    }
+
+    @PutMapping("/juniors/{registryId}/report/{reportId}")
+    @Operation(summary = "Add junior report")
+    public Mono<Integer> addJuniorReport(@PathVariable int registryId, @PathVariable int reportId, @RequestBody UpdateJuniorReportBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.updateJuniorReport(auth, registryId, reportId, body));
+    }
+
 
 }

@@ -32,10 +32,10 @@ import {UiConstants} from "@/components/uiconstants";
 import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
 
 @Component
-export default class InDialogForm<T> extends Vue {
+export default class InDialogForm<ID, T> extends Vue {
 
   @Prop({required: true})
-  private data!: InDialogActionDataContainer<T>;
+  private data!: InDialogActionDataContainer<ID, T>;
 
   @Prop({required: false})
   private title?: () => string | string | undefined;

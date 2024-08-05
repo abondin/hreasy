@@ -25,6 +25,15 @@
         <dd> {{ item.currentProject?.name || $t('Нет') }}</dd>
       </dl>
     </div>
+    <div class="col-md-auto" v-if="item.graduation">
+      <div class="subtitle-1 text-decoration-underline column-title">{{ $t('Завершение обучения') }}</div>
+      <dl class="info-dl text--primary text-wrap">
+        <dt>{{ $t('Обучение завершил') }}:</dt>
+        <dd>{{ item.graduation.graduatedBy.name }} ({{ formatDateTime(item.graduation.graduatedAt) }})</dd>
+        <dt>{{ $t('Комментарий') }}:</dt>
+        <dd>{{ item.graduation.comment }}</dd>
+      </dl>
+    </div>
     <!--</editor-fold>-->
   </div>
 </template>
@@ -41,7 +50,7 @@ import {JuniorDto} from "@/components/udr/udr.service";
 @Component({
   components: {}
 })
-export default class JuniorInfoView extends Vue {
+export default class JuniorInfoReports extends Vue {
 
   @Prop({required: true})
   item!: JuniorDto;

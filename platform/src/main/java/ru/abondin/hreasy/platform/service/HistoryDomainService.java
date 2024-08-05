@@ -29,7 +29,8 @@ public class HistoryDomainService {
         SALARY_REQUEST_APPROVAL("salary_request_approval"),
         SALARY_REQUEST_CLOSED_REPORT_PERIOD("salary_request_closed_report_period"),
         SUPPORT_REQUEST("support_request"),
-        JUNIOR_REGISTRY("junior_registry");
+        JUNIOR_REGISTRY("junior_registry"),
+        JUNIOR_REGISTRY_REPORT("junior_registry_report");
         private final String type;
     }
 

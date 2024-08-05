@@ -75,7 +75,7 @@
                   v-if="data.graduateDialogAction.formData"
                   v-model="data.graduateDialogAction.formData.comment"
                   :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
-                  :label="$t('Описание')">
+                  :label="$t('Комментарий')">
               </v-textarea>
               </span>
               <p v-else>{{ $t('Вы уверены, что хотите отменить решение об окончании обучения?') }}</p>
@@ -83,6 +83,8 @@
           </in-dialog-form>
         </v-card-text>
       </v-card>
+
+      <junior-info-reports :data="data"  v-on:submit="fetchData"></junior-info-reports>
     </div>
   </v-container>
 </template>
@@ -98,11 +100,12 @@ import {errorUtils} from "@/components/errors";
 import {JuniorDetailDataContainer} from "@/components/udr/junior-details.data.container";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import JuniorAddUpdateFormFields from "@/components/udr/JuniorAddUpdateFormFields.vue";
-import JuniorInfoView from "@/components/udr/JuniorInfoView.vue";
+import JuniorInfoReports from "@/components/udr/info/JuniorInfoReports.vue";
+import JuniorInfoView from "@/components/udr/info/JuniorInfoView.vue";
 
 
 @Component({
-  components: {JuniorInfoView, JuniorAddUpdateFormFields, InDialogForm}
+  components: {JuniorInfoReports, JuniorInfoView, JuniorAddUpdateFormFields, InDialogForm}
 })
 export default class JuniorRegistryDetailedView extends Vue {
 

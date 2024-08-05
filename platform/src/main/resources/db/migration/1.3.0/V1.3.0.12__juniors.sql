@@ -79,4 +79,5 @@ COMMENT ON COLUMN history.history.entity_type IS '
   [support_request_group] - Support Request Group
   [support_request] - Support Request
   [junior_registry] - Juniors registry
+  [junior_registry_report] - Juniors registry
   ';

@@ -11,11 +11,13 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.repo.udr.JuniorEntry;
 import ru.abondin.hreasy.platform.repo.udr.JuniorRepo;
+import ru.abondin.hreasy.platform.repo.udr.JuniorReportEntry;
 import ru.abondin.hreasy.platform.repo.udr.JuniorReportRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.udr.dto.*;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -24,6 +26,7 @@ import java.util.function.Consumer;
 public class JuniorRegistryService {
 
     public static final String JUNIOR_LOG_ENTITY_TYPE = "Junior";
+    public static final String JUNIOR_REPORT_LOG_ENTITY_TYPE = "JuniorReport";
     private final DateTimeService dateTimeService;
     private final JuniorRepo juniorRepo;
     private final JuniorReportRepo reportRepo;
@@ -142,6 +145,29 @@ public class JuniorRegistryService {
         });
     }
 
+    @Transactional
+    public Mono<Integer> addJuniorReport(AuthContext auth, int registryId, AddJuniorReportBody body) {
+        log.info("Add report to junior {} by {}", registryId, auth.getUsername());
+        return juniorRepo.findById(registryId)
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(JUNIOR_LOG_ENTITY_TYPE, registryId))
+                .flatMap(entry -> securityValidator.addReport(auth, entry))
+                .flatMap(v -> {
+                    var reportEntry = mapper.toReportEntry(body, registryId, auth.getEmployeeInfo().getEmployeeId(), dateTimeService.now());
+                    return reportRepo.save(reportEntry);
+                }).flatMap(persisted ->
+                        history.persistHistory(persisted.getId(),
+                                HistoryDomainService.HistoryEntityType.JUNIOR_REGISTRY_REPORT,
+                                persisted, dateTimeService.now(), auth.getEmployeeInfo().getEmployeeId()))
+                .map(HistoryEntry::getEntityId);
+
+    }
+
+    @Transactional
+    public Mono<Integer> updateJuniorReport(AuthContext auth, int registryId, int reportId, UpdateJuniorReportBody body) {
+        log.info("Update report {} of junior {} by {}", reportId, registryId, auth.getUsername());
+        return doUpdateReport(auth, registryId, registryId, entry -> mapper.applyReportUpdate(entry, body));
+    }
+
 
     private Mono<Integer> doUpdate(AuthContext auth, int registryId, Consumer<JuniorEntry> changesApplier) {
         var now = dateTimeService.now();
@@ -154,6 +180,23 @@ public class JuniorRegistryService {
                                     .flatMap(updated -> history.persistHistory(updated.getId(), HistoryDomainService.HistoryEntityType.JUNIOR_REGISTRY, updated, now, auth.getEmployeeInfo().getEmployeeId()))
                                     .map(HistoryEntry::getEntityId);
                         }));
+    }
+
+    private Mono<Integer> doUpdateReport(AuthContext auth, int juniorId, int reportId, Consumer<JuniorReportEntry> changesApplier) {
+        var now = dateTimeService.now();
+        return juniorRepo.findById(juniorId)
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(JUNIOR_LOG_ENTITY_TYPE, juniorId))
+                .flatMap(juniorEntry -> reportRepo.findById(reportId)
+                        .flatMap(reportEntry -> securityValidator.updateReport(auth, juniorEntry, reportEntry)
+                                .flatMap(v -> {
+                                    if (!Objects.equals(reportEntry.getJuniorId(), juniorEntry.getId())) {
+                                        return BusinessErrorFactory.entityNotFound(JUNIOR_LOG_ENTITY_TYPE, juniorId);
+                                    }
+                                    changesApplier.accept(reportEntry);
+                                    return reportRepo.save(reportEntry)
+                                            .flatMap(updated -> history.persistHistory(updated.getId(), HistoryDomainService.HistoryEntityType.JUNIOR_REGISTRY_REPORT, updated, now, auth.getEmployeeInfo().getEmployeeId()))
+                                            .map(HistoryEntry::getEntityId);
+                                })));
     }
 
 

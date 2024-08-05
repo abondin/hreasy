@@ -5,22 +5,22 @@ import logger from "@/logger";
  * Wrapper for item action in dialog.
  * Use to update, create, update item
  */
-export class InDialogActionDataContainer<T> {
+export class InDialogActionDataContainer<ID,T> {
     public dialog = false;
     public loading = false;
     public error: string | null = null;
 
     private _formData: T | null = null;
-    private _itemId: number | null = null;
+    private _itemId: ID | null = null;
 
-    constructor(private submitAction: (itemId: number | null, item: T | null) => Promise<any>) {
+    constructor(private submitAction: (itemId: ID | null, item: T | null) => Promise<any>) {
     }
 
     get formData() {
         return this._formData;
     }
 
-    public openDialog(itemId: number | null, formData: T | null) {
+    public openDialog(itemId: ID | null, formData: T | null) {
         this._formData = formData;
         this._itemId = itemId;
         this.dialog = true;

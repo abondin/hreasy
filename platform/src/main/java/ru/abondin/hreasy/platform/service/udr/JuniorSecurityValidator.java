@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.udr.JuniorEntry;
+import ru.abondin.hreasy.platform.repo.udr.JuniorReportEntry;
 
 import java.util.Objects;
 
@@ -78,6 +80,34 @@ public class JuniorSecurityValidator {
                 return Mono.just(true);
             }
             return Mono.error(new AccessDeniedException("Only user with permission admin_junior_reg or record creator can update juniors in registry"));
+        });
+    }
+
+    public Mono<Boolean> addReport(AuthContext auth, JuniorEntry entry) {
+        return Mono.defer(() ->
+                        (
+                auth.getAuthorities().contains(ADMIN_JUNIOR_REG_PERMISSION) ||
+                Objects.equals(entry.getCreatedBy(), auth.getEmployeeInfo().getEmployeeId()) ||
+                Objects.equals(entry.getMentorId(), auth.getEmployeeInfo().getEmployeeId())
+                        ) ? Mono.just(true) : Mono.just(false)).flatMap(r -> {
+            if (Boolean.TRUE.equals(r)) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only user with permission admin_junior_reg, mentor or record creator can add report to juniors in registry"));
+        });
+    }
+    public Mono<Boolean> updateReport(AuthContext auth, JuniorEntry entry, JuniorReportEntry report) {
+        return Mono.defer(() ->
+                (
+                        auth.getAuthorities().contains(ADMIN_JUNIOR_REG_PERMISSION) ||
+                                Objects.equals(entry.getCreatedBy(), auth.getEmployeeInfo().getEmployeeId()) ||
+                                Objects.equals(entry.getMentorId(), auth.getEmployeeInfo().getEmployeeId()) ||
+                                Objects.equals(report.getCreatedBy(), auth.getEmployeeInfo().getEmployeeId())
+                ) ? Mono.just(true) : Mono.just(false)).flatMap(r -> {
+            if (Boolean.TRUE.equals(r)) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only user with permission admin_junior_reg, mentor or record creator can add report to juniors in registry"));
         });
     }
 }

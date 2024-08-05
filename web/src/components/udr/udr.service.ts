@@ -26,8 +26,9 @@ export interface UpdateJuniorRegistryBody extends UpdateBody {
     role: string;
     budgetingAccount: number | null;
 }
-export interface GraduateBody{
-    comment: string|null;
+
+export interface GraduateBody {
+    comment: string | null;
 }
 
 export interface AddJuniorRegistryBody extends CreateBody {
@@ -38,7 +39,7 @@ export interface AddJuniorRegistryBody extends CreateBody {
 }
 
 export interface JuniorGraduation {
-    graduatedAt: Date;
+    graduatedAt: string;
     graduatedBy: SimpleDict;
     comment: string;
 }
@@ -47,9 +48,13 @@ export interface JuniorGraduation {
 export interface JuniorReport {
     id: number;
     progress: JuniorProgressType,
-    name: string;
     createdAt: Date;
     createdBy: SimpleDict;
+    comment: string;
+}
+
+export interface AddOrUpdateJuniorReportBody {
+    progress: JuniorProgressType;
     comment: string;
 }
 
@@ -85,6 +90,23 @@ export interface JuniorRegistryService {
     graduate(juniorRegistyId: number, body: GraduateBody | null): Promise<number>;
 
     cancelGraduation(id: number): Promise<any> | Promise<number>;
+
+    /**
+     *
+     * @param juniorId
+     * @param body
+     * @return reportId
+     */
+    createReport(juniorId: number, body: AddOrUpdateJuniorReportBody): Promise<number>;
+
+    /**
+     *
+     * @param juniorId
+     * @param reportId
+     * @param body
+     * @return reportId
+     */
+    updateReport(juniorId: number, reportId: number, body: AddOrUpdateJuniorReportBody): Promise<number>;
 }
 
 class RestJuniorRegistryService implements JuniorRegistryService {
@@ -145,6 +167,19 @@ class RestJuniorRegistryService implements JuniorRegistryService {
             link.click();
         });
     }
+
+    createReport(juniorId: number, body: AddOrUpdateJuniorReportBody): Promise<number> {
+        return httpService.post(`v1/udr/juniors/${juniorId}/reports`, body).then(response => {
+            return response.data;
+        });
+    }
+
+    updateReport(juniorId: number, reportId: number, body: AddOrUpdateJuniorReportBody): Promise<number> {
+        return httpService.put(`v1/udr/juniors/${juniorId}/reports/${reportId}`, body).then(response => {
+            return response.data;
+        });
+    }
+
 }
 
 const juniorService: JuniorRegistryService = new RestJuniorRegistryService(httpService);

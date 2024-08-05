@@ -6,6 +6,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.udr.JuniorEntry;
+import ru.abondin.hreasy.platform.repo.udr.JuniorReportEntry;
 import ru.abondin.hreasy.platform.repo.udr.JuniorView;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
@@ -41,6 +42,14 @@ public abstract class JuniorRegistryMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "employeeId", target = "graduatedBy")
     public abstract void apply(@MappingTarget JuniorEntry entry, GraduateJuniorBody body, int employeeId, OffsetDateTime now);
 
+    @Mapping(source = "body", target = ".")
+    @Mapping(source = "registryId", target = "juniorId")
+    @Mapping(source = "employeeId", target = "createdBy")
+    @Mapping(source = "now", target = "createdAt")
+    public abstract JuniorReportEntry toReportEntry(AddJuniorReportBody body, Integer registryId,Integer employeeId, OffsetDateTime now);
+
+    @Mapping(source = "body", target = ".")
+    public abstract void applyReportUpdate(@MappingTarget JuniorReportEntry entry, UpdateJuniorReportBody body);
 
     @Named("budgetingAccount")
     protected SimpleDictDto budgetingAccount(JuniorView view) {
@@ -81,6 +90,7 @@ public abstract class JuniorRegistryMapper extends MapperBaseWithJsonSupport {
     private SimpleDictDto graduatedBy(JuniorView view) {
         return simpleDto(view.getGraduatedBy(), view.getGraduatedByDisplayName());
     }
+
 
 
 }
