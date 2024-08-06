@@ -16,13 +16,13 @@
       </v-tooltip>
     </v-card-title>
     <!-- Reports -->
-    <v-card v-if="data.item.reports.length">
-      <template v-for="(report) in data.item.reports">
-        <v-container v-bind:key="report.id">
-          <v-row>
+    <span v-if="data.item.reports.length">
+      <v-card outlined v-for="(report) in data.item.reports" v-bind:key="report.id">
+        <v-container>
+          <v-row dense>
             <v-col cols="">{{ report.createdBy.name + ' (' + formatDateTime(report.createdAt) + ')' }}</v-col>
             <v-col cols="auto" align-self="end">
-              <v-tooltip>
+              <v-tooltip bottom>
                 <template v-slot:activator="{ on: ton, attrs: tattrs}">
                   <v-btn v-bind="tattrs" v-on="ton" text icon @click="data.openDeleteReportDialog(report.id)">
                     <v-icon>mdi-delete</v-icon>
@@ -32,12 +32,20 @@
               </v-tooltip>
             </v-col>
           </v-row>
-          <v-row>
-            <v-col>{{ report.comment }}</v-col>
+          <v-row dense>
+            <v-col cols="auto">
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <v-icon :set="icon=getIcon(report.progress)" v-bind="tattrs" v-on="ton" x-large :color="icon.color">{{ icon.icon }}</v-icon>
+                </template>
+                {{ $t('JUNIOR_PROGRESS_TYPE.' + report.progress) }}
+              </v-tooltip>
+            </v-col>
+            <v-col class="align-content-center">{{ report.comment }}</v-col>
           </v-row>
         </v-container>
-      </template>
-    </v-card>
+      </v-card>
+    </span>
     <v-card-text v-else class="text-center">
       {{ $t('Оставьте ваш первый отчёт о работе сотрудника!') }}
     </v-card-text>

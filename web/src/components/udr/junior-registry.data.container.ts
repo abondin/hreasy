@@ -51,6 +51,10 @@ export class JuniorRegistryDataContainer extends TableComponentDataContainer<Jun
         return this._clickOnRowAction(item);
     }
 
+    public createAllowed(): boolean {
+        return permissionService.canAdminJuniorRegistry()
+    }
+
     public canExport(): boolean {
         return permissionService.canAdminJuniorRegistry();
     }
