@@ -29,11 +29,7 @@
     </template>
     <template v-slot:[`item.progress`]="{ item }">
       <span v-for="report in item.reports" v-bind:key="report.id">
-        <span v-if="report.progress == 1"><v-icon color="error">mdi-arrow-bottom-left</v-icon></span>
-        <span v-else-if="report.progress == 2"><v-icon>mdi-minus</v-icon></span>
-        <span v-else-if="report.progress == 3"><v-icon color="success">mdi-arrow-top-right</v-icon></span>
-        <span v-else-if="report.progress == 4"><v-icon color="success">mdi-arrow-top</v-icon></span>
-        <span v-else>UNKNOWN_PROGRESS: {{ report.progress }}</span>
+        <v-icon :set="icon=getIcon(report.progress)" :color="icon.color">{{ icon.icon }}</v-icon>
       </span>
     </template>
     <template v-slot:[`item.latestReport.createdAt`]="{ item }">
@@ -55,6 +51,7 @@ import {JuniorRegistryDataContainer} from "@/components/udr/junior-registry.data
 import JuniorAddUpdateFormFields from "@/components/udr/JuniorAddUpdateFormFields.vue";
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import HreasyTableExportToExcelAction from "@/components/shared/table/HreasyTableExportToExcelAction.vue";
+import {JuniorProgressType} from "@/components/udr/udr.service";
 
 
 @Component({
@@ -67,7 +64,7 @@ import HreasyTableExportToExcelAction from "@/components/shared/table/HreasyTabl
     HreasyTableCreateForm
   }
 })
-export default class JuniorRegistry extends Vue {
+export default class JuniorRegistryTable extends Vue {
   private data = new JuniorRegistryDataContainer(() => {
         const headers: DataTableHeader[] = [
           {text: this.$tc('Молодой специалист'), value: 'juniorEmpl.name'},
@@ -96,6 +93,22 @@ export default class JuniorRegistry extends Vue {
     this.data.init();
   }
 
+  public static getIcon(type: JuniorProgressType): { icon: string, color: string } {
+    switch (type) {
+      case JuniorProgressType.DEGRADATION:
+        return {icon: 'mdi-arrow-bottom-left', color: 'error'};
+      case JuniorProgressType.NO_PROGRESS:
+        return {icon: 'mdi-minus', color: ''};
+      case JuniorProgressType.PROGRESS:
+        return {icon: 'mdi-arrow-top-right', color: 'success'};
+      case JuniorProgressType.GOOD_PROGRESS:
+        return {icon: 'mdi-arrow-up-bold', color: 'success'};
+      default:
+        return {icon: 'mdi-question', color: 'error'};
+    }
+  }
+
+  getIcon = JuniorRegistryTable.getIcon;
 
   formatDateTime = (v: string | undefined) => DateTimeUtils.formatDateTimeFromIso(v);
 

@@ -140,6 +140,7 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
         Assertions.assertEquals(auth.getEmployeeInfo().getEmployeeId(), jun.getCreatedBy());
     }
 
+
     private Mono<Void> cleanTables() {
         return db.sql("delete from udr.junior_report").then()
                 .then(db.sql("delete from udr.junior_registry").then());

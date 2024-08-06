@@ -33,7 +33,7 @@ import DictAdminOrganizations from "@/components/admin/dict/DictAdminOrganizatio
 import AdminEmployeesKidsImportWorkflowComponent
     from "@/components/admin/employee/imp/AdminEmployeesKidsImportWorkflow.vue";
 import TelegramConfirmationPage from "@/components/telegram/TelegramConfirmationPage.vue";
-import JuniorRegistry from "@/components/udr/JuniorRegistry.vue";
+import JuniorRegistryTable from "@/components/udr/JuniorRegistryTable.vue";
 import JuniorRegistryDetailedView from "@/components/udr/JuniorRegistryDetailedView.vue";
 
 Vue.use(VueRouter)
@@ -63,7 +63,7 @@ const routes = [
     },
     {path: "/salaries/requests", component: SalaryRequests, name: "salariesRequests"},
     {path: "/timesheet", component: TimesheetTableComponent},
-    {path: "/juniors", component: JuniorRegistry},
+    {path: "/juniors", component: JuniorRegistryTable},
     {path: "/juniors/:juniorRegistryId", component: JuniorRegistryDetailedView, props: true},
     {path: "/admin/projects", component: AdminProjects},
     {path: "/admin/projects/:projectId", component: AdminProjectDetails, props: true},

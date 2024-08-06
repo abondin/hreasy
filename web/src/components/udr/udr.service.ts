@@ -48,7 +48,7 @@ export interface JuniorGraduation {
 export interface JuniorReport {
     id: number;
     progress: JuniorProgressType,
-    createdAt: Date;
+    createdAt: string;
     createdBy: SimpleDict;
     comment: string;
 }
@@ -107,6 +107,8 @@ export interface JuniorRegistryService {
      * @return reportId
      */
     updateReport(juniorId: number, reportId: number, body: AddOrUpdateJuniorReportBody): Promise<number>;
+
+    deleteReport(juniorId: number, reportId: number): Promise<number>;
 }
 
 class RestJuniorRegistryService implements JuniorRegistryService {
@@ -176,6 +178,12 @@ class RestJuniorRegistryService implements JuniorRegistryService {
 
     updateReport(juniorId: number, reportId: number, body: AddOrUpdateJuniorReportBody): Promise<number> {
         return httpService.put(`v1/udr/juniors/${juniorId}/reports/${reportId}`, body).then(response => {
+            return response.data;
+        });
+    }
+
+    deleteReport(juniorId: number, reportId: number): Promise<number> {
+        return httpService.delete(`v1/udr/juniors/${juniorId}/reports/${reportId}`).then(response => {
             return response.data;
         });
     }

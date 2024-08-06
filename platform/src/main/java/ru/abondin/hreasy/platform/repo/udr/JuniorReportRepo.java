@@ -10,4 +10,7 @@ public interface JuniorReportRepo extends ReactiveCrudRepository<JuniorReportEnt
 
     @Query("update udr.junior_report set deleted_by=:deletedBy, deleted_at=:deletedAt where junior_id=:juniorId")
     Mono<Integer> markAllAsDeleted(int juniorId, Integer deletedBy, OffsetDateTime deletedAt);
+
+    @Query("select * from udr.junior_report where id=:reportId and junior_id=:juniorId")
+    Mono<JuniorReportEntry> findByJuniorIdAndReportId(int juniorId, int reportId);
 }

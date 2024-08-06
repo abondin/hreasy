@@ -59,17 +59,22 @@ public class UdrController {
         return AuthHandler.currentAuth().flatMap(auth -> service.cancelGraduation(auth, registryId));
     }
 
-    @PostMapping("/juniors/{registryId}/report")
+    @PostMapping("/juniors/{registryId}/reports")
     @Operation(summary = "Add junior report")
     public Mono<Integer> addJuniorReport(@PathVariable int registryId, @RequestBody AddJuniorReportBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> service.addJuniorReport(auth, registryId, body));
     }
 
-    @PutMapping("/juniors/{registryId}/report/{reportId}")
-    @Operation(summary = "Add junior report")
-    public Mono<Integer> addJuniorReport(@PathVariable int registryId, @PathVariable int reportId, @RequestBody UpdateJuniorReportBody body) {
+    @PutMapping("/juniors/{registryId}/reports/{reportId}")
+    @Operation(summary = "Update junior report")
+    public Mono<Integer> updateJuniorReport(@PathVariable int registryId, @PathVariable int reportId, @RequestBody UpdateJuniorReportBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> service.updateJuniorReport(auth, registryId, reportId, body));
     }
 
+    @DeleteMapping("/juniors/{registryId}/reports/{reportId}")
+    @Operation(summary = "Delete junior graduation")
+    public Mono<Integer> deleteJuniorReport(@PathVariable int registryId, @PathVariable int reportId) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.deleteJuniorReport(auth, registryId, reportId));
+    }
 
 }

@@ -8,7 +8,7 @@ import java.time.OffsetDateTime;
 
 @Data
 public class JuniorReportDto {
-
+    private Integer id;
     /**
      * <ul>
      * <li>1 - Degradation</li>

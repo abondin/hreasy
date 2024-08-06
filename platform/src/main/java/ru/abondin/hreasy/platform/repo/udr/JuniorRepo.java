@@ -25,15 +25,16 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
                         (
                             SELECT json_agg(
                                 json_build_object(
+                                    'id', report.id,
                                     'progress', report.progress,
                                     'comment', report.comment,
                                     'createdBy', json_build_object('id', created.id, 'name', created.display_name),
-                                    'createdAt', report.created_at)
+                                    'createdAt', report.created_at) ORDER BY created_at desc
                                 )
                             FROM udr.junior_report report
                             INNER JOIN empl.employee created ON report.created_by = created.id
                             WHERE report.junior_id = j.id
-                            AND report.deleted_at IS NULL
+                            AND (report.deleted_at IS NULL or report.deleted_at >= :now)
                          ) AS reports
                 from udr.junior_registry j
                 left join empl.employee je on j.junior_empl_id = je.id

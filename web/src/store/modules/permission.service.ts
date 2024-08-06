@@ -240,6 +240,13 @@ interface PermissionService {
     canAdminJuniorRegistry(): boolean;
 
     /**
+     * Only user with junior admin privilege or report creator can update of delete report
+     * @param reportCreator
+     */
+    canUpdateJuniorReport(reportCreator: number): boolean;
+
+
+    /**
      * Check if given user can download employee's tech profiles
      * @param employeeId
      */
@@ -293,6 +300,7 @@ interface PermissionService {
      * Has access to manager admin page
      */
     canAdminManagers(): boolean;
+
 }
 
 const namespace = 'auth';
@@ -396,8 +404,13 @@ class VuexPermissionService implements PermissionService {
     canAdminJuniorRegistry(): boolean {
         return this.simplePermissionCheck(Permissions.AdminJuniorRegistry)
     }
+
     canAccessJuniorsRegistry(): boolean {
         return this.simplePermissionCheck(Permissions.AccessJuniorRegistry)
+    }
+
+    canUpdateJuniorReport(reportCreator: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.AdminJuniorRegistry, reportCreator);
     }
 
 

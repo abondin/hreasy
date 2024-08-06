@@ -96,18 +96,16 @@ public class JuniorSecurityValidator {
             return Mono.error(new AccessDeniedException("Only user with permission admin_junior_reg, mentor or record creator can add report to juniors in registry"));
         });
     }
-    public Mono<Boolean> updateReport(AuthContext auth, JuniorEntry entry, JuniorReportEntry report) {
+    public Mono<Boolean> updateReport(AuthContext auth, JuniorReportEntry report) {
         return Mono.defer(() ->
                 (
                         auth.getAuthorities().contains(ADMIN_JUNIOR_REG_PERMISSION) ||
-                                Objects.equals(entry.getCreatedBy(), auth.getEmployeeInfo().getEmployeeId()) ||
-                                Objects.equals(entry.getMentorId(), auth.getEmployeeInfo().getEmployeeId()) ||
                                 Objects.equals(report.getCreatedBy(), auth.getEmployeeInfo().getEmployeeId())
                 ) ? Mono.just(true) : Mono.just(false)).flatMap(r -> {
             if (Boolean.TRUE.equals(r)) {
                 return Mono.just(true);
             }
-            return Mono.error(new AccessDeniedException("Only user with permission admin_junior_reg, mentor or record creator can add report to juniors in registry"));
+            return Mono.error(new AccessDeniedException("Only user with permission admin_junior_reg, or report creator can update report"));
         });
     }
 }

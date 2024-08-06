@@ -18,6 +18,10 @@ export class JuniorDetailDataContainer {
         new InDialogActionDataContainer<{ juniorId: number, reportId: number | null }, AddOrUpdateJuniorReportBody>((id, body) =>
             id?.reportId ? juniorService.updateReport(id.juniorId, id.reportId!, body!) : juniorService.createReport(id!.juniorId, body!)
         );
+    public readonly deleteReportDialogAction =
+        new InDialogActionDataContainer<{ juniorId: number, reportId: number}, void>((id, body) =>
+            juniorService.deleteReport(id!.juniorId!, id!.reportId)
+        );
 
     private readonly _updateFormData: UpdateJuniorRegistryBody | null = null;
     private readonly _graduateFormData: GraduateBody | null = null;
@@ -54,6 +58,13 @@ export class JuniorDetailDataContainer {
             juniorId: this._data.id!,
             reportId: null
         }, {comment: '', progress: JuniorProgressType.NO_PROGRESS});
+    }
+
+    public openDeleteReportDialog(reportId:number) {
+        return this.deleteReportDialogAction.openDialog({
+            juniorId: this._data.id!,
+            reportId: reportId
+        }, null);
     }
 }
 

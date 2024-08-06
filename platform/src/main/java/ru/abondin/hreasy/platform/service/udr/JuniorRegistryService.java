@@ -17,7 +17,6 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.udr.dto.*;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -168,6 +167,15 @@ public class JuniorRegistryService {
         return doUpdateReport(auth, registryId, registryId, entry -> mapper.applyReportUpdate(entry, body));
     }
 
+    @Transactional
+    public Mono<Integer> deleteJuniorReport(AuthContext auth, int registryId, int reportId) {
+        log.info("Delete report {} of junior {} by {}", reportId, registryId, auth.getUsername());
+        return doUpdateReport(auth, registryId, reportId, entry -> {
+            entry.setDeletedAt(dateTimeService.now());
+            entry.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
+        });
+    }
+
 
     private Mono<Integer> doUpdate(AuthContext auth, int registryId, Consumer<JuniorEntry> changesApplier) {
         var now = dateTimeService.now();
@@ -184,19 +192,15 @@ public class JuniorRegistryService {
 
     private Mono<Integer> doUpdateReport(AuthContext auth, int juniorId, int reportId, Consumer<JuniorReportEntry> changesApplier) {
         var now = dateTimeService.now();
-        return juniorRepo.findById(juniorId)
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound(JUNIOR_LOG_ENTITY_TYPE, juniorId))
-                .flatMap(juniorEntry -> reportRepo.findById(reportId)
-                        .flatMap(reportEntry -> securityValidator.updateReport(auth, juniorEntry, reportEntry)
-                                .flatMap(v -> {
-                                    if (!Objects.equals(reportEntry.getJuniorId(), juniorEntry.getId())) {
-                                        return BusinessErrorFactory.entityNotFound(JUNIOR_LOG_ENTITY_TYPE, juniorId);
-                                    }
-                                    changesApplier.accept(reportEntry);
-                                    return reportRepo.save(reportEntry)
-                                            .flatMap(updated -> history.persistHistory(updated.getId(), HistoryDomainService.HistoryEntityType.JUNIOR_REGISTRY_REPORT, updated, now, auth.getEmployeeInfo().getEmployeeId()))
-                                            .map(HistoryEntry::getEntityId);
-                                })));
+        return reportRepo.findByJuniorIdAndReportId(juniorId, reportId)
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(JUNIOR_REPORT_LOG_ENTITY_TYPE, reportId))
+                .flatMap(reportEntry -> securityValidator.updateReport(auth, reportEntry)
+                        .flatMap(v -> {
+                            changesApplier.accept(reportEntry);
+                            return reportRepo.save(reportEntry)
+                                    .flatMap(updated -> history.persistHistory(updated.getId(), HistoryDomainService.HistoryEntityType.JUNIOR_REGISTRY_REPORT, updated, now, auth.getEmployeeInfo().getEmployeeId()))
+                                    .map(HistoryEntry::getEntityId);
+                        }));
     }
 
 
