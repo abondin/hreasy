@@ -12,10 +12,10 @@
       / {{ data.item.juniorEmpl.name }}
       <!-- General information and actions -->
       <v-card class="mt-5" :loading="fetchLoading">
-        <v-card-title>
+        <v-card-title :set="actionsEnabled=canUpdateJuniorRegistryInfo()">
           <span>{{ data.item.juniorEmpl.name }}</span>
           <v-spacer></v-spacer>
-          <v-tooltip bottom>
+          <v-tooltip bottom v-if="actionsEnabled">
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <v-btn @click="data.openGraduateDialog(Boolean(data.item.graduation))"
                      v-bind="tattrs" v-on="ton" class="col-auto" color="success"
@@ -25,7 +25,7 @@
             </template>
             <span>{{ $t('Закончить обучение') }}</span>
           </v-tooltip>
-          <v-tooltip bottom>
+          <v-tooltip bottom v-if="actionsEnabled">
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <v-btn @click="data.openUpdateDialog()"
                      v-bind="tattrs" v-on="ton" class="col-auto" color="primary"
@@ -35,7 +35,7 @@
             </template>
             <span>{{ $t('Редактировать') }}</span>
           </v-tooltip>
-          <v-tooltip bottom>
+          <v-tooltip bottom v-if="actionsEnabled">
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <v-btn @click="data.openDeleteDialog()"
                      v-bind="tattrs" v-on="ton" class="col-auto" color="error"
@@ -84,7 +84,7 @@
         </v-card-text>
       </v-card>
 
-      <junior-info-reports :data="data"  v-on:submit="fetchData"></junior-info-reports>
+      <junior-info-reports :data="data" v-on:submit="fetchData"></junior-info-reports>
     </div>
   </v-container>
 </template>
@@ -102,6 +102,7 @@ import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import JuniorAddUpdateFormFields from "@/components/udr/JuniorAddUpdateFormFields.vue";
 import JuniorInfoReports from "@/components/udr/info/JuniorInfoReports.vue";
 import JuniorInfoView from "@/components/udr/info/JuniorInfoView.vue";
+import permissionService from "@/store/modules/permission.service";
 
 
 @Component({
@@ -143,6 +144,10 @@ export default class JuniorRegistryDetailedView extends Vue {
 
   public navigateRegistry() {
     this.$router.push(`/juniors`);
+  }
+
+  canUpdateJuniorRegistryInfo() {
+    return this.data?.item?.createdBy ? permissionService.canUpdateJuniorReport(this.data.item.createdBy.id) : false;
   }
 
 

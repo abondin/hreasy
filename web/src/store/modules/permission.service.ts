@@ -240,6 +240,12 @@ interface PermissionService {
     canAdminJuniorRegistry(): boolean;
 
     /**
+     * Only user with junior admin privilege or creator can update of delete junior registry
+     * @param reportCreator
+     */
+    canUpdateJuniorRegistryInfo(registryCreator: number): boolean;
+
+    /**
      * Only user with junior admin privilege or report creator can update of delete report
      * @param reportCreator
      */
@@ -411,6 +417,10 @@ class VuexPermissionService implements PermissionService {
 
     canUpdateJuniorReport(reportCreator: number): boolean {
         return this.simplePermissionCheckOrCurrentEmployee(Permissions.AdminJuniorRegistry, reportCreator);
+    }
+
+    canUpdateJuniorRegistryInfo(registryCreator: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.AdminJuniorRegistry, registryCreator);
     }
 
 

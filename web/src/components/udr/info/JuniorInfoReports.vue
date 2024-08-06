@@ -16,46 +16,31 @@
       </v-tooltip>
     </v-card-title>
     <!-- Reports -->
-    <v-list v-if="data.item.reports.length" three-line>
-      <v-list-item-group multiple>
-        <template v-for="(report, index) in data.item.reports">
-          <v-list-item :key="report.id">
-            <template v-slot:default>
-              <v-list-item-icon>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                    <v-icon v-bind="tattrs" v-on="ton" x-large :set="icon=getIcon(report.progress)" :color="icon.color">
-                      {{ icon.icon }}
-                    </v-icon>
-                  </template>
-                  {{ $t('JUNIOR_PROGRESS_TYPE.' + report.progress) }}
-                </v-tooltip>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title
-                    v-text="report.createdBy.name + ' ('+formatDateTime(report.createdAt)+')'"></v-list-item-title>
-                <v-list-item-subtitle
-                    class="text--primary"
-                    v-text="report.comment"
-                ></v-list-item-subtitle>
-              </v-list-item-content>
-              <v-list-item-action v-if="canUpdateReport(report)">
-                <v-btn text icon @click="data.openDeleteReportDialog(report.id)">
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
-              </v-list-item-action>
-            </template>
-          </v-list-item>
-          <v-divider
-              v-if="index < data.item.reports.length - 1"
-              :key="index"
-          ></v-divider>
-        </template>
-      </v-list-item-group>
-    </v-list>
-    <p v-else class="ma-5">
+    <v-card v-if="data.item.reports.length">
+      <template v-for="(report) in data.item.reports">
+        <v-container v-bind:key="report.id">
+          <v-row>
+            <v-col cols="">{{ report.createdBy.name + ' (' + formatDateTime(report.createdAt) + ')' }}</v-col>
+            <v-col cols="auto" align-self="end">
+              <v-tooltip>
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <v-btn v-bind="tattrs" v-on="ton" text icon @click="data.openDeleteReportDialog(report.id)">
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </template>
+                {{ $t('Удалить') }}
+              </v-tooltip>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>{{ report.comment }}</v-col>
+          </v-row>
+        </v-container>
+      </template>
+    </v-card>
+    <v-card-text v-else class="text-center">
       {{ $t('Оставьте ваш первый отчёт о работе сотрудника!') }}
-    </p>
+    </v-card-text>
 
 
     <!-- Dialogs -->
@@ -90,7 +75,6 @@
         <p>{{ $t('Вы уверены, что хотите удалить отчёт?') }}</p>
       </template>
     </in-dialog-form>
-
 
   </v-card>
 </template>
