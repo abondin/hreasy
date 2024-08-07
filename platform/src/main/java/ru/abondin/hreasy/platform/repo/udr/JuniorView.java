@@ -10,7 +10,6 @@ public class JuniorView extends JuniorEntry {
 
     private String juniorEmplDisplayName;
     private LocalDate juniorDateOfEmployment;
-    private Integer juniorInCompanyMonths;
     private String mentorDisplayName;
     private String createdByDisplayName;
     private String graduatedByDisplayName;

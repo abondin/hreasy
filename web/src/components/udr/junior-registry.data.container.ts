@@ -4,10 +4,14 @@ import {DataTableHeader} from "vuetify";
 import permissionService from "@/store/modules/permission.service";
 import {DataContainerWithExcelExportSupport} from "@/components/shared/table/DataContainerWithExcelExportSupport";
 import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
+import {SimpleDict} from "@/store/modules/dict";
 
 export class JuniorTableFilter extends Filter<JuniorDto> {
     public search = '';
     public onlyNotGraduated = true;
+    public selectedBas: Array<number> = [];
+
+    public selectedRoles: Array<string> = [];
 
     applyFilter(items: JuniorDto[]): JuniorDto[] {
         return items.filter((item) => {
@@ -20,6 +24,8 @@ export class JuniorTableFilter extends Filter<JuniorDto> {
                 .ignoreCase(item?.role);
 
             filtered = filtered && searchUtils.textFilter(this.search, textFilters);
+            filtered = filtered && searchUtils.array(this.selectedBas, item.budgetingAccount?.id);
+            filtered = filtered && searchUtils.array(this.selectedRoles, item.role);
             if (this.onlyNotGraduated) {
                 filtered = filtered && Boolean(!item.graduation);
             }

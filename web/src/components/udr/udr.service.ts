@@ -1,6 +1,6 @@
 import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
-import {SimpleDict} from "@/store/modules/dict";
+import {SimpleDict, ValueWithStatus} from "@/store/modules/dict";
 import {CurrentProjectDict} from "@/components/empl/employee.service";
 import {CreateBody, UpdateBody, WithId} from "@/components/shared/table/TableComponentDataContainer";
 import {DateTimeUtils} from "@/components/datetimeutils";
@@ -61,7 +61,8 @@ export interface AddOrUpdateJuniorReportBody {
 export interface JuniorDto extends WithId {
     juniorEmpl: SimpleDict;
     juniorDateOfEmployment: string,
-    juniorInCompanyMonths: number | null,
+    juniorInCompanyMonths: ValueWithStatus<number>,
+    monthsWithoutReport: ValueWithStatus<number>,
     mentor?: SimpleDict;
     role: string;
     currentProject?: CurrentProjectDict;

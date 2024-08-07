@@ -2,23 +2,7 @@
   <hreasy-table :data="data" :create-new-title="$t('Добавление в реестр')"
                 :update-title="$t('Обновление записи в реестре')">
     <template v-slot:filters>
-      <v-col>
-        <v-text-field v-if="data.filter"
-                      v-model="data.filter.search"
-                      append-icon="mdi-magnify"
-                      :label="$t('Поиск')"
-                      single-line
-                      hide-details
-        ></v-text-field>
-      </v-col>
-
-      <v-col cols="auto">
-        <v-select
-            v-model="data.filter.onlyNotGraduated"
-            :label="$t('Скрыть закончивших обучение')"
-            :items="[{value:false, text:$t('Нет')}, {value:true, text:$t('Да')}]">
-        </v-select>
-      </v-col>
+      <junior-table-filter :data="data"/>
     </template>
     <template v-slot:additionalActions>
       <hreasy-table-export-to-excel-action :data=data></hreasy-table-export-to-excel-action>
@@ -32,8 +16,17 @@
         <v-icon :set="icon=getIcon(report.progress)" :color="icon.color">{{ icon.icon }}</v-icon>
       </span>
     </template>
+    <template v-slot:[`item.juniorInCompanyMonths`]="{ item }">
+      <value-with-status-chip :value="item.juniorInCompanyMonths" dense></value-with-status-chip>
+    </template>
+    <template v-slot:[`item.monthsWithoutReport`]="{ item }">
+      <value-with-status-chip :value="item.monthsWithoutReport" dense></value-with-status-chip>
+    </template>
     <template v-slot:[`item.latestReport.createdAt`]="{ item }">
       {{ formatDateTime(item.latestReport?.createdAt) }}
+    </template>
+    <template v-slot:[`item.graduation.graduatedAt`]="{ item }">
+      {{ formatDateTime(item.graduation?.graduatedAt) }}
     </template>
   </hreasy-table>
 </template>
@@ -52,10 +45,14 @@ import JuniorAddUpdateFormFields from "@/components/udr/JuniorAddUpdateFormField
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import HreasyTableExportToExcelAction from "@/components/shared/table/HreasyTableExportToExcelAction.vue";
 import {JuniorProgressType} from "@/components/udr/udr.service";
+import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
+import JuniorTableFilter from "@/components/udr/info/JuniorTableFilter.vue";
 
 
 @Component({
   components: {
+    JuniorTableFilter,
+    ValueWithStatusChip,
     HreasyTableExportToExcelAction,
     HreasyTable,
     JuniorAddUpdateFormFields,
@@ -73,10 +70,12 @@ export default class JuniorRegistryTable extends Vue {
           {text: this.$tc('Бюджет'), value: 'budgetingAccount.name'},
           {text: this.$tc('Текущий проект'), value: 'currentProject.name'},
           {text: this.$tc('Месяцев в компании'), value: 'juniorInCompanyMonths'},
+          {text: this.$tc('Месяцев без отчёта'), value: 'monthsWithoutReport'},
           {text: this.$tc('Прогресс'), value: 'progress'},
           {text: this.$tc('Последний срез (Когда)'), value: 'latestReport.createdAt'},
           {text: this.$tc('Последний срез (Кто)'), value: 'latestReport.createdBy.name'},
-          {text: this.$tc('Последний срез (Комментарий)'), value: 'latestReport.comment'}
+          {text: this.$tc('Последний срез (Комментарий)'), value: 'latestReport.comment'},
+          {text: this.$tc('Завершенил обучение'), value: 'graduation.graduatedAt'}
         ];
         return headers;
       },

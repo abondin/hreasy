@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.dto.ValueWithStatus;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -18,7 +19,8 @@ public class JuniorDto {
     @NotNull
     private SimpleDictDto juniorEmpl;
     private LocalDate juniorDateOfEmployment;
-    private Integer juniorInCompanyMonths;
+    private ValueWithStatus<Long> juniorInCompanyMonths;
+    private ValueWithStatus<Long> monthsWithoutReport;
     @Nullable
     private SimpleDictDto mentor;
     @NotNull

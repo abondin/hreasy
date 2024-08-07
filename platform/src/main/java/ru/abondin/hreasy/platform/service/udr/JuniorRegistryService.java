@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.config.udr.UdrProps;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.repo.udr.JuniorEntry;
 import ru.abondin.hreasy.platform.repo.udr.JuniorRepo;
@@ -32,6 +33,7 @@ public class JuniorRegistryService {
     private final JuniorSecurityValidator securityValidator;
     private final JuniorRegistryMapper mapper;
     private final HistoryDomainService history;
+    private final UdrProps props;
 
 
     @Transactional(readOnly = true)
@@ -56,7 +58,7 @@ public class JuniorRegistryService {
                                     throw new IllegalStateException("Unexpected value: " + mode);
                             }
                         }
-                ).map(mapper::toDto);
+                ).map(e->mapper.toDto(e, now, props));
     }
 
 
@@ -83,7 +85,7 @@ public class JuniorRegistryService {
                             }
                         }
                 ).switchIfEmpty(BusinessErrorFactory.entityNotFound(JUNIOR_LOG_ENTITY_TYPE, registryId))
-                .map(mapper::toDto);
+                .map(e->mapper.toDto(e, now, props));
     }
 
     @Transactional

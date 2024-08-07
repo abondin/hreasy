@@ -14,7 +14,6 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
     String BASE_VIEW_QUERY = """
                 select j.*, je.display_name as junior_empl_display_name,
                         je.date_of_employment as junior_date_of_employment,
-                        extract(month from age(:now,je.date_of_employment)) as junior_in_company_months,
                         mentor.display_name as mentor_display_name,
                         created.display_name as created_by_display_name,
                         graduated.display_name as graduated_by_display_name,

@@ -2,7 +2,11 @@
 <template>
   <v-card class="mt-5" v-if="data">
     <v-card-title>
-      <span>{{ $t('Отчёты') }}</span>
+      <span>{{ $t('Отчёты') }} <value-with-status-chip v-if="data.item.monthsWithoutReport.status!==1" :value="data.item.monthsWithoutReport">{{
+          $tc('months', data.item.monthsWithoutReport.value)
+        }} {{ $t('без отчёта') }}
+          </value-with-status-chip>
+</span>
       <v-spacer></v-spacer>
       <v-tooltip bottom>
         <template v-slot:activator="{ on: ton, attrs: tattrs}">
@@ -98,10 +102,11 @@ import {JuniorDetailDataContainer} from "@/components/udr/junior-details.data.co
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import JuniorRegistryTable from "@/components/udr/JuniorRegistryTable.vue";
 import permissionService from "@/store/modules/permission.service";
+import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 
 
 @Component({
-  components: {InDialogForm}
+  components: {ValueWithStatusChip, InDialogForm}
 })
 export default class JuniorInfoReports extends Vue {
 

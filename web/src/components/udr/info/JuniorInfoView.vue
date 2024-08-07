@@ -8,8 +8,9 @@
         <dt>{{ $t('ФИО') }}:</dt>
         <dd>{{ item.juniorEmpl.name }}</dd>
         <dt>{{ $t('Дата трудоуйства') }}:</dt>
-        <dd>{{ formatDate(item.juniorDateOfEmployment) }} ({{ $tc('months', item.juniorInCompanyMonths) }}
-          {{ $t('в компании') }})
+        <dd>{{ formatDate(item.juniorDateOfEmployment) }}</dd>
+        <dt>{{ $t('Месяцев в комании') }}:</dt>
+        <dd><value-with-status-chip :value="item.juniorInCompanyMonths"></value-with-status-chip>
         </dd>
 
         <dt>{{ $t('Ментор') }}:</dt>
@@ -45,10 +46,11 @@ import Component from 'vue-class-component';
 import {DateTimeUtils} from "@/components/datetimeutils";
 import {Prop} from "vue-property-decorator";
 import {JuniorDto} from "@/components/udr/udr.service";
+import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 
 
 @Component({
-  components: {}
+  components: {ValueWithStatusChip}
 })
 export default class JuniorInfoReports extends Vue {
 
