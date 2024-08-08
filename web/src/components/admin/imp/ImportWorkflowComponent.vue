@@ -41,7 +41,7 @@
                                     v-if="workflow.importedRows"
                                     @back="step=2" @apply="applyChanges()"></import-preview-component>
           <v-alert v-else type="warning">
-            {{ $t('Не удалось корректно обратотать файл. Загрузите другой или измените конфигурацию') }}
+            {{ $t('Не удалось корректно обработать файл. Загрузите другой или измените конфигурацию') }}
           </v-alert>
         </v-stepper-content>
         <!--</editor-fold>-->

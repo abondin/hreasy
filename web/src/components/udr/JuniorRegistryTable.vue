@@ -75,7 +75,7 @@ export default class JuniorRegistryTable extends Vue {
           {text: this.$tc('Последний срез (Когда)'), value: 'latestReport.createdAt'},
           {text: this.$tc('Последний срез (Кто)'), value: 'latestReport.createdBy.name'},
           {text: this.$tc('Последний срез (Комментарий)'), value: 'latestReport.comment'},
-          {text: this.$tc('Завершенил обучение'), value: 'graduation.graduatedAt'}
+          {text: this.$tc('Завершил обучение'), value: 'graduation.graduatedAt'}
         ];
         return headers;
       },

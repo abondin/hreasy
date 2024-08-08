@@ -9,7 +9,7 @@
         <dd>{{ item.juniorEmpl.name }}</dd>
         <dt>{{ $t('Дата трудоуйства') }}:</dt>
         <dd>{{ formatDate(item.juniorDateOfEmployment) }}</dd>
-        <dt>{{ $t('Месяцев в комании') }}:</dt>
+        <dt>{{ $t('Месяцев в компании') }}:</dt>
         <dd><value-with-status-chip :value="item.juniorInCompanyMonths"></value-with-status-chip>
         </dd>
 

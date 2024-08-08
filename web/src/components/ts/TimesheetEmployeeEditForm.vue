@@ -14,7 +14,7 @@
           dense
           :loading="loading"
           :loading-text="$t('Загрузка_данных')"
-          :no-data-text="$t('По выбранныму проекту за выбранные даты записи не найдены')"
+          :no-data-text="$t('По выбранному проекту за выбранные даты записи не найдены')"
           disable-sort
           fixed-header
           :headers="headers"
