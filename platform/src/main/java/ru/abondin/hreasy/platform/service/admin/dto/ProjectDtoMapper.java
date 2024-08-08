@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.admin.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
@@ -13,6 +14,8 @@ import java.time.OffsetDateTime;
 public interface ProjectDtoMapper extends MapperBase {
 
     DictProjectEntry fromDto(ProjectDto.CreateOrUpdateProjectDto dto);
+
+    void apply(@MappingTarget DictProjectEntry entry, ProjectDto.CreateOrUpdateProjectDto dto);
 
     @Mapping(target = "department", qualifiedByName = "department", source = ".")
     @Mapping(target = "businessAccount", qualifiedByName = "businessAccount", source = ".")

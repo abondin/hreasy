@@ -112,16 +112,16 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
      * @param mentorId
      * @return
      */
-    @Query(BASE_VIEW_QUERY + " and (" +
+    @Query(BASE_VIEW_QUERY + " and j.id = :juniorRegistryId and (" +
             " (" + PROJECTS_FILTER + ")" +
             " or (" + DEPARTMENT_FILTER + ")" +
             " or (" + BAS_FILTER + ")" +
             " or (" + MENTOR_FILTER + ")" +
-            ") and j.id = :juniorRegistryId")
+            ")")
     Mono<JuniorView> notSafeFindDetailedByBaProjectOrMentor(int juniorRegistryId,
                                                             List<Integer> accessibleBas,
-                                                            List<Integer> accessibleProjects,
                                                             List<Integer> accessibleDepartments,
+                                                            List<Integer> accessibleProjects,
                                                             int mentorId,
                                                             OffsetDateTime now
     );
