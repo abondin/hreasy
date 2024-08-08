@@ -67,6 +67,15 @@
           </v-list-item-title>
         </v-list-item>
 
+        <v-list-item to="/juniors" v-if="canAccessJuniorsRegistry()">
+          <v-list-item-action>
+            <v-icon>mdi-school</v-icon>
+          </v-list-item-action>
+          <v-list-item-title>
+            {{ $t('Менторство') }}
+          </v-list-item-title>
+        </v-list-item>
+
 
         <v-divider></v-divider>
         <v-list-group
@@ -262,6 +271,10 @@ export default class App extends Vue {
 
   private canReportSalaryRequest() {
     return permissionService.canReportSalaryRequest();
+  }
+
+  private canAccessJuniorsRegistry(){
+    return permissionService.canAccessJuniorsRegistry();
   }
 
   private firstAvialableDict(): string | undefined {

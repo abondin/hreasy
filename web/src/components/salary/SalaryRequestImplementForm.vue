@@ -5,7 +5,7 @@
 
       <!--<editor-fold desc="Reset implementation">-->
       <v-card-text v-if="data.implementBody.completed">
-        {{ $t('Вы уверены что хотите сбросить принятое решение по реализации?') }}
+        {{ $t('Вы уверены, что хотите сбросить принятое решение по реализации?') }}
       </v-card-text>
       <!--</editor-fold> -->
 

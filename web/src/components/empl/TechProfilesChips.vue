@@ -44,7 +44,7 @@
       <v-card v-if="profileToDelete">
         <v-card-title primary-title>{{ $t('Удаление') + ' ' + profileToDelete.filename }}</v-card-title>
         <v-card-text>
-          {{ $t('Вы уверены что хотите удалить запись?') }}
+          {{ $t('Вы уверены, что хотите удалить запись?') }}
         </v-card-text>
         <v-alert type="error" v-if="deleteError">{{ deleteError }}</v-alert>
         <v-divider></v-divider>

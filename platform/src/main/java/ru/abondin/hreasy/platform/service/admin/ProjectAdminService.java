@@ -44,7 +44,7 @@ public class ProjectAdminService {
                     var history = mapper.historyEntry(employeeId, now, savedProject);
                     //2. Save history
                     var projectId = savedProject.getId();
-                    return historyRepo.save(history).flatMap((h) ->
+                    return historyRepo.save(history).flatMap(h ->
                             //3. Save entry
                             adminUserRolesRepo.addAccessibleProject(employeeId, projectId)
                                     .map(a -> projectId)
@@ -56,26 +56,18 @@ public class ProjectAdminService {
     public Mono<Integer> update(AuthContext auth, int projectId, ProjectDto.CreateOrUpdateProjectDto projectToUpdate) {
         log.info("Updating project by {} : {}", auth.getUsername(), projectToUpdate);
         var now = dateTimeService.now();
-        var entry = mapper.fromDto(projectToUpdate);
         return repo.findById(projectId)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(projectId))))
                 .flatMap(existing -> {
-                    entry.setId(projectId);
-                    entry.setCreatedBy(existing.getCreatedBy());
-                    entry.setCreatedAt(existing.getCreatedAt());
-                    // TODO Person of contact is now is not editable to UI
-                    // Just copy it from current value from database. Probaly it should be removed at all
-                    entry.setPersonOfContact(existing.getPersonOfContact());
-                    entry.setInfo(projectToUpdate.getInfo());
-                    var history = mapper.historyEntry(auth.getEmployeeInfo().getEmployeeId(), now, entry);
+                    mapper.apply(existing, projectToUpdate);
+                    var history = mapper.historyEntry(auth.getEmployeeInfo().getEmployeeId(), now, existing);
                     return securityValidator.validateUpdateProject(auth, existing)
-                            .flatMap(s -> historyRepo.save(history).flatMap((h) -> repo.save(entry)));
+                            .flatMap(s -> historyRepo.save(history).flatMap(h -> repo.save(existing)));
                 })
                 .map(DictProjectEntry::getId);
     }
 
     public Mono<ProjectDto> findById(AuthContext auth, int projectId) {
-        var now = dateTimeService.now();
         return repo.findFullInfoById(projectId)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(projectId))))
                 .flatMap(existing ->

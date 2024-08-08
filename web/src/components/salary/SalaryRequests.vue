@@ -104,29 +104,7 @@
         </v-col>
         <!--</editor-fold>-->
         <!--<editor-fold desc="Export to excel">-->
-        <v-col align-self="center" cols="auto" v-if="data.canExport()">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on: ton, attrs: tattrs}">
-              <div v-bind="tattrs" v-on="ton" class="ma-0 at-0">
-                <v-btn link :disabled="data.exportLoading" @click="data.exportToExcel()" icon>
-                  <v-icon>mdi-file-excel</v-icon>
-                </v-btn>
-              </div>
-            </template>
-            <p>{{ $t('Экспорт в Excel') }}</p>
-          </v-tooltip>
-          <v-snackbar
-              v-model="data.exportCompleted"
-              timeout="5000"
-          >
-            {{ $t('Экспорт успешно завершён. Файл скачен.') }}
-            <template v-slot:action="{ attrs }">
-              <v-btn color="blue" icon v-bind="attrs" @click="data.confirmExportCompleted()">
-                <v-icon>mdi-close-circle-outline</v-icon>
-              </v-btn>
-            </template>
-          </v-snackbar>
-        </v-col>
+        <hreasy-table-export-to-excel-action :data="data"></hreasy-table-export-to-excel-action>
         <!--</editor-fold>-->
       </v-row>
       <!--</editor-fold>-->
@@ -249,10 +227,12 @@ import HreasyTableDeleteConfimration from "@/components/shared/table/HreasyTable
 import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 import SalaryRequestApprovalForm from "@/components/salary/SalaryRequestApprovalForm.vue";
 import {DataTableHeader} from "vuetify";
+import HreasyTableExportToExcelAction from "@/components/shared/table/HreasyTableExportToExcelAction.vue";
 
 
 @Component({
   components: {
+    HreasyTableExportToExcelAction,
     SalaryRequestApprovalForm,
     HreasyTableDeleteConfimration,
     SalaryRequestFilterComponent,
@@ -323,6 +303,7 @@ export default class SalaryRequests extends Vue {
         + "/" +
         this.data.items.filter(i => (i.type == SalaryRequestType.BONUS)).length;
   }
+
   private increasesCountMsg(): string {
     return this.data.items.filter(i => i.type == SalaryRequestType.SALARY_INCREASE && i.impl).length
         + "/" +

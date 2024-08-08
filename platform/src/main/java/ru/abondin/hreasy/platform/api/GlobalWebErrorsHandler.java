@@ -10,6 +10,7 @@ import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.r2dbc.BadSqlGrammarException;
@@ -60,10 +61,10 @@ public class GlobalWebErrorsHandler implements ErrorWebExceptionHandler, ServerA
             errorDto = new BusinessErrorDto(be.getCode(),
                     i18Helper.localize(be.getCode(), be.getLocalizationArgs()), be.getAttrs());
             log.debug("Business error: {}", errorDto);
-        } else if (ex instanceof BadCredentialsException be) {
+        } else if (ex instanceof BadCredentialsException) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             errorDto = new BusinessErrorDto("errors.bad.credentials", i18Helper.localize("errors.bad.credentials"), new HashMap<>());
-        } else if (ex instanceof AuthenticationException be) {
+        } else if (ex instanceof AuthenticationException) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             errorDto = new BusinessErrorDto("errors.not.authenticated", i18Helper.localize("errors.not.authenticated"), new HashMap<>());
         } else if (ex instanceof AccessDeniedException be) {
@@ -74,6 +75,10 @@ public class GlobalWebErrorsHandler implements ErrorWebExceptionHandler, ServerA
             log.warn("Response status error: {} - {}", be.getStatusCode(), be.getReason());
             response.setStatusCode(be.getStatusCode());
             errorDto = new BusinessErrorDto("errors.response.not.found", i18Helper.localize("errors.response.not.found"), new HashMap<>());
+        } else if (ex instanceof DuplicateKeyException) {
+            log.error("Database error: Duplicate key", ex);
+            response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
+            errorDto = new BusinessErrorDto("errors.data_access.duplicate_key", i18Helper.localize("errors.data_access.duplicate_key"), new HashMap<>());
         } else if (ex instanceof DataAccessException) {
             log.error("Database error", ex);
             response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);

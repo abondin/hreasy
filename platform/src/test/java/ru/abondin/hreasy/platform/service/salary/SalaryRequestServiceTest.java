@@ -72,7 +72,7 @@ class SalaryRequestServiceTest extends BaseServiceTest {
                 .create(salaryRequestService.report(ctx, report)
                         .flatMap(r -> salaryRequestService.get(auth, r))
                 )
-                .expectNextMatches((dto) -> {
+                .expectNextMatches(dto -> {
                             Assertions.assertEquals(ba, dto.getBudgetBusinessAccount().getId(), "Budgeting ba");
                             Assertions.assertEquals(report.getComment(), dto.getReq().getComment(), "Request comment");
                             Assertions.assertEquals(report.getIncreaseStartPeriod(), dto.getReq().getIncreaseStartPeriod(), "Request start period");

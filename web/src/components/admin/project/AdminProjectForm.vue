@@ -60,7 +60,6 @@
             :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
         ></my-date-form-component>
 
-
         <!-- info -->
         <vue-editor
             id="project-info-editor"

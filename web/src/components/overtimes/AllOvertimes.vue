@@ -59,7 +59,7 @@
             :items="filter.allProjects"
             item-value="id"
             item-text="name"
-            :label="$t('Текущий прооект сотрудника')"
+            :label="$t('Текущий проект сотрудника')"
             multiple>
         </v-autocomplete>
         <v-divider vertical></v-divider>

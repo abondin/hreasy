@@ -70,10 +70,24 @@ export class SearchUtils {
             .reduce((prev, cur) => prev && cur, true)).length > 0;
     }
 
+    /**
+     *
+     * @param array - array of objects selected in filter
+     * @param objectFieldInp - entity field to search
+     */
     public array<T>(array: Array<T | null> | undefined, objectFieldInp: T | null | undefined): boolean {
         return (!array || array.length == 0) || (
-            (objectFieldInp!=null && objectFieldInp!=undefined) ? array.indexOf(objectFieldInp) >= 0 : array.indexOf(null) >= 0
+            (objectFieldInp != null && objectFieldInp != undefined) ? array.indexOf(objectFieldInp) >= 0 : array.indexOf(null) >= 0
         )
+    }
+
+    /**
+     *
+     * @param array - array of objects selected in filter
+     * @param objectFieldInp - entity fields to search
+     */
+    public arrayAny<T>(array: Array<T | null> | undefined, objectFieldInp: Array<T | null>): boolean {
+        return objectFieldInp.map(o => this.array(array, o)).reduce((prev, cur) => prev || cur, true);
     }
 
     private prepareStr(textInp: string | undefined | null): string {

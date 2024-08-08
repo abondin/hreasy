@@ -1,6 +1,7 @@
 import TableComponentDataContainer, {CreateAction} from "@/components/shared/table/TableComponentDataContainer";
 import salaryService, {
-    ClosedSalaryRequestPeriod, SalaryApprovalState,
+    ClosedSalaryRequestPeriod,
+    SalaryApprovalState,
     SalaryIncreaseRequest,
     SalaryRequestApproval,
     SalaryRequestReportBody
@@ -17,8 +18,10 @@ import {
     SalaryRequestApproveAction,
     SalaryRequestApproveFormData
 } from "@/components/salary/SalaryRequestApprovalForm.vue";
+import {DataContainerWithExcelExportSupport} from "@/components/shared/table/DataContainerWithExcelExportSupport";
 
-export class SalaryRequestDataContainer extends TableComponentDataContainer<SalaryIncreaseRequest, SalaryRequestFormData, SalaryRequestReportBody, SalaryRequestFilter> {
+export class SalaryRequestDataContainer extends TableComponentDataContainer<SalaryIncreaseRequest, SalaryRequestFormData, SalaryRequestReportBody, SalaryRequestFilter>
+    implements DataContainerWithExcelExportSupport {
     private _implementDialog = false;
     private _implementBody: SalaryRequestFormData | null = null;
     private readonly _implementAction: SalaryRequestImplementAction;
@@ -125,7 +128,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
     }
 
     public isImplemented() {
-        return Boolean(this.selectedItems && this.selectedItems.length>0 && this.selectedItems[0].impl);
+        return Boolean(this.selectedItems && this.selectedItems.length > 0 && this.selectedItems[0].impl);
     }
 
     //</editor-fold>
@@ -190,7 +193,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
     public exportToExcel() {
         this._exportLoading = true;
         this._exportCompleted = false;
-        adminSalaryService.export(this._selectedPeriod.periodId()).then(() => {
+        return adminSalaryService.export(this._selectedPeriod.periodId()).then(() => {
             this._exportCompleted = true;
         }).finally(() => {
             this._exportLoading = false;
@@ -204,6 +207,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
     get exportCompleted(): boolean {
         return this._exportCompleted;
     }
+
 
     //</editor-fold>
 

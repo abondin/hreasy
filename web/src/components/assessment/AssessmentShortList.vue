@@ -170,7 +170,7 @@ export default class AssessmentShortList extends Vue {
     this.headers.push({text: this.$tc('Бизнес аккаунт'), value: 'ba.name'});
     this.headers.push({text: this.$tc('Проект'), value: 'currentProject'});
     this.headers.push({text: this.$tc('Дата устройства'), value: 'employeeDateOfEmployment'});
-    this.headers.push({text: this.$tc('Послений ассессмент запланирован'), value: 'lastAssessmentDate'});
+    this.headers.push({text: this.$tc('Последний ассессмент запланирован'), value: 'lastAssessmentDate'});
     this.headers.push({text: this.$tc('Последний ассессмент завершен'), value: 'lastAssessmentCompletedDate'});
     this.headers.push({text: this.$tc('Дней без ассессмента'), value: 'daysWithoutAssessment'});
   }

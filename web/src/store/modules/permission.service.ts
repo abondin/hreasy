@@ -116,6 +116,13 @@ export enum Permissions {
     CreateAssessments = "create_assessment",
 
     /**
+     * View and modify any record in juniors registry
+     */
+    AdminJuniorRegistry = "admin_junior_reg",
+
+    AccessJuniorRegistry = "access_junior_reg",
+
+    /**
      * Only logged in user or user with permission techprofile_download can download tech profile
      */
     DownloadTechProfiles = "techprofile_download",
@@ -159,7 +166,7 @@ export enum Permissions {
     /**
      * Admin managers of departments, business accounts and projects
      */
-    AdminManagers = "admin_managers",
+    AdminManagers = "admin_managers"
 
 }
 
@@ -228,6 +235,23 @@ interface PermissionService {
 
     canApproveSalaryRequest(ba: number): boolean;
 
+    canAccessJuniorsRegistry(): boolean;
+
+    canAdminJuniorRegistry(): boolean;
+
+    /**
+     * Only user with junior admin privilege or creator can update of delete junior registry
+     * @param reportCreator
+     */
+    canUpdateJuniorRegistryInfo(registryCreator: number): boolean;
+
+    /**
+     * Only user with junior admin privilege or report creator can update of delete report
+     * @param reportCreator
+     */
+    canUpdateJuniorReport(reportCreator: number): boolean;
+
+
     /**
      * Check if given user can download employee's tech profiles
      * @param employeeId
@@ -282,6 +306,7 @@ interface PermissionService {
      * Has access to manager admin page
      */
     canAdminManagers(): boolean;
+
 }
 
 const namespace = 'auth';
@@ -381,6 +406,23 @@ class VuexPermissionService implements PermissionService {
     canApproveSalaryRequest(ba: number): boolean {
         return this.canAdminSalaryRequests() || this.permissionCheckWithAccessToBa(Permissions.ApproveSalaryRequest, ba);
     }
+
+    canAdminJuniorRegistry(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminJuniorRegistry)
+    }
+
+    canAccessJuniorsRegistry(): boolean {
+        return this.simplePermissionCheck(Permissions.AccessJuniorRegistry)
+    }
+
+    canUpdateJuniorReport(reportCreator: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.AdminJuniorRegistry, reportCreator);
+    }
+
+    canUpdateJuniorRegistryInfo(registryCreator: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.AdminJuniorRegistry, registryCreator);
+    }
+
 
     canUploadTechProfiles(employeeId: number): boolean {
         return this.simplePermissionCheckOrCurrentEmployee(Permissions.UploadTechProfiles, employeeId);

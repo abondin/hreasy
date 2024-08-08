@@ -10,6 +10,7 @@
         max-width="290px">
       <template v-slot:activator="{ on, attrs }">
         <v-text-field
+            clearable
             ref="dateField"
             :label="label"
             :value="formattedValue"
@@ -89,17 +90,20 @@ export default class MyDateFormComponent extends Vue {
   }
 
   private textFieldUpdated(formattedDate: string) {
-    const d = DateTimeUtils.dateFromFormattedString(formattedDate);
+    const d = formattedDate ? DateTimeUtils.dateFromFormattedString(formattedDate) : null;
     this.emit(d);
   }
 
-  private emit(d: Moment) {
-    if (d.isValid()) {
+  private emit(d: Moment | null) {
+    if (d === null) {
+      this.menu = false;
+      this.date = '';
+      this.$emit('input', this.date);
+    } else if (d.isValid()) {
       this.menu = false;
       this.date = d.format(moment.HTML5_FMT.DATE);
       this.$emit('input', this.date);
     }
-
   }
 
 }

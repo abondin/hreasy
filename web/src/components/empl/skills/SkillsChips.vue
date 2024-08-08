@@ -63,7 +63,7 @@
       <v-card v-if="skillToDelete">
         <v-card-title primary-title>{{ $t('Удаление') + ' ' + skillToDelete.name }}</v-card-title>
         <v-card-text>
-          {{ $t('Вы уверены что хотите удалить запись?') }}
+          {{ $t('Вы уверены, что хотите удалить запись?') }}
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>

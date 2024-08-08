@@ -11,7 +11,18 @@ export interface SimpleDict {
     active: boolean;
 }
 
-export interface ProjectDictDto extends SimpleDict{
+export const enum ValueWithStatusEnum {
+    OK = 1,
+    WARNING = 2,
+    ERROR = 3
+}
+
+export interface ValueWithStatus<T> {
+    value: T;
+    status: ValueWithStatusEnum;
+}
+
+export interface ProjectDictDto extends SimpleDict {
     baId: number;
 }
 

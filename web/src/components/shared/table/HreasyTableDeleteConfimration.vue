@@ -2,7 +2,7 @@
     <v-card>
       <v-card-title>{{ $t('Удаление записей') }}</v-card-title>
       <v-card-text>
-        {{ $t('Вы уверены что хотите удалить') }} {{$tc('records', data.selectedItems.length)}}?
+        {{ $t('Вы уверены, что хотите удалить') }} {{$tc('records', data.selectedItems.length)}}?
       </v-card-text>
       <!-- Error block -->
       <v-alert v-if="data.actionError" type="error">

@@ -33,6 +33,8 @@ import DictAdminOrganizations from "@/components/admin/dict/DictAdminOrganizatio
 import AdminEmployeesKidsImportWorkflowComponent
     from "@/components/admin/employee/imp/AdminEmployeesKidsImportWorkflow.vue";
 import TelegramConfirmationPage from "@/components/telegram/TelegramConfirmationPage.vue";
+import JuniorRegistryTable from "@/components/udr/JuniorRegistryTable.vue";
+import JuniorRegistryDetailedView from "@/components/udr/JuniorRegistryDetailedView.vue";
 
 Vue.use(VueRouter)
 
@@ -41,7 +43,12 @@ const routes = [
     {path: "/404", component: PageNotFoundComponent},
     {path: "*", redirect: "/404"},
     {path: "/login", component: Login},
-    {name: "TelegramConfirmationPage", path: "/telegram/confirm/:employeeId/:telegramAccount/:confirmationCode", component: TelegramConfirmationPage, props: true},
+    {
+        name: "TelegramConfirmationPage",
+        path: "/telegram/confirm/:employeeId/:telegramAccount/:confirmationCode",
+        component: TelegramConfirmationPage,
+        props: true
+    },
     {name: "employees", path: "/employees", component: Employees},
     {name: 'employeeProfile', path: "/profile/main", component: EmployeeProfile, props: true},
     {path: "/vacations", component: VacationsList},
@@ -56,6 +63,8 @@ const routes = [
     },
     {path: "/salaries/requests", component: SalaryRequests, name: "salariesRequests"},
     {path: "/timesheet", component: TimesheetTableComponent},
+    {path: "/juniors", component: JuniorRegistryTable},
+    {path: "/juniors/:juniorRegistryId", component: JuniorRegistryDetailedView, props: true},
     {path: "/admin/projects", component: AdminProjects},
     {path: "/admin/projects/:projectId", component: AdminProjectDetails, props: true},
     {path: "/admin/users", component: AdminUsers},
