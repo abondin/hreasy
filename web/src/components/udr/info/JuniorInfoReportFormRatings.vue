@@ -2,12 +2,13 @@
 <template>
   <span v-if="ratings">
         <rating-with-description v-for="prop in ['competence', 'process', 'teamwork', 'contribution', 'motivation']"
+                                 :key="prop"
                                  v-model="ratings[prop]" :prev="prevRatings ? prevRatings[prop]:null"
                                  :readonly="readonly"
                                  :name="$t(`JUNIOR_REPORT_RATING.${prop}.title`)">
           <template v-slot:description>
             <ul>
-              <li v-for="i in 5"><strong>{{ i }}</strong> — {{ $t(`JUNIOR_REPORT_RATING.${prop}.${i}`) }}</li>
+              <li v-for="i in 5" :key="i"><strong>{{ i }}</strong> — {{ $t(`JUNIOR_REPORT_RATING.${prop}.${i}`) }}</li>
             </ul>
           </template>
         </rating-with-description>

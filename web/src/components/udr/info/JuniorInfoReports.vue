@@ -12,8 +12,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on: ton, attrs: tattrs}">
           <v-btn @click="data.openAddReportDialog()"
-                 v-bind="tattrs" v-on="ton" class="col-auto" color="primary"
-                 :disabled="false" icon>
+                 v-bind="tattrs" v-on="ton" class="col-auto" color="primary" icon>
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </template>
@@ -26,7 +25,7 @@
         <v-container>
           <v-row dense>
             <v-col cols="">{{ report.createdBy.name + ' (' + formatDateTime(report.createdAt) + ')' }}</v-col>
-            <v-col cols="auto" align-self="end">
+            <v-col cols="auto" align-self="end" v-if="canUpdateReport(report)">
               <v-tooltip bottom>
                 <template v-slot:activator="{ on: ton, attrs: tattrs}">
                   <v-btn v-bind="tattrs" v-on="ton" text icon @click="data.openDeleteReportDialog(report.id)">
