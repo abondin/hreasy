@@ -2,7 +2,8 @@
 <template>
   <v-card class="mt-5" v-if="data">
     <v-card-title>
-      <span>{{ $t('Отчёты') }} <value-with-status-chip v-if="data.item.monthsWithoutReport.status!==1" :value="data.item.monthsWithoutReport">{{
+      <span>{{ $t('Отчёты') }} <value-with-status-chip v-if="data.item.monthsWithoutReport.status!==1"
+                                                       :value="data.item.monthsWithoutReport">{{
           $tc('months', data.item.monthsWithoutReport.value)
         }} {{ $t('без отчёта') }}
           </value-with-status-chip>
@@ -40,12 +41,17 @@
             <v-col cols="auto">
               <v-tooltip bottom>
                 <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                  <v-icon :set="icon=getIcon(report.progress)" v-bind="tattrs" v-on="ton" x-large :color="icon.color">{{ icon.icon }}</v-icon>
+                  <v-icon :set="icon=getIcon(report.progress)" v-bind="tattrs" v-on="ton" x-large
+                          :color="icon.color">{{ icon.icon }}</v-icon>
                 </template>
                 {{ $t('JUNIOR_PROGRESS_TYPE.' + report.progress) }}
               </v-tooltip>
             </v-col>
-            <v-col class="align-content-center">{{ report.comment }}</v-col>
+            <v-col cols="auto"><junior-info-report-form-ratings :ratings="report.ratings"
+                                                                :prev-ratings="previousReport(report)?.ratings"
+                                                                readonly>
+            </junior-info-report-form-ratings></v-col>
+            <v-col><div class="pt-2">{{ report.comment }}</div></v-col>
           </v-row>
         </v-container>
       </v-card>
@@ -61,21 +67,8 @@
                     :title="$t('Создать отчёт')"
                     :submit-button-text="$t('Создать')" v-on:submit="doOnSubmit">
       <template v-slot:fields>
-        <v-autocomplete
-            v-if="data.addOrUpdateReportDialogAction.formData"
-            v-model="data.addOrUpdateReportDialogAction.formData.progress"
-            :items="progressTypes"
-            :label="$t('Прогресс')"
-            :rules="[v => !!v || $t('Обязательное поле')]"
-        ></v-autocomplete>
-        <v-textarea
-            v-if="data.addOrUpdateReportDialogAction.formData"
-            v-model="data.addOrUpdateReportDialogAction.formData.comment"
-            :rules="[v=>(v && v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024}))]"
-            counter="1024"
-            :label="$t('Комментарий')">
-        </v-textarea>
-        <p v-else>{{ $t('Вы уверены, что хотите отменить решение об окончании обучения?') }}</p>
+        <junior-info-report-form :form-data="data.addOrUpdateReportDialogAction.formData"
+                                 :prev-report="data.item.latestReport"></junior-info-report-form>
       </template>
     </in-dialog-form>
 
@@ -103,10 +96,11 @@ import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import JuniorRegistryTable from "@/components/udr/JuniorRegistryTable.vue";
 import permissionService from "@/store/modules/permission.service";
 import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
-
+import JuniorInfoReportForm from "@/components/udr/info/JuniorInfoReportForm.vue";
+import JuniorInfoReportFormRatings from "@/components/udr/info/JuniorInfoReportFormRatings.vue";
 
 @Component({
-  components: {ValueWithStatusChip, InDialogForm}
+  components: {JuniorInfoReportFormRatings, JuniorInfoReportForm, ValueWithStatusChip, InDialogForm}
 })
 export default class JuniorInfoReports extends Vue {
 
@@ -136,6 +130,19 @@ export default class JuniorInfoReports extends Vue {
 
   canUpdateReport(report: JuniorReport) {
     return permissionService.canUpdateJuniorReport(report.createdBy.id);
+  }
+
+  previousReport(report: JuniorReport | null): JuniorReport | null {
+    if (report) {
+      const index = this.data.item.reports.indexOf(report);
+      if (index < this.data.item.reports.length - 1) {
+        return this.data.item.reports[index + 1];
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 
 }

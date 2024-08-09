@@ -39,13 +39,14 @@ public class JuniorRegistryService {
     @Transactional(readOnly = true)
     public Flux<JuniorDto> juniors(AuthContext authContext) {
         var now = dateTimeService.now();
+        var currentEmployee=authContext.getEmployeeInfo().getEmployeeId();
         return securityValidator
                 .get(authContext)
                 .flatMapMany(mode -> {
                             switch (mode) {
                                 case ALL:
                                     log.debug("Get all juniors by {}", authContext.getUsername());
-                                    return juniorRepo.findAllDetailed(now);
+                                    return juniorRepo.findAllDetailed(now, currentEmployee);
                                 case MY:
                                     log.debug("Get own juniors by {}", authContext.getUsername());
                                     return juniorRepo.findAllByBaProjectOrMentorSafe(
@@ -53,7 +54,7 @@ public class JuniorRegistryService {
                                             authContext.getEmployeeInfo().getAccessibleDepartments(),
                                             authContext.getEmployeeInfo().getAccessibleProjects(),
                                             authContext.getEmployeeInfo().getEmployeeId(),
-                                            now);
+                                            now, currentEmployee);
                                 default:
                                     throw new IllegalStateException("Unexpected value: " + mode);
                             }
@@ -66,12 +67,13 @@ public class JuniorRegistryService {
     public Mono<JuniorDto> juniorDetailed(AuthContext auth, int registryId) {
         log.debug("Get junior details {} by {}", registryId, auth.getUsername());
         var now = dateTimeService.now();
+        var currentEmployee=auth.getEmployeeInfo().getEmployeeId();
         return securityValidator
                 .get(auth)
                 .flatMap(mode -> {
                             switch (mode) {
                                 case ALL:
-                                    return juniorRepo.findDetailed(registryId, now);
+                                    return juniorRepo.findDetailed(registryId, now, currentEmployee);
                                 case MY:
                                     return juniorRepo.findDetailedByBaProjectOrMentorSafe(
                                             registryId,
@@ -79,7 +81,7 @@ public class JuniorRegistryService {
                                             auth.getEmployeeInfo().getAccessibleDepartments(),
                                             auth.getEmployeeInfo().getAccessibleProjects(),
                                             auth.getEmployeeInfo().getEmployeeId(),
-                                            now);
+                                            now, currentEmployee);
                                 default:
                                     throw new IllegalStateException("Unexpected value: " + mode);
                             }

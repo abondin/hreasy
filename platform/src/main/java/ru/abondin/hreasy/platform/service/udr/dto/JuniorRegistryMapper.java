@@ -76,9 +76,11 @@ public abstract class JuniorRegistryMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "registryId", target = "juniorId")
     @Mapping(source = "employeeId", target = "createdBy")
     @Mapping(source = "now", target = "createdAt")
+    @Mapping(source = "body.ratings", target = "ratings", qualifiedByName = "ratingsToJson")
     public abstract JuniorReportEntry toReportEntry(AddJuniorReportBody body, Integer registryId, Integer employeeId, OffsetDateTime now);
 
     @Mapping(source = "body", target = ".")
+    @Mapping(source = "body.ratings", target = "ratings", qualifiedByName = "ratingsToJson")
     public abstract void applyReportUpdate(@MappingTarget JuniorReportEntry entry, UpdateJuniorReportBody body);
 
     @Named("budgetingAccount")
@@ -115,6 +117,11 @@ public abstract class JuniorRegistryMapper extends MapperBaseWithJsonSupport {
     @Named("reports")
     protected List<JuniorReportDto> reports(Json json) {
         return listFromJson(json, JuniorReportDto.class);
+    }
+
+    @Named("ratingsToJson")
+    protected Json ratingsToJson(JuniorReportRatings ratings) {
+        return Json.of(toJsonStr(ratings, false));
     }
 
 

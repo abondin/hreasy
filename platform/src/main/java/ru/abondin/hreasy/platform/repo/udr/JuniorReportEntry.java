@@ -1,8 +1,11 @@
 package ru.abondin.hreasy.platform.repo.udr;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.r2dbc.postgresql.codec.Json;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import ru.abondin.hreasy.platform.service.PostgresJSONJacksonSerializer;
 
 import java.time.OffsetDateTime;
 
@@ -23,4 +26,7 @@ public class JuniorReportEntry {
 
     private OffsetDateTime deletedAt;
     private Integer deletedBy;
+
+    @JsonSerialize(using = PostgresJSONJacksonSerializer.class)
+    private Json ratings;
 }

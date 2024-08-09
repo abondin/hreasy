@@ -23,7 +23,7 @@
       <value-with-status-chip :value="item.monthsWithoutReport" dense></value-with-status-chip>
     </template>
     <template v-slot:[`item.latestReport.createdAt`]="{ item }">
-      {{ formatDateTime(item.latestReport?.createdAt) }}
+      {{ formatDateTime(item.prevReport?.createdAt) }}
     </template>
     <template v-slot:[`item.graduation.graduatedAt`]="{ item }">
       {{ formatDateTime(item.graduation?.graduatedAt) }}
@@ -72,9 +72,9 @@ export default class JuniorRegistryTable extends Vue {
           {text: this.$tc('Месяцев в компании'), value: 'juniorInCompanyMonths'},
           {text: this.$tc('Месяцев без отчёта'), value: 'monthsWithoutReport'},
           {text: this.$tc('Прогресс'), value: 'progress'},
-          {text: this.$tc('Последний срез (Когда)'), value: 'latestReport.createdAt'},
-          {text: this.$tc('Последний срез (Кто)'), value: 'latestReport.createdBy.name'},
-          {text: this.$tc('Последний срез (Комментарий)'), value: 'latestReport.comment'},
+          {text: this.$tc('Последний срез (Когда)'), value: 'prevReport.createdAt'},
+          {text: this.$tc('Последний срез (Кто)'), value: 'prevReport.createdBy.name'},
+          {text: this.$tc('Последний срез (Комментарий)'), value: 'prevReport.comment'},
           {text: this.$tc('Завершил обучение'), value: 'graduation.graduatedAt'}
         ];
         return headers;

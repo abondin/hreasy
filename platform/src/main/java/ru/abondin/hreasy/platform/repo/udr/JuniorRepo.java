@@ -28,7 +28,8 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
                                     'progress', report.progress,
                                     'comment', report.comment,
                                     'createdBy', json_build_object('id', created.id, 'name', created.display_name),
-                                    'createdAt', report.created_at) ORDER BY created_at desc
+                                    'createdAt', report.created_at,
+                                    'ratings', report.ratings) ORDER BY created_at desc
                                 )
                             FROM udr.junior_report report
                             INNER JOIN empl.employee created ON report.created_by = created.id
@@ -44,6 +45,7 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
                 left join proj.project project on je.current_project = project.id
                 where (j.deleted_at is null or j.deleted_at >= :now)
                     and (je.date_of_dismissal is null or je.date_of_dismissal >= :now)
+                    and (j.junior_empl_id != :juniorEmployeeId)
             """;
     String MENTOR_FILTER = """
             j.mentor_id is not null and (j.mentor_id = :mentorId or exists(
@@ -61,12 +63,13 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
     String DEPARTMENT_FILTER = """
             je.department in (:accessibleDepartments)
             """;
+    String DEFAULT_ORDER = " order by je.display_name asc";
 
-    @Query(BASE_VIEW_QUERY)
-    Flux<JuniorView> findAllDetailed(OffsetDateTime now);
+    @Query(BASE_VIEW_QUERY + DEFAULT_ORDER)
+    Flux<JuniorView> findAllDetailed(OffsetDateTime now, int juniorEmployeeId);
 
-    @Query(BASE_VIEW_QUERY + " and (j.id = :juniorRegistryId)")
-    Mono<JuniorView> findDetailed(int juniorRegistryId, OffsetDateTime now);
+    @Query(BASE_VIEW_QUERY + " and (j.id = :juniorRegistryId)" + DEFAULT_ORDER)
+    Mono<JuniorView> findDetailed(int juniorRegistryId, OffsetDateTime now, int juniorEmployeeId);
 
 
     /**
@@ -82,24 +85,26 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
             " or (" + DEPARTMENT_FILTER + ")" +
             " or (" + BAS_FILTER + ")" +
             " or (" + MENTOR_FILTER + ")" +
-            ")")
+            ")" + DEFAULT_ORDER)
     Flux<JuniorView> notSafeFindAllByBaProjectOrMentor(List<Integer> accessibleBas,
                                                        List<Integer> accessibleDepartments,
                                                        List<Integer> accessibleProjects,
                                                        int mentorId,
-                                                       OffsetDateTime now
+                                                       OffsetDateTime now,
+                                                       int juniorEmployeeId
     );
 
     default Flux<JuniorView> findAllByBaProjectOrMentorSafe(List<Integer> accessibleBas,
                                                             List<Integer> accessibleDepartments,
                                                             List<Integer> accessibleProjects,
                                                             int mentorId,
-                                                            OffsetDateTime now) {
+                                                            OffsetDateTime now,
+                                                            int juniorEmployeeId) {
         return notSafeFindAllByBaProjectOrMentor(
                 CollectionUtils.isEmpty(accessibleBas) ? Arrays.asList(Integer.MIN_VALUE) : accessibleBas,
                 CollectionUtils.isEmpty(accessibleDepartments) ? Arrays.asList(Integer.MIN_VALUE) : accessibleDepartments,
                 CollectionUtils.isEmpty(accessibleProjects) ? Arrays.asList(Integer.MIN_VALUE) : accessibleProjects,
-                mentorId, now
+                mentorId, now, juniorEmployeeId
         );
     }
 
@@ -117,13 +122,14 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
             " or (" + DEPARTMENT_FILTER + ")" +
             " or (" + BAS_FILTER + ")" +
             " or (" + MENTOR_FILTER + ")" +
-            ")")
+            ")" + DEFAULT_ORDER)
     Mono<JuniorView> notSafeFindDetailedByBaProjectOrMentor(int juniorRegistryId,
                                                             List<Integer> accessibleBas,
                                                             List<Integer> accessibleDepartments,
                                                             List<Integer> accessibleProjects,
                                                             int mentorId,
-                                                            OffsetDateTime now
+                                                            OffsetDateTime now,
+                                                            int juniorEmployeeId
     );
 
     default Mono<JuniorView> findDetailedByBaProjectOrMentorSafe(int juniorRegistryId,
@@ -131,13 +137,14 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
                                                                  List<Integer> accessibleDepartments,
                                                                  List<Integer> accessibleProjects,
                                                                  Integer mentorId,
-                                                                 OffsetDateTime now) {
+                                                                 OffsetDateTime now,
+                                                                 int juniorEmployeeId) {
         return notSafeFindDetailedByBaProjectOrMentor(
                 juniorRegistryId,
                 CollectionUtils.isEmpty(accessibleBas) ? Arrays.asList(Integer.MIN_VALUE) : accessibleBas,
                 CollectionUtils.isEmpty(accessibleDepartments) ? Arrays.asList(Integer.MIN_VALUE) : accessibleDepartments,
                 CollectionUtils.isEmpty(accessibleProjects) ? Arrays.asList(Integer.MIN_VALUE) : accessibleProjects,
-                mentorId, now
+                mentorId, now, juniorEmployeeId
         );
     }
 }

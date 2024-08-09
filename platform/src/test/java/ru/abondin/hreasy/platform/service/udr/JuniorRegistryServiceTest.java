@@ -20,7 +20,9 @@ import ru.abondin.hreasy.platform.repo.udr.JuniorReportEntry;
 import ru.abondin.hreasy.platform.repo.udr.JuniorReportRepo;
 import ru.abondin.hreasy.platform.service.BaseServiceTest;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.udr.dto.AddJuniorReportBody;
 import ru.abondin.hreasy.platform.service.udr.dto.AddToJuniorRegistryBody;
+import ru.abondin.hreasy.platform.service.udr.dto.JuniorReportRatings;
 
 @ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -139,6 +141,34 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
         Assertions.assertEquals(body.getRole(), jun.getRole());
         Assertions.assertEquals(auth.getEmployeeInfo().getEmployeeId(), jun.getCreatedBy());
     }
+
+    @Test
+    void testReport(){
+        this.auth = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
+        var juniorEmployeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
+        var mentorId = testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee);
+        var registryId = buildJunior(juniorEmployeeId, mentorId).block(MONO_DEFAULT_TIMEOUT).getId();
+
+        this.auth = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var reportBody = new AddJuniorReportBody();
+        reportBody.setProgress(2);
+        reportBody.setComment("Normal progress");
+        reportBody.setRatings(new JuniorReportRatings(1, 2, 3, 4, 5));
+        service.addJuniorReport(auth, registryId, reportBody).block(MONO_DEFAULT_TIMEOUT);
+        var reports = service.juniorDetailed(auth, registryId).block(MONO_DEFAULT_TIMEOUT).getReports();
+        Assertions.assertEquals(1, reports.size());
+        var report= reports.get(0);
+        Assertions.assertEquals(2, report.getProgress());
+        Assertions.assertEquals(mentorId, report.getCreatedBy().getId());
+        Assertions.assertEquals("Normal progress", report.getComment());
+        Assertions.assertEquals(1, report.getRatings().getCompetence());
+        Assertions.assertEquals(2, report.getRatings().getProcess());
+        Assertions.assertEquals(3, report.getRatings().getTeamwork());
+        Assertions.assertEquals(4, report.getRatings().getContribution());
+        Assertions.assertEquals(5, report.getRatings().getMotivation());
+
+    }
+
 
 
     private Mono<Void> cleanTables() {

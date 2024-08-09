@@ -51,13 +51,22 @@ export interface JuniorReport {
     createdAt: string;
     createdBy: SimpleDict;
     comment: string;
+    ratings: JuniorReportRatings;
 }
 
 export interface AddOrUpdateJuniorReportBody {
     progress: JuniorProgressType;
     comment: string;
+    ratings: JuniorReportRatings;
 }
 
+export interface JuniorReportRatings{
+    competence: number,
+    process: number,
+    teamwork: number,
+    contribution: number,
+    motivation: number
+}
 export interface JuniorDto extends WithId {
     juniorEmpl: SimpleDict;
     juniorDateOfEmployment: string,

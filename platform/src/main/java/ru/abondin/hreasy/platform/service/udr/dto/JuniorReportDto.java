@@ -19,6 +19,7 @@ public class JuniorReportDto {
      */
     private short progress;
     private String comment;
+    private JuniorReportRatings ratings = new JuniorReportRatings();
 
     @NotNull
     private SimpleDictDto createdBy;
