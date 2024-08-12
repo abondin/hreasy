@@ -12,14 +12,22 @@
                                      mode="add"></junior-add-update-form-fields>
     </template>
     <template v-slot:[`item.progress`]="{ item }">
-      <span v-for="report in item.reports" v-bind:key="report.id">
-        <v-icon :set="icon=getIcon(report.progress)" :color="icon.color">{{ icon.icon }}</v-icon>
-      </span>
+      <v-tooltip bottom v-for="report in reportsOrderedAsc(item.reports)" v-bind:key="report.id" max-width="500px">
+        <template v-slot:activator="{ on: ton, attrs: tattrs}">
+          <v-icon v-bind="tattrs" v-on="ton" :set="icon=getIcon(report.progress)" :color="icon.color">{{
+              icon.icon
+            }}
+          </v-icon>
+        </template>
+        <p>{{ report.createdBy.name }}<br>
+          {{ formatDateTime(report?.createdAt) }}</p>
+        <p>{{ report.comment }}</p>
+      </v-tooltip>
     </template>
-    <template v-slot:[`item.juniorInCompanyMonths`]="{ item }">
+    <template v-slot:[`item.juniorInCompanyMonths.value`]="{ item }">
       <value-with-status-chip :value="item.juniorInCompanyMonths" dense></value-with-status-chip>
     </template>
-    <template v-slot:[`item.monthsWithoutReport`]="{ item }">
+    <template v-slot:[`item.monthsWithoutReport.value`]="{ item }">
       <value-with-status-chip :value="item.monthsWithoutReport" dense></value-with-status-chip>
     </template>
     <template v-slot:[`item.latestReport.createdAt`]="{ item }">
@@ -44,7 +52,7 @@ import {JuniorRegistryDataContainer} from "@/components/udr/junior-registry.data
 import JuniorAddUpdateFormFields from "@/components/udr/JuniorAddUpdateFormFields.vue";
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
 import HreasyTableExportToExcelAction from "@/components/shared/table/HreasyTableExportToExcelAction.vue";
-import {JuniorProgressType} from "@/components/udr/udr.service";
+import {JuniorProgressType, JuniorReport} from "@/components/udr/udr.service";
 import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 import JuniorTableFilter from "@/components/udr/info/JuniorTableFilter.vue";
 
@@ -69,8 +77,8 @@ export default class JuniorRegistryTable extends Vue {
           {text: this.$tc('Роль'), value: 'role'},
           {text: this.$tc('Бюджет'), value: 'budgetingAccount.name'},
           {text: this.$tc('Текущий проект'), value: 'currentProject.name'},
-          {text: this.$tc('Месяцев в компании'), value: 'juniorInCompanyMonths'},
-          {text: this.$tc('Месяцев без отчёта'), value: 'monthsWithoutReport'},
+          {text: this.$tc('Месяцев в компании'), value: 'juniorInCompanyMonths.value'},
+          {text: this.$tc('Месяцев без отчёта'), value: 'monthsWithoutReport.value'},
           {text: this.$tc('Прогресс'), value: 'progress'},
           {text: this.$tc('Последний срез (Когда)'), value: 'prevReport.createdAt'},
           {text: this.$tc('Последний срез (Кто)'), value: 'prevReport.createdBy.name'},
@@ -105,6 +113,13 @@ export default class JuniorRegistryTable extends Vue {
       default:
         return {icon: 'mdi-question', color: 'error'};
     }
+  }
+
+  private reportsOrderedAsc(reports: JuniorReport[]) {
+    if (reports) {
+      return [...reports].sort((a, b) => (a.createdAt > b.createdAt) ? 1 : ((b.createdAt > a.createdAt) ? -1 : 0));
+    }
+    return reports;
   }
 
   getIcon = JuniorRegistryTable.getIcon;

@@ -74,7 +74,7 @@ export default class JuniorTableFilter extends Vue {
 
   private allRoles() {
     if (this.data?.items) {
-      return [...new Set(this.data.filteredItems().map(j => j.role))].sort();
+      return [...new Set(this.data.items.map(j => j.role))].sort();
     }
     return [];
   }

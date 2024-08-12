@@ -20,7 +20,7 @@ const vue = new Vue({
 }).$mount('#app')
 
 window.addEventListener('unhandledrejection', function (event) {
-    logger.log('Dispath unhandledrejection', event);
+    logger.log('Dispatch unhandledrejection', event);
     vue.$store.dispatch('error/unhandledrejection', event.reason);
 });
 
