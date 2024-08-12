@@ -60,13 +60,14 @@ export interface AddOrUpdateJuniorReportBody {
     ratings: JuniorReportRatings;
 }
 
-export interface JuniorReportRatings{
+export interface JuniorReportRatings {
     competence: number,
     process: number,
     teamwork: number,
     contribution: number,
     motivation: number
 }
+
 export interface JuniorDto extends WithId {
     juniorEmpl: SimpleDict;
     juniorDateOfEmployment: string,
@@ -93,7 +94,7 @@ export interface JuniorRegistryService {
 
     juniors(): Promise<Array<JuniorDto>>;
 
-    export(): Promise<any>;
+    export(includeGraduated: boolean): Promise<any>;
 
     juniorDetails(juniorRegistryId: number): Promise<JuniorDto>;
 
@@ -168,8 +169,11 @@ class RestJuniorRegistryService implements JuniorRegistryService {
         });
     }
 
-    export(): Promise<any> {
+    export(includeGraduated: boolean): Promise<any> {
         return httpService.get(`v1/udr/juniors/export`, {
+            params: {
+                includeGraduated: includeGraduated
+            },
             responseType: 'arraybuffer',
         }).then(response => {
             const blob = new Blob([response.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})

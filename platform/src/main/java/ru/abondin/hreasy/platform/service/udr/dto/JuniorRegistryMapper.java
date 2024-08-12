@@ -63,6 +63,9 @@ public abstract class JuniorRegistryMapper extends MapperBaseWithJsonSupport {
     @Mapping(target = "graduatedAt", ignore = true)
     @Mapping(target = "graduatedBy", ignore = true)
     @Mapping(target = "graduatedComment", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "deletedAt", ignore = true)
+    @Mapping(target = "deletedBy", ignore = true)
     public abstract JuniorEntry toEntry(AddToJuniorRegistryBody body, Integer createdBy, OffsetDateTime now);
 
     public abstract void apply(@MappingTarget JuniorEntry entry, UpdateJuniorRegistryBody body);
@@ -82,6 +85,32 @@ public abstract class JuniorRegistryMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "body", target = ".")
     @Mapping(source = "body.ratings", target = "ratings", qualifiedByName = "ratingsToJson")
     public abstract void applyReportUpdate(@MappingTarget JuniorReportEntry entry, UpdateJuniorReportBody body);
+
+
+    @Mapping(target = "juniorEmpl", source = "juniorEmpl.name")
+    @Mapping(target = "juniorInCompanyMonths", source = "juniorInCompanyMonths.value")
+    @Mapping(target = "monthsWithoutReport", source = "monthsWithoutReport.value")
+    @Mapping(target = "mentor", source = "mentor.name")
+    @Mapping(target = "currentProject", source = "currentProject.name")
+    @Mapping(target = "budgetingAccount", source = "budgetingAccount.name")
+    @Mapping(target = "graduatedAt", expression="java(((juniorDto.getGraduation()==null||juniorDto.getGraduation().graduatedAt()==null))?null:juniorDto.getGraduation().graduatedAt().toLocalDate())")
+    @Mapping(target = "graduatedBy", source = "graduation.graduatedBy.name")
+    @Mapping(target = "graduatedComment", source = "graduation.comment")
+    @Mapping(target = "reportsProgress", ignore = true)
+    @Mapping(target = "reportsCreatedAt", ignore = true)
+    @Mapping(target = "reportsCreatedBy", ignore = true)
+    @Mapping(target = "reportsComment", ignore = true)
+    public abstract JuniorExportDto toExportDto(JuniorDto juniorDto);
+
+    @AfterMapping
+    public void juniorExportDtoAfterMapping(@MappingTarget JuniorExportDto export, JuniorDto junior) {
+        junior.getReports().stream().sorted(Comparator.comparing(JuniorReportDto::getCreatedAt)).forEach(report -> {
+            export.getReportsComment().add(report.getComment());
+            export.getReportsCreatedAt().add(report.getCreatedAt() == null ? null : report.getCreatedAt().toLocalDate());
+            export.getReportsCreatedBy().add(report.getCreatedBy() == null ? null : report.getCreatedBy().getName());
+            export.getReportsProgress().add(report.getProgress());
+        });
+    }
 
     @Named("budgetingAccount")
     protected SimpleDictDto budgetingAccount(JuniorView view) {

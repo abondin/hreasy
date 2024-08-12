@@ -3,12 +3,16 @@ package ru.abondin.hreasy.platform.api.udr;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
+import ru.abondin.hreasy.platform.service.udr.AdminJuniorRegistryExportService;
 import ru.abondin.hreasy.platform.service.udr.JuniorRegistryService;
 import ru.abondin.hreasy.platform.service.udr.dto.*;
+
+import java.util.Locale;
 
 @RestController()
 @RequestMapping("/api/v1/udr")
@@ -16,6 +20,7 @@ import ru.abondin.hreasy.platform.service.udr.dto.*;
 @Slf4j
 public class UdrController {
     private final JuniorRegistryService service;
+    private final AdminJuniorRegistryExportService exportService;
 
     @GetMapping("/juniors")
     @Operation(summary = "Get juniors list")
@@ -76,5 +81,11 @@ public class UdrController {
     public Mono<Integer> deleteJuniorReport(@PathVariable int registryId, @PathVariable int reportId) {
         return AuthHandler.currentAuth().flatMap(auth -> service.deleteJuniorReport(auth, registryId, reportId));
     }
+
+    @GetMapping("/juniors/export")
+    public Mono<Resource> export(Locale locale, @RequestParam boolean includeGraduated) {
+        return AuthHandler.currentAuth().flatMap(auth -> exportService.export(auth, locale, new AdminJuniorRegistryExportService.JuniorExportFilter(includeGraduated)));
+    }
+
 
 }

@@ -63,6 +63,7 @@ public class JuniorRegistryService {
     }
 
 
+
     @Transactional(readOnly = true)
     public Mono<JuniorDto> juniorDetailed(AuthContext auth, int registryId) {
         log.debug("Get junior details {} by {}", registryId, auth.getUsername());

@@ -3,7 +3,7 @@
     <v-tooltip bottom>
       <template v-slot:activator="{ on: ton, attrs: tattrs}">
         <div v-bind="tattrs" v-on="ton" class="ma-0 at-0">
-          <v-btn link :disabled="true || data.exportLoading" @click="data.exportToExcel()" icon>
+          <v-btn link :disabled="data.exportLoading" @click="data.exportToExcel()" icon>
             <v-icon>mdi-file-excel</v-icon>
           </v-btn>
         </div>

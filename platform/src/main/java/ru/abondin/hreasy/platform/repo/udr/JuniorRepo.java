@@ -68,6 +68,11 @@ public interface JuniorRepo extends ReactiveCrudRepository<JuniorEntry, Integer>
     @Query(BASE_VIEW_QUERY + DEFAULT_ORDER)
     Flux<JuniorView> findAllDetailed(OffsetDateTime now, int juniorEmployeeId);
 
+    @Query(BASE_VIEW_QUERY +
+            " and ((:includedGraduated) or j.graduated_at is null or j.graduated_at>=:now) "
+            + DEFAULT_ORDER)
+    Flux<JuniorView> findForExport(OffsetDateTime now, int juniorEmployeeId, boolean includedGraduated);
+
     @Query(BASE_VIEW_QUERY + " and (j.id = :juniorRegistryId)" + DEFAULT_ORDER)
     Mono<JuniorView> findDetailed(int juniorRegistryId, OffsetDateTime now, int juniorEmployeeId);
 

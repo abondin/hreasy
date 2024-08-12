@@ -63,6 +63,16 @@ public class JuniorSecurityValidator {
         });
     }
 
+    public Mono<Boolean> export(AuthContext auth) {
+        return Mono.defer(() -> auth.getAuthorities().contains(ADMIN_JUNIOR_REG_PERMISSION)
+                ? Mono.just(true) : Mono.just(false)).flatMap(r -> {
+            if (Boolean.TRUE.equals(r)) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only user with permission admin_junior_reg can export juniors registry"));
+        });
+    }
+
     public Mono<Boolean> delete(AuthContext auth, JuniorEntry entry) {
         return Mono.defer(() -> auth.getAuthorities().contains(ADMIN_JUNIOR_REG_PERMISSION) ||
                 Objects.equals(entry.getCreatedBy(), auth.getEmployeeInfo().getEmployeeId()) ? Mono.just(true) : Mono.just(false)).flatMap(r -> {

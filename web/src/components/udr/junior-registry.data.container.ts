@@ -4,7 +4,6 @@ import {DataTableHeader} from "vuetify";
 import permissionService from "@/store/modules/permission.service";
 import {DataContainerWithExcelExportSupport} from "@/components/shared/table/DataContainerWithExcelExportSupport";
 import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
-import {SimpleDict} from "@/store/modules/dict";
 
 export class JuniorTableFilter extends Filter<JuniorDto> {
     public search = '';
@@ -72,7 +71,7 @@ export class JuniorRegistryDataContainer extends TableComponentDataContainer<Jun
     public exportToExcel() {
         this._exportLoading = true;
         this._exportCompleted = false;
-        return juniorService.export().then(() => {
+        return juniorService.export(!this.filter.onlyNotGraduated).then(() => {
             this._exportCompleted = true;
         }).finally(() => {
             this._exportLoading = false;
