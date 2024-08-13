@@ -1,17 +1,21 @@
 <!-- Junior Report Ratings to show on pages or edit in forms -->
 <template>
   <span v-if="ratings">
-        <rating-with-description v-for="prop in ['competence', 'process', 'teamwork', 'contribution', 'motivation']"
-                                 :key="prop"
-                                 v-model="ratings[prop]" :prev="prevRatings ? prevRatings[prop]:null"
-                                 :readonly="readonly"
-                                 :name="$t(`JUNIOR_REPORT_RATING.${prop}.title`)">
-          <template v-slot:description>
-            <ul>
-              <li v-for="i in 5" :key="i"><strong>{{ i }}</strong> — {{ $t(`JUNIOR_REPORT_RATING.${prop}.${i}`) }}</li>
-            </ul>
-          </template>
-        </rating-with-description>
+    <rating-with-description
+        v-for="prop in ['overallReadiness', 'competence', 'process', 'teamwork', 'contribution', 'motivation']"
+        :key="prop"
+        v-model="ratings[prop]" :prev="prevRatings ? prevRatings[prop]:null"
+        :readonly="readonly"
+        :name="$t(`JUNIOR_REPORT_RATING.${prop}.title`)">
+      <template v-slot:description>
+        <p>{{ $t(`JUNIOR_REPORT_RATING.${prop}.description`) }}</p>
+        <ul>
+          <li v-for="i in ['min','max']" :key="i"><strong>{{
+              i
+            }}</strong> — {{ $t(`JUNIOR_REPORT_RATING.${prop}.${i}`) }}</li>
+        </ul>
+      </template>
+    </rating-with-description>
   </span>
 </template>
 

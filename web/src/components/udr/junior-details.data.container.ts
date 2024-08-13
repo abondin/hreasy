@@ -61,11 +61,12 @@ export class JuniorDetailDataContainer {
             comment: '',
             progress: this._data.latestReport?.progress || JuniorProgressType.NO_PROGRESS,
             ratings: {
-                competence: this._data.latestReport?.ratings?.competence || 1,
-                process: this._data.latestReport?.ratings?.process || 1,
-                teamwork: this._data.latestReport?.ratings?.teamwork || 1,
-                contribution: this._data.latestReport?.ratings?.contribution || 1,
-                motivation: this._data.latestReport?.ratings?.motivation || 1
+                overallReadiness: this._data.latestReport?.ratings?.overallReadiness || 0,
+                competence: this._data.latestReport?.ratings?.competence || 0,
+                process: this._data.latestReport?.ratings?.process || 0,
+                teamwork: this._data.latestReport?.ratings?.teamwork || 0,
+                contribution: this._data.latestReport?.ratings?.contribution || 0,
+                motivation: this._data.latestReport?.ratings?.motivation || 0
             }
         });
     }

@@ -39,18 +39,6 @@ export default class DictAdminDepartments extends Vue {
       permissionService.canAdminDictDepartments()
   );
 
-  /**
-   * Lifecycle hook
-   */
-  protected created() {
-    this.data.init();
-  }
-
-  protected reloadData() {
-    return this.data.reloadData();
-  }
-
-
 }
 </script>
 

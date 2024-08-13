@@ -48,7 +48,6 @@ import {Filter} from "@/components/shared/table/TableComponentDataContainer";
 import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
-import logger from "@/logger";
 import {salaryRequestImplementationStates} from "@/components/admin/salary/admin.salary.service";
 
 
@@ -99,7 +98,6 @@ export default class SalaryRequestFilterComponent extends Vue {
    * Lifecycle hook
    */
   created() {
-    logger.log('Admin all salary requests table filter created');
     return this.$nextTick()
         .then(() => this.$store.dispatch('dict/reloadBusinessAccounts'));
   }

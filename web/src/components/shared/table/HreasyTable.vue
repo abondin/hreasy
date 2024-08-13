@@ -9,7 +9,7 @@
     <v-row dense>
       <!-- Title-->
       <v-col v-if="title">
-        {{title}}
+        {{ title }}
       </v-col>
       <!-- Refresh button -->
       <slot name="refreshButton">
@@ -135,24 +135,25 @@ export default class HreasyTable<T extends WithId, M extends UpdateBody, C exten
   private data!: TableComponentDataContainer<T, M, C, F>;
 
   @Prop({required: false, default: null})
-  private title!: string|null;
+  private title!: string | null;
 
   @Prop({required: false})
-  private createNewTitle?: ()=>string | string | undefined;
+  private createNewTitle?: () => string | string | undefined;
 
   @Prop({required: false})
-  private updateTitle?: ()=>string | string | undefined;
+  private updateTitle?: () => string | string | undefined;
 
   @Prop({required: false, default: () => ['name']})
   private sortBy!: string | string[];
 
+  @Prop({required: false, default: true})
+  private loadDataOnInit!: boolean;
   /**
    * Lifecycle hook
    */
   protected created() {
-    this.data.init();
+    this.data.init(this.loadDataOnInit);
   }
-
 
   public reloadData() {
     return this.data.reloadData();

@@ -4,9 +4,11 @@
        <v-autocomplete
            v-model="formData.progress"
            :items="progressTypes"
-           :label="$t('Общий прогресс')"
+           :label="$t('Динамика роста')"
            :rules="[v => !!v || $t('Обязательное поле')]"
        ></v-autocomplete>
+        <span class="subtitle-2">{{$t('Текущий уровень сотрудника')}}</span>
+
         <junior-info-report-form-ratings v-if="formData.ratings" :ratings="formData.ratings"
                                          :prev-ratings="prevReport?.ratings">
         </junior-info-report-form-ratings>

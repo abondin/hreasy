@@ -30,7 +30,7 @@
       <div class="subtitle-1 text-decoration-underline column-title">{{ $t('Завершение обучения') }}</div>
       <dl class="info-dl text--primary text-wrap">
         <dt>{{ $t('Обучение завершил') }}:</dt>
-        <dd>{{ item.graduation.graduatedBy.name }} ({{ formatDateTime(item.graduation.graduatedAt) }})</dd>
+        <dd>{{ item.graduation.graduatedBy?.name }} ({{ formatDateTime(item.graduation.graduatedAt) }})</dd>
         <dt>{{ $t('Комментарий') }}:</dt>
         <dd>{{ item.graduation.comment }}</dd>
       </dl>

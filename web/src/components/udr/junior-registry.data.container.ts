@@ -37,8 +37,6 @@ export class JuniorTableFilter extends Filter<JuniorDto> {
 
 export class JuniorRegistryDataContainer extends TableComponentDataContainer<JuniorDto, UpdateJuniorRegistryBody, AddJuniorRegistryBody, JuniorTableFilter>
     implements DataContainerWithExcelExportSupport {
-    private _exportLoading = false;
-    private _exportCompleted = false;
 
     constructor(_headerLoader: () => DataTableHeader[], private _clickOnRowAction: (item: JuniorDto) => any, _addAction = new AddJuniorActionHandler()) {
         super(() => juniorService.juniors(),
@@ -63,24 +61,8 @@ export class JuniorRegistryDataContainer extends TableComponentDataContainer<Jun
     public canExport(): boolean {
         return permissionService.canAdminJuniorRegistry();
     }
-
-    public confirmExportCompleted() {
-        this._exportCompleted = true;
-    }
-
     public exportToExcel() {
-        this._exportLoading = true;
-        this._exportCompleted = false;
-        return juniorService.export(!this.filter.onlyNotGraduated).then(() => {
-            this._exportCompleted = true;
-        }).finally(() => {
-            this._exportLoading = false;
-        })
-    }
-
-
-    get exportCompleted() {
-        return this._exportCompleted;
+        return juniorService.export(!this.filter.onlyNotGraduated);
     }
 
     public actionOnClickAllowed(): boolean {

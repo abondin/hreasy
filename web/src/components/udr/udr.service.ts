@@ -61,6 +61,7 @@ export interface AddOrUpdateJuniorReportBody {
 }
 
 export interface JuniorReportRatings {
+    overallReadiness: number,
     competence: number,
     process: number,
     teamwork: number,

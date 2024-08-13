@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.config.udr.UdrProps;
@@ -195,7 +196,9 @@ public class JuniorRegistryService {
                         }));
     }
 
-    private Mono<Integer> doUpdateReport(AuthContext auth, int juniorId, int reportId, Consumer<JuniorReportEntry> changesApplier) {
+    private Mono<Integer> doUpdateReport(AuthContext auth,
+                                         int juniorId,
+                                         int reportId, Consumer<JuniorReportEntry> changesApplier) {
         var now = dateTimeService.now();
         return reportRepo.findByJuniorIdAndReportId(juniorId, reportId)
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound(JUNIOR_REPORT_LOG_ENTITY_TYPE, reportId))
@@ -207,6 +210,4 @@ public class JuniorRegistryService {
                                     .map(HistoryEntry::getEntityId);
                         }));
     }
-
-
 }

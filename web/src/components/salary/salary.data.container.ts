@@ -32,9 +32,6 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
 
     private _selectedPeriod = ReportPeriod.currentPeriod();
     private _closedPeriods: ClosedSalaryRequestPeriod[] = [];
-    private _exportLoading = false;
-    private _exportCompleted = false;
-
     constructor(_headerLoader: () => DataTableHeader[]) {
         super(() => salaryService.getClosedSalaryRequestPeriods()
                 .then(data => {
@@ -191,33 +188,13 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
 
     //<editor-fold desc="Export to excel">
     public exportToExcel() {
-        this._exportLoading = true;
-        this._exportCompleted = false;
-        return adminSalaryService.export(this._selectedPeriod.periodId()).then(() => {
-            this._exportCompleted = true;
-        }).finally(() => {
-            this._exportLoading = false;
-        })
+        return adminSalaryService.export(this._selectedPeriod.periodId());
     }
-
-    get exportLoading(): boolean {
-        return this._exportLoading;
-    }
-
-    get exportCompleted(): boolean {
-        return this._exportCompleted;
-    }
-
-
     //</editor-fold>
 
     //<editor-fold desc="Periods">
     get selectedPeriod() {
         return this._selectedPeriod;
-    }
-
-    public confirmExportCompleted() {
-        this._exportCompleted = true;
     }
 
 

@@ -1,6 +1,7 @@
 <template>
-  <hreasy-table :data="data" :create-new-title="$t('Добавление в реестр')"
-                :update-title="$t('Обновление записи в реестре')">
+  <hreasy-table ref="juniorTable" :data="data" :create-new-title="$t('Добавление в реестр')"
+                :update-title="$t('Обновление записи в реестре')"
+                :load-data-on-init="false">
     <template v-slot:filters>
       <junior-table-filter :data="data"/>
     </template>
@@ -31,7 +32,7 @@
       <value-with-status-chip :value="item.monthsWithoutReport" dense></value-with-status-chip>
     </template>
     <template v-slot:[`item.latestReport.createdAt`]="{ item }">
-      {{ formatDateTime(item.prevReport?.createdAt) }}
+      {{ formatDateTime(item.latestReport?.createdAt) }}
     </template>
     <template v-slot:[`item.graduation.graduatedAt`]="{ item }">
       {{ formatDateTime(item.graduation?.graduatedAt) }}
@@ -56,7 +57,6 @@ import {JuniorProgressType, JuniorReport} from "@/components/udr/udr.service";
 import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 import JuniorTableFilter from "@/components/udr/info/JuniorTableFilter.vue";
 
-
 @Component({
   components: {
     JuniorTableFilter,
@@ -80,9 +80,9 @@ export default class JuniorRegistryTable extends Vue {
           {text: this.$tc('Месяцев в компании'), value: 'juniorInCompanyMonths.value'},
           {text: this.$tc('Месяцев без отчёта'), value: 'monthsWithoutReport.value'},
           {text: this.$tc('Прогресс'), value: 'progress'},
-          {text: this.$tc('Последний срез (Когда)'), value: 'prevReport.createdAt'},
-          {text: this.$tc('Последний срез (Кто)'), value: 'prevReport.createdBy.name'},
-          {text: this.$tc('Последний срез (Комментарий)'), value: 'prevReport.comment'},
+          {text: this.$tc('Последний срез (Когда)'), value: 'latestReport.createdAt'},
+          {text: this.$tc('Последний срез (Кто)'), value: 'latestReport.createdBy.name'},
+          {text: this.$tc('Последний срез (Комментарий)'), value: 'latestReport.comment'},
           {text: this.$tc('Завершил обучение'), value: 'graduation.graduatedAt'}
         ];
         return headers;
@@ -93,12 +93,6 @@ export default class JuniorRegistryTable extends Vue {
         }
       });
 
-  /**
-   * Lifecycle hook
-   */
-  created() {
-    this.data.init();
-  }
 
   public static getIcon(type: JuniorProgressType): { icon: string, color: string } {
     switch (type) {
@@ -113,6 +107,11 @@ export default class JuniorRegistryTable extends Vue {
       default:
         return {icon: 'mdi-question', color: 'error'};
     }
+  }
+
+  activated() {
+    const tableTef: any = this.$refs.juniorTable;
+    tableTef?.reloadData();
   }
 
   private reportsOrderedAsc(reports: JuniorReport[]) {

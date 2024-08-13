@@ -11,7 +11,7 @@
       <v-spacer></v-spacer>
       <v-tooltip bottom>
         <template v-slot:activator="{ on: ton, attrs: tattrs}">
-          <v-btn @click="data.openAddReportDialog()"
+          <v-btn :disabled="Boolean(data?.item?.graduation)" @click="data.openAddReportDialog()"
                  v-bind="tattrs" v-on="ton" class="col-auto" color="primary" icon>
             <v-icon>mdi-plus</v-icon>
           </v-btn>
@@ -28,7 +28,7 @@
             <v-col cols="auto" align-self="end" v-if="canUpdateReport(report)">
               <v-tooltip bottom>
                 <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                  <v-btn v-bind="tattrs" v-on="ton" text icon @click="data.openDeleteReportDialog(report.id)">
+                  <v-btn :disabled="Boolean(data?.item?.graduation)" v-bind="tattrs" v-on="ton" text icon @click="data.openDeleteReportDialog(report.id)">
                     <v-icon>mdi-delete</v-icon>
                   </v-btn>
                 </template>

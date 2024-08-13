@@ -1,9 +1,9 @@
 <template>
-  <v-container class="pa-0 ma-0" v-if="value">
+  <v-container class="pa-0 ma-0">
     <v-row no-gutters align="center" justify="center">
       <v-col no-gutters>
         <div class="v-label pr-5">{{ name }}
-          <v-tooltip bottom>
+          <v-tooltip bottom max-width="500px">
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <v-icon small v-bind="tattrs" v-on="ton">mdi-help-circle</v-icon>
             </template>
@@ -25,6 +25,7 @@
       <v-col cols="auto" no-gutters>
         <v-rating :readonly="readonly"
                   :value="value"
+                  :clearable="!required"
                   x-large
                   @input="handleInput"></v-rating>
       </v-col>

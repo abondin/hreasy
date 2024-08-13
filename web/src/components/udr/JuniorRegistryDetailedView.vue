@@ -11,25 +11,24 @@
       <router-link to="/juniors">{{ $t('Менторство') }}</router-link>
       / {{ data.item.juniorEmpl.name }}
       <!-- General information and actions -->
-      <v-card class="mt-5" :loading="fetchLoading">
+      <v-card class="mt-5" :loading="fetchLoading" :set="graduated=Boolean(data?.item?.graduation)">
         <v-card-title :set="actionsEnabled=canUpdateJuniorRegistryInfo()">
           <span>{{ data.item.juniorEmpl.name }}</span>
           <v-spacer></v-spacer>
           <v-tooltip bottom v-if="actionsEnabled">
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <v-btn @click="data.openGraduateDialog(Boolean(data.item.graduation))"
-                     v-bind="tattrs" v-on="ton" class="col-auto" color="success"
-                     :disabled="false" icon>
+                     v-bind="tattrs" v-on="ton" class="col-auto" :color="graduated?'':'success'" icon>
                 <v-icon>mdi-school</v-icon>
               </v-btn>
             </template>
-            <span>{{ $t('Закончить обучение') }}</span>
+            <span>{{ graduated? $t('Отменить факт окончания обучения'):$t('Закончить обучение') }}</span>
           </v-tooltip>
           <v-tooltip bottom v-if="actionsEnabled">
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <v-btn @click="data.openUpdateDialog()"
-                     v-bind="tattrs" v-on="ton" class="col-auto" color="primary"
-                     :disabled="false" icon>
+                     v-bind="tattrs" v-on="ton" class="col-auto" color="primary" icon
+                     :disabled="graduated">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
             </template>
@@ -39,7 +38,7 @@
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <v-btn @click="data.openDeleteDialog()"
                      v-bind="tattrs" v-on="ton" class="col-auto" color="error"
-                     :disabled="false" icon>
+                     :disabled="graduated" icon>
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </template>

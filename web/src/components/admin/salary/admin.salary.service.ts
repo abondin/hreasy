@@ -48,7 +48,7 @@ export interface AdminSalaryService {
      */
     reopenReportPeriod(periodId: number, comment?: string): Promise<any>;
 
-    export(periodId: number): any;
+    export(periodId: number): Promise<any>;
 
     /**
      * Clear all information about salary request implementation

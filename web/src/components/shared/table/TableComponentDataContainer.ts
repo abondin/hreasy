@@ -97,10 +97,12 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
                 private _singleSelect: boolean = true) {
     }
 
-    public init() {
+    public init(reload = true) {
         this.initHeaders();
         this._initialized = true;
-        return this.reloadData();
+        if (reload) {
+            return this.reloadData();
+        }
     }
 
     public editable(): boolean {
@@ -167,7 +169,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this.updateAction.itemEditable(this.selectedItemId, this.updateBody);
     }
 
-    public actionOnClickAllowed(): boolean{
+    public actionOnClickAllowed(): boolean {
         return this.updateAllowed();
     }
 
@@ -192,7 +194,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     }
 
 
-    public clickOnRowAction(item: T){
+    public clickOnRowAction(item: T) {
         return this.openUpdateDialog(item);
     }
 
@@ -288,7 +290,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
 //<editor-fold desc="Delete Actions">
 
-    public showSelectCheckbox(): boolean{
+    public showSelectCheckbox(): boolean {
         return this.deleteAllowed();
     }
 
@@ -363,7 +365,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
             });
     }
 
-    public reloadHeaders(){
+    public reloadHeaders() {
         this.initHeaders();
     }
 
