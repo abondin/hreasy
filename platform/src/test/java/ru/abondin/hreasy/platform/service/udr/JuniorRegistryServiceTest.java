@@ -153,7 +153,7 @@ class JuniorRegistryServiceTest extends BaseServiceTest {
         var reportBody = new AddJuniorReportBody();
         reportBody.setProgress(2);
         reportBody.setComment("Normal progress");
-        reportBody.setRatings(new JuniorReportRatings(1, 2, 3, 4, 5));
+        reportBody.setRatings(new JuniorReportRatings(5, 1, 2, 3, 4, 5));
         service.addJuniorReport(auth, registryId, reportBody).block(MONO_DEFAULT_TIMEOUT);
         var reports = service.juniorDetailed(auth, registryId).block(MONO_DEFAULT_TIMEOUT).getReports();
         Assertions.assertEquals(1, reports.size());

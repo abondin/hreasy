@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JuniorReportRatings {
-    private int competence = 0;
     private int overallReadiness = 0;
+    private int competence = 0;
     private int process = 0;
     private int teamwork = 0;
     private int contribution = 0;
