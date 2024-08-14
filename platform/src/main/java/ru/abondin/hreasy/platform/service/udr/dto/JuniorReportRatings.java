@@ -8,9 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JuniorReportRatings {
-    private int competence = 1;
-    private int process = 1;
-    private int teamwork = 1;
-    private int contribution = 1;
-    private int motivation = 1;
+    private int competence = 0;
+    private int overallReadiness = 0;
+    private int process = 0;
+    private int teamwork = 0;
+    private int contribution = 0;
+    private int motivation = 0;
 }
