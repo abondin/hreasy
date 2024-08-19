@@ -169,7 +169,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this.updateAction.itemEditable(this.selectedItemId, this.updateBody);
     }
 
-    public actionOnClickAllowed(): boolean {
+    public get actionOnClickAllowed(): boolean {
         return this.updateAllowed();
     }
 
@@ -290,7 +290,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
 //<editor-fold desc="Delete Actions">
 
-    public showSelectCheckbox(): boolean {
+    public get showSelectCheckbox(): boolean {
         return this.deleteAllowed();
     }
 

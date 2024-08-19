@@ -35,7 +35,11 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
 
     private _selectedPeriod = ReportPeriod.currentPeriod();
     private _closedPeriods: ClosedSalaryRequestPeriod[] = [];
-    constructor(_headerLoader: () => DataTableHeader[]) {
+
+    constructor(_headerLoader: () => DataTableHeader[], private _clickOnRowAction: (period: ReportPeriod, item: SalaryIncreaseRequest) => any =
+        (p, i) => {
+            // do nothing
+        }) {
         super(() => salaryService.getClosedSalaryRequestPeriods()
                 .then(data => {
                     this.setClosedPeriods(data);
@@ -59,6 +63,13 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
         );
         this._implementAction = new SalaryRequestImplementAction();
         this._approveAction = new SalaryRequestApproveAction();
+    }
+
+    clickOnRowAction(item: SalaryIncreaseRequest): void {
+        return this._clickOnRowAction(this._selectedPeriod, item);
+    }
+    public get actionOnClickAllowed(): boolean {
+        return true;
     }
 
     //<editor-fold desc="Report new request">
@@ -193,6 +204,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
     public exportToExcel() {
         return adminSalaryService.export(this._selectedPeriod.periodId());
     }
+
     //</editor-fold>
 
     //<editor-fold desc="Periods">
@@ -219,7 +231,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
 
     closePeriod() {
         if (this._selectedPeriod) {
-           return this.doInLoadingSection(() => {
+            return this.doInLoadingSection(() => {
                 return adminSalaryService.closeReportPeriod(this._selectedPeriod.periodId()).then(() => {
                     return this.reloadData();
                 })
@@ -259,6 +271,10 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
 
     public canExport(): boolean {
         return permissionService.canAdminSalaryRequests();
+    }
+
+    get showSelectCheckbox(): boolean {
+        return false;
     }
 
     //</editor-fold>

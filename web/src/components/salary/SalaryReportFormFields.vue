@@ -15,13 +15,13 @@
       :rules="[v => !!v || $t('Обязательное поле')]"
   ></v-autocomplete>
     <v-autocomplete
-        v-if="employeeAssessments && employeeAssessments.length > 0"
+        v-if="isSalaryRequest() && employeeAssessments && employeeAssessments.length > 0"
         v-model="createBody.assessmentId"
         item-value="id" item-text="plannedDate"
         :items="employeeAssessments"
         :label="$t('Ассессмент')"
     ></v-autocomplete>
-  <my-date-form-component v-model="createBody.budgetExpectedFundingUntil"
+  <my-date-form-component v-if="isSalaryRequest()" v-model="createBody.budgetExpectedFundingUntil"
                           :label="$t('Планируемая дата окончания финансирования')"
                           :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГГГ'))]"
   ></my-date-form-component>
@@ -137,7 +137,7 @@ export default class SalaryReportFormFields extends Vue {
   isSalaryRequest(): boolean{
     return Boolean(this.createBody.type == SalaryRequestType.SALARY_INCREASE);
   }
-
+  
 }
 
 </script>
