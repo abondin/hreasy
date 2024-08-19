@@ -176,7 +176,7 @@
     <v-main>
       <v-container>
         <keep-alive :max="10"
-            include="AdminProjects,VacationsList,AssessmentShortList,JuniorRegistryTable">
+            include="AdminProjects,VacationsList,AssessmentShortList,JuniorRegistryTable,SalaryRequestsTable">
           <router-view></router-view>
         </keep-alive>
       </v-container>

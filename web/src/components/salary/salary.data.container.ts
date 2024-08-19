@@ -19,9 +19,12 @@ import {
     SalaryRequestApproveFormData
 } from "@/components/salary/SalaryRequestApprovalForm.vue";
 import {DataContainerWithExcelExportSupport} from "@/components/shared/table/DataContainerWithExcelExportSupport";
+import {
+    DataContainerWithPeriodSelectionSupport
+} from "@/components/shared/table/DataContainerWithPeriodSelectionSupport";
 
 export class SalaryRequestDataContainer extends TableComponentDataContainer<SalaryIncreaseRequest, SalaryRequestFormData, SalaryRequestReportBody, SalaryRequestFilter>
-    implements DataContainerWithExcelExportSupport {
+    implements DataContainerWithExcelExportSupport, DataContainerWithPeriodSelectionSupport {
     private _implementDialog = false;
     private _implementBody: SalaryRequestFormData | null = null;
     private readonly _implementAction: SalaryRequestImplementAction;
@@ -198,33 +201,33 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
     }
 
 
-    private incrementPeriod() {
+    incrementPeriod() {
         this._selectedPeriod.increment();
         this.reloadData();
     }
 
-    private decrementPeriod() {
+    decrementPeriod() {
         this._selectedPeriod.decrement();
         this.reloadData();
     }
 
-    public periodClosed(): boolean {
+    get periodClosed(): boolean {
         return this._selectedPeriod &&
             this._closedPeriods
             && this._closedPeriods.map(p => p.period).indexOf(this._selectedPeriod.periodId()) >= 0;
     }
 
-    private closePeriod() {
+    closePeriod() {
         if (this._selectedPeriod) {
-            this.doInLoadingSection(() => {
+           return this.doInLoadingSection(() => {
                 return adminSalaryService.closeReportPeriod(this._selectedPeriod.periodId()).then(() => {
-                    this.reloadData();
+                    return this.reloadData();
                 })
             });
         }
     }
 
-    private reopenPeriod() {
+    reopenPeriod() {
         if (this._selectedPeriod) {
             return this.doInLoadingSection(() => {
                 return adminSalaryService.reopenReportPeriod(this._selectedPeriod.periodId()).then(() => {

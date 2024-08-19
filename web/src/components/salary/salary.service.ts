@@ -75,6 +75,8 @@ export interface SalaryService {
 
     load(period: number): Promise<Array<SalaryIncreaseRequest>>;
 
+    get(period: number, requestId: number): Promise<SalaryIncreaseRequest>;
+
     approve(requestId: number, body: SalaryRequestApproveBody): Promise<number>;
 
     decline(requestId: number, body: SalaryRequestDeclineBody): Promise<number>;
@@ -92,6 +94,12 @@ class RestSalaryService implements SalaryService {
 
     load(period: number): Promise<Array<SalaryIncreaseRequest>> {
         return httpService.get(`v1/salaries/requests/${period}`).then(response => {
+            return response.data;
+        });
+    }
+
+    get(period: number, requestId: number): Promise<SalaryIncreaseRequest> {
+        return httpService.get(`v1/salaries/requests/${period}/${requestId}`).then(response => {
             return response.data;
         });
     }

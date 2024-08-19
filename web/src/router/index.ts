@@ -35,6 +35,7 @@ import AdminEmployeesKidsImportWorkflowComponent
 import TelegramConfirmationPage from "@/components/telegram/TelegramConfirmationPage.vue";
 import JuniorRegistryTable from "@/components/udr/JuniorRegistryTable.vue";
 import JuniorRegistryDetailedView from "@/components/udr/JuniorRegistryDetailedView.vue";
+import SalaryRequestsTable from "@/components/salary/SalaryRequestsTable.vue";
 
 Vue.use(VueRouter)
 
@@ -62,6 +63,7 @@ const routes = [
         props: true
     },
     {path: "/salaries/requests", component: SalaryRequests, name: "salariesRequests"},
+    {path: "/salaries/requests_new", component: SalaryRequestsTable, name: "salariesRequestsNew"},
     {path: "/timesheet", component: TimesheetTableComponent},
     {path: "/juniors", component: JuniorRegistryTable},
     {path: "/juniors/:juniorRegistryId", component: JuniorRegistryDetailedView, props: true},

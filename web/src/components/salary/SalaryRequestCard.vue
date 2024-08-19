@@ -277,13 +277,13 @@ export default class SalaryRequestCard extends Vue {
   }
 
   private commentActionDisabled(item: SalaryIncreaseRequest) {
-    return this.dataContainer.periodClosed();
+    return this.dataContainer.periodClosed;
   }
   private implActionDisabled() {
-    return this.dataContainer.periodClosed();
+    return this.dataContainer.periodClosed;
   }
   private deleteActionDisabled() {
-    return this.dataContainer.periodClosed() || this.item.impl;
+    return this.dataContainer.periodClosed || this.item.impl;
   }
 }
 </script>

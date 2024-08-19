@@ -54,7 +54,7 @@
           </v-btn>
           <span class="ml-1 mr-2">
             {{ data.selectedPeriod }}
-            <v-icon v-if="data.periodClosed()" color="primary"
+            <v-icon v-if="data.periodClosed" color="primary"
                     :title="$t('Период закрыт для внесения изменений')">mdi-lock</v-icon>
           </span>
           <v-btn @click.stop="data.incrementPeriod()" text x-small>
@@ -65,18 +65,18 @@
           <v-tooltip bottom>
             <template v-slot:activator="{ on: ton, attrs: tattrs}">
               <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-                <v-btn v-if="!data.periodClosed()" link :disabled="data.loading" @click="data.closePeriod()"
+                <v-btn v-if="!data.periodClosed" link :disabled="data.loading" @click="data.closePeriod()"
                        icon>
                   <v-icon>mdi-lock</v-icon>
                 </v-btn>
-                <v-btn v-if="data.periodClosed()" link :disabled="data.loading" @click="data.reopenPeriod()"
+                <v-btn v-if="data.periodClosed" link :disabled="data.loading" @click="data.reopenPeriod()"
                        icon>
                   <v-icon>mdi-lock-open</v-icon>
                 </v-btn>
               </div>
             </template>
             <span>{{
-                $t(data.periodClosed() ? 'Переоткрыть период. Вернуть возможность вносить изменения'
+                $t(data.periodClosed ? 'Переоткрыть период. Вернуть возможность вносить изменения'
                     : 'Закрыть период. Запретить внесение изменений.')
               }}</span>
           </v-tooltip>
