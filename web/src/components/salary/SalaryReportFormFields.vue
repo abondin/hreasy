@@ -32,6 +32,7 @@
                 :label="$t('Текущая заработная плата')"
   >
   </v-text-field>
+
   <v-text-field type="number"
                 hide-spin-buttons
                 v-model="createBody.increaseAmount"
@@ -58,6 +59,14 @@
       :rules="[v=>(!v || v.length <= 4096 || $t('Не более N символов', {n:4096}))]"
       :label="$t('Примечание')">
   </v-textarea>
+    <v-text-field
+            v-if="isSalaryRequest()"
+            v-model="createBody.previousSalaryIncreaseText"
+            counter="256"
+            :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
+            :label="$t('Предыдущий реализованный пересмотр')">
+  </v-text-field>
+
   </span>
 </template>
 
@@ -134,10 +143,10 @@ export default class SalaryReportFormFields extends Vue {
     return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
   }
 
-  isSalaryRequest(): boolean{
+  isSalaryRequest(): boolean {
     return Boolean(this.createBody.type == SalaryRequestType.SALARY_INCREASE);
   }
-  
+
 }
 
 </script>

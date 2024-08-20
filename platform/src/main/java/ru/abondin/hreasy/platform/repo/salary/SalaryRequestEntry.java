@@ -63,7 +63,9 @@ public class SalaryRequestEntry {
     private LocalDate infoDateOfEmployment;
     private Integer infoEmplBa;
     private Integer infoEmplPosition;
+    //TODO Should be stored in separate table
     private BigDecimal infoCurrentSalaryAmount;
+    //TODO Should be stored in separate table
     private String infoPreviousSalaryIncreaseText;
 // </editor-fold>
 
