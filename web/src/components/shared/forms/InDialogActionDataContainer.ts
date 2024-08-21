@@ -54,6 +54,4 @@ export class InDialogActionDataContainer<ID,T> {
         this._formData = null;
         this._itemId = null;
     }
-
-
 }

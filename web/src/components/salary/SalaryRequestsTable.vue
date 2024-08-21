@@ -151,7 +151,7 @@ export default class SalaryRequestsTable extends Vue {
       },
       (period, item) => {
         if (item?.id) {
-          this.$router.push(`/salaries/requests/${period}/${item.id}`);
+          this.$router.push(`/salaries/requests/${period.periodId()}/${item.id}`);
         }
       }
   );

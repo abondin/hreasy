@@ -28,7 +28,6 @@ import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
 import AdminProjectDetails from "@/components/admin/project/AdminProjectDetails.vue";
 import AdminEmployeesImportWorkflowComponent from "@/components/admin/employee/imp/AdminEmployeesImportWorkflow.vue";
 import TimesheetTableComponent from "@/components/ts/TimesheetTableComponent.vue";
-import SalaryRequests from "@/components/salary/SalaryRequests.vue";
 import DictAdminOrganizations from "@/components/admin/dict/DictAdminOrganizations.vue";
 import AdminEmployeesKidsImportWorkflowComponent
     from "@/components/admin/employee/imp/AdminEmployeesKidsImportWorkflow.vue";
@@ -36,6 +35,7 @@ import TelegramConfirmationPage from "@/components/telegram/TelegramConfirmation
 import JuniorRegistryTable from "@/components/udr/JuniorRegistryTable.vue";
 import JuniorRegistryDetailedView from "@/components/udr/JuniorRegistryDetailedView.vue";
 import SalaryRequestsTable from "@/components/salary/SalaryRequestsTable.vue";
+import SalaryRequestDetailsView from "@/components/salary/details/SalaryRequestDetailsView.vue";
 
 Vue.use(VueRouter)
 
@@ -62,8 +62,13 @@ const routes = [
         name: 'AssessmentDetailedVue',
         props: true
     },
-    {path: "/salaries/requests", component: SalaryRequests, name: "salariesRequests"},
-    {path: "/salaries/requests_new", component: SalaryRequestsTable, name: "salariesRequestsNew"},
+    {path: "/salaries/requests", component: SalaryRequestsTable, name: "salariesRequests"},
+    {
+        path: "/salaries/requests/:period/:requestId",
+        component: SalaryRequestDetailsView,
+        name: "salariesRequestsDetails",
+        props: true
+    },
     {path: "/timesheet", component: TimesheetTableComponent},
     {path: "/juniors", component: JuniorRegistryTable},
     {path: "/juniors/:juniorRegistryId", component: JuniorRegistryDetailedView, props: true},
