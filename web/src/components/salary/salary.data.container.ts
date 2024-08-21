@@ -108,7 +108,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
         if (this._selectedPeriod) {
             return this.doInLoadingSection(() => {
                 return adminSalaryService.reopenReportPeriod(this._selectedPeriod.periodId()).then(() => {
-                    this.reloadData();
+                    return this.reloadData();
                 })
             });
         }

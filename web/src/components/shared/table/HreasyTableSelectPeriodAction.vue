@@ -14,21 +14,26 @@
     <v-tooltip bottom>
       <template v-slot:activator="{ on: ton, attrs: tattrs}">
         <span v-bind="tattrs" v-on="ton" class="ml-0 pl-0 mt-0 pt-0">
-          <v-btn v-if="!data.periodClosed" link :disabled="data.loading" @click="data.closePeriod"
+          <v-btn v-if="!data.periodClosed" link :disabled="data.loading" @click="openClosePeriodDialog()"
                  icon>
             <v-icon>mdi-lock</v-icon>
           </v-btn>
-          <v-btn v-if="data.periodClosed" link :disabled="data.loading" @click="data.reopenPeriod"
+          <v-btn v-if="data.periodClosed" link :disabled="data.loading" @click="openReopenPeriodDialog()"
                  icon>
             <v-icon>mdi-lock-open</v-icon>
           </v-btn>
         </span>
       </template>
       <span>{{
-          $t(data.periodClosed ? 'Переоткрыть период. Вернуть возможность вносить изменения'
-              : 'Закрыть период. Запретить внесение изменений.')
+          title()
         }}</span>
     </v-tooltip>
+
+    <in-dialog-form size="md" :data="action" form-ref="closePeriodForm" :title="$t('Подтвердите действие')">
+      <template v-slot:fields>
+        <p>{{ data.periodClosed ? $t('Переоткрыть период') : $t('Закрыть период') }}</p>
+      </template>
+    </in-dialog-form>
   </div>
 </template>
 
@@ -39,12 +44,39 @@ import {Prop} from "vue-property-decorator";
 import {
   DataContainerWithPeriodSelectionSupport
 } from "@/components/shared/table/DataContainerWithPeriodSelectionSupport";
+import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
+import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 
-@Component
+
+@Component({
+  components: {InDialogForm}
+})
 export default class HreasyTableSelectPeriodAction<T extends DataContainerWithPeriodSelectionSupport> extends Vue {
   @Prop({required: true})
   private data!: T;
 
+  private action = new InDialogActionDataContainer<number, 'close' | 'reopen'>(this.submitAction);
+
+  private submitAction(itemId: number | null, action: 'close' | 'reopen' | null) {
+    if (action === 'close') {
+      return this.data.closePeriod();
+    } else if (action === 'reopen') {
+      return this.data.reopenPeriod();
+    }
+  }
+
+  private title() {
+    return this.$t(this.data.periodClosed ? 'Переоткрыть период. Вернуть возможность вносить изменения'
+        : 'Закрыть период. Запретить внесение изменений.')
+  }
+
+  private openClosePeriodDialog() {
+    this.action.openDialog(null, 'close');
+  }
+
+  private openReopenPeriodDialog() {
+    this.action.openDialog(null, 'reopen');
+  }
 
 }
 </script>

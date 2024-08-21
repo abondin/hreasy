@@ -31,6 +31,7 @@ import SalaryRequestDetailsViewImplementation
   from "@/components/salary/details/impl/SalaryRequestDetailsViewImplementation.vue";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import SalaryRequestDetailsViewApprovals from "@/components/salary/details/approval/SalaryRequestDetailsViewApprovals.vue";
+import logger from "@/logger";
 
 
 @Component({
@@ -42,11 +43,14 @@ export default class SalaryRequestDetailsView extends Vue {
   private fetchLoading = false;
   private fetchError: string | null = null;
 
+  // Only string passes from URL
   @Prop({required: true})
-  period!: number;
+  period!: string;
 
+  // Only string passes from URL
   @Prop({required: true})
-  requestId!: number;
+  requestId!: string;
+
 
   data: SalaryDetailsDataContainer | null = null;
 
@@ -61,13 +65,14 @@ export default class SalaryRequestDetailsView extends Vue {
   private fetchData() {
     this.fetchLoading = true;
     this.fetchError = null;
+    const periodNum = Number(this.period);
     return salaryService.getClosedSalaryRequestPeriods()
         .then(closedPeriods => {
-          return salaryService.get(this.period, this.requestId)
+          return salaryService.get(periodNum, Number(this.requestId))
               .then(data => {
                     this.data = new SalaryDetailsDataContainer({
-                      period: ReportPeriod.fromPeriodId(this.period),
-                      closed: closedPeriods.map(c => c.period).includes(this.period)
+                      period: ReportPeriod.fromPeriodId(periodNum),
+                      closed: closedPeriods.map(p=>p.period).includes(periodNum)
                     }, data);
                     return this.data;
                   }

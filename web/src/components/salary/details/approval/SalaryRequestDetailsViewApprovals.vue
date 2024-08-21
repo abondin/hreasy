@@ -51,7 +51,7 @@
           {{ $t('Вы уверены, что хотите удалить согласование/комментарий?') }}
         </v-card-text>
         <salary-request-approval-form-fields v-else
-            :formData="data.approveAction.formData"></salary-request-approval-form-fields>
+                                             :formData="data.approveAction.formData"></salary-request-approval-form-fields>
       </template>
     </in-dialog-form>
   </v-card>
