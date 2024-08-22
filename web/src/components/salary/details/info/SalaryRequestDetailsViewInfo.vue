@@ -3,6 +3,23 @@
   <v-card class="mt-5" v-if="data">
     <v-card-title class="text-h5">
       {{ data.isSalaryRequest() ? $t('Запрос на повышение') : $t('Запрос на бонус') }}
+      <v-spacer></v-spacer>
+      <v-tooltip bottom v-if="updateAllowed()">
+        <template v-slot:activator="{ on: ton, attrs: tattrs}">
+          <v-btn v-bind="tattrs" v-on="ton" icon @click="openUpdateDialog()" :disabled="updateActionDisabled()">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+        </template>
+        <span>{{ $t('Внести изменения') }}</span>
+      </v-tooltip>
+      <v-tooltip bottom v-if="deleteAllowed()">
+        <template v-slot:activator="{ on: ton, attrs: tattrs}">
+          <v-btn v-bind="tattrs" v-on="ton" text icon @click="openDeleteDialog()" :disabled="deleteActionDisabled()">
+            <v-icon color="error">mdi-delete</v-icon>
+          </v-btn>
+        </template>
+        <span>{{ $t('Удалить') }}</span>
+      </v-tooltip>
     </v-card-title>
     <v-card-text>
       <div class="row">
@@ -80,11 +97,28 @@
 
             <dt v-if="data.item.req?.comment">{{ $t('Примечание') }}:</dt>
             <dd v-if="data.item.req?.comment">{{ data.item.req.comment }}</dd>
-
           </dl>
         </div>
       </div>
     </v-card-text>
+    <in-dialog-form size="md" form-ref="deleteForm" :data="data.deleteAction"
+                    :title="$t('Удалить запрос')"
+                    v-on:submit="navigateSalariesTable()">
+      <template v-slot:fields>
+        <v-card-text>
+          {{ $t('Вы уверены, что хотите удалить запрос?') }}
+        </v-card-text>
+      </template>
+    </in-dialog-form>
+    <in-dialog-form size="md" form-ref="updateForm" :data="data.deleteAction"
+                    :title="$t('Удалить запрос')"
+                    v-on:submit="navigateSalariesTable()">
+      <template v-slot:fields>
+        <v-card-text>
+          {{ $t('Вы уверены, что хотите удалить запрос?') }}
+        </v-card-text>
+      </template>
+    </in-dialog-form>
   </v-card>
 </template>
 
@@ -97,10 +131,12 @@ import {Prop} from "vue-property-decorator";
 import {SalaryDetailsDataContainer} from "@/components/salary/details/salary-details.data.container";
 import {SalaryIncreaseRequest} from "@/components/salary/salary.service";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
+import permissionService from "@/store/modules/permission.service";
+import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 
 
 @Component({
-  components: {}
+  components: {InDialogForm}
 })
 export default class SalaryRequestDetailsViewInfo extends Vue {
 
@@ -117,6 +153,9 @@ export default class SalaryRequestDetailsViewInfo extends Vue {
 
   formatPeriod = (v: number) => ReportPeriod.fromPeriodId(v);
 
+  private navigateSalariesTable() {
+    this.$router.push('/salaries/requests');
+  }
 
   private prettyPrintProject(item: SalaryIncreaseRequest) {
     let prettyString = "";
@@ -131,6 +170,32 @@ export default class SalaryRequestDetailsViewInfo extends Vue {
     return prettyString;
   }
 
+  updateAllowed() {
+    return permissionService.canUpdateSalaryRequests(this.data.item.createdBy.id);
+  }
+
+  deleteAllowed() {
+    return permissionService.canDeleteSalaryRequests(this.data.item.createdBy.id);
+  }
+
+  updateActionDisabled() {
+    return this.data.periodClosed || this.data.isImplemented();
+  }
+
+  deleteActionDisabled() {
+    return this.data.periodClosed || this.data.isImplemented();
+  }
+
+  openDeleteDialog(){
+    return this.data.deleteAction.openDialog(this.data.item.id, null)
+  }
+  openUpdateDialog(){
+    return false;
+  }
+
+  emitReload() {
+    this.$emit('updated');
+  }
 
 }
 </script>

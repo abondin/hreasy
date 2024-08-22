@@ -51,6 +51,7 @@ public class SalaryRequestEntry {
      */
     @NonNull
     private Integer reqIncreaseStartPeriod;
+    private Integer reqNewPosition;
     @NonNull
     private String reqReason;
     private String reqComment;

@@ -4,6 +4,7 @@ import {WithId} from "@/components/shared/table/TableComponentDataContainer";
 import {SimpleDict} from "@/store/modules/dict";
 import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 import {CurrentProjectDict} from "@/components/empl/employee.service";
+import {SalaryRequestUpdateBody} from "@/components/salary/details/info/salary-request.update.action";
 
 export const enum SalaryRequestType {
     SALARY_INCREASE = 1,
@@ -74,7 +75,9 @@ export interface SalaryService {
 
     getClosedSalaryRequestPeriods(): Promise<Array<ClosedSalaryRequestPeriod>>;
 
-    deleteSalaryRequest(ids: number[]): Promise<Array<any>>;
+    deleteSalaryRequest(id: number): Promise<number>;
+
+    updateSalaryRequest(id: number, body: SalaryRequestUpdateBody): Promise<number>;
 
     load(period: number): Promise<Array<SalaryIncreaseRequest>>;
 
@@ -111,10 +114,12 @@ class RestSalaryService implements SalaryService {
         return httpService.post("v1/salaries/requests", body);
     }
 
-    deleteSalaryRequest(ids: number[]): Promise<Array<any>> {
-        return Promise.all(
-            ids.map(requestId => httpService.delete(`v1/salaries/requests/${requestId}`))
-        );
+    deleteSalaryRequest(requestId: number): Promise<number> {
+        return httpService.delete(`v1/salaries/requests/${requestId}`);
+    }
+
+    updateSalaryRequest(requestId: number, body: SalaryRequestUpdateBody): Promise<number> {
+        return httpService.put(`v1/salaries/requests/${requestId}`, body);
     }
 
     getClosedSalaryRequestPeriods(): Promise<Array<ClosedSalaryRequestPeriod>> {
@@ -174,6 +179,7 @@ export interface SalaryIncreaseRequest extends WithId {
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */
         increaseStartPeriod: number;
+        newPosition: number | null;
         reason: string;
         comment: string | null;
     },

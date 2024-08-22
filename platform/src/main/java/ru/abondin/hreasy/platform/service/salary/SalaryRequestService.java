@@ -25,6 +25,7 @@ import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestComme
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestDeclineBody;
 
 import java.time.OffsetDateTime;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
@@ -82,27 +83,41 @@ public class SalaryRequestService {
     public Mono<Integer> delete(AuthContext auth, int requestId) {
         log.info("Deleting salary request {} by {}", requestId, auth.getUsername());
         var now = dateTimeService.now();
-        var deletedBy = auth.getEmployeeInfo().getEmployeeId();
-        // 1. Find entity to delete
+        var currentUser = auth.getEmployeeInfo().getEmployeeId();
+        return doUpdateOrDelete(auth, requestId, entry -> {
+            entry.setDeletedAt(now);
+            entry.setDeletedBy(currentUser);
+        });
+    }
+    @Transactional
+    public Mono<Integer> update(AuthContext auth, int requestId) {
+        log.info("Update salary request {} by {}", requestId, auth.getUsername());
+        var now = dateTimeService.now();
+        var currentUser = auth.getEmployeeInfo().getEmployeeId();
+        return doUpdateOrDelete(auth, requestId, entry -> {
+            entry.setDeletedAt(now);
+            entry.setDeletedBy(currentUser);
+        });
+    }
+
+    private Mono<Integer> doUpdateOrDelete(AuthContext auth, int requestId, Consumer<SalaryRequestEntry> modifications) {
+        var now = dateTimeService.now();
+        var currentUser = auth.getEmployeeInfo().getEmployeeId();
+        // 1. Find entity to update/delete
         return requestRepo.findById(requestId)
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound(requestId))
                 // 2. Check that period is not closed
-                .flatMap(entry -> checkDeleteActionAllowed(entry)
-                        // 3. Validate if user has permissions to delete
-                        .flatMap(e -> secValidator.validateDeleteSalaryRequest(auth, entry)
+                .flatMap(entry -> checkDeleteOrUpdateActionAllowed(entry)
+                        // 3. Validate if user has permissions to update/delete
+                        .flatMap(e -> secValidator.validateUpdateOrDeleteSalaryRequest(auth, entry)
                                 .flatMap(s -> {
-                                    // 4. Validate that request is not implemented
-                                    if (entry.getImplementedAt() != null) {
-                                        return Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(requestId)));
-                                    }
-                                    // 5. Update deleted fields
-                                    entry.setDeletedAt(now);
-                                    entry.setDeletedBy(deletedBy);
+                                    modifications.accept(entry);
                                     return requestRepo.save(entry);
-                                }))).flatMap(deleted ->
-                        // 6. Save history
-                        historyDomainService.persistHistory(requestId, HistoryDomainService.HistoryEntityType.SALARY_REQUEST, deleted, now, deletedBy)
+                                }))).flatMap(updatedItem ->
+                        // 5. Save history
+                        historyDomainService.persistHistory(requestId, HistoryDomainService.HistoryEntityType.SALARY_REQUEST, updatedItem, now, currentUser)
                 ).map(HistoryEntry::getEntityId);
+
     }
 
     @Transactional
@@ -249,7 +264,7 @@ public class SalaryRequestService {
         return closedPeriodCheck(entry.getReqIncreaseStartPeriod());
     }
 
-    private Mono<Boolean> checkDeleteActionAllowed(SalaryRequestEntry entry) {
+    private Mono<Boolean> checkDeleteOrUpdateActionAllowed(SalaryRequestEntry entry) {
         // 1. Check if report period is not closed
         var closedPeriodCheck = closedPeriodCheck(entry.getReqIncreaseStartPeriod());
         // 2. Check that request is not implemented

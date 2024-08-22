@@ -11,7 +11,7 @@
     <div v-else-if="data">
       <router-link to="/salaries/requests">{{ $t('Повышения и бонусы') }}</router-link>
       / {{ data.item.employee.name }}
-      <salary-request-details-view-info :data="data"/>
+      <salary-request-details-view-info :data="data" @updated="fetchData()"/>
       <salary-request-details-view-implementation :data="data" @updated="fetchData()"/>
       <salary-request-details-view-approvals :data="data" @updated="fetchData()"/>
     </div>

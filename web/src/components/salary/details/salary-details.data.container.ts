@@ -8,7 +8,11 @@ import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import {SalaryRequestApproveAction} from "@/components/salary/details/approval/salary-request.approve.action";
 import {SalaryRequestImplementAction} from "@/components/salary/details/impl/salary-request.implement.action";
 import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
-import {SalaryRequestDeleteAction} from "@/components/salary/details/info/salary-request.update.action";
+import {SalaryRequestDeleteAction} from "@/components/salary/details/info/salary-request.delete.action";
+import {
+    SalaryRequestUpdateAction,
+    SalaryRequestUpdateBody
+} from "@/components/salary/details/info/salary-request.update.action";
 
 export class SalaryDetailsDataContainer {
 
@@ -16,6 +20,7 @@ export class SalaryDetailsDataContainer {
     private _implementAction = new SalaryRequestImplementAction();
 
     private _deleteRequestAction = new SalaryRequestDeleteAction();
+    private _updateRequestAction = new SalaryRequestUpdateAction();
 
     public constructor(private _periodHolder: { period: ReportPeriod, closed: boolean }, private _item: SalaryIncreaseRequest) {
     }
@@ -44,6 +49,12 @@ export class SalaryDetailsDataContainer {
     }
     public openDeleteDialog(itemId: number) {
         this._deleteRequestAction.openDialog(itemId, null);
+    }
+    get updateAction(): SalaryRequestUpdateAction {
+        return this._updateRequestAction;
+    }
+    openUpdateDialog(id: number, formData: SalaryRequestUpdateBody) {
+        this._updateRequestAction.openDialog(id, formData);
     }
     //</editor-fold>
 
