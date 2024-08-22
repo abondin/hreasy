@@ -29,6 +29,7 @@ public class SalaryRequestExportDto {
 
     private BigDecimal reqIncreaseAmount;
     private BigDecimal reqPlannedSalaryAmount;
+    private String reqNewPosition;
 
     private String reqReason;
 
@@ -39,4 +40,7 @@ public class SalaryRequestExportDto {
     private String implState;
     private String implNewPosition;
     private String implemented;
+
+    private String previousSalaryIncreaseText;
+    private LocalDate previousSalaryIncreaseDate;
 }

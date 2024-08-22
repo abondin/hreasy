@@ -15,10 +15,7 @@ import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.repo.salary.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDto;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestMapper;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
+import ru.abondin.hreasy.platform.service.salary.dto.*;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApproveBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestCommentBody;
@@ -31,6 +28,7 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 @Slf4j
 public class SalaryRequestService {
+    public static final String SALARY_REQUEST_ENTITY_TYPE = "SalaryRequest";
     private final SalaryRequestRepo requestRepo;
 
     private final SalaryRequestClosedPeriodRepo closedPeriodRepo;
@@ -51,7 +49,7 @@ public class SalaryRequestService {
     public Mono<SalaryRequestDto> get(AuthContext auth, int id) {
         log.debug("Getting salary request {} by {}", id, auth);
         return requestRepo.findFullNotDeletedById(id, dateTimeService.now())
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound(id))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(SALARY_REQUEST_ENTITY_TYPE, id))
                 .flatMap(entry -> secValidator.validateViewSalaryRequest(auth, entry).map(v -> mapper.fromEntry(entry)));
     }
 
@@ -89,15 +87,13 @@ public class SalaryRequestService {
             entry.setDeletedBy(currentUser);
         });
     }
+
     @Transactional
-    public Mono<Integer> update(AuthContext auth, int requestId) {
+    public Mono<Integer> update(AuthContext auth, int requestId, SalaryRequestUpdateBody body) {
         log.info("Update salary request {} by {}", requestId, auth.getUsername());
-        var now = dateTimeService.now();
-        var currentUser = auth.getEmployeeInfo().getEmployeeId();
-        return doUpdateOrDelete(auth, requestId, entry -> {
-            entry.setDeletedAt(now);
-            entry.setDeletedBy(currentUser);
-        });
+        return doUpdateOrDelete(auth, requestId, entry ->
+                mapper.applyRequestUpdateBody(entry, body)
+        );
     }
 
     private Mono<Integer> doUpdateOrDelete(AuthContext auth, int requestId, Consumer<SalaryRequestEntry> modifications) {
@@ -105,7 +101,7 @@ public class SalaryRequestService {
         var currentUser = auth.getEmployeeInfo().getEmployeeId();
         // 1. Find entity to update/delete
         return requestRepo.findById(requestId)
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound(requestId))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(SALARY_REQUEST_ENTITY_TYPE, requestId))
                 // 2. Check that period is not closed
                 .flatMap(entry -> checkDeleteOrUpdateActionAllowed(entry)
                         // 3. Validate if user has permissions to update/delete
@@ -150,7 +146,7 @@ public class SalaryRequestService {
     public Flux<SalaryRequestApprovalDto> findApprovals(AuthContext auth, int requestId) {
         log.info("Get approvals for salary request {} by {}", requestId, auth.getUsername());
         return requestRepo.findById(requestId)
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound(requestId))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(SALARY_REQUEST_ENTITY_TYPE, requestId))
                 .flatMap(request -> secValidator.validateApproveSalaryRequest(auth, request.getBudgetBusinessAccount()))
                 .flatMapMany(v -> approvalRepo.findNotDeletedByRequestId(requestId, OffsetDateTime.now()).map(mapper::fromEntry));
     }
@@ -177,7 +173,7 @@ public class SalaryRequestService {
         var now = dateTimeService.now();
         // 1. Get request
         return requestRepo.findById(requestId)
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound(requestId))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(SALARY_REQUEST_ENTITY_TYPE, requestId))
                 // 2. Validate security
                 .flatMap(entry -> secValidator.validateApproveSalaryRequest(auth, entry.getBudgetBusinessAccount())
                         // 3. Check if report period is not closed
@@ -207,12 +203,12 @@ public class SalaryRequestService {
         log.info("Deleting approval {} for salary request {} by {}", approvalId, requestId, auth.getUsername());
         // 1. Find approval
         return approvalRepo.findById(approvalId)
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound(approvalId))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound("SalaryRequestApproval", approvalId))
                 .flatMap(approvalEntry ->
                         // 2. Check if user can delete approval
                         secValidator.validateDeleteApproval(auth, approvalEntry)
                                 // 3. Find approval request
-                                .flatMap(v -> requestRepo.findById(requestId).switchIfEmpty(BusinessErrorFactory.entityNotFound(requestId))
+                                .flatMap(v -> requestRepo.findById(requestId).switchIfEmpty(BusinessErrorFactory.entityNotFound(SALARY_REQUEST_ENTITY_TYPE, requestId))
                                         // 4. Check if period is not closed
                                         .flatMap(this::checkApprovalActionAllowed))
                                 .flatMap(v -> {
@@ -249,10 +245,10 @@ public class SalaryRequestService {
         // 2. Check if assessment for the same employee
         var assessmentCorrect = body.getAssessmentId() == null ? Mono.defer(() -> Mono.just(true)) :
                 assessmentRepo.findById(body.getAssessmentId())
-                        .switchIfEmpty(BusinessErrorFactory.entityNotFound(body.getAssessmentId()))
+                        .switchIfEmpty(BusinessErrorFactory.entityNotFound("Assessment", body.getAssessmentId()))
                         .flatMap(assessment -> {
                             if (assessment.getEmployee() == null || !assessment.getEmployee().equals(body.getEmployeeId())) {
-                                return BusinessErrorFactory.entityNotFound(body.getAssessmentId());
+                                return BusinessErrorFactory.entityNotFound("Assessment", body.getAssessmentId());
                             }
                             return Mono.just(true);
                         });

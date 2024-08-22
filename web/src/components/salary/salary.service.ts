@@ -39,6 +39,7 @@ export interface SalaryRequestReportBody {
     currentSalaryAmount: number | null;
 
     //TODO After salary storing feature implemented populate this field automatically
+    previousSalaryIncreaseDate: string | null;
     previousSalaryIncreaseText: string | null;
 
     plannedSalaryAmount: number | null;
@@ -171,6 +172,7 @@ export interface SalaryIncreaseRequest extends WithId {
         position: SimpleDict | null;
         currentSalaryAmount: number | null;
         previousSalaryIncreaseText: string | null;
+        previousSalaryIncreaseDate: string | null;
     }
     req: {
         increaseAmount: number;
@@ -179,7 +181,7 @@ export interface SalaryIncreaseRequest extends WithId {
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */
         increaseStartPeriod: number;
-        newPosition: number | null;
+        newPosition: SimpleDict | null;
         reason: string;
         comment: string | null;
     },

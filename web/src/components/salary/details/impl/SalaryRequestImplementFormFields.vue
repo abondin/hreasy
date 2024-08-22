@@ -15,11 +15,11 @@
             type="number"
             v-model="formData.increaseAmount"
             :rules="[v => !!v || $t('Обязательное числовое поле')]"
-            :label="$t('Итоговое изменение на')">
+            :label="isBonus()? $t('Сумма бонуса') : $t('Итоговое изменение на')">
         </v-text-field>
         <v-text-field
             :disabled="itemReadonly()"
-            v-if="!isRejected()"
+            v-if="!isRejected() && !isBonus()"
             type="number"
             v-model="formData.salaryAmount"
             :label="$t('Итоговая сумма')">

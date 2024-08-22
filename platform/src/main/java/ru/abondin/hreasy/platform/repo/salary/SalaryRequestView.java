@@ -22,6 +22,7 @@ public class SalaryRequestView extends SalaryRequestEntry {
     private String infoEmplProjectName;
     private String infoEmplBaName;
     private String implNewPositionName;
+    private String reqNewPositionName;
 
     private Json approvals;
 

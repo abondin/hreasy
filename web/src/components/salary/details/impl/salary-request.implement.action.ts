@@ -46,7 +46,7 @@ export class SalaryRequestImplementAction extends InDialogActionDataContainer<nu
             salaryAmount: item.impl ? item.impl.salaryAmount : item.req.plannedSalaryAmount,
             increaseStartPeriod: item.impl ? item.impl.increaseStartPeriod : item.req.increaseStartPeriod,
             rejectReason: item.impl ? item.impl.rejectReason : '',
-            newPosition: item.impl ? item.impl.newPosition : null,
+            newPosition: item.impl ? item.impl.newPosition?.id : item.req.newPosition?.id,
             completed: Boolean(item.impl)
         } as SalaryRequestImplementationFormData;
     }

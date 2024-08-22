@@ -6,9 +6,11 @@ export interface SalaryRequestUpdateBody {
     budgetExpectedFundingUntil: string | null;
     //TODO After salary storing feature implemented populate this field automatically
     currentSalaryAmount: number | null;
+    plannedSalaryAmount: number | null;
 
     //TODO After salary storing feature implemented populate this field automatically
     previousSalaryIncreaseText: string | null;
+    previousSalaryIncreaseDate: string | null;
 
     assessmentId: number | null;
     comment: string | null;
@@ -25,10 +27,12 @@ export class SalaryRequestUpdateAction extends InDialogActionDataContainer<numbe
         return {
             budgetExpectedFundingUntil: item.budgetExpectedFundingUntil,
             currentSalaryAmount: item.employeeInfo.currentSalaryAmount,
+            plannedSalaryAmount: item.req?.plannedSalaryAmount || null,
             previousSalaryIncreaseText: item.employeeInfo.previousSalaryIncreaseText,
+            previousSalaryIncreaseDate: item.employeeInfo.previousSalaryIncreaseDate,
             assessmentId: item.assessment?.id || null,
             comment: item.req?.comment,
-            newPosition: item.req?.newPosition
+            newPosition: item.req?.newPosition?.id || null
         };
     }
 

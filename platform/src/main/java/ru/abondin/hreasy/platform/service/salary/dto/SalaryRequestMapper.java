@@ -2,6 +2,8 @@ package ru.abondin.hreasy.platform.service.salary.dto;
 
 import io.r2dbc.postgresql.codec.Json;
 import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalView;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
@@ -21,11 +23,15 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
 
+    @Autowired
+    private I18Helper i18Helper;
+
     @Mapping(target = "id", ignore = true)
     @Mapping(source = "createdBy", target = "createdBy")
     @Mapping(source = "createdAt", target = "createdAt")
     @Mapping(source = "body.increaseAmount", target = "reqIncreaseAmount")
     @Mapping(source = "body.currentSalaryAmount", target = "infoCurrentSalaryAmount")
+    @Mapping(source = "body.previousSalaryIncreaseDate", target = "infoPreviousSalaryIncreaseDate")
     @Mapping(source = "body.previousSalaryIncreaseText", target = "infoPreviousSalaryIncreaseText")
     @Mapping(source = "body.plannedSalaryAmount", target = "reqPlannedSalaryAmount")
     @Mapping(source = "body.increaseStartPeriod", target = "reqIncreaseStartPeriod")
@@ -40,6 +46,17 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
                                                EmployeeDetailedEntry empl,
                                                Integer createdBy, OffsetDateTime createdAt);
 
+    @Mapping(source = "body.budgetExpectedFundingUntil", target = "budgetExpectedFundingUntil")
+    @Mapping(source = "body.currentSalaryAmount", target = "infoCurrentSalaryAmount")
+    @Mapping(source = "body.plannedSalaryAmount", target = "reqPlannedSalaryAmount")
+    @Mapping(source = "body.previousSalaryIncreaseDate", target = "infoPreviousSalaryIncreaseDate")
+    @Mapping(source = "body.previousSalaryIncreaseText", target = "infoPreviousSalaryIncreaseText")
+    @Mapping(source = "body.newPosition", target = "reqNewPosition")
+    @Mapping(source = "body.assessmentId", target = "assessmentId")
+    @Mapping(source = "body.comment", target = "reqComment")
+    public abstract void applyRequestUpdateBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestUpdateBody body);
+
+
     @Mapping(source = ".", target = "employee", qualifiedByName = "employee")
     @Mapping(source = ".", target = "budgetBusinessAccount", qualifiedByName = "budgetBusinessAccount")
     @Mapping(source = ".", target = "assessment", qualifiedByName = "assessment")
@@ -50,6 +67,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "infoDateOfEmployment", target = "employeeInfo.dateOfEmployment")
     @Mapping(source = "infoCurrentSalaryAmount", target = "employeeInfo.currentSalaryAmount")
     @Mapping(source = "reqPlannedSalaryAmount", target = "req.plannedSalaryAmount")
+    @Mapping(source = "infoPreviousSalaryIncreaseDate", target = "employeeInfo.previousSalaryIncreaseDate")
     @Mapping(source = "infoPreviousSalaryIncreaseText", target = "employeeInfo.previousSalaryIncreaseText")
     @Mapping(source = "reqIncreaseAmount", target = "req.increaseAmount")
     @Mapping(source = "reqIncreaseStartPeriod", target = "req.increaseStartPeriod")
@@ -63,13 +81,15 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "implRejectReason", target = "impl.rejectReason")
     @Mapping(source = "implComment", target = "impl.comment")
     @Mapping(source = "implState", target = "impl.state")
-    @Mapping(source = ".", target = "impl.newPosition", qualifiedByName = "employeeNewPosition")
+    @Mapping(source = ".", target = "req.newPosition", qualifiedByName = "reqNewPosition")
+    @Mapping(source = ".", target = "impl.newPosition", qualifiedByName = "implNewPosition")
     @Mapping(source = "approvals", target = "approvals", qualifiedByName = "approvalsFromJson")
     public abstract SalaryRequestDto fromEntry(SalaryRequestView entry);
 
     @Mapping(source = "req.increaseAmount", target = "reqIncreaseAmount")
     @Mapping(source = "req.plannedSalaryAmount", target = "reqPlannedSalaryAmount")
     @Mapping(source = "req.reason", target = "reqReason")
+    @Mapping(source = "req.newPosition.name", target = "reqNewPosition")
     @Mapping(source = "impl.increaseAmount", target = "implIncreaseAmount")
     @Mapping(source = "impl.salaryAmount", target = "implSalaryAmount")
     @Mapping(source = "impl.increaseStartPeriod", target = "implIncreaseStartPeriod", qualifiedByName = "period")
@@ -82,6 +102,8 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "employeeInfo.currentProject.role", target = "employeeProjectRole")
     @Mapping(source = "employeeInfo.ba.name", target = "employeeBusinessAccount")
     @Mapping(source = "employeeInfo.currentSalaryAmount", target = "currentSalaryAmount")
+    @Mapping(source = "employeeInfo.previousSalaryIncreaseDate", target = "previousSalaryIncreaseDate")
+    @Mapping(source = "employeeInfo.previousSalaryIncreaseText", target = "previousSalaryIncreaseText")
     @Mapping(source = "createdBy.name", target = "createdBy")
     @Mapping(source = "employeeInfo.position.name", target = "employeePosition")
     @Mapping(source = "budgetBusinessAccount.name", target = "budgetBusinessAccount")
@@ -140,8 +162,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
 
     @Named("assessment")
     protected SimpleDictDto assessment(SalaryRequestView entry) {
-        //TODO Add local date format
-        return simpleDto(entry.getAssessmentId(), entry.getAssessmentPlannedDate() == null ? null : entry.getAssessmentPlannedDate().toString());
+        return simpleDto(entry.getAssessmentId(), i18Helper.formatDate(entry.getAssessmentPlannedDate()));
     }
 
 
@@ -150,9 +171,14 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
         return simpleDto(entry.getInfoEmplPosition(), entry.getInfoEmplPositionName());
     }
 
-    @Named("employeeNewPosition")
-    protected SimpleDictDto employeeNewPosition(SalaryRequestView entry) {
+    @Named("implNewPosition")
+    protected SimpleDictDto implNewPosition(SalaryRequestView entry) {
         return simpleDto(entry.getImplNewPosition(), entry.getImplNewPositionName());
+    }
+
+    @Named("reqNewPosition")
+    protected SimpleDictDto reqNewPosition(SalaryRequestView entry) {
+        return simpleDto(entry.getReqNewPosition(), entry.getReqNewPositionName());
     }
 
     @Named("createdBy")
@@ -186,6 +212,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
         return listFromJson(json, SalaryRequestApprovalDto.class, Comparator
                 .comparing(SalaryRequestApprovalDto::getCreatedAt).reversed());
     }
+
 
 // </editor-fold>
 
