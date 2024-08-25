@@ -38,6 +38,7 @@ export class InDialogActionDataContainer<ID,T> {
             }
         }).catch((error: any) => {
             this.error = errorUtils.shortMessage(error);
+        }).finally(()=>{
             this.loading = false;
         })
     }
@@ -54,6 +55,4 @@ export class InDialogActionDataContainer<ID,T> {
         this._formData = null;
         this._itemId = null;
     }
-
-
 }

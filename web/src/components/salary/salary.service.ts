@@ -4,6 +4,7 @@ import {WithId} from "@/components/shared/table/TableComponentDataContainer";
 import {SimpleDict} from "@/store/modules/dict";
 import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 import {CurrentProjectDict} from "@/components/empl/employee.service";
+import {SalaryRequestUpdateBody} from "@/components/salary/details/info/salary-request.update.action";
 
 export const enum SalaryRequestType {
     SALARY_INCREASE = 1,
@@ -36,6 +37,10 @@ export interface SalaryRequestReportBody {
 
     //TODO After salary storing feature implemented populate this field automatically
     currentSalaryAmount: number | null;
+
+    //TODO After salary storing feature implemented populate this field automatically
+    previousSalaryIncreaseDate: string | null;
+    previousSalaryIncreaseText: string | null;
 
     plannedSalaryAmount: number | null;
     /**
@@ -71,9 +76,13 @@ export interface SalaryService {
 
     getClosedSalaryRequestPeriods(): Promise<Array<ClosedSalaryRequestPeriod>>;
 
-    deleteSalaryRequest(ids: number[]): Promise<Array<any>>;
+    deleteSalaryRequest(id: number): Promise<number>;
+
+    updateSalaryRequest(id: number, body: SalaryRequestUpdateBody): Promise<number>;
 
     load(period: number): Promise<Array<SalaryIncreaseRequest>>;
+
+    get(period: number, requestId: number): Promise<SalaryIncreaseRequest>;
 
     approve(requestId: number, body: SalaryRequestApproveBody): Promise<number>;
 
@@ -96,14 +105,22 @@ class RestSalaryService implements SalaryService {
         });
     }
 
+    get(period: number, requestId: number): Promise<SalaryIncreaseRequest> {
+        return httpService.get(`v1/salaries/requests/${period}/${requestId}`).then(response => {
+            return response.data;
+        });
+    }
+
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number> {
         return httpService.post("v1/salaries/requests", body);
     }
 
-    deleteSalaryRequest(ids: number[]): Promise<Array<any>> {
-        return Promise.all(
-            ids.map(requestId => httpService.delete(`v1/salaries/requests/${requestId}`))
-        );
+    deleteSalaryRequest(requestId: number): Promise<number> {
+        return httpService.delete(`v1/salaries/requests/${requestId}`);
+    }
+
+    updateSalaryRequest(requestId: number, body: SalaryRequestUpdateBody): Promise<number> {
+        return httpService.put(`v1/salaries/requests/${requestId}`, body);
     }
 
     getClosedSalaryRequestPeriods(): Promise<Array<ClosedSalaryRequestPeriod>> {
@@ -155,6 +172,7 @@ export interface SalaryIncreaseRequest extends WithId {
         position: SimpleDict | null;
         currentSalaryAmount: number | null;
         previousSalaryIncreaseText: string | null;
+        previousSalaryIncreaseDate: string | null;
     }
     req: {
         increaseAmount: number;
@@ -163,6 +181,7 @@ export interface SalaryIncreaseRequest extends WithId {
          * YYYYMM period. Month starts with 0. 202308 - September of 2023
          */
         increaseStartPeriod: number;
+        newPosition: SimpleDict | null;
         reason: string;
         comment: string | null;
     },

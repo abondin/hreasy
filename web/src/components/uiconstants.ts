@@ -3,6 +3,7 @@
  */
 export class UiConstants {
     static defaultItemsPerTablePage = 15;
+    static lgItemsPerTablePage = 50;
 
     /**
      * Print ()=>string, string or default value

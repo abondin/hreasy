@@ -51,6 +51,7 @@ public class SalaryRequestEntry {
      */
     @NonNull
     private Integer reqIncreaseStartPeriod;
+    private Integer reqNewPosition;
     @NonNull
     private String reqReason;
     private String reqComment;
@@ -63,7 +64,10 @@ public class SalaryRequestEntry {
     private LocalDate infoDateOfEmployment;
     private Integer infoEmplBa;
     private Integer infoEmplPosition;
+    //TODO Should be stored in separate table
     private BigDecimal infoCurrentSalaryAmount;
+    //TODO Should be stored in separate table
+    private LocalDate infoPreviousSalaryIncreaseDate;
     private String infoPreviousSalaryIncreaseText;
 // </editor-fold>
 

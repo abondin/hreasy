@@ -14,6 +14,12 @@ DEVOPS_FOLDER=$(cd `dirname $0` && pwd)
 
 cd ${DEVOPS_FOLDER}/../
 
+if [ -z "$CI_DEPLOY_TAG" ]
+then
+  out "CI_DEPLOY_TAG is empty. Set CI_DEPLOY_TAG=test"
+  CI_DEPLOY_TAG="test"
+fi
+
 
 function build {
     if  [ -z "$DOCKER_REPOSITORY" ]

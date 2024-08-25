@@ -65,7 +65,7 @@ export class JuniorRegistryDataContainer extends TableComponentDataContainer<Jun
         return juniorService.export(!this.filter.onlyNotGraduated);
     }
 
-    public actionOnClickAllowed(): boolean {
+    public get actionOnClickAllowed(): boolean {
         return true;
     }
 

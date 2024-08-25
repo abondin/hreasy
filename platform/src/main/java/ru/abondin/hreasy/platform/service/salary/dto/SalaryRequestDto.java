@@ -58,6 +58,7 @@ public class SalaryRequestDto {
         @NonNull
         private String reason;
         private String comment;
+        private SimpleDictDto newPosition;
     }
 
     @Data
@@ -88,7 +89,10 @@ public class SalaryRequestDto {
         private LocalDate dateOfEmployment;
         private SimpleDictDto ba;
         private SimpleDictDto position;
+        //TODO After salary storing feature implemented populate this field automatically
         private BigDecimal currentSalaryAmount;
-        private String infoPreviousSalaryIncreaseText;
+        //TODO After salary storing feature implemented populate this field automatically
+        private String previousSalaryIncreaseText;
+        private LocalDate previousSalaryIncreaseDate;
     }
 }

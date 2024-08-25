@@ -11,6 +11,7 @@ import ru.abondin.hreasy.platform.service.salary.SalaryRequestService;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestUpdateBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApproveBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestCommentBody;
@@ -36,6 +37,10 @@ public class SalaryRequestsController {
     @DeleteMapping("/{requestId}")
     public Mono<Integer> delete(@PathVariable int requestId) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.delete(auth, requestId));
+    }
+    @PutMapping("/{requestId}")
+    public Mono<Integer> update(@PathVariable int requestId, @RequestBody SalaryRequestUpdateBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.update(auth, requestId, body));
     }
 
     @PostMapping("/{salaryRequestId}/approvals/approve")

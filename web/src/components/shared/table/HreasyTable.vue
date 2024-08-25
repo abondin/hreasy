@@ -72,8 +72,8 @@
             dense
             :items-per-page="data.defaultItemsPerTablePage"
             class="text-truncate"
-            :class="{'table-cursor': data.actionOnClickAllowed()}"
-            :show-select="data.showSelectCheckbox()"
+            :class="{'table-cursor': data.actionOnClickAllowed}"
+            :show-select="data.showSelectCheckbox"
             :single-select="data.singleSelect"
             @click:row="(v)=>data.clickOnRowAction(v)"
         >

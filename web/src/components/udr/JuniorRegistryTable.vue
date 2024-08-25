@@ -1,7 +1,7 @@
 <template>
   <hreasy-table ref="juniorTable" :data="data" :create-new-title="$t('Добавление в реестр')"
                 :update-title="$t('Обновление записи в реестре')"
-                :load-data-on-init="true">
+                :load-data-on-init="false">
     <template v-slot:filters>
       <junior-table-filter :data="data"/>
     </template>
@@ -56,9 +56,9 @@ import HreasyTableExportToExcelAction from "@/components/shared/table/HreasyTabl
 import {JuniorProgressType, JuniorReport} from "@/components/udr/udr.service";
 import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 import JuniorTableFilter from "@/components/udr/info/JuniorTableFilter.vue";
-import logger from "@/logger";
 
 @Component({
+  name: "JuniorRegistryTable",
   components: {
     JuniorTableFilter,
     ValueWithStatusChip,
@@ -93,6 +93,13 @@ export default class JuniorRegistryTable extends Vue {
           this.$router.push(`/juniors/${item.id}`);
         }
       });
+
+  /**
+   * Keep-alive hook
+   */
+  activated() {
+    this.data.reloadData();
+  }
 
 
   public static getIcon(type: JuniorProgressType): { icon: string, color: string } {

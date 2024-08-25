@@ -32,6 +32,10 @@ public class SalaryRequestReportBody {
     private BigDecimal increaseAmount;
     //TODO After salary storing feature implemented populate this field automatically
     private BigDecimal currentSalaryAmount;
+    //TODO After salary storing feature implemented populate this field automatically
+    private String previousSalaryIncreaseText;
+    private LocalDate previousSalaryIncreaseDate;
+
     private BigDecimal plannedSalaryAmount;
 
     /**

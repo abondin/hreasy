@@ -26,11 +26,12 @@ npm run i18n-add-missing-keys
 ## Run in docker
 
 - Build docker image `hreasyweb`
-In `devops` folder execute `build.sh`
-- Run docker container
+In `devops` build docker image and then run it
 ```shell script
-docker run hreasyweb -e HREASY_API_HOST=<<API_HOST_NAME>> -p8080:80 --name hreasyweb
+export CI_DEPLOY_TAG=test
+./build.sh
+docker run -e HREASY_API_HOST=$BACKEND_HOST -p8080:80 --name hreasyweb hreasyweb:test
 ```
 
-**Important**: <<API_HOST_NAME>> - hostname of your `hreasplatform` backend. Backend must be started on 80 port 
+**Important**: <<$BACKEND_HOST>> - hostname and probably port of your `hreasplatform` backend. 
 

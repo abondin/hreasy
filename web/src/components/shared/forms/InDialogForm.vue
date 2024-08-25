@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-if="data" v-model="data.dialog" :width="width">
+  <v-dialog v-if="data.dialog" v-model="data.dialog" :width="width">
     <v-form :ref="formRef">
       <v-card>
         <v-card-title>{{ print(title, $t('Форма')) }}</v-card-title>

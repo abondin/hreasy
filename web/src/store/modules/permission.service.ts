@@ -231,6 +231,10 @@ interface PermissionService {
 
     canAdminSalaryRequests(): boolean;
 
+    canDeleteSalaryRequests(requestCreator: number): boolean;
+
+    canUpdateSalaryRequests(requestCreator: number): boolean;
+
     canReportSalaryRequest(): boolean;
 
     canApproveSalaryRequest(ba: number): boolean;
@@ -397,6 +401,13 @@ class VuexPermissionService implements PermissionService {
 
     canAdminSalaryRequests(): boolean {
         return this.simplePermissionCheck(Permissions.AdminSalaryRequests);
+    }
+
+    canDeleteSalaryRequests(requestCreator: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.AdminSalaryRequests, requestCreator);
+    }
+    canUpdateSalaryRequests(requestCreator: number): boolean {
+        return this.simplePermissionCheckOrCurrentEmployee(Permissions.AdminSalaryRequests, requestCreator);
     }
 
     canReportSalaryRequest(): boolean {

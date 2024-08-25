@@ -72,7 +72,6 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
     private _headers: DataTableHeader[] = [];
 
-    private _defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
     private _initialized = false;
 
@@ -118,7 +117,10 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     }
 
     get defaultItemsPerTablePage(): number {
-        return this._defaultItemsPerTablePage;
+        return UiConstants.defaultItemsPerTablePage;
+    }
+    get lgItemsPerTablePage(): number {
+        return UiConstants.lgItemsPerTablePage;
     }
 
     get filter(): F {
@@ -169,7 +171,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
         return this.updateAction.itemEditable(this.selectedItemId, this.updateBody);
     }
 
-    public actionOnClickAllowed(): boolean {
+    public get actionOnClickAllowed(): boolean {
         return this.updateAllowed();
     }
 
@@ -290,7 +292,7 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
 //<editor-fold desc="Delete Actions">
 
-    public showSelectCheckbox(): boolean {
+    public get showSelectCheckbox(): boolean {
         return this.deleteAllowed();
     }
 
