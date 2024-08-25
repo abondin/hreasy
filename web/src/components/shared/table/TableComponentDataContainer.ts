@@ -72,7 +72,6 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
 
     private _headers: DataTableHeader[] = [];
 
-    private _defaultItemsPerTablePage = UiConstants.defaultItemsPerTablePage;
 
     private _initialized = false;
 
@@ -118,7 +117,10 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     }
 
     get defaultItemsPerTablePage(): number {
-        return this._defaultItemsPerTablePage;
+        return UiConstants.defaultItemsPerTablePage;
+    }
+    get lgItemsPerTablePage(): number {
+        return UiConstants.lgItemsPerTablePage;
     }
 
     get filter(): F {

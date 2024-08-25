@@ -28,6 +28,7 @@ npm run i18n-add-missing-keys
 - Build docker image `hreasyweb`
 In `devops` build docker image and then run it
 ```shell script
+export CI_DEPLOY_TAG=test
 ./build.sh
 docker run -e HREASY_API_HOST=$BACKEND_HOST -p8080:80 --name hreasyweb hreasyweb:test
 ```

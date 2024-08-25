@@ -1,7 +1,8 @@
 <template>
   <hreasy-table ref="requestsTable" :data="data"
+                sortBy="employee.name"
                 :create-new-title="createNewTitle"
-                :load-data-on-init="true">
+                :load-data-on-init="false">
     <!--<editor-fold desc="Actions">-->
     <template v-slot:additionalActions>
       <hreasy-table-export-to-excel-action :data=data></hreasy-table-export-to-excel-action>
@@ -118,6 +119,7 @@ import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.
 import SalaryReportFormFields from "@/components/salary/SalaryReportFormFields.vue";
 
 @Component({
+  name: 'SalaryRequestsTable',
   components: {
     SalaryReportFormFields,
     SalaryRequestFilterComponent, HreasyTableSelectPeriodAction, HreasyTableExportToExcelAction, HreasyTable
@@ -183,7 +185,15 @@ export default class SalaryRequestsTable extends Vue {
         }
       }
   );
-  
+
+  /**
+   * Keep-alive hook
+   */
+  activated() {
+    this.data.reloadData();
+  }
+
+
   @Watch("data.filter.type")
   private watchFilterType(newValue: SalaryRequestType) {
     this.data.reloadHeaders();

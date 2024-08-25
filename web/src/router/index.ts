@@ -62,7 +62,7 @@ const routes = [
         name: 'AssessmentDetailedVue',
         props: true
     },
-    {path: "/salaries/requests", component: SalaryRequestsTable, name: "salariesRequests"},
+    {path: "/salaries/requests", component: SalaryRequestsTable, name: "SalaryRequestsTable"},
     {
         path: "/salaries/requests/:period/:requestId",
         component: SalaryRequestDetailsView,

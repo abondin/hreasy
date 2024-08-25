@@ -175,6 +175,7 @@
 
     <v-main>
       <v-container>
+        <!-- Do not forget to add the component name in @Component decorator -->
         <keep-alive :max="10"
             include="AdminProjects,VacationsList,AssessmentShortList,JuniorRegistryTable,SalaryRequestsTable">
           <router-view></router-view>
