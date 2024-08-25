@@ -82,6 +82,21 @@
     <template v-slot:item.req.budgetExpectedFundingUntil="{ item }">
       {{ formatDate(item.req.budgetExpectedFundingUntil) }}
     </template>
+
+    <template v-slot:item.approvals="{ item }">
+      <v-tooltip bottom v-for="approval in approvalsOrderedAsc(item.approvals)" v-bind:key="approval.id"
+                 max-width="500px">
+        <template v-slot:activator="{ on: ton, attrs: tattrs}">
+          <v-icon v-bind="tattrs" v-on="ton" :set="icon=getApprovalIcon(approval)" :color="icon.color">{{
+              icon.icon
+            }}
+          </v-icon>
+        </template>
+        <p>{{ approval.createdBy.name }}<br>
+          {{ formatDateTime(approval?.createdAt) }}</p>
+        <p>{{ approval.comment }}</p>
+      </v-tooltip>
+    </template>
     <!--</editor-fold>-->
 
   </hreasy-table>
@@ -90,7 +105,7 @@
 <script lang="ts">
 import Component from "vue-class-component";
 import {Vue, Watch} from "vue-property-decorator";
-import {SalaryRequestType} from "@/components/salary/salary.service";
+import {SalaryApprovalState, SalaryRequestApproval, SalaryRequestType} from "@/components/salary/salary.service";
 import {SalaryRequestDataContainer} from "@/components/salary/salary.data.container";
 import {DataTableHeader} from "vuetify";
 import HreasyTable from "@/components/shared/table/HreasyTable.vue";
@@ -105,7 +120,8 @@ import SalaryReportFormFields from "@/components/salary/SalaryReportFormFields.v
 @Component({
   components: {
     SalaryReportFormFields,
-    SalaryRequestFilterComponent, HreasyTableSelectPeriodAction, HreasyTableExportToExcelAction, HreasyTable}
+    SalaryRequestFilterComponent, HreasyTableSelectPeriodAction, HreasyTableExportToExcelAction, HreasyTable
+  }
 })
 export default class SalaryRequestsTable extends Vue {
   private data = new SalaryRequestDataContainer(
@@ -156,6 +172,9 @@ export default class SalaryRequestsTable extends Vue {
         headers.push(
             {text: this.$tc('Решение'), value: 'impl.state', width: "150px"}
         );
+        headers.push(
+            {text: this.$tc('Согласования'), value: 'approvals', width: "150px"}
+        );
         return headers;
       },
       (period, item) => {
@@ -164,7 +183,7 @@ export default class SalaryRequestsTable extends Vue {
         }
       }
   );
-
+  
   @Watch("data.filter.type")
   private watchFilterType(newValue: SalaryRequestType) {
     this.data.reloadHeaders();
@@ -193,6 +212,25 @@ export default class SalaryRequestsTable extends Vue {
   createNewTitle = () => this.data.filter.type == SalaryRequestType.SALARY_INCREASE
       ? this.$t('Создание запроса на индексацию ЗП') : this.$t('Создание запроса на бонус');
   private REJECTED = SalaryRequestImplementationState.REJECTED;
+
+  private approvalsOrderedAsc(approvals: SalaryRequestApproval[]) {
+    if (approvals) {
+      return [...approvals].filter(a => a.state != SalaryApprovalState.COMMENT).sort((a, b) => (a.createdAt > b.createdAt) ? 1 : ((b.createdAt > a.createdAt) ? -1 : 0));
+    }
+    return approvals;
+  }
+
+  public getApprovalIcon(approval: SalaryRequestApproval): { icon: string, color: string } {
+    switch (approval.state) {
+      case SalaryApprovalState.DECLINE:
+        return {icon: 'mdi-alert-circle', color: 'error'};
+      case SalaryApprovalState.APPROVE:
+        return {icon: 'mdi-checkbox-marked-circle', color: 'success'};
+      default:
+        return {icon: 'mdi-comment', color: ''};
+    }
+  }
+
 }
 </script>
 

@@ -2,7 +2,7 @@
 <template>
   <v-card class="mt-5" v-if="data">
     <v-card-title class="text-h5">
-      {{ data.isSalaryRequest() ? $t('Запрос на повышение') : $t('Запрос на бонус') }}
+      {{ data.isSalaryRequest() ? $t('Запрос на повышение') : $t('Запрос на бонус') }}&nbsp;<span class="text-subtitle-1">(+{{formatMoney(data.item.req.increaseAmount)}})</span>
       <v-spacer></v-spacer>
       <v-tooltip bottom v-if="updateAllowed()">
         <template v-slot:activator="{ on: ton, attrs: tattrs}">
