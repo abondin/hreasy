@@ -14,6 +14,7 @@ import {DataContainerWithExcelExportSupport} from "@/components/shared/table/Dat
 import {
     DataContainerWithPeriodSelectionSupport
 } from "@/components/shared/table/DataContainerWithPeriodSelectionSupport";
+import {UiConstants} from "@/components/uiconstants";
 
 export class SalaryRequestDataContainer extends TableComponentDataContainer<SalaryIncreaseRequest, SalaryRequestImplementationFormData, SalaryRequestReportBody, SalaryRequestFilter>
     implements DataContainerWithExcelExportSupport, DataContainerWithPeriodSelectionSupport {
@@ -44,6 +45,10 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
             () => permissionService.canReportSalaryRequest(),
             true
         );
+    }
+
+    get defaultItemsPerTablePage(): number {
+        return -1;
     }
 
     clickOnRowAction(item: SalaryIncreaseRequest): void {

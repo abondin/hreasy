@@ -119,9 +119,6 @@ export default class TableComponentDataContainer<T extends WithId, M extends Upd
     get defaultItemsPerTablePage(): number {
         return UiConstants.defaultItemsPerTablePage;
     }
-    get lgItemsPerTablePage(): number {
-        return UiConstants.lgItemsPerTablePage;
-    }
 
     get filter(): F {
         return this._filter;

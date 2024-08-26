@@ -132,7 +132,7 @@ export default class SalaryRequestsTable extends Vue {
   private data = new SalaryRequestDataContainer(
       () => {
         const headers: DataTableHeader[] = [
-          {text: this.$tc('№'), value:"row_number", width:"15px"},
+          {text: this.$tc('№ на странице'), value:"row_number", width:"15px", class: "text-wrap"},
           {text: this.$tc('Сотрудник'), value: 'employee.name', width: "250px"}
         ];
         if (this.data.filter.type == SalaryRequestType.SALARY_INCREASE) {

@@ -8,7 +8,7 @@
       <dt>{{ $t('Бюджет') }}:</dt>
       <dd>{{ item.budgetingAccount?.name || $t('Нет') }}</dd>
 
-      <dt>{{ $t('Дата трудоуйства') }}:</dt>
+      <dt>{{ $t('Дата трудоустройства') }}:</dt>
       <dd>{{ formatDate(item.juniorDateOfEmployment) }}</dd>
 
       <dt>{{ $t('Месяцев в компании') }}:</dt>
