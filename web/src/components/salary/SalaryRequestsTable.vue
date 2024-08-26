@@ -44,6 +44,9 @@
     </template>
     <!--</editor-fold>-->
 
+    <template v-slot:item.row_number="{ index }">
+      {{index+1}}
+    </template>
     <!--<editor-fold desc="Table columns">-->
     <template v-slot:item.impl.increaseStartPeriod="{ item }">
       {{ fromPeriodId(item.impl?.increaseStartPeriod) }}
@@ -129,6 +132,7 @@ export default class SalaryRequestsTable extends Vue {
   private data = new SalaryRequestDataContainer(
       () => {
         const headers: DataTableHeader[] = [
+          {text: this.$tc('№'), value:"row_number", width:"15px"},
           {text: this.$tc('Сотрудник'), value: 'employee.name', width: "250px"}
         ];
         if (this.data.filter.type == SalaryRequestType.SALARY_INCREASE) {
