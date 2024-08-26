@@ -1,39 +1,10 @@
 <!-- All assessments for selected employee -->
 <template>
-  <v-container v-if="employee">
+  <v-container>
     <router-link to="/assessments">{{ $t('Ассессменты') }}</router-link>
-    / {{ employee.displayName }}
     <v-card>
-      <v-card-text class="d-flex flex-column flex-lg-row pa-5 mt-3">
-        <employee-avatar v-bind:employee="employee"></employee-avatar>
-        <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="title">{{ employee.displayName }}</v-list-item-title>
-            <v-list-item-subtitle>{{ $t('Отдел') }} :
-              {{ employee.department ? employee.department.name : $t("Не задан") }}
-            </v-list-item-subtitle>
-            <v-list-item-subtitle>{{ $t('Текущий проект') }} :
-              {{ employee.currentProject ? employee.currentProject.name : $t("Не задан") }}
-            </v-list-item-subtitle>
-            <v-list-item-subtitle>{{ $t('Роль на текущем проекте') }} :
-              {{
-                (employee.currentProject && employee.currentProject.role) ? employee.currentProject.role : $t("Не задана")
-              }}
-            </v-list-item-subtitle>
-            <v-list-item-subtitle>{{ $t('Бизнес Аккаунт') }} :
-              {{ employee.ba ? employee.ba.name : $t("Не задан") }}
-            </v-list-item-subtitle>
-            <v-list-item-subtitle>
-              {{ $t('Почтовый адрес') }} : {{ employee.email ? employee.email : $t("Не задан") }}
-            </v-list-item-subtitle>
-            <v-list-item-subtitle>
-              {{ $t('Позиция') }} : {{ employee.position ? employee.position.name : $t("Не задана") }}
-            </v-list-item-subtitle>
-            <v-list-item-subtitle>
-              {{ $t('Кабинет') }} : {{ employee.officeLocation ? employee.officeLocation.name : $t("Не задан") }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
+      <v-card-text>
+        <employee-base-info-card :employee-id="employeeId"/>
       </v-card-text>
     </v-card>
 
@@ -123,8 +94,6 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
-import employeeService, {Employee} from "@/components/empl/employee.service";
-import EmployeeAvatarUploader from "@/components/empl/EmployeeAvatarUploader.vue";
 import {Prop} from "vue-property-decorator";
 import {DataTableHeader} from "vuetify";
 import assessmentService, {AssessmentBase, NewAssessmentBody} from "@/components/assessment/assessment.service";
@@ -132,6 +101,7 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
+import EmployeeBaseInfoCard from "@/components/shared/EmployeeBaseInfoCard.vue";
 
 class Filter {
   public includeCanceled = false;
@@ -143,7 +113,7 @@ class NewAssessmentForm {
 
 @Component({
   components: {
-    "employee-avatar": EmployeeAvatarUploader,
+    EmployeeBaseInfoCard,
     MyDateFormComponent
   }
 })
@@ -156,8 +126,6 @@ export default class EmployeeAssessmentProfile extends Vue {
   newAssessmentFormError = '';
 
   private newAssessmentDialog = false;
-
-  private employee: Employee | null = null;
 
   @Prop({required: true})
   employeeId!: number;
@@ -179,12 +147,7 @@ export default class EmployeeAssessmentProfile extends Vue {
 
   private fetchData(employeeId: number) {
     this.loading = true;
-    return employeeService.find(employeeId)
-        .then(data => {
-              this.employee = data;
-              return this.employee;
-            }
-        ).then(() => assessmentService.employeeAssessments(employeeId))
+    return assessmentService.employeeAssessments(employeeId)
         .then((assessments) => {
           this.assessments = assessments
         })

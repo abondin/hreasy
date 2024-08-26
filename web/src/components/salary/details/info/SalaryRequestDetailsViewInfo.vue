@@ -22,93 +22,74 @@
       </v-tooltip>
     </v-card-title>
     <v-card-text>
-      <div class="row">
+      <employee-base-info-card :employee-id="data.item.employee.id">
         <!-- editor-fold desc="Информация о сотруднике">-->
-        <div class="col-md-auto">
-          <dl class="info-dl text--primary text-wrap">
-            <dt>{{ $t('ФИО') }}:</dt>
-            <dd>{{ data.item.employee.name }}</dd>
+        <template v-slot:additionalFields>
+          <dt>{{ $t('Дата трудоустройства') }}:</dt>
+          <dd>{{ formatDate(data.item.employeeInfo.dateOfEmployment) }}</dd>
 
-            <dt>{{ $t('Бизнес аккаунт') }}:</dt>
-            <dd>{{ data.item.employeeInfo.ba?.name  || '-' }}</dd>
+          <dt v-if="data.isSalaryRequest()">{{$t('Предыдущий реализованный пересмотр')}}:
+          </dt>
 
-            <dt>{{ $t('Дата трудоустройства') }}:</dt>
-            <dd>{{ formatDate(data.item.employeeInfo.dateOfEmployment) }}</dd>
+          <dd v-if="data.isSalaryRequest()">
+            {{ formatDate(data.item.employeeInfo.previousSalaryIncreaseDate)  || '-' }}
+            <span v-if="data.item.employeeInfo.previousSalaryIncreaseText"> ({{ data.item.employeeInfo.previousSalaryIncreaseText }})</span>
+          </dd>
 
-            <dt v-if="data.isSalaryRequest()">{{$t('Предыдущий реализованный пересмотр')}}:
-            </dt>
-            <dd v-if="data.isSalaryRequest()">
-              {{ formatDate(data.item.employeeInfo.previousSalaryIncreaseDate)  || '-' }}
-              <span v-if="data.item.employeeInfo.previousSalaryIncreaseText"> ({{ data.item.employeeInfo.previousSalaryIncreaseText }})</span>
-            </dd>
+          <dt v-if="data.isSalaryRequest()">{{ $t('Текущая заработная плата') }}:</dt>
+          <dd v-if="data.isSalaryRequest()">
+            {{ formatMoney(data.item.employeeInfo.currentSalaryAmount) || '-' }}
+          </dd>
 
-
-            <dt v-if="data.isSalaryRequest()">{{ $t('Текущая заработная плата') }}:</dt>
-            <dd v-if="data.isSalaryRequest()">
-              {{ formatMoney(data.item.employeeInfo.currentSalaryAmount) || '-' }}
-            </dd>
-
-
-
-            <dt>{{ $t('Текущая позиция') }}:</dt>
-            <dd>{{ data.item.employeeInfo.position?.name || '-'}}</dd>
-
-            <dt>{{ $t('Текущий проект') }}:</dt>
-            <dd>{{ prettyPrintProject(data.item) }}</dd>
-
-            <dt v-if="data.isSalaryRequest()">{{ $t('Ассессмент') }}:</dt>
-            <dd v-if="data.isSalaryRequest()">
-              <router-link v-if="data.item.assessment"  target="_blank" :to="`/assessments/${data.item.employee.id}/${data.item.assessment.id}`">
-                {{ data.item.assessment.name }}
-              </router-link>
-              <span v-else>-</span>
-            </dd>
-
-          </dl>
-        </div>
+          <dt v-if="data.isSalaryRequest()">{{ $t('Ассессмент') }}:</dt>
+          <dd v-if="data.isSalaryRequest()">
+            <router-link v-if="data.item.assessment"  target="_blank" :to="`/assessments/${data.item.employee.id}/${data.item.assessment.id}`">
+              {{ data.item.assessment.name }}
+            </router-link>
+            <span v-else>-</span>
+          </dd>
+        </template>
         <!--</editor-fold>-->
-
         <!-- editor-fold desc="Запрос">-->
-        <div class="col-md-auto">
-          <dl class="info-dl text--primary text-wrap" :set="invalidAmmount=!validateIncreaseAndSalary()">
-            <dt>{{ $t('Инициатор') }}:</dt>
-            <dd>{{ data.item.createdBy.name }} ({{ formatDateFromDateTime(data.item.createdAt) }})</dd>
+        <dl class="info-dl text--primary text-wrap ml-lg-5" :set="invalidAmmount=!validateIncreaseAndSalary()">
+          <dt>{{ $t('Инициатор') }}:</dt>
+          <dd>{{ data.item.createdBy.name }} ({{ formatDateFromDateTime(data.item.createdAt) }})</dd>
 
-            <dt>{{ $t('Бюджет из бизнес аккаунта') }}:</dt>
-            <dd>{{ data.item.budgetBusinessAccount.name }}</dd>
+          <dt>{{ $t('Бюджет из бизнес аккаунта') }}:</dt>
+          <dd>{{ data.item.budgetBusinessAccount.name }}</dd>
 
-            <dt v-if="data.isSalaryRequest()">{{ $t('Перспективы биллинга') }}:</dt>
-            <dd v-if="data.isSalaryRequest()">{{ formatDate(data.item.budgetExpectedFundingUntil)  || '-'}}</dd>
+          <dt v-if="data.isSalaryRequest()">{{ $t('Перспективы биллинга') }}:</dt>
+          <dd v-if="data.isSalaryRequest()">{{ formatDate(data.item.budgetExpectedFundingUntil)  || '-'}}</dd>
 
-            <dt>
-              {{ data.isSalaryRequest() ? $t('Изменение на') : $t('Сумма бонуса') }}:
-            </dt>
-            <dd>{{ formatMoney(data.item.req.increaseAmount) }}</dd>
+          <dt>
+            {{ data.isSalaryRequest() ? $t('Изменение на') : $t('Сумма бонуса') }}:
+          </dt>
+          <dd>{{ formatMoney(data.item.req.increaseAmount) }}</dd>
 
-            <dt v-if="data.isSalaryRequest()">
-              {{ $t('Заработная плата после повышения') }}:
-            </dt>
-            <dd v-if="data.isSalaryRequest()" :class="{'error--text':invalidAmmount}">{{ formatMoney(data.item.req.plannedSalaryAmount)  || '-'}}
-              <v-tooltip bottom v-if="invalidAmmount">
-                <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                  <v-icon small color="error" v-bind="tattrs" v-on="ton">mdi-help-circle</v-icon>
-                </template>
-                {{ $t('Запланированная заработная плата должна совпадать с суммой текущей и изменением') }}
-              </v-tooltip>
-            </dd>
+          <dt v-if="data.isSalaryRequest()">
+            {{ $t('Заработная плата после повышения') }}:
+          </dt>
+          <dd v-if="data.isSalaryRequest()" :class="{'error--text':invalidAmmount}">{{ formatMoney(data.item.req.plannedSalaryAmount)  || '-'}}
+            <v-tooltip bottom v-if="invalidAmmount">
+              <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                <v-icon small color="error" v-bind="tattrs" v-on="ton">mdi-help-circle</v-icon>
+              </template>
+              {{ $t('Запланированная заработная плата должна совпадать с суммой текущей и изменением') }}
+            </v-tooltip>
+          </dd>
 
-            <dt v-if="data.isSalaryRequest()">{{ $t('Запрошенная позиция') }}:</dt>
-            <dd v-if="data.isSalaryRequest()">{{ data.item.req.newPosition?.name  || '-'}}</dd>
+          <dt v-if="data.isSalaryRequest()">{{ $t('Запрошенная позиция') }}:</dt>
+          <dd v-if="data.isSalaryRequest()">{{ data.item.req.newPosition?.name  || '-'}}</dd>
 
 
-            <dt>{{ $t('Обоснование') }}:</dt>
-            <dd>{{ data.item.req?.reason  || '-'}}</dd>
+          <dt>{{ $t('Обоснование') }}:</dt>
+          <dd>{{ data.item.req?.reason  || '-'}}</dd>
 
-            <dt>{{ $t('Примечание') }}:</dt>
-            <dd>{{ data.item.req?.comment || '-' }}</dd>
-          </dl>
-        </div>
-      </div>
+          <dt>{{ $t('Примечание') }}:</dt>
+          <dd>{{ data.item.req?.comment || '-' }}</dd>
+        </dl>
+        <!--</editor-fold>-->
+      </employee-base-info-card>
     </v-card-text>
     <in-dialog-form size="md" form-ref="deleteForm" :data="data.deleteAction"
                     :title="$t('Удалить запрос')"
@@ -146,10 +127,11 @@ import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import permissionService from "@/store/modules/permission.service";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import SalaryRequestUpdateFields from "@/components/salary/details/info/SalaryRequestUpdateFields.vue";
+import EmployeeBaseInfoCard from "@/components/shared/EmployeeBaseInfoCard.vue";
 
 
 @Component({
-  components: {SalaryRequestUpdateFields, InDialogForm}
+  components: {EmployeeBaseInfoCard, SalaryRequestUpdateFields, InDialogForm}
 })
 export default class SalaryRequestDetailsViewInfo extends Vue {
 

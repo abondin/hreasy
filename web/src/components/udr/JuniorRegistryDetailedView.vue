@@ -13,7 +13,7 @@
       <!-- General information and actions -->
       <v-card class="mt-5" :loading="fetchLoading" :set="graduated=Boolean(data?.item?.graduation)">
         <v-card-title :set="actionsEnabled=canUpdateJuniorRegistryInfo()">
-          <span>{{ data.item.juniorEmpl.name }}</span>
+          <span>{{ $t('Сотрудник') }}</span>
           <v-spacer></v-spacer>
           <v-tooltip bottom v-if="actionsEnabled">
             <template v-slot:activator="{ on: ton, attrs: tattrs}">

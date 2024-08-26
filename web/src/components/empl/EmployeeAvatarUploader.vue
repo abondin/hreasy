@@ -22,6 +22,7 @@
               color="grey">
       <v-img v-if="emplAvatar" :src="emplAvatar" @click.stop="fullscreen = !fullscreen"></v-img>
       <avatar-cropper
+          v-if="!readOnly"
           output-mime="image/jpeg"
           @error="handleError"
           @uploaded="handleUploaded"
@@ -32,7 +33,7 @@
           :output-options="{width: 1024, height: 1024}"
       />
     </v-avatar>
-    <div class="align-self-center">
+    <div class="align-self-center" v-if="!readOnly">
       <v-btn x-small :disabled="!canUpdateAvatar()" :id="'pick-avatar-'+employee.id">{{ $tc('Загрузить фото') }}
       </v-btn>
     </div>
@@ -57,6 +58,9 @@ export default class EmployeeAvatarUploader extends Vue {
 
   @Prop({required: true})
   employee!: Employee;
+
+  @Prop({required:false, default:false})
+  readOnly!: boolean;
 
   // Show image in fullscreen
   private fullscreen = false;
