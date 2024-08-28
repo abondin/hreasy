@@ -30,7 +30,11 @@ public class JuniorSecurityValidator {
         /**
          * Request only if I mentor or if I was a mentor
          */
-        MY
+        MY,
+        /**
+         * NO_ACCESS
+         */
+        NO_ACCESS
     }
 
     public Mono<ViewFilter> get(AuthContext authContext) {
@@ -41,11 +45,11 @@ public class JuniorSecurityValidator {
             } else if (authContext.getAuthorities().contains("access_junior_reg")) {
                 filter = ViewFilter.MY;
             } else {
-                return null;
+                filter = ViewFilter.NO_ACCESS;
             }
             return Mono.just(filter);
         }).flatMap(r -> {
-            if (r == null) {
+            if (r == ViewFilter.NO_ACCESS) {
                 return Mono.error(new AccessDeniedException("No access to view junior registry"));
             } else {
                 return Mono.just(r);

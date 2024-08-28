@@ -1,0 +1,2 @@
+ALTER TABLE udr.junior_report DROP CONSTRAINT junior_report_junior_id_fkey;
+ALTER TABLE udr.junior_report ADD CONSTRAINT junior_report_junior_id_fkey FOREIGN KEY (junior_id) REFERENCES udr.junior_registry(id);
