@@ -10,37 +10,75 @@
       </v-tabs>
 
       <!-- Filter Area -->
-      <v-container fluid class="pb-0">
-        <v-row>
-          <v-col lg="2" sm="6" xs="6" class="pb-0">
-            <!-- Selected year -->
-            <v-select
+      <v-container>
+        <v-row align="center">
+          <!-- Actions -->
+          <v-col cols="auto" class="pb-0">
+            <div>
+              <!-- Refresh button -->
+              <v-tooltip bottom v-if="canEditVacations">
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <div v-bind="tattrs" v-on="ton" class="d-inline">
+                    <v-btn text icon @click="fetchData(false)">
+                      <v-icon>refresh</v-icon>
+                    </v-btn>
+                  </div>
+                </template>
+                <span>{{ $t('Обновить данные') }}</span>
+              </v-tooltip>
+              <!-- Add new project -->
+              <v-tooltip bottom v-if="canEditVacations">
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <div v-bind="tattrs" v-on="ton" class="d-inline">
+                    <v-btn text color="primary" :disabled="loading" @click="openVacationDialog(undefined)" icon>
+                      <v-icon>mdi-plus</v-icon>
+                    </v-btn>
+                  </div>
+                </template>
+                <span>{{ $t('Добавить отпуск') }}</span>
+              </v-tooltip>
+
+              <!-- Export -->
+              <v-tooltip bottom v-if="canExportVacations">
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <div v-bind="tattrs" v-on="ton" class="d-inline">
+                    <v-btn text :disabled="loading" @click="exportToExcel()" icon>
+                      <v-icon>mdi-file-excel</v-icon>
+                    </v-btn>
+                  </div>
+                </template>
+                <span>{{ $t('Экспорт в excel') }}</span>
+              </v-tooltip>
+
+              <v-snackbar
+                  v-model="snackbarNotification"
+                  timeout="5000">
+                {{ snackbarMessage }}
+                <template v-slot:action="{ attrs }">
+                  <v-btn color="blue" icon v-bind="attrs" @click="snackbarNotification = false" class="mt-0 pt-0">
+                    <v-icon>mdi-close-circle-outline</v-icon>
+                  </v-btn>
+                </template>
+              </v-snackbar>
+            </div>
+          </v-col>
+
+          <!-- Selected year -->
+          <v-col cols="1"  class="pb-0">
+            <v-select dense
                 v-model="selectedYear"
                 :items="allYears"
                 :label="$t('Год')"></v-select>
           </v-col>
 
-          <v-col lg="4" sm="6" xs="6" class="pb-0">
-            <!-- Dates selection filter -->
-            <my-date-range-component ref="dateSelector" v-model="filter.selectedDates"
+          <!-- Dates selection filter -->
+          <v-col class="pb-0">
+            <my-date-range-component dense ref="dateSelector" v-model="filter.selectedDates"
                                      :label="$t('Дата начала отпуска')"></my-date-range-component>
           </v-col>
-
-          <!-- Current Project Filter -->
-          <v-col lg="3" sm="6" xs="6" class="pb-0">
-            <v-select
-                clearable
-                v-model="filter.selectedProjects"
-                :items="allProjects.filter(p=>p.active)"
-                item-value="id"
-                item-text="name"
-                :label="$t('Текущий проект')"
-                multiple
-            ></v-select>
-          </v-col>
           <!-- Vacation Status -->
-          <v-col lg="3" sm="6" xs="6" class="pb-0">
-            <v-select
+          <v-col class="pb-0">
+            <v-select dense
                 clearable
                 v-model="filter.selectedStatuses"
                 :items="allStatuses"
@@ -50,64 +88,35 @@
           </v-col>
 
 
-        </v-row>
+          <v-responsive  width="100%"></v-responsive>
 
-        <v-row>
-          <v-col class="pt-0 pb-0">
-            <!-- Main search -->
-            <v-text-field
-                class="mt-0 pt-0"
-                v-model="filter.search"
-                :label="$t('Поиск')" clearable></v-text-field>
+          <!-- Main search -->
+          <v-col class="pb-0 pt-0">
+            <v-text-field dense
+                          v-model="filter.search"
+                          :label="$t('Поиск')" clearable></v-text-field>
           </v-col>
-
-          <v-spacer></v-spacer>
-          <v-col class="row pt-0 pb-0" align-self="center" cols="auto">
-            <!-- Refresh button -->
-            <v-tooltip bottom v-if="canEditVacations">
-              <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-                  <v-btn text icon @click="fetchData(false)">
-                    <v-icon>refresh</v-icon>
-                  </v-btn>
-                </div>
-              </template>
-              <span>{{ $t('Обновить данные') }}</span>
-            </v-tooltip>
-            <!-- Add new project -->
-            <v-tooltip bottom v-if="canEditVacations">
-              <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-                  <v-btn text color="primary" :disabled="loading" @click="openVacationDialog(undefined)" icon>
-                    <v-icon>mdi-plus</v-icon>
-                  </v-btn>
-                </div>
-              </template>
-              <span>{{ $t('Добавить отпуск') }}</span>
-            </v-tooltip>
-
-            <!-- Export -->
-            <v-tooltip bottom v-if="canExportVacations">
-              <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                <div v-bind="tattrs" v-on="ton" class="mt-0 pt-0">
-                  <v-btn text :disabled="loading" @click="exportToExcel()" icon>
-                    <v-icon>mdi-file-excel</v-icon>
-                  </v-btn>
-                </div>
-              </template>
-              <span>{{ $t('Экспорт в excel') }}</span>
-            </v-tooltip>
-
-            <v-snackbar
-                v-model="snackbarNotification"
-                timeout="5000">
-              {{ snackbarMessage }}
-              <template v-slot:action="{ attrs }">
-                <v-btn color="blue" icon v-bind="attrs" @click="snackbarNotification = false" class="mt-0 pt-0">
-                  <v-icon>mdi-close-circle-outline</v-icon>
-                </v-btn>
-              </template>
-            </v-snackbar>
+          <!-- Current Project Filter -->
+          <v-col class="pb-0 pt-0">
+            <v-autocomplete dense
+                clearable
+                v-model="filter.selectedProjects"
+                :items="allProjects.filter(p=>p.active)"
+                item-value="id"
+                item-text="name"
+                :label="$t('Текущий проект')"
+                multiple
+            ></v-autocomplete>
+          </v-col>
+          <!-- Current Project Role Filter -->
+          <v-col class="pb-0 pt-0">
+            <v-autocomplete dense
+                clearable
+                v-model="filter.selectedProjectRoles"
+                :items="allProjectRoles"
+                :label="$t('Роль на проекте')"
+                multiple
+            ></v-autocomplete>
           </v-col>
         </v-row>
       </v-container>
@@ -261,8 +270,10 @@ class Filter {
   public selectedStatuses: Array<string> = ['PLANNED', 'TAKEN'];
   public search = '';
   public selectedProjects: Array<number> = [];
+  public selectedProjectRoles: Array<string> = [];
   public selectedDates: Array<string> = [];
 }
+
 
 @Component({
   name: 'VacationsList',
@@ -287,6 +298,7 @@ export default class VacationsListComponent extends Vue {
 
   public allStatuses: Array<any> = [];
   public allEmployees: Array<SimpleDict> = [];
+  public allProjectRoles: Array<string> = [];
   public allYears: Array<number> = [];
   public daysNotIncludedInVacations: Array<string> = [];
 
@@ -314,9 +326,16 @@ export default class VacationsListComponent extends Vue {
           this.daysNotIncludedInVacations = data;
         })
         .then(() => employeeService.findAll().then(data => {
-          this.allEmployees = data.map(e => {
-            return {id: e.id, name: e.displayName} as SimpleDict
+          this.allEmployees.length = 0;
+          this.allProjectRoles.length = 0;
+          var roles = new Set<string>();
+          data.forEach(e => {
+            this.allEmployees.push({id: e.id, name: e.displayName} as SimpleDict);
+            if (e.currentProject && e.currentProject.role) {
+              roles.add(e.currentProject.role);
+            }
           });
+          this.allProjectRoles.push(...Array.from(roles).sort());
           return this.allEmployees;
         }))
         .then(() => this.fetchData(true));
@@ -352,6 +371,8 @@ export default class VacationsListComponent extends Vue {
       let filtered = true;
       // Current project
       filtered = filtered && searchUtils.array(this.filter.selectedProjects, item.employeeCurrentProject?.id);
+      // Current project role
+      filtered = filtered && searchUtils.array(this.filter.selectedProjectRoles, item.employeeCurrentProject?.role);
       // Status
       filtered = filtered && searchUtils.array(this.filter.selectedStatuses, item.status);
 

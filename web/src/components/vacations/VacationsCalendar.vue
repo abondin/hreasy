@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="5" lg="4">
+      <v-col cols="7" lg="6">
         <v-card>
           <v-data-table
               dense
@@ -21,10 +21,8 @@
           </v-data-table>
         </v-card>
       </v-col>
-      <v-col cols="7" lg="8">
-        <v-card>
-          <full-calendar :options="calendarOptions" ref="calendar"></full-calendar>
-        </v-card>
+      <v-col class="calendar_col">
+        <full-calendar :options="calendarOptions" ref="calendar"></full-calendar>
       </v-col>
     </v-row>
   </v-container>
@@ -52,7 +50,7 @@ export default class VacationsCalendar extends Vue {
     headerToolbar: false,
     multiMonthMaxColumns: 1
   }
-  private pageSize=20;
+  private pageSize = 15;
 
   @Prop({required: true})
   vacations!: Vacation[];
@@ -72,7 +70,7 @@ export default class VacationsCalendar extends Vue {
   @Watch('year')
   private onYearUpdated() {
     const now = new Date();
-    this.selectedEmployees=[];
+    this.selectedEmployees = [];
     if (this.$refs.calendar) {
       const c = this.$refs.calendar as any;
       if (this.year == now.getFullYear()) {
@@ -112,6 +110,8 @@ export default class VacationsCalendar extends Vue {
 }
 </script>
 
-<style scoped>
-
+<style scoped lang="scss">
+.calendar_col {
+  max-width: 800px;
+}
 </style>
