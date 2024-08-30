@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
@@ -108,5 +109,10 @@ public class DictService {
                     dto.setActive(!e.isArchived());
                     return dto;
                 });
+    }
+
+    public Mono<String> getOfficeLocationMap(AuthContext auth, int officeLocationId) {
+        return officeLocationRepo
+                .getMap(officeLocationId);
     }
 }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dict.DictWorkingDaysCalendarService;
@@ -69,6 +70,13 @@ public class DictController {
     public Flux<SimpleDictDto> locations() {
         return AuthHandler.currentAuth().flatMapMany(
                 auth -> dictService.findOfficeLocations(auth));
+    }
+
+    @Operation(summary = "All office locations")
+    @GetMapping("/office_locations/{officeLocationId}/map")
+    public Mono<String> getOfficeLocationMap(@PathVariable int officeLocationId) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> dictService.getOfficeLocationMap(auth, officeLocationId));
     }
 
     @Operation(summary = "All not working days")

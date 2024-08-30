@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600">
+    <!-- Коридор -->
+    <rect x="0" y="0" width="100" height="600" fill="#e0e0e0" stroke="#000" stroke-width="2"/>
+    <text x="25" y="300" font-family="Arial" font-size="16" fill="#000" transform="rotate(-90 25,300)">Коридор
+    </text>
+
+    <!-- Комната 1 (большая комната, опенспейс) -->
+    <rect x="100" y="0" width="700" height="300" fill="#d3d3d3" stroke="#000" stroke-width="2"/>
+    <text x="400" y="250" font-family="Arial" font-size="16" fill="#000">Опенспейс</text>
+
+    <!-- Комната 2 (средняя комната) -->
+    <rect x="100" y="300" width="450" height="300" fill="#d3d3d3" stroke="#000" stroke-width="2"/>
+    <text x="325" y="450" font-family="Arial" font-size="16" fill="#000">Комната 2</text>
+
+    <!-- Комната 3 (маленькая комната) -->
+    <rect x="550" y="300" width="250" height="300" fill="#d3d3d3" stroke="#000" stroke-width="2"/>
+    <text x="675" y="450" font-family="Arial" font-size="16" fill="#000">Комната 3</text>
+
+    <!-- Двери -->
+    <!-- Дверь из коридора в К1 -->
+    <rect x="90" y="150" width="10" height="40" fill="#8b4513" stroke="#000" stroke-width="1"/>
+    <!-- Дверь из коридора в К2 -->
+    <rect x="90" y="400" width="10" height="40" fill="#8b4513" stroke="#000" stroke-width="1"/>
+    <!-- Дверь из К1 в К2 -->
+    <rect x="400" y="290" width="40" height="10" fill="#8b4513" stroke="#000" stroke-width="1"/>
+
+    <!-- Окна -->
+    <!-- Три окна в К1 (наверх) -->
+    <rect x="150" y="0" width="100" height="10" fill="#87CEEB" stroke="#000" stroke-width="1"/>
+    <rect x="300" y="0" width="100" height="10" fill="#87CEEB" stroke="#000" stroke-width="1"/>
+    <rect x="450" y="0" width="100" height="10" fill="#87CEEB" stroke="#000" stroke-width="1"/>
+
+    <!-- Два окна в К2 (вниз) -->
+    <rect x="150" y="590" width="100" height="10" fill="#87CEEB" stroke="#000" stroke-width="1"/>
+    <rect x="300" y="590" width="100" height="10" fill="#87CEEB" stroke="#000" stroke-width="1"/>
+
+    <!-- Окно в К3 (вниз) -->
+    <rect x="600" y="590" width="100" height="10" fill="#87CEEB" stroke="#000" stroke-width="1"/>
+    <!-- Окно в К3 (справа) -->
+    <rect x="790" y="350" width="10" height="100" fill="#87CEEB" stroke="#000" stroke-width="1"/>
+
+    <!-- Столы в опенспейсе (К1) -->
+    <!-- Стол 1 -->
+    <rect x="150" y="50" width="100" height="50" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="200" y="50" width="1" height="50" fill="#000"/>
+    <!-- Стол 2 -->
+    <rect x="300" y="50" width="100" height="50" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="350" y="50" width="1" height="50" fill="#000"/>
+    <!-- Стол 3 -->
+    <rect x="450" y="50" width="100" height="50" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="500" y="50" width="1" height="50" fill="#000"/>
+    <!-- Стол 4 -->
+    <rect x="150" y="150" width="100" height="50" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="200" y="150" width="1" height="50" fill="#000"/>
+    <!-- Стол 5 -->
+    <rect x="300" y="150" width="100" height="50" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="350" y="150" width="1" height="50" fill="#000"/>
+    <!-- Стол 6 -->
+    <rect x="450" y="150" width="100" height="50" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+    <rect x="500" y="150" width="1" height="50" fill="#000"/>
+</svg>

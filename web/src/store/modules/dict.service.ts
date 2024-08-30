@@ -1,6 +1,7 @@
 import httpService from "../../components/http.service";
 import {AxiosInstance} from "axios";
 import {CurrentProjectRole, ManagerOfObject, ProjectDictDto, SimpleDict} from "@/store/modules/dict";
+import DOMPurify from 'dompurify';
 
 export interface SharedSkillName {
     groupId: number,
@@ -35,6 +36,8 @@ export interface DictService {
     loadAllLevels(): Promise<Array<SimpleDict>>;
 
     loadAllOfficeLocations(): Promise<Array<SimpleDict>>;
+
+    getOfficeLocationMap(officeLocationId: number): Promise<string>;
 
     loadAllSkillGroups(): Promise<Array<SimpleDict>>;
 
@@ -74,6 +77,13 @@ class RestDictService implements DictService {
 
     loadAllOfficeLocations(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/dict/office_locations").then(response => response.data);
+    }
+
+    getOfficeLocationMap(officeLocationId: number): Promise<string> {
+        return httpService.get(`v1/dict/office_locations/${officeLocationId}/map`, {responseType: 'text'}).then(response => {
+            const svgText = response.data;
+            return DOMPurify.sanitize(svgText, { USE_PROFILES: { svg: true } });
+        });
     }
 
 
