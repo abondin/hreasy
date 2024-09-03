@@ -177,7 +177,7 @@ public class SalaryRequestService {
                 // 2. Validate security
                 .flatMap(entry -> secValidator.validateApproveSalaryRequest(auth, entry.getBudgetBusinessAccount())
                         // 3. Check if report period is not closed
-                        .flatMap(v -> checkApprovalActionAllowed(entry))
+                        .flatMap(v -> checkApprovalActionAllowed(entry, state))
                         // 4. Apply action
                         .flatMap(v -> {
                             var approvalEntry = new SalaryRequestApprovalEntry();
@@ -210,7 +210,7 @@ public class SalaryRequestService {
                                 // 3. Find approval request
                                 .flatMap(v -> requestRepo.findById(requestId).switchIfEmpty(BusinessErrorFactory.entityNotFound(SALARY_REQUEST_ENTITY_TYPE, requestId))
                                         // 4. Check if period is not closed
-                                        .flatMap(this::checkApprovalActionAllowed))
+                                        .flatMap(e -> checkApprovalActionAllowed(e, approvalEntry.getState())))
                                 .flatMap(v -> {
                                     // 5. Check that approval is related to given request
                                     if (requestId != approvalEntry.getRequestId()) {
@@ -255,8 +255,12 @@ public class SalaryRequestService {
         return closedPeriodCheck.flatMap(v -> assessmentCorrect);
     }
 
-    private Mono<Boolean> checkApprovalActionAllowed(SalaryRequestEntry entry) {
+    private Mono<Boolean> checkApprovalActionAllowed(SalaryRequestEntry entry, short approvalState) {
         // 1. Allow even if request is marked as implemented
+        // Add and delete comments is allowed even in closed period
+        if (approvalState == SalaryRequestApprovalDto.ApprovalActionTypes.COMMENT.getValue()) {
+            return Mono.just(true);
+        }
         return closedPeriodCheck(entry.getReqIncreaseStartPeriod());
     }
 
