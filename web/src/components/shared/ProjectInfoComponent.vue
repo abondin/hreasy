@@ -22,11 +22,11 @@
           </v-row>
           <v-row no-gutters>
             <v-col cols="4">{{ $t('Начало') }}:</v-col>
-            <v-col cols="8">{{ formatDate(project.startDate) }}</v-col>
+            <v-col cols="8">{{ formatDatePlanActual(project.planStartDate, project.startDate) }}</v-col>
           </v-row>
           <v-row no-gutters>
             <v-col cols="4">{{ $t('Окончание') }}:</v-col>
-            <v-col cols="8">{{ formatDate(project.endDate) }}</v-col>
+            <v-col cols="8">{{ formatDatePlanActual(project.planEndDate, project.endDate) }}</v-col>
           </v-row>
           <v-row no-gutters v-if="managers()">
             <v-col cols="4">{{ $t('Менеджеры') }}:</v-col>
@@ -82,6 +82,20 @@ export default class ProjectInfoComponent extends Vue {
 
   private formatDate(date: string | undefined): string | undefined {
     return DateTimeUtils.formatFromIso(date);
+  }
+
+  private formatDatePlanActual(plan: string | undefined, actual: string | undefined) {
+    let result = '';
+    if (actual) {
+      result += this.formatDate(actual) + ` (${this.$t('факт')})`;
+    }
+    if (plan) {
+      if (result) {
+        result += ', ';
+      }
+      result += this.formatDate(plan) + ` (${this.$t('план')})`;
+    }
+    return result;
   }
 }
 </script>

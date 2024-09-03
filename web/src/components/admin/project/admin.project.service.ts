@@ -17,6 +17,8 @@ export interface ProjectFullInfo {
     name: string;
     startDate?: string,
     endDate?: string,
+    planStartDate?: string,
+    planEndDate?: string,
     customer?: string,
     department: SimpleDict,
     businessAccount: SimpleDict
