@@ -74,6 +74,7 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import logger from "@/logger";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import assessmentService, {AssessmentBase} from "@/components/assessment/assessment.service";
+import dictService from "@/store/modules/dict.service";
 
 const namespace_dict = 'dict';
 @Component({
@@ -120,16 +121,38 @@ export default class SalaryReportFormFields extends Vue {
     this.createBody.currentSalaryAmount = null;
     this.createBody.reason = null;
     this.createBody.comment = null;
-    this.createBody.budgetExpectedFundingUntil = null;
     this.createBody.assessmentId = null;
+    this.createBody.budgetExpectedFundingUntil=null
+    this.loadAssessments(empl.id).then(()=>{
+      if (empl.currentProject) {
+        this.loadBudgetExpectedFundingUntil(empl.currentProject.id);
+      }
+    });
+  }
+
+  private loadAssessments(employeeId: number): Promise<any> {
     return assessmentService.employeeAssessments(employeeId)
         .then(data => {
           this.employeeAssessments = data.filter(a => !a.canceledAt);
+          return data;
         })
         .catch(err => {
-          console.error(`Unable to load assessment ${err}`);
-        })
+          console.error(`Unable to load assessments ${err}`);
+        });
+  }
 
+  private loadBudgetExpectedFundingUntil(projectId: number): Promise<any> {
+    return dictService.getProjectCard(projectId).then(proj => {
+      const newBudgetExpectedFundingUntil = proj.endDate || proj.planEndDate || null;
+      if (newBudgetExpectedFundingUntil) {
+        this.createBody.budgetExpectedFundingUntil = newBudgetExpectedFundingUntil;
+        // Dirty hack to update my-date-form-component
+        this.$forceUpdate();
+      }
+      return proj;
+    }).catch(err => {
+      console.error(`Unable to load project ${err}`);
+    });
   }
 
   private validateDate(formattedDate: string, allowEmpty = true): boolean {
