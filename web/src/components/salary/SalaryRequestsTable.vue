@@ -162,8 +162,14 @@ export default class SalaryRequestsTable extends Vue {
           );
         }
         headers.push(
-            {text: this.$tc('Инициатор'), value: 'createdBy.name', width: "250px"},
-            {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name', width: "150px"}
+            {text: this.$tc('Решение'), value: 'impl.state', width: "150px"}
+        );
+        headers.push(
+            {text: this.$tc('Согласования'), value: 'approvals', width: "150px"}
+        );
+        headers.push(
+            {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name', width: "150px"},
+            {text: this.$tc('Инициатор'), value: 'createdBy.name', width: "250px"}
         );
         if (this.data.filter.type == SalaryRequestType.SALARY_INCREASE) {
           headers.push(
@@ -175,12 +181,6 @@ export default class SalaryRequestsTable extends Vue {
               {text: this.$tc('Итоговая сумма бонуса'), value: 'impl.increaseAmount', width: "150px"}
           );
         }
-        headers.push(
-            {text: this.$tc('Решение'), value: 'impl.state', width: "150px"}
-        );
-        headers.push(
-            {text: this.$tc('Согласования'), value: 'approvals', width: "150px"}
-        );
         return headers;
       },
       (period, item) => {

@@ -104,6 +104,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "employeeInfo.currentSalaryAmount", target = "currentSalaryAmount")
     @Mapping(source = "employeeInfo.previousSalaryIncreaseDate", target = "previousSalaryIncreaseDate")
     @Mapping(source = "employeeInfo.previousSalaryIncreaseText", target = "previousSalaryIncreaseText")
+    @Mapping(source = "employeeInfo.dateOfEmployment", target = "dateOfEmployment")
     @Mapping(source = "createdBy.name", target = "createdBy")
     @Mapping(source = "employeeInfo.position.name", target = "employeePosition")
     @Mapping(source = "budgetBusinessAccount.name", target = "budgetBusinessAccount")
