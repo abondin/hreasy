@@ -175,6 +175,7 @@ export default class SalaryRequestsTable extends Vue {
           headers.push(
               {text: this.$tc('Итоговое изменение на'), value: 'impl.increaseAmount', width: "150px"},
               {text: this.$tc('Итоговая сумма'), value: 'impl.salaryAmount', width: "150px"},
+              {text: this.$tc('Сообщение об изменениях'), value: 'impl.increaseText', width: "150px"},
           );
         } else {
           headers.push(

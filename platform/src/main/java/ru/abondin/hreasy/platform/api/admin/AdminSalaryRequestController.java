@@ -12,6 +12,7 @@ import ru.abondin.hreasy.platform.service.salary.AdminSalaryRequestService;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestRejectBody;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestUpdateImplIncreaseTextBody;
 
 import java.util.Locale;
 
@@ -50,6 +51,12 @@ public class AdminSalaryRequestController {
     public Mono<Integer> reject(@PathVariable int salaryRequestId, @RequestBody SalaryRequestRejectBody body) {
         return AuthHandler.currentAuth().flatMap(auth ->
                 requestAdminService.reject(auth, salaryRequestId, body));
+    }
+
+    @PutMapping("/{salaryRequestId}/impl/increase-text")
+    public Mono<Integer> updateImplIncreaseTextBody(@PathVariable int salaryRequestId, @RequestBody SalaryRequestUpdateImplIncreaseTextBody body) {
+        return AuthHandler.currentAuth().flatMap(auth ->
+                requestAdminService.updateImplIncreaseTextBody(auth, salaryRequestId, body));
     }
 
     @PostMapping("/periods/{period}/close")

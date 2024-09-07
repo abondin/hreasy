@@ -81,6 +81,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "implRejectReason", target = "impl.rejectReason")
     @Mapping(source = "implComment", target = "impl.comment")
     @Mapping(source = "implState", target = "impl.state")
+    @Mapping(source = "implIncreaseText", target = "impl.increaseText")
     @Mapping(source = ".", target = "req.newPosition", qualifiedByName = "reqNewPosition")
     @Mapping(source = ".", target = "impl.newPosition", qualifiedByName = "implNewPosition")
     @Mapping(source = "approvals", target = "approvals", qualifiedByName = "approvalsFromJson")
@@ -131,6 +132,9 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "implementedBy", target = "implementedBy")
     @Mapping(constant = "1", target = "implState")
     public abstract void applyRequestImplementBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestImplementBody body, OffsetDateTime implementedAt, Integer implementedBy);
+
+    @Mapping(source = "body.increaseText", target = "implIncreaseText")
+    public abstract void applyUpdateImplIncreaseTextBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestUpdateImplIncreaseTextBody body, OffsetDateTime implementedAt, Integer implementedBy);
 
     @Mapping(source = "body.reason", target = "implRejectReason")
     @Mapping(source = "body.comment", target = "implComment")
