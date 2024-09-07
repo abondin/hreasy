@@ -32,7 +32,7 @@
         </template>
         <span>{{ $t('Сбросить решение') }}</span>
       </v-tooltip>
-      <v-tooltip bottom v-if="Boolean(data.item.impl)">
+      <v-tooltip bottom v-if="Boolean(data.item.impl && data.isSalaryRequest())">
         <template v-slot:activator="{ on: ton, attrs: tattrs}">
           <v-btn v-bind="tattrs" v-on="ton" icon @click="updateImplText()"
                  :disabled="implementActionDisabled()">

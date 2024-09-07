@@ -95,6 +95,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "impl.salaryAmount", target = "implSalaryAmount")
     @Mapping(source = "impl.increaseStartPeriod", target = "implIncreaseStartPeriod", qualifiedByName = "period")
     @Mapping(source = "impl.rejectReason", target = "implRejectReason")
+    @Mapping(source = "impl.increaseText", target = "implIncreaseText")
     @Mapping(source = "impl.state", target = "implState")
     @Mapping(source = "impl.newPosition.name", target = "implNewPosition")
     @Mapping(source = "impl.implementedBy.name", target = "implemented")

@@ -41,6 +41,7 @@ public class SalaryRequestExportDto {
     private String implState;
     private String implNewPosition;
     private String implComment;
+    private String implIncreaseText;
     private String implemented;
 
     private String previousSalaryIncreaseText;
