@@ -44,7 +44,7 @@ public class VacationExportService {
         log.info("Export vacations for {} by {}", filter, auth.getUsername());
         var now = dateTimeService.now();
         var years = vacationService.yearsOrDefault(filter.getYears());
-        return securityValidator.validateCanEditOvertimes(auth)
+        return securityValidator.validateCanEditVacations(auth)
                 .then(
                         vacationService.findAll(auth, new VacationService.VacationFilter(years))
                                 .map(v -> mapper.toExportProjection(v, i18n, locale))

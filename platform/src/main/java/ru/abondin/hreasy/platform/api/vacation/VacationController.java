@@ -10,10 +10,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.vacation.VacationExportService;
 import ru.abondin.hreasy.platform.service.vacation.VacationService;
-import ru.abondin.hreasy.platform.service.vacation.dto.EmployeeVacationShort;
-import ru.abondin.hreasy.platform.service.vacation.dto.MyVacationDto;
-import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
-import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
+import ru.abondin.hreasy.platform.service.vacation.dto.*;
 
 import jakarta.validation.Valid;
 import java.util.Arrays;
@@ -95,6 +92,20 @@ public class VacationController {
                 .export(auth,
                         new VacationExportService.VacationExportFilter(years == null ? Arrays.asList() : years)
                         , locale));
+    }
+
+    @PostMapping("/planning-period/open")
+    public Mono<Integer> openPlanningPeriod(VacPlanningPeriodOpenBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> vacationService.openPlanningPeriod(auth, body));
+    }
+    @PutMapping("/planning-period/close")
+    public Mono<Integer> closePlanningPeriod(VacPlanningPeriodCloseBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> vacationService.closePlanningPeriod(auth, body));
+    }
+
+    @GetMapping("/planning-period")
+    public Flux<VacPlanningPeriodDto> getOpenPlanningPeriods(){
+        return AuthHandler.currentAuth().flatMapMany(auth->vacationService.getOpenPlanningPeriods(auth));
     }
 
 }

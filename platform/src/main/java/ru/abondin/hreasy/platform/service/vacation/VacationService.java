@@ -9,16 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
-import ru.abondin.hreasy.platform.repo.vacation.VacationHistoryRepo;
-import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
+import ru.abondin.hreasy.platform.repo.vacation.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.mapper.VacationDtoMapper;
-import ru.abondin.hreasy.platform.service.vacation.dto.EmployeeVacationShort;
-import ru.abondin.hreasy.platform.service.vacation.dto.MyVacationDto;
-import ru.abondin.hreasy.platform.service.vacation.dto.VacationCreateOrUpdateDto;
-import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
+import ru.abondin.hreasy.platform.service.vacation.dto.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +39,7 @@ public class VacationService {
     private final VacationRepo vacationRepo;
     private final VacationHistoryRepo historyRepo;
     private final VacationDtoMapper mapper;
+    private final VacPlanningPeriodRepo planningPeriodRepo;
 
     public Flux<VacationDto> findAll(AuthContext auth, VacationFilter filter) {
         return validator.validateCanViewOvertimes(auth).flatMapMany((v) -> vacationRepo.findAll(
@@ -76,7 +73,7 @@ public class VacationService {
     public Mono<Integer> create(AuthContext auth, int employeeId, VacationCreateOrUpdateDto body) {
         log.info("Create new overtime item: auth={},empl={},body={}", auth.getUsername(), employeeId, body);
         var now = dateTimeService.now();
-        return validator.validateCanEditOvertimes(auth).flatMap((v) -> {
+        return validator.validateCanEditVacations(auth).flatMap((v) -> {
             var entry = mapper.toEntry(body);
             entry.setCreatedAt(now);
             entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
@@ -93,10 +90,28 @@ public class VacationService {
     }
 
     @Transactional
+    public Mono<Integer> requestVacation(AuthContext auth, MyPlannedVacationRequestDto request) {
+        log.info("Request vacation {} by {}", request, auth.getUsername());
+        var now = dateTimeService.now();
+        return planningPeriodRepo.findById(request.getYear())
+                .filter(period -> period.getOpenedAt() != null && period.getClosedAt() == null)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.vac_planning_period.not.open", Integer.toString(request.getYear()))))
+                .flatMap(period -> {
+                    var entry = mapper.toEntry(request, auth.getEmployeeInfo().getEmployeeId(), now);
+                    return vacationRepo.save(entry).flatMap(vacation -> {
+                        var history = mapper.history(vacation);
+                        history.setCreatedAt(now);
+                        history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
+                        return historyRepo.save(history).map(VacationEntry.VacationHistoryEntry::getVacationId);
+                    });
+                });
+    }
+
+    @Transactional
     public Mono<Integer> update(AuthContext auth, int employeeId, int vacationId, VacationCreateOrUpdateDto body) {
         log.info("Update overtime item: auth={},empl={},vacationId={}, body={}", auth.getUsername(), employeeId, vacationId, body);
         var now = dateTimeService.now();
-        return validator.validateCanEditOvertimes(auth)
+        return validator.validateCanEditVacations(auth)
                 .flatMap(v -> vacationRepo.findById(vacationId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(vacationId))))
                 .flatMap((entry) -> {
@@ -113,6 +128,47 @@ public class VacationService {
                         return historyRepo.save(history).map(VacationEntry.VacationHistoryEntry::getVacationId);
                     });
                 });
+    }
+
+
+    
+    
+    @Transactional(readOnly = true)
+    public Flux<VacPlanningPeriodDto> getOpenPlanningPeriods(AuthContext auth) {
+        return planningPeriodRepo.findOpened().map(mapper::fromEntry);
+    }
+
+    @Transactional
+    public Mono<Integer> openPlanningPeriod(AuthContext auth, VacPlanningPeriodOpenBody body) {
+        log.info("Start vacation planning period {} by {}", body.getYear(), auth.getUsername());
+        var year = body.getYear();
+        var now = dateTimeService.now();
+        return validator.validateCanStartAndClosePlanningPeriod(auth)
+                .flatMap(v -> planningPeriodRepo.findById(year))
+                .switchIfEmpty(Mono.just(new VacPlanningPeriodEntry(year, now, auth.getEmployeeInfo().getEmployeeId(), null, null, null)))
+                .flatMap(period -> {
+                    if (period.getOpenedAt() != null) {
+                        return Mono.error(new BusinessError("errors.vac_planning_period.already.opened", Integer.toString(year)));
+                    }
+                    return planningPeriodRepo.save(period);
+                })
+                .map(VacPlanningPeriodEntry::getYear);
+    }
+
+    @Transactional
+    public Mono<Integer> closePlanningPeriod(AuthContext auth, VacPlanningPeriodCloseBody body) {
+        log.info("Close vacation planning period {} by {}", body.getYear(), auth.getUsername());
+        var year = body.getYear();
+        var now = dateTimeService.now();
+        return validator.validateCanStartAndClosePlanningPeriod(auth)
+                .flatMap(v -> planningPeriodRepo.findById(year))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound("vac_planning_period", Integer.toString(year)))
+                .flatMap(period -> {
+                    period.setClosedAt(now);
+                    period.setClosedBy(auth.getEmployeeInfo().getEmployeeId());
+                    return planningPeriodRepo.save(period);
+                })
+                .map(VacPlanningPeriodEntry::getYear);
     }
 
     /**
