@@ -36,7 +36,7 @@ class EmployeeVacationSummaryMapperImpl implements EmployeeVacationSummaryMapper
         // 1. Group all vacation by employee
         input.forEach(v => {
             // 1.1 Ignore canceled and rejected statuses
-            if (v.status == "PLANNED" || v.status == "TAKEN" || v.status == "COMPENSATION") {
+            if (v.status == "PLANNED" || v.status == "TAKEN" || v.status == "COMPENSATION" || v.status == "REQUESTED") {
                 const collection = groupedByEmployee.get(v.employee);
                 if (!collection) {
                     groupedByEmployee.set(v.employee, [v]);

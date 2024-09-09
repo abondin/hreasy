@@ -267,7 +267,7 @@ import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 const namespace = 'dict';
 
 class Filter {
-  public selectedStatuses: Array<string> = ['PLANNED', 'TAKEN'];
+  public selectedStatuses: Array<string> = ['PLANNED', 'TAKEN', 'REQUESTED'];
   public search = '';
   public selectedProjects: Array<number> = [];
   public selectedProjectRoles: Array<string> = [];
