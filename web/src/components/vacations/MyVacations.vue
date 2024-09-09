@@ -50,25 +50,12 @@
         </template>
       </v-data-table>
     </v-card-text>
-    <in-dialog-form :title="$t('Запланировать отпуск на X год', {year: requestAction.formData.year})" :data="requestAction" form-ref="requestVacation"
-                    v-if="requestAction.formData">
+    <in-dialog-form :title="$t('Запланировать отпуск на X год', {year: requestAction.formData.year})"
+                    :data="requestAction" form-ref="requestVacation"
+                    v-if="requestAction.formData" v-on:submit="fetchData()">
       <template v-slot:fields>
         <!-- start date -->
-        <my-date-form-component
-            v-model="requestAction.formData.startDate"
-            :label="$t('Начало')+`*`"
-            :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
-        ></my-date-form-component>
-        <!-- end date -->
-        <my-date-form-component
-            v-model="requestAction.formData.endDate"
-            :label="$t('Окончание')+`*`"
-            :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
-        ></my-date-form-component>
-        <v-slider
-            :label="$t('Количество дней')" min="0" max="31" step="1" thumbLabel="always"
-            v-model="requestAction.formData.daysNumber">
-        </v-slider>
+        <request-vacations-form-fields :data="requestAction" :days-not-included-in-vacations="daysNotIncludedInVacations"></request-vacations-form-fields>
       </template>
     </in-dialog-form>
   </v-card>
@@ -89,10 +76,12 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import {RequestOrUpdateVacationActionDataContainer} from "@/components/vacations/request-vacation.data.container";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
+import dictService from "@/store/modules/dict.service";
+import RequestVacationsFormFields from "@/components/vacations/RequestVacationsFormFields.vue";
 
 
 @Component({
-  components: {MyDateFormComponent, InDialogForm}
+  components: {RequestVacationsFormFields, MyDateFormComponent, InDialogForm}
 })
 export default class MyVacations extends Vue {
   headers: DataTableHeader[] = [];
@@ -104,6 +93,7 @@ export default class MyVacations extends Vue {
   public allMonths: Array<any> = [];
   openedPeriods: Array<VacPlanningPeriod> = [];
   requestAction = new RequestOrUpdateVacationActionDataContainer();
+  daysNotIncludedInVacations: Array<string> = [];
 
   /**
    * Lifecycle hook
@@ -144,11 +134,16 @@ export default class MyVacations extends Vue {
     return vacationService.openPlanningPeriods()
         .then(periods => {
           this.openedPeriods = periods;
-          return vacationService.myFutureVacations()
-              .then(data => {
-                this.vacations = data.filter(m => m.startDate && m.endDate);
-                return;
-              })
+          return dictService.daysNotIncludedInVacations(this.allYears)
+              .then(days => {
+                this.daysNotIncludedInVacations = days;
+                return vacationService.myFutureVacations()
+                    .then(data => {
+                      this.vacations = data.filter(m => m.startDate && m.endDate);
+                      return;
+                    });
+              }
+          )
         }).finally(() => {
           this.loading = false
         });
