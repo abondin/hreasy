@@ -99,13 +99,18 @@ import {Prop, Watch} from "vue-property-decorator";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
-import vacationService, {CreateOrUpdateVacation, Vacation} from "@/components/vacations/vacation.service";
+import vacationService, {
+  CreateOrUpdateVacation,
+  Vacation,
+  VacationStatus
+} from "@/components/vacations/vacation.service";
 import {SimpleDict} from "@/store/modules/dict";
 import moment from "moment";
 import {DateTimeUtils} from "@/components/datetimeutils";
+import {RequestOrUpdateVacationActionDataContainer} from "@/components/vacations/request-vacation.data.container";
 
 
-class VacationForm {
+export class VacationForm {
   public isNew = true;
   public id?: number;
   public year = new Date().getFullYear();
@@ -114,7 +119,7 @@ class VacationForm {
   public endDate = '';
   public plannedStartDate = '';
   public plannedEndDate = '';
-  public status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED' | 'REJECTED' = 'PLANNED'
+  public status: VacationStatus = 'PLANNED';
   public notes = '';
   public documents = '';
   public daysNumber?: number;
@@ -160,36 +165,8 @@ export default class VacationEditForm extends Vue {
    * Resets only on first creation. To reset data after creation call this method from parent component
    */
   public reset() {
-    const defaultStartDate = (this.defaultYear && this.defaultYear != new Date().getFullYear()) ?
-        moment({year: this.defaultYear, month: 1, day: 1}) : undefined;
     this.error = null;
-    this.vacationForm.isNew = true;
-    this.vacationForm.id = undefined;
-    this.vacationForm.year = this.defaultYear ? this.defaultYear : new Date().getFullYear();
-    this.vacationForm.employeeId = undefined;
-    this.vacationForm.startDate = defaultStartDate ? DateTimeUtils.formatToIsoDate(defaultStartDate)! : '';
-    this.vacationForm.endDate = '';
-    this.vacationForm.plannedStartDate = '';
-    this.vacationForm.plannedEndDate = '';
-    this.vacationForm.status = 'PLANNED';
-    this.vacationForm.notes = '';
-    this.vacationForm.documents = '';
-    this.vacationForm.daysNumber = 0;
-
-    if (this.input) {
-      this.vacationForm.isNew = false;
-      this.vacationForm.id = this.input.id;
-      this.vacationForm.year = this.input.year;
-      this.vacationForm.employeeId = this.input.employee;
-      this.vacationForm.startDate = this.input.startDate;
-      this.vacationForm.endDate = this.input.endDate;
-      this.vacationForm.plannedStartDate = this.input.plannedStartDate ? this.input.plannedStartDate : '';
-      this.vacationForm.plannedEndDate = this.input.plannedEndDate ? this.input.plannedEndDate : '';
-      this.vacationForm.status = this.input.status;
-      this.vacationForm.notes = this.input.notes;
-      this.vacationForm.documents = this.input.documents;
-      this.vacationForm.daysNumber = this.input.daysNumber;
-    }
+    RequestOrUpdateVacationActionDataContainer.applyVacationToForm(this.vacationForm, this.input, this.defaultYear)
     if (this.$refs.startDateRef && this.$refs.endDateRef) {
       (this.$refs.startDateRef as MyDateFormComponent).reset();
       (this.$refs.endDateRef as MyDateFormComponent).reset();

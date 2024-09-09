@@ -103,6 +103,14 @@ export class DateTimeUtils {
         return this.formatToIsoDate(this.now());
     }
 
+    public static firstDayOfYear(year: number): Moment{
+        return moment({ year: year, month: 0, day: 1})
+    }
+
+    public static firstDayOfYearStr(year: number): string{
+        return this.formatToIsoDate(this.firstDayOfYear(year))!;
+    }
+
     public static defaultYears(): number[]{
         const currentYear = this.now().year();
         return [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];

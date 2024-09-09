@@ -228,7 +228,7 @@
       <v-dialog v-model="vacationDialog">
         <vacation-edit-form ref="vacationEditForm"
                             v-bind:all-employees="allEmployees"
-                            v-bind:all-statuses="allStatuses"
+                            v-bind:all-statuses="allStatuses.filter(s=>s.value!='REQUESTED')"
                             v-bind:allYears="allYears"
                             v-bind:input="selectedVacation"
                             v-bind:default-year="selectedYear"
@@ -244,7 +244,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
-import vacationService, {Vacation} from "@/components/vacations/vacation.service";
+import vacationService, {Vacation, vacationStatuses} from "@/components/vacations/vacation.service";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import {DataTableHeader} from "vuetify";
@@ -314,7 +314,7 @@ export default class VacationsListComponent extends Vue {
    * Lifecycle hook
    */
   created() {
-    this.allStatuses = ['PLANNED', 'TAKEN', 'COMPENSATION', 'CANCELED', 'REJECTED'].map(status => {
+    this.allStatuses = vacationStatuses.map(status => {
       return {value: status, text: this.$tc(`VACATION_STATUS_ENUM.${status}`)}
     });
     this.allYears = DateTimeUtils.defaultYears();

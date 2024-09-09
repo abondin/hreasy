@@ -44,7 +44,9 @@ public interface VacationDtoMapper extends MapperBase {
     @Mapping(target = "employee", source = "employeeId")
     @Mapping(target = "createdBy", source = "employeeId")
     @Mapping(target = "createdAt", source = "now")
-    VacationEntry toEntry(MyPlannedVacationRequestDto request, int employeeId, OffsetDateTime now);
+    @Mapping(target = "updatedBy", source = "employeeId")
+    @Mapping(target = "updatedAt", source = "now")
+    VacationEntry toEntry(VacationRequestDto request, int employeeId, OffsetDateTime now);
 
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)

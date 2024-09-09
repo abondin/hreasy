@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface VacPlanningPeriodRepo extends ReactiveCrudRepository<VacPlanningPeriodEntry, Integer> {
 
-    @Query("SELECT * FROM vac_planning_period WHERE opened_at IS NOT NULL AND closed_at IS NULL")
+    @Query("SELECT * FROM vac.vac_planning_period WHERE opened_at IS NOT NULL AND closed_at IS NULL")
     Flux<VacPlanningPeriodEntry> findOpened();
 }

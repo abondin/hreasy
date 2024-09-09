@@ -90,7 +90,7 @@ public class VacationService {
     }
 
     @Transactional
-    public Mono<Integer> requestVacation(AuthContext auth, MyPlannedVacationRequestDto request) {
+    public Mono<Integer> requestVacation(AuthContext auth, VacationRequestDto request) {
         log.info("Request vacation {} by {}", request, auth.getUsername());
         var now = dateTimeService.now();
         return planningPeriodRepo.findById(request.getYear())

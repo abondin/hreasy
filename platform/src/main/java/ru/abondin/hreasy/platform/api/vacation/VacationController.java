@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.api.vacation;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -12,7 +13,6 @@ import ru.abondin.hreasy.platform.service.vacation.VacationExportService;
 import ru.abondin.hreasy.platform.service.vacation.VacationService;
 import ru.abondin.hreasy.platform.service.vacation.dto.*;
 
-import jakarta.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -94,18 +94,24 @@ public class VacationController {
                         , locale));
     }
 
+    @PostMapping("/request")
+    public Mono<Integer> requestVacation(@RequestBody VacationRequestDto request) {
+        return AuthHandler.currentAuth().flatMap(auth -> vacationService.requestVacation(auth, request));
+    }
+
     @PostMapping("/planning-period/open")
-    public Mono<Integer> openPlanningPeriod(VacPlanningPeriodOpenBody body) {
+    public Mono<Integer> openPlanningPeriod(@RequestBody VacPlanningPeriodOpenBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> vacationService.openPlanningPeriod(auth, body));
     }
+
     @PutMapping("/planning-period/close")
-    public Mono<Integer> closePlanningPeriod(VacPlanningPeriodCloseBody body) {
+    public Mono<Integer> closePlanningPeriod(@RequestBody VacPlanningPeriodCloseBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> vacationService.closePlanningPeriod(auth, body));
     }
 
     @GetMapping("/planning-period")
-    public Flux<VacPlanningPeriodDto> getOpenPlanningPeriods(){
-        return AuthHandler.currentAuth().flatMapMany(auth->vacationService.getOpenPlanningPeriods(auth));
+    public Flux<VacPlanningPeriodDto> getOpenPlanningPeriods() {
+        return AuthHandler.currentAuth().flatMapMany(auth -> vacationService.getOpenPlanningPeriods(auth));
     }
 
 }
