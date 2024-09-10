@@ -228,7 +228,7 @@
       <v-dialog v-model="vacationDialog">
         <vacation-edit-form ref="vacationEditForm"
                             v-bind:all-employees="allEmployees"
-                            v-bind:all-statuses="allStatuses.filter(s=>s.value!='REQUESTED')"
+                            v-bind:all-statuses="statusesForForm(selectedVacation)"
                             v-bind:allYears="allYears"
                             v-bind:input="selectedVacation"
                             v-bind:default-year="selectedYear"
@@ -502,6 +502,14 @@ export default class VacationsListComponent extends Vue {
   private selectEmployee(item: EmployeeVacationSummary) {
     this.filter.search = item.employeeDisplayName;
     this.selectedTab = 0;
+  }
+
+  private statusesForForm(vacation?: Vacation){
+    if (vacation && vacation.status==="REQUESTED"){
+      return this.allStatuses;
+    } else {
+      return this.allStatuses.filter(s=>s.value!='REQUESTED');
+    }
   }
 
 }

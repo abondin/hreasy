@@ -50,44 +50,19 @@ import {RequestOrUpdateVacationActionDataContainer} from "@/components/vacations
 @Component(
     {components: {MyDateFormComponent}}
 )
-
 export default class VacationEditForm extends Vue {
   @Prop({required: true})
   private data!: RequestOrUpdateVacationActionDataContainer;
 
-  @Prop({required: true})
-  public daysNotIncludedInVacations!: Array<string>;
-
-  public defaultNumberOrDays = 14;
-
 
   @Watch("data.formData.startDate")
   private watchStartDate() {
-    const startDate = moment(this.data.formData?.startDate, moment.HTML5_FMT.DATE, true);
-    if (startDate.isValid()) {
-      if (this.data.formData && !this.data.formData.endDate) {
-        this.data.formData.endDate = startDate.add(this.defaultNumberOrDays - 1, "days").format(moment.HTML5_FMT.DATE);
-      }
-      this.updateDaysNumber();
-    }
+    this.data.startDateUpdated();
   }
 
   @Watch("data.formData.endDate")
   private watchEndDate() {
-    const endDate = moment(this.data.formData?.endDate, moment.HTML5_FMT.DATE, true);
-    if (endDate.isValid()) {
-      this.updateDaysNumber();
-    }
-  }
-
-  private updateDaysNumber() {
-    if (this.data.formData?.startDate && this.data.formData?.endDate) {
-      const start = moment(this.data.formData.startDate, moment.HTML5_FMT.DATE, true);
-      const end = moment(this.data.formData.endDate, moment.HTML5_FMT.DATE, true);
-      if (start.isValid() && end.isValid()) {
-        this.data.formData.daysNumber = DateTimeUtils.vacationDays(start, end, this.daysNotIncludedInVacations);
-      }
-    }
+    this.data.endDateUpdated();
   }
 
   private validateDate(formattedDate: string, allowEmpty = true): boolean {

@@ -55,7 +55,7 @@
                     v-if="requestAction.formData" v-on:submit="fetchData()">
       <template v-slot:fields>
         <!-- start date -->
-        <request-vacations-form-fields :data="requestAction" :days-not-included-in-vacations="daysNotIncludedInVacations"></request-vacations-form-fields>
+        <request-vacations-form-fields :data="requestAction"></request-vacations-form-fields>
       </template>
     </in-dialog-form>
   </v-card>
@@ -93,8 +93,6 @@ export default class MyVacations extends Vue {
   public allMonths: Array<any> = [];
   openedPeriods: Array<VacPlanningPeriod> = [];
   requestAction = new RequestOrUpdateVacationActionDataContainer();
-  daysNotIncludedInVacations: Array<string> = [];
-
   /**
    * Lifecycle hook
    */
@@ -136,7 +134,7 @@ export default class MyVacations extends Vue {
           this.openedPeriods = periods;
           return dictService.daysNotIncludedInVacations(this.allYears)
               .then(days => {
-                this.daysNotIncludedInVacations = days;
+                this.requestAction.daysNotIncludedInVacations = days;
                 return vacationService.myFutureVacations()
                     .then(data => {
                       this.vacations = data.filter(m => m.startDate && m.endDate);
