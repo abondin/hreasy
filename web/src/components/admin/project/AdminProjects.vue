@@ -63,8 +63,16 @@
             @click:row="(v)=>navigateProject(v.id)">
 
           <template
+              v-slot:item.planStartDate="{ item }">
+            {{ formatDate(item.planStartDate) }}
+          </template>
+          <template
               v-slot:item.startDate="{ item }">
             {{ formatDate(item.startDate) }}
+          </template>
+          <template
+              v-slot:item.planEndDate="{ item }">
+            {{ formatDate(item.planEndDate) }}
           </template>
           <template
               v-slot:item.endDate="{ item }">
@@ -200,8 +208,10 @@ export default class AdminProjects extends Vue {
     this.headers.push({text: this.$tc('Наименование'), value: 'name'});
     this.headers.push({text: this.$tc('Бизнес аккаунт'), value: 'businessAccount.name'});
     this.headers.push({text: this.$tc('Заказчик'), value: 'customer'});
-    this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
-    this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});
+    this.headers.push({text: this.$tc('Начало (план)'), value: 'planStartDate'});
+    this.headers.push({text: this.$tc('Начало (факт)'), value: 'startDate'});
+    this.headers.push({text: this.$tc('Окончание (план)'), value: 'planEndDate'});
+    this.headers.push({text: this.$tc('Окончание (факт)'), value: 'endDate'});
     this.headers.push({text: this.$tc('Отдел'), value: 'department.name'});
   }
 

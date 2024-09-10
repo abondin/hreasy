@@ -35,6 +35,11 @@ public class DictProjectEntry {
     @Nullable
     private LocalDate endDate;
 
+    @Nullable
+    private LocalDate planStartDate;
+    @Nullable
+    private LocalDate planEndDate;
+
     @NonNull
     private Integer departmentId;
 

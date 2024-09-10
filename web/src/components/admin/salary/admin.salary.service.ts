@@ -12,10 +12,16 @@ export interface SalaryRequestImplementBody {
     comment: string | null;
 }
 
+export interface SalaryRequestUpdateImplIncreaseTextBody {
+    increaseText: string | null;
+}
 export interface SalaryRequestRejectBody {
     reason: string;
     comment: string | null;
 }
+
+
+
 
 export const enum SalaryRequestImplementationState {
     IMPLEMENTED = 1,
@@ -31,6 +37,8 @@ export interface AdminSalaryService {
     loadAllSalaryRequests(periodId: number): Promise<Array<SalaryIncreaseRequest>>;
 
     markAsImplemented(requestId: number, body: SalaryRequestImplementBody): Promise<number>;
+    updateImplIncreaseText(requestId: number, body: SalaryRequestUpdateImplIncreaseTextBody): Promise<number>;
+
     reject(requestId: number, body: SalaryRequestRejectBody): Promise<number>;
 
 
@@ -73,6 +81,13 @@ class RestAdminSalaryService implements AdminSalaryService {
 
     reject(requestId: number, body: SalaryRequestRejectBody): Promise<number> {
         return httpService.put(`v1/admin/salaries/requests/${requestId}/reject`, body).then(response => {
+            return response.data;
+        });
+    }
+
+
+    updateImplIncreaseText(requestId: number, body: SalaryRequestUpdateImplIncreaseTextBody): Promise<number> {
+        return httpService.put(`v1/admin/salaries/requests/${requestId}/impl/increase-text`, body).then(response => {
             return response.data;
         });
     }

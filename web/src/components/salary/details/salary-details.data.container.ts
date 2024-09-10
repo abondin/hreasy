@@ -10,11 +10,15 @@ import {SalaryRequestImplementAction} from "@/components/salary/details/impl/sal
 import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 import {SalaryRequestDeleteAction} from "@/components/salary/details/info/salary-request.delete.action";
 import {SalaryRequestUpdateAction} from "@/components/salary/details/info/salary-request.update.action";
+import {
+    SalaryRequestUpdateImplTextAction
+} from "@/components/salary/details/impl/salary-request.udpate.impl-text.action";
 
 export class SalaryDetailsDataContainer {
 
     private _approveAction = new SalaryRequestApproveAction();
     private _implementAction = new SalaryRequestImplementAction();
+    private _updateImplTextAction = new SalaryRequestUpdateImplTextAction();
 
     private _deleteRequestAction = new SalaryRequestDeleteAction();
     private _updateRequestAction = new SalaryRequestUpdateAction();
@@ -79,6 +83,15 @@ export class SalaryDetailsDataContainer {
     openImplementDialog(item: SalaryIncreaseRequest, state?: SalaryRequestImplementationState) {
         const body = this._implementAction.itemToBody(item, state);
         this._implementAction.openDialog(item.id, body);
+    }
+
+    get updateImplTextAction(): SalaryRequestUpdateImplTextAction {
+        return this._updateImplTextAction;
+    }
+
+    openUpdateImplTextDialog(item: SalaryIncreaseRequest) {
+        const body = this._updateImplTextAction.itemToBody(item);
+        this._updateImplTextAction.openDialog(item.id, body);
     }
 
     //</editor-fold>

@@ -46,17 +46,29 @@
 
         <!-- start date -->
         <my-date-form-component
+            ref="planStartDateRef"
+            v-model="projectForm.planStartDate"
+            :label="$t('Планируемая дата начала')"
+            :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
+        ></my-date-form-component>
+        <my-date-form-component
             ref="startDateRef"
             v-model="projectForm.startDate"
-            :label="$t('Начало')"
+            :label="$t('Фактическая дата начала проекта')"
             :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
         ></my-date-form-component>
 
         <!-- end date -->
         <my-date-form-component
+            ref="planEndDateRef"
+            v-model="projectForm.planEndDate"
+            :label="$t('Планируемая дата окончания проекта')"
+            :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
+        ></my-date-form-component>
+        <my-date-form-component
             ref="endDateRef"
             v-model="projectForm.endDate"
-            :label="$t('Окончание')"
+            :label="$t('Фактическая дата окончания проекта')"
             :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
         ></my-date-form-component>
 
@@ -104,6 +116,8 @@ class ProjectForm {
   public name = '';
   public startDate = '';
   public endDate = '';
+  public planStartDate = '';
+  public planEndDate = '';
   public customer = '';
   public departmentId?: number;
   public baId: number | null = null;
@@ -153,6 +167,8 @@ export default class AdminProjectForm extends Vue {
     this.projectForm.departmentId = undefined;
     this.projectForm.startDate = '';
     this.projectForm.endDate = '';
+    this.projectForm.planStartDate = '';
+    this.projectForm.planEndDate = '';
     this.projectForm.baId = null;
     this.projectForm.info='';
 
@@ -164,6 +180,8 @@ export default class AdminProjectForm extends Vue {
       this.projectForm.departmentId = this.input.department ? this.input.department.id : undefined;
       this.projectForm.startDate = this.input.startDate ? this.input.startDate : '';
       this.projectForm.endDate = this.input.endDate ? this.input.endDate : '';
+      this.projectForm.planStartDate = this.input.planStartDate ? this.input.planStartDate : '';
+      this.projectForm.planEndDate = this.input.planEndDate ? this.input.planEndDate : '';
       this.projectForm.baId = this.input.businessAccount ? this.input.businessAccount.id : null;
       this.projectForm.info = this.input.info;
     }
@@ -184,9 +202,11 @@ export default class AdminProjectForm extends Vue {
     if (form.validate()) {
       const body = {
         name: this.projectForm.name,
-        startDate: this.projectForm.startDate,
         customer: this.projectForm.customer,
+        startDate: this.projectForm.startDate,
         endDate: this.projectForm.endDate,
+        planStartDate: this.projectForm.planStartDate,
+        planEndDate: this.projectForm.planEndDate,
         departmentId: this.projectForm.departmentId,
         baId: this.projectForm.baId,
         info: this.projectForm.info

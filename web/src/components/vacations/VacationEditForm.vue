@@ -99,7 +99,11 @@ import {Prop, Watch} from "vue-property-decorator";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
-import vacationService, {CreateOrUpdateVacation, Vacation} from "@/components/vacations/vacation.service";
+import vacationService, {
+  CreateOrUpdateVacation,
+  Vacation,
+  VacationStatus
+} from "@/components/vacations/vacation.service";
 import {SimpleDict} from "@/store/modules/dict";
 import moment from "moment";
 import {DateTimeUtils} from "@/components/datetimeutils";
@@ -114,7 +118,7 @@ class VacationForm {
   public endDate = '';
   public plannedStartDate = '';
   public plannedEndDate = '';
-  public status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED' | 'REJECTED' = 'PLANNED'
+  public status: VacationStatus = 'PLANNED';
   public notes = '';
   public documents = '';
   public daysNumber?: number;

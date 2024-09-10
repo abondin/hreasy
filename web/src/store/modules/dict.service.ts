@@ -11,6 +11,8 @@ export interface ProjectInfo {
     id: number,
     name: string;
     startDate?: string,
+    planStartDate?: string,
+    planEndDate?: string,
     endDate?: string,
     customer?: string,
     department: SimpleDict,
