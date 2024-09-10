@@ -42,7 +42,7 @@ export class SalaryRequestDataContainer extends TableComponentDataContainer<Sala
             } as CreateAction<SalaryIncreaseRequest, SalaryRequestReportBody>,
             null,
             new SalaryRequestFilter(),
-            () => permissionService.canReportSalaryRequest(),
+            () => permissionService.canReportSalaryRequest() && !this.periodClosed,
             true
         );
     }

@@ -7,7 +7,7 @@
       <span v-if="approveAllowed()">
       <v-tooltip bottom>
         <template v-slot:activator="{ on: ton, attrs: tattrs}">
-          <v-btn v-bind="tattrs" v-on="ton" icon @click="approve()" :disabled="commentActionDisabled()">
+          <v-btn v-bind="tattrs" v-on="ton" icon @click="approve()" :disabled="approveOrDeclineActionDisabled()">
             <v-icon color="success">mdi-checkbox-marked-circle</v-icon>
           </v-btn>
         </template>
@@ -15,7 +15,7 @@
       </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on: ton, attrs: tattrs}">
-          <v-btn v-bind="tattrs" v-on="ton" text icon @click="decline()" :disabled="commentActionDisabled()">
+          <v-btn v-bind="tattrs" v-on="ton" text icon @click="decline()" :disabled="approveOrDeclineActionDisabled()">
             <v-icon color="error">mdi-alert-circle</v-icon>
           </v-btn>
         </template>
@@ -85,8 +85,12 @@ export default class SalaryRequestDetailsViewImplementation extends Vue {
     return permissionService.canApproveSalaryRequest(this.data.item?.budgetBusinessAccount?.id);
   }
 
-  private commentActionDisabled() {
+  private approveOrDeclineActionDisabled() {
     return this.data.approveAction.loading || this.data.periodClosed;
+  }
+
+  private commentActionDisabled(){
+    return this.data.approveAction.loading;
   }
 
 

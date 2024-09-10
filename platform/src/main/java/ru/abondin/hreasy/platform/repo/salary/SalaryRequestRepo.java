@@ -23,16 +23,16 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
     @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.req_increase_start_period=:period and (" +
             "r.created_by =:createdBy " +
             "or r.budget_business_account in (:bas)" +
-            ") order by r.created_at desc")
+            ") order by employee_display_name")
     Flux<SalaryRequestView> findNotDeleted(int period, int createdBy, List<Integer> bas, OffsetDateTime now);
 
     @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL + " and r.req_increase_start_period=:period and (" +
             "r.created_by =:createdBy " +
-            ") order by r.created_at desc")
+            ") order by employee_display_name")
     Flux<SalaryRequestView> findNotDeletedMy(int period, int createdBy, OffsetDateTime now);
 
 
-    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL+" and r.req_increase_start_period=:periodId order by r.created_at desc")
+    @Query(GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL+" and r.req_increase_start_period=:periodId order by employee_display_name")
     Flux<SalaryRequestView> findAllNotDeleted(int periodId, OffsetDateTime now);
 }
 

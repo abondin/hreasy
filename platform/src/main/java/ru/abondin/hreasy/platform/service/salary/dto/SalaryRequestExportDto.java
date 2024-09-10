@@ -15,6 +15,7 @@ public class SalaryRequestExportDto {
     private String type;
     private String budgetBusinessAccount;
     private LocalDate budgetExpectedFundingUntil;
+    private LocalDate dateOfEmployment;
 
     private String assessment;
     private String employeePosition;
@@ -39,6 +40,8 @@ public class SalaryRequestExportDto {
     private String implRejectReason;
     private String implState;
     private String implNewPosition;
+    private String implComment;
+    private String implIncreaseText;
     private String implemented;
 
     private String previousSalaryIncreaseText;

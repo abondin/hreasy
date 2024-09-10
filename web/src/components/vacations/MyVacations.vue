@@ -2,7 +2,28 @@
 <template>
   <v-card>
     <v-card-title>
-      <div>{{ $t('Планируемые отпуска') }}</div>
+      <span>{{ $t('Планируемые отпуска') }}</span>
+      <v-spacer></v-spacer>
+
+      <v-menu offset-y v-if="openedPeriods && openedPeriods.length>0">
+        <template v-slot:activator="{ on: menu, attrs }">
+          <v-tooltip top>
+            <template v-slot:activator="{ on: tooltip }">
+              <v-btn color="primary" v-bind="attrs" v-on="{ ...tooltip, ...menu }">
+                {{ $t('Запланировать') }}
+              </v-btn>
+            </template>
+            <span>{{ $t('Запланировать отпуск на будущий год') }}</span>
+          </v-tooltip>
+        </template>
+        <v-list>
+          <v-list-item link v-for="(item, index) in openedPeriods" :key="index">
+            <v-list-item-title @click="requestAction.openRequestVacationDialog(item.year)">
+              {{ item.year }}
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </v-card-title>
 
     <v-card-text>
@@ -29,6 +50,14 @@
         </template>
       </v-data-table>
     </v-card-text>
+    <in-dialog-form :title="$t('Запланировать отпуск на X год', {year: requestAction.formData.year})"
+                    :data="requestAction" form-ref="requestVacation"
+                    v-if="requestAction.formData" v-on:submit="fetchData()">
+      <template v-slot:fields>
+        <!-- start date -->
+        <request-vacations-form-fields :data="requestAction"></request-vacations-form-fields>
+      </template>
+    </in-dialog-form>
   </v-card>
 </template>
 
@@ -36,13 +65,24 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
-import vacationService, {MyVacation} from "@/components/vacations/vacation.service";
+import vacationService, {
+  MyVacation,
+  vacationStatuses,
+  VacPlanningPeriod
+} from "@/components/vacations/vacation.service";
 import {DataTableHeader} from "vuetify";
 import moment from 'moment';
 import {DateTimeUtils} from "@/components/datetimeutils";
+import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
+import {RequestOrUpdateVacationActionDataContainer} from "@/components/vacations/request-vacation.data.container";
+import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
+import dictService from "@/store/modules/dict.service";
+import RequestVacationsFormFields from "@/components/vacations/RequestVacationsFormFields.vue";
 
 
-@Component({})
+@Component({
+  components: {RequestVacationsFormFields, MyDateFormComponent, InDialogForm}
+})
 export default class MyVacations extends Vue {
   headers: DataTableHeader[] = [];
   loading = false;
@@ -51,12 +91,13 @@ export default class MyVacations extends Vue {
   public allStatuses: Array<any> = [];
   public allYears: Array<number> = [];
   public allMonths: Array<any> = [];
-
+  openedPeriods: Array<VacPlanningPeriod> = [];
+  requestAction = new RequestOrUpdateVacationActionDataContainer();
   /**
    * Lifecycle hook
    */
   created() {
-    this.allStatuses = ['PLANNED', 'TAKEN', 'COMPENSATION', 'CANCELED', 'REJECTED'].map(status => {
+    this.allStatuses = vacationStatuses.map(status => {
       return {value: status, text: this.$tc(`VACATION_STATUS_ENUM.${status}`)}
     });
     const currentYear = new Date().getFullYear();
@@ -88,18 +129,30 @@ export default class MyVacations extends Vue {
 
   private fetchData() {
     this.loading = true;
-    return vacationService.myFutureVacations()
-        .then(data => {
-              this.vacations = data.filter(m => m.startDate && m.endDate);
-              return;
-            }
-        ).finally(() => {
+    return vacationService.openPlanningPeriods()
+        .then(periods => {
+          this.openedPeriods = periods;
+          return dictService.daysNotIncludedInVacations(this.allYears)
+              .then(days => {
+                this.requestAction.daysNotIncludedInVacations = days;
+                return vacationService.myFutureVacations()
+                    .then(data => {
+                      this.vacations = data.filter(m => m.startDate && m.endDate);
+                      return;
+                    });
+              }
+          )
+        }).finally(() => {
           this.loading = false
         });
   }
 
   private formatDate(date: string): string | undefined {
     return DateTimeUtils.formatFromIso(date);
+  }
+
+  private validateDate(formattedDate: string, allowEmpty = true): boolean {
+    return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
   }
 
 

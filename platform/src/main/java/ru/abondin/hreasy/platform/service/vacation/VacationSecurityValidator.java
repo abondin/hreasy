@@ -24,7 +24,7 @@ public class VacationSecurityValidator {
         });
     }
 
-    public Mono<Boolean> validateCanEditOvertimes(AuthContext auth) {
+    public Mono<Boolean> validateCanEditVacations(AuthContext auth) {
         return Mono.defer(() -> {
             if (auth.getAuthorities().contains("vacation_edit")) {
                 return Mono.just(true);
@@ -33,12 +33,21 @@ public class VacationSecurityValidator {
         });
     }
 
-    public Mono<Boolean> validateCanExportOvertimes(AuthContext auth) {
+    public Mono<Boolean> validateCanExportVacations(AuthContext auth) {
         return Mono.defer(() -> {
             if (auth.getAuthorities().contains("vacation_edit")) {
                 return Mono.just(true);
             }
             return Mono.error(new AccessDeniedException("Only user with permission vacation_edit can export vacations"));
+        });
+    }
+
+    public Mono<Boolean> validateCanStartAndClosePlanningPeriod(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (auth.getAuthorities().contains("vacation_edit")) {
+                return Mono.just(true);
+            }
+            return Mono.error(new AccessDeniedException("Only user with permission vacation_edit can start or close vacations planning period"));
         });
     }
 }

@@ -21,7 +21,7 @@
         <template v-slot:activator="{ on: ton, attrs: tattrs}">
           <v-btn v-bind="tattrs" v-on="ton" x-small text icon
                  @click="dataContainer.openApproveDialog(request, approval)"
-                 v-if="approvalActionsAllowed(request)">
+                 v-if="approvalActionsAllowed(approval, request)">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </template>
@@ -35,7 +35,7 @@
 </template>
 <script lang="ts">
 import {Prop, Vue} from "vue-property-decorator";
-import {SalaryApprovalState, SalaryIncreaseRequest} from "../../salary.service";
+import {SalaryApprovalState, SalaryIncreaseRequest, SalaryRequestApproval} from "../../salary.service";
 import Component from "vue-class-component";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import {SalaryDetailsDataContainer} from "@/components/salary/details/salary-details.data.container";
@@ -64,8 +64,8 @@ export default class SalaryRequestApprovalCard extends Vue {
     return DateTimeUtils.formatDateTimeFromIso(date);
   }
 
-  private approvalActionsAllowed(request: SalaryIncreaseRequest) {
-    return !this.dataContainer.periodClosed;
+  private approvalActionsAllowed(approval: SalaryRequestApproval, request: SalaryIncreaseRequest) {
+    return !this.dataContainer.periodClosed || Boolean(approval?.state == SalaryApprovalState.COMMENT)
   }
 }
 </script>
