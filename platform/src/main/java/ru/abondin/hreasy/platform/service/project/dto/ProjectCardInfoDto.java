@@ -24,6 +24,10 @@ public class ProjectCardInfoDto {
     private LocalDate startDate;
     @Nullable
     private LocalDate endDate;
+    @Nullable
+    private LocalDate planStartDate;
+    @Nullable
+    private LocalDate planEndDate;
 
     @NonNull
     private SimpleDictDto department;

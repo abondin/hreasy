@@ -32,6 +32,15 @@
         </template>
         <span>{{ $t('Сбросить решение') }}</span>
       </v-tooltip>
+      <v-tooltip bottom v-if="Boolean(data.item.impl && data.isSalaryRequest())">
+        <template v-slot:activator="{ on: ton, attrs: tattrs}">
+          <v-btn v-bind="tattrs" v-on="ton" icon @click="updateImplText()"
+                 :disabled="implementActionDisabled()">
+            <v-icon>mdi-email-edit</v-icon>
+          </v-btn>
+        </template>
+        <span>{{ $t('Изменить сообщение') }}</span>
+      </v-tooltip>
       </span>
     </v-card-title>
     <v-card-text>
@@ -74,6 +83,10 @@
             <dd v-if="data.item.impl?.comment">{{ data.item.impl.comment }}</dd>
 
 
+            <dt v-if="data.item.impl?.increaseText">{{ $t('Сообщение об изменениях') }}:</dt>
+            <dd v-if="data.item.impl?.increaseText">{{ data.item.impl.increaseText }}</dd>
+
+
           </dl>
           <div v-else>{{ $t('На рассмотрении') }}</div>
         </div>
@@ -92,6 +105,15 @@
       </template>
     </in-dialog-form>
 
+    <in-dialog-form size="lg" form-ref="updateImplTextForm" :data="data.updateImplTextAction"
+                    :title="$t('Изменить сообщение')"
+                    v-on:submit="emitReload()">
+      <template v-slot:fields>
+        <salary-request-update-impl-text-form-fields
+            :formData="data.updateImplTextAction.formData"></salary-request-update-impl-text-form-fields>
+      </template>
+    </in-dialog-form>
+
   </v-card>
 </template>
 
@@ -107,10 +129,12 @@ import permissionService from "@/store/modules/permission.service";
 import {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import SalaryRequestImplementFormFields from "@/components/salary/details/impl/SalaryRequestImplementFormFields.vue";
+import SalaryRequestUpdateImplTextFormFields
+  from "@/components/salary/details/impl/SalaryRequestUpdateImplTextFormFields.vue";
 
 
 @Component({
-  components: {SalaryRequestImplementFormFields, InDialogForm}
+  components: {SalaryRequestUpdateImplTextFormFields, SalaryRequestImplementFormFields, InDialogForm}
 })
 export default class SalaryRequestDetailsViewImplementation extends Vue {
 
@@ -139,12 +163,16 @@ export default class SalaryRequestDetailsViewImplementation extends Vue {
     this.data.openImplementDialog(this.data.item, SalaryRequestImplementationState.REJECTED);
   }
 
-  isRejected(){
+  isRejected() {
     return Boolean(this.data.item.impl?.state == SalaryRequestImplementationState.REJECTED);
   }
 
   private deleteImpl() {
     this.data.openImplementDialog(this.data.item);
+  }
+
+  private updateImplText() {
+    this.data.openUpdateImplTextDialog(this.data.item);
   }
 
   private implementActionDisabled() {

@@ -81,6 +81,8 @@ public class SalaryRequestDto {
 
         private OffsetDateTime implementedAt;
         private SimpleDictDto implementedBy;
+
+        private String increaseText;
     }
 
     @Data

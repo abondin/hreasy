@@ -2,13 +2,13 @@ package ru.abondin.hreasy.platform.service.mapper;
 
 import org.mapstruct.*;
 import ru.abondin.hreasy.platform.I18Helper;
+import ru.abondin.hreasy.platform.repo.vacation.VacPlanningPeriodEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacationView;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
-import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.*;
 
+import java.time.OffsetDateTime;
 import java.util.Locale;
 
 /**
@@ -35,6 +35,19 @@ public interface VacationDtoMapper extends MapperBase {
         return entry;
     }
 
+    @Mapping(target = "status", expression = "java(VacationDto.VacationStatus.REQUESTED.getStatusId())")
+    @Mapping(target = "year", source = "request.year")
+    @Mapping(target = "startDate", source = "request.startDate")
+    @Mapping(target = "endDate", source = "request.endDate")
+    @Mapping(target = "daysNumber", source = "request.daysNumber")
+    @Mapping(target = "notes", source = "request.notes")
+    @Mapping(target = "employee", source = "employeeId")
+    @Mapping(target = "createdBy", source = "employeeId")
+    @Mapping(target = "createdAt", source = "now")
+    @Mapping(target = "updatedBy", source = "employeeId")
+    @Mapping(target = "updatedAt", source = "now")
+    VacationEntry toEntry(VacationRequestDto request, int employeeId, OffsetDateTime now);
+
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "vacationId", source = "id")
@@ -45,6 +58,8 @@ public interface VacationDtoMapper extends MapperBase {
     @Mapping(target = "employeeCurrentProjectRole", source = "employeeCurrentProject.role")
     @Mapping(target = "status", qualifiedByName = "vacationStatus")
     VacationExportDto toExportProjection(VacationDto vacation, @Context I18Helper helper, @Context Locale locale);
+
+    VacPlanningPeriodDto fromEntry(VacPlanningPeriodEntry entry);
 
     @Named("vacationStatus")
     default String vacationStatus(VacationDto.VacationStatus status, @Context I18Helper helper, @Context Locale locale) {

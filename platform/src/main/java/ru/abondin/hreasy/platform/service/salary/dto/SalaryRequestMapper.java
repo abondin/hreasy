@@ -81,6 +81,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "implRejectReason", target = "impl.rejectReason")
     @Mapping(source = "implComment", target = "impl.comment")
     @Mapping(source = "implState", target = "impl.state")
+    @Mapping(source = "implIncreaseText", target = "impl.increaseText")
     @Mapping(source = ".", target = "req.newPosition", qualifiedByName = "reqNewPosition")
     @Mapping(source = ".", target = "impl.newPosition", qualifiedByName = "implNewPosition")
     @Mapping(source = "approvals", target = "approvals", qualifiedByName = "approvalsFromJson")
@@ -94,6 +95,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "impl.salaryAmount", target = "implSalaryAmount")
     @Mapping(source = "impl.increaseStartPeriod", target = "implIncreaseStartPeriod", qualifiedByName = "period")
     @Mapping(source = "impl.rejectReason", target = "implRejectReason")
+    @Mapping(source = "impl.increaseText", target = "implIncreaseText")
     @Mapping(source = "impl.state", target = "implState")
     @Mapping(source = "impl.newPosition.name", target = "implNewPosition")
     @Mapping(source = "impl.implementedBy.name", target = "implemented")
@@ -104,6 +106,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "employeeInfo.currentSalaryAmount", target = "currentSalaryAmount")
     @Mapping(source = "employeeInfo.previousSalaryIncreaseDate", target = "previousSalaryIncreaseDate")
     @Mapping(source = "employeeInfo.previousSalaryIncreaseText", target = "previousSalaryIncreaseText")
+    @Mapping(source = "employeeInfo.dateOfEmployment", target = "dateOfEmployment")
     @Mapping(source = "createdBy.name", target = "createdBy")
     @Mapping(source = "employeeInfo.position.name", target = "employeePosition")
     @Mapping(source = "budgetBusinessAccount.name", target = "budgetBusinessAccount")
@@ -130,6 +133,9 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = "implementedBy", target = "implementedBy")
     @Mapping(constant = "1", target = "implState")
     public abstract void applyRequestImplementBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestImplementBody body, OffsetDateTime implementedAt, Integer implementedBy);
+
+    @Mapping(source = "body.increaseText", target = "implIncreaseText")
+    public abstract void applyUpdateImplIncreaseTextBody(@MappingTarget SalaryRequestEntry entry, SalaryRequestUpdateImplIncreaseTextBody body, OffsetDateTime implementedAt, Integer implementedBy);
 
     @Mapping(source = "body.reason", target = "implRejectReason")
     @Mapping(source = "body.comment", target = "implComment")

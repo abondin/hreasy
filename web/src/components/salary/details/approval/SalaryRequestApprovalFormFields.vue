@@ -3,12 +3,6 @@ Form to create or delete approve/decline or just comment
 -->
 <template>
   <div>
-    <v-select
-        v-model="formData.action"
-        :label="$t('Действие')"
-        :rules="[v => !!v || $t('Обязательное поле')]"
-        :items="approvalActionDict">
-    </v-select>
     <v-textarea
         autofocus
         tabindex="1"

@@ -1,6 +1,5 @@
 import httpService from "../http.service";
 import {AxiosInstance} from "axios";
-import {ProjectDictDto, SimpleDict} from "@/store/modules/dict";
 import {CurrentProjectDict} from "@/components/empl/employee.service";
 
 export interface EmployeeVacationShort {
@@ -10,6 +9,13 @@ export interface EmployeeVacationShort {
     endDate: string,
     current: boolean
 }
+
+export interface VacPlanningPeriod {
+    year: number
+}
+
+export const vacationStatuses = ['PLANNED', 'TAKEN', 'COMPENSATION', 'CANCELED', 'REJECTED', 'REQUESTED'] as const;
+export type VacationStatus = typeof vacationStatuses[number];
 
 export interface Vacation {
     id: number,
@@ -23,7 +29,7 @@ export interface Vacation {
     canceled: boolean,
     plannedStartDate?: string,
     plannedEndDate?: string,
-    status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED' | 'REJECTED',
+    status: VacationStatus,
     documents: string,
     daysNumber: number
 }
@@ -36,11 +42,19 @@ export interface MyVacation {
     notes: string,
     plannedStartDate?: string,
     plannedEndDate?: string,
-    status: 'PLANNED' | 'TAKEN' | 'COMPENSATION' | 'CANCELED' | 'REJECTED',
+    status: VacationStatus,
     documents: string,
     daysNumber: number
 }
 
+
+export interface RequestOrUpdateMyVacation {
+    year: number,
+    startDate: string,
+    endDate: string,
+    notes: string,
+    daysNumber: number
+}
 
 export interface CreateOrUpdateVacation {
     year: number,
@@ -74,6 +88,12 @@ export interface VacationService {
     export(selectedYears: Array<number>): Promise<any>;
 
     isNotWorkingDays(vacation: Vacation): boolean;
+
+    openPlanningPeriods(): Promise<Array<VacPlanningPeriod>>;
+
+    requestVacation(body: RequestOrUpdateMyVacation): Promise<number>;
+
+    updatePlanningVacation(vacationId: number, body: RequestOrUpdateMyVacation): Promise<number>;
 }
 
 class RestVacationService implements VacationService {
@@ -123,12 +143,30 @@ class RestVacationService implements VacationService {
         });
     }
 
+    openPlanningPeriods(): Promise<Array<VacPlanningPeriod>> {
+        return httpService.get(`v1/vacations/planning-period`).then(response => {
+            return response.data;
+        });
+    }
+
+    requestVacation(body: RequestOrUpdateMyVacation): Promise<number> {
+        return httpService.post('v1/vacations/request', body).then(response => {
+            return response.data;
+        });
+    }
+
+    updatePlanningVacation(vacationId: number, body: RequestOrUpdateMyVacation): Promise<number> {
+        return httpService.put(`v1/vacations/request/${vacationId}`, body).then(response => {
+            return response.data;
+        });
+    }
+
     /**
      *
      * @param vacation
      * @return true if employee doesn't work in the vacation
      */
-    public isNotWorkingDays(vacation: Vacation): boolean{
+    public isNotWorkingDays(vacation: Vacation): boolean {
         return vacation && (vacation.status == "PLANNED" || vacation.status == "TAKEN");
     }
 }

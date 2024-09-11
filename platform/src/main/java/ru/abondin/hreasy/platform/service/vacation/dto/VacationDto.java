@@ -36,7 +36,11 @@ public class VacationDto {
         TAKEN(1),
         COMPENSATION(2),
         CANCELED(3),
-        REJECTED(4);
+        REJECTED(4),
+        /**
+         * When employee schedule own vacation on next planning period (on next year)
+         */
+        REQUESTED(5);
 
         private final int statusId;
 

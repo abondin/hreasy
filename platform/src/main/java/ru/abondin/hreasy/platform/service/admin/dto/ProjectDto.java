@@ -29,6 +29,11 @@ public class ProjectDto {
     @Nullable
     private LocalDate endDate;
 
+    @Nullable
+    private LocalDate planStartDate;
+    @Nullable
+    private LocalDate planEndDate;
+
     @NonNull
     private SimpleDictDto department;
 
@@ -56,6 +61,10 @@ public class ProjectDto {
         private LocalDate startDate;
         @Nullable
         private LocalDate endDate;
+        @Nullable
+        private LocalDate planStartDate;
+        @Nullable
+        private LocalDate planEndDate;
 
         @NonNull
         private Integer departmentId;

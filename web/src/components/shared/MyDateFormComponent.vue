@@ -39,6 +39,7 @@ import Vue from 'vue'
 import {Prop, Watch} from "vue-property-decorator";
 import moment, {Moment} from "moment";
 import {DateTimeUtils} from "@/components/datetimeutils";
+import logger from "@/logger";
 
 
 @Component
