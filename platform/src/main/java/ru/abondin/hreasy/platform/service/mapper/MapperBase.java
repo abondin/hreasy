@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.mapper;
 
 import org.apache.commons.lang3.StringUtils;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
+import ru.abondin.hreasy.platform.service.dto.PositionOnMap;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.YearMonth;
@@ -26,6 +27,10 @@ public interface MapperBase {
 
     default SimpleDictDto simpleDto(Integer id, String name) {
         return id == null ? null : new SimpleDictDto(id, name);
+    }
+
+    default PositionOnMap position(Integer x, Integer y) {
+        return (x != null || y != null) ? new PositionOnMap(x, y) : null;
     }
 
     default CurrentProjectDictDto currentProjectDto(Integer id, String name, String role) {

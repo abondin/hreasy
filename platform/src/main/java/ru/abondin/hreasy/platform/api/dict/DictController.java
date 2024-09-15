@@ -71,6 +71,7 @@ public class DictController {
         return AuthHandler.currentAuth().flatMapMany(
                 auth -> dictService.findOffices(auth));
     }
+
     @Operation(summary = "All office locations")
     @GetMapping("/office_locations")
     @ResponseBody

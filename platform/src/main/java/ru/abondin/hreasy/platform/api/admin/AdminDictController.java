@@ -22,6 +22,7 @@ public class AdminDictController {
     private final AdminDictPositionService positions;
     private final AdminDictOrganizationService organizations;
     private final AdminDictOfficeService offices;
+    private final AdminDictOfficeWorkplaceService workplaces;
     private final AdminDictOfficeLocationService officeLocations;
 
     // ------------ Department CRUD
@@ -156,5 +157,27 @@ public class AdminDictController {
     public Mono<Integer> updateOfficeLocation(@PathVariable int id, @RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.update(auth, id, body));
+    }
+
+    // ------------ Office Workplace CRUD
+    @Operation(summary = "All office workplace")
+    @GetMapping("/office_workplaces")
+    public Flux<DictOfficeWorkplaceDto> officeWorkplaces() {
+        return AuthHandler.currentAuth().flatMapMany(
+                workplaces::findAll);
+    }
+
+    @Operation(summary = "Create office location")
+    @PostMapping("/office_workplaces")
+    public Mono<Integer> createOfficeWorkplace(@RequestBody CreateOrUpdateWorkplaceBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> workplaces.create(auth, body));
+    }
+
+    @Operation(summary = "Update office workplace")
+    @PutMapping("/office_workplaces/{id}")
+    public Mono<Integer> updateOfficeWorkplace(@PathVariable int id, @RequestBody CreateOrUpdateWorkplaceBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> workplaces.update(auth, id, body));
     }
 }

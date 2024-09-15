@@ -11,6 +11,11 @@ export interface SimpleDict {
     active: boolean;
 }
 
+export interface PositionOnMap {
+    x?: number;
+    y?: number;
+}
+
 export const enum ValueWithStatusEnum {
     OK = 1,
     WARNING = 2,
