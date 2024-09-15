@@ -9,7 +9,10 @@ import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 @Mapper(componentModel = "spring")
 public interface AdminDictDtoMapper extends MapperBase {
 
+    DictOfficeEntry toEntry(CreateOrUpdateOfficeBody dto);
+
     DictOfficeLocationEntry toEntry(CreateOrUpdateOfficeLocationBody dto);
+
 
     DictOrganizationEntry toEntry(CreateOrUpdateOrganizationBody dto);
 
@@ -34,6 +37,8 @@ public interface AdminDictDtoMapper extends MapperBase {
     @Mapping(source = "id", target = "positionId")
     @Mapping(target = "id", ignore = true)
     DictPositionLogEntry toHistory(DictPositionEntry entry);
+
+    DictOfficeDto fromEntry(DictOfficeEntry entry);
 
     @Mapping(target = "office", expression = "java(simpleDto(entry.getOfficeId(), entry.getOfficeName()))")
     DictOfficeLocationDto fromEntry(DictOfficeLocationView entry);

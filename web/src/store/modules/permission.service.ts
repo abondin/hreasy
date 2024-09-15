@@ -155,6 +155,11 @@ export enum Permissions {
     AdminDictOfficeLocations = "admin_office_location",
 
     /**
+     * Only user with permission admin_department can admin office
+     */
+    AdminDictOffices="admin_office",
+
+    /**
      * View current project role
      */
     ViewEmplCurrentProjectRole = "view_empl_current_project_role",
@@ -285,11 +290,16 @@ interface PermissionService {
      */
     canAdminDictPositions(): boolean;
 
+
     /**
      * Check if given user has grants to CRUD operations on office locations
      */
     canAdminDictOfficeLocations(): boolean;
 
+    /**
+     * Check if given user has grants to CRUD operations on office
+     */
+    canAdminDictOffices(): boolean;
     /**
      * Has access to view employee's skills
      */
@@ -459,6 +469,9 @@ class VuexPermissionService implements PermissionService {
         return this.simplePermissionCheck(Permissions.AdminDictPositions);
     }
 
+    canAdminDictOffices(): boolean {
+        return this.simplePermissionCheck(Permissions.AdminDictOffices);
+    }
     canAdminDictOfficeLocations(): boolean {
         return this.simplePermissionCheck(Permissions.AdminDictOfficeLocations);
     }

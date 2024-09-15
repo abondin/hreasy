@@ -21,6 +21,7 @@ public class AdminDictController {
     private final AdminDictLevelService levels;
     private final AdminDictPositionService positions;
     private final AdminDictOrganizationService organizations;
+    private final AdminDictOfficeService offices;
     private final AdminDictOfficeLocationService officeLocations;
 
     // ------------ Department CRUD
@@ -113,6 +114,28 @@ public class AdminDictController {
                 auth -> levels.update(auth, id, body));
     }
 
+    // ------------ Office CRUD
+    @Operation(summary = "All offices")
+    @GetMapping("/offices")
+    public Flux<DictOfficeDto> offices() {
+        return AuthHandler.currentAuth().flatMapMany(
+                offices::findAll);
+    }
+
+    @Operation(summary = "Create office")
+    @PostMapping("/offices")
+    public Mono<Integer> createOffice(@RequestBody CreateOrUpdateOfficeBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> offices.create(auth, body));
+    }
+
+    @Operation(summary = "Update office")
+    @PutMapping("/offices/{id}")
+    public Mono<Integer> updateOffice(@PathVariable int id, @RequestBody CreateOrUpdateOfficeBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> offices.update(auth, id, body));
+    }
+
     // ------------ Office Location CRUD
     @Operation(summary = "All office locations")
     @GetMapping("/office_locations")
@@ -121,14 +144,14 @@ public class AdminDictController {
                 officeLocations::findAll);
     }
 
-    @Operation(summary = "Create level")
+    @Operation(summary = "Create office location")
     @PostMapping("/office_locations")
     public Mono<Integer> createOfficeLocation(@RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.create(auth, body));
     }
 
-    @Operation(summary = "Update level")
+    @Operation(summary = "Update office location")
     @PutMapping("/office_locations/{id}")
     public Mono<Integer> updateOfficeLocation(@PathVariable int id, @RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(

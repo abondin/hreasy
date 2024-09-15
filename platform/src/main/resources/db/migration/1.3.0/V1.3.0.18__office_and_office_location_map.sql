@@ -35,3 +35,11 @@ COMMENT ON COLUMN history.history.entity_type IS '
   [office] - Office
   [office_location] - Office Location
   ';
+
+-- Permission to admin office location
+INSERT INTO sec.perm (permission,description) VALUES
+	 ('admin_office','Create/update/delete office') on conflict do nothing;
+INSERT INTO sec.role_perm (role,permission) VALUES
+	 ('global_admin','admin_office'),
+	 ('hr','admin_office') on conflict do nothing;
+
