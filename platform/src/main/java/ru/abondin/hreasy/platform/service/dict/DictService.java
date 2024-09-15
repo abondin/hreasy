@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.*;
+import ru.abondin.hreasy.platform.repo.dict.office_map.OfficeLocationMapRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
@@ -27,6 +28,7 @@ public class DictService {
     private final DictPositionRepo positionRepo;
     private final DictLevelRepo levelRepo;
     private final DictOfficeLocationRepo officeLocationRepo;
+    private final OfficeLocationMapRepo mapRepo;
 
     private final DictDtoMapper mapper;
 
@@ -112,7 +114,7 @@ public class DictService {
     }
 
     public Mono<String> getOfficeLocationMap(AuthContext auth, int officeLocationId) {
-        return officeLocationRepo
-                .getMap(officeLocationId);
+        return mapRepo
+                .findById(officeLocationId).map(e -> e.getMapSvg());
     }
 }
