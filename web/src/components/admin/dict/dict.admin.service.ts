@@ -1,5 +1,6 @@
 import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
+import {SimpleDict} from "@/store/modules/dict";
 
 export interface DictDepartment {
     id: number,
@@ -55,14 +56,14 @@ export interface DictOfficeLocation {
     id: number,
     name: string,
     description: string | undefined,
-    office: string | undefined,
+    office: SimpleDict | undefined,
     archived: boolean
 }
 
 export interface DictOfficeLocationUpdateBody {
     name: string,
     description: string | undefined,
-    office: string | undefined,
+    officeId: number | undefined,
     archived: boolean
 }
 
@@ -88,9 +89,9 @@ export interface DictAdminService {
 
     loadOfficeLocations(): Promise<Array<DictOfficeLocation>>;
 
-    createOfficeLocation(body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation>;
+    createOfficeLocation(body: DictOfficeLocationUpdateBody): Promise<number>;
 
-    updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation>;
+    updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<number>;
 
     loadOrganizations(): Promise<Array<DictOrganization>>;
 
@@ -111,7 +112,7 @@ class RestDictAdminService implements DictAdminService {
         return httpService.post("v1/admin/dict/levels", body);
     }
 
-    createOfficeLocation(body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation> {
+    createOfficeLocation(body: DictOfficeLocationUpdateBody): Promise<number> {
         return httpService.post("v1/admin/dict/office_locations", body);
     }
 
@@ -151,7 +152,7 @@ class RestDictAdminService implements DictAdminService {
         return httpService.put(`v1/admin/dict/levels/${id}`, body);
     }
 
-    updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation> {
+    updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<number> {
         return httpService.put(`v1/admin/dict/office_locations/${id}`, body);
     }
 

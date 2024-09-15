@@ -7,7 +7,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.*;
-import ru.abondin.hreasy.platform.repo.dict.office_map.OfficeLocationMapRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
@@ -28,7 +27,7 @@ public class DictService {
     private final DictPositionRepo positionRepo;
     private final DictLevelRepo levelRepo;
     private final DictOfficeLocationRepo officeLocationRepo;
-    private final OfficeLocationMapRepo mapRepo;
+    private final DictOfficeRepo officeRepo;
 
     private final DictDtoMapper mapper;
 
@@ -97,6 +96,19 @@ public class DictService {
                 });
     }
 
+    public Flux<SimpleDictDto> findOffices(AuthContext auth) {
+        log.trace("Get all offices {}", auth.getUsername());
+        return officeRepo
+                .findNotArchived()
+                .map(e -> {
+                    var dto = new SimpleDictDto();
+                    dto.setId(e.getId());
+                    dto.setName(e.getName());
+                    dto.setActive(!e.isArchived());
+                    return dto;
+                });
+    }
+
     public Flux<SimpleDictDto> findOfficeLocations(AuthContext auth) {
         log.trace("Get all office locations {}", auth.getUsername());
         return officeLocationRepo
@@ -114,7 +126,8 @@ public class DictService {
     }
 
     public Mono<String> getOfficeLocationMap(AuthContext auth, int officeLocationId) {
-        return mapRepo
-                .findById(officeLocationId).map(e -> e.getMapSvg());
+        log.trace("Get office location map {} by {}", officeLocationId, auth.getUsername());
+        return officeLocationRepo
+                .findNotArchived(officeLocationId).map(DictOfficeLocationEntry::getMapSvg);
     }
 }

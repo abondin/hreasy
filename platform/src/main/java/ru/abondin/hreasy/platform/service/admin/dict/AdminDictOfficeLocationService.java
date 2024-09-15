@@ -8,12 +8,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.repo.dict.DictOfficeLocationLogRepo;
 import ru.abondin.hreasy.platform.repo.dict.DictOfficeLocationRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.admin.dict.dto.AdminDictDtoMapper;
 import ru.abondin.hreasy.platform.service.admin.dict.dto.CreateOrUpdateOfficeLocationBody;
 import ru.abondin.hreasy.platform.service.dict.dto.DictOfficeLocationDto;
+
+import static ru.abondin.hreasy.platform.service.HistoryDomainService.HistoryEntityType.OFFICE_LOCATION;
 
 @RequiredArgsConstructor
 @Service
@@ -22,24 +24,24 @@ public class AdminDictOfficeLocationService {
 
     private final DateTimeService dateTimeService;
     private final DictOfficeLocationRepo repo;
-    private final DictOfficeLocationLogRepo logRepo;
+    private final HistoryDomainService history;
 
     private final AdminDictDtoMapper mapper;
     private final AdminDictValidator secValidator;
 
     public Flux<DictOfficeLocationDto> findAll(AuthContext auth) {
         return secValidator.validateAdminOfficeLocation(auth)
-                .flatMapMany(v -> repo.findAll())
+                .flatMapMany(v -> repo.findAllView())
                 .map(mapper::fromEntry);
     }
 
     @Transactional
-    public Mono<DictOfficeLocationDto> create(AuthContext auth, CreateOrUpdateOfficeLocationBody body) {
+    public Mono<Integer> create(AuthContext auth, CreateOrUpdateOfficeLocationBody body) {
         return doUpdate(auth, null, body);
     }
 
     @Transactional
-    public Mono<DictOfficeLocationDto> update(AuthContext auth, int id, CreateOrUpdateOfficeLocationBody body) {
+    public Mono<Integer> update(AuthContext auth, int id, CreateOrUpdateOfficeLocationBody body) {
         return doUpdate(auth, id, body);
     }
 
@@ -58,35 +60,28 @@ public class AdminDictOfficeLocationService {
         return secValidator.validateAdminOfficeLocation(auth)
                 .flatMap(s -> repo.findById(id))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(id))))
-                .flatMap(entry -> {
-                    var history = mapper.toHistory(entry);
-                    history.setCreatedAt(now);
-                    history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-                    return logRepo.save(history).map(h -> id);
-                });
+                .flatMap(entry ->
+                        history.persistHistory(entry.getId(), OFFICE_LOCATION, entry, now, auth.getEmployeeInfo().getEmployeeId())
+                ).map(h -> h.getEntityId());
     }
 
 
-    private Mono<DictOfficeLocationDto> doUpdate(AuthContext auth, Integer id, CreateOrUpdateOfficeLocationBody body) {
+    private Mono<Integer> doUpdate(AuthContext auth, Integer id, CreateOrUpdateOfficeLocationBody body) {
         log.info("Update office location. Employee = {}. Id={}. RequestBody = {}", auth.getUsername(), id, body);
         var now = dateTimeService.now();
-        var entry = mapper.toEntry(body);
+        var entryToUpdate = mapper.toEntry(body);
         if (id != null) {
-            entry.setId(id);
+            entryToUpdate.setId(id);
         }
-        entry.setUpdatedAt(now);
-        entry.setUpdatedBy(auth.getEmployeeInfo().getEmployeeId());
+        entryToUpdate.setUpdatedAt(now);
+        entryToUpdate.setUpdatedBy(auth.getEmployeeInfo().getEmployeeId());
         return secValidator.validateAdminOfficeLocation(auth)
                 .flatMap((v) -> repo
-                        .save(entry)
+                        .save(entryToUpdate)
                 )
-                .flatMap(persisted -> {
-                    var history = mapper.toHistory(persisted);
-                    history.setCreatedAt(now);
-                    history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-                    return logRepo.save(history).map((h) -> persisted);
-                })
-                .map(mapper::fromEntry);
+                .flatMap(entry ->
+                        history.persistHistory(entry.getId(), OFFICE_LOCATION, entry, now, auth.getEmployeeInfo().getEmployeeId())
+                ).map(h -> h.getEntityId());
     }
 
 

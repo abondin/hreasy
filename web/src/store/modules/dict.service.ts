@@ -39,6 +39,8 @@ export interface DictService {
 
     loadAllOfficeLocations(): Promise<Array<SimpleDict>>;
 
+    loadAllOffices(): Promise<Array<SimpleDict>>;
+
     getOfficeLocationMap(officeLocationId: number): Promise<string>;
 
     loadAllSkillGroups(): Promise<Array<SimpleDict>>;
@@ -75,6 +77,10 @@ class RestDictService implements DictService {
 
     loadAllLevels(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/dict/levels").then(response => response.data);
+    }
+
+    loadAllOffices(): Promise<Array<SimpleDict>> {
+        return httpService.get("v1/dict/offices").then(response => response.data);
     }
 
     loadAllOfficeLocations(): Promise<Array<SimpleDict>> {

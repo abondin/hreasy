@@ -123,14 +123,14 @@ public class AdminDictController {
 
     @Operation(summary = "Create level")
     @PostMapping("/office_locations")
-    public Mono<DictOfficeLocationDto> createOfficeLocation(@RequestBody CreateOrUpdateOfficeLocationBody body) {
+    public Mono<Integer> createOfficeLocation(@RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.create(auth, body));
     }
 
     @Operation(summary = "Update level")
     @PutMapping("/office_locations/{id}")
-    public Mono<DictOfficeLocationDto> updateOfficeLocation(@PathVariable int id, @RequestBody CreateOrUpdateOfficeLocationBody body) {
+    public Mono<Integer> updateOfficeLocation(@PathVariable int id, @RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.update(auth, id, body));
     }

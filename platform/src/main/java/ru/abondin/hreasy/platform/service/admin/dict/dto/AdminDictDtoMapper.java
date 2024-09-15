@@ -4,9 +4,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.abondin.hreasy.platform.repo.dict.*;
 import ru.abondin.hreasy.platform.service.dict.dto.*;
+import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 
 @Mapper(componentModel = "spring")
-public interface AdminDictDtoMapper {
+public interface AdminDictDtoMapper extends MapperBase {
 
     DictOfficeLocationEntry toEntry(CreateOrUpdateOfficeLocationBody dto);
 
@@ -17,10 +18,6 @@ public interface AdminDictDtoMapper {
     DictLevelEntry toEntry(CreateOrUpdateLevelBody dto);
 
     DictPositionEntry toEntry(CreateOrUpdatePositionBody dto);
-
-    @Mapping(source = "id", target = "officeLocationId")
-    @Mapping(target = "id", ignore = true)
-    DictOfficeLocationLogEntry toHistory(DictOfficeLocationEntry entry);
 
     @Mapping(source = "id", target = "organizationId")
     @Mapping(target = "id", ignore = true)
@@ -38,7 +35,8 @@ public interface AdminDictDtoMapper {
     @Mapping(target = "id", ignore = true)
     DictPositionLogEntry toHistory(DictPositionEntry entry);
 
-    DictOfficeLocationDto fromEntry(DictOfficeLocationEntry entry);
+    @Mapping(target = "office", expression = "java(simpleDto(entry.getOfficeId(), entry.getOfficeName()))")
+    DictOfficeLocationDto fromEntry(DictOfficeLocationView entry);
 
     DictOrganizationDto fromEntry(DictOrganizationEntry entry);
 

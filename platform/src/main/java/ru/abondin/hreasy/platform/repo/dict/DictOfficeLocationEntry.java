@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.repo.dict;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.lang.Nullable;
@@ -11,6 +12,7 @@ import java.time.OffsetDateTime;
 
 @Table("dict.office_location")
 @Data
+@NoArgsConstructor
 public class DictOfficeLocationEntry {
     @Id
     private Integer id;
@@ -21,8 +23,10 @@ public class DictOfficeLocationEntry {
     @Nullable
     private String description;
 
+    private String mapSvg;
+
     @Nullable
-    private String office;
+    private Integer officeId;
 
     private boolean archived = false;
 

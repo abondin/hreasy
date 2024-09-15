@@ -1,37 +1,40 @@
 package ru.abondin.hreasy.platform.repo.dict;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-import org.springframework.lang.NonNull;
 import java.time.OffsetDateTime;
 
 
-@Table("dict.office_location_log")
+@Table("dict.office")
 @Data
-public class DictOfficeLocationLogEntry {
+@NoArgsConstructor
+public class DictOfficeEntry {
     @Id
     private Integer id;
-
-    private Integer officeLocationId;
 
     @NonNull
     private String name;
 
     @Nullable
-    private String description;
+    private String address;
 
     @Nullable
-    private String office;
+    private String description;
+
+    private String mapSvg;
+
+
+    private boolean archived = false;
 
     @Nullable
     private OffsetDateTime createdAt;
 
     @Nullable
     private Integer createdBy;
-
-    private boolean archived = false;
 
 }

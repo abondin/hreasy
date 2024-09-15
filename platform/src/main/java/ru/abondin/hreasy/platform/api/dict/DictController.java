@@ -64,6 +64,13 @@ public class DictController {
                 auth -> dictService.findLevels(auth));
     }
 
+    @Operation(summary = "All offices")
+    @GetMapping("/offices")
+    @ResponseBody
+    public Flux<SimpleDictDto> offices() {
+        return AuthHandler.currentAuth().flatMapMany(
+                auth -> dictService.findOffices(auth));
+    }
     @Operation(summary = "All office locations")
     @GetMapping("/office_locations")
     @ResponseBody
