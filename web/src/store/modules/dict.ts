@@ -11,6 +11,10 @@ export interface SimpleDict {
     active: boolean;
 }
 
+export interface OfficeLocationDict extends SimpleDict{
+    officeId?: number;
+}
+
 export interface PositionOnMap {
     x?: number;
     y?: number;

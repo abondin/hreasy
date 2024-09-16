@@ -21,7 +21,7 @@ import DictAdminMain from "@/components/admin/dict/DictAdminMain.vue";
 import DictAdminLevels from "@/components/admin/dict/DictAdminLevels.vue";
 import DictAdminDepartments from "@/components/admin/dict/DictAdminDepartments.vue";
 import DictAdminPositions from "@/components/admin/dict/DictAdminPositions.vue";
-import DictAdminOfficeLocations from "@/components/admin/dict/DictAdminOfficeLocations.vue";
+import DictAdminOfficeLocations from "@/components/admin/dict/office/DictAdminOfficeLocations.vue";
 import PageNotFoundComponent from "@/components/PageNotFoundComponent.vue";
 import AdminEmployeeAndKidsTabs from "@/components/admin/employee/AdminEmployeeAndKidsTabs.vue";
 import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
@@ -37,8 +37,8 @@ import JuniorRegistryDetailedView from "@/components/udr/JuniorRegistryDetailedV
 import SalaryRequestsTable from "@/components/salary/SalaryRequestsTable.vue";
 import SalaryRequestDetailsView from "@/components/salary/details/SalaryRequestDetailsView.vue";
 import OfficeRoomSeatsComponent from "@/components/office/OfficeRoomSeatsComponent.vue";
-import DictAdminOffices from "@/components/admin/dict/DictAdminOffices.vue";
-import DictAdminOfficeWorkplaces from "@/components/admin/dict/DictAdminOfficeWorkplaces.vue";
+import DictAdminOffices from "@/components/admin/dict/office/DictAdminOffices.vue";
+import DictAdminOfficeWorkplaces from "@/components/admin/dict/office/DictAdminOfficeWorkplaces.vue";
 
 Vue.use(VueRouter)
 

@@ -1,6 +1,12 @@
 import httpService from "../../components/http.service";
 import {AxiosInstance} from "axios";
-import {CurrentProjectRole, ManagerOfObject, ProjectDictDto, SimpleDict} from "@/store/modules/dict";
+import {
+    CurrentProjectRole,
+    ManagerOfObject,
+    OfficeLocationDict,
+    ProjectDictDto,
+    SimpleDict
+} from "@/store/modules/dict";
 import DOMPurify from 'dompurify';
 
 export interface SharedSkillName {
@@ -37,7 +43,7 @@ export interface DictService {
 
     loadAllLevels(): Promise<Array<SimpleDict>>;
 
-    loadAllOfficeLocations(): Promise<Array<SimpleDict>>;
+    loadAllOfficeLocations(): Promise<Array<OfficeLocationDict>>;
 
     loadAllOffices(): Promise<Array<SimpleDict>>;
 

@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dict.DictWorkingDaysCalendarService;
+import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
 import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
@@ -75,7 +76,7 @@ public class DictController {
     @Operation(summary = "All office locations")
     @GetMapping("/office_locations")
     @ResponseBody
-    public Flux<SimpleDictDto> locations() {
+    public Flux<OfficeLocationDictDto> locations() {
         return AuthHandler.currentAuth().flatMapMany(
                 auth -> dictService.findOfficeLocations(auth));
     }
