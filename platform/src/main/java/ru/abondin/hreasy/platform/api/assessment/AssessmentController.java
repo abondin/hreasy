@@ -14,6 +14,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentService;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentsSummaryExportService;
 import ru.abondin.hreasy.platform.service.assessment.dto.*;
+import ru.abondin.hreasy.platform.service.dto.UploadResponse;
 
 import java.util.Locale;
 
@@ -81,10 +82,10 @@ public class AssessmentController {
 
     @Operation(summary = "Upload assessment attachment")
     @PostMapping(value = "/{employeeId}/{assessmentId}/attachment")
-    public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(@PathVariable("employeeId") int employeeId,
-                                                                     @PathVariable int assessmentId,
-                                                                     @RequestPart("file") Mono<FilePart> multipartFile,
-                                                                     @RequestHeader(value = HttpHeaders.CONTENT_LENGTH) long contentLength) {
+    public Mono<UploadResponse> uploadAttachment(@PathVariable("employeeId") int employeeId,
+                                                 @PathVariable int assessmentId,
+                                                 @RequestPart("file") Mono<FilePart> multipartFile,
+                                                 @RequestHeader(value = HttpHeaders.CONTENT_LENGTH) long contentLength) {
         log.debug("Upload new attachment for assessment {}:{}", employeeId, assessmentId);
         return AuthHandler.currentAuth().flatMap(auth -> multipartFile
                 .flatMap(it -> service.uploadAttachment(auth, employeeId, assessmentId, it, contentLength)));

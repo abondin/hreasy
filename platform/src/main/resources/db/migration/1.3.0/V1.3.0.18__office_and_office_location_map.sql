@@ -19,9 +19,6 @@ COMMENT ON COLUMN dict.office.map_svg IS 'Office map SVG';
 ALTER TABLE dict.office_location ADD COLUMN IF NOT EXISTS office_id int null REFERENCES dict.office(id);
 COMMENT ON COLUMN dict.office_location.office IS '!!! DEPRECATED COLUMN !!! Use office_id instead';
 
-ALTER TABLE dict.office_location ADD COLUMN IF NOT EXISTS map_svg text NULL;
-COMMENT ON COLUMN dict.office_location.map_svg IS 'Office location map SVG';
-
 DROP TABLE IF EXISTS dict.office_location_log;
 
 COMMENT ON COLUMN history.history.entity_type IS '

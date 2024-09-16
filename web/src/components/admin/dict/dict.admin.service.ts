@@ -143,6 +143,8 @@ export interface DictAdminService {
     createOrganization(body: DictOrganizationUpdateBody): Promise<DictOrganization>;
 
     updateOrganization(id: number, body: DictOrganizationUpdateBody): Promise<DictOrganization>;
+
+    getUploadOfficeLocationMapPath(officeLocationId: number): any;
 }
 
 class RestDictAdminService implements DictAdminService {
@@ -191,6 +193,10 @@ class RestDictAdminService implements DictAdminService {
 
     loadOfficeLocations(): Promise<Array<DictOfficeLocation>> {
         return httpService.get("v1/admin/dict/office_locations").then(response => response.data);
+    }
+
+    getUploadOfficeLocationMapPath(officeLocationId: number): string {
+        return `${httpService.defaults.baseURL}v1/admin/dict/office_locations/${officeLocationId}/map`;
     }
 
     loadOfficeWorkplaces(): Promise<Array<DictOfficeWorkplace>> {

@@ -5,16 +5,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
 import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.DictDtoMapper;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static ru.abondin.hreasy.platform.service.admin.dict.AdminDictOfficeLocationService.OFFICE_LOCATION_MAP_RESOURCE_TYPE;
+import static ru.abondin.hreasy.platform.service.admin.dict.AdminDictOfficeLocationService.getOfficeLocationMapFileName;
 
 @RequiredArgsConstructor
 @Service
@@ -31,6 +38,8 @@ public class DictService {
     private final DictOfficeRepo officeRepo;
 
     private final DictDtoMapper mapper;
+
+    private final FileStorage fileStorage;
 
 
     public Flux<ProjectDictDto> findProjects(AuthContext auth) {
@@ -129,7 +138,18 @@ public class DictService {
 
     public Mono<String> getOfficeLocationMap(AuthContext auth, int officeLocationId) {
         log.trace("Get office location map {} by {}", officeLocationId, auth.getUsername());
-        return officeLocationRepo
-                .findNotArchived(officeLocationId).filter(l -> l.getMapSvg() != null).map(DictOfficeLocationEntry::getMapSvg);
+        if (fileStorage.fileExists(OFFICE_LOCATION_MAP_RESOURCE_TYPE, getOfficeLocationMapFileName(officeLocationId))) {
+            return fileStorage.streamFile(OFFICE_LOCATION_MAP_RESOURCE_TYPE, getOfficeLocationMapFileName(officeLocationId))
+                    .map(resource -> {
+                        try {
+                            return resource.getContentAsString(Charset.defaultCharset());
+                        } catch (IOException e) {
+                            log.error("Error reading office location map from file", e);
+                            throw new BusinessError("errors.file.read_content.error");
+                        }
+                    });
+        } else {
+            return Mono.empty();
+        }
     }
 }

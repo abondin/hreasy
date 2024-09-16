@@ -3,6 +3,8 @@ package ru.abondin.hreasy.platform.api.admin;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -10,6 +12,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.admin.dict.*;
 import ru.abondin.hreasy.platform.service.admin.dict.dto.*;
 import ru.abondin.hreasy.platform.service.dict.dto.*;
+import ru.abondin.hreasy.platform.service.dto.UploadResponse;
 
 @RestController()
 @RequestMapping("/api/v1/admin/dict")
@@ -109,7 +112,7 @@ public class AdminDictController {
 
     @Operation(summary = "Update level")
     @PutMapping("/levels/{id}")
-    
+
     public Mono<DictLevelDto> updateLevel(@PathVariable int id, @RequestBody CreateOrUpdateLevelBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> levels.update(auth, id, body));
@@ -158,6 +161,16 @@ public class AdminDictController {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.update(auth, id, body));
     }
+
+    @Operation(summary = "Upload office location SVG map")
+    @PostMapping(value = "/office_locations/{officeLocationId}/map")
+    public Mono<UploadResponse> uploadOfficeLocationMap(@PathVariable("officeLocationId") int officeLocationId,
+                                                        @RequestPart("file") Mono<FilePart> multipartFile,
+                                                        @RequestHeader(value = HttpHeaders.CONTENT_LENGTH) long contentLength) {
+        return AuthHandler.currentAuth().flatMap(auth -> multipartFile
+                .flatMap(it -> officeLocations.uploadMap(auth, officeLocationId, it, contentLength)));
+    }
+
 
     // ------------ Office Workplace CRUD
     @Operation(summary = "All office workplace")

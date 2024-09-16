@@ -8,6 +8,8 @@ export default class WorkplacesDataContainer {
     private _officeLocationMap: string | null = null;
     private _workplaces: DictOfficeWorkplace[] = [];
 
+    private _uploadSvgMapDialog=false;
+
     private _loading = false;
     private _error: string | null = null;
 
@@ -67,5 +69,17 @@ export default class WorkplacesDataContainer {
                 this._loading = false
             })
         }
+    }
+
+    openSvgMapDialog(){
+        this._uploadSvgMapDialog = true;
+    }
+
+    get uploadSvgMapDialog(){
+        return this._uploadSvgMapDialog;
+    }
+
+    getSvgMapUploadPath(){
+        return dictAdminService.getUploadOfficeLocationMapPath(this._filter.officeLocationId!);
     }
 }

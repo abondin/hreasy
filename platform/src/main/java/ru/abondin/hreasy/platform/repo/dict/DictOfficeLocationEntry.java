@@ -23,8 +23,6 @@ public class DictOfficeLocationEntry {
     @Nullable
     private String description;
 
-    private String mapSvg;
-
     @Nullable
     private Integer officeId;
 
