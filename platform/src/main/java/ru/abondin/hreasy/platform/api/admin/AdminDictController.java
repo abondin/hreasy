@@ -12,6 +12,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.admin.dict.*;
 import ru.abondin.hreasy.platform.service.admin.dict.dto.*;
 import ru.abondin.hreasy.platform.service.dict.dto.*;
+import ru.abondin.hreasy.platform.service.dto.DeleteResourceResponse;
 import ru.abondin.hreasy.platform.service.dto.UploadResponse;
 
 @RestController()
@@ -169,6 +170,12 @@ public class AdminDictController {
                                                         @RequestHeader(value = HttpHeaders.CONTENT_LENGTH) long contentLength) {
         return AuthHandler.currentAuth().flatMap(auth -> multipartFile
                 .flatMap(it -> officeLocations.uploadMap(auth, officeLocationId, it, contentLength)));
+    }
+
+    @Operation(summary = "Delete office location SVG map")
+    @DeleteMapping(value = "/office_locations/{officeLocationId}/map")
+    public Mono<DeleteResourceResponse> deleteOfficeLocationMap(@PathVariable("officeLocationId") int officeLocationId) {
+        return AuthHandler.currentAuth().flatMap(auth -> officeLocations.deleteMap(auth, officeLocationId));
     }
 
 

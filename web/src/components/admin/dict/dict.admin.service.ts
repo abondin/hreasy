@@ -144,7 +144,9 @@ export interface DictAdminService {
 
     updateOrganization(id: number, body: DictOrganizationUpdateBody): Promise<DictOrganization>;
 
-    getUploadOfficeLocationMapPath(officeLocationId: number): any;
+    getUploadOfficeLocationMapPath(officeLocationId: number): string;
+
+    deleteOfficeLocationMap(officeLocationId: number): Promise<any>;
 }
 
 class RestDictAdminService implements DictAdminService {
@@ -227,6 +229,10 @@ class RestDictAdminService implements DictAdminService {
         return httpService.put(`v1/admin/dict/office_locations/${id}`, body);
     }
 
+    deleteOfficeLocationMap(officeLocationId: number): Promise<any> {
+        return httpService.delete(`v1/admin/dict/office_locations/${officeLocationId}/map`)
+    }
+
     updateOfficeWorkplace(id: number, body: DictOfficeWorkplaceUpdateBody): Promise<number> {
         return httpService.put(`v1/admin/dict/office_workplaces/${id}`, body);
     }
@@ -238,6 +244,7 @@ class RestDictAdminService implements DictAdminService {
     updateOrganization(id: number, body: DictOrganizationUpdateBody): Promise<DictOrganization> {
         return httpService.put(`v1/admin/dict/organizations/${id}`, body);
     }
+
 }
 
 const dictAdminService: DictAdminService = new RestDictAdminService(httpService);

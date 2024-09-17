@@ -15,9 +15,8 @@ import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.admin.dict.dto.AdminDictDtoMapper;
 import ru.abondin.hreasy.platform.service.admin.dict.dto.CreateOrUpdateOfficeLocationBody;
 import ru.abondin.hreasy.platform.service.dict.dto.DictOfficeLocationDto;
+import ru.abondin.hreasy.platform.service.dto.DeleteResourceResponse;
 import ru.abondin.hreasy.platform.service.dto.UploadResponse;
-
-import java.io.File;
 
 import static ru.abondin.hreasy.platform.service.HistoryDomainService.HistoryEntityType.OFFICE_LOCATION;
 
@@ -29,7 +28,7 @@ public class AdminDictOfficeLocationService {
     public static final String OFFICE_LOCATION_MAP_RESOURCE_TYPE = "office_location_map";
 
     public static String getOfficeLocationMapFileName(int officeLocationId) {
-        return officeLocationId+".svg";
+        return officeLocationId + ".svg";
     }
 
     private final DateTimeService dateTimeService;
@@ -82,12 +81,19 @@ public class AdminDictOfficeLocationService {
         return secValidator.validateAdminOfficeLocation(auth)
                 .flatMap(v -> {
                     var filename = getOfficeLocationMapFileName(officeLocationId);
-                    if (fileStorage.fileExists(OFFICE_LOCATION_MAP_RESOURCE_TYPE, filename)){
+                    if (fileStorage.fileExists(OFFICE_LOCATION_MAP_RESOURCE_TYPE, filename)) {
                         fileStorage.toRecycleBin(OFFICE_LOCATION_MAP_RESOURCE_TYPE, filename);
                     }
                     return fileStorage.uploadFile(OFFICE_LOCATION_MAP_RESOURCE_TYPE, filename, file, contentLength)
                             .then(Mono.just(new UploadResponse()));
                 });
+    }
+
+    public Mono<DeleteResourceResponse> deleteMap(AuthContext auth, int officeLocationId) {
+        log.info("Delete map for office location {}", officeLocationId);
+        return secValidator.validateAdminOfficeLocation(auth)
+                .flatMap(v -> fileStorage.toRecycleBin(OFFICE_LOCATION_MAP_RESOURCE_TYPE, getOfficeLocationMapFileName(officeLocationId)))
+                .map(deleted -> new DeleteResourceResponse(deleted));
     }
 
 }

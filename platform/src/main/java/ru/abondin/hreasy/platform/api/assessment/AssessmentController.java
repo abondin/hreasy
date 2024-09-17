@@ -14,6 +14,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentService;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentsSummaryExportService;
 import ru.abondin.hreasy.platform.service.assessment.dto.*;
+import ru.abondin.hreasy.platform.service.dto.DeleteResourceResponse;
 import ru.abondin.hreasy.platform.service.dto.UploadResponse;
 
 import java.util.Locale;
@@ -93,9 +94,9 @@ public class AssessmentController {
 
     @Operation(summary = "Delete assessment attachment")
     @DeleteMapping(value = "/{employeeId}/{assessmentId}/attachment/{filename}")
-    public Mono<DeleteAssessmentAttachmentResponse> deleteAttachment(@PathVariable("employeeId") int employeeId,
-                                                                     @PathVariable int assessmentId,
-                                                                     @PathVariable String filename) {
+    public Mono<DeleteResourceResponse> deleteAttachment(@PathVariable("employeeId") int employeeId,
+                                                         @PathVariable int assessmentId,
+                                                         @PathVariable String filename) {
         log.debug("Delete attachment {} for assessment {}:{}. Content length={}", filename, employeeId, assessmentId);
         return AuthHandler.currentAuth().flatMap(auth -> service.deleteAttachment(auth, employeeId, assessmentId, filename));
     }
