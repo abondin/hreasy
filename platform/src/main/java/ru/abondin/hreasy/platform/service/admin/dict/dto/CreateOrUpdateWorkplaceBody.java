@@ -1,7 +1,6 @@
 package ru.abondin.hreasy.platform.service.admin.dict.dto;
 
 import lombok.Data;
-import ru.abondin.hreasy.platform.service.dto.PositionOnMap;
 
 /**
  * Office location
@@ -11,7 +10,8 @@ public class CreateOrUpdateWorkplaceBody {
     private String name;
     private Integer officeLocationId;
     private String description;
-    private PositionOnMap position;
+    private Integer mapX;
+    private Integer mapY;
     private boolean archived = false;
 
 }

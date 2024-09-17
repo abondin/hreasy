@@ -1,6 +1,6 @@
 import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
-import {PositionOnMap, SimpleDict} from "@/store/modules/dict";
+import {SimpleDict} from "@/store/modules/dict";
 
 export interface DictDepartment {
     id: number,
@@ -66,7 +66,8 @@ export interface DictOfficeWorkplace {
     description: string | undefined,
     office: SimpleDict | undefined,
     officeLocation: SimpleDict | undefined,
-    mapPosition: PositionOnMap | undefined,
+    mapX: number | undefined,
+    mapY: number | undefined,
     archived: boolean
 }
 
@@ -96,7 +97,8 @@ export interface DictOfficeWorkplaceUpdateBody {
     name: string,
     description: string | undefined,
     officeLocationId: number | undefined,
-    mapPosition: PositionOnMap | undefined,
+    mapX: number | undefined,
+    mapY: number | undefined,
     archived: boolean
 }
 

@@ -1,5 +1,8 @@
 import {WorkplacesFilterContainer} from "@/components/admin/dict/office/workplace/WorkplacesFilterComponent.vue";
-import dictAdminService, {DictOfficeWorkplace} from "@/components/admin/dict/dict.admin.service";
+import dictAdminService, {
+    DictOfficeWorkplace,
+    DictOfficeWorkplaceUpdateBody
+} from "@/components/admin/dict/dict.admin.service";
 import dictService from "@/store/modules/dict.service";
 import {errorUtils} from "@/components/errors";
 import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
@@ -12,6 +15,8 @@ export interface WorkplacesOnMapContainer {
 
 export interface SingleWorkplaceDataContainer {
     get selectedWorkplace(): DictOfficeWorkplace | null;
+
+    submitSelectedWorkplaceOnBackend(): Promise<any>;
 }
 
 
@@ -40,6 +45,30 @@ export default class WorkplacesDataContainer implements WorkplacesOnMapContainer
         } else {
             return Promise.resolve();
         }
+    }
+
+    public submitSelectedWorkplaceOnBackend(): Promise<any> {
+        this._loading = true;
+        this._error = null;
+        if (!this.selectedWorkplace) {
+            this._loading = false;
+            return Promise.resolve();
+        }
+        const body = {
+            name: this.selectedWorkplace.name,
+            description: this.selectedWorkplace.description,
+            officeLocationId: this.filter.officeLocationId,
+            mapPosition: this.selectedWorkplace.mapPosition,
+            archived: this.selectedWorkplace.archived
+        } as DictOfficeWorkplaceUpdateBody;
+        const promise = this.selectedWorkplace.id ?
+            dictAdminService.updateOfficeWorkplace(this.selectedWorkplace.id, body) :
+            dictAdminService.createOfficeWorkplace(body);
+        return promise
+            .then()
+            .catch(e => {
+                this._error = errorUtils.shortMessage(e);
+            }).finally(() => this._loading = false);
     }
 
     get error() {

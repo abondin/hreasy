@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="data.loading">
+  <v-card :loading="data.loading" height="684px">
     <v-card-title>
       {{ $t('Рабочие места') }}
     </v-card-title>
@@ -8,8 +8,9 @@
         <v-list-item-group :multiple="false" v-model="data.selectedWorkplace">
           <v-list-item selectable v-for="(w, i) in data.workplaces" v-bind:key="w.id"
                        :value="data.workplaces[i]">
-            <v-list-item-icon v-if="w.id" draggable @dragstart="startDrag($event, w)">
-              🪑
+            <v-list-item-icon draggable @dragstart="startDrag($event, w)">
+              <v-icon v-if="w.id">🪑</v-icon>
+              <v-icon v-else>🪑</v-icon>
             </v-list-item-icon>
             <v-list-item-title>{{ w.id ? w.name : $t('Новое место') }}</v-list-item-title>
             <v-list-item-subtitle>{{ w.description }}</v-list-item-subtitle>

@@ -36,17 +36,18 @@ public class AdminDictOfficeWorkplaceService {
 
     @Transactional
     public Mono<Integer> create(AuthContext auth, CreateOrUpdateWorkplaceBody body) {
+        log.info("Create office workplace. Employee = {}. RequestBody = {}", auth.getUsername(), body);
         return doUpdate(auth, null, body);
     }
 
     @Transactional
     public Mono<Integer> update(AuthContext auth, int id, CreateOrUpdateWorkplaceBody body) {
+        log.info("Update office workplace. Employee = {}. Id={}. RequestBody = {}", auth.getUsername(), id, body);
         return doUpdate(auth, id, body);
     }
 
 
     private Mono<Integer> doUpdate(AuthContext auth, Integer id, CreateOrUpdateWorkplaceBody body) {
-        log.info("Update office workplace. Employee = {}. Id={}. RequestBody = {}", auth.getUsername(), id, body);
         var now = dateTimeService.now();
         var entryToUpdate = mapper.toEntry(body);
         if (id != null) {
@@ -56,7 +57,7 @@ public class AdminDictOfficeWorkplaceService {
             entryToUpdate.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
         }
         return secValidator.validateAdminOfficeLocation(auth)
-                .flatMap((v) -> repo
+                .flatMap(v -> repo
                         .save(entryToUpdate)
                 )
                 .flatMap(entry ->
