@@ -16,8 +16,7 @@
       </v-tooltip>
     </v-card-title>
     <v-card-text class="d-flex align-center justify-center">
-      <div v-if="data.officeLocationMap" v-html="data.officeLocationMap" ref="officeLocationMap"
-           :style="`width: ${defaultMapSizes.width}; height: ${defaultMapSizes.height}`"></div>
+      <workplaces-on-map :data="data" v-if="data.officeLocationMap"></workplaces-on-map>
       <div v-else>
         <v-alert type="info">{{ $t('Для назначения мест необходимо загрузить карту кабинета в формате SVG') }}</v-alert>
         <v-chip outlined link class="ml-5" @click="data.openSvgMapDialog()">
@@ -54,13 +53,13 @@ import WorkplacesDataContainer from "@/components/admin/dict/office/workplace/wo
 import MyFileUploader, {UploadCompleteEvent} from "@/components/shared/MyFileUploader.vue";
 import logger from "@/logger";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
+import WorkplacesOnMap from "@/components/admin/dict/office/workplace/WorkplacesOnMap.vue";
 
 
 @Component({
-  components: {InDialogForm, MyFileUploader}
+  components: {WorkplacesOnMap, InDialogForm, MyFileUploader}
 })
-export default class WorkspacesOnMap extends Vue {
-  private defaultMapSizes = {width: "800px", height: "600px"};
+export default class OfficeLocationMapComponent extends Vue {
   @Prop({required: true})
   private data!: WorkplacesDataContainer;
 

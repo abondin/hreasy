@@ -67,7 +67,7 @@ public class AdminDictOfficeLocationService {
         entryToUpdate.setUpdatedAt(now);
         entryToUpdate.setUpdatedBy(auth.getEmployeeInfo().getEmployeeId());
         return secValidator.validateAdminOfficeLocation(auth)
-                .flatMap((v) -> repo
+                .flatMap(v -> repo
                         .save(entryToUpdate)
                 )
                 .flatMap(entry ->
@@ -93,7 +93,7 @@ public class AdminDictOfficeLocationService {
         log.info("Delete map for office location {}", officeLocationId);
         return secValidator.validateAdminOfficeLocation(auth)
                 .flatMap(v -> fileStorage.toRecycleBin(OFFICE_LOCATION_MAP_RESOURCE_TYPE, getOfficeLocationMapFileName(officeLocationId)))
-                .map(deleted -> new DeleteResourceResponse(deleted));
+                .map(DeleteResourceResponse::new);
     }
 
 }

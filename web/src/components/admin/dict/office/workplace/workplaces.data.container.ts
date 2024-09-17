@@ -4,15 +4,28 @@ import dictService from "@/store/modules/dict.service";
 import {errorUtils} from "@/components/errors";
 import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
 
-export default class WorkplacesDataContainer {
+export interface WorkplacesOnMapContainer {
+    get officeLocationMap(): string | null;
+
+    get workplaces(): DictOfficeWorkplace[];
+}
+
+export interface SingleWorkplaceDataContainer {
+    get selectedWorkplace(): DictOfficeWorkplace | null;
+}
+
+
+export default class WorkplacesDataContainer implements WorkplacesOnMapContainer, SingleWorkplaceDataContainer {
     private readonly _filter: WorkplacesFilterContainer;
     private _officeLocationMap: string | null = null;
     private _workplaces: DictOfficeWorkplace[] = [];
+    private _selectedWorkplace: DictOfficeWorkplace | null = null;
 
     private _uploadSvgMapDialog = false;
 
     private _loading = false;
     private _error: string | null = null;
+
 
     private readonly _deleteMapAction: InDialogActionDataContainer<number, void>;
 
@@ -42,16 +55,33 @@ export default class WorkplacesDataContainer {
     }
 
     get workplaces() {
-        return this.filter.officeLocationId ? this._workplaces.filter(w => w.officeLocation?.id == this.filter.officeLocationId) : [];
+        let ws = this.filter.officeLocationId ? this._workplaces.filter(w => w.officeLocation?.id == this.filter.officeLocationId) : [];
+        if (ws.filter(w => !w.id).length == 0) {
+            ws = [...ws];
+            ws.unshift({
+                name: "",
+                archived: false
+            } as DictOfficeWorkplace);
+        }
+        return ws;
     }
 
     get officeLocationMap() {
         return this._officeLocationMap;
     }
 
-    get deleteMapAction(){
+    get deleteMapAction() {
         return this._deleteMapAction;
     }
+
+    get selectedWorkplace(): DictOfficeWorkplace | null {
+        return this._selectedWorkplace;
+    }
+
+    set selectedWorkplace(workplace: DictOfficeWorkplace | null) {
+        this._selectedWorkplace = workplace;
+    }
+
 
     reloadData() {
         this.loadWorkplaces().then(() => this.loadOfficeLocationMap());

@@ -33,14 +33,7 @@
       </v-col>
       <!-- Workplace attributes -->
       <v-col cols="auto">
-        <v-card :loading="data.loading">
-          <v-card-title></v-card-title>
-          <v-card-text>
-            <v-form>
-              <v-text-field label="Название"></v-text-field>
-            </v-form>
-          </v-card-text>
-        </v-card>
+        <workplace-attributes-card :data="data"></workplace-attributes-card>
       </v-col>
     </v-row>
     <v-row v-else justify="center">
@@ -60,11 +53,14 @@ import WorkplacesFilterComponent from "@/components/admin/dict/office/workplace/
 import {Watch} from "vue-property-decorator";
 import WorkplacesDataContainer from "@/components/admin/dict/office/workplace/workplaces.data.container";
 import WorkplacesList from "@/components/admin/dict/office/workplace/WorkplacesList.vue";
-import WorkspacesOnMap from "@/components/admin/dict/office/workplace/WorkspacesOnMap.vue";
+import OfficeLocationMapComponent from "@/components/admin/dict/office/workplace/OfficeLocationMapComponent.vue";
+import WorkplaceAttributesCard from "@/components/admin/dict/office/workplace/WorkplaceAttributesCard.vue";
 
 const namespace_dict = 'dict';
 @Component({
-  components: {WorkspacesOnMap, WorkplacesList, WorkplacesFilterComponent}
+  components: {
+    WorkplaceAttributesCard,
+    WorkspacesOnMap: OfficeLocationMapComponent, WorkplacesList, WorkplacesFilterComponent}
 })
 export default class DictAdminOfficeWorkplaces extends Vue {
 
