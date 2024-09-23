@@ -29,11 +29,7 @@
       </v-col>
       <!-- Interactive Map -->
       <v-col>
-        <workspaces-on-map :data="data"></workspaces-on-map>
-      </v-col>
-      <!-- Workplace attributes -->
-      <v-col cols="auto">
-        <workplace-attributes-card :data="data"></workplace-attributes-card>
+        <office-location-map-component :data="data"></office-location-map-component>
       </v-col>
     </v-row>
     <v-row v-else justify="center">
@@ -41,6 +37,15 @@
         <v-alert type="info">{{ $t('Для начала работы необходимо выбрать кабинет') }}</v-alert>
       </v-col>
     </v-row>
+
+    <in-dialog-form size="lg" form-ref="createOrUpdateMapForm" :data="data.createOrUpdateWorkplaceAction"
+                    :title="data.createOrUpdateWorkplaceAction.isNew() ? $t('Добавить рабочее место') : $t('Обновить рабочее место')"
+                    v-on:submit="data.reloadData()">
+      <template v-slot:fields>
+        <workplace-attributes-form-data :form-data="data.createOrUpdateWorkplaceAction.formData"/>
+      </template>
+    </in-dialog-form>
+
   </v-container>
 </template>
 
@@ -54,13 +59,20 @@ import {Watch} from "vue-property-decorator";
 import WorkplacesDataContainer from "@/components/admin/dict/office/workplace/workplaces.data.container";
 import WorkplacesList from "@/components/admin/dict/office/workplace/WorkplacesList.vue";
 import OfficeLocationMapComponent from "@/components/admin/dict/office/workplace/OfficeLocationMapComponent.vue";
-import WorkplaceAttributesCard from "@/components/admin/dict/office/workplace/WorkplaceAttributesCard.vue";
+import WorkplaceAttributesFormData from "@/components/admin/dict/office/workplace/WorkplaceAttributesFormData.vue";
+import WorkplacesOnMap from "@/components/admin/dict/office/workplace/WorkplacesOnMap.vue";
+import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 
 const namespace_dict = 'dict';
 @Component({
   components: {
-    WorkplaceAttributesCard,
-    WorkspacesOnMap: OfficeLocationMapComponent, WorkplacesList, WorkplacesFilterComponent}
+    InDialogForm,
+    WorkplaceAttributesFormData,
+    OfficeLocationMapComponent,
+    WorkplacesOnMap,
+    WorkplaceAttributesCard: WorkplaceAttributesFormData,
+    WorkspacesOnMap: OfficeLocationMapComponent, WorkplacesList, WorkplacesFilterComponent
+  }
 })
 export default class DictAdminOfficeWorkplaces extends Vue {
 

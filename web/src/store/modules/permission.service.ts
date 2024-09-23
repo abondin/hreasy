@@ -503,7 +503,6 @@ class VuexPermissionService implements PermissionService {
 
     private permissionCheckWithAccessToBa(permission: Permissions, ba: number): boolean {
         const securityInfo: SecurityInfo = store.getters['auth/securityInfo'];
-        logger.error(`simplePermissionCheckOrCurrentEmployee ${securityInfo.accessibleBas}`);
         return securityInfo && securityInfo.authorities &&
             securityInfo.authorities.indexOf(permission) >= 0
             && securityInfo.accessibleBas?.indexOf(ba) >= 0;

@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 public class CreateOrUpdateWorkplaceBody {
     private String name;
-    private Integer officeLocationId;
     private String description;
     private Integer mapX;
     private Integer mapY;

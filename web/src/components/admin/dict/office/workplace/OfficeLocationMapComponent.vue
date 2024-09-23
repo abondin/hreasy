@@ -41,7 +41,6 @@
         </v-card-text>
       </template>
     </in-dialog-form>
-
   </v-card>
 </template>
 

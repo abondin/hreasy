@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.dict.DictOfficeWorkplaceEntry;
 import ru.abondin.hreasy.platform.repo.dict.DictOfficeWorkplaceRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
@@ -35,27 +37,24 @@ public class AdminDictOfficeWorkplaceService {
     }
 
     @Transactional
-    public Mono<Integer> create(AuthContext auth, CreateOrUpdateWorkplaceBody body) {
-        log.info("Create office workplace. Employee = {}. RequestBody = {}", auth.getUsername(), body);
-        return doUpdate(auth, null, body);
+    public Mono<Integer> create(AuthContext auth, int officeLocationId, CreateOrUpdateWorkplaceBody body) {
+        log.info("Create workplace in office location {} by {}", officeLocationId, auth.getUsername());
+        return doUpdate(auth, mapper.toNewWorkplaceEntry(officeLocationId, body,
+                auth.getEmployeeInfo().getEmployeeId(), dateTimeService.now()));
     }
 
     @Transactional
-    public Mono<Integer> update(AuthContext auth, int id, CreateOrUpdateWorkplaceBody body) {
-        log.info("Update office workplace. Employee = {}. Id={}. RequestBody = {}", auth.getUsername(), id, body);
-        return doUpdate(auth, id, body);
+    public Mono<Integer> update(AuthContext auth, int officeLocationId, int workplaceId, CreateOrUpdateWorkplaceBody body) {
+        log.info("Update office workplace. Employee = {}. Id={}:{}. RequestBody = {}", auth.getUsername(), officeLocationId, workplaceId, body);
+        return repo.findByOfficeLocationAndId(officeLocationId, workplaceId).switchIfEmpty(
+                BusinessErrorFactory.entityNotFound("Workplace", workplaceId)
+        ).flatMap(entry -> doUpdate(auth, mapper.applyWorkplaceBody(entry, body)));
+
     }
 
 
-    private Mono<Integer> doUpdate(AuthContext auth, Integer id, CreateOrUpdateWorkplaceBody body) {
+    private Mono<Integer> doUpdate(AuthContext auth, DictOfficeWorkplaceEntry entryToUpdate) {
         var now = dateTimeService.now();
-        var entryToUpdate = mapper.toEntry(body);
-        if (id != null) {
-            entryToUpdate.setId(id);
-        } else {
-            entryToUpdate.setCreatedAt(now);
-            entryToUpdate.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-        }
         return secValidator.validateAdminOfficeLocation(auth)
                 .flatMap(v -> repo
                         .save(entryToUpdate)

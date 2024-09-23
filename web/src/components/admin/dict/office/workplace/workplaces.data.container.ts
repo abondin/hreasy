@@ -1,22 +1,22 @@
 import {WorkplacesFilterContainer} from "@/components/admin/dict/office/workplace/WorkplacesFilterComponent.vue";
-import dictAdminService, {
-    DictOfficeWorkplace,
-    DictOfficeWorkplaceUpdateBody
-} from "@/components/admin/dict/dict.admin.service";
+import dictAdminService, {DictOfficeWorkplace} from "@/components/admin/dict/dict.admin.service";
 import dictService from "@/store/modules/dict.service";
 import {errorUtils} from "@/components/errors";
 import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
+import WorkplaceCreateOrUpdateAction from "@/components/admin/dict/office/workplace/workplace.create-update.actions";
 
 export interface WorkplacesOnMapContainer {
     get officeLocationMap(): string | null;
 
     get workplaces(): DictOfficeWorkplace[];
+
+    get selectedWorkplace(): DictOfficeWorkplace | null;
+
+    set selectedWorkplace(workplace: DictOfficeWorkplace | null);
 }
 
 export interface SingleWorkplaceDataContainer {
     get selectedWorkplace(): DictOfficeWorkplace | null;
-
-    submitSelectedWorkplaceOnBackend(): Promise<any>;
 }
 
 
@@ -33,42 +33,18 @@ export default class WorkplacesDataContainer implements WorkplacesOnMapContainer
 
 
     private readonly _deleteMapAction: InDialogActionDataContainer<number, void>;
+    private readonly _createOrUpdateWorkplaceAction: WorkplaceCreateOrUpdateAction;
 
     constructor() {
         this._filter = new WorkplacesFilterContainer();
-        this._deleteMapAction = new InDialogActionDataContainer(this.submitDeleteMap);
-    }
-
-    private submitDeleteMap(officeLocationId: number | null): Promise<any> {
-        if (officeLocationId) {
-            return dictAdminService.deleteOfficeLocationMap(officeLocationId);
-        } else {
-            return Promise.resolve();
-        }
-    }
-
-    public submitSelectedWorkplaceOnBackend(): Promise<any> {
-        this._loading = true;
-        this._error = null;
-        if (!this.selectedWorkplace) {
-            this._loading = false;
-            return Promise.resolve();
-        }
-        const body = {
-            name: this.selectedWorkplace.name,
-            description: this.selectedWorkplace.description,
-            officeLocationId: this.filter.officeLocationId,
-            mapPosition: this.selectedWorkplace.mapPosition,
-            archived: this.selectedWorkplace.archived
-        } as DictOfficeWorkplaceUpdateBody;
-        const promise = this.selectedWorkplace.id ?
-            dictAdminService.updateOfficeWorkplace(this.selectedWorkplace.id, body) :
-            dictAdminService.createOfficeWorkplace(body);
-        return promise
-            .then()
-            .catch(e => {
-                this._error = errorUtils.shortMessage(e);
-            }).finally(() => this._loading = false);
+        this._deleteMapAction = new InDialogActionDataContainer((officeLocationId: number | null) => {
+            if (officeLocationId) {
+                return dictAdminService.deleteOfficeLocationMap(officeLocationId);
+            } else {
+                return Promise.resolve();
+            }
+        });
+        this._createOrUpdateWorkplaceAction = new WorkplaceCreateOrUpdateAction();
     }
 
     get error() {
@@ -84,19 +60,15 @@ export default class WorkplacesDataContainer implements WorkplacesOnMapContainer
     }
 
     get workplaces() {
-        let ws = this.filter.officeLocationId ? this._workplaces.filter(w => w.officeLocation?.id == this.filter.officeLocationId) : [];
-        if (ws.filter(w => !w.id).length == 0) {
-            ws = [...ws];
-            ws.unshift({
-                name: "",
-                archived: false
-            } as DictOfficeWorkplace);
-        }
-        return ws;
+        return this.filter.officeLocationId ? this._workplaces.filter(w => w.officeLocation?.id == this.filter.officeLocationId && !w.archived) : [];
     }
 
     get officeLocationMap() {
         return this._officeLocationMap;
+    }
+
+    get createOrUpdateWorkplaceAction() {
+        return this._createOrUpdateWorkplaceAction;
     }
 
     get deleteMapAction() {

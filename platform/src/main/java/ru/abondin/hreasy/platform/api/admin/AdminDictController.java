@@ -181,23 +181,23 @@ public class AdminDictController {
 
     // ------------ Office Workplace CRUD
     @Operation(summary = "All office workplace")
-    @GetMapping("/office_workplaces")
+    @GetMapping("/office_locations/workplaces")
     public Flux<DictOfficeWorkplaceDto> officeWorkplaces() {
         return AuthHandler.currentAuth().flatMapMany(
                 workplaces::findAll);
     }
 
     @Operation(summary = "Create office location")
-    @PostMapping("/office_workplaces")
-    public Mono<Integer> createOfficeWorkplace(@RequestBody CreateOrUpdateWorkplaceBody body) {
+    @PostMapping("/office_locations/{officeLocationId}/workplaces")
+    public Mono<Integer> createOfficeWorkplace(@PathVariable int officeLocationId, @RequestBody CreateOrUpdateWorkplaceBody body) {
         return AuthHandler.currentAuth().flatMap(
-                auth -> workplaces.create(auth, body));
+                auth -> workplaces.create(auth, officeLocationId, body));
     }
 
     @Operation(summary = "Update office workplace")
-    @PutMapping("/office_workplaces/{id}")
-    public Mono<Integer> updateOfficeWorkplace(@PathVariable int id, @RequestBody CreateOrUpdateWorkplaceBody body) {
+    @PutMapping("/office_locations/{officeLocationId}/workplaces/{workplaceId}")
+    public Mono<Integer> updateOfficeWorkplace(@PathVariable int officeLocationId, @PathVariable int workplaceId, @RequestBody CreateOrUpdateWorkplaceBody body) {
         return AuthHandler.currentAuth().flatMap(
-                auth -> workplaces.update(auth, id, body));
+                auth -> workplaces.update(auth, officeLocationId, workplaceId, body));
     }
 }
