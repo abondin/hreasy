@@ -1,9 +1,9 @@
-import {WorkplacesFilterContainer} from "@/components/admin/dict/office/workplace/WorkplacesFilterComponent.vue";
 import dictAdminService, {DictOfficeWorkplace} from "@/components/admin/dict/dict.admin.service";
 import dictService from "@/store/modules/dict.service";
 import {errorUtils} from "@/components/errors";
 import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
 import WorkplaceCreateOrUpdateAction from "@/components/admin/dict/office/workplace/workplace.create-update.actions";
+import {WorkplacesFilterContainer} from "@/components/admin/dict/office/workplace/WorkplacesFilterComponent.vue";
 
 export interface WorkplacesOnMapContainer {
     get officeLocationMap(): string | null;
@@ -17,6 +17,10 @@ export interface WorkplacesOnMapContainer {
 
 export interface SingleWorkplaceDataContainer {
     get selectedWorkplace(): DictOfficeWorkplace | null;
+
+    get selectOnMapModeEnabled(): boolean;
+
+    set selectOnMapModeEnabled(value: boolean);
 }
 
 
@@ -25,6 +29,7 @@ export default class WorkplacesDataContainer implements WorkplacesOnMapContainer
     private _officeLocationMap: string | null = null;
     private _workplaces: DictOfficeWorkplace[] = [];
     private _selectedWorkplace: DictOfficeWorkplace | null = null;
+    private _selectOnMapModeEnabled=false;
 
     private _uploadSvgMapDialog = false;
 
@@ -80,9 +85,17 @@ export default class WorkplacesDataContainer implements WorkplacesOnMapContainer
     }
 
     set selectedWorkplace(workplace: DictOfficeWorkplace | null) {
+        this._selectOnMapModeEnabled = false;
         this._selectedWorkplace = workplace;
     }
 
+    get selectOnMapModeEnabled(): boolean {
+        return this._selectOnMapModeEnabled;
+    }
+
+    set selectOnMapModeEnabled(value){
+        this._selectOnMapModeEnabled = value;
+    }
 
     reloadData() {
         this.loadWorkplaces().then(() => this.loadOfficeLocationMap());

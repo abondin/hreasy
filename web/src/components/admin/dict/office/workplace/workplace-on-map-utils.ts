@@ -24,7 +24,7 @@ export default class WorkplaceOnMapUtils {
         newGroup.setAttribute('data-id', workplace.id.toString());
         newGroup.setAttribute('class', 'workplace-icon');
         newGroup.style.cursor = 'pointer';
-        
+
         if (clickListener) {
             newGroup.addEventListener('click', () => {
                 clickListener(workplace);
@@ -57,6 +57,8 @@ export default class WorkplaceOnMapUtils {
         newText.setAttribute('font-size', '18');
         newText.setAttribute('fill', 'white');
         newText.textContent = '🪑';
+
+        newText.style.userSelect = 'none';
 
         return newText;
     }

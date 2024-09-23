@@ -13,7 +13,6 @@ import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop, Watch} from "vue-property-decorator";
 import {WorkplacesOnMapContainer} from "@/components/admin/dict/office/workplace/workplaces.data.container";
-import {DictOfficeWorkplace} from "@/components/admin/dict/dict.admin.service";
 import WorkplaceOnMapUtils from "@/components/admin/dict/office/workplace/workplace-on-map-utils";
 
 
@@ -31,7 +30,7 @@ export default class WorkplacesOnMap extends Vue {
   }
 
   @Watch("data.selectedWorkplace")
-  public selectionChanged(){
+  public selectionChanged() {
     const svg = this.$refs.officeLocationMap as SVGElement | null;
     if (svg) {
       WorkplaceOnMapUtils.highlightWorkplace(svg, this.data.selectedWorkplace);
@@ -47,6 +46,7 @@ export default class WorkplacesOnMap extends Vue {
     if (svg) {
       WorkplaceOnMapUtils.removeAllWorkplaces(svg);
       this.data.workplaces.forEach(w => WorkplaceOnMapUtils.getOrCreateWorkplaceIcon(svg, w, (w) => this.data.selectedWorkplace = w));
+      WorkplaceOnMapUtils.highlightWorkplace(svg, this.data.selectedWorkplace);
     }
   }
 

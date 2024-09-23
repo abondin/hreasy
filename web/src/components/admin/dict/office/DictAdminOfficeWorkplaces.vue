@@ -26,6 +26,7 @@
       <!-- Workplaces to select -->
       <v-col cols="auto">
         <workplaces-list :data="data"></workplaces-list>
+        <workplaces-details-card :data="data"></workplaces-details-card>
       </v-col>
       <!-- Interactive Map -->
       <v-col>
@@ -62,10 +63,12 @@ import OfficeLocationMapComponent from "@/components/admin/dict/office/workplace
 import WorkplaceAttributesFormData from "@/components/admin/dict/office/workplace/WorkplaceAttributesFormData.vue";
 import WorkplacesOnMap from "@/components/admin/dict/office/workplace/WorkplacesOnMap.vue";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
+import WorkplacesDetailsCard from "@/components/admin/dict/office/workplace/WorkplacesDetailsCard.vue";
 
 const namespace_dict = 'dict';
 @Component({
   components: {
+    WorkplacesDetailsCard,
     InDialogForm,
     WorkplaceAttributesFormData,
     OfficeLocationMapComponent,
