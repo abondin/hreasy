@@ -13,6 +13,8 @@ export interface WorkplacesOnMapContainer {
     get selectedWorkplace(): DictOfficeWorkplace | null;
 
     set selectedWorkplace(workplace: DictOfficeWorkplace | null);
+
+    get selectOnMapModeEnabled(): boolean;
 }
 
 export interface SingleWorkplaceDataContainer {

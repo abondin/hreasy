@@ -4,6 +4,7 @@
 <template>
   <svg
       v-html="data.officeLocationMap" ref="officeLocationMap"
+      :class="{'selectOnMapModeEnabled': data.selectOnMapModeEnabled}"
       :style="`width: ${defaultMapSizes.width}; height: ${defaultMapSizes.height}`">
   </svg>
 </template>
@@ -53,4 +54,10 @@ export default class WorkplacesOnMap extends Vue {
 
 }
 </script>
+
+<style lang="css">
+.selectOnMapModeEnabled {
+  cursor: crosshair;
+}
+</style>
 
