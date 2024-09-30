@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="data.loading" :class="{'selectOnMapModeEnabled': data.selectOnMapModeEnabled}">
+  <v-card :loading="data.loading">
     <v-card-title>
       {{ $t('Рабочие места') }}
       <v-spacer></v-spacer>
@@ -16,7 +16,7 @@
       </v-tooltip>
     </v-card-title>
     <v-card-text>
-      <v-list min-width="400px" dense class="overflow-y-auto" style="max-height: 536px" :disabled="data.selectOnMapModeEnabled">
+      <v-list min-width="400px" dense class="overflow-y-auto" style="max-height: 536px">
         <v-list-item-group :multiple="false" v-model="data.selectedWorkplace">
           <v-list-item two-line selectable v-for="(w, i) in data.workplaces" v-bind:key="w.id"
                        :value="data.workplaces[i]">
@@ -32,8 +32,6 @@
       </v-list>
     </v-card-text>
     <v-card-actions>
-      <v-switch :disabled="!data.selectedWorkplace" color="primary" v-model="data.selectOnMapModeEnabled"
-                :label="$t('Выбрать координаты на карте')"> </v-switch>
       <v-btn color="primary"
              :disabled="!data.selectedWorkplace"
              text
@@ -61,10 +59,4 @@ export default class WorkplacesFilterComponent extends Vue {
 
 }
 </script>
-
-<style lang="css">
-.selectOnMapModeEnabled {
-  cursor: crosshair;
-}
-</style>
 

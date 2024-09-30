@@ -4,7 +4,7 @@
 <template>
   <svg
       v-html="data.officeLocationMap" ref="officeLocationMap"
-      :class="{'selectOnMapModeEnabled': data.selectOnMapModeEnabled}"
+      :class="{'selectOnMapModeEnabled': data.selectedWorkplace}"
       :style="`width: ${defaultMapSizes.width}; height: ${defaultMapSizes.height}`"
       @click.stop="clickOnMap"
   >
@@ -54,7 +54,7 @@ export default class WorkplacesOnMap extends Vue {
   }
 
   private clickOnMap(e: MouseEvent) {
-    if (this.data?.selectOnMapModeEnabled && this.data?.selectedWorkplace) {
+    if (this.data?.selectedWorkplace) {
       this.data.createOrUpdateWorkplaceAction.openDialogForWorkplace(this.data.selectedWorkplace.officeLocation.id
           , this.data.selectedWorkplace
           , {x: e.offsetX, y: e.offsetY});

@@ -26,8 +26,9 @@ export default class WorkplaceOnMapUtils {
         newGroup.style.cursor = 'pointer';
 
         if (clickListener) {
-            newGroup.addEventListener('click', () => {
+            newGroup.addEventListener('click', (e) => {
                 clickListener(workplace);
+                e.stopPropagation();
             });
         }
 

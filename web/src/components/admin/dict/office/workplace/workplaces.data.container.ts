@@ -14,17 +14,11 @@ export interface WorkplacesOnMapContainer {
 
     set selectedWorkplace(workplace: DictOfficeWorkplace | null);
 
-    get selectOnMapModeEnabled(): boolean;
-
     get createOrUpdateWorkplaceAction(): WorkplaceCreateOrUpdateAction;
 }
 
 export interface SingleWorkplaceDataContainer {
     get selectedWorkplace(): DictOfficeWorkplace | null;
-
-    get selectOnMapModeEnabled(): boolean;
-
-    set selectOnMapModeEnabled(value: boolean);
 }
 
 
@@ -33,7 +27,6 @@ export default class WorkplacesDataContainer implements WorkplacesOnMapContainer
     private _officeLocationMap: string | null = null;
     private _workplaces: DictOfficeWorkplace[] = [];
     private _selectedWorkplace: DictOfficeWorkplace | null = null;
-    private _selectOnMapModeEnabled=false;
 
     private _uploadSvgMapDialog = false;
 
@@ -89,17 +82,9 @@ export default class WorkplacesDataContainer implements WorkplacesOnMapContainer
     }
 
     set selectedWorkplace(workplace: DictOfficeWorkplace | null) {
-        this._selectOnMapModeEnabled = false;
         this._selectedWorkplace = workplace;
     }
 
-    get selectOnMapModeEnabled(): boolean {
-        return this._selectOnMapModeEnabled;
-    }
-
-    set selectOnMapModeEnabled(value){
-        this._selectOnMapModeEnabled = value;
-    }
 
     reloadData() {
         this.loadWorkplaces().then(() => this.loadOfficeLocationMap());
@@ -108,8 +93,6 @@ export default class WorkplacesDataContainer implements WorkplacesOnMapContainer
     loadWorkplaces() {
         this._error = null;
         this._loading = true;
-        this._selectedWorkplace = null;
-        this._selectOnMapModeEnabled = false;
         return dictAdminService.loadOfficeWorkplaces().then(data => {
             this._workplaces = data;
         }).catch(e => {
@@ -121,6 +104,7 @@ export default class WorkplacesDataContainer implements WorkplacesOnMapContainer
 
     loadOfficeLocationMap() {
         this._error = null;
+        this._selectedWorkplace = null;
         if (this._filter.officeLocationId == null) {
             this._officeLocationMap = null;
             return Promise.resolve();
