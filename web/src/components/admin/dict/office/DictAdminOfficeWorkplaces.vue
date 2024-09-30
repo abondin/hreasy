@@ -55,7 +55,7 @@ import Vue from "vue";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import WorkplacesFilterComponent from "@/components/admin/dict/office/workplace/WorkplacesFilterComponent.vue";
-import {Watch} from "vue-property-decorator";
+import {Prop, Watch} from "vue-property-decorator";
 import WorkplacesDataContainer from "@/components/admin/dict/office/workplace/workplaces.data.container";
 import WorkplacesList from "@/components/admin/dict/office/workplace/WorkplacesList.vue";
 import OfficeLocationMapComponent from "@/components/admin/dict/office/workplace/OfficeLocationMapComponent.vue";
@@ -79,13 +79,19 @@ export default class DictAdminOfficeWorkplaces extends Vue {
   @Getter("officeLocations", {namespace: namespace_dict})
   private allOfficeLocations!: Array<SimpleDict>;
 
+  @Prop({required: false})
+  private queryParamOfficeId?: number;
+  @Prop({required: false})
+  private queryParamOfficeLocationId?: number;
+
   private data = new WorkplacesDataContainer();
 
 
   created() {
     this.$store.dispatch('dict/reloadOfficeLocations')
-    this.data.loadWorkplaces();
+        .then(() => this.data.loadWorkplaces());
   }
+
 
   @Watch("data.filter.officeLocationId")
   officeLocationChanged() {

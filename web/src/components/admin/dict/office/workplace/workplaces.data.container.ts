@@ -15,6 +15,8 @@ export interface WorkplacesOnMapContainer {
     set selectedWorkplace(workplace: DictOfficeWorkplace | null);
 
     get selectOnMapModeEnabled(): boolean;
+
+    get createOrUpdateWorkplaceAction(): WorkplaceCreateOrUpdateAction;
 }
 
 export interface SingleWorkplaceDataContainer {
@@ -106,6 +108,8 @@ export default class WorkplacesDataContainer implements WorkplacesOnMapContainer
     loadWorkplaces() {
         this._error = null;
         this._loading = true;
+        this._selectedWorkplace = null;
+        this._selectOnMapModeEnabled = false;
         return dictAdminService.loadOfficeWorkplaces().then(data => {
             this._workplaces = data;
         }).catch(e => {

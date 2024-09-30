@@ -3,10 +3,12 @@ import dictAdminService, {
     DictOfficeWorkplace,
     DictOfficeWorkplaceUpdateBody
 } from "@/components/admin/dict/dict.admin.service";
-import logger from "@/logger";
 
 export default class WorkplaceCreateOrUpdateAction
-    extends InDialogActionDataContainer<{ officeLocationId: number, workplaceId: number|null }, DictOfficeWorkplaceUpdateBody> {
+    extends InDialogActionDataContainer<{
+        officeLocationId: number,
+        workplaceId: number | null
+    }, DictOfficeWorkplaceUpdateBody> {
 
 
     constructor() {
@@ -19,18 +21,18 @@ export default class WorkplaceCreateOrUpdateAction
         });
     }
 
-    public isNew(): boolean{
+    public isNew(): boolean {
         return Boolean(!this._itemId?.workplaceId);
     }
 
-    public openDialogForWorkplace(officeLocationId: number, workplace: DictOfficeWorkplace | null) {
+    public openDialogForWorkplace(officeLocationId: number, workplace: DictOfficeWorkplace | null, mapCoordinates?:{x:number,y:number}) {
         const formData = {archived: false} as DictOfficeWorkplaceUpdateBody;
         if (workplace) {
             formData.name = workplace.name;
             formData.description = workplace.description;
             formData.archived = workplace.archived;
-            formData.mapX = workplace.mapX;
-            formData.mapY = workplace.mapY;
+            formData.mapX = mapCoordinates?.x || workplace.mapX;
+            formData.mapY = mapCoordinates?.y || workplace.mapY;
         }
         super.openDialog({officeLocationId: officeLocationId, workplaceId: workplace?.id || null}, formData);
     }

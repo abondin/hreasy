@@ -103,7 +103,7 @@ const routes = [
             {name: "admin_dict_departments", path: "departments", component: DictAdminDepartments},
             {path: "positions", component: DictAdminPositions},
             {path: "office_locations", component: DictAdminOfficeLocations},
-            {path: "office_workplaces", component: DictAdminOfficeWorkplaces},
+            {path: "office_workplaces", component: DictAdminOfficeWorkplaces, props: true},
             {path: "offices", component: DictAdminOffices},
             {path: "levels", component: DictAdminLevels}
         ]
