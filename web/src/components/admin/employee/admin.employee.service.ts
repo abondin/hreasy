@@ -3,7 +3,6 @@ import {AxiosInstance} from "axios";
 import {Skill} from "@/components/empl/skills/skills.service";
 import {SimpleDict} from "@/store/modules/dict";
 
-
 /**
  * 33 fields (1 is read only, should not be attached to the AdminEmployeeForm#EmployeeFrom)
  * If new fields added please don't forgot to update AdminEmployeeForm#EmployeeFrom
@@ -20,13 +19,13 @@ export interface EmployeeWithAllDetails {
     skills: Skill[],
     active: boolean,
     currentProjectId?: number,
-    currentProjectRole: string|null,
+    currentProjectRole: string | null,
     /**
      * Business account - readonly field (depends on current project)
      */
     baId?: number,
     departmentId: number,
-    organizationId: number|null,
+    organizationId: number | null,
     dateOfEmployment?: string,
     levelId?: number,
     workType?: string,
@@ -49,11 +48,11 @@ export interface EmployeeWithAllDetails {
 }
 
 export interface CreateOrUpdateEmployeeBody {
-    currentProjectId?: number|null,
-    currentProjectRole: string|null,
+    currentProjectId?: number | null,
+    currentProjectRole: string | null,
     displayName: string,
-    departmentId?: number|null,
-    organizationId?: number|null,
+    departmentId?: number | null,
+    organizationId?: number | null,
     birthday?: string,
     sex?: string,
     email?: string,
@@ -61,7 +60,7 @@ export interface CreateOrUpdateEmployeeBody {
     skype?: string,
     telegram: string,
     dateOfEmployment?: string,
-    levelId?: number|null,
+    levelId?: number | null,
     workType?: string,
     workDay?: string,
     registrationAddress?: string,
@@ -76,8 +75,8 @@ export interface CreateOrUpdateEmployeeBody {
     spouseName?: string,
     children?: string,
     dateOfDismissal?: string,
-    positionId?: number|null,
-    officeLocationId?: number|null
+    positionId?: number | null,
+    officeLocationId?: number | null
 }
 
 /**
@@ -123,12 +122,12 @@ export interface AdminEmployeeService {
     /**
      * Create new employee kid record
      */
-    createKid(employeeId:number, body: CreateOrUpdateEmployeeKidBody): Promise<number>;
+    createKid(employeeId: number, body: CreateOrUpdateEmployeeKidBody): Promise<number>;
 
     /**
      * Update existing employee record
      */
-    updateKid(employeeId: number, kidId:number,  body: CreateOrUpdateEmployeeKidBody): Promise<number>;
+    updateKid(employeeId: number, kidId: number, body: CreateOrUpdateEmployeeKidBody): Promise<number>;
 }
 
 
@@ -136,8 +135,8 @@ class RestAdminEmployeeService implements AdminEmployeeService {
     constructor(private httpService: AxiosInstance) {
     }
 
-    findAll(): Promise<EmployeeWithAllDetails[]> {
-        return httpService.get(`v1/admin/employees`).then(response => {
+    findAll(includeFired = true): Promise<EmployeeWithAllDetails[]> {
+        return httpService.get(`v1/admin/employees`, {params: {'includeFired': includeFired}}).then(response => {
             return response.data;
         });
     }
@@ -172,13 +171,13 @@ class RestAdminEmployeeService implements AdminEmployeeService {
         });
     }
 
-    createKid(employeeId:number, body: CreateOrUpdateEmployeeKidBody): Promise<number> {
+    createKid(employeeId: number, body: CreateOrUpdateEmployeeKidBody): Promise<number> {
         return httpService.post(`v1/admin/employees/${employeeId}/kids`, body).then(response => {
             return response.data;
         });
     }
 
-    updateKid(employeeId: number, kidId:number, body: CreateOrUpdateEmployeeKidBody): Promise<number> {
+    updateKid(employeeId: number, kidId: number, body: CreateOrUpdateEmployeeKidBody): Promise<number> {
         return httpService.put(`v1/admin/employees/${employeeId}/kids/${kidId}`, body).then(response => {
             return response.data;
         });

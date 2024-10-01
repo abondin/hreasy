@@ -30,6 +30,8 @@ import java.util.Objects;
 public class AdminEmployeeService {
 
     private static final EmployeeWithAllDetailsEntry EMPTY_INSTANCE = new EmployeeWithAllDetailsEntry();
+    public static final String EMPLOYEE_ENTITY_TYPE = "employee";
+    public static final String KID_ENTITY_TYPE = "kid";
 
     private final DateTimeService dateTimeService;
     private final EmployeeWithAllDetailsRepo employeeRepo;
@@ -39,10 +41,10 @@ public class AdminEmployeeService {
     private final EmployeeKidRepo kidsRepo;
 
 
-    public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth) {
+    public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth, boolean includeFired) {
         log.info("Get full information for all employees by {}", auth.getUsername());
         return securityValidator.validateViewEmployeeFull(auth)
-                .flatMapMany(sec -> employeeRepo.findAllDetailed()).map(m -> mapper.fromView(m, dateTimeService.now()));
+                .flatMapMany(sec -> employeeRepo.findAllDetailed()).map(m -> mapper.fromView(m, dateTimeService.now())).filter(e -> includeFired || e.isActive());
     }
 
     public Flux<EmployeeKidDto> findAllKids(AuthContext auth) {
@@ -89,7 +91,7 @@ public class AdminEmployeeService {
         log.info("Create new employee {} kid {} by {}", employeeId, body, auth.getUsername());
         return securityValidator.validateEditEmployee(auth)
                 .flatMap(s -> employeeRepo.findById(employeeId))
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound(employeeId))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(EMPLOYEE_ENTITY_TYPE, employeeId))
                 .flatMap(employee -> {
                     var kid = new EmployeeKidEntry();
                     kid.setBirthday(body.getBirthday());
@@ -104,9 +106,9 @@ public class AdminEmployeeService {
         log.info("Update employee {} kid {}: {} by {}", employeeId, kidId, body, auth.getUsername());
         return securityValidator.validateEditEmployee(auth)
                 .flatMap(s -> employeeRepo.findById(employeeId))
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound(employeeId))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(EMPLOYEE_ENTITY_TYPE, employeeId))
                 .flatMap(s -> kidsRepo.findById(kidId))
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound(kidId))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(KID_ENTITY_TYPE, kidId))
                 .flatMap(kidEntry -> {
                     if (employeeId != kidEntry.getParent()) {
                         return Mono.error(new BusinessError("errors.entity.invalid.parent", Integer.toString(kidId),
@@ -124,7 +126,7 @@ public class AdminEmployeeService {
         var now = dateTimeService.now();
         return securityValidator.validateEditEmployee(auth)
                 .flatMap(s -> employeeRepo.findById(employeeId))
-                .switchIfEmpty(BusinessErrorFactory.entityNotFound(employeeId))
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(EMPLOYEE_ENTITY_TYPE, employeeId))
                 .flatMap(entry -> {
                     if (!entry.getEmail().equals(body.getEmail())) {
                         return Mono.error(new BusinessError("errors.emailupdate.unsupported", entry.getEmail(), body.getEmail()));

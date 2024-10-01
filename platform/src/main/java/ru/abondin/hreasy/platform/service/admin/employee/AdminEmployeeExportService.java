@@ -58,9 +58,7 @@ public class AdminEmployeeExportService {
             var positions = fromDicts(tupple.getT6());
             var organizations = fromDicts(tupple.getT7());
             // 2. Load all employees (include fired)
-            return employeeService.findAll(auth)
-                    // 3. Filter employees. //TODO Move to database?
-                    .filter(e -> filter(e, filter, now))
+            return employeeService.findAll(auth, filter.isIncludeFired())
                     .map(e -> {
                         var emplExp = mapper.toExportWithoutDictionaries(e);
                         emplExp.setCurrentProject(e.getCurrentProjectId() == null ? null : projects.get(e.getCurrentProjectId()));
@@ -87,10 +85,6 @@ public class AdminEmployeeExportService {
     }
 
 
-    private boolean filter(EmployeeWithAllDetailsDto e, EmployeeExportFilter filter, OffsetDateTime now) {
-        return filter.isIncludeFired() ||
-                (e.getDateOfDismissal() == null || e.getDateOfDismissal().isAfter(now.toLocalDate()));
-    }
 
 
     private Mono<Resource> export(AdminEmployeeExcelExporter.AdminEmployeeExportBundle bundle) {

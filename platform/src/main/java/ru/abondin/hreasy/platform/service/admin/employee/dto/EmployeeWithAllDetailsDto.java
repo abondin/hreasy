@@ -16,6 +16,7 @@ public class EmployeeWithAllDetailsDto extends EmployeeAllFields {
     private String currentProjectRole;
     private Integer positionId;
     private Integer officeLocationId;
+    private Integer officeWorkplaceId;
     private Integer baId;
 
     private String extErpId;
