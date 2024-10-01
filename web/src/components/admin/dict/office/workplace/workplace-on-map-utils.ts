@@ -1,4 +1,4 @@
-import {DictOfficeWorkplace} from "@/components/admin/dict/dict.admin.service";
+import {DictOfficeWorkplace, DictOfficeWorkplaceType} from "@/components/admin/dict/dict.admin.service";
 
 export default class WorkplaceOnMapUtils {
     public static getOrCreateWorkplaceIcon(svg: SVGElement, workplace: DictOfficeWorkplace, clickListener?: (workplace: DictOfficeWorkplace)=>any) {
@@ -23,9 +23,9 @@ export default class WorkplaceOnMapUtils {
         const newGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         newGroup.setAttribute('data-id', workplace.id.toString());
         newGroup.setAttribute('class', 'workplace-icon');
-        newGroup.style.cursor = 'pointer';
 
         if (clickListener) {
+            newGroup.style.cursor = 'pointer';
             newGroup.addEventListener('click', (e) => {
                 clickListener(workplace);
                 e.stopPropagation();
@@ -57,7 +57,7 @@ export default class WorkplaceOnMapUtils {
         newText.setAttribute('text-anchor', 'middle');
         newText.setAttribute('font-size', '18');
         newText.setAttribute('fill', 'white');
-        newText.textContent = '🪑';
+        newText.textContent = this.getWorkplaceIcon(workplace.type);
 
         newText.style.userSelect = 'none';
 
@@ -92,6 +92,19 @@ export default class WorkplaceOnMapUtils {
         icons.forEach(icon => {
             icon.remove();
         });
+    }
+
+    public static getWorkplaceIcon(type: DictOfficeWorkplaceType){
+        let result = '❓';
+        switch (type){
+            case DictOfficeWorkplaceType.REGULAR:
+                result= '🪑'
+                break;
+            case DictOfficeWorkplaceType.GUEST:
+                result='🅿️';
+                break;
+        }
+        return result;
     }
 
 }

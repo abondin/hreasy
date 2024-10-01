@@ -9,6 +9,11 @@
         :rules="[v=>(v && v.length <= 256 || $t('Обязательное поле. Не более N символов', {n:256}))]"
         :label="$t('Наименование')">
     </v-text-field>
+    <v-select
+        :label="$t('Тип')"
+        :rules="[v=>!!v  || $t('Обязательное поле')]"
+        v-model="formData.type"
+        :items="types"></v-select>
     <v-text-field
         v-model="formData.mapX"
         type="number"
@@ -35,7 +40,7 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
-import {DictOfficeWorkplaceUpdateBody} from "@/components/admin/dict/dict.admin.service";
+import {dictOfficeWorkplaceType, DictOfficeWorkplaceUpdateBody} from "@/components/admin/dict/dict.admin.service";
 
 
 @Component({
@@ -44,6 +49,13 @@ import {DictOfficeWorkplaceUpdateBody} from "@/components/admin/dict/dict.admin.
 export default class WorkplaceAttributesFormData extends Vue {
   @Prop({required: true})
   private formData!: DictOfficeWorkplaceUpdateBody;
+
+  private types = dictOfficeWorkplaceType.map(v => {
+    return {
+      text: this.$t('WORKPLACE_TYPE.' + v),
+      value: v
+    }
+  });
 }
 </script>
 

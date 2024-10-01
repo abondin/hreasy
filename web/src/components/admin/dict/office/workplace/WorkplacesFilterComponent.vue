@@ -72,11 +72,11 @@ export default class WorkplacesFilterComponent extends Vue {
     this.$store.dispatch('dict/reloadOffices').then(() => {
       return this.$store.dispatch('dict/reloadOfficeLocations')
           .then(() => {
-            const officeId = Number(this.$route.query['officeId']) || null;
+            const officeId = Number(this.$route.query['office']) || null;
             if (officeId && this.allOffices.map(o => o.id).indexOf(officeId) >= 0) {
               this.data.filter.officeId = officeId;
             }
-            const officeLocationId = Number(this.$route.query['officeLocationId']) || null;
+            const officeLocationId = Number(this.$route.query['officeLocation']) || null;
             if (officeLocationId && this.allOfficeLocations.map(o => o.id).indexOf(officeLocationId) >= 0) {
               this.data.filter.officeLocationId = officeLocationId;
             }

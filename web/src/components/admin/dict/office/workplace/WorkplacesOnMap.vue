@@ -17,6 +17,7 @@ import Vue from "vue";
 import {Prop, Watch} from "vue-property-decorator";
 import {WorkplacesOnMapContainer} from "@/components/admin/dict/office/workplace/workplaces.data.container";
 import WorkplaceOnMapUtils from "@/components/admin/dict/office/workplace/workplace-on-map-utils";
+import {DictOfficeWorkplace} from "@/components/admin/dict/dict.admin.service";
 
 
 @Component({
@@ -48,7 +49,7 @@ export default class WorkplacesOnMap extends Vue {
     const svg = this.$refs.officeLocationMap as SVGElement | null;
     if (svg) {
       WorkplaceOnMapUtils.removeAllWorkplaces(svg);
-      this.data.workplaces.forEach(w => WorkplaceOnMapUtils.getOrCreateWorkplaceIcon(svg, w, (w) => this.data.selectedWorkplace = w));
+      this.data.workplaces.forEach(w => WorkplaceOnMapUtils.getOrCreateWorkplaceIcon(svg, w, this.selectWorkplaceOnMap));
       WorkplaceOnMapUtils.highlightWorkplace(svg, this.data.selectedWorkplace);
     }
   }
@@ -58,6 +59,14 @@ export default class WorkplacesOnMap extends Vue {
       this.data.createOrUpdateWorkplaceAction.openDialogForWorkplace(this.data.selectedWorkplace.officeLocation.id
           , this.data.selectedWorkplace
           , {x: e.offsetX, y: e.offsetY});
+    }
+  }
+
+  private selectWorkplaceOnMap(selectedWorkplace: DictOfficeWorkplace){
+    if (this.data.selectedWorkplace === selectedWorkplace){
+      this.data.selectedWorkplace = null;
+    } else {
+      this.data.selectedWorkplace = selectedWorkplace;
     }
   }
 

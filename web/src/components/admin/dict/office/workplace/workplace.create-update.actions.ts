@@ -29,6 +29,7 @@ export default class WorkplaceCreateOrUpdateAction
         const formData = {archived: false} as DictOfficeWorkplaceUpdateBody;
         if (workplace) {
             formData.name = workplace.name;
+            formData.type = workplace.type;
             formData.description = workplace.description;
             formData.archived = workplace.archived;
             formData.mapX = mapCoordinates?.x || workplace.mapX;

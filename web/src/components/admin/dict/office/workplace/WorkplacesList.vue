@@ -21,12 +21,25 @@
           <v-list-item two-line selectable v-for="(w, i) in data.workplaces" v-bind:key="w.id"
                        :value="data.workplaces[i]">
             <v-list-item-icon>
-              <v-icon dense>🪑</v-icon>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <v-icon dense v-bind="tattrs" v-on="ton">{{getIcon(w.type)}}</v-icon>
+                </template>
+                <span>{{ $t('WORKPLACE_TYPE.' +w.type) }}</span>
+              </v-tooltip>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>{{ w.id ? w.name : $t('Новое место') }}</v-list-item-title>
               <v-list-item-subtitle>{{ w.description }}</v-list-item-subtitle>
             </v-list-item-content>
+            <v-list-item-action>
+              <v-tooltip bottom v-if="!w.mapX||!w.mapY">
+                <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                  <v-icon dense v-bind="tattrs" v-on="ton">⚪️</v-icon>
+                </template>
+                <span>{{ $t('Место не привязано к плану офиса') }}</span>
+              </v-tooltip>
+            </v-list-item-action>
           </v-list-item>
         </v-list-item-group>
       </v-list>
@@ -47,6 +60,7 @@ import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
 import WorkplacesDataContainer from "@/components/admin/dict/office/workplace/workplaces.data.container";
+import WorkplaceOnMapUtils from "@/components/admin/dict/office/workplace/workplace-on-map-utils";
 
 
 @Component({
@@ -56,6 +70,8 @@ export default class WorkplacesFilterComponent extends Vue {
 
   @Prop({required: true})
   private data!: WorkplacesDataContainer;
+
+  private getIcon = WorkplaceOnMapUtils.getWorkplaceIcon;
 
 }
 </script>

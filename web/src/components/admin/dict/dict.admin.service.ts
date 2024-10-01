@@ -1,6 +1,7 @@
 import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
 import {SimpleDict} from "@/store/modules/dict";
+import {JuniorProgressType} from "@/components/udr/udr.service";
 
 export interface DictDepartment {
     id: number,
@@ -60,9 +61,19 @@ export interface DictOffice {
     archived: boolean
 }
 
+export const enum DictOfficeWorkplaceType {
+    REGULAR = 1,
+    GUEST = 2
+}
+export const dictOfficeWorkplaceType = [
+    DictOfficeWorkplaceType.REGULAR,
+    DictOfficeWorkplaceType.GUEST
+];
+
 export interface DictOfficeWorkplace {
     id: number,
     name: string,
+    type: DictOfficeWorkplaceType,
     description: string | undefined,
     office: SimpleDict,
     officeLocation: SimpleDict,
@@ -96,6 +107,7 @@ export interface DictOfficeLocationUpdateBody {
 export interface DictOfficeWorkplaceUpdateBody {
     name: string,
     description: string | undefined,
+    type: DictOfficeWorkplaceType,
     mapX: number | undefined,
     mapY: number | undefined,
     archived: boolean

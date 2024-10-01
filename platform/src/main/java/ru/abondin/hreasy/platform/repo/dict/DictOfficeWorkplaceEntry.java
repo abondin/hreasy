@@ -23,6 +23,13 @@ public class DictOfficeWorkplaceEntry {
     @NonNull
     private String name;
 
+    /**
+     * 1 - Regular
+     * 2 - Guest
+     */
+    @NonNull
+    private short type;
+
     @Nullable
     private String description;
 
