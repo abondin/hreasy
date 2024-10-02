@@ -62,6 +62,7 @@ import OfficeLocationMapComponent from "@/components/admin/dict/office/workplace
 import WorkplaceAttributesFormData from "@/components/admin/dict/office/workplace/WorkplaceAttributesFormData.vue";
 import WorkplacesOnMap from "@/components/admin/dict/office/workplace/WorkplacesOnMap.vue";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
+import logger from "@/logger";
 
 const namespace_dict = 'dict';
 @Component({
@@ -79,13 +80,7 @@ export default class DictAdminOfficeWorkplaces extends Vue {
   @Getter("officeLocations", {namespace: namespace_dict})
   private allOfficeLocations!: Array<SimpleDict>;
 
-  @Prop({required: false})
-  private queryParamOfficeId?: number;
-  @Prop({required: false})
-  private queryParamOfficeLocationId?: number;
-
   private data = new WorkplacesDataContainer();
-
 
   created() {
     this.$store.dispatch('dict/reloadOfficeLocations')
@@ -97,6 +92,7 @@ export default class DictAdminOfficeWorkplaces extends Vue {
   officeLocationChanged() {
     this.data.loadOfficeLocationMap();
   }
+
 
 }
 </script>

@@ -80,7 +80,7 @@ public class AdminEmployeeExportService {
                                     .build()
                     )
                     // 5. Write exported document to resource. //TODO Another place to migrate to pipes
-                    .flatMap(bundle -> export(bundle));
+                    .flatMap(this::export);
         });
     }
 

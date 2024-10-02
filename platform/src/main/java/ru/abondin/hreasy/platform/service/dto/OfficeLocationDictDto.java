@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
 /**
- * Simple dict for project
+ * Simple dict for the office location with link to office
  */
 @Data
 @NoArgsConstructor

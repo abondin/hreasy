@@ -4,6 +4,7 @@
 import {ActionTree, GetterTree, Module, MutationTree} from "vuex";
 import {RootState} from "@/store";
 import dictService, {SharedSkillName} from "@/store/modules/dict.service";
+import {DictOfficeWorkplaceType} from "@/components/admin/dict/dict.admin.service";
 
 export interface SimpleDict {
     id: number;
@@ -13,6 +14,11 @@ export interface SimpleDict {
 
 export interface OfficeLocationDict extends SimpleDict{
     officeId?: number;
+}
+
+export interface OfficeWorkplaceDict extends SimpleDict {
+    officeLocationId?: number;
+    type: DictOfficeWorkplaceType;
 }
 
 
@@ -51,7 +57,8 @@ export interface DictLoadedState {
     positions: Array<SimpleDict>;
     levels: Array<SimpleDict>;
     offices: Array<SimpleDict>;
-    officeLocations: Array<SimpleDict>;
+    officeLocations: Array<OfficeLocationDict>;
+    officeWorkplaces: Array<OfficeWorkplaceDict>,
     skillGroups: Array<SimpleDict>;
     sharedSkillsNames: Array<SharedSkillName>;
     currentProjectRoles: Array<CurrentProjectRole>;
@@ -66,6 +73,7 @@ export const dictState: DictLoadedState = {
     levels: [],
     offices: [],
     officeLocations: [],
+    officeWorkplaces: [],
     skillGroups: [],
     sharedSkillsNames: [],
     currentProjectRoles: []
@@ -113,6 +121,11 @@ export const dictActions: ActionTree<DictLoadedState, RootState> = {
             commit('officeLocationsLoaded', locations);
         });
     },
+    reloadOfficeWorkplaces({commit}): any {
+        return dictService.loadAllOfficeWorkplaces().then(locations => {
+            commit('officeWorkplacesLoaded', locations);
+        });
+    },
     reloadSkillGroups({commit}): any {
         return dictService.loadAllSkillGroups().then(groups => {
             commit('skillGroupsLoaded', groups);
@@ -155,6 +168,9 @@ export const dictMutations: MutationTree<DictLoadedState> = {
     officeLocationsLoaded(state: DictLoadedState, value: Array<SimpleDict>) {
         state.officeLocations = value;
     },
+    officeWorkplacesLoaded(state: DictLoadedState, value: Array<OfficeWorkplaceDict>) {
+        state.officeWorkplaces = value;
+    },
     skillGroupsLoaded(state: DictLoadedState, groups: Array<SimpleDict>) {
         state.skillGroups = groups;
     },
@@ -191,6 +207,9 @@ export const dictGetters: GetterTree<DictLoadedState, RootState> = {
     },
     officeLocations(state: DictLoadedState): Array<SimpleDict> {
         return state.officeLocations;
+    },
+    officeWorkplaces(state: DictLoadedState): Array<OfficeWorkplaceDict> {
+        return state.officeWorkplaces;
     },
     skillGroups(state: DictLoadedState): Array<SimpleDict> {
         return state.skillGroups;

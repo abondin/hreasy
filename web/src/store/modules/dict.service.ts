@@ -3,7 +3,7 @@ import {AxiosInstance} from "axios";
 import {
     CurrentProjectRole,
     ManagerOfObject,
-    OfficeLocationDict,
+    OfficeLocationDict, OfficeWorkplaceDict,
     ProjectDictDto,
     SimpleDict
 } from "@/store/modules/dict";
@@ -44,6 +44,8 @@ export interface DictService {
     loadAllLevels(): Promise<Array<SimpleDict>>;
 
     loadAllOfficeLocations(): Promise<Array<OfficeLocationDict>>;
+
+    loadAllOfficeWorkplaces(): Promise<Array<OfficeWorkplaceDict>>;
 
     loadAllOffices(): Promise<Array<SimpleDict>>;
 
@@ -91,6 +93,10 @@ class RestDictService implements DictService {
 
     loadAllOfficeLocations(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/dict/office_locations").then(response => response.data);
+    }
+
+    loadAllOfficeWorkplaces(): Promise<Array<OfficeWorkplaceDict>> {
+        return httpService.get("v1/dict/office_workplaces").then(response => response.data);
     }
 
     getOfficeLocationMap(officeLocationId: number): Promise<string> {

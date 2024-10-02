@@ -11,6 +11,7 @@ import ru.abondin.hreasy.platform.repo.dict.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
+import ru.abondin.hreasy.platform.service.dto.OfficeWorkplaceDictDto;
 import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.DictDtoMapper;
@@ -35,6 +36,7 @@ public class DictService {
     private final DictPositionRepo positionRepo;
     private final DictLevelRepo levelRepo;
     private final DictOfficeLocationRepo officeLocationRepo;
+    private final DictOfficeWorkplaceRepo workplaceRepo;
     private final DictOfficeRepo officeRepo;
 
     private final DictDtoMapper mapper;
@@ -129,6 +131,22 @@ public class DictService {
                     dto.setOfficeId(e.getOfficeId());
                     dto.setName(
                             Stream.of(e.getName(), e.getDescription())
+                                    .filter(i -> i != null)
+                                    .collect(Collectors.joining(", ")));
+                    dto.setActive(!e.isArchived());
+                    return dto;
+                });
+    }
+    public Flux<OfficeWorkplaceDictDto> findOfficeWorkplaces(AuthContext auth) {
+        log.trace("Get all office workloads {}", auth.getUsername());
+        return workplaceRepo
+                .findNotArchived()
+                .map(e -> {
+                    var dto = new OfficeWorkplaceDictDto();
+                    dto.setId(e.getId());
+                    dto.setOfficeLocationId(e.getOfficeLocationId());
+                    dto.setType(e.getType());
+                    dto.setName(Stream.of(e.getName(), e.getDescription())
                                     .filter(i -> i != null)
                                     .collect(Collectors.joining(", ")));
                     dto.setActive(!e.isArchived());

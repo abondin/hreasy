@@ -4,8 +4,8 @@
 <template>
   <svg
       v-html="data.officeLocationMap" ref="officeLocationMap"
+      :width="defaultMapSizes.width" :height="defaultMapSizes.height"
       :class="{'selectOnMapModeEnabled': data.selectedWorkplace}"
-      :style="`width: ${defaultMapSizes.width}; height: ${defaultMapSizes.height}`"
       @click.stop="clickOnMap"
   >
   </svg>
@@ -24,7 +24,7 @@ import {DictOfficeWorkplace} from "@/components/admin/dict/dict.admin.service";
   components: {}
 })
 export default class WorkplacesOnMap extends Vue {
-  private defaultMapSizes = {width: "800px", height: "600px"};
+  private defaultMapSizes = WorkplaceOnMapUtils.defaultMapSizes;
   @Prop({required: true})
   private data!: WorkplacesOnMapContainer;
 
@@ -48,6 +48,7 @@ export default class WorkplacesOnMap extends Vue {
   private redrawWorkplaces() {
     const svg = this.$refs.officeLocationMap as SVGElement | null;
     if (svg) {
+      WorkplaceOnMapUtils.adjustSvgViewBox(svg);
       WorkplaceOnMapUtils.removeAllWorkplaces(svg);
       this.data.workplaces.forEach(w => WorkplaceOnMapUtils.getOrCreateWorkplaceIcon(svg, w, this.selectWorkplaceOnMap));
       WorkplaceOnMapUtils.highlightWorkplace(svg, this.data.selectedWorkplace);
@@ -62,13 +63,14 @@ export default class WorkplacesOnMap extends Vue {
     }
   }
 
-  private selectWorkplaceOnMap(selectedWorkplace: DictOfficeWorkplace){
-    if (this.data.selectedWorkplace === selectedWorkplace){
+  private selectWorkplaceOnMap(selectedWorkplace: DictOfficeWorkplace) {
+    if (this.data.selectedWorkplace === selectedWorkplace) {
       this.data.selectedWorkplace = null;
     } else {
       this.data.selectedWorkplace = selectedWorkplace;
     }
   }
+
 
 }
 </script>

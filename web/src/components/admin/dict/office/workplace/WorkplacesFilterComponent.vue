@@ -78,7 +78,7 @@ export default class WorkplacesFilterComponent extends Vue {
             }
             const officeLocationId = Number(this.$route.query['officeLocation']) || null;
             if (officeLocationId && this.allOfficeLocations.map(o => o.id).indexOf(officeLocationId) >= 0) {
-              this.data.filter.officeLocationId = officeLocationId;
+              this.$nextTick(() => this.data.filter.officeLocationId = officeLocationId);
             }
           })
     });

@@ -4,7 +4,7 @@ import {Skill} from "@/components/empl/skills/skills.service";
 import {SimpleDict} from "@/store/modules/dict";
 
 /**
- * 33 fields (1 is read only, should not be attached to the AdminEmployeeForm#EmployeeFrom)
+ * 34 fields (1 is read only, should not be attached to the AdminEmployeeForm#EmployeeFrom)
  * If new fields added please don't forgot to update AdminEmployeeForm#EmployeeFrom
  */
 export interface EmployeeWithAllDetails {
@@ -44,7 +44,8 @@ export interface EmployeeWithAllDetails {
     dateOfDismissal?: string,
     documentFull?: string,
     positionId?: number,
-    officeLocationId?: number
+    officeLocationId?: number,
+    officeWorkplaceId?: number | null
 }
 
 export interface CreateOrUpdateEmployeeBody {
@@ -76,7 +77,8 @@ export interface CreateOrUpdateEmployeeBody {
     children?: string,
     dateOfDismissal?: string,
     positionId?: number | null,
-    officeLocationId?: number | null
+    officeLocationId?: number | null,
+    officeWorkplaceId?: number | null
 }
 
 /**
