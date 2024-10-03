@@ -49,8 +49,7 @@ export default class WorkplacesOnMap extends Vue {
     const svg = this.$refs.officeLocationMap as SVGElement | null;
     if (svg) {
       WorkplaceOnMapUtils.adjustSvgViewBox(svg);
-      WorkplaceOnMapUtils.removeAllWorkplaces(svg);
-      this.data.workplaces.forEach(w => WorkplaceOnMapUtils.getOrCreateWorkplaceIcon(svg, w, this.selectWorkplaceOnMap));
+      WorkplaceOnMapUtils.initializeWorkplace(svg);
       WorkplaceOnMapUtils.highlightWorkplace(svg, this.data.selectedWorkplace);
     }
   }
