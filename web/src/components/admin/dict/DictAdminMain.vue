@@ -10,7 +10,6 @@ Navigate between dictionaries admin pages using tabs
       <v-tab to="/admin/dicts/levels">{{ $t('Уровни') }}</v-tab>
       <v-tab to="/admin/dicts/offices">{{ $t('Офисы') }}</v-tab>
       <v-tab to="/admin/dicts/office_locations">{{ $t('Кабинеты') }}</v-tab>
-      <v-tab to="/admin/dicts/office_workplaces">{{ $t('Рабочие места') }}</v-tab>
     </v-tabs>
     <router-view></router-view>
   </div>

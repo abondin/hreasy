@@ -95,7 +95,7 @@
               </v-text-field>
             </v-col>
             <!--</editor-fold>-->
-            <!--<editor-fold desc="4 row (levelId, positionId, officeLocationId, officeWorkplaceId)">-->
+            <!--<editor-fold desc="4 row (levelId, positionId, officeLocationId, officeWorkplace)">-->
             <v-col cols=3>
               <v-autocomplete v-model="employeeForm.levelId"
                               :items="allLevelsWithCurrent"
@@ -121,12 +121,13 @@
               ></v-autocomplete>
             </v-col>
             <v-col cols=3>
-              <v-autocomplete v-model="employeeForm.officeWorkplaceId"
-                              :items="allOfficeWorkplacesWithCurrent.filter(w=>w.officeLocationId==employeeForm.officeLocationId)"
-                              item-value="id"
-                              item-text="name"
-                              :label="$t('Рабочее место')"
-              ></v-autocomplete>
+              <v-text-field
+                  :counter="64"
+                  :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:64}))]"
+                  v-model="employeeForm.officeWorkplace"
+                            :label="$t('Рабочее место')"
+
+              ></v-text-field>
             </v-col>
             <!-- </editor-fold> -->
             <!-- <editor-fold desc="5 row (dateOfEmployment, dateOfDismissal, workType, workDay, birthday, sex)"-->
@@ -285,9 +286,8 @@ import adminEmployeeService, {
   CreateOrUpdateEmployeeBody,
   EmployeeWithAllDetails
 } from "@/components/admin/employee/admin.employee.service";
-import {OfficeLocationDict, OfficeWorkplaceDict, SimpleDict} from "@/store/modules/dict";
+import {OfficeLocationDict, SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
-import {DictOfficeWorkplaceType} from "@/components/admin/dict/dict.admin.service";
 
 /**
  * 34 fields from EmployeeWithAllDetails
@@ -331,7 +331,7 @@ class employeeForm {
   dateOfDismissal: string | null = null;
   positionId: number | null = null;
   officeLocationId: number | null = null;
-  officeWorkplaceId: number | null = null;
+  officeWorkplace: string | null = null;
 }
 
 @Component(
@@ -366,10 +366,6 @@ export default class AdminEmployeeForm extends Vue {
   @Prop({required: true})
   private allOfficeLocations!: Array<OfficeLocationDict>;
   private allOfficeLocationsWithCurrent: Array<OfficeLocationDict> = [];
-
-  @Prop({required: true})
-  private allOfficeWorkplaces!: Array<OfficeWorkplaceDict>;
-  private allOfficeWorkplacesWithCurrent: Array<OfficeWorkplaceDict> = [];
 
   private employeeForm = new employeeForm();
 
@@ -448,7 +444,7 @@ export default class AdminEmployeeForm extends Vue {
       this.employeeForm.foreignPassport = this.input.foreignPassport || null;
       this.employeeForm.levelId = this.input.levelId || null;
       this.employeeForm.officeLocationId = this.input.officeLocationId || null;
-      this.employeeForm.officeWorkplaceId = this.input.officeWorkplaceId || null;
+      this.employeeForm.officeWorkplace = this.input.officeWorkplace || null;
       this.employeeForm.spouseName = this.input.spouseName || null;
       this.employeeForm.sex = this.input.sex || null;
       this.employeeForm.positionId = this.input.positionId || null;
@@ -462,7 +458,6 @@ export default class AdminEmployeeForm extends Vue {
     this.allProjectsWithCurrent = this.withCurrent(this.allProjects, this.employeeForm.currentProjectId);
     this.allLevelsWithCurrent = this.withCurrent(this.allLevels, this.employeeForm.levelId);
     this.allOfficeLocationsWithCurrent = this.withCurrent(this.allOfficeLocations, this.employeeForm.officeLocationId);
-    this.allOfficeWorkplacesWithCurrent = this.withCurrent(this.allOfficeWorkplaces, this.employeeForm.officeWorkplaceId, w => w.type == DictOfficeWorkplaceType.REGULAR);
     this.allPositionsWithCurrent = this.withCurrent(this.allPositions, this.employeeForm.positionId);
 
   }

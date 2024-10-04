@@ -27,7 +27,7 @@ public class EmployeeEntry {
     @Column("office_location")
     private Integer officeLocationId;
     @Column("office_workplace")
-    private Integer officeWorkplaceId;
+    private String officeWorkplace;
     @Column("date_of_employment")
     private LocalDate dateOfEmployment;
     @Column("date_of_dismissal")

@@ -45,7 +45,7 @@ export interface EmployeeWithAllDetails {
     documentFull?: string,
     positionId?: number,
     officeLocationId?: number,
-    officeWorkplaceId?: number | null
+    officeWorkplace?: string | null
 }
 
 export interface CreateOrUpdateEmployeeBody {

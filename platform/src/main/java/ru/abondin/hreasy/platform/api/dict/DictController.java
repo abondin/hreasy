@@ -10,7 +10,6 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dict.DictWorkingDaysCalendarService;
 import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
-import ru.abondin.hreasy.platform.service.dto.OfficeWorkplaceDictDto;
 import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
@@ -87,14 +86,6 @@ public class DictController {
     public Mono<String> getOfficeLocationMap(@PathVariable int officeLocationId) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> dictService.getOfficeLocationMap(auth, officeLocationId));
-    }
-
-    @Operation(summary = "All office workplaces")
-    @GetMapping("/office_workplaces")
-    @ResponseBody
-    public Flux<OfficeWorkplaceDictDto> workplaces() {
-        return AuthHandler.currentAuth().flatMapMany(
-                auth -> dictService.findOfficeWorkplaces(auth));
     }
 
     @Operation(summary = "All not working days")

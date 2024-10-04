@@ -1,4 +1,3 @@
-import {DictOfficeWorkplace} from "@/components/admin/dict/dict.admin.service";
 import logger from "@/logger";
 
 export default class WorkplaceOnMapUtils {
@@ -29,28 +28,33 @@ export default class WorkplaceOnMapUtils {
             if (element instanceof SVGElement && element.dataset && element.dataset['workplacename']) {
                 const dataset = element.dataset;
                 logger.log(`found workplace ${element.getAttribute('data-workplacename')}`, element);
-                const workplaceName = dataset['workplacename'];
-                const workplaceType = Number(dataset['workplacetype']);
-                element.addEventListener('click', (e) => {
-                    console.log(`clicked ${workplaceType}:${workplaceName}`, e);
+                element.addEventListener('mouseenter', (e) => {
+                    element.style.strokeWidth = '3px';
+                })
+                element.addEventListener('mouseleave', (e) => {
+                    element.style.strokeWidth = '1px';
                 })
             }
         })
     }
 
-
-    public static highlightWorkplace(svg: SVGElement, selectedWorkplace: DictOfficeWorkplace | null) {
-        // Reset previous highlights (remove highlights from all workplaces)
-        const allIcons = svg.querySelectorAll('.workplace-icon rect');
-        allIcons.forEach(icon => {
-            icon.setAttribute('fill', icon.getAttribute('data-background-color') || 'lightgray');
+    public static findWorkplaceSvgElement(svg: SVGElement, workplaceName: string): SVGElement | undefined {
+        let result = undefined;
+        svg.querySelectorAll('*').forEach(element => {
+            if (element instanceof SVGElement && element.dataset && element.dataset['workplacename'] == workplaceName) {
+                result = element;
+            }
         });
+        return result;
+    }
 
+
+    public static highlightWorkplace(svg: SVGElement, workplaceName: string | null) {
         // Highlight the selected workplace
-        if (selectedWorkplace) {
-            const selectedIcon = svg.querySelector(`[data-id='${selectedWorkplace.id?.toString()}'] rect`);
-            if (selectedIcon) {
-                selectedIcon.setAttribute('fill', 'lightgreen');
+        if (workplaceName) {
+            const element = this.findWorkplaceSvgElement(svg, workplaceName);
+            if (element) {
+                element.setAttribute('fill', 'lightgreen');
             }
         }
     }

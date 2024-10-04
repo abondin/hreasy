@@ -15,7 +15,7 @@ public class CreateOrUpdateEmployeeBody extends EmployeeAllFields {
     private Integer positionId;
     private Integer organizationId;
     private Integer officeLocationId;
-    private Integer officeWorkplaceId;
+    private String officeWorkplace;
     private String extErpId;
 
     @Nullable

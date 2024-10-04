@@ -61,27 +61,6 @@ export interface DictOffice {
     archived: boolean
 }
 
-export const enum DictOfficeWorkplaceType {
-    REGULAR = 1,
-    GUEST = 2
-}
-export const dictOfficeWorkplaceType = [
-    DictOfficeWorkplaceType.REGULAR,
-    DictOfficeWorkplaceType.GUEST
-];
-
-export interface DictOfficeWorkplace {
-    id: number,
-    name: string,
-    type: DictOfficeWorkplaceType,
-    description: string | undefined,
-    office: SimpleDict,
-    officeLocation: SimpleDict,
-    mapX: number | undefined,
-    mapY: number | undefined,
-    archived: boolean
-}
-
 export interface DictOfficeLocation {
     id: number,
     name: string,
@@ -104,14 +83,6 @@ export interface DictOfficeLocationUpdateBody {
     archived: boolean
 }
 
-export interface DictOfficeWorkplaceUpdateBody {
-    name: string,
-    description: string | undefined,
-    type: DictOfficeWorkplaceType,
-    mapX: number | undefined,
-    mapY: number | undefined,
-    archived: boolean
-}
 
 export interface DictAdminService {
     loadDepartments(): Promise<Array<DictDepartment>>;
@@ -144,11 +115,6 @@ export interface DictAdminService {
 
     updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<number>;
 
-    loadOfficeWorkplaces(): Promise<Array<DictOfficeWorkplace>>;
-
-    createOfficeWorkplace(officeLocationId: number, body: DictOfficeWorkplaceUpdateBody): Promise<number>;
-
-    updateOfficeWorkplace(officeLocationId: number, workplace: number, body: DictOfficeWorkplaceUpdateBody): Promise<number>;
 
     loadOrganizations(): Promise<Array<DictOrganization>>;
 
@@ -181,9 +147,6 @@ class RestDictAdminService implements DictAdminService {
         return httpService.post("v1/admin/dict/office_locations", body);
     }
 
-    createOfficeWorkplace(officeLocationId: number, body: DictOfficeWorkplaceUpdateBody): Promise<number> {
-        return httpService.post(`v1/admin/dict/office_locations/${officeLocationId}/workplaces`, body);
-    }
 
     createPosition(body: DictPositionUpdateBody): Promise<DictPosition> {
         return httpService.post("v1/admin/dict/positions", body);
@@ -212,11 +175,6 @@ class RestDictAdminService implements DictAdminService {
     getUploadOfficeLocationMapPath(officeLocationId: number): string {
         return `${httpService.defaults.baseURL}v1/admin/dict/office_locations/${officeLocationId}/map`;
     }
-
-    loadOfficeWorkplaces(): Promise<Array<DictOfficeWorkplace>> {
-        return httpService.get("v1/admin/dict/office_locations/workplaces").then(response => response.data);
-    }
-
     loadPositions(): Promise<Array<DictPosition>> {
         return httpService.get("v1/admin/dict/positions").then(response => response.data);
     }
@@ -245,9 +203,6 @@ class RestDictAdminService implements DictAdminService {
         return httpService.delete(`v1/admin/dict/office_locations/${officeLocationId}/map`)
     }
 
-    updateOfficeWorkplace(officeLocationId: number, workplaceId: number, body: DictOfficeWorkplaceUpdateBody): Promise<number> {
-        return httpService.put(`v1/admin/dict/office_locations/${officeLocationId}/workplaces/${workplaceId}`, body);
-    }
 
     updatePosition(id: number, body: DictPositionUpdateBody): Promise<DictPosition> {
         return httpService.put(`v1/admin/dict/positions/${id}`, body);

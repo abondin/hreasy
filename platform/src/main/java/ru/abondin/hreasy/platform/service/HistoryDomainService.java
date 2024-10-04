@@ -25,7 +25,6 @@ public class HistoryDomainService {
     public enum HistoryEntityType {
         OFFICE("office"),
         OFFICE_LOCATION("office_location"),
-        OFFICE_WORKPLACE("office_workplace"),
         MANAGER("empl_manager"),
         TIMESHEET_RECORD("timesheet_record"),
         SALARY_REQUEST("salary_request"),

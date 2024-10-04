@@ -28,7 +28,7 @@
             </div>
           </template>
           <p>{{ $t('Экспорт в Excel') }}<p>
-          {{ $t('Результат выгрузки зависит только от фильтра ') + $t('Скрыть уволенных')}}</p>
+            {{ $t('Результат выгрузки зависит только от фильтра ') + $t('Скрыть уволенных') }}</p>
         </v-tooltip>
         <v-snackbar
             v-model="exportCompleted"
@@ -123,7 +123,7 @@
           <template v-slot:item.currentProjectId="{ item }">
             {{ getById(allProjects, item.currentProjectId) }}
             <span v-if="item.currentProjectRole">
-              ({{item.currentProjectRole}})
+              ({{ item.currentProjectRole }})
             </span>
           </template>
 
@@ -161,7 +161,6 @@
               :all-organizations="allOrganizations"
               :all-levels="allLevels"
               :all-office-locations="allOfficeLocations"
-              :all-office-workplaces="allOfficeWorkplaces"
               :all-positions="allPositions"
               :all-projects="allProjects"
               @close="editDialog=false;fetchData()"></admin-employee-form>
@@ -178,7 +177,7 @@ import Vue from 'vue'
 import {DataTableHeader} from "vuetify";
 import Component from "vue-class-component";
 import logger from "@/logger";
-import {OfficeLocationDict, OfficeWorkplaceDict, SimpleDict} from "@/store/modules/dict";
+import {OfficeLocationDict, SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import AdminEmployeeForm from "@/components/admin/employee/AdminEmployeeForm.vue";
@@ -235,9 +234,6 @@ export default class AdminEmployees extends Vue {
   @Getter("officeLocations", {namespace: namespace_dict})
   private allOfficeLocations!: Array<OfficeLocationDict>;
 
-  @Getter("officeWorkplaces", {namespace: namespace_dict})
-  private allOfficeWorkplaces!: Array<OfficeWorkplaceDict>;
-
   private error: string | null = null;
 
   /**
@@ -254,7 +250,6 @@ export default class AdminEmployees extends Vue {
         .then(() => this.$store.dispatch('dict/reloadPositions'))
         .then(() => this.$store.dispatch('dict/reloadLevels'))
         .then(() => this.$store.dispatch('dict/reloadOfficeLocations'))
-        .then(() => this.$store.dispatch('dict/reloadOfficeWorkplaces'))
         .then(() => this.fetchData())
   }
 

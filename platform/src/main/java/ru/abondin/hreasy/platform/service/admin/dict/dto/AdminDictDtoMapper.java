@@ -2,12 +2,9 @@ package ru.abondin.hreasy.platform.service.admin.dict.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import ru.abondin.hreasy.platform.repo.dict.*;
 import ru.abondin.hreasy.platform.service.dict.dto.*;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
-
-import java.time.OffsetDateTime;
 
 @Mapper(componentModel = "spring")
 public interface AdminDictDtoMapper extends MapperBase {
@@ -15,16 +12,6 @@ public interface AdminDictDtoMapper extends MapperBase {
     DictOfficeEntry toEntry(CreateOrUpdateOfficeBody dto);
 
     DictOfficeLocationEntry toEntry(CreateOrUpdateOfficeLocationBody dto);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "officeLocationId", source = "officeLocationId")
-    @Mapping(target = "createdBy", source = "author")
-    @Mapping(target = "createdAt", source = "now")
-    DictOfficeWorkplaceEntry toNewWorkplaceEntry(int officeLocationId,
-                                                 CreateOrUpdateWorkplaceBody dto, int author, OffsetDateTime now);
-
-
-    DictOfficeWorkplaceEntry applyWorkplaceBody(@MappingTarget DictOfficeWorkplaceEntry entry, CreateOrUpdateWorkplaceBody body);
 
     DictOrganizationEntry toEntry(CreateOrUpdateOrganizationBody dto);
 
@@ -54,10 +41,6 @@ public interface AdminDictDtoMapper extends MapperBase {
 
     @Mapping(target = "office", expression = "java(simpleDto(entry.getOfficeId(), entry.getOfficeName()))")
     DictOfficeLocationDto fromEntry(DictOfficeLocationView entry);
-
-    @Mapping(target = "office", expression = "java(simpleDto(entry.getOfficeId(), entry.getOfficeName()))")
-    @Mapping(target = "officeLocation", expression = "java(simpleDto(entry.getOfficeLocationId(), entry.getOfficeLocationName()))")
-    DictOfficeWorkplaceDto fromEntry(DictOfficeWorkplaceView entry);
 
     DictOrganizationDto fromEntry(DictOrganizationEntry entry);
 
