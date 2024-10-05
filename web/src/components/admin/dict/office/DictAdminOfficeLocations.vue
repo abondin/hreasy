@@ -16,18 +16,32 @@
         </v-textarea>
       </template>
       <template v-slot:item.hasMapFile="{ item }">
-        <v-tooltip bottom>
+        <v-tooltip bottom v-if="item.hasMapFile">
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <v-chip small v-if="item.hasMapFile" v-bind="tattrs" v-on="ton"
-                    @click="openDeleteDialog($event, item)">
-              <v-icon>mdi-delete</v-icon>
+            <v-chip small v-bind="tattrs" v-on="ton"
+                    @click="openPreviewDialog($event, item)">
+              <v-icon>mdi-map</v-icon>
             </v-chip>
-            <v-chip small v-else v-bind="tattrs" v-on="ton"
+          </template>
+          <span>{{ $t('Посмотреть карту') }}</span>
+        </v-tooltip>
+        <v-tooltip bottom v-if="item.hasMapFile">
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <v-btn color="error" x-small text link icon v-bind="tattrs" v-on="ton"
+                    @click="openDeleteDialog($event, item)">
+              <v-icon>mdi-cancel</v-icon>
+            </v-btn>
+          </template>
+          <span>{{ $t('Удалить карту') }}</span>
+        </v-tooltip>
+        <v-tooltip bottom v-if="!item.hasMapFile">
+          <template v-slot:activator="{ on: ton, attrs: tattrs}">
+            <v-chip small v-bind="tattrs" v-on="ton"
                     @click="openUploadDialog($event, item)">
               <v-icon>mdi-upload</v-icon>
             </v-chip>
           </template>
-          <span>{{ item.hasMapFile ? $t('Удалить карту') : $t('Загрузить карту') }}</span>
+          <span>{{ $t('Загрузить карту') }}</span>
         </v-tooltip>
       </template>
 
@@ -44,13 +58,17 @@
       </template>
     </in-dialog-form>
 
-    <in-dialog-form :data="deleteMapAction" form-ref="deleteMapForm" :title="$t('Удалить карту офиса')" @submit="data.reloadData()">
+    <in-dialog-form :data="deleteMapAction" form-ref="deleteMapForm" :title="$t('Удалить карту офиса')"
+                    @submit="data.reloadData()">
       <template v-slot:fields>
         <v-card-text>
           {{ $t('Вы уверены, что хотите удалить карту офиса?') }}
         </v-card-text>
       </template>
     </in-dialog-form>
+
+    <map-preview-component :data="previewMapAction"></map-preview-component>
+
   </div>
 </template>
 
@@ -72,10 +90,14 @@ import {SimpleDict} from "@/store/modules/dict";
 import MyFileUploader, {UploadCompleteEvent} from "@/components/shared/MyFileUploader.vue";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
+import MapPreviewComponent, {
+  MapPreviewDataContainer
+} from "@/components/admin/dict/office/workplace/MapPreviewComponent.vue";
+import dictService from "@/store/modules/dict.service";
 
 const namespace_dict = 'dict';
 @Component({
-  components: {InDialogForm, MyFileUploader, DictAdminTable}
+  components: {MapPreviewComponent, InDialogForm, MyFileUploader, DictAdminTable}
 })
 export default class DictAdminOfficeLocations extends Vue {
 
@@ -88,6 +110,7 @@ export default class DictAdminOfficeLocations extends Vue {
   private uploadMapAction = new InDialogActionDataContainer<number, DictOfficeLocation>(
       () => Promise.resolve()
   );
+  private previewMapAction = new MapPreviewDataContainer();
 
   private data = new DictTableComponentDataContainer<DictOfficeLocation, DictOfficeLocationUpdateBody, BasicDictFilter<DictOfficeLocation>>(
       () => dictAdminService.loadOfficeLocations(),
@@ -138,6 +161,14 @@ export default class DictAdminOfficeLocations extends Vue {
     this.uploadMapAction.openDialog(item.id, item);
     event.stopPropagation();
     event.preventDefault();
+  }
+
+  private openPreviewDialog(event: Event, item: DictOfficeLocation) {
+    event.stopPropagation();
+    event.preventDefault();
+    dictService.getOfficeLocationMap(item.id).then((map) => {
+      this.previewMapAction.show(map);
+    })
   }
 
   private uploadComplete(event: UploadCompleteEvent) {
