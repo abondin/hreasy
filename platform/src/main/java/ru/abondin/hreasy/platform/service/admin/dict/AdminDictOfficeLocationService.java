@@ -43,7 +43,10 @@ public class AdminDictOfficeLocationService {
     public Flux<DictOfficeLocationDto> findAll(AuthContext auth) {
         return secValidator.validateAdminOfficeLocation(auth)
                 .flatMapMany(v -> repo.findAllView())
-                .map(mapper::fromEntry);
+                .map(e -> mapper.fromEntry(e, fileStorage.fileExists(
+                        OFFICE_LOCATION_MAP_RESOURCE_TYPE,
+                        getOfficeLocationMapFileName(e.getId())
+                )));
     }
 
     @Transactional

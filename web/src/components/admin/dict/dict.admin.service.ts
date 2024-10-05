@@ -66,7 +66,8 @@ export interface DictOfficeLocation {
     name: string,
     description: string | undefined,
     office: SimpleDict | undefined,
-    archived: boolean
+    archived: boolean,
+    hasMapFile: boolean
 }
 
 export interface DictOfficeUpdateBody {
@@ -80,7 +81,7 @@ export interface DictOfficeLocationUpdateBody {
     name: string,
     description: string | undefined,
     officeId: number | undefined,
-    archived: boolean
+    archived: boolean,
 }
 
 

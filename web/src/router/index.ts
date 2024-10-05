@@ -36,7 +36,6 @@ import JuniorRegistryTable from "@/components/udr/JuniorRegistryTable.vue";
 import JuniorRegistryDetailedView from "@/components/udr/JuniorRegistryDetailedView.vue";
 import SalaryRequestsTable from "@/components/salary/SalaryRequestsTable.vue";
 import SalaryRequestDetailsView from "@/components/salary/details/SalaryRequestDetailsView.vue";
-import OfficeRoomSeatsComponent from "@/components/office/OfficeRoomSeatsComponent.vue";
 import DictAdminOffices from "@/components/admin/dict/office/DictAdminOffices.vue";
 
 Vue.use(VueRouter)
@@ -74,7 +73,6 @@ const routes = [
     {path: "/timesheet", component: TimesheetTableComponent},
     {path: "/juniors", component: JuniorRegistryTable},
     {path: "/juniors/:juniorRegistryId", component: JuniorRegistryDetailedView, props: true},
-    {path: "/office/:officeId", component: OfficeRoomSeatsComponent},
     {path: "/admin/projects", component: AdminProjects},
     {path: "/admin/projects/:projectId", component: AdminProjectDetails, props: true},
     {path: "/admin/users", component: AdminUsers},

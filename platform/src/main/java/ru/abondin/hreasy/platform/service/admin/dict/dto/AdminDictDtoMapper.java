@@ -40,7 +40,8 @@ public interface AdminDictDtoMapper extends MapperBase {
     DictOfficeDto fromEntry(DictOfficeEntry entry);
 
     @Mapping(target = "office", expression = "java(simpleDto(entry.getOfficeId(), entry.getOfficeName()))")
-    DictOfficeLocationDto fromEntry(DictOfficeLocationView entry);
+    @Mapping(target = "hasMapFile", source = "hasMapFile")
+    DictOfficeLocationDto fromEntry(DictOfficeLocationView entry, boolean hasMapFile);
 
     DictOrganizationDto fromEntry(DictOrganizationEntry entry);
 

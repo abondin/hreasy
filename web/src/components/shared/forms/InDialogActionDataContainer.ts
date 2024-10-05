@@ -20,6 +20,10 @@ export class InDialogActionDataContainer<ID,T> {
         return this._formData;
     }
 
+    get itemId() {
+        return this._itemId;
+    }
+
     public openDialog(itemId: ID | null, formData: T | null) {
         this._formData = formData;
         this._itemId = itemId;

@@ -11,6 +11,7 @@
           </v-alert>
         </v-card-text>
         <v-card-actions>
+          <slot name="actions">
           <v-spacer></v-spacer>
           <v-progress-circular class="mr-2" v-if="data.loading" indeterminate></v-progress-circular>
           <v-btn @click="cancel">{{ closeButtonText || $t('Закрыть') }}</v-btn>
@@ -18,6 +19,7 @@
               submitButtonText || $t('Применить')
             }}
           </v-btn>
+          </slot>
         </v-card-actions>
       </v-card>
     </v-form>
