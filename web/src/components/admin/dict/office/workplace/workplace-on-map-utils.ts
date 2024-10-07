@@ -1,4 +1,5 @@
 import logger from "@/logger";
+import {EmployeeOnWorkplace} from "@/components/admin/dict/office/workplace/MapPreviewDataContainer";
 
 export default class WorkplaceOnMapUtils {
 
@@ -22,7 +23,7 @@ export default class WorkplaceOnMapUtils {
         }
     }
 
-    public static initializeWorkplace(svg: SVGElement) {
+    public static initializeWorkplace(svg: SVGElement, employees?: EmployeeOnWorkplace[]) {
         const elements = svg.querySelectorAll('*');
         elements.forEach(element => {
             if (element instanceof SVGElement && element.dataset && element.dataset['workplacename']) {

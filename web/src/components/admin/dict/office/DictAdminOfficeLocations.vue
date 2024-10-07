@@ -28,7 +28,7 @@
         <v-tooltip bottom v-if="item.hasMapFile">
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
             <v-btn color="error" x-small text link icon v-bind="tattrs" v-on="ton"
-                    @click="openDeleteDialog($event, item)">
+                   @click="openDeleteDialog($event, item)">
               <v-icon>mdi-cancel</v-icon>
             </v-btn>
           </template>
@@ -90,10 +90,9 @@ import {SimpleDict} from "@/store/modules/dict";
 import MyFileUploader, {UploadCompleteEvent} from "@/components/shared/MyFileUploader.vue";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
-import MapPreviewComponent, {
-  MapPreviewDataContainer
-} from "@/components/admin/dict/office/workplace/MapPreviewComponent.vue";
+import MapPreviewComponent from "@/components/admin/dict/office/workplace/MapPreviewComponent.vue";
 import dictService from "@/store/modules/dict.service";
+import MapPreviewDataContainer from "@/components/admin/dict/office/workplace/MapPreviewDataContainer";
 
 const namespace_dict = 'dict';
 @Component({
@@ -167,7 +166,11 @@ export default class DictAdminOfficeLocations extends Vue {
     event.stopPropagation();
     event.preventDefault();
     dictService.getOfficeLocationMap(item.id).then((map) => {
-      this.previewMapAction.show(map);
+      this.previewMapAction.show(map, [{
+        employeeId: 1,
+        employeeDisplayName: 'Киршанов Николай Александрович',
+        workplaceName: '3.300.06'
+      }]);
     })
   }
 

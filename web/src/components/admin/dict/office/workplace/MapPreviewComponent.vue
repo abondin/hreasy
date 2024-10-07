@@ -15,40 +15,9 @@
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import WorkplaceOnMapUtils from "@/components/admin/dict/office/workplace/workplace-on-map-utils";
+import MapPreviewDataContainer from "@/components/admin/dict/office/workplace/MapPreviewDataContainer";
 
-export class MapPreviewDataContainer {
-  private _fullscreen = false;
-  private _img: string | null = null;
-  private _mapSelectedListener: (() => any) | null = null;
 
-  public show(svg: string) {
-    this._img = svg;
-    if (svg) {
-      this._fullscreen = true;
-      if (this._mapSelectedListener) {
-        this._mapSelectedListener();
-      }
-    }
-  }
-
-  set mapSelectedListener(listener: () => any | null) {
-    this._mapSelectedListener = listener;
-  }
-
-  public hide() {
-    this._fullscreen = false;
-    this._img = null;
-  }
-
-  get img(): string | null {
-    return this._img;
-  }
-
-  get fullscreen(): boolean {
-    return this._fullscreen;
-  }
-
-}
 
 @Component({})
 export default class MapPreviewComponent extends Vue {
@@ -61,7 +30,7 @@ export default class MapPreviewComponent extends Vue {
       this.$nextTick(() => {
         const svgElement = this.$refs.map as SVGElement;
         WorkplaceOnMapUtils.adjustSvgViewBox(svgElement);
-        WorkplaceOnMapUtils.initializeWorkplace(svgElement);
+        WorkplaceOnMapUtils.initializeWorkplace(svgElement, this.data.employees);
       });
     }
   }
