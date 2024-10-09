@@ -1,12 +1,19 @@
 <template>
-  <v-overlay :value="data.fullscreen" absolute>
-    <v-card @click.stop="data.hide()">
+  <v-overlay :value="data.fullscreen" class="map-overlay" absolute>
+    <v-alert type="error" v-if="data.error">
+      {{ data.error }}
+    </v-alert>
+    <v-progress-circular v-if="data.loading"
+                         indeterminate
+                         size="64"
+    ></v-progress-circular>
+    <v-card light v-else @click.stop="data.hide()">
       <v-card-text class="full-screen-card">
         <svg v-if="data.img"
              v-html="data.img" ref="map" class="full-screen-svg">
         </svg>
       </v-card-text>
-      <v-btn absolute dark fab top right @click="data.hide()">
+      <v-btn absolute fab top right @click="data.hide()">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-card>
@@ -25,7 +32,7 @@ export default class MapPreviewComponent extends Vue {
   private data!: MapPreviewDataContainer;
 
   mounted() {
-    this.data.mapSelectedListener = () => {
+    this.data.mapReadyListener = () => {
       this.$nextTick(() => {
         const svgElement = this.$refs.map as SVGElement;
         const {width, height} = svgElement.getBoundingClientRect();
@@ -38,17 +45,28 @@ export default class MapPreviewComponent extends Vue {
 </script>
 
 <style scoped>
+.map-overlay {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999; /* Ensure it's on top */
+}
+
 .full-screen-card {
   width: 90vw;
   height: 90vh;
   margin: 0;
   padding: 0;
   overflow: hidden;
+  justify-content: center;
+  align-items: center;
+  display: flex;
 }
 
 .full-screen-svg {
   width: 100%;
   height: 100%;
-  display: block;
 }
 </style>

@@ -165,9 +165,7 @@ export default class DictAdminOfficeLocations extends Vue {
   private openPreviewDialog(event: Event, item: DictOfficeLocation) {
     event.stopPropagation();
     event.preventDefault();
-    dictService.getOfficeLocationMap(item.id).then((map) => {
-      this.previewMapAction.show(map);
-    })
+    this.previewMapAction.show(item.id);
   }
 
   private uploadComplete(event: UploadCompleteEvent) {

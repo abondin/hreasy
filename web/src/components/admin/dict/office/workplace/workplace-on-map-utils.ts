@@ -16,14 +16,15 @@ export default class WorkplaceOnMapUtils {
             // Minimum scale
             const scale = Math.min(scaleX, scaleY);
 
-            // Применяем масштабирование через viewBox или transform
-            svgElement.setAttribute(
-                "viewBox",
-                `0 0 ${svgWidth} ${svgHeight}`
-            );
-            svgElement.setAttribute("width",`${svgWidth * scale}px`);
-            svgElement.setAttribute("height",`${svgHeight * scale}px`);
-            svgElement.style.height = `${svgHeight * scale}px`;
+            if (scale < 1) {
+                svgElement.setAttribute(
+                    "viewBox",
+                    `0 0 ${svgWidth} ${svgHeight}`
+                );
+                svgElement.setAttribute("width", `${svgWidth * scale}px`);
+                svgElement.setAttribute("height", `${svgHeight * scale}px`);
+                svgElement.style.height = `${svgHeight * scale}px`;
+            }
         }
     }
 
