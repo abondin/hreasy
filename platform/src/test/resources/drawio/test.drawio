@@ -1,15 +1,18 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.17 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.17">
   <diagram name="Страница — 1" id="RWA4iWW7VHmDz5b1m-5r">
-    <mxGraphModel dx="1434" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2206" dy="1298" grid="1" gridSize="10" guides="1" tooltips="1" connect="0" arrows="0" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="fzES5mH8itLE2TRIsAih-3" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="20" y="50" width="800" height="600" as="geometry" />
+        <mxCell id="fzES5mH8itLE2TRIsAih-3" value="" style="rounded=0;whiteSpace=wrap;html=1;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;connectable=0;" vertex="1" parent="1">
+          <mxGeometry x="30" y="80" width="1890" height="1089" as="geometry" />
         </mxCell>
-        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.303.06" workplaceType="1" id="fzES5mH8itLE2TRIsAih-6">
+        <mxCell id="fzES5mH8itLE2TRIsAih-21" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1441" y="120" width="450" height="450" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.303.29" workplaceType="1" id="fzES5mH8itLE2TRIsAih-6">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-            <mxGeometry x="60" y="90" width="200" height="100" as="geometry" />
+            <mxGeometry x="1641" y="191" width="200" height="100" as="geometry" />
           </mxCell>
         </object>
         <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-7">
@@ -17,27 +20,9 @@
             <mxGeometry y="10" width="200" height="30" as="geometry" />
           </mxCell>
         </object>
-        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.303.08" workplaceType="2" id="fzES5mH8itLE2TRIsAih-8">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;resizable=0;" vertex="1" parent="1">
-            <mxGeometry x="60" y="370" width="200" height="100" as="geometry" />
-          </mxCell>
-        </object>
-        <mxCell id="fzES5mH8itLE2TRIsAih-10" value="Гостевое место" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=2;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-8">
-          <mxGeometry y="10" width="200" height="30" as="geometry" />
-        </mxCell>
-        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.303.07" workplaceType="1" id="fzES5mH8itLE2TRIsAih-11">
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.01" workplaceType="1" id="fzES5mH8itLE2TRIsAih-13">
           <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-            <mxGeometry x="60" y="220" width="200" height="100" as="geometry" />
-          </mxCell>
-        </object>
-        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-12">
-          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-11">
-            <mxGeometry y="10" width="200" height="30" as="geometry" />
-          </mxCell>
-        </object>
-        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.303.09" workplaceType="1" id="fzES5mH8itLE2TRIsAih-13">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-            <mxGeometry x="60" y="500" width="200" height="100" as="geometry" />
+            <mxGeometry x="50" y="910" width="200" height="100" as="geometry" />
           </mxCell>
         </object>
         <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-14">
@@ -45,13 +30,304 @@
             <mxGeometry y="10" width="200" height="30" as="geometry" />
           </mxCell>
         </object>
-        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.303.09" workplaceType="1" id="fzES5mH8itLE2TRIsAih-16">
-          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-            <mxGeometry x="290" y="90" width="200" height="100" as="geometry" />
+        <mxCell id="fzES5mH8itLE2TRIsAih-22" value="&lt;font style=&quot;font-size: 48px;&quot;&gt;Серверная&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1441" y="585" width="450" height="265" as="geometry" />
+        </mxCell>
+        <mxCell id="fzES5mH8itLE2TRIsAih-23" value="&lt;span style=&quot;font-size: 48px;&quot;&gt;Переговорка аквариум&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1201" y="870" width="690" height="285" as="geometry" />
+        </mxCell>
+        <mxCell id="fzES5mH8itLE2TRIsAih-24" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1431" y="440" width="20" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="fzES5mH8itLE2TRIsAih-25" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1191" y="960" width="20" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="fzES5mH8itLE2TRIsAih-26" value="" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;" vertex="1" parent="1">
+          <mxGeometry x="290" y="1110" width="20" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="fzES5mH8itLE2TRIsAih-28" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fillStyle=hatch;" vertex="1" parent="1">
+          <mxGeometry x="50" y="600" width="450" height="280" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.04" workplaceType="1" id="fzES5mH8itLE2TRIsAih-29">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;editable=1;movable=1;resizable=1;rotatable=1;deletable=1;locked=0;connectable=1;" vertex="1" parent="1">
+            <mxGeometry x="70" y="630" width="200" height="100" as="geometry" />
           </mxCell>
         </object>
-        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-17">
-          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-16">
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-30">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-29">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.05" workplaceType="1" id="fzES5mH8itLE2TRIsAih-31">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="280" y="630" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-32">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-31">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.03" workplaceType="1" id="fzES5mH8itLE2TRIsAih-33">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="280" y="750" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-34">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-33">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.02" workplaceType="1" id="fzES5mH8itLE2TRIsAih-35">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="70" y="750" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-36">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-35">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="fzES5mH8itLE2TRIsAih-52" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fillStyle=hatch;" vertex="1" parent="1">
+          <mxGeometry x="50" y="291" width="450" height="280" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.08" workplaceType="1" id="fzES5mH8itLE2TRIsAih-53">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;editable=1;movable=1;resizable=1;rotatable=1;deletable=1;locked=0;connectable=1;" vertex="1" parent="1">
+            <mxGeometry x="70" y="320" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-54">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-53">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.09" workplaceType="1" id="fzES5mH8itLE2TRIsAih-55">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="280" y="320" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-56">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-55">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.07" workplaceType="1" id="fzES5mH8itLE2TRIsAih-57">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="280" y="440" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-58">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-57">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.06" workplaceType="1" id="fzES5mH8itLE2TRIsAih-59">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="70" y="440" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-60">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-59">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="fzES5mH8itLE2TRIsAih-61" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fillStyle=hatch;" vertex="1" parent="1">
+          <mxGeometry x="50" y="120" width="450" height="140" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.10" workplaceType="1" id="fzES5mH8itLE2TRIsAih-62">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;editable=1;movable=1;resizable=1;rotatable=1;deletable=1;locked=0;connectable=1;" vertex="1" parent="1">
+            <mxGeometry x="70" y="140" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-63">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-62">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.11" workplaceType="1" id="fzES5mH8itLE2TRIsAih-64">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="280" y="140" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-65">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-64">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="fzES5mH8itLE2TRIsAih-66" value="&lt;span style=&quot;font-size: 48px;&quot;&gt;Офис 306&lt;br&gt;Углерод&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="50" y="1027.5" width="330" height="112.5" as="geometry" />
+        </mxCell>
+        <mxCell id="fzES5mH8itLE2TRIsAih-67" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fillStyle=hatch;" vertex="1" parent="1">
+          <mxGeometry x="660" y="700" width="450" height="280" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.14" workplaceType="1" id="fzES5mH8itLE2TRIsAih-68">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;editable=1;movable=1;resizable=1;rotatable=1;deletable=1;locked=0;connectable=1;" vertex="1" parent="1">
+            <mxGeometry x="680" y="730" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-69">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-68">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.15" workplaceType="1" id="fzES5mH8itLE2TRIsAih-70">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="890" y="730" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-71">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-70">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.13" workplaceType="1" id="fzES5mH8itLE2TRIsAih-72">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="890" y="850" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-73">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-72">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.12" workplaceType="1" id="fzES5mH8itLE2TRIsAih-74">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="680" y="850" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-75">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-74">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="fzES5mH8itLE2TRIsAih-76" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fillStyle=hatch;" vertex="1" parent="1">
+          <mxGeometry x="660" y="120" width="450" height="280" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.22" workplaceType="1" id="fzES5mH8itLE2TRIsAih-77">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;editable=1;movable=1;resizable=1;rotatable=1;deletable=1;locked=0;connectable=1;" vertex="1" parent="1">
+            <mxGeometry x="680" y="150" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-78">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-77">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.23" workplaceType="1" id="fzES5mH8itLE2TRIsAih-79">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="890" y="150" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-80">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-79">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.21" workplaceType="1" id="fzES5mH8itLE2TRIsAih-81">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="890" y="270" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-82">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-81">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.20" workplaceType="1" id="fzES5mH8itLE2TRIsAih-83">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="680" y="270" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-84">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-83">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="fzES5mH8itLE2TRIsAih-86" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fillStyle=hatch;" vertex="1" parent="1">
+          <mxGeometry x="600" y="540" width="450" height="140" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.16" workplaceType="2" id="fzES5mH8itLE2TRIsAih-87">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;resizable=0;" vertex="1" parent="1">
+            <mxGeometry x="620" y="560" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="fzES5mH8itLE2TRIsAih-88" value="Гостевое место" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=2;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-87">
+          <mxGeometry y="10" width="200" height="30" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.17" workplaceType="2" id="fzES5mH8itLE2TRIsAih-89">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;resizable=0;" vertex="1" parent="1">
+            <mxGeometry x="827" y="560" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="fzES5mH8itLE2TRIsAih-90" value="Гостевое место" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=2;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-89">
+          <mxGeometry y="10" width="200" height="30" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.18" workplaceType="1" id="fzES5mH8itLE2TRIsAih-91">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="680" y="420" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-92">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-91">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="fzES5mH8itLE2TRIsAih-93" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fillStyle=hatch;" vertex="1" parent="1">
+          <mxGeometry x="1201" y="120" width="220" height="380" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.28" workplaceType="1" id="fzES5mH8itLE2TRIsAih-96">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="1211" y="140" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-97">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-96">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.27" workplaceType="1" id="fzES5mH8itLE2TRIsAih-98">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="1211" y="250" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-99">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-98">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.26" workplaceType="1" id="fzES5mH8itLE2TRIsAih-100">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="1211" y="360" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-101">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-100">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="fzES5mH8itLE2TRIsAih-102" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fillStyle=hatch;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="570" width="221" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="fzES5mH8itLE2TRIsAih-103" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1431" y="650" width="20" height="120" as="geometry" />
+        </mxCell>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.24" workplaceType="1" id="fzES5mH8itLE2TRIsAih-104">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="1210.5" y="730" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-105">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-104">
+            <mxGeometry y="10" width="200" height="30" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%workplaceName%&lt;/b&gt;&lt;/font&gt;" placeholders="1" workplaceName="3.306.25" workplaceType="1" id="fzES5mH8itLE2TRIsAih-106">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;metaEdit=1;container=1;dropTarget=1;collapsible=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+            <mxGeometry x="1210.5" y="610" width="200" height="100" as="geometry" />
+          </mxCell>
+        </object>
+        <object label="${empl}" empl="" id="fzES5mH8itLE2TRIsAih-107">
+          <mxCell style="text;align=center;verticalAlign=middle;rounded=0;connectable=0;allowArrows=0;expand=0;recursiveResize=0;editable=0;movable=0;resizable=0;rotatable=0;deletable=0;locked=1;cloneable=0;pointerEvents=0;" vertex="1" parent="fzES5mH8itLE2TRIsAih-106">
             <mxGeometry y="10" width="200" height="30" as="geometry" />
           </mxCell>
         </object>

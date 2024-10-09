@@ -2,24 +2,28 @@ import {EmployeeOnWorkplace} from "@/components/admin/dict/office/workplace/MapP
 
 export default class WorkplaceOnMapUtils {
 
-    public static defaultMapSizes = {
-        width: 800,
-        height: 600,
-        employeeNameTextAreaWidth: 200,
-    };
-
-    public static adjustSvgViewBox(svg: SVGElement) {
+    public static adjustSvgViewBox(svg: SVGElement, width: number, height: number) {
         const svgElement = svg.querySelector('svg');
-        if (svgElement && !svgElement.hasAttribute('viewBox')) {
+        if (svgElement) {
             // Original svg size
-            const svgWidth = svgElement.getAttribute('width') || this.defaultMapSizes.width;
-            const svgHeight = svgElement.getAttribute('height') || this.defaultMapSizes.height;
+            const svgWidth = svgElement.width.baseVal.value;
+            const svgHeight = svgElement.height.baseVal.value;
 
-            // Adjust to default map size
-            svgElement.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
-            svgElement.setAttribute('width', `${this.defaultMapSizes.width}`);
-            svgElement.setAttribute('height', `${this.defaultMapSizes.height}`);
-            svgElement.setAttribute('preserveAspectRatio', 'xMidYMin meet');
+            // Scale
+            const scaleX = width / svgWidth;
+            const scaleY = height / svgHeight;
+
+            // Minimum scale
+            const scale = Math.min(scaleX, scaleY);
+
+            // Применяем масштабирование через viewBox или transform
+            svgElement.setAttribute(
+                "viewBox",
+                `0 0 ${svgWidth} ${svgHeight}`
+            );
+            svgElement.setAttribute("width",`${svgWidth * scale}px`);
+            svgElement.setAttribute("height",`${svgHeight * scale}px`);
+            svgElement.style.height = `${svgHeight * scale}px`;
         }
     }
 
@@ -63,7 +67,7 @@ export default class WorkplaceOnMapUtils {
 
 // Update the text element with employee's name and adjust the length
     private static updateEmployeeText(workplaceElement: SVGGraphicsElement, emplElement: Element, employee?: EmployeeOnWorkplace): void {
-        const maxLength = Math.round(workplaceElement.getBBox().width*0.95);
+        const maxLength = Math.round(workplaceElement.getBBox().width * 0.95);
         const ellipsis = '...';
 
         emplElement.querySelectorAll('text').forEach((textElement) => {
@@ -85,28 +89,27 @@ export default class WorkplaceOnMapUtils {
 // Highlight the workplace if the employee is selected
     private static highlightSelectedEmployee(workplace: SVGElement, employee?: EmployeeOnWorkplace): void {
         if (employee?.selected) {
-            workplace.querySelectorAll('rect').forEach(rect=>{
+            workplace.querySelectorAll('rect').forEach(rect => {
                 rect.style.filter = 'drop-shadow(2px 2px 4px rgba(255, 50, 50, 0.7))';
             })
         }
     }
 
     private static addTooltip(workplace: SVGElement, employee?: EmployeeOnWorkplace, workplaceName?: string): void {
-        let titleElement: Element|null = workplace.querySelector('title');
+        let titleElement: Element | null = workplace.querySelector('title');
         if (!titleElement) {
             titleElement = document.createElementNS('http://www.w3.org/2000/svg', 'title');
             workplace.appendChild(titleElement);
         }
         let title = '';
-        if (workplaceName){
-            title+=`${workplaceName}`;
+        if (workplaceName) {
+            title += `${workplaceName}`;
         }
-        if (employee?.employeeDisplayName){
-            title+=`\n${employee?.employeeDisplayName}`;
+        if (employee?.employeeDisplayName) {
+            title += `\n${employee?.employeeDisplayName}`;
         }
         titleElement.textContent = title;
     }
-
 
 
 }
