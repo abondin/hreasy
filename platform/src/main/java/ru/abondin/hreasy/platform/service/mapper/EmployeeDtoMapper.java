@@ -26,6 +26,7 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
     @Mapping(target = "ba", source = ".", qualifiedByName = "ba")
     @Mapping(target = "skills", ignore = true)
     @Mapping(target = "hasAvatar", ignore = true)
+    @Mapping(target = "hasOfficeLocationMap", ignore = true)
     EmployeeDto employeeNoSkills(EmployeeDetailedEntry entry);
 
     default EmployeeDto employeeWithSkills(EmployeeDetailedEntry entry, int loggedInEmployee) {

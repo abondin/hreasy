@@ -23,10 +23,12 @@ public class EmployeeDto {
     private CurrentProjectDictDto currentProject;
     private SimpleDictDto position;
     private SimpleDictDto officeLocation;
+    private String officeWorkplace;
     private SimpleDictDto ba;
     private String email;
     private String telegram;
     private OffsetDateTime telegramConfirmedAt;
     private boolean hasAvatar;
+    private boolean hasOfficeLocationMap;
     private List<SkillDto> skills = new ArrayList<>();
 }
