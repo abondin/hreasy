@@ -7,16 +7,19 @@ CREATE TABLE IF NOT EXISTS dict.office (
     archived boolean NOT NULL DEFAULT false,
     created_at timestamp with time zone NOT NULL,
     created_by integer NOT NULL REFERENCES empl.employee (id),
-    map_svg text NULL
+    map_name varchar(255) null
 );
 COMMENT ON TABLE dict.office IS 'Company office';
 COMMENT ON COLUMN dict.office.id IS 'Primary key to link with other tables';
 COMMENT ON COLUMN dict.office."name" IS 'Office name';
 COMMENT ON COLUMN dict.office.address IS 'Office address';
 COMMENT ON COLUMN dict.office.description IS 'Office description';
-COMMENT ON COLUMN dict.office.map_svg IS 'Office map SVG';
+COMMENT ON COLUMN dict.office.map_name IS 'Office map filename';
 
 ALTER TABLE dict.office_location ADD COLUMN IF NOT EXISTS office_id int null REFERENCES dict.office(id);
+ALTER TABLE dict.office_location ADD COLUMN IF NOT EXISTS map_name varchar(255) null;
+COMMENT ON COLUMN dict.office_location.office_id IS 'Link to office';
+COMMENT ON COLUMN dict.office_location.map_name IS 'Office location map file name';
 COMMENT ON COLUMN dict.office_location.office IS '!!! DEPRECATED COLUMN !!! Use office_id instead';
 
 DROP TABLE IF EXISTS dict.office_location_log;
@@ -39,6 +42,13 @@ INSERT INTO sec.perm (permission,description) VALUES
 INSERT INTO sec.role_perm (role,permission) VALUES
 	 ('global_admin','admin_office'),
 	 ('hr','admin_office') on conflict do nothing;
+-- Permission to upload maps
+INSERT INTO sec.perm (permission,description) VALUES
+	 ('admin_office_map','Upload and delete office and office location map') on conflict do nothing;
+INSERT INTO sec.role_perm (role,permission) VALUES
+	 ('global_admin','admin_office_map'),
+	 ('hr','admin_office_map') on conflict do nothing;
+
 
 
 ALTER TABLE empl.employee ADD COLUMN IF NOT EXISTS office_workplace varchar(64) null;
@@ -58,7 +68,9 @@ AS SELECT e.*,
     p.category AS position_category,
     project.name AS current_project_name,
     o.id AS office_location_id,
+    o.office_id AS office_location_office_id,
     o.name AS office_location_name,
+    o.map_name AS office_location_map_name,
     sk.rating AS aggregated_skills,
     ba.id AS ba_id,
     ba.name AS ba_name

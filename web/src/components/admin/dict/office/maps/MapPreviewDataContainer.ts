@@ -14,23 +14,23 @@ export default class MapPreviewDataContainer {
     private _loading = false;
     private _error = '';
     private _img: string | null = null;
-    private _officeLocation: { id: number, name: string } | null = null;
+    private _filename: string | null = null;
     private _mapReadyListener: (() => any) | null = null;
     private _employees: EmployeeOnWorkplace[] = [];
 
 
-    public show(officeLocation: { id: number, name: string }, selectedEmployeeId?: number) {
+    public show(filename: string, selectedEmployeeId?: number) {
         this._img = null;
         this._employees = [];
-        this._officeLocation = officeLocation;
+        this._filename = filename;
         this._loading = true;
         this._error = '';
         this._opened = true;
-        dictService.getOfficeLocationMap(officeLocation.id).then(img => {
+        dictService.getOfficeLocationMapFile(filename).then(img => {
             if (img) {
                 this._img = img;
                 return employeeService.findAll().then(allEmployees => {
-                    this._employees = allEmployees.filter(e => e.officeLocation?.id === officeLocation.id).map(e => {
+                    this._employees = allEmployees.filter(e => e.officeLocation?.mapName === filename).map(e => {
                         return {
                             employeeId: e.id,
                             employeeDisplayName: e.displayName,
@@ -82,7 +82,7 @@ export default class MapPreviewDataContainer {
         return this._error;
     }
 
-    get officeLocation(): { id: number, name: string } | null {
-        return this._officeLocation;
+    get filename(){
+        return this._filename;
     }
 }

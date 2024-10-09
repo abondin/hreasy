@@ -26,7 +26,7 @@ public class DictOfficeEntry {
     @Nullable
     private String description;
 
-    private String mapSvg;
+    private String mapName;
 
 
     private boolean archived = false;

@@ -1,4 +1,4 @@
-import {EmployeeOnWorkplace} from "@/components/admin/dict/office/workplace/MapPreviewDataContainer";
+import {EmployeeOnWorkplace} from "@/components/admin/dict/office/maps/MapPreviewDataContainer";
 
 export default class WorkplaceOnMapUtils {
 

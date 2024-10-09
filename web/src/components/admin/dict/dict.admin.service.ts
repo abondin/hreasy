@@ -67,7 +67,7 @@ export interface DictOfficeLocation {
     description: string | undefined,
     office: SimpleDict | undefined,
     archived: boolean,
-    hasMapFile: boolean
+    mapName: string
 }
 
 export interface DictOfficeUpdateBody {
@@ -123,9 +123,9 @@ export interface DictAdminService {
 
     updateOrganization(id: number, body: DictOrganizationUpdateBody): Promise<DictOrganization>;
 
-    getUploadOfficeLocationMapPath(officeLocationId: number): string;
+    getUploadOfficeLocationMapPath(): string;
 
-    deleteOfficeLocationMap(officeLocationId: number): Promise<any>;
+    deleteOfficeLocationMap(filename: string): Promise<any>;
 }
 
 class RestDictAdminService implements DictAdminService {
@@ -173,8 +173,8 @@ class RestDictAdminService implements DictAdminService {
         return httpService.get("v1/admin/dict/office_locations").then(response => response.data);
     }
 
-    getUploadOfficeLocationMapPath(officeLocationId: number): string {
-        return `${httpService.defaults.baseURL}v1/admin/dict/office_locations/${officeLocationId}/map`;
+    getUploadOfficeLocationMapPath(): string {
+        return `${httpService.defaults.baseURL}v1/admin/dict/office_maps`;
     }
     loadPositions(): Promise<Array<DictPosition>> {
         return httpService.get("v1/admin/dict/positions").then(response => response.data);
@@ -200,8 +200,8 @@ class RestDictAdminService implements DictAdminService {
         return httpService.put(`v1/admin/dict/office_locations/${id}`, body);
     }
 
-    deleteOfficeLocationMap(officeLocationId: number): Promise<any> {
-        return httpService.delete(`v1/admin/dict/office_locations/${officeLocationId}/map`)
+    deleteOfficeLocationMap(filename: string): Promise<any> {
+        return httpService.delete(`v1/admin/dict/office_locations/${filename}/map`)
     }
 
 

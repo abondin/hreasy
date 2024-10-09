@@ -25,47 +25,9 @@
           </template>
           <span>{{ $t('Посмотреть карту') }}</span>
         </v-tooltip>
-        <v-tooltip bottom v-if="item.hasMapFile">
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <v-btn color="error" x-small text link icon v-bind="tattrs" v-on="ton"
-                   @click="openDeleteDialog($event, item)">
-              <v-icon>mdi-cancel</v-icon>
-            </v-btn>
-          </template>
-          <span>{{ $t('Удалить карту') }}</span>
-        </v-tooltip>
-        <v-tooltip bottom v-if="!item.hasMapFile">
-          <template v-slot:activator="{ on: ton, attrs: tattrs}">
-            <v-chip small v-bind="tattrs" v-on="ton"
-                    @click="openUploadDialog($event, item)">
-              <v-icon>mdi-upload</v-icon>
-            </v-chip>
-          </template>
-          <span>{{ $t('Загрузить карту') }}</span>
-        </v-tooltip>
       </template>
 
     </dict-admin-table>
-    <in-dialog-form :data="uploadMapAction" form-ref="uploadMapForm" :title="$t('Загрузить SVG файл с картой')">
-      <template v-slot:fields>
-        <my-file-uploader
-            :file-id="'map-'+uploadMapAction.itemId"
-            :post-action="getUploadOfficeLocationMapPath(uploadMapAction.itemId)"
-            @close="uploadComplete"></my-file-uploader>
-      </template>
-      <template v-slot:actions>
-        <span></span>
-      </template>
-    </in-dialog-form>
-
-    <in-dialog-form :data="deleteMapAction" form-ref="deleteMapForm" :title="$t('Удалить карту офиса')"
-                    @submit="data.reloadData()">
-      <template v-slot:fields>
-        <v-card-text>
-          {{ $t('Вы уверены, что хотите удалить карту офиса?') }}
-        </v-card-text>
-      </template>
-    </in-dialog-form>
 
     <map-preview-component :data="previewMapAction"></map-preview-component>
 
@@ -87,12 +49,10 @@ import DictTableComponentDataContainer, {
 import {CreateOrUpdateAction} from "@/components/shared/table/EditTableComponentDataContainer";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
-import MyFileUploader, {UploadCompleteEvent} from "@/components/shared/MyFileUploader.vue";
+import MyFileUploader from "@/components/shared/MyFileUploader.vue";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
-import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
-import MapPreviewComponent from "@/components/admin/dict/office/workplace/MapPreviewComponent.vue";
-import dictService from "@/store/modules/dict.service";
-import MapPreviewDataContainer from "@/components/admin/dict/office/workplace/MapPreviewDataContainer";
+import MapPreviewComponent from "@/components/admin/dict/office/maps/MapPreviewComponent.vue";
+import MapPreviewDataContainer from "@/components/admin/dict/office/maps/MapPreviewDataContainer";
 
 const namespace_dict = 'dict';
 @Component({
@@ -103,12 +63,6 @@ export default class DictAdminOfficeLocations extends Vue {
   @Getter("offices", {namespace: namespace_dict})
   private allOffices!: Array<SimpleDict>;
 
-  private deleteMapAction = new InDialogActionDataContainer<number, DictOfficeLocation>(
-      (id) => dictAdminService.deleteOfficeLocationMap(id!));
-
-  private uploadMapAction = new InDialogActionDataContainer<number, DictOfficeLocation>(
-      () => Promise.resolve()
-  );
   private previewMapAction = new MapPreviewDataContainer();
 
   private data = new DictTableComponentDataContainer<DictOfficeLocation, DictOfficeLocationUpdateBody, BasicDictFilter<DictOfficeLocation>>(
@@ -142,38 +96,12 @@ export default class DictAdminOfficeLocations extends Vue {
     this.$store.dispatch('dict/reloadOffices')
   }
 
-  reload() {
-    this.data.reloadData();
-  }
-
-  private getUploadOfficeLocationMapPath(officeLocationId: number) {
-    return dictAdminService.getUploadOfficeLocationMapPath(officeLocationId)
-  }
-
-  private openDeleteDialog(event: Event, item: DictOfficeLocation) {
-    this.deleteMapAction.openDialog(item.id, item);
-    event.stopPropagation();
-    event.preventDefault();
-  }
-
-  private openUploadDialog(event: Event, item: DictOfficeLocation) {
-    this.uploadMapAction.openDialog(item.id, item);
-    event.stopPropagation();
-    event.preventDefault();
-  }
-
   private openPreviewDialog(event: Event, item: DictOfficeLocation) {
     event.stopPropagation();
     event.preventDefault();
-    this.previewMapAction.show(item);
+    this.previewMapAction.show(item.mapName);
   }
 
-  private uploadComplete(event: UploadCompleteEvent) {
-    if (event && event.uploaded) {
-      this.data.reloadData();
-    }
-    this.uploadMapAction.cancel();
-  }
 
 }
 </script>

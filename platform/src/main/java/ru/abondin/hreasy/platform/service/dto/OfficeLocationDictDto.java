@@ -9,6 +9,14 @@ import org.springframework.lang.Nullable;
  */
 @Data
 @NoArgsConstructor
-public class OfficeLocationDictDto extends SimpleDictDto { @Nullable
+public class OfficeLocationDictDto extends SimpleDictDto {
+    @Nullable
     private Integer officeId;
+    private String mapName;
+
+    public OfficeLocationDictDto(Integer id, String name, Integer officeId, String mapName) {
+        super(id, name);
+        this.officeId = officeId;
+        this.mapName = mapName;
+    }
 }

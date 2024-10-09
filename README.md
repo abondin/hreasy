@@ -95,6 +95,7 @@ and Dave's overtimes. Dave can see only his own overtimes.
 | admin_organization             | N                     | N                           | N                                      | Create/update/delete organizations                                                                                                                                |
 | admin_office                   | N                     | N                           | N                                      | Create/update/delete office location                                                                                                                              |
 | admin_office_location          | N                     | N                           | N                                      | Create/update/delete office location                                                                                                                              |
+| admin_office_map               | N                     | N                           | N                                      | Create/update/delete office location                                                                                                                              |
 | view_empl_current_project_role | Y                     | Y                           | Y                                      | View current project role                                                                                                                                         |
 | view_empl_skills               | Y                     | Y                           | Y                                      | View employee skills                                                                                                                                              |
 | admin_managers                 | N                     | N                           | N                                      | Admin managers for department,ba,project employees                                                                                                                |
@@ -152,6 +153,8 @@ and Dave's overtimes. Dave can see only his own overtimes.
 | admin_level                   | global_admin,hr                 |
 | admin_position                | global_admin,hr                 |
 | admin_office_location         | global_admin,hr                 |
+| admin_office                  | global_admin,hr                 |
+| admin_office_map              | global_admin,hr                 |
 | admin_managers                | global_admin,hr                 |
 | view_timesheet                | pm,global_admin                 |            
 | view_timesheet_summary        | pm, hr, global_admin            |            

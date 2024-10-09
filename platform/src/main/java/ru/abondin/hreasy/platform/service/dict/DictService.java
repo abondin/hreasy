@@ -10,6 +10,7 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
+import ru.abondin.hreasy.platform.service.dict.dto.DictOfficeLocationMap;
 import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
 import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
@@ -20,8 +21,7 @@ import java.nio.charset.Charset;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static ru.abondin.hreasy.platform.service.admin.dict.AdminDictOfficeLocationService.OFFICE_LOCATION_MAP_RESOURCE_TYPE;
-import static ru.abondin.hreasy.platform.service.admin.dict.AdminDictOfficeLocationService.getOfficeLocationMapFileName;
+import static ru.abondin.hreasy.platform.service.admin.dict.AdminOfficeMapService.OFFICE_LOCATION_MAP_RESOURCE_TYPE;
 
 @RequiredArgsConstructor
 @Service
@@ -136,10 +136,15 @@ public class DictService {
                 });
     }
 
-    public Mono<String> getOfficeLocationMap(AuthContext auth, int officeLocationId) {
-        log.trace("Get office location map {} by {}", officeLocationId, auth.getUsername());
-        if (fileStorage.fileExists(OFFICE_LOCATION_MAP_RESOURCE_TYPE, getOfficeLocationMapFileName(officeLocationId))) {
-            return fileStorage.streamFile(OFFICE_LOCATION_MAP_RESOURCE_TYPE, getOfficeLocationMapFileName(officeLocationId))
+    public Flux<DictOfficeLocationMap> getOfficeLocationMaps(AuthContext auth) {
+        log.trace("Get all office location maps {}", auth.getUsername());
+        return fileStorage.listFiles(OFFICE_LOCATION_MAP_RESOURCE_TYPE, false).map(DictOfficeLocationMap::new);
+    }
+
+    public Mono<String> getOfficeLocationMap(AuthContext auth, String filename) {
+        log.trace("Get office location map {} by {}", filename, auth.getUsername());
+        if (fileStorage.fileExists(OFFICE_LOCATION_MAP_RESOURCE_TYPE, filename)) {
+            return fileStorage.streamFile(OFFICE_LOCATION_MAP_RESOURCE_TYPE, filename)
                     .map(resource -> {
                         try {
                             return resource.getContentAsString(Charset.defaultCharset());

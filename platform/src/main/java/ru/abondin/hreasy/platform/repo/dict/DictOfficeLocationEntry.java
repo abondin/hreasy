@@ -26,6 +26,8 @@ public class DictOfficeLocationEntry {
     @Nullable
     private Integer officeId;
 
+    private String mapName;
+
     private boolean archived = false;
 
     @Nullable
