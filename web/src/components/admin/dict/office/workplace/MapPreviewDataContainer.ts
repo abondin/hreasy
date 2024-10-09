@@ -10,25 +10,27 @@ export interface EmployeeOnWorkplace {
 }
 
 export default class MapPreviewDataContainer {
-    private _fullscreen = false;
+    private _opened = false;
     private _loading = false;
     private _error = '';
     private _img: string | null = null;
+    private _officeLocation: { id: number, name: string } | null = null;
     private _mapReadyListener: (() => any) | null = null;
     private _employees: EmployeeOnWorkplace[] = [];
 
 
-    public show(officeLocationId: number, selectedEmployeeId?: number) {
+    public show(officeLocation: { id: number, name: string }, selectedEmployeeId?: number) {
         this._img = null;
         this._employees = [];
+        this._officeLocation = officeLocation;
         this._loading = true;
         this._error = '';
-        this._fullscreen = true;
-        dictService.getOfficeLocationMap(officeLocationId).then(img => {
+        this._opened = true;
+        dictService.getOfficeLocationMap(officeLocation.id).then(img => {
             if (img) {
                 this._img = img;
                 return employeeService.findAll().then(allEmployees => {
-                    this._employees = allEmployees.filter(e => e.officeLocation?.id === officeLocationId).map(e => {
+                    this._employees = allEmployees.filter(e => e.officeLocation?.id === officeLocation.id).map(e => {
                         return {
                             employeeId: e.id,
                             employeeDisplayName: e.displayName,
@@ -56,7 +58,7 @@ export default class MapPreviewDataContainer {
     }
 
     public hide() {
-        this._fullscreen = false;
+        this._opened = false;
         this._img = null;
     }
 
@@ -68,8 +70,8 @@ export default class MapPreviewDataContainer {
         return this._employees;
     }
 
-    get fullscreen(): boolean {
-        return this._fullscreen;
+    get opened(): boolean {
+        return this._opened;
     }
 
     get loading(): boolean {
@@ -78,5 +80,9 @@ export default class MapPreviewDataContainer {
 
     get error(): string {
         return this._error;
+    }
+
+    get officeLocation(): { id: number, name: string } | null {
+        return this._officeLocation;
     }
 }

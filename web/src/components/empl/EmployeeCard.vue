@@ -15,7 +15,7 @@ Uses in Employees Table (Employees.vue)
         <v-list-item-subtitle v-if="employee.position">{{ employee.position.name }}</v-list-item-subtitle>
         <v-list-item-subtitle v-if="employee.officeLocation">
           {{ employee.officeLocation.name }}
-          <v-btn x-small v-if="employee.hasOfficeLocationMap" icon @click="previewMapAction.show(employee.officeLocation.id, employee.id)">
+          <v-btn x-small v-if="employee.hasOfficeLocationMap" icon @click="previewMapAction.show(employee.officeLocation, employee.id)">
             <v-icon>mdi-map</v-icon>
           </v-btn>
         </v-list-item-subtitle>

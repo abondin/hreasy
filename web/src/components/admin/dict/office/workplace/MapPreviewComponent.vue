@@ -1,23 +1,27 @@
 <template>
-  <v-overlay :value="data.fullscreen" class="map-overlay" absolute>
-    <v-alert type="error" v-if="data.error">
-      {{ data.error }}
-    </v-alert>
-    <v-progress-circular v-if="data.loading"
-                         indeterminate
-                         size="64"
-    ></v-progress-circular>
-    <v-card light v-else @click.stop="data.hide()">
-      <v-card-text class="full-screen-card">
-        <svg v-if="data.img"
-             v-html="data.img" ref="map" class="full-screen-svg">
+  <v-dialog fullscreen v-if="data?.officeLocation" :value="data.opened" >
+    <v-card>
+      <v-card-title>
+        {{ $t('Карта') + ": " + data.officeLocation.name }}
+        <v-spacer></v-spacer>
+        <v-btn icon @click="data.hide()">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-card-title>
+      <v-alert type="error" v-if="data.error">
+        {{ data.error }}
+      </v-alert>
+      <v-progress-circular v-if="data.loading"
+                           indeterminate
+                           size="64"
+      ></v-progress-circular>
+      <v-card-text class="full-card-text" v-else>
+        <svg v-if="data.img" class="full-screen-svg"
+             v-html="data.img" ref="map">
         </svg>
       </v-card-text>
-      <v-btn absolute fab top right @click="data.hide()">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
     </v-card>
-  </v-overlay>
+  </v-dialog>
 </template>
 
 <script lang="ts">
@@ -45,24 +49,9 @@ export default class MapPreviewComponent extends Vue {
 </script>
 
 <style scoped>
-.map-overlay {
-  position: fixed !important;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 9999; /* Ensure it's on top */
-}
-
-.full-screen-card {
+.full-card-text{
   width: 90vw;
   height: 90vh;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  justify-content: center;
-  align-items: center;
-  display: flex;
 }
 
 .full-screen-svg {
