@@ -2,6 +2,7 @@ export interface EmployeeOnWorkplace {
     employeeId: number,
     employeeDisplayName: string;
     workplaceName: string;
+    selected?: boolean;
 }
 
 export default class MapPreviewDataContainer {

@@ -166,11 +166,7 @@ export default class DictAdminOfficeLocations extends Vue {
     event.stopPropagation();
     event.preventDefault();
     dictService.getOfficeLocationMap(item.id).then((map) => {
-      this.previewMapAction.show(map, [{
-        employeeId: 1,
-        employeeDisplayName: 'Киршанов Николай Александрович',
-        workplaceName: '3.300.06'
-      }]);
+      this.previewMapAction.show(map);
     })
   }
 

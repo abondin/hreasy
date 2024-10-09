@@ -23,6 +23,7 @@
 - Download and upload Technical Profiles
 - Report, Implement and export salaries requests and bonuses
 - Junior and mentors registry
+- Upload office location map. See [instruction](.docs/create_ofiice_workplace_map.md)
 
 ## Architecture overview
 
