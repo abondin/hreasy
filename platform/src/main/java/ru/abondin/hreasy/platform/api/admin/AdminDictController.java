@@ -27,6 +27,7 @@ public class AdminDictController {
     private final AdminDictOrganizationService organizations;
     private final AdminDictOfficeService offices;
     private final AdminDictOfficeLocationService officeLocations;
+    private final AdminOfficeMapService mapService;
 
     // ------------ Department CRUD
     @Operation(summary = "All departments")
@@ -162,19 +163,18 @@ public class AdminDictController {
                 auth -> officeLocations.update(auth, id, body));
     }
 
-    @Operation(summary = "Upload office location SVG map")
-    @PostMapping(value = "/office_locations/{officeLocationId}/map")
-    public Mono<UploadResponse> uploadOfficeLocationMap(@PathVariable("officeLocationId") int officeLocationId,
-                                                        @RequestPart("file") Mono<FilePart> multipartFile,
+    @Operation(summary = "Upload office or office location SVG map")
+    @PostMapping(value = "/office_maps")
+    public Mono<UploadResponse> uploadOfficeLocationMap(@RequestPart("file") Mono<FilePart> multipartFile,
                                                         @RequestHeader(value = HttpHeaders.CONTENT_LENGTH) long contentLength) {
         return AuthHandler.currentAuth().flatMap(auth -> multipartFile
-                .flatMap(it -> officeLocations.uploadMap(auth, officeLocationId, it, contentLength)));
+                .flatMap(it -> mapService.uploadMap(auth, it, contentLength)));
     }
 
     @Operation(summary = "Delete office location SVG map")
-    @DeleteMapping(value = "/office_locations/{officeLocationId}/map")
-    public Mono<DeleteResourceResponse> deleteOfficeLocationMap(@PathVariable("officeLocationId") int officeLocationId) {
-        return AuthHandler.currentAuth().flatMap(auth -> officeLocations.deleteMap(auth, officeLocationId));
+    @DeleteMapping(value = "/office_maps/{filename}")
+    public Mono<DeleteResourceResponse> deleteOfficeLocationMap(@PathVariable("filename") String filename) {
+        return AuthHandler.currentAuth().flatMap(auth -> mapService.deleteMap(auth, filename));
     }
 
 

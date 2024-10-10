@@ -27,7 +27,9 @@ export interface ProjectInfo {
     info?: string,
     managers: ManagerOfObject[]
 }
-
+export interface OfficeOrOfficeLocationMap {
+    mapName: string;
+}
 export interface DictService {
     loadAllProjects(): Promise<Array<ProjectDictDto>>;
 
@@ -47,7 +49,9 @@ export interface DictService {
 
     loadAllOffices(): Promise<Array<SimpleDict>>;
 
-    getOfficeLocationMap(officeLocationId: number): Promise<string>;
+    getOfficeLocationMaps(): Promise<OfficeOrOfficeLocationMap[]>;
+
+    getOfficeLocationMapFile(filename: string): Promise<string>;
 
     loadAllSkillGroups(): Promise<Array<SimpleDict>>;
 
@@ -93,8 +97,12 @@ class RestDictService implements DictService {
         return httpService.get("v1/dict/office_locations").then(response => response.data);
     }
 
-    getOfficeLocationMap(officeLocationId: number): Promise<string> {
-        return httpService.get(`v1/dict/office_locations/${officeLocationId}/map`, {responseType: 'text'}).then(response => {
+    getOfficeLocationMaps(): Promise<OfficeOrOfficeLocationMap[]> {
+        return httpService.get("v1/dict/office_maps").then(response => response.data);
+    }
+
+    getOfficeLocationMapFile(filename: string): Promise<string> {
+        return httpService.get(`v1/dict/office_maps/${filename}`, {responseType: 'text'}).then(response => {
             const svgText = response.data;
             return DOMPurify.sanitize(svgText, { USE_PROFILES: { svg: true } });
         });

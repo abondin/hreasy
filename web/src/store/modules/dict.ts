@@ -13,6 +13,7 @@ export interface SimpleDict {
 
 export interface OfficeLocationDict extends SimpleDict{
     officeId?: number;
+    mapName?: string;
 }
 
 

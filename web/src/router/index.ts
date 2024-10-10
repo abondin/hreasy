@@ -37,6 +37,7 @@ import JuniorRegistryDetailedView from "@/components/udr/JuniorRegistryDetailedV
 import SalaryRequestsTable from "@/components/salary/SalaryRequestsTable.vue";
 import SalaryRequestDetailsView from "@/components/salary/details/SalaryRequestDetailsView.vue";
 import DictAdminOffices from "@/components/admin/dict/office/DictAdminOffices.vue";
+import DictAdminMaps from "@/components/admin/dict/office/maps/DictAdminMaps.vue";
 
 Vue.use(VueRouter)
 
@@ -101,6 +102,7 @@ const routes = [
             {path: "positions", component: DictAdminPositions},
             {path: "office_locations", component: DictAdminOfficeLocations},
             {path: "offices", component: DictAdminOffices},
+            {path: "office_maps", component: DictAdminMaps},
             {path: "levels", component: DictAdminLevels}
         ]
     },

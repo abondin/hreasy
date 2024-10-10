@@ -26,8 +26,8 @@
 
 <script lang="ts">
 import {Component, Prop, Vue} from 'vue-property-decorator';
-import WorkplaceOnMapUtils from "@/components/admin/dict/office/workplace/workplace-on-map-utils";
-import MapPreviewDataContainer from "@/components/admin/dict/office/workplace/MapPreviewDataContainer";
+import WorkplaceOnMapUtils from "@/components/admin/dict/office/maps/workplace-on-map-utils";
+import MapPreviewDataContainer from "@/components/admin/dict/office/maps/MapPreviewDataContainer";
 
 
 @Component({})

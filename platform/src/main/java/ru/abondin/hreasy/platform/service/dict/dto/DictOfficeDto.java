@@ -9,6 +9,7 @@ public class DictOfficeDto {
     private String name;
     private String description;
     private String address;
+    private String mapName;
     private boolean archived = false;
 
 }

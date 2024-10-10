@@ -10,6 +10,7 @@ public class CreateOrUpdateOfficeLocationBody {
     private String name;
     private Integer officeId;
     private String description;
+    private String mapName;
     private boolean archived = false;
 
 }

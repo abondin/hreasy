@@ -10,5 +10,5 @@ public class DictOfficeLocationDto {
     private String description;
     private SimpleDictDto office;
     private boolean archived = false;
-    private boolean hasMapFile = false;
+    private String mapName;
 }

@@ -15,7 +15,7 @@ Uses in Employees Table (Employees.vue)
         <v-list-item-subtitle v-if="employee.position">{{ employee.position.name }}</v-list-item-subtitle>
         <v-list-item-subtitle v-if="employee.officeLocation">
           {{ employee.officeLocation.name }}
-          <v-btn x-small v-if="employee.hasOfficeLocationMap" icon @click="previewMapAction.show(employee.officeLocation, employee.id)">
+          <v-btn x-small v-if="employee.officeLocation.mapName" icon @click="previewMapAction.show(employee.officeLocation.mapName, employee.id)">
             <v-icon>mdi-map</v-icon>
           </v-btn>
         </v-list-item-subtitle>
@@ -114,8 +114,8 @@ import vacationService, {EmployeeVacationShort} from "@/components/vacations/vac
 import TechProfilesChips from "@/components/empl/TechProfilesChips.vue";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import ProjectInfoCardComponent from "@/components/shared/ProjectInfoCardComponent.vue";
-import MapPreviewDataContainer from "@/components/admin/dict/office/workplace/MapPreviewDataContainer";
-import MapPreviewComponent from "@/components/admin/dict/office/workplace/MapPreviewComponent.vue";
+import MapPreviewDataContainer from "@/components/admin/dict/office/maps/MapPreviewDataContainer";
+import MapPreviewComponent from "@/components/admin/dict/office/maps/MapPreviewComponent.vue";
 
 @Component({
   components: {
