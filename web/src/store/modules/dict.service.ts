@@ -1,6 +1,13 @@
 import httpService from "../../components/http.service";
 import {AxiosInstance} from "axios";
-import {CurrentProjectRole, ManagerOfObject, ProjectDictDto, SimpleDict} from "@/store/modules/dict";
+import {
+    CurrentProjectRole,
+    ManagerOfObject,
+    OfficeLocationDict,
+    ProjectDictDto,
+    SimpleDict
+} from "@/store/modules/dict";
+import DOMPurify from 'dompurify';
 
 export interface SharedSkillName {
     groupId: number,
@@ -20,7 +27,9 @@ export interface ProjectInfo {
     info?: string,
     managers: ManagerOfObject[]
 }
-
+export interface OfficeOrOfficeLocationMap {
+    mapName: string;
+}
 export interface DictService {
     loadAllProjects(): Promise<Array<ProjectDictDto>>;
 
@@ -36,7 +45,13 @@ export interface DictService {
 
     loadAllLevels(): Promise<Array<SimpleDict>>;
 
-    loadAllOfficeLocations(): Promise<Array<SimpleDict>>;
+    loadAllOfficeLocations(): Promise<Array<OfficeLocationDict>>;
+
+    loadAllOffices(): Promise<Array<SimpleDict>>;
+
+    getOfficeLocationMaps(): Promise<OfficeOrOfficeLocationMap[]>;
+
+    getOfficeLocationMapFile(filename: string): Promise<string>;
 
     loadAllSkillGroups(): Promise<Array<SimpleDict>>;
 
@@ -74,8 +89,23 @@ class RestDictService implements DictService {
         return httpService.get("v1/dict/levels").then(response => response.data);
     }
 
+    loadAllOffices(): Promise<Array<SimpleDict>> {
+        return httpService.get("v1/dict/offices").then(response => response.data);
+    }
+
     loadAllOfficeLocations(): Promise<Array<SimpleDict>> {
         return httpService.get("v1/dict/office_locations").then(response => response.data);
+    }
+
+    getOfficeLocationMaps(): Promise<OfficeOrOfficeLocationMap[]> {
+        return httpService.get("v1/dict/office_maps").then(response => response.data);
+    }
+
+    getOfficeLocationMapFile(filename: string): Promise<string> {
+        return httpService.get(`v1/dict/office_maps/${filename}`, {responseType: 'text'}).then(response => {
+            const svgText = response.data;
+            return DOMPurify.sanitize(svgText, { USE_PROFILES: { svg: true } });
+        });
     }
 
 

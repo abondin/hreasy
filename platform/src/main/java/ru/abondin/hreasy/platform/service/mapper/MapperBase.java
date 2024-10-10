@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.mapper;
 
 import org.apache.commons.lang3.StringUtils;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
+import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.YearMonth;
@@ -9,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public interface MapperBase {
@@ -32,14 +32,19 @@ public interface MapperBase {
         return id == null ? null : new CurrentProjectDictDto(id, name, role);
     }
 
+    default OfficeLocationDictDto officeLocationDto(Integer id, String name, Integer officeId, String mapName) {
+        return id == null ? null : new OfficeLocationDictDto(id, name, officeId, mapName);
+    }
+
+
     default List<Integer> splitIds(String commaSeparatedIds) {
         return splitToStream(commaSeparatedIds)
-                .map(Integer::valueOf).collect(Collectors.toList());
+                .map(Integer::valueOf).toList();
     }
 
     default List<String> splitStrings(String commaSeparatedStrings) {
         return splitToStream(commaSeparatedStrings)
-                .map(String::trim).collect(Collectors.toList());
+                .map(String::trim).toList();
 
     }
 

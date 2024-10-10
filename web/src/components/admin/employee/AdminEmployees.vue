@@ -28,7 +28,7 @@
             </div>
           </template>
           <p>{{ $t('Экспорт в Excel') }}<p>
-          {{ $t('Результат выгрузки зависит только от фильтра ') + $t('Скрыть уволенных')}}</p>
+            {{ $t('Результат выгрузки зависит только от фильтра ') + $t('Скрыть уволенных') }}</p>
         </v-tooltip>
         <v-snackbar
             v-model="exportCompleted"
@@ -123,7 +123,7 @@
           <template v-slot:item.currentProjectId="{ item }">
             {{ getById(allProjects, item.currentProjectId) }}
             <span v-if="item.currentProjectRole">
-              ({{item.currentProjectRole}})
+              ({{ item.currentProjectRole }})
             </span>
           </template>
 
@@ -177,7 +177,7 @@ import Vue from 'vue'
 import {DataTableHeader} from "vuetify";
 import Component from "vue-class-component";
 import logger from "@/logger";
-import {SimpleDict} from "@/store/modules/dict";
+import {OfficeLocationDict, SimpleDict} from "@/store/modules/dict";
 import {Getter} from "vuex-class";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import AdminEmployeeForm from "@/components/admin/employee/AdminEmployeeForm.vue";
@@ -232,7 +232,7 @@ export default class AdminEmployees extends Vue {
   private allLevels!: Array<SimpleDict>;
 
   @Getter("officeLocations", {namespace: namespace_dict})
-  private allOfficeLocations!: Array<SimpleDict>;
+  private allOfficeLocations!: Array<OfficeLocationDict>;
 
   private error: string | null = null;
 

@@ -7,6 +7,7 @@ import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedEntry;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
+import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.skills.dto.RatingsMapper;
 
@@ -47,8 +48,8 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
     }
 
     @Named("officeLocation")
-    default SimpleDictDto officeLocation(EmployeeDetailedEntry entry) {
-        return simpleDto(entry.getOfficeLocationId(), entry.getOfficeLocationName());
+    default OfficeLocationDictDto officeLocation(EmployeeDetailedEntry entry) {
+        return officeLocationDto(entry.getOfficeLocationId(), entry.getOfficeLocationName(), entry.getOfficeLocationOfficeId(), entry.getOfficeLocationMapName());
     }
 
     @Named("ba")

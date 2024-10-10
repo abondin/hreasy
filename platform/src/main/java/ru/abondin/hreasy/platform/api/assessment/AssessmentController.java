@@ -14,6 +14,8 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentService;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentsSummaryExportService;
 import ru.abondin.hreasy.platform.service.assessment.dto.*;
+import ru.abondin.hreasy.platform.service.dto.DeleteResourceResponse;
+import ru.abondin.hreasy.platform.service.dto.UploadResponse;
 
 import java.util.Locale;
 
@@ -81,10 +83,10 @@ public class AssessmentController {
 
     @Operation(summary = "Upload assessment attachment")
     @PostMapping(value = "/{employeeId}/{assessmentId}/attachment")
-    public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(@PathVariable("employeeId") int employeeId,
-                                                                     @PathVariable int assessmentId,
-                                                                     @RequestPart("file") Mono<FilePart> multipartFile,
-                                                                     @RequestHeader(value = HttpHeaders.CONTENT_LENGTH) long contentLength) {
+    public Mono<UploadResponse> uploadAttachment(@PathVariable("employeeId") int employeeId,
+                                                 @PathVariable int assessmentId,
+                                                 @RequestPart("file") Mono<FilePart> multipartFile,
+                                                 @RequestHeader(value = HttpHeaders.CONTENT_LENGTH) long contentLength) {
         log.debug("Upload new attachment for assessment {}:{}", employeeId, assessmentId);
         return AuthHandler.currentAuth().flatMap(auth -> multipartFile
                 .flatMap(it -> service.uploadAttachment(auth, employeeId, assessmentId, it, contentLength)));
@@ -92,9 +94,9 @@ public class AssessmentController {
 
     @Operation(summary = "Delete assessment attachment")
     @DeleteMapping(value = "/{employeeId}/{assessmentId}/attachment/{filename}")
-    public Mono<DeleteAssessmentAttachmentResponse> deleteAttachment(@PathVariable("employeeId") int employeeId,
-                                                                     @PathVariable int assessmentId,
-                                                                     @PathVariable String filename) {
+    public Mono<DeleteResourceResponse> deleteAttachment(@PathVariable("employeeId") int employeeId,
+                                                         @PathVariable int assessmentId,
+                                                         @PathVariable String filename) {
         log.debug("Delete attachment {} for assessment {}:{}. Content length={}", filename, employeeId, assessmentId);
         return AuthHandler.currentAuth().flatMap(auth -> service.deleteAttachment(auth, employeeId, assessmentId, filename));
     }

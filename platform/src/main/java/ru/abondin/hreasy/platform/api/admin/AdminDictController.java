@@ -3,6 +3,8 @@ package ru.abondin.hreasy.platform.api.admin;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -10,6 +12,8 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.admin.dict.*;
 import ru.abondin.hreasy.platform.service.admin.dict.dto.*;
 import ru.abondin.hreasy.platform.service.dict.dto.*;
+import ru.abondin.hreasy.platform.service.dto.DeleteResourceResponse;
+import ru.abondin.hreasy.platform.service.dto.UploadResponse;
 
 @RestController()
 @RequestMapping("/api/v1/admin/dict")
@@ -21,7 +25,9 @@ public class AdminDictController {
     private final AdminDictLevelService levels;
     private final AdminDictPositionService positions;
     private final AdminDictOrganizationService organizations;
+    private final AdminDictOfficeService offices;
     private final AdminDictOfficeLocationService officeLocations;
+    private final AdminOfficeMapService mapService;
 
     // ------------ Department CRUD
     @Operation(summary = "All departments")
@@ -107,10 +113,32 @@ public class AdminDictController {
 
     @Operation(summary = "Update level")
     @PutMapping("/levels/{id}")
-    
+
     public Mono<DictLevelDto> updateLevel(@PathVariable int id, @RequestBody CreateOrUpdateLevelBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> levels.update(auth, id, body));
+    }
+
+    // ------------ Office CRUD
+    @Operation(summary = "All offices")
+    @GetMapping("/offices")
+    public Flux<DictOfficeDto> offices() {
+        return AuthHandler.currentAuth().flatMapMany(
+                offices::findAll);
+    }
+
+    @Operation(summary = "Create office")
+    @PostMapping("/offices")
+    public Mono<Integer> createOffice(@RequestBody CreateOrUpdateOfficeBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> offices.create(auth, body));
+    }
+
+    @Operation(summary = "Update office")
+    @PutMapping("/offices/{id}")
+    public Mono<Integer> updateOffice(@PathVariable int id, @RequestBody CreateOrUpdateOfficeBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> offices.update(auth, id, body));
     }
 
     // ------------ Office Location CRUD
@@ -121,17 +149,33 @@ public class AdminDictController {
                 officeLocations::findAll);
     }
 
-    @Operation(summary = "Create level")
+    @Operation(summary = "Create office location")
     @PostMapping("/office_locations")
-    public Mono<DictOfficeLocationDto> createOfficeLocation(@RequestBody CreateOrUpdateOfficeLocationBody body) {
+    public Mono<Integer> createOfficeLocation(@RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.create(auth, body));
     }
 
-    @Operation(summary = "Update level")
+    @Operation(summary = "Update office location")
     @PutMapping("/office_locations/{id}")
-    public Mono<DictOfficeLocationDto> updateOfficeLocation(@PathVariable int id, @RequestBody CreateOrUpdateOfficeLocationBody body) {
+    public Mono<Integer> updateOfficeLocation(@PathVariable int id, @RequestBody CreateOrUpdateOfficeLocationBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> officeLocations.update(auth, id, body));
     }
+
+    @Operation(summary = "Upload office or office location SVG map")
+    @PostMapping(value = "/office_maps")
+    public Mono<UploadResponse> uploadOfficeLocationMap(@RequestPart("file") Mono<FilePart> multipartFile,
+                                                        @RequestHeader(value = HttpHeaders.CONTENT_LENGTH) long contentLength) {
+        return AuthHandler.currentAuth().flatMap(auth -> multipartFile
+                .flatMap(it -> mapService.uploadMap(auth, it, contentLength)));
+    }
+
+    @Operation(summary = "Delete office location SVG map")
+    @DeleteMapping(value = "/office_maps/{filename}")
+    public Mono<DeleteResourceResponse> deleteOfficeLocationMap(@PathVariable("filename") String filename) {
+        return AuthHandler.currentAuth().flatMap(auth -> mapService.deleteMap(auth, filename));
+    }
+
+
 }

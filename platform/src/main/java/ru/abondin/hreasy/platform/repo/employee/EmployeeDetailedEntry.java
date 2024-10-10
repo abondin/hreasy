@@ -15,6 +15,8 @@ public class EmployeeDetailedEntry extends EmployeeEntry {
     private String currentProjectName;
     private String currentProjectRole;
     private String officeLocationName;
+    private String officeLocationMapName;
+    private Integer officeLocationOfficeId;
     private Integer baId;
     private String baName;
 

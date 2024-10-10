@@ -10,14 +10,18 @@ export class InDialogActionDataContainer<ID,T> {
     public loading = false;
     public error: string | null = null;
 
-    private _formData: T | null = null;
-    private _itemId: ID | null = null;
+    protected _formData: T | null = null;
+    protected _itemId: ID | null = null;
 
     constructor(private submitAction: (itemId: ID | null, item: T | null) => Promise<any>) {
     }
 
     get formData() {
         return this._formData;
+    }
+
+    get itemId() {
+        return this._itemId;
     }
 
     public openDialog(itemId: ID | null, formData: T | null) {

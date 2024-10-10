@@ -1,5 +1,7 @@
 import {AxiosInstance} from "axios";
 import httpService from "@/components/http.service";
+import {SimpleDict} from "@/store/modules/dict";
+import {JuniorProgressType} from "@/components/udr/udr.service";
 
 export interface DictDepartment {
     id: number,
@@ -51,20 +53,38 @@ export interface DictPositionUpdateBody {
     archived: boolean
 }
 
+export interface DictOffice {
+    id: number,
+    name: string,
+    description: string | undefined,
+    address: string | undefined,
+    archived: boolean
+}
+
 export interface DictOfficeLocation {
     id: number,
     name: string,
     description: string | undefined,
-    office: string | undefined,
+    office: SimpleDict | undefined,
+    archived: boolean,
+    mapName: string
+}
+
+export interface DictOfficeUpdateBody {
+    name: string,
+    description: string | undefined,
+    address: string | undefined,
     archived: boolean
 }
 
 export interface DictOfficeLocationUpdateBody {
     name: string,
     description: string | undefined,
-    office: string | undefined,
-    archived: boolean
+    officeId: number | undefined,
+    mapName: string| undefined,
+    archived: boolean,
 }
+
 
 export interface DictAdminService {
     loadDepartments(): Promise<Array<DictDepartment>>;
@@ -85,18 +105,28 @@ export interface DictAdminService {
 
     updatePosition(id: number, body: DictPositionUpdateBody): Promise<DictPosition>;
 
+    loadOffices(): Promise<Array<DictOffice>>;
+
+    createOffice(body: DictOfficeUpdateBody): Promise<number>;
+
+    updateOffice(id: number, body: DictOfficeUpdateBody): Promise<number>;
 
     loadOfficeLocations(): Promise<Array<DictOfficeLocation>>;
 
-    createOfficeLocation(body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation>;
+    createOfficeLocation(body: DictOfficeLocationUpdateBody): Promise<number>;
 
-    updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation>;
+    updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<number>;
+
 
     loadOrganizations(): Promise<Array<DictOrganization>>;
 
     createOrganization(body: DictOrganizationUpdateBody): Promise<DictOrganization>;
 
     updateOrganization(id: number, body: DictOrganizationUpdateBody): Promise<DictOrganization>;
+
+    getUploadOfficeLocationMapPath(): string;
+
+    deleteOfficeLocationMap(filename: string): Promise<any>;
 }
 
 class RestDictAdminService implements DictAdminService {
@@ -111,9 +141,14 @@ class RestDictAdminService implements DictAdminService {
         return httpService.post("v1/admin/dict/levels", body);
     }
 
-    createOfficeLocation(body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation> {
+    createOffice(body: DictOfficeUpdateBody): Promise<number> {
+        return httpService.post("v1/admin/dict/offices", body);
+    }
+
+    createOfficeLocation(body: DictOfficeLocationUpdateBody): Promise<number> {
         return httpService.post("v1/admin/dict/office_locations", body);
     }
+
 
     createPosition(body: DictPositionUpdateBody): Promise<DictPosition> {
         return httpService.post("v1/admin/dict/positions", body);
@@ -131,10 +166,17 @@ class RestDictAdminService implements DictAdminService {
         return httpService.get("v1/admin/dict/levels").then(response => response.data);
     }
 
+    loadOffices(): Promise<Array<DictOffice>> {
+        return httpService.get("v1/admin/dict/offices").then(response => response.data);
+    }
+
     loadOfficeLocations(): Promise<Array<DictOfficeLocation>> {
         return httpService.get("v1/admin/dict/office_locations").then(response => response.data);
     }
 
+    getUploadOfficeLocationMapPath(): string {
+        return `${httpService.defaults.baseURL}v1/admin/dict/office_maps`;
+    }
     loadPositions(): Promise<Array<DictPosition>> {
         return httpService.get("v1/admin/dict/positions").then(response => response.data);
     }
@@ -151,9 +193,18 @@ class RestDictAdminService implements DictAdminService {
         return httpService.put(`v1/admin/dict/levels/${id}`, body);
     }
 
-    updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<DictOfficeLocation> {
+    updateOffice(id: number, body: DictOfficeUpdateBody): Promise<number> {
+        return httpService.put(`v1/admin/dict/offices/${id}`, body);
+    }
+
+    updateOfficeLocation(id: number, body: DictOfficeLocationUpdateBody): Promise<number> {
         return httpService.put(`v1/admin/dict/office_locations/${id}`, body);
     }
+
+    deleteOfficeLocationMap(filename: string): Promise<any> {
+        return httpService.delete(`v1/admin/dict/office_locations/${filename}`)
+    }
+
 
     updatePosition(id: number, body: DictPositionUpdateBody): Promise<DictPosition> {
         return httpService.put(`v1/admin/dict/positions/${id}`, body);
@@ -162,6 +213,7 @@ class RestDictAdminService implements DictAdminService {
     updateOrganization(id: number, body: DictOrganizationUpdateBody): Promise<DictOrganization> {
         return httpService.put(`v1/admin/dict/organizations/${id}`, body);
     }
+
 }
 
 const dictAdminService: DictAdminService = new RestDictAdminService(httpService);

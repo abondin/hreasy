@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.api.employee;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,8 +14,6 @@ import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectRole;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
-
-import org.springframework.lang.NonNull;
 
 
 @RestController()
@@ -30,7 +29,6 @@ public class EmployeeController {
 
     @Operation(summary = "Get basic information about all employees of the company")
     @GetMapping("")
-    @ResponseBody
     public Flux<EmployeeDto> employees(@RequestParam(defaultValue = "false") boolean includeFired) {
         return AuthHandler.currentAuth().flatMapMany(
                 auth -> emplService.findAll(auth, includeFired).map(
@@ -44,7 +42,6 @@ public class EmployeeController {
 
     @Operation(summary = "Get basic information about given employee")
     @GetMapping("/{employeeId}")
-    @ResponseBody
     public Mono<EmployeeDto> employee(@PathVariable int employeeId) {
         return AuthHandler.currentAuth().flatMap(auth -> emplService.find(employeeId, auth)
                 .map(empl -> {
@@ -57,14 +54,12 @@ public class EmployeeController {
 
     @Operation(summary = "Get unique set of current project roles for all employees")
     @GetMapping("/current_project_roles")
-    @ResponseBody
     public Flux<CurrentProjectRole> currentUserRoles() {
-        return AuthHandler.currentAuth().flatMapMany(auth -> emplService.currentUserRoles(auth));
+        return AuthHandler.currentAuth().flatMapMany(emplService::currentUserRoles);
     }
 
     @Operation(summary = "Update current project for employee")
     @PutMapping("/{employeeId}/currentProject")
-    @ResponseBody
     public Mono<Integer> updateCurrentProject(@PathVariable int employeeId,
                                               @RequestBody(required = false) UpdateCurrentProjectBody newCurrentProject) {
         return AuthHandler.currentAuth().flatMap(auth -> adminEmployeeService.updateCurrentProject(employeeId, newCurrentProject, auth));
@@ -77,7 +72,6 @@ public class EmployeeController {
      */
     @Operation(summary = "Update telegram account for employee")
     @PutMapping("/{employeeId}/telegram")
-    @ResponseBody
     public Mono<Integer> updateTelegram(@PathVariable int employeeId, @NonNull @RequestBody EmployeeUpdateTelegramBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> adminEmployeeService.updateTelegram(auth, employeeId, body));
     }

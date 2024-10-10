@@ -17,6 +17,8 @@ import ru.abondin.hreasy.platform.repo.assessment.EmployeeAssessmentEntry;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.assessment.dto.*;
+import ru.abondin.hreasy.platform.service.dto.DeleteResourceResponse;
+import ru.abondin.hreasy.platform.service.dto.UploadResponse;
 
 import java.io.File;
 import java.time.temporal.ChronoUnit;
@@ -70,14 +72,14 @@ public class AssessmentService {
                 assessmentRepo.findByEmployeeId(employeeId).map(mapper::assessmentBaseFromEntry));
     }
 
-    public Mono<UploadAssessmentAttachmentResponse> uploadAttachment(AuthContext auth, int employeeId, int assessmentId
+    public Mono<UploadResponse> uploadAttachment(AuthContext auth, int employeeId, int assessmentId
             , FilePart file, long contentLength) {
         log.info("Upload attachment to assessments {}:{} by {}", employeeId, assessmentId, auth.getUsername());
         return validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentId)
                 .flatMap(v -> {
                     var filename = file.filename();
                     return fileStorage.uploadFile(getAssessmentAttachmentFolder(employeeId, assessmentId), filename, file, contentLength)
-                            .then(Mono.just(new UploadAssessmentAttachmentResponse()));
+                            .then(Mono.just(new UploadResponse()));
                 });
     }
 
@@ -140,10 +142,10 @@ public class AssessmentService {
                 .flatMap(v -> assessmentRepo.updateCompletedBy(assessmentId, auth.getEmployeeInfo().getEmployeeId(), now));
     }
 
-    public Mono<DeleteAssessmentAttachmentResponse> deleteAttachment(AuthContext auth, int employeeId, int assessmentId, String filename) {
+    public Mono<DeleteResourceResponse> deleteAttachment(AuthContext auth, int employeeId, int assessmentId, String filename) {
         return validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentId)
                 .flatMap(v -> fileStorage.toRecycleBin(getAssessmentAttachmentFolder(employeeId, assessmentId), filename))
-                .map(deleted -> new DeleteAssessmentAttachmentResponse(deleted));
+                .map(deleted -> new DeleteResourceResponse(deleted));
     }
 
 

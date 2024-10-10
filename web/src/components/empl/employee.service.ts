@@ -1,6 +1,7 @@
 import httpService from "../http.service";
 import {AxiosInstance} from "axios";
 import {Skill} from "@/components/empl/skills/skills.service";
+import {OfficeLocationDict} from "@/store/modules/dict";
 
 export class Dict {
     constructor(public id: number, public name: string) {
@@ -19,12 +20,14 @@ export interface Employee {
     sex: string,
     department: Dict,
     position: Dict,
-    officeLocation: Dict,
+    officeLocation: OfficeLocationDict,
+    officeWorkplace: string,
     email: string,
     telegram?: string,
 
     telegramConfirmedAt: string,
     hasAvatar: boolean,
+    hasOfficeLocationMap: boolean,
     skills: Skill[]
 }
 

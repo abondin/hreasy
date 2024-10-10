@@ -21,7 +21,7 @@ import DictAdminMain from "@/components/admin/dict/DictAdminMain.vue";
 import DictAdminLevels from "@/components/admin/dict/DictAdminLevels.vue";
 import DictAdminDepartments from "@/components/admin/dict/DictAdminDepartments.vue";
 import DictAdminPositions from "@/components/admin/dict/DictAdminPositions.vue";
-import DictAdminOfficeLocations from "@/components/admin/dict/DictAdminOfficeLocations.vue";
+import DictAdminOfficeLocations from "@/components/admin/dict/office/DictAdminOfficeLocations.vue";
 import PageNotFoundComponent from "@/components/PageNotFoundComponent.vue";
 import AdminEmployeeAndKidsTabs from "@/components/admin/employee/AdminEmployeeAndKidsTabs.vue";
 import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
@@ -36,6 +36,8 @@ import JuniorRegistryTable from "@/components/udr/JuniorRegistryTable.vue";
 import JuniorRegistryDetailedView from "@/components/udr/JuniorRegistryDetailedView.vue";
 import SalaryRequestsTable from "@/components/salary/SalaryRequestsTable.vue";
 import SalaryRequestDetailsView from "@/components/salary/details/SalaryRequestDetailsView.vue";
+import DictAdminOffices from "@/components/admin/dict/office/DictAdminOffices.vue";
+import DictAdminMaps from "@/components/admin/dict/office/maps/DictAdminMaps.vue";
 
 Vue.use(VueRouter)
 
@@ -99,6 +101,8 @@ const routes = [
             {name: "admin_dict_departments", path: "departments", component: DictAdminDepartments},
             {path: "positions", component: DictAdminPositions},
             {path: "office_locations", component: DictAdminOfficeLocations},
+            {path: "offices", component: DictAdminOffices},
+            {path: "office_maps", component: DictAdminMaps},
             {path: "levels", component: DictAdminLevels}
         ]
     },

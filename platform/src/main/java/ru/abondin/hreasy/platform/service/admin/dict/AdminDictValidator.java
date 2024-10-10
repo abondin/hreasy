@@ -55,7 +55,26 @@ public class AdminDictValidator {
     public Mono<Boolean> validateAdminOfficeLocation(AuthContext auth) {
         return Mono.defer(() -> {
             if (!auth.getAuthorities().contains("admin_office_location")) {
-                return Mono.error(new AccessDeniedException("Only user with permission admin_department can admin office location"));
+                return Mono.error(new AccessDeniedException("Only user with permission admin_office_location can admin office location"));
+            }
+            return Mono.just(true);
+        });
+    }
+
+    public Mono<Boolean> validateAdminUploadMap(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("admin_office_map")) {
+                return Mono.error(new AccessDeniedException("Only user with permission admin_office_map can upload or delete office or office location map"));
+            }
+            return Mono.just(true);
+        });
+    }
+
+
+    public Mono<Boolean> validateAdminOffice(AuthContext auth) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("admin_office")) {
+                return Mono.error(new AccessDeniedException("Only user with permission admin_office can admin offices"));
             }
             return Mono.just(true);
         });

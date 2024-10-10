@@ -97,15 +97,15 @@ public class FindEmployeeTest {
     private void initializeTestEmployees() {
         // Test data for tests in Russian
         testEmployees.addAll(Arrays.asList(
-                new EmployeeDto(1, "Иванов Петр Алексеевич", "male", null, null, null, null, null,
+                new EmployeeDto(1, "Иванов Петр Алексеевич", "male", null, null, null, null, null, null,
                         "Petr.Ivanov@company.org", "petro1999", null, false, new ArrayList<>()),
-                new EmployeeDto(2, "Иванов Петр Степанович", "male", null, null, null, null, null,
+                new EmployeeDto(2, "Иванов Петр Степанович", "male", null, null, null, null, null,null,
                         "Petr.Ivanov2@company.org", "petro1999", null, false, new ArrayList<>()),
-                new EmployeeDto(3, "Сидоров Иван Петрович", "male", null, null, null, null, null,
+                new EmployeeDto(3, "Сидоров Иван Петрович", "male", null, null, null, null, null,null,
                         "Ivan.Sidorov@company.org", "ivan123", null, false, new ArrayList<>()),
-                new EmployeeDto(4, "Петров Иван Сидорович", "male", null, null, null, null, null,
+                new EmployeeDto(4, "Петров Иван Сидорович", "male", null, null, null, null, null,null,
                         "Ivan.Petrov@company.org", "petrov", null, false, new ArrayList<>()),
-                new EmployeeDto(4, "Пчёлкина Антонина Сергеевна", "female", null, null, null, null, null,
+                new EmployeeDto(4, "Пчёлкина Антонина Сергеевна", "female", null, null, null, null, null,null,
                         "Antonina.Pchelkina@company.org", "bee123", null, false, new ArrayList<>())
         ));
     }
