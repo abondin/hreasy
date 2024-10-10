@@ -1,8 +1,8 @@
 <template>
-  <v-dialog fullscreen v-if="data?.officeLocation" :value="data.opened" >
+  <v-dialog fullscreen v-if="data?.filename" v-model="data.opened">
     <v-card>
       <v-card-title>
-        {{ $t('Карта') + ": " + data.officeLocation.name }}
+        {{ $t('Карта') + ": " + data.filename }}
         <v-spacer></v-spacer>
         <v-btn icon @click="data.hide()">
           <v-icon>mdi-close</v-icon>
@@ -28,6 +28,7 @@
 import {Component, Prop, Vue} from 'vue-property-decorator';
 import WorkplaceOnMapUtils from "@/components/admin/dict/office/maps/workplace-on-map-utils";
 import MapPreviewDataContainer from "@/components/admin/dict/office/maps/MapPreviewDataContainer";
+import logger from "@/logger";
 
 
 @Component({})
@@ -35,21 +36,23 @@ export default class MapPreviewComponent extends Vue {
   @Prop({required: true})
   private data!: MapPreviewDataContainer;
 
-  mounted() {
+  created() {
     this.data.mapReadyListener = () => {
-      this.$nextTick(() => {
-        const svgElement = this.$refs.map as SVGElement;
+      const svgElement = this.$refs.map as SVGElement;
+      if (svgElement) {
         const {width, height} = svgElement.getBoundingClientRect();
         WorkplaceOnMapUtils.adjustSvgViewBox(svgElement, width, height);
         WorkplaceOnMapUtils.initializeWorkplace(svgElement, this.data.employees);
-      });
+      } else {
+        logger.error("Unable to find svg dom element to render the map");
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-.full-card-text{
+.full-card-text {
   width: 90vw;
   height: 90vh;
 }

@@ -9,18 +9,26 @@
             item-value="id" item-text="name"
             :label="$t('Офис')"
         ></v-autocomplete>
+        <v-autocomplete
+            v-model="data.updateBody.mapName"
+            clearable
+            :items="data.allMaps"
+            item-value="mapName" item-text="mapName"
+            :label="$t('Карта')"
+        ></v-autocomplete>
         <v-textarea
             v-model="data.updateBody.description"
             :rules="[v=>(!v || v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
             :label="$t('Описание')">
         </v-textarea>
       </template>
-      <template v-slot:item.hasMapFile="{ item }">
-        <v-tooltip bottom v-if="item.hasMapFile">
+      <template v-slot:item.mapName="{ item }">
+        <v-tooltip bottom v-if="item.mapName">
           <template v-slot:activator="{ on: ton, attrs: tattrs}">
             <v-chip small v-bind="tattrs" v-on="ton"
                     @click="openPreviewDialog($event, item)">
               <v-icon>mdi-map</v-icon>
+              {{ item.mapName }}
             </v-chip>
           </template>
           <span>{{ $t('Посмотреть карту') }}</span>
@@ -37,22 +45,16 @@
 <script lang="ts">
 import Component from "vue-class-component";
 import Vue from "vue";
-import dictAdminService, {
-  DictOfficeLocation,
-  DictOfficeLocationUpdateBody
-} from "@/components/admin/dict/dict.admin.service";
-import permissionService from "@/store/modules/permission.service";
+import {DictOfficeLocation} from "@/components/admin/dict/dict.admin.service";
 import DictAdminTable from "@/components/admin/dict/DictAdminTable.vue";
-import DictTableComponentDataContainer, {
-  BasicDictFilter
-} from "@/components/admin/dict/DictTableComponentDataContainer";
-import {CreateOrUpdateAction} from "@/components/shared/table/EditTableComponentDataContainer";
 import {Getter} from "vuex-class";
 import {SimpleDict} from "@/store/modules/dict";
 import MyFileUploader from "@/components/shared/MyFileUploader.vue";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import MapPreviewComponent from "@/components/admin/dict/office/maps/MapPreviewComponent.vue";
 import MapPreviewDataContainer from "@/components/admin/dict/office/maps/MapPreviewDataContainer";
+import DictAdminOfficeLocationsDataTableContainer
+  from "@/components/admin/dict/office/maps/DictAdminOfficeLocationsDataTableContainer";
 
 const namespace_dict = 'dict';
 @Component({
@@ -65,32 +67,14 @@ export default class DictAdminOfficeLocations extends Vue {
 
   private previewMapAction = new MapPreviewDataContainer();
 
-  private data = new DictTableComponentDataContainer<DictOfficeLocation, DictOfficeLocationUpdateBody, BasicDictFilter<DictOfficeLocation>>(
-      () => dictAdminService.loadOfficeLocations(),
-      () =>
-          [
-            {text: this.$tc('Наименования'), value: 'name'},
-            {text: this.$tc('Офис'), value: 'office.name'},
-            {text: this.$tc('Описание'), value: 'description'},
-            {text: this.$tc('Карта'), value: 'hasMapFile'},
-            {text: this.$tc('Архив'), value: 'archived'},
-          ],
-      {
-        updateItemRequest: (id, body) => (dictAdminService.updateOfficeLocation(id, body)),
-        itemEditable: (id, body) => true,
-        itemToUpdateBody: item =>
-            ({
-              name: item.name,
-              archived: item.archived,
-              officeId: item.office?.id,
-              description: item.description
-            } as DictOfficeLocationUpdateBody),
-        createItemRequest: (body) => (dictAdminService.createOfficeLocation(body)),
-        defaultBody: () => ({name: '', archived: false} as DictOfficeLocationUpdateBody)
-      } as CreateOrUpdateAction<DictOfficeLocation, DictOfficeLocationUpdateBody>,
-      new BasicDictFilter(),
-      permissionService.canAdminDictOfficeLocations()
-  );
+  private data = new DictAdminOfficeLocationsDataTableContainer(() =>
+      [
+        {text: this.$tc('Наименования'), value: 'name'},
+        {text: this.$tc('Офис'), value: 'office.name'},
+        {text: this.$tc('Описание'), value: 'description'},
+        {text: this.$tc('Карта'), value: 'mapName'},
+        {text: this.$tc('Архив'), value: 'archived'},
+      ]);
 
   created() {
     this.$store.dispatch('dict/reloadOffices')

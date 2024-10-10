@@ -81,6 +81,7 @@ export interface DictOfficeLocationUpdateBody {
     name: string,
     description: string | undefined,
     officeId: number | undefined,
+    mapName: string| undefined,
     archived: boolean,
 }
 
@@ -201,7 +202,7 @@ class RestDictAdminService implements DictAdminService {
     }
 
     deleteOfficeLocationMap(filename: string): Promise<any> {
-        return httpService.delete(`v1/admin/dict/office_locations/${filename}/map`)
+        return httpService.delete(`v1/admin/dict/office_locations/${filename}`)
     }
 
 

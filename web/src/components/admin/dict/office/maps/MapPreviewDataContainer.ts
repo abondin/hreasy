@@ -26,7 +26,7 @@ export default class MapPreviewDataContainer {
         this._loading = true;
         this._error = '';
         this._opened = true;
-        dictService.getOfficeLocationMapFile(filename).then(img => {
+        return dictService.getOfficeLocationMapFile(filename).then(img => {
             if (img) {
                 this._img = img;
                 return employeeService.findAll().then(allEmployees => {
@@ -38,10 +38,6 @@ export default class MapPreviewDataContainer {
                             selected: e.id === selectedEmployeeId
                         }
                     });
-                    this._loading = false;
-                    if (this._mapReadyListener) {
-                        this._mapReadyListener();
-                    }
                     return this._employees;
                 });
             } else {
@@ -49,7 +45,12 @@ export default class MapPreviewDataContainer {
             }
         }).catch(err => {
             this._error = errorUtils.shortMessage(err);
+        }).finally(() => {
             this._loading = false;
+        }).then(() => {
+            if (this._mapReadyListener) {
+                return this._mapReadyListener();
+            }
         });
     }
 
@@ -74,6 +75,10 @@ export default class MapPreviewDataContainer {
         return this._opened;
     }
 
+    set opened(opened: boolean) {
+        this._opened = opened;
+    }
+
     get loading(): boolean {
         return this._loading;
     }
@@ -82,7 +87,7 @@ export default class MapPreviewDataContainer {
         return this._error;
     }
 
-    get filename(){
+    get filename() {
         return this._filename;
     }
 }
