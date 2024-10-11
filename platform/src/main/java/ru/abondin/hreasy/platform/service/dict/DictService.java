@@ -138,7 +138,7 @@ public class DictService {
 
     public Flux<DictOfficeLocationMap> getOfficeLocationMaps(AuthContext auth) {
         log.trace("Get all office location maps {}", auth.getUsername());
-        return fileStorage.listFiles(OFFICE_LOCATION_MAP_RESOURCE_TYPE, false).map(DictOfficeLocationMap::new);
+        return fileStorage.listFiles(OFFICE_LOCATION_MAP_RESOURCE_TYPE, true).map(DictOfficeLocationMap::new);
     }
 
     public Mono<String> getOfficeLocationMap(AuthContext auth, String filename) {
