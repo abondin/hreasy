@@ -6,8 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.abondin.hreasy.platform.BusinessError;
+import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.dict.DictOfficeEntry;
 import ru.abondin.hreasy.platform.repo.dict.DictOfficeRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
@@ -37,32 +38,32 @@ public class AdminDictOfficeService {
 
     @Transactional
     public Mono<Integer> create(AuthContext auth, CreateOrUpdateOfficeBody body) {
-        return doUpdate(auth, null, body);
+        log.info("Create office {} by {}", body.getName(), auth.getUsername());
+        var entry = new DictOfficeEntry();
+        entry.setCreatedAt(dateTimeService.now());
+        entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
+        return
+                doUpdate(auth, entry, body);
     }
 
     @Transactional
     public Mono<Integer> update(AuthContext auth, int id, CreateOrUpdateOfficeBody body) {
-        return doUpdate(auth, id, body);
+        log.info("Update office {} by {}", id, auth.getUsername());
+        return repo.findById(id)
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound("Office", id))
+                .flatMap(e -> doUpdate(auth, e, body));
     }
 
 
-
-    private Mono<Integer> doUpdate(AuthContext auth, Integer id, CreateOrUpdateOfficeBody body) {
-        log.info("Update office. Employee = {}. Id={}. RequestBody = {}", auth.getUsername(), id, body);
+    private Mono<Integer> doUpdate(AuthContext auth, DictOfficeEntry entry, CreateOrUpdateOfficeBody body) {
         var now = dateTimeService.now();
-        var entryToUpdate = mapper.toEntry(body);
-        if (id != null) {
-            entryToUpdate.setId(id);
-        } else {
-            entryToUpdate.setCreatedAt(now);
-            entryToUpdate.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
-        }
+        var entryToUpdate = mapper.applyToEntry(entry, body);
         return secValidator.validateAdminOffice(auth)
                 .flatMap((v) -> repo
                         .save(entryToUpdate)
                 )
-                .flatMap(entry ->
-                        history.persistHistory(entry.getId(), OFFICE, entry, now, auth.getEmployeeInfo().getEmployeeId())
+                .flatMap(persisted ->
+                        history.persistHistory(persisted.getId(), OFFICE, persisted, now, auth.getEmployeeInfo().getEmployeeId())
                 ).map(h -> h.getEntityId());
     }
 

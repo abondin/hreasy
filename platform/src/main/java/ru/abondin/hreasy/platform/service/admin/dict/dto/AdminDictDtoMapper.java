@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.admin.dict.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import ru.abondin.hreasy.platform.repo.dict.*;
 import ru.abondin.hreasy.platform.service.dict.dto.*;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
@@ -9,7 +10,7 @@ import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 @Mapper(componentModel = "spring")
 public interface AdminDictDtoMapper extends MapperBase {
 
-    DictOfficeEntry toEntry(CreateOrUpdateOfficeBody dto);
+    DictOfficeEntry applyToEntry(@MappingTarget DictOfficeEntry entry, CreateOrUpdateOfficeBody dto);
 
     DictOfficeLocationEntry toEntry(CreateOrUpdateOfficeLocationBody dto);
 
