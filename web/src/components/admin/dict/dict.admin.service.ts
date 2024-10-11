@@ -202,7 +202,7 @@ class RestDictAdminService implements DictAdminService {
     }
 
     deleteOfficeLocationMap(filename: string): Promise<any> {
-        return httpService.delete(`v1/admin/dict/office_locations/${filename}`)
+        return httpService.delete(`v1/admin/dict/office_maps/${filename}`)
     }
 
 
