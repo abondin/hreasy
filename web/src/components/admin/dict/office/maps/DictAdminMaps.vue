@@ -44,7 +44,7 @@
             :items="data.maps"
             sort-by="mapName"
             dense
-            @click:row="item=>previewMapAction.show(item.mapName)"
+            @click:row="item=>previewMapAction.show(item.mapName, item.mapName)"
             :items-per-page="defaultItemsPerTablePage"
             class="text-truncate table-cursor"
         >

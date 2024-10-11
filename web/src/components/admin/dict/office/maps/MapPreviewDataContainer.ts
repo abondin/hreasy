@@ -1,13 +1,6 @@
 import dictService from "@/store/modules/dict.service";
-import employeeService from "@/components/empl/employee.service";
+import employeeService, {Employee} from "@/components/empl/employee.service";
 import {errorUtils} from "@/components/errors";
-
-export interface EmployeeOnWorkplace {
-    employeeId: number,
-    employeeDisplayName: string;
-    workplaceName: string;
-    selected?: boolean;
-}
 
 export default class MapPreviewDataContainer {
     private _opened = false;
@@ -16,28 +9,29 @@ export default class MapPreviewDataContainer {
     private _img: string | null = null;
     private _filename: string | null = null;
     private _mapReadyListener: (() => any) | null = null;
-    private _employees: EmployeeOnWorkplace[] = [];
+    private _employees: Employee[] = [];
+    private _highlightedWorkplace: string[] = [];
+    private _title: string | null = null;
+    private _employeeDetailedOpened = false;
+    private _selectedEmployee: Employee | null = null;
 
 
-    public show(filename: string, selectedEmployeeId?: number) {
+    public show(filename: string, title?: string,highlightedWorkplace?: string[]) {
         this._img = null;
         this._employees = [];
+        this._highlightedWorkplace = highlightedWorkplace || [];
         this._filename = filename;
         this._loading = true;
         this._error = '';
         this._opened = true;
+        this._title = title || null;
+        this._employeeDetailedOpened = false;
+        this._selectedEmployee = null;
         return dictService.getOfficeLocationMapFile(filename).then(img => {
             if (img) {
                 this._img = img;
                 return employeeService.findAll().then(allEmployees => {
-                    this._employees = allEmployees.filter(e => e.officeLocation?.mapName === filename).map(e => {
-                        return {
-                            employeeId: e.id,
-                            employeeDisplayName: e.displayName,
-                            workplaceName: e.officeWorkplace,
-                            selected: e.id === selectedEmployeeId
-                        }
-                    });
+                    this._employees = allEmployees.filter(e => e.officeLocation?.mapName === filename);
                     return this._employees;
                 });
             } else {
@@ -54,7 +48,7 @@ export default class MapPreviewDataContainer {
         });
     }
 
-    set mapReadyListener(listener: () => any | null) {
+    public set mapReadyListener(listener: () => any | null) {
         this._mapReadyListener = listener;
     }
 
@@ -63,31 +57,57 @@ export default class MapPreviewDataContainer {
         this._img = null;
     }
 
-    get img(): string | null {
+    public openEmployeeDetails(employee: Employee) {
+        this._selectedEmployee = employee;
+        this._employeeDetailedOpened = true;
+    }
+
+    public get img(): string | null {
         return this._img;
     }
 
-    get employees(): EmployeeOnWorkplace[] {
+    public get employees(): Employee[] {
         return this._employees;
     }
 
-    get opened(): boolean {
+    public get highlightedWorkplace(): string[] {
+        return this._highlightedWorkplace;
+    }
+
+    public get opened(): boolean {
         return this._opened;
     }
 
-    set opened(opened: boolean) {
+    public set opened(opened: boolean) {
         this._opened = opened;
     }
 
-    get loading(): boolean {
+    public get title(): string | null {
+        return this._title;
+    }
+
+    public get selectedEmployee(): Employee | null {
+        return this._selectedEmployee;
+    }
+
+    public get employeeDetailedOpened(): boolean {
+        return this._employeeDetailedOpened;
+    }
+
+    public set employeeDetailedOpened(employeeDetailedOpened: boolean) {
+        this._employeeDetailedOpened = employeeDetailedOpened;
+    }
+
+
+    public get loading(): boolean {
         return this._loading;
     }
 
-    get error(): string {
+    public get error(): string {
         return this._error;
     }
 
-    get filename() {
+    public get filename() {
         return this._filename;
     }
 }

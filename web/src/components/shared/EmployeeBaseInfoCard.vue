@@ -37,7 +37,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import {Prop} from "vue-property-decorator";
+import {Prop, Watch} from "vue-property-decorator";
 import Component from "vue-class-component";
 import {errorUtils} from "@/components/errors";
 import employeeService, {Employee} from "@/components/empl/employee.service";
@@ -56,11 +56,15 @@ export default class EmployeeBaseInfoCard extends Vue {
 
   private error = '';
 
-  /**
-   * Lifecycle hook
-   */
-  created() {
+  created(){
     this.fetch();
+  }
+
+  @Watch('employeeId')
+  employeeIdChanged() {
+    if (this.employeeId) {
+      this.fetch();
+    }
   }
 
   private fetch() {

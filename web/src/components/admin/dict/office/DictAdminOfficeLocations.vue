@@ -83,7 +83,7 @@ export default class DictAdminOfficeLocations extends Vue {
   private openPreviewDialog(event: Event, item: DictOfficeLocation) {
     event.stopPropagation();
     event.preventDefault();
-    this.previewMapAction.show(item.mapName);
+    this.previewMapAction.show(item.mapName, item.name);
   }
 
 

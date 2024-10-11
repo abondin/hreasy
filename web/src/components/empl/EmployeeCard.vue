@@ -15,7 +15,8 @@ Uses in Employees Table (Employees.vue)
         <v-list-item-subtitle v-if="employee.position">{{ employee.position.name }}</v-list-item-subtitle>
         <v-list-item-subtitle v-if="employee.officeLocation">
           {{ employee.officeLocation.name }}
-          <v-btn x-small v-if="employee.officeLocation.mapName" icon @click="previewMapAction.show(employee.officeLocation.mapName, employee.id)">
+          <v-btn x-small v-if="employee.officeLocation.mapName" icon
+                 @click="previewMapAction.show(employee.officeLocation.mapName, employee.officeLocation.name, [employee.officeWorkplace])">
             <v-icon>mdi-map</v-icon>
           </v-btn>
         </v-list-item-subtitle>
@@ -76,7 +77,8 @@ Uses in Employees Table (Employees.vue)
 
         <!-- Project card dialog -->
         <v-dialog v-if="employee && employee.currentProject" v-model="projectCardDialog">
-          <project-info-card-component :project-id="employee.currentProject.id" @close="projectCardDialog=false"></project-info-card-component>
+          <project-info-card-component :project-id="employee.currentProject.id"
+                                       @close="projectCardDialog=false"></project-info-card-component>
         </v-dialog>
 
       </v-list-item-content>

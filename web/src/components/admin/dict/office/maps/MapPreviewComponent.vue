@@ -1,13 +1,16 @@
 <template>
-  <v-dialog fullscreen v-if="data?.filename" v-model="data.opened">
+  <v-dialog v-if="data?.filename" v-model="data.opened"
+            fullscreen
+            transition="dialog-transition">
     <v-card>
-      <v-card-title>
-        {{ $t('Карта') + ": " + data.filename }}
+      <v-toolbar color="grey lighten-1">
+        <v-toolbar-title>{{ $t('Карта') }}{{ data.title ? (": " + data.title) : '' }}</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn icon @click="data.hide()">
+        <v-btn icon @click="data.hide()" outlined>
           <v-icon>mdi-close</v-icon>
         </v-btn>
-      </v-card-title>
+      </v-toolbar>
+
       <v-alert type="error" v-if="data.error">
         {{ data.error }}
       </v-alert>
@@ -15,11 +18,21 @@
                            indeterminate
                            size="64"
       ></v-progress-circular>
-      <v-card-text class="full-card-text" v-else>
+      <v-card-text class="full-card-text pa-5" v-else>
         <svg v-if="data.img" class="full-screen-svg"
              v-html="data.img" ref="map">
         </svg>
       </v-card-text>
+      <v-dialog max-width="900px" v-if="data.selectedEmployee" v-model="data.employeeDetailedOpened">
+        <v-card>
+          <v-card-text>
+            <v-btn icon absolute top right @click="data.employeeDetailedOpened=false" outlined>
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+            <employee-base-info-card :employee-id="data.selectedEmployee.id"></employee-base-info-card>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </v-card>
   </v-dialog>
 </template>
@@ -29,9 +42,12 @@ import {Component, Prop, Vue} from 'vue-property-decorator';
 import WorkplaceOnMapUtils from "@/components/admin/dict/office/maps/workplace-on-map-utils";
 import MapPreviewDataContainer from "@/components/admin/dict/office/maps/MapPreviewDataContainer";
 import logger from "@/logger";
+import EmployeeBaseInfoCard from "@/components/shared/EmployeeBaseInfoCard.vue";
 
 
-@Component({})
+@Component({
+  components: {EmployeeBaseInfoCard}
+})
 export default class MapPreviewComponent extends Vue {
   @Prop({required: true})
   private data!: MapPreviewDataContainer;
@@ -42,7 +58,14 @@ export default class MapPreviewComponent extends Vue {
       if (svgElement) {
         const {width, height} = svgElement.getBoundingClientRect();
         WorkplaceOnMapUtils.adjustSvgViewBox(svgElement, width, height);
-        WorkplaceOnMapUtils.initializeWorkplace(svgElement, this.data.employees);
+        WorkplaceOnMapUtils.initializeWorkplace(svgElement,
+            (workplaceName, employee) => {
+              if (employee) {
+                this.data.openEmployeeDetails(employee);
+              }
+            },
+            this.data.employees,
+            this.data.highlightedWorkplace);
       } else {
         logger.error("Unable to find svg dom element to render the map");
       }
@@ -53,8 +76,8 @@ export default class MapPreviewComponent extends Vue {
 
 <style scoped>
 .full-card-text {
-  width: 90vw;
-  height: 90vh;
+  width: 100vw;
+  height: 100vh;
 }
 
 .full-screen-svg {
