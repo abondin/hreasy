@@ -118,7 +118,10 @@ export default class WorkplaceOnMapUtils {
         if (employee?.displayName) {
             title += `\n${employee?.displayName}`;
             if (employee.currentProject) {
-                title += `\n${employee.currentProject.name} - ${employee.currentProject.role}`
+                title += `\n${employee.currentProject.name}`;
+                if (employee.currentProject.role) {
+                    title += `- ${employee.currentProject.role}`;
+                }
             }
         }
         titleElement.textContent = title;
