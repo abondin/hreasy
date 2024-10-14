@@ -57,7 +57,8 @@ export default class MapPreviewComponent extends Vue {
       const svgElement = this.$refs.map as SVGElement;
       if (svgElement) {
         const {width, height} = svgElement.getBoundingClientRect();
-        WorkplaceOnMapUtils.adjustSvgViewBox(svgElement, width, height);
+        const headerAndPaddingsCompensation = 64+5+5;
+        WorkplaceOnMapUtils.adjustSvgViewBox(svgElement, width, height-headerAndPaddingsCompensation);
         WorkplaceOnMapUtils.initializeWorkplace(svgElement,
             (workplaceName, employee) => {
               if (employee) {

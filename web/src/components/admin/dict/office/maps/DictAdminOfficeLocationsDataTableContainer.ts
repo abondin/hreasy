@@ -29,6 +29,7 @@ export default class DictAdminOfficeLocationsDataTableContainer extends DictTabl
                         name: item.name,
                         archived: item.archived,
                         officeId: item.office?.id,
+                        mapName: item.mapName,
                         description: item.description
                     } as DictOfficeLocationUpdateBody),
                 createItemRequest: (body) => (dictAdminService.createOfficeLocation(body)),
