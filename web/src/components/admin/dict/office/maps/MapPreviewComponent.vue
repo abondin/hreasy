@@ -43,6 +43,7 @@ import WorkplaceOnMapUtils from "@/components/admin/dict/office/maps/workplace-o
 import MapPreviewDataContainer from "@/components/admin/dict/office/maps/MapPreviewDataContainer";
 import logger from "@/logger";
 import EmployeeBaseInfoCard from "@/components/shared/EmployeeBaseInfoCard.vue";
+import svgPanZoom from 'svg-pan-zoom';
 
 
 @Component({
@@ -52,13 +53,13 @@ export default class MapPreviewComponent extends Vue {
   @Prop({required: true})
   private data!: MapPreviewDataContainer;
 
-  created() {
+  private panZoomInstance?: any;
+
+
+  mounted() {
     this.data.mapReadyListener = () => {
       const svgElement = this.$refs.map as SVGElement;
       if (svgElement) {
-        const {width, height} = svgElement.getBoundingClientRect();
-        const headerAndPaddingsCompensation = 64+5+5;
-        WorkplaceOnMapUtils.adjustSvgViewBox(svgElement, width, height-headerAndPaddingsCompensation);
         WorkplaceOnMapUtils.initializeWorkplace(svgElement,
             (workplaceName, employee) => {
               if (employee) {
@@ -67,6 +68,14 @@ export default class MapPreviewComponent extends Vue {
             },
             this.data.employees,
             this.data.highlightedWorkplace);
+        this.panZoomInstance = svgPanZoom(svgElement, {
+          zoomEnabled: true,
+          controlIconsEnabled: true,
+          fit: true,
+          center: true,
+          minZoom: 0.7,
+          maxZoom: 10,
+        });
       } else {
         logger.error("Unable to find svg dom element to render the map");
       }
@@ -77,8 +86,8 @@ export default class MapPreviewComponent extends Vue {
 
 <style scoped>
 .full-card-text {
-  width: 100vw;
-  height: 100vh;
+  width: 90vw;
+  height: 90vh;
 }
 
 .full-screen-svg {

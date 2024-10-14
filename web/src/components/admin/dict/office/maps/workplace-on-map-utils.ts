@@ -1,34 +1,6 @@
 import {Employee} from "@/components/empl/employee.service";
-import logger from "@/logger";
 
 export default class WorkplaceOnMapUtils {
-
-    public static adjustSvgViewBox(svg: SVGElement, width: number, height: number) {
-        const svgElement = svg.querySelector('svg');
-        if (svgElement) {
-            // Original svg size
-            const svgWidth = svgElement.width.baseVal.value;
-            const svgHeight = svgElement.height.baseVal.value;
-
-            // Scale
-            const scaleX = width / svgWidth;
-            const scaleY = height / svgHeight;
-
-            // Minimum scale
-            const scale = Math.min(scaleX, scaleY);
-
-            if (scale < 1) {
-                svgElement.setAttribute(
-                    "viewBox",
-                    `0 0 ${svgWidth} ${svgHeight}`
-                );
-                svgElement.setAttribute("width", `${svgWidth * scale}px`);
-                svgElement.setAttribute("height", `${svgHeight * scale}px`);
-                svgElement.style.height = `${svgHeight * scale}px`;
-            }
-        }
-    }
-
     public static initializeWorkplace(svg: SVGElement, workplaceClickListener?: (workplaceName: string, employee?: Employee) => any, employees?: Employee[], highlightedWorkplaces?: string[]) {
         const workplaces = svg.querySelectorAll('[data-workplaceName][data-workplaceType="1"]');
 
