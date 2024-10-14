@@ -104,9 +104,10 @@ export default class VacationsCalendar extends Vue {
     this.calendarOptions.events = filteredVacations.map(v => ({
       title: v.employeeDisplayName + ' (' + DateTimeUtils.formatDateFromIsoDateTime(v.startDate) + ' - ' + DateTimeUtils.formatDateFromIsoDateTime(v.endDate) + ')',
       start: v.startDate,
-      end: v.endDate
+      end: DateTimeUtils.endOfDay(v.endDate)
     }));
   }
+
 }
 </script>
 

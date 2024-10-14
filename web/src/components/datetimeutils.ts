@@ -103,11 +103,11 @@ export class DateTimeUtils {
         return this.formatToIsoDate(this.now());
     }
 
-    public static firstDayOfYear(year: number): Moment{
-        return moment({ year: year, month: 0, day: 1})
+    public static firstDayOfYear(year: number): Moment {
+        return moment({year: year, month: 0, day: 1})
     }
 
-    public static defaultYears(): number[]{
+    public static defaultYears(): number[] {
         const currentYear = this.now().year();
         return [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];
     }
@@ -140,6 +140,19 @@ export class DateTimeUtils {
         return d1.year() === d2.year() &&
             d1.month() === d2.month() &&
             d1.date() === d2.date();
+    }
+
+    /**
+     *
+     * @param date - date iso string
+     * return end od the day date-time ISO string
+     */
+    static endOfDay(date: string): string | undefined {
+        const d = this.dateFromIsoString(date);
+        if (d && d.isValid()) {
+            return d.endOf("day").toISOString();
+        }
+        return undefined;
     }
 
 }
