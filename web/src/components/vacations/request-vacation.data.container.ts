@@ -5,7 +5,8 @@ import moment from "moment";
 
 export class RequestOrUpdateVacationActionDataContainer extends InDialogActionDataContainer<number, RequestOrUpdateMyVacation> {
     private _defaultNumberOrDays = 14;
-    private _daysNotIncludedInVacations: Array<string>=[];
+    private _daysNotIncludedInVacations: Array<string> = [];
+
     constructor() {
         super((id, request) => {
             if (id) {
@@ -16,15 +17,15 @@ export class RequestOrUpdateVacationActionDataContainer extends InDialogActionDa
         });
     }
 
-    get defaultNumberOrDays(){
+    get defaultNumberOrDays() {
         return this._defaultNumberOrDays;
     }
 
-    get daysNotIncludedInVacations(){
+    get daysNotIncludedInVacations() {
         return this._daysNotIncludedInVacations;
     }
 
-    set daysNotIncludedInVacations(daysNotIncludedInVacations ){
+    set daysNotIncludedInVacations(daysNotIncludedInVacations) {
         this._daysNotIncludedInVacations = daysNotIncludedInVacations;
     }
 
@@ -52,17 +53,29 @@ export class RequestOrUpdateVacationActionDataContainer extends InDialogActionDa
         super.openDialog(vacation.id, formData);
     }
 
-    startDateUpdated(){
-        const startDate = moment(this.formData?.startDate, moment.HTML5_FMT.DATE, true);
-        if (startDate.isValid()) {
-            if (this.formData && !this.formData.endDate) {
-                this.formData.endDate = startDate.add(this.defaultNumberOrDays - 1, "days").format(moment.HTML5_FMT.DATE);
+    startDateUpdated() {
+        if (this.formData) {
+            const startDate = moment(this.formData.startDate, moment.HTML5_FMT.DATE, true);
+            let updateEndDateRequired = false;
+            if (startDate.isValid()) {
+                if (this.formData.endDate) {
+                    const endDate = moment(this.formData.endDate, moment.HTML5_FMT.DATE, true);
+                    if (!endDate.isValid() || endDate.isBefore(startDate)) {
+                        updateEndDateRequired = true;
+                    }
+                } else {
+                    updateEndDateRequired = true;
+                }
+                if (updateEndDateRequired) {
+                    this.formData.endDate = startDate.add(this.defaultNumberOrDays - 1, "days").format(moment.HTML5_FMT.DATE);
+                }
+                this.updateDaysNumber();
             }
-            this.updateDaysNumber();
         }
     }
 
-    endDateUpdated(){
+
+    endDateUpdated() {
         const endDate = moment(this.formData?.endDate, moment.HTML5_FMT.DATE, true);
         if (endDate.isValid()) {
             this.updateDaysNumber();
