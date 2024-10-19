@@ -6,18 +6,26 @@
         ref="startDateRef"
         v-model="data.formData.startDate"
         :label="$t('Начало')+`*`"
-        :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
+        :rules="[v=>(v && validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
     ></my-date-form-component>
 
     <!-- end date -->
     <my-date-form-component
         ref="endDateRef"
+        :picker-date="data.formData.startDate"
         v-model="data.formData.endDate"
         :label="$t('Окончание')+`*`"
-        :rules="[v=>(validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
+        :rules="[v=>(v && validateDate(v, true) || $t('Дата в формате ДД.ММ.ГГ'))]"
     ></my-date-form-component>
 
+    {{$t('Количество дней отпуска')}}: <span>{{data.formData.daysNumber}}</span>
+
+    <v-checkbox
+        v-model="data.daysNumberSetManually"
+        :label="$t('Скорректировать количество дней вручную')"></v-checkbox>
+
     <v-slider
+        v-if="data.daysNumberSetManually"
         :label="$t('Количество дней')"
         min="0"
         max="31"

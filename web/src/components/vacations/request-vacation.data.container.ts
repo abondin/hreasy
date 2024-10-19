@@ -6,6 +6,7 @@ import moment from "moment";
 export class RequestOrUpdateVacationActionDataContainer extends InDialogActionDataContainer<number, RequestOrUpdateMyVacation> {
     private _defaultNumberOrDays = 14;
     private _daysNotIncludedInVacations: Array<string> = [];
+    private _daysNumberSetManually=false;
 
     constructor() {
         super((id, request) => {
@@ -15,6 +16,14 @@ export class RequestOrUpdateVacationActionDataContainer extends InDialogActionDa
                 return vacationService.requestVacation(request!);
             }
         });
+    }
+
+    get daysNumberSetManually() {
+        return this._daysNumberSetManually;
+    }
+
+    set daysNumberSetManually(daysNumberSetManually) {
+        this._daysNumberSetManually = daysNumberSetManually;
     }
 
     get defaultNumberOrDays() {
@@ -30,12 +39,14 @@ export class RequestOrUpdateVacationActionDataContainer extends InDialogActionDa
     }
 
     openRequestVacationDialog(year: number) {
+        this.daysNumberSetManually=false;
         const start = DateTimeUtils.firstDayOfYear(year);
         const end = moment(start).add(14, 'days');
         const formData = {
             year: year,
             startDate: DateTimeUtils.formatToIsoDate(start),
             endDate: DateTimeUtils.formatToIsoDate(end),
+            daysNumber: this.defaultNumberOrDays,
             notes: ''
         } as RequestOrUpdateMyVacation;
         super.openDialog(null, formData);

@@ -24,6 +24,7 @@
         </v-text-field>
       </template>
       <v-date-picker
+          :picker-date="pickerDate"
           :first-day-of-week="1"
           :value="date"
           @input="calendarSelected">
@@ -50,6 +51,9 @@ export default class MyDateFormComponent extends Vue {
 
   @Prop({required: true})
   private label!: string;
+
+  @Prop({required: false})
+  private pickerDate?: string;
 
   @Prop({required: false, type: Array})
   private rules: any;
