@@ -93,14 +93,36 @@ public class VacationService {
     public Mono<Integer> requestVacation(AuthContext auth, VacationRequestDto request) {
         log.info("Request vacation {} by {}", request, auth.getUsername());
         var now = dateTimeService.now();
-        return planningPeriodRepo.findById(request.getYear())
-                .filter(period -> period.getOpenedAt() != null && period.getClosedAt() == null)
-                .switchIfEmpty(Mono.error(new BusinessError("errors.vac_planning_period.not.open", Integer.toString(request.getYear()))))
-                .flatMap(period -> {
+        return validateOpenedPlanningPeriod(request.getYear())
+                .flatMap(v -> {
                     var entry = mapper.toEntry(request, auth.getEmployeeInfo().getEmployeeId(), now);
                     return vacationRepo.save(entry).flatMap(vacation -> {
                         var history = mapper.history(vacation);
                         history.setCreatedAt(now);
+                        history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
+                        return historyRepo.save(history).map(VacationEntry.VacationHistoryEntry::getVacationId);
+                    });
+                });
+    }
+
+    public Mono<Integer> cancelRequestedVacation(AuthContext auth, int vacationId) {
+        log.info("Delete requested vacation {} by {}", vacationId, auth.getUsername());
+        return vacationRepo.findById(vacationId)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(vacationId))))
+                .flatMap(v -> validateOpenedPlanningPeriod(v.getYear()).map(r -> v))
+                .flatMap(entry -> {
+                    if (!entry.getEmployee().equals(auth.getEmployeeInfo().getEmployeeId())) {
+                        return Mono.error(new BusinessError("errors.vacation.not.your", Integer.toString(vacationId)));
+                    }
+                    if (VacationDto.VacationStatus.REQUESTED.getStatusId() != entry.getStatus()) {
+                        return Mono.error(new BusinessError("errors.vacation.status.not.requested", Integer.toString(vacationId)));
+                    }
+                    entry.setStatus(VacationDto.VacationStatus.CANCELED.getStatusId());
+                    entry.setUpdatedAt(dateTimeService.now());
+                    entry.setUpdatedBy(auth.getEmployeeInfo().getEmployeeId());
+                    return vacationRepo.save(entry).flatMap(vacation -> {
+                        var history = mapper.history(vacation);
+                        history.setCreatedAt(dateTimeService.now());
                         history.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
                         return historyRepo.save(history).map(VacationEntry.VacationHistoryEntry::getVacationId);
                     });
@@ -131,8 +153,6 @@ public class VacationService {
     }
 
 
-    
-    
     @Transactional(readOnly = true)
     public Flux<VacPlanningPeriodDto> getOpenPlanningPeriods(AuthContext auth) {
         return planningPeriodRepo.findOpened().map(mapper::fromEntry);
@@ -182,6 +202,13 @@ public class VacationService {
         } else {
             return filteredYears;
         }
+    }
+
+    private Mono<Boolean> validateOpenedPlanningPeriod(int year) {
+        return planningPeriodRepo.findById(year)
+                .filter(period -> period.getOpenedAt() != null && period.getClosedAt() == null)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.vac_planning_period.not.opened", Integer.toString(year))))
+                .map(period -> true);
     }
 
 }

@@ -35,6 +35,7 @@
           multi-sort
           hide-default-footer
           :sort-by="['startDate', 'endDate']"
+          class="hover-table"
           disable-pagination>
         <template
             v-slot:item.startDate="{ item }">
@@ -48,6 +49,26 @@
             v-slot:item.status="{ item }">
           {{ $t(`VACATION_STATUS_ENUM.${item.status}`) }}
         </template>
+        <template
+            v-slot:item.notes="{ item }">
+          <div class="d-flex justify-space-between align-center">
+            <span>{{ item.notes || '' }}</span>
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn v-if="vacationCanBeCanceled(item)"
+                    icon
+                    @click="cancelRequestAction.openDialog(item.id)"
+                    class="delete-btn"
+                    v-bind="attrs"
+                    v-on="on"
+                >
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ $t('Отозвать') }}</span>
+            </v-tooltip>
+          </div>
+        </template>
       </v-data-table>
     </v-card-text>
     <in-dialog-form :title="$t('Запланировать отпуск на X год', {year: requestAction.formData.year})"
@@ -56,6 +77,13 @@
       <template v-slot:fields>
         <!-- start date -->
         <request-vacations-form-fields :data="requestAction"></request-vacations-form-fields>
+      </template>
+    </in-dialog-form>
+    <in-dialog-form :title="$t('Отозвать отпуск')"
+                    :data="cancelRequestAction" form-ref="cancelRequestVacation"
+                    v-on:submit="fetchData()">
+      <template v-slot:fields>
+        <span>{{ $t('Вы уверены, что хотите отозвать отпуск?') }}</span>
       </template>
     </in-dialog-form>
   </v-card>
@@ -78,6 +106,7 @@ import {RequestOrUpdateVacationActionDataContainer} from "@/components/vacations
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import dictService from "@/store/modules/dict.service";
 import RequestVacationsFormFields from "@/components/vacations/RequestVacationsFormFields.vue";
+import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
 
 
 @Component({
@@ -93,6 +122,15 @@ export default class MyVacations extends Vue {
   public allMonths: Array<any> = [];
   openedPeriods: Array<VacPlanningPeriod> = [];
   requestAction = new RequestOrUpdateVacationActionDataContainer();
+  cancelRequestAction = new InDialogActionDataContainer<number, void>(
+      (id) => {
+        if (id) {
+          return vacationService.cancelVacationRequest(id);
+        }
+        return Promise.resolve();
+      }
+  );
+
   /**
    * Lifecycle hook
    */
@@ -123,7 +161,7 @@ export default class MyVacations extends Vue {
 
 
   private filteredItems() {
-    return this.vacations;
+    return this.vacations.filter(v=>['PLANNED', 'REQUESTED'].includes(v.status));
   }
 
 
@@ -134,14 +172,14 @@ export default class MyVacations extends Vue {
           this.openedPeriods = periods;
           return dictService.daysNotIncludedInVacations(this.allYears)
               .then(days => {
-                this.requestAction.daysNotIncludedInVacations = days;
-                return vacationService.myFutureVacations()
-                    .then(data => {
-                      this.vacations = data.filter(m => m.startDate && m.endDate);
-                      return;
-                    });
-              }
-          )
+                    this.requestAction.daysNotIncludedInVacations = days;
+                    return vacationService.myFutureVacations()
+                        .then(data => {
+                          this.vacations = data.filter(m => m.startDate && m.endDate);
+                          return;
+                        });
+                  }
+              )
         }).finally(() => {
           this.loading = false
         });
@@ -155,10 +193,21 @@ export default class MyVacations extends Vue {
     return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
   }
 
+  private vacationCanBeCanceled(vacation: MyVacation): boolean {
+    let result = vacation && vacation.status === 'REQUESTED';
+    result = result && this.openedPeriods && this.openedPeriods.some(period => period.year === vacation.year);
+    return result;
+  }
 
 }
 </script>
 
 <style scoped>
+.hover-table .v-btn.delete-btn {
+  visibility: hidden;
+}
 
+.hover-table .v-data-table__wrapper tr:hover .v-btn.delete-btn {
+  visibility: visible;
+}
 </style>

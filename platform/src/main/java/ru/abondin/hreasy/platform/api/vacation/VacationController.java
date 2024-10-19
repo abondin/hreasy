@@ -70,6 +70,15 @@ public class VacationController {
     }
 
     /**
+     * @param vacationId
+     * @return id of updated vacation id
+     */
+    @DeleteMapping("/my/{vacationId}")
+    @ResponseBody
+    public Mono<Integer> cancelRequest(@PathVariable int vacationId) {
+        return AuthHandler.currentAuth().flatMap(auth -> vacationService.cancelRequestedVacation(auth, vacationId));
+    }
+    /**
      * @param employeeId
      * @param vacationId
      * @param body
