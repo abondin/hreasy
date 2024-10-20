@@ -55,9 +55,9 @@
             <span>{{ item.notes || '' }}</span>
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
-                <v-btn v-if="vacationCanBeCanceled(item)"
+                <v-btn v-if="vacationCanBeRejected(item)"
                     icon
-                    @click="cancelRequestAction.openDialog(item.id)"
+                    @click="rejectRequestAction.openDialog(item.id)"
                     class="delete-btn"
                     v-bind="attrs"
                     v-on="on"
@@ -80,7 +80,7 @@
       </template>
     </in-dialog-form>
     <in-dialog-form :title="$t('Отозвать отпуск')"
-                    :data="cancelRequestAction" form-ref="cancelRequestVacation"
+                    :data="rejectRequestAction" form-ref="rejectRequestVacation"
                     v-on:submit="fetchData()">
       <template v-slot:fields>
         <span>{{ $t('Вы уверены, что хотите отозвать отпуск?') }}</span>
@@ -122,10 +122,10 @@ export default class MyVacations extends Vue {
   public allMonths: Array<any> = [];
   openedPeriods: Array<VacPlanningPeriod> = [];
   requestAction = new RequestOrUpdateVacationActionDataContainer();
-  cancelRequestAction = new InDialogActionDataContainer<number, void>(
+  rejectRequestAction = new InDialogActionDataContainer<number, void>(
       (id) => {
         if (id) {
-          return vacationService.cancelVacationRequest(id);
+          return vacationService.rejectVacationRequest(id);
         }
         return Promise.resolve();
       }
@@ -193,7 +193,7 @@ export default class MyVacations extends Vue {
     return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
   }
 
-  private vacationCanBeCanceled(vacation: MyVacation): boolean {
+  private vacationCanBeRejected(vacation: MyVacation): boolean {
     let result = vacation && vacation.status === 'REQUESTED';
     result = result && this.openedPeriods && this.openedPeriods.some(period => period.year === vacation.year);
     return result;

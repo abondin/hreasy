@@ -6,7 +6,7 @@
       <v-tabs v-model="selectedTab">
         <v-tab>{{ $t('Все отпуска') }}</v-tab>
         <v-tab>{{ $t('Сводная по сотрудникам') }}</v-tab>
-        <v-tab>{{ $t('Календарь') }}</v-tab>
+        <v-tab>{{ $t('График отпусков') }}</v-tab>
       </v-tabs>
 
       <!-- Filter Area -->
@@ -220,8 +220,9 @@
 
         <!-- Calendar -->
         <v-tab-item>
-          <vacations-calendar
-              :vacations="filteredItems()" :year="selectedYear"></vacations-calendar>
+          <vacations-timeline
+              @year-navigation="timeLineYearChanged"
+              :vacations="filteredItems()" :year="selectedYear"></vacations-timeline>
         </v-tab-item>
       </v-tabs-items>
 
@@ -261,7 +262,7 @@ import {
 } from "@/components/vacations/employeeVacationSummaryService";
 import {Watch} from "vue-property-decorator";
 import dictService from "@/store/modules/dict.service";
-import VacationsCalendar from "@/components/vacations/VacationsCalendar.vue";
+import VacationsTimeline from "@/components/vacations/VacationsTimeline.vue";
 import {searchUtils, TextFilterBuilder} from "@/components/searchutils";
 
 const namespace = 'dict';
@@ -277,7 +278,7 @@ class Filter {
 
 @Component({
   name: 'VacationsList',
-  components: {VacationsCalendar, MyDateRangeComponent, VacationEditForm}
+  components: {VacationsTimeline, MyDateRangeComponent, VacationEditForm}
 })
 export default class VacationsListComponent extends Vue {
   headers: DataTableHeader[] = [];
@@ -510,6 +511,11 @@ export default class VacationsListComponent extends Vue {
     } else {
       return this.allStatuses.filter(s=>s.value!='REQUESTED');
     }
+  }
+
+  private timeLineYearChanged(year: number) {
+    this.selectedYear = year;
+    this.fetchData(true);
   }
 
 }

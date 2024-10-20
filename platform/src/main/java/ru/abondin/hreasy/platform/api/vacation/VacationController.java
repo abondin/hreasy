@@ -54,7 +54,7 @@ public class VacationController {
     @ResponseBody
     public Flux<EmployeeVacationShort> currentOrFutureVacations(@PathVariable int employeeId) {
         return
-                AuthHandler.currentAuth().flatMapMany(auth -> vacationService.currentOrFutureVacations(employeeId, auth));
+                AuthHandler.currentAuth().flatMapMany(auth -> vacationService.currentOrFutureVacations(employeeId));
     }
 
 
@@ -75,8 +75,8 @@ public class VacationController {
      */
     @DeleteMapping("/my/{vacationId}")
     @ResponseBody
-    public Mono<Integer> cancelRequest(@PathVariable int vacationId) {
-        return AuthHandler.currentAuth().flatMap(auth -> vacationService.cancelRequestedVacation(auth, vacationId));
+    public Mono<Integer> rejectRequest(@PathVariable int vacationId) {
+        return AuthHandler.currentAuth().flatMap(auth -> vacationService.rejectRequestedVacation(auth, vacationId));
     }
     /**
      * @param employeeId

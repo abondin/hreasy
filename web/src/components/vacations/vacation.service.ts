@@ -93,7 +93,7 @@ export interface VacationService {
 
     requestVacation(body: RequestOrUpdateMyVacation): Promise<number>;
 
-    cancelVacationRequest(vacationId: number): Promise<number>;
+    rejectVacationRequest(vacationId: number): Promise<number>;
 
     updatePlanningVacation(vacationId: number, body: RequestOrUpdateMyVacation): Promise<number>;
 }
@@ -157,7 +157,7 @@ class RestVacationService implements VacationService {
         });
     }
 
-    cancelVacationRequest(vacationId: number): Promise<number> {
+    rejectVacationRequest(vacationId: number): Promise<number> {
         return httpService.delete(`v1/vacations/my/${vacationId}`).then(response => response.data);
     }
 

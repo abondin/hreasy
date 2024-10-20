@@ -42,12 +42,12 @@ public class VacationService {
     private final VacPlanningPeriodRepo planningPeriodRepo;
 
     public Flux<VacationDto> findAll(AuthContext auth, VacationFilter filter) {
-        return validator.validateCanViewOvertimes(auth).flatMapMany((v) -> vacationRepo.findAll(
+        return validator.validateCanViewOvertimes(auth).flatMapMany(v -> vacationRepo.findAll(
                 yearsOrDefault(filter.getSelectedYears()), dateTimeService.now()
         ).map(e -> mapper.vacationToDto(e)));
     }
 
-    public Flux<EmployeeVacationShort> currentOrFutureVacations(int employeeId, AuthContext auth) {
+    public Flux<EmployeeVacationShort> currentOrFutureVacations(int employeeId) {
         var now = dateTimeService.now();
         var today = now.toLocalDate();
         return vacationRepo.findFuture(employeeId, now)
@@ -66,14 +66,14 @@ public class VacationService {
 
     public Flux<MyVacationDto> my(AuthContext auth) {
         var now = dateTimeService.now();
-        return vacationRepo.findFuture(auth.getEmployeeInfo().getEmployeeId(), now).map(e -> mapper.toMyDto(e));
+        return vacationRepo.findFuture(auth.getEmployeeInfo().getEmployeeId(), now).map(mapper::toMyDto);
     }
 
     @Transactional
     public Mono<Integer> create(AuthContext auth, int employeeId, VacationCreateOrUpdateDto body) {
         log.info("Create new overtime item: auth={},empl={},body={}", auth.getUsername(), employeeId, body);
         var now = dateTimeService.now();
-        return validator.validateCanEditVacations(auth).flatMap((v) -> {
+        return validator.validateCanEditVacations(auth).flatMap(v -> {
             var entry = mapper.toEntry(body);
             entry.setCreatedAt(now);
             entry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
@@ -105,8 +105,8 @@ public class VacationService {
                 });
     }
 
-    public Mono<Integer> cancelRequestedVacation(AuthContext auth, int vacationId) {
-        log.info("Delete requested vacation {} by {}", vacationId, auth.getUsername());
+    public Mono<Integer> rejectRequestedVacation(AuthContext auth, int vacationId) {
+        log.info("Reject requested vacation {} by {}", vacationId, auth.getUsername());
         return vacationRepo.findById(vacationId)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(vacationId))))
                 .flatMap(v -> validateOpenedPlanningPeriod(v.getYear()).map(r -> v))
@@ -117,7 +117,7 @@ public class VacationService {
                     if (VacationDto.VacationStatus.REQUESTED.getStatusId() != entry.getStatus()) {
                         return Mono.error(new BusinessError("errors.vacation.status.not.requested", Integer.toString(vacationId)));
                     }
-                    entry.setStatus(VacationDto.VacationStatus.CANCELED.getStatusId());
+                    entry.setStatus(VacationDto.VacationStatus.REJECTED.getStatusId());
                     entry.setUpdatedAt(dateTimeService.now());
                     entry.setUpdatedBy(auth.getEmployeeInfo().getEmployeeId());
                     return vacationRepo.save(entry).flatMap(vacation -> {
@@ -136,7 +136,7 @@ public class VacationService {
         return validator.validateCanEditVacations(auth)
                 .flatMap(v -> vacationRepo.findById(vacationId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(vacationId))))
-                .flatMap((entry) -> {
+                .flatMap(entry -> {
                     mapper.copyToEntry(body, entry);
                     entry.setId(vacationId);
                     entry.setUpdatedAt(now);

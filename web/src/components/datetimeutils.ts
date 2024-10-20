@@ -107,6 +107,10 @@ export class DateTimeUtils {
         return moment({year: year, month: 0, day: 1})
     }
 
+    public static lastDayOfYear(year: number): Moment {
+        return moment({year: year, month: 11, day: 31})
+    }
+
     public static defaultYears(): number[] {
         const currentYear = this.now().year();
         return [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];

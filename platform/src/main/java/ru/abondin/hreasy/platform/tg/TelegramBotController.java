@@ -51,7 +51,7 @@ public class TelegramBotController {
                 emplService.find(auth.getEmployeeInfo().getEmployeeId(), auth)
                         .map(mapper::myProfile)
                         // 2. Load upcoming vacations
-                        .flatMap(employee -> addUpcomingVacations(employee, auth))
+                        .flatMap(employee -> addUpcomingVacations(employee))
                         // 3. Load project managers
                         .flatMap(employee -> addProjectManagers(employee, auth)));
     }
@@ -63,7 +63,7 @@ public class TelegramBotController {
                 emplService.find(employeeId, auth)
                         .map(mapper::toFindEmployeeResponseEmployee)
                         // 2. Load upcoming vacations
-                        .flatMap(employee -> addUpcomingVacations(employee, auth)));
+                        .flatMap(employee -> addUpcomingVacations(employee)));
     }
 
 
@@ -76,7 +76,7 @@ public class TelegramBotController {
                     List<FindEmployeeResponse.EmployeeDto> employees = response.getEmployees();
                     // Load vacations for each employee
                     return Flux.fromIterable(employees)
-                            .flatMap(employee -> addUpcomingVacations(employee, auth)
+                            .flatMap(employee -> addUpcomingVacations(employee)
                             )
                             .collectList()
                             .map(updatedEmployees -> {
@@ -95,6 +95,7 @@ public class TelegramBotController {
     /**
      * Support Group CRUD API is not implemented.
      * Please populate <b>support.support_request_group</b> manually in SQL Editor.
+     *
      * @param request
      * @return
      */
@@ -105,8 +106,8 @@ public class TelegramBotController {
                 supportRequestService.createSupportRequest(auth, NewSupportRequestDto.SOURCE_TYPE_TELEGRAM, request));
     }
 
-    private Mono<FindEmployeeResponse.EmployeeDto> addUpcomingVacations(FindEmployeeResponse.EmployeeDto employee, AuthContext auth) {
-        return vacationService.currentOrFutureVacations(employee.getId(), auth)
+    private Mono<FindEmployeeResponse.EmployeeDto> addUpcomingVacations(FindEmployeeResponse.EmployeeDto employee) {
+        return vacationService.currentOrFutureVacations(employee.getId())
                 .map(v -> new VacationDto(v.getStartDate(), v.getEndDate()))
                 .collectList()
                 .map(vacations -> {
@@ -115,8 +116,8 @@ public class TelegramBotController {
                 });
     }
 
-    private Mono<TgMyProfileResponse> addUpcomingVacations(TgMyProfileResponse employee, AuthContext auth) {
-        return vacationService.currentOrFutureVacations(employee.getId(), auth)
+    private Mono<TgMyProfileResponse> addUpcomingVacations(TgMyProfileResponse employee) {
+        return vacationService.currentOrFutureVacations(employee.getId())
                 .map(v -> new VacationDto(v.getStartDate(), v.getEndDate()))
                 .collectList()
                 .map(vacations -> {
