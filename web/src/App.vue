@@ -199,6 +199,7 @@ import {Component, Vue} from 'vue-property-decorator';
 import {Action, Getter} from "vuex-class";
 import moment from "moment";
 import permissionService from "@/store/modules/permission.service";
+import colors from "vuetify/lib/util/colors";
 
 const namespace_auth = 'auth';
 const namespace_error = 'error';
@@ -221,8 +222,8 @@ export default class App extends Vue {
 
   created() {
     this.$vuetify.theme.dark = false;
-    this.$vuetify.theme.themes.light.primary = '#E74C05';
-    this.$vuetify.theme.themes.light.secondary = '#941680';
+    this.$vuetify.theme.themes.light.primary = colors.deepOrange.darken1;
+    this.$vuetify.theme.themes.light.secondary = colors.deepPurple.darken3;
     moment.locale(this.$i18n.locale);
   }
 

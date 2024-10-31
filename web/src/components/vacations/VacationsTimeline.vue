@@ -139,11 +139,11 @@ export default class VacationsTimeline extends Vue {
       case 'COMPENSATION':
         return colors.green.darken4;
       case 'CANCELED':
-        return colors.red.base;
+        return this.$vuetify.theme.currentTheme.error?.toString() || colors.red.darken2;
       case 'REJECTED':
         return colors.grey.darken2;
       case 'REQUESTED':
-        return colors.amber.base;
+        return colors.deepOrange.lighten4;
       default:
         return '';
     }

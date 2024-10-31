@@ -90,10 +90,8 @@ export default class EmployeeUpdateCurrentProject extends Vue {
   }
 
   update() {
-    if (!this.selectedProject) {
-      this.roleOnProject = null;
-    }
-    employeeService.updateCurrentProject(this.employee.id, this.selectedProject, this.roleOnProject)
+    const updateBody = this.selectedProject ? {id: this.selectedProject, role: this.roleOnProject} : undefined;
+    employeeService.updateCurrentProject(this.employee.id, updateBody)
         .then(() => {
           // Update current project roles dictionary if new value added
           if (this.roleOnProject && this.allCurrentProjectRoles.map(r => r.value).indexOf(this.roleOnProject) < 0) {
