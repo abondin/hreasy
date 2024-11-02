@@ -96,6 +96,12 @@ public class VacationService {
         return validateOpenedPlanningPeriod(request.getYear())
                 .flatMap(v -> {
                     var entry = mapper.toEntry(request, auth.getEmployeeInfo().getEmployeeId(), now);
+                    if (entry.getStartDate() == null){
+                        return Mono.error(new BusinessError("errors.vacation.request.validation.start_date_null"));
+                    }
+                    if (entry.getEndDate() == null){
+                        return Mono.error(new BusinessError("errors.vacation.request.validation.end_date_null"));
+                    }
                     return vacationRepo.save(entry).flatMap(vacation -> {
                         var history = mapper.history(vacation);
                         history.setCreatedAt(now);

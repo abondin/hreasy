@@ -56,6 +56,7 @@ export interface RequestOrUpdateMyVacation {
     daysNumber: number
 }
 
+
 export interface CreateOrUpdateVacation {
     year: number,
     startDate: string,
