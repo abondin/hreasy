@@ -159,10 +159,6 @@
               </v-menu>
             </template>
             <template
-                v-slot:item.employeeCurrentProject="{ item }">
-              {{ item.employeeCurrentProject ? item.employeeCurrentProject.name : '' }}
-            </template>
-            <template
                 v-slot:item.startDate="{ item }">
               {{ formatDate(item.startDate) }}
             </template>
@@ -203,10 +199,6 @@
               <v-btn small text @click="selectEmployee(item)">
                 {{ item.employeeDisplayName }}
               </v-btn>
-            </template>
-            <template
-                v-slot:item.employeeCurrentProject="{ item }">
-              {{ item.employeeCurrentProject ? item.employeeCurrentProject.name : '' }}
             </template>
             <template
                 v-slot:item.upcomingVacation="{ item }">
@@ -345,7 +337,8 @@ export default class VacationsListComponent extends Vue {
   private reloadHeaders() {
     this.headers.length = 0;
     this.headers.push({text: this.$tc('ФИО'), value: 'employeeDisplayName'});
-    this.headers.push({text: this.$tc('Текущий проект'), value: 'employeeCurrentProject'});
+    this.headers.push({text: this.$tc('Текущий проект'), value: 'employeeCurrentProject.name'});
+    this.headers.push({text: this.$tc('Роль на проекте'), value: 'employeeCurrentProject.role'});
     this.headers.push({text: this.$tc('Год'), value: 'year'});
     this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
     this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});
@@ -356,7 +349,8 @@ export default class VacationsListComponent extends Vue {
 
     this.summaryHeaders.length = 0;
     this.summaryHeaders.push({text: this.$tc('ФИО'), value: 'employeeDisplayName'});
-    this.summaryHeaders.push({text: this.$tc('Текущий проект'), value: 'employeeCurrentProject'});
+    this.summaryHeaders.push({text: this.$tc('Текущий проект'), value: 'employeeCurrentProject.name'});
+    this.summaryHeaders.push({text: this.$tc('Роль на проекте'), value: 'employeeCurrentProject.role'});
     this.summaryHeaders.push({text: this.$tc('Год'), value: 'year'});
     this.summaryHeaders.push({
       text: this.$tc('Количество отпусков'),
@@ -368,36 +362,11 @@ export default class VacationsListComponent extends Vue {
 
 
   private filteredItems() {
-    return this.vacations.filter(item => {
-      let filtered = true;
-      // Current project
-      filtered = filtered && searchUtils.array(this.filter.selectedProjects, item.employeeCurrentProject?.id);
-      // Current project role
-      filtered = filtered && searchUtils.array(this.filter.selectedProjectRoles, item.employeeCurrentProject?.role);
-      // Status
-      filtered = filtered && searchUtils.array(this.filter.selectedStatuses, item.status);
-
-      const textFilters = TextFilterBuilder.of()
-          // Display name
-          .splitWords(item.employeeDisplayName)
-          // Project role
-          .ignoreCase(item.employeeCurrentProject?.role);
-
-      filtered = filtered && searchUtils.textFilter(this.filter.search, textFilters);
-      filtered = filtered && this.inDateRange(item);
-
-      return filtered;
-    });
+    return this.vacations.filter(this.filterItem);
   }
 
   private filteredSummaryItems(): EmployeeVacationSummary[] {
-    return employeeVacationSummaryMapper.map(this.vacations).filter(s => {
-      let filtered = true;
-      if (this.filter.search) {
-        filtered = filtered && s.employeeDisplayName.toLowerCase().indexOf(this.filter.search.toLowerCase()) >= 0;
-      }
-      return filtered;
-    });
+    return employeeVacationSummaryMapper.map(this.vacations).filter(this.filterItem);
   }
 
   @Watch('selectedYear')
@@ -518,6 +487,30 @@ export default class VacationsListComponent extends Vue {
     this.fetchData(true);
   }
 
+  private filterItem(item: Vacation | EmployeeVacationSummary):boolean {
+    let filtered = true;
+    // Current project
+    filtered = filtered && searchUtils.array(this.filter.selectedProjects, item.employeeCurrentProject?.id);
+    // Current project role
+    filtered = filtered && searchUtils.array(this.filter.selectedProjectRoles, item.employeeCurrentProject?.role);
+
+    // Only vacations might be filtered by status
+    if ('status' in item) {
+      // Status
+      filtered = filtered && searchUtils.array(this.filter.selectedStatuses, item.status);
+      filtered = filtered && this.inDateRange(item);
+    }
+
+
+    const textFilters = TextFilterBuilder.of()
+        // Display name
+        .splitWords(item.employeeDisplayName)
+        // Project role
+        .ignoreCase(item.employeeCurrentProject?.role);
+
+    filtered = filtered && searchUtils.textFilter(this.filter.search, textFilters);
+    return filtered;
+  }
 }
 </script>
 
