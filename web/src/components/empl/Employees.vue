@@ -43,7 +43,7 @@
           :headers="headers"
           :items="filtered"
           sort-by="displayName"
-          :show-expand="$vuetify.breakpoint.mdAndUp"
+          :show-expand="$vuetify.breakpoint.smAndUp"
           disable-pagination
           single-expand
           hide-default-footer
