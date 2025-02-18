@@ -76,7 +76,7 @@ Uses in Employees Table (Employees.vue)
         </v-list-item-subtitle>
 
         <!-- Project card dialog -->
-        <v-dialog v-if="employee && employee.currentProject" v-model="projectCardDialog">
+        <v-dialog max-width="900" v-if="employee && employee.currentProject" v-model="projectCardDialog">
           <project-info-card-component :project-id="employee.currentProject.id"
                                        @close="projectCardDialog=false"></project-info-card-component>
         </v-dialog>

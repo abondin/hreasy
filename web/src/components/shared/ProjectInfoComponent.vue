@@ -1,53 +1,69 @@
 <template>
-  <v-container>
-    <v-row v-if="project">
-      <v-col cols="3">
-
-        <v-container class="pa-0">
-          <v-row no-gutters>
-            <v-col cols="4">{{ $t('Наименование') }}:</v-col>
-            <v-col cols="8">{{ project.name }}</v-col>
-          </v-row>
-          <v-row no-gutters>
-            <v-col cols="4">{{ $t('Отдел') }}:</v-col>
-            <v-col cols="8">{{ project.department ? project.department.name : this.$t('Не задан') }}</v-col>
-          </v-row>
-          <v-row no-gutters>
-            <v-col cols="4">{{ $t('Бизнес аккаунт') }}:</v-col>
-            <v-col cols="8">{{ project.businessAccount ? project.businessAccount.name : this.$t('Не задан') }}</v-col>
-          </v-row>
-          <v-row no-gutters>
-            <v-col cols="4">{{ $t('Заказчик') }}:</v-col>
-            <v-col cols="8">{{ project.customer ? project.customer : $t('Не задан') }}</v-col>
-          </v-row>
-          <v-row no-gutters>
-            <v-col cols="4">{{ $t('Начало') }}:</v-col>
-            <v-col cols="8">{{ formatDatePlanActual(project.planStartDate, project.startDate) }}</v-col>
-          </v-row>
-          <v-row no-gutters>
-            <v-col cols="4">{{ $t('Окончание') }}:</v-col>
-            <v-col cols="8">{{ formatDatePlanActual(project.planEndDate, project.endDate) }}</v-col>
-          </v-row>
-          <v-row no-gutters v-if="managers()">
-            <v-col cols="4">{{ $t('Менеджеры') }}:</v-col>
-            <v-col cols="8">
-              <v-tooltip bottom v-for="m in managers()" v-bind:key="m.id">
-                <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                  <v-chip v-bind="tattrs" v-on="ton" class="col-auto mr-1 mb-1" outlined>
-                    {{ m.employeeName }}
-                  </v-chip>
-                </template>
-                <span>{{
-                    $t("Основное направление") + ': ' + $t('MANAGER_RESPONSIBILITY_TYPE.' + m.responsibilityType)
-                  }}</span>
-              </v-tooltip>
-            </v-col>
-          </v-row>
-        </v-container>
+  <v-container fluid class="pa-0">
+    <v-row v-if="project" justify="center" class="ma-0">
+      <v-col cols="12" sm="6" class="pa-2">
+        <v-card flat class="ma-0">
+          <v-card-text class="pa-2">
+            <v-list dense class="pa-0">
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>{{ $t('Наименование') }}:</v-list-item-title>
+                  <v-list-item-subtitle>{{ project.name }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>{{ $t('Отдел') }}:</v-list-item-title>
+                  <v-list-item-subtitle>{{ project.department ? project.department.name : this.$t('Не задан') }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>{{ $t('Бизнес аккаунт') }}:</v-list-item-title>
+                  <v-list-item-subtitle>{{ project.businessAccount ? project.businessAccount.name : this.$t('Не задан') }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>{{ $t('Заказчик') }}:</v-list-item-title>
+                  <v-list-item-subtitle>{{ project.customer ? project.customer : $t('Не задан') }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>{{ $t('Начало') }}:</v-list-item-title>
+                  <v-list-item-subtitle>{{ formatDatePlanActual(project.planStartDate, project.startDate) }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>{{ $t('Окончание') }}:</v-list-item-title>
+                  <v-list-item-subtitle>{{ formatDatePlanActual(project.planEndDate, project.endDate) }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item v-if="managers()">
+                <v-list-item-content>
+                  <v-list-item-title>{{ $t('Менеджеры') }}:</v-list-item-title>
+                  <v-list-item-subtitle>
+                    <v-chip v-for="m in managers()" :key="m.id" class="mr-1 mb-1" outlined>
+                      {{ m.employeeName }}
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{ on: ton, attrs: tattrs}">
+                          <v-icon v-bind="tattrs" v-on="ton" small>mdi-help-circle</v-icon>
+                        </template>
+                        <span>{{ $t("Основное направление") + ': ' + $t('MANAGER_RESPONSIBILITY_TYPE.' + m.responsibilityType) }}</span>
+                      </v-tooltip>
+                    </v-chip>
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
       </v-col>
-      <v-col v-if="project.info">
-        <v-card>
-          <v-card-text>
+      <v-col v-if="project.info" cols="12" sm="6" class="pa-2">
+        <v-card flat class="ma-0">
+          <v-card-text class="pa-2">
             <div v-html="project.info" :style="{'max-height': maxHeight}" class="overflow-y-auto"></div>
           </v-card-text>
         </v-card>
