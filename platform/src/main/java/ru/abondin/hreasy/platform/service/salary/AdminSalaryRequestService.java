@@ -43,6 +43,19 @@ public class AdminSalaryRequestService {
                 .map(mapper::fromEntry);
     }
 
+    /**
+     * @param auth
+     * @param employeeId
+     * @return all requests for employee for all periods
+     */
+    public Flux<SalaryRequestDto> findAllForEmployeeForAllPeriods(AuthContext auth, int employeeId) {
+        log.debug("Get all requests for employee {} by {}", employeeId, auth);
+        var now = dateTimeService.now();
+        return secValidator.validateViewAll(auth)
+                .flatMapMany(v -> requestRepo.findAllForEmployeeForAllPeriodsNotDeleted(employeeId, now))
+                .map(mapper::fromEntry);
+    }
+
 
     //<editor-fold desc="Implementation">
     @Transactional

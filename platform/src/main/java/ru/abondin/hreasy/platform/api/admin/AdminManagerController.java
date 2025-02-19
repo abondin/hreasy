@@ -21,7 +21,7 @@ public class AdminManagerController {
 
     @GetMapping
     public Flux<ManagerDto> all() {
-        return AuthHandler.currentAuth().flatMapMany(auth -> service.all(auth));
+        return AuthHandler.currentAuth().flatMapMany(service::all);
     }
 
     @GetMapping("/object/{objectType}/{objectId}")
