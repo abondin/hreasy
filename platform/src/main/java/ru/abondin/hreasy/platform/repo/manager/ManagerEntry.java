@@ -17,6 +17,9 @@ public class ManagerEntry {
 
     private int employee;
 
+    /**
+     * project, business_account, department
+     */
     private String objectType;
 
     private int objectId;

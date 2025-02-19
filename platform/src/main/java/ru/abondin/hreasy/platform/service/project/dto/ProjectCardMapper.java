@@ -19,6 +19,7 @@ public abstract class ProjectCardMapper extends MapperBaseWithJsonSupport  {
     @Mapping(target = "department", qualifiedByName = "department", source = ".")
     @Mapping(target = "businessAccount", qualifiedByName = "businessAccount", source = ".")
     @Mapping(target = "managers", qualifiedByName = "managersJson", source = "managersJson")
+    @Mapping(target = "baManagers", qualifiedByName = "managersJson", source = "baManagersJson")
     public abstract ProjectCardInfoDto fromEntry(DictProjectEntry.ProjectFullEntryWithManagers projectFullEntryWithManagers);
 
     @Named("managersJson")

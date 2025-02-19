@@ -67,6 +67,7 @@ public class DictProjectEntry {
     @NoArgsConstructor
     public static class ProjectFullEntryWithManagers extends ProjectFullEntry {
         private Json managersJson;
+        private Json baManagersJson;
     }
 
 

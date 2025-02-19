@@ -25,7 +25,8 @@ export interface ProjectInfo {
     department: SimpleDict,
     businessAccount: SimpleDict
     info?: string,
-    managers: ManagerOfObject[]
+    managers: ManagerOfObject[],
+    baManagers: ManagerOfObject[]
 }
 export interface OfficeOrOfficeLocationMap {
     mapName: string;

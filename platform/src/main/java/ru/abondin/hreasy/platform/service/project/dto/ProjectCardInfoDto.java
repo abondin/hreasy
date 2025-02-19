@@ -40,4 +40,5 @@ public class ProjectCardInfoDto {
     private String info;
 
     private List<ManagerInfoDto> managers = new ArrayList<>();
+    private List<ManagerInfoDto> baManagers = new ArrayList<>();
 }

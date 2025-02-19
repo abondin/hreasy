@@ -21,11 +21,14 @@ public interface DictProjectRepo extends ReactiveSortingRepository<DictProjectEn
             """;
 
     String WITH_MANAGERS_QUERY =
-            "select pr.*, mgs.managers_json from ("
+            "select pr.*, mgs.managers_json, ba_mgs.managers_json ba_managers_json  from ("
                     + FULL_INFO_QUERY
                     + " ) pr left join ( "
                     + ManagerRepo.AGGREGATED_MANAGERS_BY_OBJECT
-                    + ") mgs on pr.id=mgs.object_id and mgs.object_type='project'";
+                    + ") mgs on pr.id=mgs.object_id and mgs.object_type='project'"
+                    + " left join ( "
+                                        + ManagerRepo.AGGREGATED_MANAGERS_BY_OBJECT
+                    + ") ba_mgs on pr.ba_id=ba_mgs.object_id and ba_mgs.object_type='business_account'";
 
     @Query("select * from proj.project p order by name")
     Flux<DictProjectEntry> findAll();
