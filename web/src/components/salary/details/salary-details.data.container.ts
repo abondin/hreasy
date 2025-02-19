@@ -96,5 +96,15 @@ export class SalaryDetailsDataContainer {
 
     //</editor-fold>
 
+    // <editor-fold desc="Validation">
+    public static validateIncreaseAndSalary(currentSalaryAmount:number|null, increaseAmount:number|null, plannedSalaryAmount:number|null) {
+        if (currentSalaryAmount && increaseAmount && plannedSalaryAmount) {
+            return Number(plannedSalaryAmount) == (Number(currentSalaryAmount) + Number(increaseAmount));
+        } else {
+            return true;
+        }
+    }
+
+    //</editor-fold>
 
 }

@@ -2,7 +2,8 @@
 <template>
   <v-card class="mt-5" v-if="data">
     <v-card-title class="text-h5">
-      {{ data.isSalaryRequest() ? $t('Запрос на повышение') : $t('Запрос на бонус') }}&nbsp;<span class="text-subtitle-1">(+{{formatMoney(data.item.req.increaseAmount)}})</span>
+      {{ data.isSalaryRequest() ? $t('Запрос на повышение') : $t('Запрос на бонус') }}&nbsp;<span
+        class="text-subtitle-1">(+{{ formatMoney(data.item.req.increaseAmount) }})</span>
       <v-spacer></v-spacer>
       <v-tooltip bottom v-if="updateAllowed()">
         <template v-slot:activator="{ on: ton, attrs: tattrs}">
@@ -28,12 +29,14 @@
           <dt>{{ $t('Дата трудоустройства') }}:</dt>
           <dd>{{ formatDate(data.item.employeeInfo.dateOfEmployment) }}</dd>
 
-          <dt v-if="data.isSalaryRequest()">{{$t('Предыдущий реализованный пересмотр')}}:
+          <dt v-if="data.isSalaryRequest()">{{ $t('Предыдущий реализованный пересмотр') }}:
           </dt>
 
           <dd v-if="data.isSalaryRequest()">
-            {{ formatDate(data.item.employeeInfo.previousSalaryIncreaseDate)  || '-' }}
-            <span v-if="data.item.employeeInfo.previousSalaryIncreaseText"> ({{ data.item.employeeInfo.previousSalaryIncreaseText }})</span>
+            {{ formatDate(data.item.employeeInfo.previousSalaryIncreaseDate) || '-' }}
+            <span v-if="data.item.employeeInfo.previousSalaryIncreaseText"> ({{
+                data.item.employeeInfo.previousSalaryIncreaseText
+              }})</span>
           </dd>
 
           <dt v-if="data.isSalaryRequest()">{{ $t('Текущая заработная плата') }}:</dt>
@@ -43,7 +46,8 @@
 
           <dt v-if="data.isSalaryRequest()">{{ $t('Ассессмент') }}:</dt>
           <dd v-if="data.isSalaryRequest()">
-            <router-link v-if="data.item.assessment"  target="_blank" :to="`/assessments/${data.item.employee.id}/${data.item.assessment.id}`">
+            <router-link v-if="data.item.assessment" target="_blank"
+                         :to="`/assessments/${data.item.employee.id}/${data.item.assessment.id}`">
               {{ data.item.assessment.name }}
             </router-link>
             <span v-else>-</span>
@@ -59,7 +63,7 @@
           <dd>{{ data.item.budgetBusinessAccount.name }}</dd>
 
           <dt v-if="data.isSalaryRequest()">{{ $t('Перспективы биллинга') }}:</dt>
-          <dd v-if="data.isSalaryRequest()">{{ formatDate(data.item.budgetExpectedFundingUntil)  || '-'}}</dd>
+          <dd v-if="data.isSalaryRequest()">{{ formatDate(data.item.budgetExpectedFundingUntil) || '-' }}</dd>
 
           <dt>
             {{ data.isSalaryRequest() ? $t('Изменение на') : $t('Сумма бонуса') }}:
@@ -69,7 +73,8 @@
           <dt v-if="data.isSalaryRequest()">
             {{ $t('Заработная плата после повышения') }}:
           </dt>
-          <dd v-if="data.isSalaryRequest()" :class="{'error--text':invalidAmmount}">{{ formatMoney(data.item.req.plannedSalaryAmount)  || '-'}}
+          <dd v-if="data.isSalaryRequest()" :class="{'error--text':invalidAmmount}">
+            {{ formatMoney(data.item.req.plannedSalaryAmount) || '-' }}
             <v-tooltip bottom v-if="invalidAmmount">
               <template v-slot:activator="{ on: ton, attrs: tattrs}">
                 <v-icon small color="error" v-bind="tattrs" v-on="ton">mdi-help-circle</v-icon>
@@ -79,11 +84,11 @@
           </dd>
 
           <dt v-if="data.isSalaryRequest()">{{ $t('Запрошенная позиция') }}:</dt>
-          <dd v-if="data.isSalaryRequest()">{{ data.item.req.newPosition?.name  || '-'}}</dd>
+          <dd v-if="data.isSalaryRequest()">{{ data.item.req.newPosition?.name || '-' }}</dd>
 
 
           <dt>{{ $t('Обоснование') }}:</dt>
-          <dd>{{ data.item.req?.reason  || '-'}}</dd>
+          <dd>{{ data.item.req?.reason || '-' }}</dd>
 
           <dt>{{ $t('Примечание') }}:</dt>
           <dd>{{ data.item.req?.comment || '-' }}</dd>
@@ -193,12 +198,9 @@ export default class SalaryRequestDetailsViewInfo extends Vue {
     this.$emit('updated');
   }
 
-  validateIncreaseAndSalary(): boolean{
-    if (this.data.item.employeeInfo.currentSalaryAmount && this.data.item.req.increaseAmount && this.data.item.req.plannedSalaryAmount) {
-      return Number(this.data.item.req.plannedSalaryAmount) == (Number(this.data.item.employeeInfo.currentSalaryAmount) + Number(this.data.item.req.increaseAmount));
-    } else {
-      return true;
-    }
+  validateIncreaseAndSalary(): boolean {
+    return SalaryDetailsDataContainer
+        .validateIncreaseAndSalary(this.data.item.employeeInfo.currentSalaryAmount, this.data.item.req.increaseAmount, this.data.item.req.plannedSalaryAmount);
   }
 
 }

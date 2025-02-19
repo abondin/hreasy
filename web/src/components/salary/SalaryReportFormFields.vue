@@ -46,6 +46,7 @@
                 v-if="isSalaryRequest()"
                 hide-spin-buttons
                 v-model="createBody.plannedSalaryAmount"
+                :rules="[v=>(validateIncreaseAndSalary()) || $t('Запланированная заработная плата должна совпадать с суммой текущей и изменением')]"
                 :label="$t('Предполагаемая заработная плата после повышения')">
   </v-text-field>
 
@@ -75,6 +76,7 @@ import logger from "@/logger";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import assessmentService, {AssessmentBase} from "@/components/assessment/assessment.service";
 import dictService from "@/store/modules/dict.service";
+import {SalaryDetailsDataContainer} from "@/components/salary/details/salary-details.data.container";
 
 const namespace_dict = 'dict';
 @Component({
@@ -122,8 +124,8 @@ export default class SalaryReportFormFields extends Vue {
     this.createBody.reason = null;
     this.createBody.comment = null;
     this.createBody.assessmentId = null;
-    this.createBody.budgetExpectedFundingUntil=null
-    this.loadAssessments(empl.id).then(()=>{
+    this.createBody.budgetExpectedFundingUntil = null
+    this.loadAssessments(empl.id).then(() => {
       if (empl.currentProject) {
         this.loadBudgetExpectedFundingUntil(empl.currentProject.id);
       }
@@ -157,6 +159,11 @@ export default class SalaryReportFormFields extends Vue {
 
   private validateDate(formattedDate: string, allowEmpty = true): boolean {
     return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
+  }
+
+  private validateIncreaseAndSalary(): boolean {
+    return (this.createBody.type == SalaryRequestType.BONUS) || SalaryDetailsDataContainer.validateIncreaseAndSalary(this.createBody.currentSalaryAmount,
+        this.createBody.increaseAmount, this.createBody.plannedSalaryAmount);
   }
 
   isSalaryRequest(): boolean {
