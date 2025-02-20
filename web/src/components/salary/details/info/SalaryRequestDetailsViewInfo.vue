@@ -22,6 +22,9 @@
         <span>{{ $t('Удалить') }}</span>
       </v-tooltip>
     </v-card-title>
+    <v-card-subtitle>
+      {{formatPeriod(data.item.req.increaseStartPeriod)}}
+    </v-card-subtitle>
     <v-card-text>
       <employee-base-info-card :employee-id="data.item.employee.id">
         <!-- editor-fold desc="Информация о сотруднике">-->
