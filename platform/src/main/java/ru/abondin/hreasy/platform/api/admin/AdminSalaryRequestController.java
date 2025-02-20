@@ -30,6 +30,12 @@ public class AdminSalaryRequestController {
         return AuthHandler.currentAuth().flatMapMany(auth -> requestAdminService.findAll(auth, period));
     }
 
+    @GetMapping("/employee/{employee}")
+    public Flux<SalaryRequestDto> loadEmployeeSalaryRequestsForAllPeriod(@PathVariable int employee) {
+        return AuthHandler.currentAuth().flatMapMany(auth -> requestAdminService.findAllForEmployeeForAllPeriods(auth, employee));
+    }
+
+
     @GetMapping("/{period}/export")
     public Mono<Resource> export(@PathVariable int period, Locale locale) {
         return AuthHandler.currentAuth().flatMap(auth -> exportService.export(period, auth, locale));

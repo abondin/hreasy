@@ -36,6 +36,13 @@ export const salaryRequestImplementationStates = [
 export interface AdminSalaryService {
     loadAllSalaryRequests(periodId: number): Promise<Array<SalaryIncreaseRequest>>;
 
+    /**
+     * Load all requests for all period for given employee.
+     * Accessible only with admin_salary_request permission
+     * @param employeeId
+     */
+    loadEmployeeSalaryRequestsForAllPeriods(employeeId: number): Promise<Array<SalaryIncreaseRequest>>;
+
     markAsImplemented(requestId: number, body: SalaryRequestImplementBody): Promise<number>;
     updateImplIncreaseText(requestId: number, body: SalaryRequestUpdateImplIncreaseTextBody): Promise<number>;
 
@@ -71,6 +78,10 @@ class RestAdminSalaryService implements AdminSalaryService {
 
     loadAllSalaryRequests(periodId: number): Promise<Array<SalaryIncreaseRequest>> {
         return httpService.get(`v1/admin/salaries/requests/${periodId}`).then(response => response.data);
+    }
+
+    loadEmployeeSalaryRequestsForAllPeriods(employeeId: number): Promise<Array<SalaryIncreaseRequest>> {
+        return httpService.get(`v1/admin/salaries/requests/employee/${employeeId}`).then(response => response.data);
     }
 
     markAsImplemented(requestId: number, body: SalaryRequestImplementBody): Promise<number> {

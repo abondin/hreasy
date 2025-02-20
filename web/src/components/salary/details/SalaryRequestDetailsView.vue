@@ -14,6 +14,8 @@
       <salary-request-details-view-info :data="data" @updated="fetchData()"/>
       <salary-request-details-view-implementation :data="data" @updated="fetchData()"/>
       <salary-request-details-view-approvals :data="data" @updated="fetchData()"/>
+      <salary-request-employee-history :data="data"
+                                       v-if="isEmployeeHistoryAccessible()"></salary-request-employee-history>
     </div>
   </v-container>
 </template>
@@ -22,7 +24,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
-import {Prop} from "vue-property-decorator";
+import {Prop, Watch} from "vue-property-decorator";
 import {SalaryDetailsDataContainer} from "@/components/salary/details/salary-details.data.container";
 import {errorUtils} from "@/components/errors";
 import salaryService from "@/components/salary/salary.service";
@@ -30,12 +32,19 @@ import SalaryRequestDetailsViewInfo from "@/components/salary/details/info/Salar
 import SalaryRequestDetailsViewImplementation
   from "@/components/salary/details/impl/SalaryRequestDetailsViewImplementation.vue";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
-import SalaryRequestDetailsViewApprovals from "@/components/salary/details/approval/SalaryRequestDetailsViewApprovals.vue";
+import SalaryRequestDetailsViewApprovals
+  from "@/components/salary/details/approval/SalaryRequestDetailsViewApprovals.vue";
 import logger from "@/logger";
+import SalaryRequestEmployeeHistory from "@/components/salary/details/info/SalaryRequestEmployeeHistory.vue";
+import permissionService from "@/store/modules/permission.service";
+import {Route} from "vue-router";
 
 
 @Component({
-  components: {SalaryRequestDetailsViewApprovals, SalaryRequestDetailsViewImplementation, SalaryRequestDetailsViewInfo}
+  components: {
+    SalaryRequestEmployeeHistory,
+    SalaryRequestDetailsViewApprovals, SalaryRequestDetailsViewImplementation, SalaryRequestDetailsViewInfo
+  }
 })
 export default class SalaryRequestDetailsView extends Vue {
 
@@ -61,6 +70,18 @@ export default class SalaryRequestDetailsView extends Vue {
     return this.fetchData();
   }
 
+  @Watch('$route', {immediate: true, deep: true})
+  onRouteChange(newRoute: Route) {
+    if (this.data?.item) {
+      const params = newRoute.params as { period: string; requestId: string };
+      if (this.data.item.req.increaseStartPeriod.toString() != params.period
+          || this.data.item.id.toString() != params.requestId) {
+        logger.log(`Parameters changed. Reload data for ${params.period}:${params.requestId}`)
+        this.fetchData();
+      }
+    }
+  }
+
 
   private fetchData() {
     this.fetchLoading = true;
@@ -72,7 +93,7 @@ export default class SalaryRequestDetailsView extends Vue {
               .then(data => {
                     this.data = new SalaryDetailsDataContainer({
                       period: ReportPeriod.fromPeriodId(periodNum),
-                      closed: closedPeriods.map(p=>p.period).includes(periodNum)
+                      closed: closedPeriods.map(p => p.period).includes(periodNum)
                     }, data);
                     return this.data;
                   }
@@ -89,6 +110,9 @@ export default class SalaryRequestDetailsView extends Vue {
     this.$router.push(`salaries/requests`);
   }
 
+  private isEmployeeHistoryAccessible() {
+    return permissionService.canAdminSalaryRequests();
+  }
 
 }
 </script>
