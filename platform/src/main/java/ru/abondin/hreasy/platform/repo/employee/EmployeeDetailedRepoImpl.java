@@ -42,4 +42,12 @@ public class EmployeeDetailedRepoImpl implements EmployeeDetailedRepo {
                 .bind("now", now)
                 .map(r -> r.get(0, String.class)).all();
     }
+
+    @Override
+    public Flux<EmployeeProjectChangesEntry> employeeProjectChanges(int employeeId) {
+        return dbTemplate
+                .select(Query.query(Criteria.where("employee_id").is(employeeId))
+                        .sort(Sort.by(Sort.Direction.DESC, "changed_at")
+                        ), EmployeeProjectChangesEntry.class);
+    }
 }

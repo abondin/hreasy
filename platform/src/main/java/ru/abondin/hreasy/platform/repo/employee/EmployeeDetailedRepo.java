@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.repo.employee;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
@@ -14,4 +15,7 @@ public interface EmployeeDetailedRepo {
     Mono<EmployeeDetailedEntry> findDetailed(int id);
 
     Flux<String> uniqueCurrentProjectRoles(OffsetDateTime now);
+
+    Flux<EmployeeProjectChangesEntry> employeeProjectChanges(int employeeId);
 }
+

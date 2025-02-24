@@ -54,7 +54,7 @@
 
     <!-- Project card dialog -->
     <v-dialog v-if="employee && employee.currentProject" v-model="projectCardDialog">
-      <project-info-card-component :project-id="employee.currentProject.id"
+      <project-info-card-component :employee-id="employee.id" :project-id="employee.currentProject.id"
                                    @close="projectCardDialog=false"></project-info-card-component>
     </v-dialog>
 

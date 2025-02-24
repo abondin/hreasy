@@ -32,6 +32,15 @@ export interface Employee {
     skills: Skill[]
 }
 
+export interface EmployeeProjectChanges {
+    id: number;
+    employee: Dict;
+    project: CurrentProjectDict | null;
+    ba: Dict | null;
+    changedBy: Dict;
+    changedAt: string;
+}
+
 export interface UpdateTelegramBody {
     telegram: string | null;
 }
@@ -49,6 +58,8 @@ export interface EmployeeService {
     updateCurrentProject(employeeId: number, project?: { id: number, role: string | null }): Promise<number>;
 
     updateTelegram(employeeId: number, telegramAccount: UpdateTelegramBody): Promise<number>;
+
+    employeeProjectChanges(employeeId: number): Promise<EmployeeProjectChanges[]>;
 }
 
 class RestEmployeeService implements EmployeeService {
@@ -87,7 +98,12 @@ class RestEmployeeService implements EmployeeService {
         return httpService.put(`v1/employee/${employeeId}/telegram`, updateTelegramBody).then(response => {
             return response.data;
         });
+    }
 
+    employeeProjectChanges(employeeId: number): Promise<EmployeeProjectChanges[]> {
+        return httpService.get(`v1/employee/${employeeId}/project_changes`).then(response => {
+            return response.data;
+        })
     }
 }
 

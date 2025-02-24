@@ -13,6 +13,7 @@ import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectRole;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
+import ru.abondin.hreasy.platform.service.dto.EmployeeProjectChangesDto;
 import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
 
 
@@ -37,6 +38,14 @@ public class EmployeeController {
                             return empl;
                         }
                 )
+        );
+    }
+
+    @Operation(summary = "Get employee's project changes")
+    @GetMapping("/{employeeId}/project_changes")
+    public Flux<EmployeeProjectChangesDto> employeeProjectChanges(@PathVariable int employeeId) {
+        return AuthHandler.currentAuth().flatMapMany(
+                auth -> emplService.employeeProjectChanges(auth, employeeId)
         );
     }
 

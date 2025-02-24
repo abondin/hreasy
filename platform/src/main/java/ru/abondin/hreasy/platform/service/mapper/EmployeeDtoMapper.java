@@ -1,18 +1,12 @@
 package ru.abondin.hreasy.platform.service.mapper;
 
-import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedEntry;
-import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
-import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
-import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
-import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.repo.employee.EmployeeProjectChangesEntry;
+import ru.abondin.hreasy.platform.service.dto.*;
 import ru.abondin.hreasy.platform.service.skills.dto.RatingsMapper;
-
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Map all dictionaries database entries to API DTO
@@ -28,6 +22,13 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
     @Mapping(target = "skills", ignore = true)
     @Mapping(target = "hasAvatar", ignore = true)
     EmployeeDto employeeNoSkills(EmployeeDetailedEntry entry);
+
+    @Mapping(target = "ba", source = ".", qualifiedByName = "projectChangesBa")
+    @Mapping(target = "employee", source = ".", qualifiedByName = "projectChangesEmployee")
+    @Mapping(target = "changedBy", source = ".", qualifiedByName = "projectChangesChangedBy")
+    @Mapping(target = "project", source = ".", qualifiedByName = "projectChangesProject")
+    EmployeeProjectChangesDto employeeProjectChangesFromEntry(EmployeeProjectChangesEntry employeeProjectChangesEntry);
+
 
     default EmployeeDto employeeWithSkills(EmployeeDetailedEntry entry, int loggedInEmployee) {
         var result = employeeNoSkills(entry);
@@ -65,6 +66,26 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
                     entry.getCurrentProjectName(), entry.getCurrentProjectRole());
         }
         return currentProject;
+    }
+
+    @Named("projectChangesBa")
+    default SimpleDictDto projectChangesBa(EmployeeProjectChangesEntry entry) {
+        return simpleDto(entry.getBaId(), entry.getBaName());
+    }
+
+    @Named("projectChangesEmployee")
+    default SimpleDictDto projectChangesEmployee(EmployeeProjectChangesEntry entry) {
+        return simpleDto(entry.getEmployeeId(), entry.getEmployeeDisplayName());
+    }
+
+    @Named("projectChangesChangedBy")
+    default SimpleDictDto projectChangesChangedBy(EmployeeProjectChangesEntry entry) {
+        return simpleDto(entry.getChangedById(), entry.getChangedByDisplayName());
+    }
+
+    @Named("projectChangesProject")
+    default CurrentProjectDictDto projectChangesProject(EmployeeProjectChangesEntry entry) {
+        return currentProjectDto(entry.getProjectId(), entry.getProjectName(), entry.getProjectRole());
     }
 
 

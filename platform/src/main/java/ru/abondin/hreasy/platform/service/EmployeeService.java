@@ -14,6 +14,7 @@ import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
 import ru.abondin.hreasy.platform.service.currentproject.EmployeeProjectSecurityValidator;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectRole;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
+import ru.abondin.hreasy.platform.service.dto.EmployeeProjectChangesDto;
 import ru.abondin.hreasy.platform.service.mapper.EmployeeDtoMapper;
 
 @Service
@@ -27,15 +28,14 @@ public class EmployeeService {
 
     public Flux<EmployeeDto> findAll(AuthContext auth, boolean includeFired) {
         log.debug("Find all employees from {} account", auth.getEmail());
-        //TODO Add filtering and ordering
         Criteria criteria = null;
         if (!includeFired) {
             criteria = addNotFiredCriteria(criteria);
         }
         return emplRepo.findDetailed(criteria,
-                Sort.by("display_name")
-        ).map(e -> mapper.employeeWithSkills(e, auth.getEmployeeInfo().getEmployeeId()))
-                .doOnNext(empl->employeeProjectSecurityValidator.setToNullUngrantedFields(empl, auth));
+                        Sort.by("display_name")
+                ).map(e -> mapper.employeeWithSkills(e, auth.getEmployeeInfo().getEmployeeId()))
+                .doOnNext(empl -> employeeProjectSecurityValidator.setToNullUngrantedFields(empl, auth));
     }
 
 
@@ -45,20 +45,25 @@ public class EmployeeService {
                 .map(e -> mapper.employeeWithSkills(e, auth.getEmployeeInfo().getEmployeeId()))
                 .switchIfEmpty(Mono.error(new HttpClientErrorException(HttpStatus.NOT_FOUND,
                         "Employee with ID=" + employeeId + " not found")))
-                .doOnNext(empl->employeeProjectSecurityValidator.setToNullUngrantedFields(empl, auth));
+                .doOnNext(empl -> employeeProjectSecurityValidator.setToNullUngrantedFields(empl, auth));
     }
 
 
-
     private Criteria addNotFiredCriteria(Criteria criteria) {
-        var notFiredCriteria = criteria == null ? Criteria.where("date_of_dismissal")
-                : criteria.and("date_of_dismissal");
-        return notFiredCriteria.isNull().or("date_of_dismissal").greaterThan(dateTimeService.now());
+        var dateOfDismissalColumn = "date_of_dismissal";
+        var notFiredCriteria = criteria == null ? Criteria.where(dateOfDismissalColumn)
+                : criteria.and(dateOfDismissalColumn);
+        return notFiredCriteria.isNull().or(dateOfDismissalColumn).greaterThan(dateTimeService.now());
 
     }
 
     public Flux<CurrentProjectRole> currentUserRoles(AuthContext auth) {
-        log.debug("Find all current user roles");
-        return emplRepo.uniqueCurrentProjectRoles(dateTimeService.now()).map(r->new CurrentProjectRole(r));
+        log.debug("Find all current user roles by {}", auth.getUsername());
+        return emplRepo.uniqueCurrentProjectRoles(dateTimeService.now()).map(CurrentProjectRole::new);
+    }
+
+    public Flux<EmployeeProjectChangesDto> employeeProjectChanges(AuthContext auth, int employeeId) {
+        log.debug("Find project changes for employee {} by ", employeeId, auth.getUsername());
+        return emplRepo.employeeProjectChanges(employeeId).map(mapper::employeeProjectChangesFromEntry);
     }
 }
