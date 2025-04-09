@@ -5,10 +5,7 @@ import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedEntry;
-import ru.abondin.hreasy.platform.repo.salary.SalaryRequestApprovalView;
-import ru.abondin.hreasy.platform.repo.salary.SalaryRequestClosedPeriodEntry;
-import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
-import ru.abondin.hreasy.platform.repo.salary.SalaryRequestView;
+import ru.abondin.hreasy.platform.repo.salary.*;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
@@ -22,6 +19,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
+
 
     @Autowired
     private I18Helper i18Helper;
@@ -86,6 +84,10 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = ".", target = "impl.newPosition", qualifiedByName = "implNewPosition")
     @Mapping(source = "approvals", target = "approvals", qualifiedByName = "approvalsFromJson")
     public abstract SalaryRequestDto fromEntry(SalaryRequestView entry);
+
+    @Mapping(source = ".", target = "employeeCurrentProject", qualifiedByName = "employeeCurrentProject")
+    @Mapping(source = ".", target = "employeeBusinessAccount", qualifiedByName = "employeeBusinessAccount")
+    public abstract EmployeeWithLatestSalaryRequestDto fromEntry(EmployeeWithLatestSalaryRequestView entry);
 
     @Mapping(source = "req.increaseAmount", target = "reqIncreaseAmount")
     @Mapping(source = "req.plannedSalaryAmount", target = "reqPlannedSalaryAmount")
@@ -217,6 +219,16 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     protected List<SalaryRequestApprovalDto> approvalsFromJson(Json json) {
         return listFromJson(json, SalaryRequestApprovalDto.class, Comparator
                 .comparing(SalaryRequestApprovalDto::getCreatedAt).reversed());
+    }
+
+    @Named("employeeBusinessAccount")
+    protected SimpleDictDto employeeBusinessAccount(EmployeeWithLatestSalaryRequestView entry) {
+        return simpleDto(entry.getEmployeeBusinessAccountId(), entry.getEmployeeBusinessAccountName());
+    }
+
+    @Named("employeeCurrentProject")
+    protected CurrentProjectDictDto employeeCurrentProject(EmployeeWithLatestSalaryRequestView entry) {
+        return currentProjectDto(entry.getEmployeeCurrentProjectId(), entry.getEmployeeCurrentProjectName(), entry.getEmployeeCurrentProjectRole());
     }
 
 
