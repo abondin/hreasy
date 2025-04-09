@@ -71,6 +71,24 @@ export interface SalaryRequestDeclineBody {
     comment: string | null;
 }
 
+export interface EmployeeWithLatestSalaryRequest extends WithId {
+    id: number;
+    employeeId: number;
+    employeeDisplayName: string;
+    employeeEmail: string;
+    employeeBusinessAccount: SimpleDict | null;
+    employeeCurrentProject: CurrentProjectDict | null;
+    employeeDateOfEmployment: string | null;
+
+    requestId: number | null;
+    requestCreatedAt: string | null;
+    requestStartPeriod: number | null;
+    requestReqIncreaseAmount: number | null;
+    requestImplIncreaseAmount: number | null;
+    requestImplSalaryAmount: number | null;
+    requestImplState: SalaryRequestImplementationState | null;
+}
+
 export interface SalaryService {
     reportSalaryRequest(body: SalaryRequestReportBody): Promise<number>;
 
@@ -93,6 +111,8 @@ export interface SalaryService {
     deleteApproval(requestId: number, approvalId: number): Promise<number>;
 
     getApprovals(requestId: number): Promise<Array<SalaryRequestApproval>>;
+
+    getEmployeesWithLatestSalaryRequest(): Promise<Array<EmployeeWithLatestSalaryRequest>>;
 }
 
 class RestSalaryService implements SalaryService {
@@ -147,6 +167,12 @@ class RestSalaryService implements SalaryService {
 
     getApprovals(requestId: number): Promise<Array<SalaryRequestApproval>> {
         return httpService.get(`v1/salaries/requests/${requestId}/approvals`).then(response => {
+            return response.data;
+        });
+    }
+
+    getEmployeesWithLatestSalaryRequest(): Promise<Array<EmployeeWithLatestSalaryRequest>> {
+        return this.httpService.get("v1/salaries/requests/latest").then(response => {
             return response.data;
         });
     }

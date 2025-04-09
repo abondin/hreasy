@@ -8,10 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.salary.SalaryRequestService;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestClosedPeriodDto;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestDto;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
-import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestUpdateBody;
+import ru.abondin.hreasy.platform.service.salary.dto.*;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApproveBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestCommentBody;
@@ -74,6 +71,16 @@ public class SalaryRequestsController {
     @GetMapping("/{period}")
     public Flux<SalaryRequestDto> find(@PathVariable int period) {
         return AuthHandler.currentAuth().flatMapMany(auth -> requestService.find(auth, period));
+    }
+
+    /**
+     * For each employee who has not been dismissed, this endpoint returns their latest salary request (excluding bonuses).
+     * If no such request exists, the related request fields will be null.
+     * @return
+     */
+    @GetMapping("/latest")
+    public Flux<EmployeeWithLatestSalaryRequestDto> findLatestIncreases() {
+        return AuthHandler.currentAuth().flatMapMany(auth -> requestService.findLatestIncreases(auth));
     }
 
     @GetMapping("/{period}/{requestId}")

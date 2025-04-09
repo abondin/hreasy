@@ -38,6 +38,8 @@ import SalaryRequestsTable from "@/components/salary/SalaryRequestsTable.vue";
 import SalaryRequestDetailsView from "@/components/salary/details/SalaryRequestDetailsView.vue";
 import DictAdminOffices from "@/components/admin/dict/office/DictAdminOffices.vue";
 import DictAdminMaps from "@/components/admin/dict/office/maps/DictAdminMaps.vue";
+import EmployeeWithLatestSalaryRequestTable
+    from "@/components/salary/overview/EmployeeWithLatestSalaryRequestTable.vue";
 
 Vue.use(VueRouter)
 
@@ -65,6 +67,7 @@ const routes = [
         props: true
     },
     {path: "/salaries/requests", component: SalaryRequestsTable, name: "SalaryRequestsTable"},
+    {path: "/salaries/latest", component: EmployeeWithLatestSalaryRequestTable, name: "EmployeeWithLatestSalaryRequestTable"},
     {
         path: "/salaries/requests/:period/:requestId",
         component: SalaryRequestDetailsView,

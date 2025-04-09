@@ -58,14 +58,29 @@
         </v-list-item>
 
 
+        <v-list-group
+            no-action
+            v-if="canReportSalaryRequest"
+        >
+          <template v-slot:activator>
+            <v-list-item-action>
+              <v-icon>mdi-currency-rub</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>{{ $t('Повышения') }}</v-list-item-title>
+            </v-list-item-content>
+          </template>
         <v-list-item to="/salaries/requests" v-if="canReportSalaryRequest()">
-          <v-list-item-action>
-            <v-icon>mdi-currency-rub</v-icon>
-          </v-list-item-action>
           <v-list-item-title>
             {{ $t('Повышения и бонусы') }}
           </v-list-item-title>
         </v-list-item>
+          <v-list-item to="/salaries/latest" v-if="canAdminSalaryRequests()">
+            <v-list-item-title>
+              {{ $t('Последние повышения') }}
+            </v-list-item-title>
+          </v-list-item>
+        </v-list-group>
 
         <v-list-item to="/juniors" v-if="canAccessJuniorsRegistry()">
           <v-list-item-action>
@@ -177,7 +192,7 @@
       <v-container>
         <!-- Do not forget to add the component name in @Component decorator -->
         <keep-alive :max="10"
-            include="AdminProjects,VacationsList,AssessmentShortList,JuniorRegistryTable,SalaryRequestsTable">
+            include="AdminProjects,VacationsList,AssessmentShortList,JuniorRegistryTable,SalaryRequestsTable,EmployeeWithLatestSalaryRequestTable">
           <router-view></router-view>
         </keep-alive>
       </v-container>

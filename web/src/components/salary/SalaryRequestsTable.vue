@@ -69,10 +69,10 @@
                 }}</span>
     </template>
     <template v-slot:item.req.increaseAmount="{ item }">
-      {{ formatMoney(item.req.increaseAmount) }}
+      <span class="grey--text">{{ formatMoney(item.req.increaseAmount) }}</span>
     </template>
     <template v-slot:item.req.plannedSalaryAmount="{ item }">
-      {{ formatMoney(item.req.plannedSalaryAmount) }}
+      <span class="grey--text">{{ formatMoney(item.req.plannedSalaryAmount) }}</span>
     </template>
     <template v-slot:item.employeeInfo.currentSalaryAmount="{ item }">
       {{ formatMoney(item.employeeInfo.currentSalaryAmount) }}
@@ -140,7 +140,7 @@ export default class SalaryRequestsTable extends Vue {
               {
                 text: this.$tc('Предполагаемое изменение на'),
                 value: 'req.increaseAmount',
-                width: "150px",
+                width: "100px",
                 class: "text-wrap"
               }
           );
@@ -162,26 +162,26 @@ export default class SalaryRequestsTable extends Vue {
           );
         }
         headers.push(
-            {text: this.$tc('Решение'), value: 'impl.state', width: "150px"}
-        );
-        headers.push(
-            {text: this.$tc('Согласования'), value: 'approvals', width: "150px"}
-        );
-        headers.push(
-            {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name', width: "150px"},
-            {text: this.$tc('Инициатор'), value: 'createdBy.name', width: "250px"}
+            {text: this.$tc('Решение'), value: 'impl.state', width: "100px"}
         );
         if (this.data.filter.type == SalaryRequestType.SALARY_INCREASE) {
           headers.push(
-              {text: this.$tc('Итоговое изменение на'), value: 'impl.increaseAmount', width: "150px"},
+              {text: this.$tc('Итоговое изменение на'), value: 'impl.increaseAmount', width: "100px"},
               {text: this.$tc('Итоговая сумма'), value: 'impl.salaryAmount', width: "150px"},
               {text: this.$tc('Сообщение об изменениях'), value: 'impl.increaseText', width: "150px"},
           );
         } else {
           headers.push(
-              {text: this.$tc('Итоговая сумма бонуса'), value: 'impl.increaseAmount', width: "150px"}
+              {text: this.$tc('Итоговая сумма бонуса'), value: 'impl.increaseAmount', width: "100px"}
           );
         }
+        headers.push(
+            {text: this.$tc('Бюджет из бизнес аккаунта'), value: 'budgetBusinessAccount.name', width: "150px"},
+            {text: this.$tc('Инициатор'), value: 'createdBy.name', width: "250px"}
+        );
+        headers.push(
+            {text: this.$tc('Согласования'), value: 'approvals', width: "150px"}
+        );
         return headers;
       },
       (period, item) => {

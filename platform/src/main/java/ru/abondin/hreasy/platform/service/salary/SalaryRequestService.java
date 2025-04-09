@@ -77,6 +77,19 @@ public class SalaryRequestService {
                 .map(mapper::fromEntry);
     }
 
+    /**
+     * @param auth
+     * @return all not dismissed employees with zero or one latest salary request
+     */
+    public Flux<EmployeeWithLatestSalaryRequestDto> findLatestIncreases(AuthContext auth) {
+        var now = dateTimeService.now();
+        log.debug("Get all not dismissed employees with zero or one latest salary request by {}", auth.getUsername());
+        return secValidator.validateAdminSalaryRequest(auth)
+                .flatMapMany(v -> requestRepo.findLatestIncreases(now))
+                .map(mapper::fromEntry);
+    }
+
+
     @Transactional
     public Mono<Integer> delete(AuthContext auth, int requestId) {
         log.info("Deleting salary request {} by {}", requestId, auth.getUsername());
