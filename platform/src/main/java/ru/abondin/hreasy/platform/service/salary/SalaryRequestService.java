@@ -83,7 +83,7 @@ public class SalaryRequestService {
      */
     public Flux<EmployeeWithLatestSalaryRequestDto> findLatestIncreases(AuthContext auth) {
         var now = dateTimeService.now();
-        log.debug("Get all not dismissed employees with zero or one latest salary request by {}", auth);
+        log.debug("Get all not dismissed employees with zero or one latest salary request by {}", auth.getUsername());
         return secValidator.validateAdminSalaryRequest(auth)
                 .flatMapMany(v -> requestRepo.findLatestIncreases(now))
                 .map(mapper::fromEntry);

@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.repo.salary;
 
-import org.reactivestreams.Publisher;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
@@ -42,7 +41,7 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
     Flux<SalaryRequestView> findAllForEmployeeForAllPeriodsNotDeleted(int employeeId, OffsetDateTime now);
 
     @Query("""
-            SELECT
+                SELECT
                 e.id AS employee_id,
                 e.display_name AS employee_display_name,
                 e.email AS employee_email,
@@ -54,7 +53,7 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
                 e.date_of_employment AS employee_date_of_employment,
                 sr.id as request_id,
                 sr.created_at AS request_created_at,
-            	sr.req_increase_start_period AS request_start_period,
+                sr.req_increase_start_period AS request_start_period,
                 sr.req_increase_amount AS request_req_increase_amount,
                 sr.impl_increase_amount AS request_impl_increase_amount,
                 sr.impl_salary_amount AS request_impl_salary_amount,
