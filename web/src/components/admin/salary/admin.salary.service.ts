@@ -18,6 +18,7 @@ export interface SalaryRequestUpdateImplIncreaseTextBody {
 export interface SalaryRequestRejectBody {
     reason: string;
     comment: string | null;
+    rescheduleToNewPeriod: number | null;
 }
 
 

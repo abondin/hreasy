@@ -19,6 +19,8 @@ import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.salary.dto.*;
+import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkCreateBody;
+import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkType;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class AdminSalaryRequestService {
     private final SalaryRequestClosedPeriodRepo closedPeriodRepo;
     private final SalarySecurityValidator secValidator;
     private final SalaryRequestMapper mapper;
+    private final SalaryRequestDomainService domainService;
 
     private final HistoryDomainService historyDomainService;
 
@@ -69,12 +72,55 @@ public class AdminSalaryRequestService {
                     }
                     mapper.applyRequestRejectBody(entry, body, now, auth.getEmployeeInfo().getEmployeeId());
                     return requestRepo.save(entry)
+                            .flatMap(rejectedEntry -> rescheduleIfRequired(auth, rejectedEntry, body.getRescheduleToNewPeriod()))
                             .flatMap(p -> historyDomainService.persistHistory(salaryRequestId,
                                     HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
                                     p, now, auth.getEmployeeInfo().getEmployeeId()))
                             .map(HistoryEntry::getEntityId);
                 });
     }
+
+
+    /**
+     * @param rejectedEntry
+     * @param newPeriod
+     * @return unmodified rejectedEntry
+     */
+    private Mono<SalaryRequestEntry> rescheduleIfRequired(AuthContext auth, SalaryRequestEntry rejectedEntry, Integer newPeriod) {
+        if (newPeriod == null) {
+            return Mono.just(rejectedEntry);
+        }
+        return closedPeriodCheck(newPeriod)
+                .flatMap(period -> {
+                    log.info("Reschedule salary request {} to period {} by {}", rejectedEntry.getId(), newPeriod, auth.getUsername());
+                    var newRequestBody = SalaryRequestReportBody.builder()
+                            .employeeId(rejectedEntry.getEmployeeId())
+                            .type(rejectedEntry.getType())
+                            .budgetBusinessAccount(rejectedEntry.getBudgetBusinessAccount())
+                            .budgetExpectedFundingUntil(rejectedEntry.getBudgetExpectedFundingUntil())
+                            .increaseAmount(rejectedEntry.getReqIncreaseAmount())
+                            .currentSalaryAmount(rejectedEntry.getInfoCurrentSalaryAmount())
+                            .previousSalaryIncreaseText(rejectedEntry.getInfoPreviousSalaryIncreaseText())
+                            .previousSalaryIncreaseDate(rejectedEntry.getInfoPreviousSalaryIncreaseDate())
+                            .plannedSalaryAmount(rejectedEntry.getReqPlannedSalaryAmount())
+                            .increaseStartPeriod(newPeriod)
+                            .reason(rejectedEntry.getReqReason())
+                            .assessmentId(rejectedEntry.getAssessmentId())
+                            .comment(rejectedEntry.getReqComment())
+                            .build();
+
+                    return domainService.doReport(auth, newRequestBody)
+                            .flatMap(newRequestId -> {
+                                var link = new SalaryRequestLinkCreateBody(
+                                        rejectedEntry.getId(),
+                                        newRequestId,
+                                        SalaryRequestLinkType.RESCHEDULED.getId(),
+                                        null);
+                                return domainService.createLink(auth, link);
+                            });
+                }).map(newRequestId -> rejectedEntry);
+    }
+
 
     @Transactional
     public Mono<Integer> markAsImplemented(AuthContext auth, int salaryRequestId, SalaryRequestImplementBody body) {

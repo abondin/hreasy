@@ -45,30 +45,35 @@ select
                 req_new_pos.name as req_new_position_name,
                 approvals.approval_data AS approvals,
                 (
-                        SELECT jsonb_agg(
-                            jsonb_build_object(
-                                'id', link.id,
-                                'type', link.type,
-                                'initiator', CASE
-                                    WHEN link.source = r.id THEN true
-                                    ELSE false
-                                END,
-                                'linked_request_id', CASE
-                                    WHEN link.source = r.id THEN link.destination
-                                    ELSE link.source
-                                END,
-                                'comment', link.comment,
-                                'created_at', link.created_at,
-                                'createdBy', json_build_object(
-                                    'id', created_by,
-                                     'name', (SELECT display_name as name FROM empl.employee WHERE id = created_by)
-                                )
+                    SELECT jsonb_agg(
+                        jsonb_build_object(
+                            'id', link.id,
+                            'type', link.type,
+                            'initiator',
+                            CASE
+                                WHEN link.source = r.id THEN true
+                                ELSE false
+                            END,
+                            'linkedRequest',
+                            jsonb_build_object('id', linked.id, 'period', linked.req_increase_start_period),
+                            'comment', link.comment,
+                            'created_at', link.created_at,
+                            'createdBy', json_build_object(
+                                'id', link.created_by,
+                                 'name', (SELECT display_name as name FROM empl.employee WHERE id = link.created_by)
                             )
                         )
-                        FROM sal.salary_request_link link
-                        WHERE link.deleted_at IS NULL
-                        AND (link.source = r.id OR link.destination = r.id)
-                    ) AS links
+                    )
+                    from sal.salary_request_link link
+                    left join sal.salary_request linked on
+                              linked.id =
+                                CASE
+                                  WHEN link.source = r.id THEN link.destination
+                                  ELSE link.source
+                                  END
+                    where link.deleted_at IS null and linked.deleted_at  is null
+                    AND (link.source = r.id OR link.destination = r.id)
+                ) AS links
             from sal.salary_request r
                 left join empl.employee e on r.employee_id = e.id
                 left join proj.project p on e.current_project=p.id

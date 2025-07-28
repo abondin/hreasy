@@ -9,7 +9,6 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.repo.assessment.AssessmentRepo;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedRepo;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.repo.salary.*;
@@ -40,7 +39,7 @@ public class SalaryRequestService {
 
     private final DateTimeService dateTimeService;
 
-    private final AssessmentRepo assessmentRepo;
+    private final SalaryRequestDomainService domainService;
 
     private final EmployeeDetailedRepo employeeRepo;
 
@@ -116,7 +115,7 @@ public class SalaryRequestService {
         return requestRepo.findById(requestId)
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound(SALARY_REQUEST_ENTITY_TYPE, requestId))
                 // 2. Check that period is not closed
-                .flatMap(entry -> checkDeleteOrUpdateActionAllowed(entry)
+                .flatMap(entry -> domainService.checkDeleteOrUpdateActionAllowed(entry)
                         // 3. Validate if user has permissions to update/delete
                         .flatMap(e -> secValidator.validateUpdateOrDeleteSalaryRequest(auth, entry)
                                 .flatMap(s -> {
@@ -131,26 +130,7 @@ public class SalaryRequestService {
 
     @Transactional
     public Mono<Integer> report(AuthContext ctx, SalaryRequestReportBody body) {
-        var now = dateTimeService.now();
-        var createdBy = ctx.getEmployeeInfo().getEmployeeId();
-        log.info("Reporting {} by {}", body, ctx.getUsername());
-        // 1. Validate if logged-in user has permissions to report new salary request
-        return secValidator.validateReportSalaryRequest(ctx)
-                // 2. Additional validation
-                .flatMap(v -> checkReportBodyConsistency(body))
-                // 3. Get additional information about employee
-                .flatMap(v -> employeeRepo.findDetailed(body.getEmployeeId()))
-                .map(empl -> mapper.toEntry(body, empl, createdBy, now)).flatMap(entry ->
-                        // 2. Save new request to DB
-                        requestRepo.save(entry).flatMap(persisted ->
-                                // 3. Save history record
-                                historyDomainService.persistHistory(persisted.getId(),
-                                                HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
-                                                persisted, now, createdBy)
-                                        .map(h -> persisted.getId()))
-
-                );
-        // 4. TODO Send email notification
+        return domainService.doReport(ctx, body);
     }
     //</editor-fold>
 
@@ -190,7 +170,7 @@ public class SalaryRequestService {
                 // 2. Validate security
                 .flatMap(entry -> secValidator.validateApproveSalaryRequest(auth, entry.getBudgetBusinessAccount())
                         // 3. Check if report period is not closed
-                        .flatMap(v -> checkApprovalActionAllowed(entry, state))
+                        .flatMap(v -> domainService.checkApprovalActionAllowed(entry, state))
                         // 4. Apply action
                         .flatMap(v -> {
                             var approvalEntry = new SalaryRequestApprovalEntry();
@@ -223,7 +203,7 @@ public class SalaryRequestService {
                                 // 3. Find approval request
                                 .flatMap(v -> requestRepo.findById(requestId).switchIfEmpty(BusinessErrorFactory.entityNotFound(SALARY_REQUEST_ENTITY_TYPE, requestId))
                                         // 4. Check if period is not closed
-                                        .flatMap(e -> checkApprovalActionAllowed(e, approvalEntry.getState())))
+                                        .flatMap(e -> domainService.checkApprovalActionAllowed(e, approvalEntry.getState())))
                                 .flatMap(v -> {
                                     // 5. Check that approval is related to given request
                                     if (requestId != approvalEntry.getRequestId()) {
@@ -243,49 +223,6 @@ public class SalaryRequestService {
 
     //</editor-fold>
 
-    private Mono<Boolean> closedPeriodCheck(int periodId) {
-        return closedPeriodRepo.findById(periodId)
-                .flatMap(p -> Mono.error(new BusinessError("errors.salary_request.period_closed", Integer.toString(p.getPeriod()))))
-                .map(e -> true)
-                .defaultIfEmpty(true);
-    }
-
-    private Mono<Boolean> checkReportBodyConsistency(SalaryRequestReportBody body) {
-        // 1. Check if report period is not closed
-        var closedPeriodCheck = closedPeriodCheck(body.getIncreaseStartPeriod());
-
-
-        // 2. Check if assessment for the same employee
-        var assessmentCorrect = body.getAssessmentId() == null ? Mono.defer(() -> Mono.just(true)) :
-                assessmentRepo.findById(body.getAssessmentId())
-                        .switchIfEmpty(BusinessErrorFactory.entityNotFound("Assessment", body.getAssessmentId()))
-                        .flatMap(assessment -> {
-                            if (assessment.getEmployee() == null || !assessment.getEmployee().equals(body.getEmployeeId())) {
-                                return BusinessErrorFactory.entityNotFound("Assessment", body.getAssessmentId());
-                            }
-                            return Mono.just(true);
-                        });
-        return closedPeriodCheck.flatMap(v -> assessmentCorrect);
-    }
-
-    private Mono<Boolean> checkApprovalActionAllowed(SalaryRequestEntry entry, short approvalState) {
-        // 1. Allow even if request is marked as implemented
-        // Add and delete comments is allowed even in closed period
-        if (approvalState == SalaryRequestApprovalDto.ApprovalActionTypes.COMMENT.getValue()) {
-            return Mono.just(true);
-        }
-        return closedPeriodCheck(entry.getReqIncreaseStartPeriod());
-    }
-
-    private Mono<Boolean> checkDeleteOrUpdateActionAllowed(SalaryRequestEntry entry) {
-        // 1. Check if report period is not closed
-        var closedPeriodCheck = closedPeriodCheck(entry.getReqIncreaseStartPeriod());
-        // 2. Check that request is not implemented
-        var implementedCheck = Mono.defer(() -> entry.getImplementedAt() == null
-                ? Mono.just(true)
-                : Mono.error(new BusinessError("errors.salary_request.already_implemented", Integer.toString(entry.getId()))));
-        return closedPeriodCheck.flatMap(v -> implementedCheck);
-    }
 
     public Flux<SalaryRequestClosedPeriodDto> getClosedSalaryRequestPeriods() {
         return closedPeriodRepo.findAll().map(mapper::closedPeriodFromEntry);
