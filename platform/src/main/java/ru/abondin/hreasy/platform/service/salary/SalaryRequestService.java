@@ -19,6 +19,7 @@ import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestAppro
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApproveBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestCommentBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestDeclineBody;
+import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkCreateBody;
 
 import java.time.OffsetDateTime;
 import java.util.function.Consumer;
@@ -223,6 +224,13 @@ public class SalaryRequestService {
 
     //</editor-fold>
 
+
+    //<editor-fold desc="Links">
+    @Transactional
+    public Mono<Integer> addLink(AuthContext ctx, SalaryRequestLinkCreateBody body){
+        return domainService.createLink(ctx, body);
+    }
+    //</editor-fold>
 
     public Flux<SalaryRequestClosedPeriodDto> getClosedSalaryRequestPeriods() {
         return closedPeriodRepo.findAll().map(mapper::closedPeriodFromEntry);

@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS sal.salary_request_link (
     deleted_at timestamp with time zone
 );
 
+CREATE UNIQUE INDEX salary_request_link_unique ON sal.salary_request_link (source, destination, type) WHERE (deleted_at is null);
+
+
 COMMENT ON TABLE sal.salary_request_link IS 'Links between salary requests';
 COMMENT ON COLUMN sal.salary_request_link.id IS 'Primary key';
 COMMENT ON COLUMN sal.salary_request_link.type IS '
@@ -59,14 +62,14 @@ select
                                 'id', linked.id,
                                 'period', linked.req_increase_start_period,
                                 'implState', linked.impl_state,
-                                'created_at', linked.created_at,
+                                'createdA', linked.created_at,
                                 'createdBy', json_build_object(
                                     'id', linked.created_by,
                                      'name', (SELECT display_name as name FROM empl.employee WHERE id = linked.created_by)
                                 )
                             ),
                             'comment', link.comment,
-                            'created_at', link.created_at,
+                            'createdAt', link.created_at,
                             'createdBy', json_build_object(
                                 'id', link.created_by,
                                  'name', (SELECT display_name as name FROM empl.employee WHERE id = link.created_by)

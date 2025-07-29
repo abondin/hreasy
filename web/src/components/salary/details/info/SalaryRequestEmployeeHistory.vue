@@ -30,11 +30,15 @@ Show all employee's salaries increases and bonuses for the all periods
               ({{ $t('Бонус') }})
             </span>
           <span v-if="isCurrentReport(item)">{{ title }}</span>
-          <router-link v-else :to="{name:'salariesRequestsDetails', params:{
-              period:item.req?.increaseStartPeriod,
-              requestId:item.id}}">
-            {{ title }}
-          </router-link>
+          <span v-else class="navigation-cell-parent">
+            <router-link :to="{name:'salariesRequestsDetails', params:{
+                period:item.req?.increaseStartPeriod,
+                requestId:item.id}}">
+              {{ title }}
+            </router-link>
+            <v-btn class="ml-2 navigation-cell-btn" @click="addLink(item)"
+                   x-small text icon><v-icon>mdi-link-variant-plus</v-icon></v-btn>
+            </span>
           </span>
         </template>
         <template v-slot:item.req.increaseAmount="{ item }">
@@ -56,13 +60,25 @@ Show all employee's salaries increases and bonuses for the all periods
         </template>
       </v-data-table>
     </v-card-text>
+
+    <in-dialog-form size="lg" form-ref="addLinkForm" :data="data.addLinkAction"
+                    :title="$t('Добавить связанный запрос')"
+                    v-on:submit="emitReload">
+      <template v-slot:fields>
+        <v-textarea
+            v-model="data.addLinkAction.formData.comment"
+            :rules="[v=>(!v || v.length <= 4096 || $t('Не более N символов', {n:4096}))]"
+            :label="$t('Примечание')">
+        </v-textarea>
+      </template>
+    </in-dialog-form>
   </v-card>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import {SalaryDetailsDataContainer} from "@/components/salary/details/salary-details.data.container";
-import {SalaryIncreaseRequest, SalaryRequestType} from "@/components/salary/salary.service";
+import {SalaryIncreaseRequest, SalaryRequestLinkType, SalaryRequestType} from "@/components/salary/salary.service";
 import salaryAdminService, {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 import {errorUtils} from "@/components/errors";
 import {UiConstants} from "@/components/uiconstants";
@@ -70,8 +86,12 @@ import {DataTableHeader} from "vuetify";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
 import {Route} from "vue-router";
 import logger from "@/logger";
+import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
+import SalaryRequestUpdateFields from "@/components/salary/details/info/SalaryRequestUpdateFields.vue";
 
-@Component({})
+@Component({
+  components: {SalaryRequestUpdateFields, InDialogForm}
+})
 export default class SalaryRequestEmployeeHistory extends Vue {
   @Prop({required: true})
   data!: SalaryDetailsDataContainer;
@@ -142,6 +162,10 @@ export default class SalaryRequestEmployeeHistory extends Vue {
       this.loading = false;
     })
   }
+  private emitReload() {
+    this.$emit('updated');
+  }
+
 
   filteredItems() {
     return this.requests.filter((r) => {
@@ -153,6 +177,16 @@ export default class SalaryRequestEmployeeHistory extends Vue {
         filtered = filtered || r.type == SalaryRequestType.BONUS;
       }
       return filtered;
+    });
+  }
+
+  addLink(r: SalaryIncreaseRequest) {
+    logger.log(`Adding link from ${this.data.item.id} to ${r.id}`);
+    this.data.openAddLinkDialog({
+      source: this.data.item.id,
+      destination: r.id,
+      type: SalaryRequestLinkType.MULTISTAGE,
+      comment: null
     });
   }
 
@@ -170,5 +204,10 @@ export default class SalaryRequestEmployeeHistory extends Vue {
 
 
 <style scoped>
-
+.navigation-cell-btn {
+  display: none;
+}
+.navigation-cell-parent:hover .navigation-cell-btn {
+  display: inline;
+}
 </style>

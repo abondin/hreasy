@@ -17,6 +17,8 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
 import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkCreateBody;
 
+import static ru.abondin.hreasy.platform.service.salary.SalaryRequestService.SALARY_REQUEST_ENTITY_TYPE;
+
 /**
  * Middleware service with logic for salary report. Uses in {@link SalaryRequestService} and {@link AdminSalaryRequestService}
  */
@@ -76,11 +78,22 @@ public class SalaryRequestDomainService {
         entry.setComment(body.getComment());
         entry.setCreatedBy(ctx.getEmployeeInfo().getEmployeeId());
         entry.setCreatedAt(now);
-        return linkRepo.save(entry).flatMap(persisted ->
+        return validateLinkCreation(ctx, body).flatMap(v -> linkRepo.save(entry)).flatMap(persisted ->
                 historyDomainService.persistHistory(persisted.getId(),
-                        HistoryDomainService.HistoryEntityType.SALARY_REQUEST_LINK,
-                        persisted, now, ctx.getEmployeeInfo().getEmployeeId())
+                                HistoryDomainService.HistoryEntityType.SALARY_REQUEST_LINK,
+                                persisted, now, ctx.getEmployeeInfo().getEmployeeId())
                         .map(h -> persisted.getId()));
+    }
+
+    Mono<Boolean> validateLinkCreation(AuthContext ctx, SalaryRequestLinkCreateBody body) {
+        return secValidator.validateReportSalaryRequest(ctx).flatMap(v -> Mono.defer(() -> {
+            if (body.getSource() == body.getDestination()) {
+                return Mono.error(new BusinessError("errors.salary_request.link.source_equals_destination"));
+            }
+            return Mono.just(true);
+
+        }));
+
     }
 
     Mono<Boolean> checkReportBodyConsistency(SalaryRequestReportBody body) {

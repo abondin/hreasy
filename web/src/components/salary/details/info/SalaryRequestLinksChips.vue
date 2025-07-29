@@ -27,11 +27,8 @@ export default class SalaryRequestLinksChips extends Vue {
   @Prop({required: true})
   private data!: SalaryRequestLink[];
 
-  @Prop({required: true, default: []})
-  private allowedTypes!: SalaryRequestLinkType[];
-
   chipProps(): ChipProps[] {
-    return this.data.filter((link) => this.allowedTypes.indexOf(link.type) >= 0).map(l => this.fromLink(l));
+    return this.data.map(l => this.fromLink(l));
   }
 
   private fromLink(link: SalaryRequestLink): ChipProps {

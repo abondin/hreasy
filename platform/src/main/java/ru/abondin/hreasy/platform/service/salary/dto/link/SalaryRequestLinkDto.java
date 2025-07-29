@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.salary.dto.link;
 
 import lombok.Data;
+import org.springframework.lang.NonNull;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
 import java.time.OffsetDateTime;
@@ -12,13 +13,16 @@ import java.time.OffsetDateTime;
 public class SalaryRequestLinkDto {
     private int id;
     private boolean initiator;
+    @NonNull
     private SalaryLinkedRequest linkedRequest;
     /**
      * @see SalaryRequestLinkType
      */
     private short type;
     private String comment;
+    @NonNull
     private OffsetDateTime createdAt;
+    @NonNull
     private SimpleDictDto createdBy;
 
     @Data

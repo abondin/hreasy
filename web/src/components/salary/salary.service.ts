@@ -83,6 +83,13 @@ export interface SalaryRequestDeclineBody {
     comment: string | null;
 }
 
+export interface SalaryRequestLinkCreateBody {
+    source: number;
+    destination: number;
+    type: number;
+    comment: string | null;
+}
+
 export interface EmployeeWithLatestSalaryRequest extends WithId {
     id: number;
     employeeId: number;
@@ -125,6 +132,8 @@ export interface SalaryService {
     getApprovals(requestId: number): Promise<Array<SalaryRequestApproval>>;
 
     getEmployeesWithLatestSalaryRequest(): Promise<Array<EmployeeWithLatestSalaryRequest>>;
+
+    addLink(body: SalaryRequestLinkCreateBody): Promise<number>;
 }
 
 class RestSalaryService implements SalaryService {
@@ -187,6 +196,10 @@ class RestSalaryService implements SalaryService {
         return this.httpService.get("v1/salaries/requests/latest").then(response => {
             return response.data;
         });
+    }
+
+    addLink(body: SalaryRequestLinkCreateBody): Promise<number> {
+        return httpService.post("v1/salaries/requests/links", body);
     }
 }
 

@@ -1,7 +1,7 @@
 import {
     SalaryApprovalState,
     SalaryIncreaseRequest,
-    SalaryRequestApproval,
+    SalaryRequestApproval, SalaryRequestLink,
     SalaryRequestType
 } from "@/components/salary/salary.service";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
@@ -13,6 +13,10 @@ import {SalaryRequestUpdateAction} from "@/components/salary/details/info/salary
 import {
     SalaryRequestUpdateImplTextAction
 } from "@/components/salary/details/impl/salary-request.udpate.impl-text.action";
+import {
+    SalaryRequestAddLinkAction,
+    SalaryRequestAddLinkFormData
+} from "@/components/salary/details/info/salary-request.addlink.action";
 
 export class SalaryDetailsDataContainer {
 
@@ -22,6 +26,8 @@ export class SalaryDetailsDataContainer {
 
     private _deleteRequestAction = new SalaryRequestDeleteAction();
     private _updateRequestAction = new SalaryRequestUpdateAction();
+
+    private _addLinkAction = new SalaryRequestAddLinkAction();
 
     public constructor(private _periodHolder: { period: ReportPeriod, closed: boolean }, private _item: SalaryIncreaseRequest) {
     }
@@ -74,6 +80,19 @@ export class SalaryDetailsDataContainer {
     }
 
     //</editor-fold>
+
+    //<editor-fold desc="Links">
+    get addLinkAction(): SalaryRequestAddLinkAction {
+        return this._addLinkAction;
+    }
+
+    public openAddLinkDialog(defaultBody?: SalaryRequestAddLinkFormData) {
+        const body = defaultBody? defaultBody : this._addLinkAction.defaultBody();
+        this._addLinkAction.openDialog(null, body);
+    }
+
+    //</editor-fold>
+
 
     //<editor-fold desc="Implementation">
     get implementAction(): SalaryRequestImplementAction {
