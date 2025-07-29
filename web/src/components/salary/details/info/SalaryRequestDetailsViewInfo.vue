@@ -4,6 +4,7 @@
     <v-card-title class="text-h5">
       {{ data.isSalaryRequest() ? $t('Запрос на повышение') : $t('Запрос на бонус') }}&nbsp;<span
         class="text-subtitle-1">(+{{ formatMoney(data.item.req.increaseAmount) }})</span>
+      <salary-request-links-chips :data="data.item.links" :allowed-types="[1]" class="ml-2"></salary-request-links-chips>
       <v-spacer></v-spacer>
       <v-tooltip bottom v-if="updateAllowed()">
         <template v-slot:activator="{ on: ton, attrs: tattrs}">
@@ -136,10 +137,11 @@ import permissionService from "@/store/modules/permission.service";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import SalaryRequestUpdateFields from "@/components/salary/details/info/SalaryRequestUpdateFields.vue";
 import EmployeeBaseInfoCard from "@/components/shared/EmployeeBaseInfoCard.vue";
+import SalaryRequestLinksChips from "@/components/salary/details/info/SalaryRequestLinksChips.vue";
 
 
 @Component({
-  components: {EmployeeBaseInfoCard, SalaryRequestUpdateFields, InDialogForm}
+  components: {SalaryRequestLinksChips, EmployeeBaseInfoCard, SalaryRequestUpdateFields, InDialogForm}
 })
 export default class SalaryRequestDetailsViewInfo extends Vue {
 

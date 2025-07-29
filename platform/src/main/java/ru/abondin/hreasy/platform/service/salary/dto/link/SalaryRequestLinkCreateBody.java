@@ -17,6 +17,6 @@ public class SalaryRequestLinkCreateBody {
     @NonNull
     private Integer destination;
     @NonNull
-    private Integer type;
+    private Short type;
     private String comment;
 }

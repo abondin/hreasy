@@ -22,6 +22,18 @@ export const enum SalaryApprovalState {
     DECLINE = 3
 }
 
+export const enum SalaryRequestLinkType {
+    /**
+     * If salary request has been rescheduled. 'Rescheduled From' for link Source, 'Rescheduled To' for link Destination.
+     */
+    RESCHEDULED = 1,
+    /**
+     *
+     */
+    MULTISTAGE = 2
+}
+
+
 export const salaryApprovalStates = [
     SalaryApprovalState.COMMENT,
     SalaryApprovalState.APPROVE,
@@ -223,7 +235,8 @@ export interface SalaryIncreaseRequest extends WithId {
         comment: string | null;
         increaseText: string | null;
     };
-    approvals: SalaryRequestApproval[]
+    approvals: SalaryRequestApproval[],
+    links: SalaryRequestLink[],
 }
 
 /**
@@ -234,6 +247,31 @@ export interface SalaryRequestApproval {
     requestId: number;
     state: SalaryApprovalState;
     comment: string | null;
+    createdAt: string;
+    createdBy: SimpleDict;
+}
+
+
+/**
+ * Link to another salary request of the same employee
+ */
+export interface SalaryRequestLink {
+    id: number;
+    initiator: boolean;
+    linkedRequest: SalaryLinkedRequest;
+    type: SalaryRequestLinkType;
+    comment: string | null;
+    createdAt: string;
+    createdBy: SimpleDict;
+}
+
+/**
+ * Opposite salary request in link
+ */
+export interface SalaryLinkedRequest {
+    id: number;
+    period: number;
+    implState: number;
     createdAt: string;
     createdBy: SimpleDict;
 }

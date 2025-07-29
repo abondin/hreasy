@@ -55,7 +55,16 @@ select
                                 ELSE false
                             END,
                             'linkedRequest',
-                            jsonb_build_object('id', linked.id, 'period', linked.req_increase_start_period),
+                            jsonb_build_object(
+                                'id', linked.id,
+                                'period', linked.req_increase_start_period,
+                                'implState', linked.impl_state,
+                                'created_at', linked.created_at,
+                                'createdBy', json_build_object(
+                                    'id', linked.created_by,
+                                     'name', (SELECT display_name as name FROM empl.employee WHERE id = linked.created_by)
+                                )
+                            ),
                             'comment', link.comment,
                             'created_at', link.created_at,
                             'createdBy', json_build_object(

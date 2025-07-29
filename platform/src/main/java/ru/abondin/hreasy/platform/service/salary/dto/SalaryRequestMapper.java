@@ -11,6 +11,7 @@ import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 import ru.abondin.hreasy.platform.service.mapper.MapperBaseWithJsonSupport;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
+import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkDto;
 
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
@@ -83,6 +84,7 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     @Mapping(source = ".", target = "req.newPosition", qualifiedByName = "reqNewPosition")
     @Mapping(source = ".", target = "impl.newPosition", qualifiedByName = "implNewPosition")
     @Mapping(source = "approvals", target = "approvals", qualifiedByName = "approvalsFromJson")
+    @Mapping(source = "links", target = "links", qualifiedByName = "linksFromJson")
     public abstract SalaryRequestDto fromEntry(SalaryRequestView entry);
 
     @Mapping(source = ".", target = "employeeCurrentProject", qualifiedByName = "employeeCurrentProject")
@@ -219,6 +221,12 @@ public abstract class SalaryRequestMapper extends MapperBaseWithJsonSupport {
     protected List<SalaryRequestApprovalDto> approvalsFromJson(Json json) {
         return listFromJson(json, SalaryRequestApprovalDto.class, Comparator
                 .comparing(SalaryRequestApprovalDto::getCreatedAt).reversed());
+    }
+
+    @Named("linksFromJson")
+    protected List<SalaryRequestLinkDto> linksFromJson(Json json) {
+        return listFromJson(json, SalaryRequestLinkDto.class, Comparator
+                .comparing(SalaryRequestLinkDto::getCreatedAt).reversed());
     }
 
     @Named("employeeBusinessAccount")

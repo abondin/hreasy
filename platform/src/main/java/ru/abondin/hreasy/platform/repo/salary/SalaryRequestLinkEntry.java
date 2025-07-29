@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 public class SalaryRequestLinkEntry {
     @Id
     private Integer id;
-    private Integer type;
+    private Short type;
     private Integer source;
     private Integer destination;
     private String comment;

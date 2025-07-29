@@ -76,7 +76,7 @@ export default class SalaryRequestDetailsView extends Vue {
       const params = newRoute.params as { period: string; requestId: string };
       if (this.data.item.req.increaseStartPeriod.toString() != params.period
           || this.data.item.id.toString() != params.requestId) {
-        logger.log(`Parameters changed. Reload data for ${params.period}:${params.requestId}`)
+        logger.log(`Salary Request Details: Parameters changed. Reload data for ${params.period}:${params.requestId}`)
         this.fetchData();
       }
     }

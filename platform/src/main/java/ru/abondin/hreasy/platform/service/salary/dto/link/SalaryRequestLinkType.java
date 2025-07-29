@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public enum SalaryRequestLinkType {
-    RESCHEDULED(1, "Rescheduled From", "Rescheduled To"),
-    MULTISTAGE(2, "Part of Multi-Stage Increase", "Part of Multi-Stage Increase");
-    private final int id;
+    RESCHEDULED((short) 1, "Rescheduled From", "Rescheduled To"),
+    MULTISTAGE((short) 2, "Part of Multi-Stage Increase", "Part of Multi-Stage Increase");
+    private final short id;
     private final String sourceType;
     private final String destinationType;
 

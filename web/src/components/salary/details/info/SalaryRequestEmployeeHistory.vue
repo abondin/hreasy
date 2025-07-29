@@ -60,7 +60,7 @@ Show all employee's salaries increases and bonuses for the all periods
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import {SalaryDetailsDataContainer} from "@/components/salary/details/salary-details.data.container";
 import {SalaryIncreaseRequest, SalaryRequestType} from "@/components/salary/salary.service";
 import salaryAdminService, {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
@@ -68,6 +68,8 @@ import {errorUtils} from "@/components/errors";
 import {UiConstants} from "@/components/uiconstants";
 import {DataTableHeader} from "vuetify";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
+import {Route} from "vue-router";
+import logger from "@/logger";
 
 @Component({})
 export default class SalaryRequestEmployeeHistory extends Vue {
@@ -113,6 +115,22 @@ export default class SalaryRequestEmployeeHistory extends Vue {
   ];
 
   mounted() {
+   this.reload();
+  }
+
+  @Watch('$route', {immediate: true, deep: true})
+  onRouteChange(newRoute: Route) {
+    if (this.data?.item) {
+      const params = newRoute.params as { period: string; requestId: string };
+      if (this.data.item.req.increaseStartPeriod.toString() != params.period
+          || this.data.item.id.toString() != params.requestId) {
+        logger.log(`Salary History: Parameters changed. Reload data for ${params.period}:${params.requestId}`)
+        this.reload();
+      }
+    }
+  }
+
+  private reload(){
     this.requests = [];
     this.error = null;
     this.loading = true;

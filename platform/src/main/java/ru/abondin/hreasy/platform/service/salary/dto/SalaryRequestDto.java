@@ -6,6 +6,7 @@ import org.springframework.lang.NonNull;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
+import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,6 +43,7 @@ public class SalaryRequestDto {
     private EmployeeInfo employeeInfo = new EmployeeInfo();
 
     private List<SalaryRequestApprovalDto> approvals = new ArrayList<>();
+    private List<SalaryRequestLinkDto> links = new ArrayList<>();
 
     @Data
     @NoArgsConstructor
