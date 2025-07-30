@@ -25,5 +25,6 @@ public class SalaryRequestView extends SalaryRequestEntry {
     private String reqNewPositionName;
 
     private Json approvals;
+    private Json links;
 
 }

@@ -96,8 +96,8 @@ export class ReportPeriod {
         return new ReportPeriod(m.year(), m.month());
     }
 
-    static currentAndNextPeriods(): ReportPeriod[] {
-        return [this.currentPeriod(), this.currentPeriod(1), this.currentPeriod(2)];
+    static currentAndNextPeriods(shift = 0): ReportPeriod[] {
+        return [this.currentPeriod(shift), this.currentPeriod(shift+1), this.currentPeriod(shift+2)];
     }
 
     constructor(private year: number, private month: number) {

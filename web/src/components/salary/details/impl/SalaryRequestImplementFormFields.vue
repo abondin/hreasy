@@ -42,6 +42,15 @@
             item-text="name"
             :label="$t('Изменить позицию')"
         ></v-autocomplete>
+         <v-select
+             :disabled="itemReadonly()"
+             v-if="isRejected()"
+             v-model="formData.rescheduleToNewPeriod"
+             :label="$t('Перенести запрос в другой период')"
+             :items="periodsToChooseReschedule"
+             item-value="id"
+             item-text="toString()">
+        </v-select>
         <v-text-field
             v-if="isRejected()"
             :disabled="itemReadonly()"
@@ -61,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import {Prop, Vue} from "vue-property-decorator";
+import {Prop, Vue, Watch} from "vue-property-decorator";
 import Component from "vue-class-component";
 import {SalaryRequestType, salaryRequestTypes} from "@/components/salary/salary.service";
 import logger from "@/logger";
@@ -85,6 +94,7 @@ export interface SalaryRequestImplementationFormData {
   increaseStartPeriod: number;
   newPosition: number | null;
   rejectReason: string;
+  rescheduleToNewPeriod: number | null;
   comment: string | null;
   completed: boolean;
 }
@@ -105,6 +115,7 @@ export default class SalaryRequestImplementFormFields extends Vue {
   }
 
   private periodsToChoose = ReportPeriod.currentAndNextPeriods();
+  private periodsToChooseReschedule = ReportPeriod.currentAndNextPeriods(1);
 
   private salaryStats = salaryRequestImplementationStates.map(v => {
     return {text: this.$tc(`SALARY_REQUEST_STAT.${v}`), value: v};
@@ -116,6 +127,16 @@ export default class SalaryRequestImplementFormFields extends Vue {
 
   @Getter("positions", {namespace: namespace_dict})
   private allPositions!: Array<SimpleDict>;
+
+  @Watch('formData.rescheduleToNewPeriod')
+  watchRescheduleToNewPeriod() {
+    if (this.formData.rescheduleToNewPeriod && !this.formData.rejectReason) {
+      this.formData.rejectReason = this.$t('Перенос решения на ПЕРИОД'
+          , {
+            period: ReportPeriod.fromPeriodId(this.formData.rescheduleToNewPeriod).toString()
+          }).toString();
+    }
+  }
 
   /**
    * Lifecycle hook

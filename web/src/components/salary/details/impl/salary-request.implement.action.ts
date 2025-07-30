@@ -21,7 +21,8 @@ export class SalaryRequestImplementAction extends InDialogActionDataContainer<nu
         if (formData.state == SalaryRequestImplementationState.REJECTED) {
             const body = {
                 comment: formData.comment,
-                reason: formData.rejectReason
+                reason: formData.rejectReason,
+                rescheduleToNewPeriod: formData.rescheduleToNewPeriod
             };
             logger.log(`Reject salary request ${id}: ${body}`);
             return salaryAdminService.reject(id, body);

@@ -22,6 +22,18 @@ export const enum SalaryApprovalState {
     DECLINE = 3
 }
 
+export const enum SalaryRequestLinkType {
+    /**
+     * If salary request has been rescheduled. 'Rescheduled From' for link Source, 'Rescheduled To' for link Destination.
+     */
+    RESCHEDULED = 1,
+    /**
+     *
+     */
+    MULTISTAGE = 2
+}
+
+
 export const salaryApprovalStates = [
     SalaryApprovalState.COMMENT,
     SalaryApprovalState.APPROVE,
@@ -71,6 +83,13 @@ export interface SalaryRequestDeclineBody {
     comment: string | null;
 }
 
+export interface SalaryRequestLinkCreateBody {
+    source: number;
+    destination: number;
+    type: number;
+    comment: string | null;
+}
+
 export interface EmployeeWithLatestSalaryRequest extends WithId {
     id: number;
     employeeId: number;
@@ -113,6 +132,10 @@ export interface SalaryService {
     getApprovals(requestId: number): Promise<Array<SalaryRequestApproval>>;
 
     getEmployeesWithLatestSalaryRequest(): Promise<Array<EmployeeWithLatestSalaryRequest>>;
+
+    addLink(body: SalaryRequestLinkCreateBody): Promise<number>;
+
+    deleteLink(number: number): Promise<number>;
 }
 
 class RestSalaryService implements SalaryService {
@@ -176,6 +199,14 @@ class RestSalaryService implements SalaryService {
             return response.data;
         });
     }
+
+    addLink(body: SalaryRequestLinkCreateBody): Promise<number> {
+        return httpService.post("v1/salaries/requests/links", body);
+    }
+
+    deleteLink(linkId: number): Promise<number> {
+        return httpService.delete(`v1/salaries/requests/links/${linkId}`);
+    }
 }
 
 const salaryService: SalaryService = new RestSalaryService(httpService);
@@ -223,7 +254,8 @@ export interface SalaryIncreaseRequest extends WithId {
         comment: string | null;
         increaseText: string | null;
     };
-    approvals: SalaryRequestApproval[]
+    approvals: SalaryRequestApproval[],
+    links: SalaryRequestLink[],
 }
 
 /**
@@ -234,6 +266,31 @@ export interface SalaryRequestApproval {
     requestId: number;
     state: SalaryApprovalState;
     comment: string | null;
+    createdAt: string;
+    createdBy: SimpleDict;
+}
+
+
+/**
+ * Link to another salary request of the same employee
+ */
+export interface SalaryRequestLink {
+    id: number;
+    initiator: boolean;
+    linkedRequest: SalaryLinkedRequest;
+    type: SalaryRequestLinkType;
+    comment: string | null;
+    createdAt: string;
+    createdBy: SimpleDict;
+}
+
+/**
+ * Opposite salary request in link
+ */
+export interface SalaryLinkedRequest {
+    id: number;
+    period: number;
+    implState: number;
     createdAt: string;
     createdBy: SimpleDict;
 }

@@ -13,6 +13,7 @@ import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestAppro
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApproveBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestCommentBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestDeclineBody;
+import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkCreateBody;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,6 +36,7 @@ public class SalaryRequestsController {
     public Mono<Integer> delete(@PathVariable int requestId) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.delete(auth, requestId));
     }
+
     @PutMapping("/{requestId}")
     public Mono<Integer> update(@PathVariable int requestId, @RequestBody SalaryRequestUpdateBody body) {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.update(auth, requestId, body));
@@ -68,6 +70,17 @@ public class SalaryRequestsController {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.deleteApproval(auth, salaryRequestId, approvalId));
     }
 
+    @PostMapping("/links")
+    public Mono<Integer> addLink(@RequestBody SalaryRequestLinkCreateBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.addLink(auth, body));
+    }
+
+    @DeleteMapping("/links/{linkId}")
+    public Mono<Integer> deleteLink(@PathVariable int linkId) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.deleteLink(auth, linkId));
+    }
+
+
     @GetMapping("/{period}")
     public Flux<SalaryRequestDto> find(@PathVariable int period) {
         return AuthHandler.currentAuth().flatMapMany(auth -> requestService.find(auth, period));
@@ -76,6 +89,7 @@ public class SalaryRequestsController {
     /**
      * For each employee who has not been dismissed, this endpoint returns their latest salary request (excluding bonuses).
      * If no such request exists, the related request fields will be null.
+     *
      * @return
      */
     @GetMapping("/latest")

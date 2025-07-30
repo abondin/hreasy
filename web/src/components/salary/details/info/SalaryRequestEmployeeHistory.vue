@@ -30,13 +30,26 @@ Show all employee's salaries increases and bonuses for the all periods
               ({{ $t('Бонус') }})
             </span>
           <span v-if="isCurrentReport(item)">{{ title }}</span>
-          <router-link v-else :to="{name:'salariesRequestsDetails', params:{
-              period:item.req?.increaseStartPeriod,
-              requestId:item.id}}">
-            {{ title }}
-          </router-link>
+            <router-link v-else :to="{name:'salariesRequestsDetails', params:{
+                period:item.req?.increaseStartPeriod,
+                requestId:item.id}}">
+              {{ title }}
+            </router-link>
           </span>
         </template>
+
+
+        <template v-slot:item.links="{ item }">
+          <salary-request-links-chips v-if="!isCurrentReport(item)"
+                                      :add-link-action="data.addLinkAction"
+                                      :delete-link-action="data.deleteLinkAction"
+                                      :small="true"
+                                      :source="data.item.id"
+                                      :destination="item.id"
+                                      :data="getLinks(item)"
+                                      @updated="emitReload()"></salary-request-links-chips>
+        </template>
+
         <template v-slot:item.req.increaseAmount="{ item }">
           {{ formatMoney(item.req.increaseAmount) }}
           <span v-if="item.req.plannedSalaryAmount">
@@ -60,7 +73,7 @@ Show all employee's salaries increases and bonuses for the all periods
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue} from 'vue-property-decorator';
+import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import {SalaryDetailsDataContainer} from "@/components/salary/details/salary-details.data.container";
 import {SalaryIncreaseRequest, SalaryRequestType} from "@/components/salary/salary.service";
 import salaryAdminService, {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
@@ -68,8 +81,15 @@ import {errorUtils} from "@/components/errors";
 import {UiConstants} from "@/components/uiconstants";
 import {DataTableHeader} from "vuetify";
 import {ReportPeriod} from "@/components/overtimes/overtime.service";
+import {Route} from "vue-router";
+import logger from "@/logger";
+import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
+import SalaryRequestUpdateFields from "@/components/salary/details/info/SalaryRequestUpdateFields.vue";
+import SalaryRequestLinksChips from "@/components/salary/details/info/SalaryRequestLinksChips.vue";
 
-@Component({})
+@Component({
+  components: {SalaryRequestLinksChips, SalaryRequestUpdateFields, InDialogForm}
+})
 export default class SalaryRequestEmployeeHistory extends Vue {
   @Prop({required: true})
   data!: SalaryDetailsDataContainer;
@@ -98,6 +118,12 @@ export default class SalaryRequestEmployeeHistory extends Vue {
       class: "text-wrap"
     },
     {
+      text: this.$tc('Ссылки'),
+      value: 'links',
+      width: "250px",
+      class: "text-wrap"
+    },
+    {
       text: this.$tc('Запрошенное повышение или бонус / заработная плата после повышения'),
       value: 'req.increaseAmount',
       width: "150px",
@@ -113,6 +139,22 @@ export default class SalaryRequestEmployeeHistory extends Vue {
   ];
 
   mounted() {
+    this.reload();
+  }
+
+  @Watch('$route', {immediate: true, deep: true})
+  onRouteChange(newRoute: Route) {
+    if (this.data?.item) {
+      const params = newRoute.params as { period: string; requestId: string };
+      if (this.data.item.req.increaseStartPeriod.toString() != params.period
+          || this.data.item.id.toString() != params.requestId) {
+        logger.log(`Salary History: Parameters changed. Reload data for ${params.period}:${params.requestId}`)
+        this.reload();
+      }
+    }
+  }
+
+  private reload() {
     this.requests = [];
     this.error = null;
     this.loading = true;
@@ -124,6 +166,11 @@ export default class SalaryRequestEmployeeHistory extends Vue {
       this.loading = false;
     })
   }
+
+  private emitReload() {
+    this.$emit('updated');
+  }
+
 
   filteredItems() {
     return this.requests.filter((r) => {
@@ -138,6 +185,11 @@ export default class SalaryRequestEmployeeHistory extends Vue {
     });
   }
 
+  getLinks(r: SalaryIncreaseRequest) {
+    return this.data.item.links.filter(l => l.linkedRequest.id == r.id);
+  }
+
+
   private isCurrentReport(r: SalaryIncreaseRequest) {
     return r.req.increaseStartPeriod == this.data.item.req.increaseStartPeriod
         && r.id == this.data.item.id;
@@ -151,6 +203,3 @@ export default class SalaryRequestEmployeeHistory extends Vue {
 </script>
 
 
-<style scoped>
-
-</style>
