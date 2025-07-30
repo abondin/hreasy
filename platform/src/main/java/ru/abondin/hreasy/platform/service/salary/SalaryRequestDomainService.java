@@ -17,8 +17,6 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
 import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkCreateBody;
 
-import static ru.abondin.hreasy.platform.service.salary.SalaryRequestService.SALARY_REQUEST_ENTITY_TYPE;
-
 /**
  * Middleware service with logic for salary report. Uses in {@link SalaryRequestService} and {@link AdminSalaryRequestService}
  */

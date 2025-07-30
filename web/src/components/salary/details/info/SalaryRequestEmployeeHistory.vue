@@ -30,17 +30,26 @@ Show all employee's salaries increases and bonuses for the all periods
               ({{ $t('Бонус') }})
             </span>
           <span v-if="isCurrentReport(item)">{{ title }}</span>
-          <span v-else class="navigation-cell-parent">
-            <router-link :to="{name:'salariesRequestsDetails', params:{
+            <router-link v-else :to="{name:'salariesRequestsDetails', params:{
                 period:item.req?.increaseStartPeriod,
                 requestId:item.id}}">
               {{ title }}
             </router-link>
-            <v-btn class="ml-2 navigation-cell-btn" @click="addLink(item)"
-                   x-small text icon><v-icon>mdi-link-variant-plus</v-icon></v-btn>
-            </span>
           </span>
         </template>
+
+
+        <template v-slot:item.links="{ item }">
+          <salary-request-links-chips v-if="!isCurrentReport(item)"
+                                      :add-link-action="data.addLinkAction"
+                                      :delete-link-action="data.deleteLinkAction"
+                                      :small="true"
+                                      :source="data.item.id"
+                                      :destination="item.id"
+                                      :data="getLinks(item)"
+                                      @updated="emitReload()"></salary-request-links-chips>
+        </template>
+
         <template v-slot:item.req.increaseAmount="{ item }">
           {{ formatMoney(item.req.increaseAmount) }}
           <span v-if="item.req.plannedSalaryAmount">
@@ -60,25 +69,13 @@ Show all employee's salaries increases and bonuses for the all periods
         </template>
       </v-data-table>
     </v-card-text>
-
-    <in-dialog-form size="lg" form-ref="addLinkForm" :data="data.addLinkAction"
-                    :title="$t('Добавить связанный запрос')"
-                    v-on:submit="emitReload">
-      <template v-slot:fields>
-        <v-textarea
-            v-model="data.addLinkAction.formData.comment"
-            :rules="[v=>(!v || v.length <= 4096 || $t('Не более N символов', {n:4096}))]"
-            :label="$t('Примечание')">
-        </v-textarea>
-      </template>
-    </in-dialog-form>
   </v-card>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import {SalaryDetailsDataContainer} from "@/components/salary/details/salary-details.data.container";
-import {SalaryIncreaseRequest, SalaryRequestLinkType, SalaryRequestType} from "@/components/salary/salary.service";
+import {SalaryIncreaseRequest, SalaryRequestType} from "@/components/salary/salary.service";
 import salaryAdminService, {SalaryRequestImplementationState} from "@/components/admin/salary/admin.salary.service";
 import {errorUtils} from "@/components/errors";
 import {UiConstants} from "@/components/uiconstants";
@@ -88,9 +85,10 @@ import {Route} from "vue-router";
 import logger from "@/logger";
 import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
 import SalaryRequestUpdateFields from "@/components/salary/details/info/SalaryRequestUpdateFields.vue";
+import SalaryRequestLinksChips from "@/components/salary/details/info/SalaryRequestLinksChips.vue";
 
 @Component({
-  components: {SalaryRequestUpdateFields, InDialogForm}
+  components: {SalaryRequestLinksChips, SalaryRequestUpdateFields, InDialogForm}
 })
 export default class SalaryRequestEmployeeHistory extends Vue {
   @Prop({required: true})
@@ -120,6 +118,12 @@ export default class SalaryRequestEmployeeHistory extends Vue {
       class: "text-wrap"
     },
     {
+      text: this.$tc('Ссылки'),
+      value: 'links',
+      width: "250px",
+      class: "text-wrap"
+    },
+    {
       text: this.$tc('Запрошенное повышение или бонус / заработная плата после повышения'),
       value: 'req.increaseAmount',
       width: "150px",
@@ -135,7 +139,7 @@ export default class SalaryRequestEmployeeHistory extends Vue {
   ];
 
   mounted() {
-   this.reload();
+    this.reload();
   }
 
   @Watch('$route', {immediate: true, deep: true})
@@ -150,7 +154,7 @@ export default class SalaryRequestEmployeeHistory extends Vue {
     }
   }
 
-  private reload(){
+  private reload() {
     this.requests = [];
     this.error = null;
     this.loading = true;
@@ -162,6 +166,7 @@ export default class SalaryRequestEmployeeHistory extends Vue {
       this.loading = false;
     })
   }
+
   private emitReload() {
     this.$emit('updated');
   }
@@ -180,15 +185,10 @@ export default class SalaryRequestEmployeeHistory extends Vue {
     });
   }
 
-  addLink(r: SalaryIncreaseRequest) {
-    logger.log(`Adding link from ${this.data.item.id} to ${r.id}`);
-    this.data.openAddLinkDialog({
-      source: this.data.item.id,
-      destination: r.id,
-      type: SalaryRequestLinkType.MULTISTAGE,
-      comment: null
-    });
+  getLinks(r: SalaryIncreaseRequest) {
+    return this.data.item.links.filter(l => l.linkedRequest.id == r.id);
   }
+
 
   private isCurrentReport(r: SalaryIncreaseRequest) {
     return r.req.increaseStartPeriod == this.data.item.req.increaseStartPeriod
@@ -203,11 +203,3 @@ export default class SalaryRequestEmployeeHistory extends Vue {
 </script>
 
 
-<style scoped>
-.navigation-cell-btn {
-  display: none;
-}
-.navigation-cell-parent:hover .navigation-cell-btn {
-  display: inline;
-}
-</style>

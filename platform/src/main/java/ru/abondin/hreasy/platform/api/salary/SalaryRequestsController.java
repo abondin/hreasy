@@ -75,6 +75,11 @@ public class SalaryRequestsController {
         return AuthHandler.currentAuth().flatMap(auth -> requestService.addLink(auth, body));
     }
 
+    @DeleteMapping("/links/{linkId}")
+    public Mono<Integer> deleteLink(@PathVariable int linkId) {
+        return AuthHandler.currentAuth().flatMap(auth -> requestService.deleteLink(auth, linkId));
+    }
+
 
     @GetMapping("/{period}")
     public Flux<SalaryRequestDto> find(@PathVariable int period) {

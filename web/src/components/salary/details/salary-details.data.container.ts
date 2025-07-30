@@ -17,6 +17,7 @@ import {
     SalaryRequestAddLinkAction,
     SalaryRequestAddLinkFormData
 } from "@/components/salary/details/info/salary-request.addlink.action";
+import {SalaryRequestDeleteLinkAction} from "@/components/salary/details/info/salary-request.deletelink.action";
 
 export class SalaryDetailsDataContainer {
 
@@ -28,6 +29,7 @@ export class SalaryDetailsDataContainer {
     private _updateRequestAction = new SalaryRequestUpdateAction();
 
     private _addLinkAction = new SalaryRequestAddLinkAction();
+    private _deleteLinkAction = new SalaryRequestDeleteLinkAction();
 
     public constructor(private _periodHolder: { period: ReportPeriod, closed: boolean }, private _item: SalaryIncreaseRequest) {
     }
@@ -86,9 +88,9 @@ export class SalaryDetailsDataContainer {
         return this._addLinkAction;
     }
 
-    public openAddLinkDialog(defaultBody?: SalaryRequestAddLinkFormData) {
-        const body = defaultBody? defaultBody : this._addLinkAction.defaultBody();
-        this._addLinkAction.openDialog(null, body);
+
+    get deleteLinkAction(): SalaryRequestDeleteLinkAction {
+        return this._deleteLinkAction;
     }
 
     //</editor-fold>

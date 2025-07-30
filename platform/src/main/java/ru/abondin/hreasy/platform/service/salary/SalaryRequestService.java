@@ -9,7 +9,6 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.auth.AuthContext;
-import ru.abondin.hreasy.platform.repo.employee.EmployeeDetailedRepo;
 import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.repo.salary.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
@@ -42,7 +41,7 @@ public class SalaryRequestService {
 
     private final SalaryRequestDomainService domainService;
 
-    private final EmployeeDetailedRepo employeeRepo;
+    private final SalaryRequestLinkRepo linkRepo;
 
     //<editor-fold desc="Common operations">
 
@@ -227,8 +226,31 @@ public class SalaryRequestService {
 
     //<editor-fold desc="Links">
     @Transactional
-    public Mono<Integer> addLink(AuthContext ctx, SalaryRequestLinkCreateBody body){
+    public Mono<Integer> addLink(AuthContext ctx, SalaryRequestLinkCreateBody body) {
         return domainService.createLink(ctx, body);
+    }
+
+    @Transactional
+    public Mono<Integer> deleteLink(AuthContext auth, int linkId) {
+        return linkRepo.findById(linkId).switchIfEmpty(BusinessErrorFactory.entityNotFound("SalaryRequestLink", linkId))
+                .flatMap(link -> {
+                    Mono<Boolean> next;
+                    if (link.getCreatedBy().equals(auth.getEmployeeInfo().getEmployeeId())) {
+                        next = Mono.just(true);
+                    } else {
+                        next = secValidator.validateAdminSalaryRequest(auth);
+                    }
+                    return next.flatMap(v -> {
+                        link.setDeletedAt(dateTimeService.now());
+                        link.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
+                        return linkRepo.save(link).flatMap(persisted -> historyDomainService.persistHistory(
+                                        persisted.getId(),
+                                        HistoryDomainService.HistoryEntityType.SALARY_REQUEST_LINK,
+                                        persisted, dateTimeService.now(), auth.getEmployeeInfo().getEmployeeId())
+                                .map(HistoryEntry::getEntityId
+                                ));
+                    });
+                });
     }
     //</editor-fold>
 

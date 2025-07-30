@@ -134,6 +134,8 @@ export interface SalaryService {
     getEmployeesWithLatestSalaryRequest(): Promise<Array<EmployeeWithLatestSalaryRequest>>;
 
     addLink(body: SalaryRequestLinkCreateBody): Promise<number>;
+
+    deleteLink(number: number): Promise<number>;
 }
 
 class RestSalaryService implements SalaryService {
@@ -200,6 +202,10 @@ class RestSalaryService implements SalaryService {
 
     addLink(body: SalaryRequestLinkCreateBody): Promise<number> {
         return httpService.post("v1/salaries/requests/links", body);
+    }
+
+    deleteLink(linkId: number): Promise<number> {
+        return httpService.delete(`v1/salaries/requests/links/${linkId}`);
     }
 }
 

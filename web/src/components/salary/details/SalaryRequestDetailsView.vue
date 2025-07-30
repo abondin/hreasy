@@ -15,7 +15,8 @@
       <salary-request-details-view-implementation :data="data" @updated="fetchData()"/>
       <salary-request-details-view-approvals :data="data" @updated="fetchData()"/>
       <salary-request-employee-history :data="data"
-                                       v-if="isEmployeeHistoryAccessible()" @updated="fetchData()"></salary-request-employee-history>
+                                       v-if="isEmployeeHistoryAccessible()"
+                                       @updated="fetchData()"></salary-request-employee-history>
     </div>
   </v-container>
 </template>
