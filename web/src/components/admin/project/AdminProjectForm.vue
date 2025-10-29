@@ -73,10 +73,11 @@
         ></my-date-form-component>
 
         <!-- info -->
-        <vue-editor
-            id="project-info-editor"
-            v-model="projectForm.info">
-        </vue-editor>
+        <MarkdownTextEditor
+            v-model="projectForm.info"
+            :label="$t('Информация о проекте (Markdown)')"
+            :counter="4000"
+        />
 
         <!-- Error block -->
         <v-alert v-if="error" type="error">
@@ -107,7 +108,7 @@ import logger from "@/logger";
 import {errorUtils} from "@/components/errors";
 import {SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
-import {VueEditor} from "vue2-editor";
+import MarkdownTextEditor from "@/components/shared/MarkdownTextEditor.vue";
 
 
 class ProjectForm {
@@ -125,7 +126,7 @@ class ProjectForm {
 }
 
 @Component(
-    {components: {MyDateFormComponent, VueEditor}}
+    {components: {MyDateFormComponent, MarkdownTextEditor}}
 )
 
 export default class AdminProjectForm extends Vue {

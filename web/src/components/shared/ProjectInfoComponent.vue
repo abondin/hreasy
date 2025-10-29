@@ -81,7 +81,9 @@
       <v-col v-if="project.info" cols="12" sm="6" class="pa-2">
         <v-card flat class="ma-0">
           <v-card-text class="pa-2">
-            <div v-html="project.info" :style="{'max-height': maxHeight}" class="overflow-y-auto"></div>
+            <div :style="{'max-height': maxHeight}" class="overflow-y-auto">
+              <MarkdownTextRenderer :content="project.info" />
+            </div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -98,8 +100,10 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import {ProjectInfo} from "@/store/modules/dict.service";
 import {ManagerOfObject} from "@/store/modules/dict";
 
+import MarkdownTextRenderer from '@/components/shared/MarkdownTextRenderer.vue'
+
 @Component({
-  components: {}
+  components: { MarkdownTextRenderer }
 })
 export default class ProjectInfoComponent extends Vue {
   @Prop({required: true})

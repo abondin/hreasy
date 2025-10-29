@@ -24,10 +24,12 @@
                   :label="$t('Модерированная')"></v-select>
 
 
-        <vue-editor
-            id="article-editor"
-            v-model="articleForm.content">
-        </vue-editor>
+        <MarkdownTextEditor
+            v-model="articleForm.content"
+            :label="$t('Содержимое статьи (Markdown)')"
+            :rules="[v => (v && v.length <= 20000) || $t('Обязательное поле. Не более N символов', { n: 20000 })]"
+            :counter="20000"
+        />
 
         <v-select class="mr-5"
                   v-model="articleForm.articleGroup"
@@ -69,7 +71,7 @@ import articleAdminService, {
   CreateOrUpdateArticleBody
 } from "@/components/admin/article/admin.article.service";
 import {Prop, Watch} from "vue-property-decorator";
-import {VueEditor} from "vue2-editor";
+import MarkdownTextEditor from "@/components/shared/MarkdownTextEditor.vue";
 
 class ArticleForm {
   public id: number | undefined;
@@ -82,7 +84,7 @@ class ArticleForm {
 }
 
 @Component(
-    {components: {MyDateFormComponent, VueEditor}}
+    {components: {MyDateFormComponent, MarkdownTextEditor}}
 )
 
 export default class ArticleEditForm extends Vue {
@@ -163,18 +165,7 @@ export default class ArticleEditForm extends Vue {
     });
   }
 
-  private handleImageAdded(file: File, Editor: any, cursorLocation: any, resetUploader: any) {
-    const formData = new FormData();
-    formData.append("file", file);
-    articleAdminService.uploadImage(this.input.id, formData)
-        .then((imageFullUrl: string) => {
-          Editor.insertEmbed(cursorLocation, "image", imageFullUrl);
-          resetUploader();
-        })
-        .catch((err: any) => {
-          logger.log(err);
-        });
-  }
+  // Images: вставляйте ссылки вида ![alt](https://...)
 
 }
 </script>

@@ -19,6 +19,11 @@
 - Follow ESLint config (`plugin:vue/essential`, `@vue/typescript/recommended`). Fix lints before PRs.
 - Prefer `@/` alias for imports (configured via `tsconfig.json`).
 
+## i18n Usage
+- Use `vue-i18n` for all user-facing text. Do not hardcode strings in templates or scripts.
+- Templates: `{{ $t('KEY') }}` or `:label="$t('KEY')"`. Scripts: `this.$t('KEY')`.
+- Add/maintain keys in `src/locales/*.json`. Use `npm run i18n-add-missing-keys` to sync.
+
 ## TypeScript Style Rules
 - Avoid trivial annotations: do not annotate types that are inferred.
   - Prefer `let ready = false` over `let ready: boolean = false`.

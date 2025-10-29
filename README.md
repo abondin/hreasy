@@ -1,6 +1,6 @@
 # HREasy - HR Portal for STM Internal Uses
 
-@author Alexander Bondin 2019-2024
+@author Alexander Bondin 2019-2025
 
 [![CI](https://github.com/abondin/hreasy/actions/workflows/main.yml/badge.svg)](https://github.com/abondin/hreasy/actions/workflows/main.yml)
 
