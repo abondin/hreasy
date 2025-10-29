@@ -7,17 +7,15 @@
            :label="$t('Динамика роста')"
            :rules="[v => !!v || $t('Обязательное поле')]"
        ></v-autocomplete>
-        <span class="subtitle-2">{{$t('Текущий уровень сотрудника')}}</span>
+        <span class="subtitle-2">{{ $t('Текущий уровень сотрудника') }}</span>
 
         <junior-info-report-form-ratings v-if="formData.ratings" :ratings="formData.ratings"
                                          :prev-ratings="prevReport?.ratings">
         </junior-info-report-form-ratings>
-        <v-textarea
-            v-model="formData.comment"
-            :rules="[v=>(v && v.length <= 1024 || $t('Обязательное поле. Не более N символов', {n:1024}))]"
-            counter="1024"
-            :label="$t('Комментарий')">
-        </v-textarea>
+        <markdown-text-editor
+            :rules="[v=>(v && v.length <= 4096 || $t('Обязательное поле. Не более N символов', {n:4096}))]"
+            v-model="formData.comment" :label="$t('Комментарий')" :counter="4096">
+        </markdown-text-editor>
   </span>
 </template>
 
@@ -29,10 +27,11 @@ import {DateTimeUtils} from "@/components/datetimeutils";
 import {Prop} from "vue-property-decorator";
 import {AddOrUpdateJuniorReportBody, juniorProgressTypes, JuniorReport} from "@/components/udr/udr.service";
 import JuniorInfoReportFormRatings from "@/components/udr/info/JuniorInfoReportFormRatings.vue";
+import MarkdownTextEditor from "@/components/shared/MarkdownTextEditor.vue";
 
 
 @Component({
-  components: {JuniorInfoReportFormRatings}
+  components: {MarkdownTextEditor, JuniorInfoReportFormRatings}
 })
 export default class JuniorInfoReportForm extends Vue {
 

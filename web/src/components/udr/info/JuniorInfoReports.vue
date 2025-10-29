@@ -28,7 +28,8 @@
             <v-col cols="auto" align-self="end" v-if="canUpdateReport(report)">
               <v-tooltip bottom>
                 <template v-slot:activator="{ on: ton, attrs: tattrs}">
-                  <v-btn :disabled="Boolean(data?.item?.graduation)" v-bind="tattrs" v-on="ton" text icon @click="data.openDeleteReportDialog(report.id)">
+                  <v-btn :disabled="Boolean(data?.item?.graduation)" v-bind="tattrs" v-on="ton" text icon
+                         @click="data.openDeleteReportDialog(report.id)">
                     <v-icon>mdi-delete</v-icon>
                   </v-btn>
                 </template>
@@ -50,7 +51,9 @@
                                                                 :prev-ratings="previousReport(report)?.ratings"
                                                                 readonly>
             </junior-info-report-form-ratings></v-col>
-            <v-col><div class="pt-2">{{ report.comment }}</div></v-col>
+            <v-col><div class="pt-2">
+              <markdown-text-renderer :content="report.comment"/>
+            </div></v-col>
           </v-row>
         </v-container>
       </v-card>
@@ -97,9 +100,13 @@ import permissionService from "@/store/modules/permission.service";
 import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 import JuniorInfoReportForm from "@/components/udr/info/JuniorInfoReportForm.vue";
 import JuniorInfoReportFormRatings from "@/components/udr/info/JuniorInfoReportFormRatings.vue";
+import MarkdownTextRenderer from "@/components/shared/MarkdownTextRenderer.vue";
 
 @Component({
-  components: {JuniorInfoReportFormRatings, JuniorInfoReportForm, ValueWithStatusChip, InDialogForm}
+  components: {
+    MarkdownTextRenderer,
+    JuniorInfoReportFormRatings, JuniorInfoReportForm, ValueWithStatusChip, InDialogForm
+  }
 })
 export default class JuniorInfoReports extends Vue {
 
