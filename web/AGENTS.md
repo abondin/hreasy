@@ -56,3 +56,7 @@
 ## Security & Configuration Tips
 - Backend URL via `BACKEND_API_BASE_URL` (see README). For Docker, use `devops/build.sh` and run with `HREASY_API_HOST` as needed.
 - Avoid committing secrets; use `.env` for local-only values (already gitignored).
+
+## Agent Notes
+- Не оставлять сгенерированные `vue-tsc` артефакты (`*.js`, `*.d.ts`) рядом с исходниками; после проверок типов обязательно чистить или настраивать `--noEmit`.
+- При работе с `vue-router` в Vue 3-скелете проверять версии пакета: пока основной проект на `vue-router@3`, использовать доступ через `getCurrentInstance().appContext.config.globalProperties.$router`/`$route` и гонять `npx vue-tsc --noEmit`, чтобы исключить конфликт типов.

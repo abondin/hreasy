@@ -125,6 +125,6 @@ Focus migration spikes here before tackling the long tail.
 - **Next actions**:
   1. Port authentication API/client into a Pinia store and replace placeholder texts on `HomeView`.
   2. Integrate legacy API client abstractions (http service, error wrapper) for reuse across Pinia stores.
-  3. Start migrating low-complexity components (e.g., login, 404) into the new workspace to validate Vuetify 3 patterns.
+  3. Continue migrating low-complexity components (404 done, login restyled in Vue 3) to validate Vuetify 3 patterns.
   4. Wire vue-i18n routed components to locale switcher once design for language selection is ready (`migration/vue3-skeleton/src/i18n.ts`).
 - **Tooling note**: project now targets the latest stable toolchain (Vite 7 + `@vitejs/plugin-vue` 6 + `vite-plugin-vuetify` 2.1). Ensure Node 20+ before running installs; revisit dependencies if new breaking releases appear.

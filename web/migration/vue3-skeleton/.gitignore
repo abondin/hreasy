@@ -1,0 +1,9 @@
+dist/
+tsconfig.tsbuildinfo
+
+# TypeScript incremental build output
+src/**/*.js
+src/**/*.d.ts
+
+# Keep ambient declarations that belong in source
+!src/env.d.ts
