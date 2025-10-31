@@ -1,0 +1,11 @@
+@use 'vuetify/styles';
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+.skeleton-card {
+  max-width: 640px;
+}

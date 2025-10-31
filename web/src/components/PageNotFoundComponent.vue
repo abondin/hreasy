@@ -12,10 +12,12 @@
 </template>
 
 <script lang="ts">
-import Component from "vue-class-component";
-import Vue from "vue";
+import {defineComponent} from 'vue';
 
-@Component
-export default class PageNotFoundComponent extends Vue {
-}
+export default defineComponent({
+  name: 'PageNotFoundComponent',
+  setup() {
+    return {};
+  }
+});
 </script>
