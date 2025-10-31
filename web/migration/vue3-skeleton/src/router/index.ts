@@ -3,6 +3,7 @@ import HomeView from '@/views/HomeView.vue';
 import LegacyStatusView from '@/views/LegacyStatusView.vue';
 import NotFoundView from '@/views/NotFoundView.vue';
 import LoginView from '@/views/LoginView.vue';
+import ProfileMainView from '@/views/profile/ProfileMainView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,6 +22,11 @@ const router = createRouter({
       path: '/legacy-status',
       name: 'legacy-status',
       component: LegacyStatusView
+    },
+    {
+      path: '/profile',
+      name: 'profile-main',
+      component: ProfileMainView
     },
     {
       path: '/:pathMatch(.*)*',

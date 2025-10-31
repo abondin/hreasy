@@ -1,49 +1,100 @@
 <template>
   <v-app>
-    <v-app-bar elevation="1" density="comfortable">
+    <v-navigation-drawer
+      v-model="drawer"
+      temporary
+      class="app-navigation"
+    >
+      <v-list density="comfortable" nav>
+        <v-list-item
+          v-for="item in navigationItems"
+          :key="item.key"
+          :prepend-icon="item.icon"
+          :to="item.to"
+          link
+          @click="drawer = false"
+        >
+          <v-list-item-title>{{ item.label }}</v-list-item-title>
+        </v-list-item>
+
+        <v-divider
+          v-if="isAuthenticated"
+          class="my-2"
+        />
+
+        <v-list-item
+          v-if="isAuthenticated"
+          prepend-icon="mdi-logout"
+          @click="logout"
+        >
+          <v-list-item-title>{{ t('Выход') }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-app-bar
+      app
+      elevation="1"
+      density="comfortable"
+    >
+      <v-app-bar-nav-icon
+        :aria-label="t('Открыть_меню')"
+        @click="drawer = !drawer"
+      />
       <v-app-bar-title class="font-weight-medium">
         HREasy Vue 3 Skeleton
       </v-app-bar-title>
-      <v-spacer/>
-      <v-btn variant="text" :to="{ name: 'home' }">
-        {{ t('Главная') }}
-      </v-btn>
-      <v-btn variant="text" :to="{ name: 'legacy-status' }">
-        Статус миграции
-      </v-btn>
+      <v-spacer />
       <template v-if="!isAuthenticated">
         <v-btn
-            variant="tonal"
-            color="primary"
-            :to="{ name: 'login' }"
-            class="ml-4"
+          variant="tonal"
+          color="primary"
+          :to="{ name: 'login' }"
         >
           {{ t('Вход') }}
         </v-btn>
       </template>
       <template v-else>
-        <v-chip class="ml-4" color="primary" variant="outlined">
+        <v-chip class="mr-2" color="primary" variant="outlined">
           {{ displayName }}
         </v-chip>
         <v-btn
-            variant="text"
-            color="primary"
-            class="ml-2"
-            @click="logout"
+          variant="text"
+          color="primary"
+          @click="logout"
         >
           {{ t('Выход') }}
         </v-btn>
       </template>
     </v-app-bar>
 
-    <v-main class="d-flex align-center justify-center">
-      <RouterView/>
+    <v-main>
+      <RouterView />
     </v-main>
+
+    <v-footer
+      app
+      color="grey-lighten-4"
+      border="top"
+      height="60"
+    >
+      <v-container>
+        <v-row>
+          <v-col
+            cols="12"
+            class="text-end text-body-2"
+          >
+            {{ currentYear }} — <strong>Alexander Bondin</strong>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-footer>
   </v-app>
 </template>
 
 <script setup lang="ts">
-import {computed, getCurrentInstance, onMounted} from 'vue';
+import {RouterView} from 'vue-router';
+import {computed, getCurrentInstance, onMounted, ref} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useAuthStore} from '@/stores/auth';
 
@@ -57,12 +108,54 @@ const {t} = useI18n();
 
 const displayName = computed(() => authStore.displayName);
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+const drawer = ref(false);
+const currentYear = new Date().getFullYear();
+
+const navigationItems = computed(() => {
+  const items = [
+    {
+      key: 'home',
+      label: t('Главная'),
+      icon: 'mdi-home',
+      to: {name: 'home'},
+      requiresAuth: false
+    },
+    {
+      key: 'legacy-status',
+      label: t('Статус_миграции'),
+      icon: 'mdi-progress-clock',
+      to: {name: 'legacy-status'},
+      requiresAuth: false
+    }
+  ];
+
+  if (isAuthenticated.value) {
+    items.splice(1, 0, {
+      key: 'profile-main',
+      label: t('Профиль'),
+      icon: 'mdi-account',
+      to: {name: 'profile-main'},
+      requiresAuth: true
+    });
+  } else {
+    items.push({
+      key: 'login',
+      label: t('Вход'),
+      icon: 'mdi-login',
+      to: {name: 'login'},
+      requiresAuth: false
+    });
+  }
+
+  return items.filter(item => !item.requiresAuth || isAuthenticated.value);
+});
 
 onMounted(() => {
   authStore.fetchCurrentUser().catch(() => undefined);
 });
 
 async function logout() {
+  drawer.value = false;
   if (!router) {
     return;
   }

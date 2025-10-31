@@ -38,7 +38,7 @@ Use the checkboxes to mark completion; add notes/dates next to items as you prog
 
 - [x] Introduce Composition API usage (`@vue/composition-api` or Vue 2.7 native) in new/isolated components (`src/components/PageNotFoundComponent.vue:12`).
 - [ ] Wrap global singletons (logger, permissions, http service) into plugin factories to ease DI.
-- [ ] Start extracting domain-specific composables (auth, permissions, vacations) mirroring Vuex modules.
+- [ ] Start extracting domain-specific composables (auth, permissions, vacations) mirroring Vuex modules _(useEmployeeProfile introduced for profile view in Vue 3 skeleton)_.
 - [ ] Replace Moment.js usage with Day.js or date-fns while staying on Vue 2 where possible.
 
 ### Phase C – Store & Routing Transition
@@ -121,10 +121,10 @@ Focus migration spikes here before tackling the long tail.
   export VITE_API_BASE_URL=/api/
   npm run dev
   ```
-- **Current scope**: basic layout (`migration/vue3-skeleton/src/App.vue`), router with placeholder views (`migration/vue3-skeleton/src/router/index.ts`), Vuetify theme (`migration/vue3-skeleton/src/plugins/vuetify.ts`). Auth flow now reachable via `/login` using Pinia 3 store (`migration/vue3-skeleton/src/views/LoginView.vue`).
+- **Current scope**: basic layout (`migration/vue3-skeleton/src/App.vue`), router with placeholder views (`migration/vue3-skeleton/src/router/index.ts`), Vuetify theme (`migration/vue3-skeleton/src/plugins/vuetify.ts`). Auth flow now reachable via `/login` using Pinia 3 store (`migration/vue3-skeleton/src/views/LoginView.vue`). Employee profile shell available at `/profile` with data fetch and legacy placeholders (`migration/vue3-skeleton/src/views/profile/ProfileMainView.vue`).
 - **Next actions**:
-  1. Port authentication API/client into a Pinia store and replace placeholder texts on `HomeView`.
-  2. Integrate legacy API client abstractions (http service, error wrapper) for reuse across Pinia stores.
-  3. Continue migrating low-complexity components (404 done, login restyled in Vue 3) to validate Vuetify 3 patterns.
+  1. Finish replacing placeholder copy on `HomeView` once product requirements are clear.
+  2. Port employee-centric legacy components (avatar upload, Telegram update, tech profiles) and mount them inside `/profile`.
+  3. Extract vacations and overtime modules into composables/Pinia stores to replace legacy placeholders on the profile page.
   4. Wire vue-i18n routed components to locale switcher once design for language selection is ready (`migration/vue3-skeleton/src/i18n.ts`).
 - **Tooling note**: project now targets the latest stable toolchain (Vite 7 + `@vitejs/plugin-vue` 6 + `vite-plugin-vuetify` 2.1). Ensure Node 20+ before running installs; revisit dependencies if new breaking releases appear.
