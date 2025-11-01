@@ -29,6 +29,7 @@
         <pg-classicjdbc.version>42.7.8</pg-classicjdbc.version>
         <r2dbc-postgresql.version>1.1.1.RELEASE</r2dbc-postgresql.version>
         <jjwt.version>0.12.6</jjwt.version>
+        <springdoc-openapi>2.8.13</springdoc-openapi>
         <git-plugin.skip>false</git-plugin.skip>
     </properties>
 
@@ -96,6 +97,11 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
+        <!-- Flyway 10+ requires a database-specific plugin for PostgreSQL -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.jxls</groupId>
@@ -127,7 +133,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-            <version>2.8.6</version>
+            <version>${springdoc-openapi}</version>
         </dependency>
 
 

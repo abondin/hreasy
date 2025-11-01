@@ -12,6 +12,7 @@
 <p>Добрый день! </p>
 <p>
     От сотрудника <span th:text="${employeeDisplayName}"></span> поступил запрос.
+</p>
 <ul>
     <li>Идентификатор запроса: <span th:text="${requestId}">${requestId}</span></li>
     <li>Группа: <span th:text="${requestGroup}?:'-'">-</span></li>
@@ -23,7 +24,6 @@
         </ul>
     </li>
 </ul>
-</p>
 <hr>
 
 <p th:text="${requestMessage}">
