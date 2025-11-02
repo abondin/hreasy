@@ -17,11 +17,30 @@
     />
 
     <template v-else-if="employee">
-      <profile-summary-card
-        :display-name="employee.displayName"
-        :avatar-url="avatarUrl"
-        :items="summaryItems"
-      />
+      <section>
+        <v-row dense>
+          <v-col cols="12">
+            <profile-summary-card
+              :employee="employee"
+              :items="summaryItems"
+              @avatar-updated="handleEmployeeUpdated"
+            />
+          </v-col>
+        </v-row>
+      </section>
+
+      <section class="mt-6">
+        <v-row dense>
+          <v-col cols="12" md="6">
+            <profile-telegram-card
+              :employee-id="employee.id"
+              :display-name="employee.displayName"
+              :initial-telegram="employee.telegram"
+              @updated="handleEmployeeUpdated"
+            />
+          </v-col>
+        </v-row>
+      </section>
 
       <section class="mt-6">
         <v-row dense>
@@ -77,9 +96,9 @@ import {computed} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useAuthStore} from '@/stores/auth';
 import {useEmployeeProfile} from '@/composables/useEmployeeProfile';
-import {getEmployeeAvatarUrl} from '@/services/employee.service';
 import LegacyFeatureCard from '@/components/LegacyFeatureCard.vue';
 import ProfileSummaryCard from '@/views/profile/components/ProfileSummaryCard.vue';
+import ProfileTelegramCard from '@/views/profile/components/ProfileTelegramCard.vue';
 
 const {t} = useI18n();
 const authStore = useAuthStore();
@@ -90,18 +109,11 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
 const {
   employee,
   loading: profileLoading,
-  error: profileError
+  error: profileError,
+  reload: reloadEmployeeProfile
 } = useEmployeeProfile(() => employeeId.value);
 
 const isLoading = computed(() => profileLoading.value);
-
-const avatarUrl = computed(() => {
-  const id = employee.value?.id;
-  if (typeof id === 'number') {
-    return getEmployeeAvatarUrl(id);
-  }
-  return undefined;
-});
 
 const summaryItems = computed(() => {
   const profile = employee.value;
@@ -153,4 +165,8 @@ const summaryItems = computed(() => {
 });
 
 const hasError = computed(() => Boolean(profileError.value));
+
+function handleEmployeeUpdated() {
+  reloadEmployeeProfile().catch(() => undefined);
+}
 </script>

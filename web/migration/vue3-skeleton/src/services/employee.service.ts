@@ -9,9 +9,13 @@ export interface CurrentProjectDict extends Dict {
   role: string | null;
 }
 
-export interface Employee {
+export interface WithAvatar {
   id: number;
   displayName: string;
+  hasAvatar?: boolean;
+}
+
+export interface Employee extends WithAvatar {
   currentProject?: CurrentProjectDict | null;
   ba?: Dict | null;
   department?: Dict | null;
@@ -21,7 +25,6 @@ export interface Employee {
   email?: string | null;
   telegram?: string | null;
   telegramConfirmedAt?: string | null;
-  hasAvatar?: boolean;
   hasOfficeLocationMap?: boolean;
 }
 
@@ -42,6 +45,15 @@ export function getEmployeeAvatarUrl(employeeId: number): string {
 export function getEmployeeAvatarUploadUrl(employeeId: number): string {
   const baseURL = normalizeBaseUrl(http.defaults.baseURL);
   return `${baseURL}v1/fs/avatar/${employeeId}/upload`;
+}
+
+export async function uploadEmployeeAvatar(
+  employeeId: number,
+  file: Blob
+): Promise<void> {
+  const formData = new FormData();
+  formData.append('file', file, 'avatar.jpg');
+  await http.post<void>(`v1/fs/avatar/${employeeId}/upload`, formData);
 }
 
 export async function updateEmployeeTelegram(

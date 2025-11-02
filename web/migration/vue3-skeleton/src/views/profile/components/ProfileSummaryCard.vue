@@ -3,39 +3,37 @@
   In editable mode project/role, avatar and telegram can be changed if permissions allow.
   -->
 <template>
-  <v-card class="pa-6">
-    <v-row align="center">
-      <!--<editor-fold desc="Avatar">-->
-      <v-col cols="auto">
-        <v-avatar size="164" class="profile-avatar">
-          <v-img
-              v-if="avatarUrl"
-              :src="avatarUrl"
-              :alt="displayName"/>
-          <v-icon v-else icon="mdi-account-circle" size="120" color="grey"/>
-        </v-avatar>
+  <v-card class="profile-summary-card pa-6">
+    <v-row align="center" no-gutters>
+      <v-col cols="auto" class="mr-6">
+        <profile-avatar
+          :owner="employee"
+          :read-only="false"
+          @updated="onAvatarUpdated"
+        />
       </v-col>
-      <!-- </editor-fold> -->
-      <!--<editor-fold desc="Employee basic info">-->
+
       <v-col>
-        <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="title">
-              {{ displayName }}
-            </v-list-item-title>
-            <v-list-item-subtitle v-for="item in items" :key="item.key">
-              {{ item.label }}: {{ item.value }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
+        <div class="profile-summary-card__name">
+          {{ employee.displayName }}
+        </div>
+        <div
+          v-for="item in items"
+          :key="item.key"
+          class="profile-summary-card__item"
+        >
+          <span class="profile-summary-card__label">{{ item.label }}:</span>
+          <span class="profile-summary-card__value">{{ item.value }}</span>
+        </div>
       </v-col>
-      <!-- </editor-fold> -->
     </v-row>
   </v-card>
 </template>
 
 <script setup lang="ts">
-// Renders the employee summary header on the profile page;
+import ProfileAvatar from '@/views/profile/components/ProfileAvatar.vue';
+import type {WithAvatar} from '@/services/employee.service';
+
 interface SummaryItem {
   key: string;
   label: string;
@@ -43,12 +41,38 @@ interface SummaryItem {
 }
 
 defineProps<{
-  displayName: string;
-  avatarUrl?: string;
+  employee: WithAvatar;
   items: SummaryItem[];
 }>();
+
+const emit = defineEmits<{
+  (event: 'avatar-updated'): void;
+}>();
+
+function onAvatarUpdated() {
+  emit('avatar-updated');
+}
 </script>
 
 <style scoped>
+.profile-summary-card__name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
 
+.profile-summary-card__item {
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.72);
+  margin-bottom: 6px;
+}
+
+.profile-summary-card__label {
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.profile-summary-card__value {
+  font-weight: 400;
+}
 </style>

@@ -124,7 +124,8 @@ Focus migration spikes here before tackling the long tail.
 - **Current scope**: basic layout (`migration/vue3-skeleton/src/App.vue`), router with placeholder views (`migration/vue3-skeleton/src/router/index.ts`), Vuetify theme (`migration/vue3-skeleton/src/plugins/vuetify.ts`). Auth flow now reachable via `/login` using Pinia 3 store (`migration/vue3-skeleton/src/views/LoginView.vue`). Employee profile shell available at `/profile` with data fetch and legacy placeholders (`migration/vue3-skeleton/src/views/profile/ProfileMainView.vue`).
 - **Next actions**:
   1. Finish replacing placeholder copy on `HomeView` once product requirements are clear.
-  2. Port employee-centric legacy components (avatar upload, Telegram update, tech profiles) and mount them inside `/profile`.
+  2. Port employee-centric legacy components (avatar upload, Telegram update, tech profiles) and mount them inside `/profile` _(Telegram editor and avatar card ported to Vue 3 skeleton; tech profiles pending)_.
   3. Extract vacations and overtime modules into composables/Pinia stores to replace legacy placeholders on the profile page.
   4. Wire vue-i18n routed components to locale switcher once design for language selection is ready (`migration/vue3-skeleton/src/i18n.ts`).
 - **Tooling note**: project now targets the latest stable toolchain (Vite 7 + `@vitejs/plugin-vue` 6 + `vite-plugin-vuetify` 2.1). Ensure Node 20+ before running installs; revisit dependencies if new breaking releases appear.
+- **Docs note**: before implementing or adjusting Vuetify components, consult the upstream documentation mirrored under `migration/vuetify/packages/docs`; reference the full `migration/vuetify` repo for implementation details when needed.
