@@ -1,15 +1,15 @@
-import {defineStore} from 'pinia';
+import { defineStore } from "pinia";
 import type {
   CurrentUser,
   EmployeeShortInfo,
-  LoginRequest
-} from '@/services/auth.service';
+  LoginRequest,
+} from "@/services/auth.service";
 import {
   currentUser as fetchCurrentUserApi,
   login as loginApi,
-  logout as logoutApi
-} from '@/services/auth.service';
-import {AuthenticationError} from '@/lib/errors';
+  logout as logoutApi,
+} from "@/services/auth.service";
+import { AuthenticationError } from "@/lib/errors";
 
 export interface SecurityInfo {
   username: string;
@@ -27,22 +27,22 @@ interface AuthState {
 function mapEmployee(info: EmployeeShortInfo) {
   return {
     employeeId: info.employeeId,
-    accessibleBas: info.accessibleBas
+    accessibleBas: info.accessibleBas,
   };
 }
 
-export const useAuthStore = defineStore('auth', {
+export const useAuthStore = defineStore("auth", {
   state: (): AuthState => ({
     currentUser: null,
     userLoaded: false,
-    loading: false
+    loading: false,
   }),
   getters: {
     username(state): string | undefined {
       return state.currentUser?.username;
     },
     displayName(state): string {
-      return state.currentUser?.username ?? 'anonymous';
+      return state.currentUser?.username ?? "anonymous";
     },
     employeeId(state): number | null {
       return state.currentUser?.employee.employeeId ?? null;
@@ -56,12 +56,12 @@ export const useAuthStore = defineStore('auth', {
         username: user.username,
         authorities: user.authorities,
         employeeId: user.employee.employeeId,
-        accessibleBas: user.employee.accessibleBas
+        accessibleBas: user.employee.accessibleBas,
       };
     },
     isAuthenticated(state): boolean {
       return !!state.currentUser;
-    }
+    },
   },
   actions: {
     clearAuth() {
@@ -71,7 +71,7 @@ export const useAuthStore = defineStore('auth', {
     setCurrentUser(user: CurrentUser) {
       this.currentUser = {
         ...user,
-        employee: mapEmployee(user.employee)
+        employee: mapEmployee(user.employee),
       };
       this.userLoaded = true;
     },
@@ -108,6 +108,6 @@ export const useAuthStore = defineStore('auth', {
         }
         throw error;
       }
-    }
-  }
+    },
+  },
 });

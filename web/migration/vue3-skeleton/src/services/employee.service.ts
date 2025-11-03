@@ -1,4 +1,4 @@
-import http from '@/lib/http';
+import http from "@/lib/http";
 
 export interface Dict {
   id: number;
@@ -49,22 +49,25 @@ export function getEmployeeAvatarUploadUrl(employeeId: number): string {
 
 export async function uploadEmployeeAvatar(
   employeeId: number,
-  file: Blob
+  file: Blob,
 ): Promise<void> {
   const formData = new FormData();
-  formData.append('file', file, 'avatar.jpg');
+  formData.append("file", file, "avatar.jpg");
   await http.post<void>(`v1/fs/avatar/${employeeId}/upload`, formData);
 }
 
 export async function updateEmployeeTelegram(
   employeeId: number,
-  payload: UpdateTelegramBody
+  payload: UpdateTelegramBody,
 ): Promise<number> {
-  const response = await http.put<number>(`v1/employee/${employeeId}/telegram`, payload);
+  const response = await http.put<number>(
+    `v1/employee/${employeeId}/telegram`,
+    payload,
+  );
   return response.data;
 }
 
 function normalizeBaseUrl(baseUrl: string | undefined): string {
-  const value = baseUrl ?? '/api/';
-  return value.endsWith('/') ? value : `${value}/`;
+  const value = baseUrl ?? "/api/";
+  return value.endsWith("/") ? value : `${value}/`;
 }

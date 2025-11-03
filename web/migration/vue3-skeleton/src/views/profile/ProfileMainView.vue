@@ -63,24 +63,24 @@
     </template>
 
     <v-alert v-else-if="hasError" type="error" variant="tonal" border="start">
-      {{ t('Не_удалось_загрузить_профиль') }}
+      {{ t("Не_удалось_загрузить_профиль") }}
     </v-alert>
     <v-alert v-else type="info" variant="tonal" border="start">
-      {{ t('Профиль_недоступен') }}
+      {{ t("Профиль_недоступен") }}
     </v-alert>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import {computed} from 'vue';
-import {useI18n} from 'vue-i18n';
-import {useAuthStore} from '@/stores/auth';
-import {useEmployeeProfile} from '@/composables/useEmployeeProfile';
-import LegacyFeatureCard from '@/components/LegacyFeatureCard.vue';
-import ProfileSummaryCard from '@/views/profile/components/ProfileSummaryCard.vue';
-import ProfileTelegramCard from '@/views/profile/components/ProfileTelegramCard.vue';
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { useAuthStore } from "@/stores/auth";
+import { useEmployeeProfile } from "@/composables/useEmployeeProfile";
+import LegacyFeatureCard from "@/components/LegacyFeatureCard.vue";
+import ProfileSummaryCard from "@/views/profile/components/ProfileSummaryCard.vue";
+import ProfileTelegramCard from "@/views/profile/components/ProfileTelegramCard.vue";
 
-const {t} = useI18n();
+const { t } = useI18n();
 const authStore = useAuthStore();
 
 const employeeId = computed(() => authStore.employeeId ?? null);
@@ -89,7 +89,7 @@ const {
   employee,
   loading: profileLoading,
   error: profileError,
-  reload: reloadEmployeeProfile
+  reload: reloadEmployeeProfile,
 } = useEmployeeProfile(() => employeeId.value);
 
 const isLoading = computed(() => profileLoading.value);
@@ -101,45 +101,45 @@ const summaryItems = computed(() => {
   }
   return [
     {
-      key: 'department',
-      label: t('Отдел'),
-      value: profile.department?.name ?? t('Не задан')
+      key: "department",
+      label: t("Отдел"),
+      value: profile.department?.name ?? t("Не задан"),
     },
     {
-      key: 'project',
-      label: t('Текущий проект'),
-      value: profile.currentProject?.name ?? t('Не задан')
+      key: "project",
+      label: t("Текущий проект"),
+      value: profile.currentProject?.name ?? t("Не задан"),
     },
     {
-      key: 'role',
-      label: t('Роль на текущем проекте'),
-      value: profile.currentProject?.role ?? t('Не задана')
+      key: "role",
+      label: t("Роль на текущем проекте"),
+      value: profile.currentProject?.role ?? t("Не задана"),
     },
     {
-      key: 'ba',
-      label: t('Бизнес Аккаунт'),
-      value: profile.ba?.name ?? t('Не задан')
+      key: "ba",
+      label: t("Бизнес Аккаунт"),
+      value: profile.ba?.name ?? t("Не задан"),
     },
     {
-      key: 'email',
-      label: t('Почтовый адрес'),
-      value: profile.email ?? t('Не задан')
+      key: "email",
+      label: t("Почтовый адрес"),
+      value: profile.email ?? t("Не задан"),
     },
     {
-      key: 'position',
-      label: t('Позиция'),
-      value: profile.position?.name ?? t('Не задана')
+      key: "position",
+      label: t("Позиция"),
+      value: profile.position?.name ?? t("Не задана"),
     },
     {
-      key: 'office',
-      label: t('Кабинет'),
-      value: profile.officeLocation?.name ?? t('Не задан')
+      key: "office",
+      label: t("Кабинет"),
+      value: profile.officeLocation?.name ?? t("Не задан"),
     },
     {
-      key: 'telegram',
-      label: t('Телеграм'),
-      value: profile.telegram ?? t('Не задан')
-    }
+      key: "telegram",
+      label: t("Телеграм"),
+      value: profile.telegram ?? t("Не задан"),
+    },
   ];
 });
 

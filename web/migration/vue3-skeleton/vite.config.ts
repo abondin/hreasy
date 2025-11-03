@@ -1,11 +1,25 @@
+import {createRequire} from 'node:module';
+import {fileURLToPath, URL} from 'node:url';
+
+import type {PluginOption} from 'vite';
 import {defineConfig, loadEnv} from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
-import path from 'path';
 
-const projectRoot = __dirname;
-const srcAlias = path.resolve(projectRoot, 'src');
-const legacyLocalesDir = path.resolve(projectRoot, '../../src/locales');
+const projectRoot = fileURLToPath(new URL('.', import.meta.url));
+const srcAlias = fileURLToPath(new URL('./src', import.meta.url));
+const legacyLocalesDir = fileURLToPath(new URL('../../src/locales', import.meta.url));
+const require = createRequire(import.meta.url);
+
+let vueDevToolsPlugin: PluginOption | null = null;
+try {
+  const {default: pluginFactory} = require('vite-plugin-vue-devtools');
+  if (typeof pluginFactory === 'function') {
+    vueDevToolsPlugin = pluginFactory();
+  }
+} catch {
+  vueDevToolsPlugin = null;
+}
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -14,6 +28,7 @@ export default defineConfig(({mode}) => {
   return {
     plugins: [
       vue(),
+      ...(vueDevToolsPlugin ? [vueDevToolsPlugin] : []),
       vuetify({
         autoImport: true
       })
@@ -39,17 +54,6 @@ export default defineConfig(({mode}) => {
           projectRoot,
           legacyLocalesDir
         ]
-      }
-    },
-    test: {
-      environment: 'happy-dom',
-      setupFiles: ['tests/setup.ts'],
-      css: true,
-      pool: 'threads',
-      server: {
-        deps: {
-          inline: ['vuetify']
-        }
       }
     }
   };

@@ -4,7 +4,7 @@
   -->
 <template>
   <!--<editor-fold desc="Avatar block">-->
-  <div  class="d-flex flex-column align-center text-center" style="width: 164px;">
+  <div class="d-flex flex-column align-center text-center" style="width: 164px">
     <v-overlay
       v-model="previewDialog"
       scroll-strategy="close"
@@ -23,7 +23,7 @@
           cover
         />
         <v-card-text v-else class="text-medium-emphasis text-center">
-          {{ t('Фото недоступно') }}
+          {{ t("Фото недоступно") }}
         </v-card-text>
       </v-card>
     </v-overlay>
@@ -35,21 +35,14 @@
       @click="openPreview"
     >
       <template v-if="computedAvatarUrl">
-        <v-img
-            :src="computedAvatarUrl"
-            :alt="displayName"
-            cover
-        />
+        <v-img :src="computedAvatarUrl" :alt="displayName" cover />
       </template>
       <template v-else>
-        <v-icon icon="mdi-account-circle" size="120" color="grey-lighten-5"/>
+        <v-icon icon="mdi-account-circle" size="120" color="grey-lighten-5" />
       </template>
     </v-avatar>
 
-    <div
-      v-if="canEdit"
-      class="d-flex flex-column align-center mt-3"
-    >
+    <div v-if="canEdit" class="d-flex flex-column align-center mt-3">
       <v-btn
         size="x-small"
         variant="text"
@@ -60,27 +53,21 @@
         class="text-none font-weight-medium px-0"
         @click="triggerFileSelect"
       >
-        {{ currentAvatarExists ? t('Сменить фото') : t('Загрузить фото') }}
+        {{ currentAvatarExists ? t("Сменить фото") : t("Загрузить фото") }}
       </v-btn>
       <input
         ref="fileInput"
         type="file"
         accept="image/*"
-        style="display: none;"
+        style="display: none"
         @change="handleFileChange"
-      >
+      />
     </div>
 
-    <div
-      v-if="canEdit && errorMessage"
-      class="text-error mt-2"
-    >
+    <div v-if="canEdit && errorMessage" class="text-error mt-2">
       {{ errorMessage }}
     </div>
-    <div
-      v-else-if="canEdit && successMessage"
-      class="text-success mt-2"
-    >
+    <div v-else-if="canEdit && successMessage" class="text-success mt-2">
       {{ successMessage }}
     </div>
   </div>
@@ -88,71 +75,67 @@
 
   <!-- Cropper dialog -->
   <v-dialog
-      v-model="cropDialog" max-width="720"
-      transition="dialog-bottom-transition">
+    v-model="cropDialog"
+    max-width="720"
+    transition="dialog-bottom-transition"
+  >
     <v-card>
-      <v-card-title>{{ t('Настройка фото') }}</v-card-title>
+      <v-card-title>{{ t("Настройка фото") }}</v-card-title>
       <v-card-text>
         <div
-            v-if="cropper.active"
-            class="cropper-container"
-            @wheel.prevent="handleWheel">
+          v-if="cropper.active"
+          class="cropper-container"
+          @wheel.prevent="handleWheel"
+        >
           <div
-              ref="cropArea"
-              class="crop-area"
-              @pointerdown="startPan"
-              @pointermove="continuePan"
-              @pointerup="stopPan"
-              @pointercancel="stopPan"
-              @pointerleave="stopPan"
+            ref="cropArea"
+            class="crop-area"
+            @pointerdown="startPan"
+            @pointermove="continuePan"
+            @pointerup="stopPan"
+            @pointercancel="stopPan"
+            @pointerleave="stopPan"
           >
             <img
-                :src="cropper.dataUrl"
-                alt=""
-                draggable="false"
-                class="crop-image"
-                :style="imageStyle"
-            >
-            <div class="crop-overlay"/>
+              :src="cropper.dataUrl"
+              alt=""
+              draggable="false"
+              class="crop-image"
+              :style="imageStyle"
+            />
+            <div class="crop-overlay" />
           </div>
           <div class="mt-4">
             <div class="text-caption mb-2">
-              {{ t('Перемещайте и масштабируйте изображение') }}
+              {{ t("Перемещайте и масштабируйте изображение") }}
             </div>
             <v-slider
-                v-model="cropper.zoom"
-                :min="1"
-                :max="cropper.maxZoomFactor"
-                :step="0.01"
-                color="primary"
+              v-model="cropper.zoom"
+              :min="1"
+              :max="cropper.maxZoomFactor"
+              :step="0.01"
+              color="primary"
             >
               <template #prepend>
-                <v-icon icon="mdi-magnify-minus"/>
+                <v-icon icon="mdi-magnify-minus" />
               </template>
               <template #append>
-                <v-icon icon="mdi-magnify-plus"/>
+                <v-icon icon="mdi-magnify-plus" />
               </template>
             </v-slider>
           </div>
         </div>
-        <div
-            v-else
-            class="text-medium-emphasis"
-        >
-          {{ t('Выберите изображение') }}
+        <div v-else class="text-medium-emphasis">
+          {{ t("Выберите изображение") }}
         </div>
       </v-card-text>
       <v-card-actions>
         <v-btn variant="text" @click="cancelCrop">
-          {{ t('Отмена') }}
+          {{ t("Отмена") }}
         </v-btn>
-        <v-spacer/>
-        <v-btn
-            color="primary"
-            :loading="uploading"
-            @click="confirmCrop"
-        >
-          {{ t('Применить') }}
+        <v-spacer />
+        <v-btn color="primary" :loading="uploading" @click="confirmCrop">
+          {{ t("Применить") }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -160,30 +143,36 @@
 </template>
 
 <script setup lang="ts">
-import {computed, reactive, ref, toRef, watch} from 'vue';
-import {useI18n} from 'vue-i18n';
-import {getEmployeeAvatarUrl, uploadEmployeeAvatar} from '@/services/employee.service';
-import type {WithAvatar} from '@/services/employee.service';
-import {usePermissions, Permissions} from '@/lib/permissions';
-import {errorUtils} from '@/lib/errors';
+import { computed, reactive, ref, toRef, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import {
+  getEmployeeAvatarUrl,
+  uploadEmployeeAvatar,
+} from "@/services/employee.service";
+import type { WithAvatar } from "@/services/employee.service";
+import { usePermissions, Permissions } from "@/lib/permissions";
+import { errorUtils } from "@/lib/errors";
 
 const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024;
 const EXPORT_SIZE = 1024;
 const CROP_AREA_SIZE = 280;
 const MAX_ZOOM_MULTIPLIER = 3;
 
-const props = withDefaults(defineProps<{
-  owner: WithAvatar;
-  readOnly?: boolean;
-}>(), {
-  readOnly: true
-});
+const props = withDefaults(
+  defineProps<{
+    owner: WithAvatar;
+    readOnly?: boolean;
+  }>(),
+  {
+    readOnly: true,
+  },
+);
 
 const emit = defineEmits<{
-  (event: 'updated'): void;
+  (event: "updated"): void;
 }>();
 
-const {t} = useI18n();
+const { t } = useI18n();
 const permissions = usePermissions();
 
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -191,38 +180,39 @@ const previewDialog = ref(false);
 const cropDialog = ref(false);
 
 const uploading = ref(false);
-const errorMessage = ref('');
-const successMessage = ref('');
+const errorMessage = ref("");
+const successMessage = ref("");
 
-const owner = toRef(props, 'owner');
+const owner = toRef(props, "owner");
 const ownerId = computed(() => owner.value.id);
 const displayName = computed(() => owner.value.displayName);
 
 const avatarRevision = ref(0);
 
-watch(
-    ownerId,
-    () => {
-      avatarRevision.value = 0;
-      previewDialog.value = false;
-      cropDialog.value = false;
-      cropper.active = false;
-      successMessage.value = '';
-      errorMessage.value = '';
-    }
-);
+watch(ownerId, () => {
+  avatarRevision.value = 0;
+  previewDialog.value = false;
+  cropDialog.value = false;
+  cropper.active = false;
+  successMessage.value = "";
+  errorMessage.value = "";
+});
 
 const baseAvatarUrl = computed(() => getEmployeeAvatarUrl(ownerId.value));
 
 const ownerHasAvatar = computed(() => Boolean(owner.value.hasAvatar));
 
-const hasAvatar = computed(() => ownerHasAvatar.value || avatarRevision.value !== 0);
+const hasAvatar = computed(
+  () => ownerHasAvatar.value || avatarRevision.value !== 0,
+);
 
 const computedAvatarUrl = computed(() => {
   if (!hasAvatar.value) {
     return undefined;
   }
-  return avatarRevision.value ? `${baseAvatarUrl.value}?v=${avatarRevision.value}` : baseAvatarUrl.value;
+  return avatarRevision.value
+    ? `${baseAvatarUrl.value}?v=${avatarRevision.value}`
+    : baseAvatarUrl.value;
 });
 
 const currentAvatarExists = computed(() => hasAvatar.value);
@@ -230,7 +220,7 @@ const currentAvatarExists = computed(() => hasAvatar.value);
 const cropArea = ref<HTMLDivElement | null>(null);
 const cropper = reactive({
   active: false,
-  dataUrl: '',
+  dataUrl: "",
   image: null as HTMLImageElement | null,
   naturalWidth: 0,
   naturalHeight: 0,
@@ -241,10 +231,12 @@ const cropper = reactive({
   offsetY: 0,
   pointerId: null as null | number,
   lastPointerX: 0,
-  lastPointerY: 0
+  lastPointerY: 0,
 });
 
-const canEdit = computed(() => !props.readOnly && permissions.hasPermission(Permissions.UpdateAvatar));
+const canEdit = computed(
+  () => !props.readOnly && permissions.hasPermission(Permissions.UpdateAvatar),
+);
 
 const imageStyle = computed(() => {
   if (!cropper.active) {
@@ -252,13 +244,13 @@ const imageStyle = computed(() => {
   }
   const scale = cropper.minZoomFactor * cropper.zoom;
   return {
-    transform: `translate(-50%, -50%) translate(${cropper.offsetX}px, ${cropper.offsetY}px) scale(${scale})`
+    transform: `translate(-50%, -50%) translate(${cropper.offsetX}px, ${cropper.offsetY}px) scale(${scale})`,
   };
 });
 
 function triggerFileSelect() {
-  errorMessage.value = '';
-  successMessage.value = '';
+  errorMessage.value = "";
+  successMessage.value = "";
   if (!canEdit.value) {
     return;
   }
@@ -275,32 +267,32 @@ function openPreview() {
 function handleFileChange(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
-  input.value = '';
+  input.value = "";
   if (!file) {
     return;
   }
 
-  if (!file.type.startsWith('image/')) {
-    errorMessage.value = t('Поддерживаются только изображения');
+  if (!file.type.startsWith("image/")) {
+    errorMessage.value = t("Поддерживаются только изображения");
     return;
   }
 
   if (file.size > MAX_FILE_SIZE_BYTES) {
-    errorMessage.value = t('Размер файла превышает N МБ', {n: 15});
+    errorMessage.value = t("Размер файла превышает N МБ", { n: 15 });
     return;
   }
 
   const reader = new FileReader();
   reader.onload = () => {
     const result = reader.result;
-    if (typeof result !== 'string') {
-      errorMessage.value = t('Не удалось обработать изображение');
+    if (typeof result !== "string") {
+      errorMessage.value = t("Не удалось обработать изображение");
       return;
     }
     prepareCropper(result);
   };
   reader.onerror = () => {
-    errorMessage.value = t('Не удалось обработать изображение');
+    errorMessage.value = t("Не удалось обработать изображение");
   };
   reader.readAsDataURL(file);
 }
@@ -313,8 +305,8 @@ function prepareCropper(dataUrl: string) {
     cropper.naturalWidth = image.naturalWidth;
     cropper.naturalHeight = image.naturalHeight;
     const minZoom = Math.max(
-        CROP_AREA_SIZE / image.naturalWidth,
-        CROP_AREA_SIZE / image.naturalHeight
+      CROP_AREA_SIZE / image.naturalWidth,
+      CROP_AREA_SIZE / image.naturalHeight,
     );
     cropper.minZoomFactor = minZoom;
     cropper.maxZoomFactor = MAX_ZOOM_MULTIPLIER;
@@ -326,16 +318,16 @@ function prepareCropper(dataUrl: string) {
     cropDialog.value = true;
   };
   image.onerror = () => {
-    errorMessage.value = t('Не удалось обработать изображение');
+    errorMessage.value = t("Не удалось обработать изображение");
   };
   image.src = dataUrl;
 }
 
 watch(
-    () => cropper.zoom,
-    () => {
-      clampOffsets();
-    }
+  () => cropper.zoom,
+  () => {
+    clampOffsets();
+  },
 );
 
 function startPan(event: PointerEvent) {
@@ -373,11 +365,7 @@ function handleWheel(event: WheelEvent) {
     return;
   }
   const delta = event.deltaY > 0 ? 0.1 : -0.1;
-  const nextZoom = clamp(
-      cropper.zoom - delta,
-      1,
-      cropper.maxZoomFactor
-  );
+  const nextZoom = clamp(cropper.zoom - delta, 1, cropper.maxZoomFactor);
   if (nextZoom !== cropper.zoom) {
     cropper.zoom = nextZoom;
   }
@@ -414,14 +402,14 @@ async function confirmCrop() {
     const blob = await generateCroppedBlob();
     await uploadEmployeeAvatar(ownerId.value, blob);
     avatarRevision.value = Date.now();
-    successMessage.value = t('Изменения успешно применились!');
-    errorMessage.value = '';
+    successMessage.value = t("Изменения успешно применились!");
+    errorMessage.value = "";
     cropDialog.value = false;
     cropper.active = false;
-    emit('updated');
+    emit("updated");
   } catch (error) {
     errorMessage.value = errorUtils.shortMessage(error);
-    successMessage.value = '';
+    successMessage.value = "";
   } finally {
     uploading.value = false;
   }
@@ -429,14 +417,14 @@ async function confirmCrop() {
 
 async function generateCroppedBlob(): Promise<Blob> {
   if (!cropper.image) {
-    throw new Error('Image not available');
+    throw new Error("Image not available");
   }
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = EXPORT_SIZE;
   canvas.height = EXPORT_SIZE;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
   if (!ctx) {
-    throw new Error('Canvas is not supported');
+    throw new Error("Canvas is not supported");
   }
 
   const scale = cropper.minZoomFactor * cropper.zoom;
@@ -445,39 +433,39 @@ async function generateCroppedBlob(): Promise<Blob> {
   const sourceWidth = CROP_AREA_SIZE / scale;
   const sourceHeight = CROP_AREA_SIZE / scale;
   const sourceX = clamp(
-      sourceCenterX - sourceWidth / 2,
-      0,
-      Math.max(0, cropper.naturalWidth - sourceWidth)
+    sourceCenterX - sourceWidth / 2,
+    0,
+    Math.max(0, cropper.naturalWidth - sourceWidth),
   );
   const sourceY = clamp(
-      sourceCenterY - sourceHeight / 2,
-      0,
-      Math.max(0, cropper.naturalHeight - sourceHeight)
+    sourceCenterY - sourceHeight / 2,
+    0,
+    Math.max(0, cropper.naturalHeight - sourceHeight),
   );
 
   ctx.drawImage(
-      cropper.image,
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
-      0,
-      0,
-      EXPORT_SIZE,
-      EXPORT_SIZE
+    cropper.image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    0,
+    0,
+    EXPORT_SIZE,
+    EXPORT_SIZE,
   );
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-        blob => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error('Could not create image blob'));
-          }
-        },
-        'image/jpeg',
-        0.9
+      (blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("Could not create image blob"));
+        }
+      },
+      "image/jpeg",
+      0.9,
     );
   });
 }

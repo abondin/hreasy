@@ -31,8 +31,8 @@
 </template>
 
 <script setup lang="ts">
-import ProfileAvatar from '@/views/profile/components/ProfileAvatar.vue';
-import type {WithAvatar} from '@/services/employee.service';
+import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
+import type { WithAvatar } from "@/services/employee.service";
 
 interface SummaryItem {
   key: string;
@@ -46,11 +46,11 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (event: 'avatar-updated'): void;
+  (event: "avatar-updated"): void;
 }>();
 
 function onAvatarUpdated() {
-  emit('avatar-updated');
+  emit("avatar-updated");
 }
 </script>
 

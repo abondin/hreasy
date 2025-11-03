@@ -4,12 +4,9 @@
   -->
 <template>
   <!--<editor-fold desc="Telegram update form">-->
-  <v-form
-    ref="form"
-    @submit.prevent="onSubmit"
-  >
+  <v-form ref="form" @submit.prevent="onSubmit">
     <v-card class="profile-telegram-card">
-      <v-card-title>{{ t('Телеграм аккаунт') }}</v-card-title>
+      <v-card-title>{{ t("Телеграм аккаунт") }}</v-card-title>
       <v-card-subtitle>{{ displayName }}</v-card-subtitle>
       <v-card-text>
         <v-text-field
@@ -48,7 +45,7 @@
           :loading="loading"
           :disabled="isSubmitDisabled"
         >
-          {{ t('Применить') }}
+          {{ t("Применить") }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -57,14 +54,14 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref, watch} from 'vue';
-import {useI18n} from 'vue-i18n';
-import {errorUtils} from '@/lib/errors';
-import {isShortTelegramUsernameOrPhoneValid} from '@/lib/telegram';
-import {updateEmployeeTelegram} from '@/services/employee.service';
+import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { errorUtils } from "@/lib/errors";
+import { isShortTelegramUsernameOrPhoneValid } from "@/lib/telegram";
+import { updateEmployeeTelegram } from "@/services/employee.service";
 
 interface VFormInstance {
-  validate: () => Promise<{valid: boolean}>;
+  validate: () => Promise<{ valid: boolean }>;
   resetValidation: () => void;
 }
 
@@ -75,36 +72,35 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (event: 'updated'): void;
+  (event: "updated"): void;
 }>();
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const form = ref<VFormInstance | null>(null);
-const telegram = ref(props.initialTelegram ?? '');
+const telegram = ref(props.initialTelegram ?? "");
 const loading = ref(false);
-const errorMessage = ref('');
-const successMessage = ref('');
+const errorMessage = ref("");
+const successMessage = ref("");
 
 watch(
   () => props.initialTelegram,
-  value => {
-    telegram.value = value ?? '';
-    successMessage.value = '';
-    errorMessage.value = '';
+  (value) => {
+    telegram.value = value ?? "";
+    successMessage.value = "";
+    errorMessage.value = "";
     form.value?.resetValidation();
-  }
+  },
 );
 
-watch(
-  telegram,
-  () => {
-    successMessage.value = '';
-    errorMessage.value = '';
-  }
-);
+watch(telegram, () => {
+  successMessage.value = "";
+  errorMessage.value = "";
+});
 
-const normalizedOriginal = computed(() => normalizeTelegram(props.initialTelegram));
+const normalizedOriginal = computed(() =>
+  normalizeTelegram(props.initialTelegram),
+);
 const normalizedCurrent = computed(() => normalizeTelegram(telegram.value));
 
 const rules = [
@@ -112,14 +108,16 @@ const rules = [
     if (!value || value.length <= 255) {
       return true;
     }
-    return t('Не более N символов', {n: 255});
+    return t("Не более N символов", { n: 255 });
   },
   (value: string | null | undefined) => {
     if (isShortTelegramUsernameOrPhoneValid(value)) {
       return true;
     }
-    return t('Username без @ и без https://t.me/ или номер телефона с +7 без пробелов');
-  }
+    return t(
+      "Username без @ и без https://t.me/ или номер телефона с +7 без пробелов",
+    );
+  },
 ];
 
 const isSubmitDisabled = computed(() => {
@@ -142,20 +140,20 @@ async function onSubmit() {
     return;
   }
 
-  const {valid} = await form.value.validate();
+  const { valid } = await form.value.validate();
   if (!valid || loading.value) {
     return;
   }
 
   loading.value = true;
-  errorMessage.value = '';
+  errorMessage.value = "";
 
   try {
     await updateEmployeeTelegram(props.employeeId, {
-      telegram: normalizedCurrent.value
+      telegram: normalizedCurrent.value,
     });
-    successMessage.value = t('Изменения успешно применились!');
-    emit('updated');
+    successMessage.value = t("Изменения успешно применились!");
+    emit("updated");
   } catch (error) {
     errorMessage.value = errorUtils.shortMessage(error);
   } finally {

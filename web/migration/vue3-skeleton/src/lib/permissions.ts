@@ -1,67 +1,70 @@
-import {computed} from 'vue';
-import {useAuthStore} from '@/stores/auth';
+import { computed } from "vue";
+import { useAuthStore } from "@/stores/auth";
 
 export enum Permissions {
   /** Update avatar of any employees */
-  UpdateAvatar = 'update_avatar',
+  UpdateAvatar = "update_avatar",
   /** Update current project of any employees */
-  UpdateCurrentProjectGlobal = 'update_current_project_global',
+  UpdateCurrentProjectGlobal = "update_current_project_global",
   /** Allow to update project when certain conditions are met */
-  UpdateCurrentProject = 'update_current_project',
+  UpdateCurrentProject = "update_current_project",
   /** View overtimes of all employees */
-  ViewOvertimes = 'overtime_view',
+  ViewOvertimes = "overtime_view",
   /** Edit overtimes of any employee */
-  EditOvertimes = 'overtime_edit',
+  EditOvertimes = "overtime_edit",
   /** Approve overtimes of any employee */
-  ApproveOvertimes = 'overtime_edit',
+  ApproveOvertimes = EditOvertimes,
   /** Export all overtimes for period */
-  ExportOvertimes = 'overtime_edit',
+  ExportOvertimes = EditOvertimes,
   /** Admin overtimes. Close overtime period */
-  AdminOvertimes = 'overtime_admin',
+  AdminOvertimes = "overtime_admin",
   /** View vacations of all employees */
-  ViewVacations = 'vacation_view',
+  ViewVacations = "vacation_view",
   /** Edit vacations of any employee */
-  EditVacations = 'vacation_edit',
+  EditVacations = "vacation_edit",
   /** Export all vacations */
-  ExportVacations = 'vacation_edit',
+  ExportVacations = EditVacations,
   /** Access to admin projects */
-  AdminProjects = 'project_admin_area',
+  AdminProjects = "project_admin_area",
   /** Admin user. Assign roles */
-  AdminUsers = 'admin_users',
+  AdminUsers = "admin_users",
   /** Edit skills of any employee */
-  EditSkills = 'edit_skills',
+  EditSkills = "edit_skills",
   /** Admin business account */
-  EditBusinessAccount = 'edit_business_account',
+  EditBusinessAccount = "edit_business_account",
   /** Admin articles/news */
-  EditArticles = 'edit_articles',
+  EditArticles = "edit_articles",
   /** Admin salary requests */
-  AdminSalaryRequests = 'admin_salary_request',
+  AdminSalaryRequests = "admin_salary_request",
   /** Report salary request */
-  ReportSalaryRequest = 'report_salary_request',
+  ReportSalaryRequest = "report_salary_request",
   /** View/modify juniors registry */
-  AdminJuniorRegistry = 'admin_junior_reg',
-  AccessJuniorRegistry = 'access_junior_reg',
+  AdminJuniorRegistry = "admin_junior_reg",
+  AccessJuniorRegistry = "access_junior_reg",
   /** Upload tech profiles */
-  UploadTechProfiles = 'techprofile_upload',
+  UploadTechProfiles = "techprofile_upload",
   /** Download tech profiles */
-  DownloadTechProfiles = 'techprofile_download',
+  DownloadTechProfiles = "techprofile_download",
   /** Admin departments */
-  AdminDictDepartments = 'admin_department',
+  AdminDictDepartments = "admin_department",
   /** Admin levels */
-  AdminDictLevels = 'admin_level',
-  AdminDictOrganizations = 'admin_organization',
-  AdminDictPositions = 'admin_position',
-  AdminDictOffices = 'admin_office',
-  AdminDictOfficeLocations = 'admin_office_location',
+  AdminDictLevels = "admin_level",
+  AdminDictOrganizations = "admin_organization",
+  AdminDictPositions = "admin_position",
+  AdminDictOffices = "admin_office",
+  AdminDictOfficeLocations = "admin_office_location",
   /** View employee skills */
-  ViewEmplSkills = 'view_empl_skills',
+  ViewEmplSkills = "view_empl_skills",
   /** View current project role */
-  ViewEmplCurrentProjectRole = 'view_empl_current_project_role',
+  ViewEmplCurrentProjectRole = "view_empl_current_project_role",
   /** Admin managers */
-  AdminManagers = 'admin_managers'
+  AdminManagers = "admin_managers",
 }
 
-function hasAuthority(authorities: string[] | undefined, permission: Permissions): boolean {
+function hasAuthority(
+  authorities: string[] | undefined,
+  permission: Permissions,
+): boolean {
   return Array.isArray(authorities) && authorities.includes(permission);
 }
 
@@ -78,6 +81,6 @@ export function usePermissions() {
   }
 
   return {
-    hasPermission
+    hasPermission,
   };
 }

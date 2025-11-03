@@ -1,14 +1,20 @@
 export class AuthenticationError extends Error {
-  constructor(message: string, public code?: string) {
+  constructor(
+    message: string,
+    public code?: string,
+  ) {
     super(message);
-    this.name = 'AuthenticationError';
+    this.name = "AuthenticationError";
   }
 }
 
 export class AccessDeniedError extends Error {
-  constructor(message: string, public code?: string) {
+  constructor(
+    message: string,
+    public code?: string,
+  ) {
     super(message);
-    this.name = 'AccessDeniedError';
+    this.name = "AccessDeniedError";
   }
 }
 
@@ -16,24 +22,24 @@ export class BusinessError extends Error {
   constructor(
     message: string,
     public code?: string,
-    public attrs?: Record<string, string>
+    public attrs?: Record<string, string>,
   ) {
     super(message);
-    this.name = 'BusinessError';
+    this.name = "BusinessError";
   }
 }
 
 export class UnknownBackendError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'UnknownBackendError';
+    this.name = "UnknownBackendError";
   }
 }
 
 export const errorUtils = {
   shortMessage(error: unknown): string {
-    if (!error || typeof error === 'undefined') {
-      return 'Unknown Error without any description';
+    if (!error || typeof error === "undefined") {
+      return "Unknown Error without any description";
     }
     if (error instanceof AccessDeniedError) {
       return error.message;
@@ -55,5 +61,5 @@ export const errorUtils = {
 
   isAccessDenied(error: unknown): boolean {
     return error instanceof AccessDeniedError;
-  }
+  },
 };

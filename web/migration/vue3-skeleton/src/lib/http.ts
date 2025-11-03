@@ -1,31 +1,34 @@
-import axios, {AxiosError, AxiosInstance} from 'axios';
+import axios from "axios";
+import type { AxiosError, AxiosInstance } from "axios";
 import {
   AccessDeniedError,
   AuthenticationError,
   BusinessError,
-  UnknownBackendError
-} from './errors';
+  UnknownBackendError,
+} from "./errors";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? '/api/';
+const baseURL = import.meta.env.VITE_API_BASE_URL ?? "/api/";
 
 const httpService: AxiosInstance = axios.create({
   baseURL,
   withCredentials: true,
   headers: {
-    'Accept-Language': 'ru-RU,ru'
-  }
+    "Accept-Language": "ru-RU,ru",
+  },
 });
 
 httpService.interceptors.response.use(
-  response => response,
+  (response) => response,
   (error: AxiosError) => {
     let wrappedError: unknown = error;
     const status = error.response?.status;
-    const data = error.response?.data as {
-      code?: string;
-      attrs?: Record<string, string>;
-      message?: string;
-    } | undefined;
+    const data = error.response?.data as
+      | {
+          code?: string;
+          attrs?: Record<string, string>;
+          message?: string;
+        }
+      | undefined;
 
     const message = data?.message ?? error.message;
     const code = data?.code;
@@ -48,7 +51,7 @@ httpService.interceptors.response.use(
     }
 
     return Promise.reject(wrappedError);
-  }
+  },
 );
 
 export default httpService;

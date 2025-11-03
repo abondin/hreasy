@@ -6,4 +6,9 @@ src/**/*.js
 src/**/*.d.ts
 
 # Keep ambient declarations that belong in source
-!src/env.d.ts
+!env.d.ts
+
+# Tooling caches and reports
+.eslintcache
+test-results/
+playwright-report/

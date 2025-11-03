@@ -1,12 +1,14 @@
-import {computed, ref, watch} from 'vue';
-import type {Employee} from '@/services/employee.service';
-import {findEmployee} from '@/services/employee.service';
+import { computed, ref, watch } from "vue";
+import type { Employee } from "@/services/employee.service";
+import { findEmployee } from "@/services/employee.service";
 
 /**
  * Provides a reactive employee profile that automatically reloads when the supplied ID factory changes.
  * Consumers supply a getter so the composable can stay in sync with a parent route param or store field.
  */
-export function useEmployeeProfile(employeeId: () => number | null | undefined) {
+export function useEmployeeProfile(
+  employeeId: () => number | null | undefined,
+) {
   const employee = ref<Employee | null>(null);
   const loading = ref(false);
   const error = ref<unknown>(null);
@@ -27,14 +29,14 @@ export function useEmployeeProfile(employeeId: () => number | null | undefined) 
 
   watch(
     employeeId,
-    id => {
-      if (typeof id === 'number') {
+    (id) => {
+      if (typeof id === "number") {
         void load(id);
       } else {
         employee.value = null;
       }
     },
-    {immediate: true}
+    { immediate: true },
   );
 
   return {
@@ -43,10 +45,10 @@ export function useEmployeeProfile(employeeId: () => number | null | undefined) 
     error: computed(() => error.value),
     reload() {
       const id = employeeId();
-      if (typeof id === 'number') {
+      if (typeof id === "number") {
         return load(id);
       }
       return Promise.resolve();
-    }
+    },
   };
 }

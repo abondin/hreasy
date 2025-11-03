@@ -1,12 +1,16 @@
-import {createI18n} from 'vue-i18n';
+import { createI18n } from "vue-i18n";
+
+type MessageSchema = Record<string, string>;
 
 type LocaleModule = {
-  default: Record<string, any>;
+  default: MessageSchema;
 };
 
-const localeModules = import.meta.glob<LocaleModule>('@locales/*.json', {eager: true});
+const localeModules = import.meta.glob<LocaleModule>("@locales/*.json", {
+  eager: true,
+});
 
-const messages: Record<string, Record<string, any>> = {};
+const messages: Record<string, MessageSchema> = {};
 
 Object.entries(localeModules).forEach(([path, module]) => {
   const matched = path.match(/([\w-]+)\.json$/i);
@@ -17,8 +21,8 @@ Object.entries(localeModules).forEach(([path, module]) => {
 
 const i18n = createI18n({
   legacy: false,
-  locale: 'ru',
-  fallbackLocale: 'en',
+  locale: "ru",
+  fallbackLocale: "en",
   globalInjection: true,
   messages,
   pluralRules: {
@@ -41,8 +45,8 @@ const i18n = createI18n({
       }
 
       return choicesLength < 4 ? 2 : 3;
-    }
-  }
+    },
+  },
 });
 
 export default i18n;
