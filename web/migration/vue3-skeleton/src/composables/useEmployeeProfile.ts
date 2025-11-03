@@ -2,6 +2,10 @@ import {computed, ref, watch} from 'vue';
 import type {Employee} from '@/services/employee.service';
 import {findEmployee} from '@/services/employee.service';
 
+/**
+ * Provides a reactive employee profile that automatically reloads when the supplied ID factory changes.
+ * Consumers supply a getter so the composable can stay in sync with a parent route param or store field.
+ */
 export function useEmployeeProfile(employeeId: () => number | null | undefined) {
   const employee = ref<Employee | null>(null);
   const loading = ref(false);

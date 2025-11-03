@@ -1,17 +1,7 @@
 <template>
   <v-container class="profile-view py-6">
-    <v-alert
-      v-if="!isAuthenticated"
-      type="info"
-      variant="tonal"
-      border="start"
-      class="mb-6"
-    >
-      {{ t('Для_просмотра_профиля_нужно_войти') }}
-    </v-alert>
-
     <v-skeleton-loader
-      v-else-if="isLoading"
+      v-if="isLoading"
       type="card, list-item-two-line, actions"
       class="mt-6"
     />
@@ -72,20 +62,10 @@
       </section>
     </template>
 
-    <v-alert
-      v-else-if="hasError"
-      type="error"
-      variant="tonal"
-      border="start"
-    >
+    <v-alert v-else-if="hasError" type="error" variant="tonal" border="start">
       {{ t('Не_удалось_загрузить_профиль') }}
     </v-alert>
-    <v-alert
-      v-else
-      type="info"
-      variant="tonal"
-      border="start"
-    >
+    <v-alert v-else type="info" variant="tonal" border="start">
       {{ t('Профиль_недоступен') }}
     </v-alert>
   </v-container>
@@ -104,7 +84,6 @@ const {t} = useI18n();
 const authStore = useAuthStore();
 
 const employeeId = computed(() => authStore.employeeId ?? null);
-const isAuthenticated = computed(() => authStore.isAuthenticated);
 
 const {
   employee,

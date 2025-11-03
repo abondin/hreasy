@@ -40,6 +40,17 @@ export default defineConfig(({mode}) => {
           legacyLocalesDir
         ]
       }
+    },
+    test: {
+      environment: 'happy-dom',
+      setupFiles: ['tests/setup.ts'],
+      css: true,
+      pool: 'threads',
+      server: {
+        deps: {
+          inline: ['vuetify']
+        }
+      }
     }
   };
 });

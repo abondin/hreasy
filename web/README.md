@@ -37,9 +37,9 @@ For the in-progress Vue 3/Vite migration use the separate skeleton located in `m
 ```shell
 cd migration/vue3-skeleton
 npm install
-# проксирование запросов /api к бэкенду
+# API request proxy (url to backend)
 export VITE_DEV_SERVER_PROXY=http://localhost:8081
-# при необходимости можно указать явный baseURL для axios
+# API request base url (prefix for axios requests)
 export VITE_API_BASE_URL=/api/
 npm run dev
 ```
