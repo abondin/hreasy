@@ -46,6 +46,16 @@ npm run dev
 
 The sandbox currently exposes a simplified layout, router, and Vuetify 3 theme so that individual features can be ported incrementally from the legacy Vue 2 application.
 
+For production hosting alongside the legacy Vue 2 build, output the Vue 3 bundle under `/app-v3/`:
+
+```shell
+cd migration/vue3-skeleton
+export VITE_APP_BASE_PATH=/app-v3/
+npm run build
+```
+
+Serve the generated files under that prefix (e.g. nginx `location /app-v3/ { ... }`). The router already derives its history base from `import.meta.env.BASE_URL`, so the app will respect the configured path automatically.
+
 ## Run in docker
 
 - Build docker image `hreasyweb`

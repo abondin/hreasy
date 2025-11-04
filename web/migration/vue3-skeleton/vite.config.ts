@@ -24,8 +24,10 @@ try {
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
   const proxyTarget = env.VITE_DEV_SERVER_PROXY || env.BACKEND_API_BASE_URL;
+  const basePath = env.VITE_APP_BASE_PATH ?? (mode === 'development' ? '/' : '/app-v3/');
 
   return {
+    base: basePath,
     plugins: [
       vue(),
       ...(vueDevToolsPlugin ? [vueDevToolsPlugin] : []),
