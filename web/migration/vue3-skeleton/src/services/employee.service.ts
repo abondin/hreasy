@@ -35,6 +35,15 @@ export interface UpdateTelegramBody {
   telegram: string | null;
 }
 
+export interface EmployeeProjectChange {
+  id: number;
+  employee: Dict | null;
+  project: CurrentProjectDict | null;
+  ba: Dict | null;
+  changedBy: Dict | null;
+  changedAt: string;
+}
+
 export async function findEmployee(id: number): Promise<Employee> {
   const response = await http.get<Employee>(`v1/employee/${id}`);
   return response.data;
@@ -71,6 +80,26 @@ export async function updateEmployeeTelegram(
   const response = await http.put<number>(
     `v1/employee/${employeeId}/telegram`,
     payload,
+  );
+  return response.data;
+}
+
+export async function updateEmployeeCurrentProject(
+  employeeId: number,
+  payload: { id: number; role: string | null } | undefined,
+): Promise<number> {
+  const response = await http.put<number>(
+    `v1/employee/${employeeId}/currentProject`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function fetchEmployeeProjectChanges(
+  employeeId: number,
+): Promise<EmployeeProjectChange[]> {
+  const response = await http.get<EmployeeProjectChange[]>(
+    `v1/employee/${employeeId}/project_changes`,
   );
   return response.data;
 }

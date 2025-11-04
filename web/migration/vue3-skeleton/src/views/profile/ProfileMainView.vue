@@ -15,6 +15,7 @@
               :read-only="false"
               @avatar-updated="handleEmployeeUpdated"
               @edit-telegram="openTelegramDialog"
+              @update-project="handleEmployeeUpdated"
             />
           </v-col>
         </v-row>

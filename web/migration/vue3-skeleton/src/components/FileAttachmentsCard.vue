@@ -2,98 +2,108 @@
   Generic card for displaying downloadable attachments with built-in upload and delete flows.
 -->
 <template>
-  <!--<editor-fold desc="File attachments card">-->
-  <v-card class="file-attachments-card">
-    <v-card-title class="d-flex align-center">
-      <span>{{ title }}</span>
-      <v-spacer />
+  <!--<editor-fold desc="File attachments inline">-->
+  <div class="file-attachments">
+    <div class="file-attachments__row">
+      <div class="file-attachments__content">
+        <template v-if="!loading && !permissionDenied && !loadError">
+          <div v-if="displayFiles.length" class="file-attachments__chips">
+            <v-tooltip
+              v-for="file in displayFiles"
+              :key="file.key"
+              :text="file.tooltip"
+              location="bottom"
+            >
+              <template #activator="{ props: tooltipProps }">
+                <v-chip
+                  v-bind="tooltipProps"
+                  class="file-attachments__chip"
+                  color="primary"
+                  variant="outlined"
+                >
+                  <template v-if="isDownloadAllowed(file.source)">
+                    <a
+                      :href="file.downloadUrl"
+                      class="file-attachments__link"
+                      download
+                    >
+                      {{ file.filename }}
+                    </a>
+                  </template>
+                  <template v-else>
+                    <span class="file-attachments__link">
+                      {{ file.filename }}
+                    </span>
+                  </template>
+                  <v-btn
+                    v-if="canDelete"
+                    icon
+                    density="compact"
+                    variant="text"
+                    size="x-small"
+                    class="file-attachments__close"
+                    :aria-label="t('Удалить')"
+                    @click.stop.prevent="requestDelete(file.source)"
+                  >
+                    <v-icon icon="mdi-close" size="x-small" />
+                  </v-btn>
+                </v-chip>
+              </template>
+            </v-tooltip>
+          </div>
+          <div v-else class="text-medium-emphasis">
+            {{ emptyMessageComputed }}
+          </div>
+        </template>
+        <v-progress-circular
+          v-else-if="loading"
+          size="20"
+          width="2"
+          color="primary"
+        />
+      </div>
+
       <v-btn
         v-if="canUpload"
+        class="file-attachments__add"
         color="primary"
         variant="tonal"
         icon="mdi-plus"
-        :disabled="deleteLoading"
+        :aria-label="uploadButtonLabel"
+        :title="uploadButtonLabel"
+        :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
         @click="openUploadDialog"
       />
-    </v-card-title>
+    </div>
 
-    <v-card-text>
-      <v-progress-linear
-        v-if="loading"
-        color="primary"
-        indeterminate
-      />
+    <v-alert
+      v-if="permissionDenied && !loading"
+      type="warning"
+      variant="tonal"
+      border="start"
+      class="mt-3"
+    >
+      <v-icon icon="mdi-lock-alert" class="mr-2" />
+      {{ permissionMessageComputed }}
+    </v-alert>
 
-      <v-alert
-        v-else-if="permissionDenied"
-        type="warning"
-        variant="tonal"
-        border="start"
-      >
-        <v-icon icon="mdi-lock-alert" class="mr-2" />
-        {{ permissionMessageComputed }}
-      </v-alert>
+    <v-alert
+      v-else-if="loadError && !loading"
+      type="error"
+      variant="tonal"
+      border="start"
+      class="mt-3"
+    >
+      {{ loadError }}
+    </v-alert>
 
-      <v-alert
-        v-else-if="loadError"
-        type="error"
-        variant="tonal"
-        border="start"
-      >
-        {{ loadError }}
-      </v-alert>
-
-      <div v-else>
-        <div v-if="displayFiles.length" class="file-attachments-card__chips">
-          <v-tooltip
-            v-for="file in displayFiles"
-            :key="file.key"
-            :text="file.tooltip"
-            location="bottom"
-          >
-            <template #activator="{ props: tooltipProps }">
-              <v-chip
-                v-bind="tooltipProps"
-                class="file-attachments-card__chip"
-                color="primary"
-                variant="outlined"
-              >
-                <template v-if="isDownloadAllowed(file.source)">
-                  <a
-                    :href="file.downloadUrl"
-                    class="file-attachments-card__link"
-                    download
-                  >
-                    {{ file.filename }}
-                  </a>
-                </template>
-                <template v-else>
-                  <span class="file-attachments-card__link">
-                    {{ file.filename }}
-                  </span>
-                </template>
-                <v-btn
-                  v-if="canDelete"
-                  icon
-                  density="compact"
-                  variant="text"
-                  size="x-small"
-                  class="file-attachments-card__close"
-                  :aria-label="t('Удалить')"
-                  @click.stop.prevent="requestDelete(file.source)"
-                >
-                  <v-icon icon="mdi-close" size="x-small" />
-                </v-btn>
-              </v-chip>
-            </template>
-          </v-tooltip>
-        </div>
-        <div v-else class="text-medium-emphasis">
-          {{ emptyMessageComputed }}
-        </div>
-      </div>
-    </v-card-text>
-  </v-card>
+    <v-progress-linear
+      v-if="loading"
+      color="primary"
+      indeterminate
+      class="mt-3"
+    />
+  </div>
   <!-- </editor-fold> -->
 
   <v-dialog v-model="uploadDialog" max-width="620">
@@ -161,7 +171,6 @@ export type AttachmentItem = {
 
 const props = withDefaults(
   defineProps<{
-    title: string;
     listUrl?: string | null;
     uploadUrl?: string | null;
     buildDownloadUrl: (item: AttachmentItem) => string;
@@ -233,6 +242,8 @@ const canDelete = computed(() => {
 const uploadTitleComputed = computed(
   () => props.uploadTitle || t("Загрузить файл"),
 );
+
+const uploadButtonLabel = computed(() => uploadTitleComputed.value);
 
 const permissionMessageComputed = computed(
   () => props.permissionMessage || t("Не достаточно прав"),
@@ -358,14 +369,32 @@ defineExpose({
 </script>
 
 <style scoped>
-.file-attachments-card__chips {
+.file-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.file-attachments__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-attachments__content {
+  flex: 1 1 auto;
+  min-width: 160px;
+}
+
+.file-attachments__chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
 }
 
-.file-attachments-card__chip {
+.file-attachments__chip {
   max-width: 220px;
   display: inline-flex;
   align-items: center;
@@ -373,7 +402,7 @@ defineExpose({
   padding-right: 8px;
 }
 
-.file-attachments-card__link {
+.file-attachments__link {
   color: inherit;
   text-decoration: none;
   display: inline-block;
@@ -383,9 +412,13 @@ defineExpose({
   max-width: 170px;
 }
 
-.file-attachments-card__close {
+.file-attachments__close {
   margin-left: 2px;
   min-width: 24px;
   padding: 0;
+}
+
+.file-attachments__add {
+  flex: 0 0 auto;
 }
 </style>

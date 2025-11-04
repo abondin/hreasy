@@ -30,7 +30,27 @@
             {{ t("Текущий проект") }}:
           </span>
           <span class="profile-summary-card__value">
+            <v-btn
+              v-if="canShowProjectInfo"
+              icon="mdi-information"
+              color="info"
+              variant="text"
+              density="compact"
+              size="small"
+              :title="t('Подробная информация по проекту ')"
+              @click.stop="openProjectInfo"
+            />
             {{ employee.currentProject?.name ?? t("Не задан") }}
+            <v-btn
+              v-if="canEditProject"
+              icon="mdi-pencil"
+              variant="text"
+              density="compact"
+              size="small"
+              class="profile-summary-card__inline-icon"
+              :title="t('Обновление текущего проекта')"
+              @click.stop="openProjectUpdate"
+            />
           </span>
         </div>
 
@@ -107,6 +127,18 @@
       :map-title="mapTitle"
       :workplace="highlightedWorkplace"
   />
+  <project-info-dialog
+      v-model="projectInfoDialogOpen"
+      :project-id="employee.currentProject?.id ?? null"
+      :employee-id="employee.id ?? null"
+  />
+  <project-assignment-dialog
+      v-model="projectUpdateDialogOpen"
+      :employee-id="employee.id ?? null"
+      :employee-name="employee.displayName"
+      :current-project="employee.currentProject ?? null"
+      @updated="emitProjectUpdated"
+  />
 </template>
 
 <script setup lang="ts">
@@ -116,6 +148,9 @@ import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import ProfileTelegramEditor from "@/views/profile/components/ProfileTelegramEditor.vue";
 import type {Employee} from "@/services/employee.service";
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
+import ProjectInfoDialog from "@/components/project/ProjectInfoDialog.vue";
+import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialog.vue";
+import {usePermissions} from "@/lib/permissions";
 
 const {employee, readOnly = true} = defineProps<{
   employee: Employee;
@@ -125,10 +160,14 @@ const {employee, readOnly = true} = defineProps<{
 const emit = defineEmits<{
   (event: "avatar-updated"): void;
   (event: "edit-telegram"): void;
+  (event: "update-project"): void;
 }>();
 
 const {t} = useI18n();
 const mapDialogOpen = ref(false);
+const projectInfoDialogOpen = ref(false);
+const projectUpdateDialogOpen = ref(false);
+const permissions = usePermissions();
 
 const mapName = computed(() => employee.officeLocation?.mapName ?? null);
 const mapTitle = computed(() => employee.officeLocation?.name ?? null);
@@ -137,6 +176,12 @@ const highlightedWorkplace = computed(
 );
 const canShowMap = computed(
     () => Boolean(mapName.value),
+);
+const canShowProjectInfo = computed(
+    () => Boolean(employee.currentProject?.id),
+);
+const canEditProject = computed(
+    () => Boolean(employee.id && permissions.canUpdateCurrentProject(employee.id)),
 );
 
 function onAvatarUpdated() {
@@ -151,6 +196,22 @@ function openMap() {
   if (canShowMap.value) {
     mapDialogOpen.value = true;
   }
+}
+
+function openProjectInfo() {
+  if (canShowProjectInfo.value) {
+    projectInfoDialogOpen.value = true;
+  }
+}
+
+function openProjectUpdate() {
+  if (canEditProject.value) {
+    projectUpdateDialogOpen.value = true;
+  }
+}
+
+function emitProjectUpdated() {
+  emit("update-project");
 }
 </script>
 
@@ -178,6 +239,8 @@ function openMap() {
   align-items: center;
   gap: 4px;
 }
+
+
 
 
 </style>

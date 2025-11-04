@@ -4,24 +4,30 @@
 -->
 <template>
   <!--<editor-fold desc="Tech profiles card">-->
-  <file-attachments-card
-    :title="t('Квалификационные карточки')"
-    :list-url="listUrl"
-    :upload-url="uploadUrl"
-    :build-download-url="buildDownloadUrl"
-    :build-delete-url="buildDeleteUrl"
-    :can-view="canView"
-    :can-download="canDownload"
-    :can-upload="canUpload"
-    :read-only="readOnly"
-    :empty-message="t('Квалификационные_карточки_отсутствуют')"
-    :permission-message="t('Не достаточно прав')"
-    :accept="ACCEPTED_FILE_TYPES"
-    :maximum-size="MAX_FILE_SIZE"
-    :upload-timeout="UPLOAD_TIMEOUT"
-    :upload-title="t('Загрузить квалификационную карточку')"
-    @updated="handleUpdated"
-  />
+  <v-card class="profile-tech-profiles-card">
+    <v-card-title class="d-flex align-center">
+      <span>{{ t("Квалификационные карточки") }}</span>
+    </v-card-title>
+    <v-card-text>
+      <file-attachments-card
+        :list-url="listUrl"
+        :upload-url="uploadUrl"
+        :build-download-url="buildDownloadUrl"
+        :build-delete-url="buildDeleteUrl"
+        :can-view="canView"
+        :can-download="canDownload"
+        :can-upload="canUpload"
+        :read-only="readOnly"
+        :empty-message="t('Квалификационные_карточки_отсутствуют')"
+        :permission-message="t('Не достаточно прав')"
+        :accept="ACCEPTED_FILE_TYPES"
+        :maximum-size="MAX_FILE_SIZE"
+        :upload-timeout="UPLOAD_TIMEOUT"
+        :upload-title="t('Загрузить квалификационную карточку')"
+        @updated="handleUpdated"
+      />
+    </v-card-text>
+  </v-card>
   <!-- </editor-fold> -->
 </template>
 
@@ -51,7 +57,7 @@ const { t } = useI18n();
 const permissions = usePermissions();
 
 const ACCEPTED_FILE_TYPES =
-  ".pdf,.doc,.docx,.rtf,.txt,.xls,.xlsx,.zip,.rar,.7z,.png,.jpg,.jpeg";
+  ".pdf,.doc,.docx,.rtf,.txt,.md,.xls,.xlsx,.zip,.rar,.7z,.png,.jpg,.jpeg,.pptx,.ppsx,.odp,.ppt,.pps";
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const UPLOAD_TIMEOUT = 30_000;
 
