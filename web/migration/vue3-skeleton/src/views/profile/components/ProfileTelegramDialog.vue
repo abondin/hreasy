@@ -1,60 +1,98 @@
 <!--
-  Telegram account editor for employee profile.
-  Shows current value and allows updating via API with basic validation.
+  Dialog for editing employee Telegram account.
+  Mirrors legacy behaviour: pre-fills current value, validates format, writes via API, shows status messages.
   -->
 <template>
-  <!--<editor-fold desc="Telegram update form">-->
-  <v-form ref="form" @submit.prevent="onSubmit">
-    <v-card class="profile-telegram-card">
-      <v-card-title>{{ t("Телеграм аккаунт") }}</v-card-title>
-      <v-card-subtitle>{{ displayName }}</v-card-subtitle>
+  <!--<editor-fold desc="Telegram update dialog">-->
+  <v-dialog
+    :model-value="open"
+    max-width="520"
+    persistent
+    @update:model-value="onUpdateModelValue"
+  >
+    <v-card>
+      <v-card-title>
+        {{ t("Телеграм аккаунт") }}
+      </v-card-title>
+      <v-card-subtitle>
+        {{ displayName }}
+        <v-chip
+            v-if="isConfirmed"
+            size="small"
+            color="success"
+            variant="tonal"
+            data-testid="telegram-confirmed"
+        >
+          {{ t("Подтвержден") }}
+        </v-chip>
+      </v-card-subtitle>
+
       <v-card-text>
-        <v-text-field
-          v-model="telegram"
-          :label="t('Аккаунт')"
-          :counter="255"
-          :rules="rules"
-          :disabled="loading"
-          variant="outlined"
-          clearable
-        />
-        <v-alert
-          v-if="errorMessage"
-          type="error"
-          variant="tonal"
-          border="start"
-          class="mt-4"
-        >
-          {{ errorMessage }}
-        </v-alert>
-        <v-alert
-          v-else-if="successMessage"
-          type="success"
-          variant="tonal"
-          border="start"
-          class="mt-4"
-        >
-          {{ successMessage }}
-        </v-alert>
+        <v-form ref="form" @submit.prevent="onSubmit">
+          <v-text-field
+            v-model="telegram"
+            :label="t('Аккаунт')"
+            :counter="255"
+            :rules="rules"
+            :disabled="loading"
+            variant="outlined"
+            density="comfortable"
+            clearable
+            autocomplete="off"
+            autofocus
+            data-testid="telegram-input"
+          />
+          <v-alert
+            v-if="errorMessage"
+            type="error"
+            variant="tonal"
+            border="start"
+            class="mt-4"
+            data-testid="telegram-error"
+          >
+            {{ errorMessage }}
+          </v-alert>
+          <v-alert
+            v-else-if="successMessage"
+            type="success"
+            variant="tonal"
+            border="start"
+            class="mt-4"
+            data-testid="telegram-success"
+          >
+            {{ successMessage }}
+          </v-alert>
+        </v-form>
       </v-card-text>
+
       <v-card-actions>
         <v-spacer />
         <v-btn
+          variant="text"
+          color="secondary"
+          :disabled="loading"
+          data-testid="telegram-cancel"
+          @click="emitClose"
+        >
+          {{ t("Отмена") }}
+        </v-btn>
+        <v-btn
           color="primary"
-          type="submit"
           :loading="loading"
           :disabled="isSubmitDisabled"
+          data-testid="telegram-submit"
+          @click="onSubmit"
         >
           {{ t("Применить") }}
         </v-btn>
       </v-card-actions>
     </v-card>
-  </v-form>
+  </v-dialog>
   <!-- </editor-fold> -->
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, toRef } from "vue";
 import { useI18n } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";
 import { isShortTelegramUsernameOrPhoneValid } from "@/lib/telegram";
@@ -66,17 +104,21 @@ interface VFormInstance {
 }
 
 const props = defineProps<{
+  open: boolean;
   employeeId: number;
   displayName: string;
   initialTelegram?: string | null;
+  telegramConfirmedAt?: string | null;
 }>();
 
 const emit = defineEmits<{
+  (event: "close"): void;
   (event: "updated"): void;
 }>();
 
 const { t } = useI18n();
 
+const open = toRef(props, "open");
 const form = ref<VFormInstance | null>(null);
 const telegram = ref(props.initialTelegram ?? "");
 const loading = ref(false);
@@ -127,6 +169,8 @@ const isSubmitDisabled = computed(() => {
   return normalizedOriginal.value === normalizedCurrent.value;
 });
 
+const isConfirmed = computed(() => Boolean(props.telegramConfirmedAt));
+
 function normalizeTelegram(value: string | null | undefined): string | null {
   if (!value) {
     return null;
@@ -135,13 +179,22 @@ function normalizeTelegram(value: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function emitClose() {
+  emit("close");
+}
+
+function onUpdateModelValue(value: boolean) {
+  if (!value) {
+    emitClose();
+  }
+}
+
 async function onSubmit() {
-  if (!form.value) {
+  if (loading.value || !form.value) {
     return;
   }
-
   const { valid } = await form.value.validate();
-  if (!valid || loading.value) {
+  if (!valid) {
     return;
   }
 
@@ -154,6 +207,7 @@ async function onSubmit() {
     });
     successMessage.value = t("Изменения успешно применились!");
     emit("updated");
+    emitClose();
   } catch (error) {
     errorMessage.value = errorUtils.shortMessage(error);
   } finally {
@@ -163,7 +217,4 @@ async function onSubmit() {
 </script>
 
 <style scoped>
-.profile-telegram-card {
-  border-radius: 16px;
-}
 </style>

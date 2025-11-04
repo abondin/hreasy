@@ -150,7 +150,7 @@ import {
   uploadEmployeeAvatar,
 } from "@/services/employee.service";
 import type { WithAvatar } from "@/services/employee.service";
-import { usePermissions, Permissions } from "@/lib/permissions";
+import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
 
 const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024;
@@ -234,9 +234,12 @@ const cropper = reactive({
   lastPointerY: 0,
 });
 
-const canEdit = computed(
-  () => !props.readOnly && permissions.hasPermission(Permissions.UpdateAvatar),
-);
+const canEdit = computed(() => {
+  if (props.readOnly) {
+    return false;
+  }
+  return permissions.canUpdateAvatar(ownerId.value);
+});
 
 const imageStyle = computed(() => {
   if (!cropper.active) {

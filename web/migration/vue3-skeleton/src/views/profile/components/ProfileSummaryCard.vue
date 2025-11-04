@@ -8,7 +8,7 @@
       <v-col cols="auto" class="mr-6">
         <profile-avatar
           :owner="employee"
-          :read-only="false"
+          :read-only="readOnly"
           @updated="onAvatarUpdated"
         />
       </v-col>
@@ -17,13 +17,81 @@
         <div class="profile-summary-card__name">
           {{ employee.displayName }}
         </div>
-        <div
-          v-for="item in items"
-          :key="item.key"
-          class="profile-summary-card__item"
-        >
-          <span class="profile-summary-card__label">{{ item.label }}:</span>
-          <span class="profile-summary-card__value">{{ item.value }}</span>
+
+        <div class="profile-summary-card__item">
+          <span class="profile-summary-card__label">{{ t("Отдел") }}:</span>
+          <span class="profile-summary-card__value">
+            {{ employee.department?.name ?? t("Не задан") }}
+          </span>
+        </div>
+
+        <div class="profile-summary-card__item">
+          <span class="profile-summary-card__label">
+            {{ t("Текущий проект") }}:
+          </span>
+          <span class="profile-summary-card__value">
+            {{ employee.currentProject?.name ?? t("Не задан") }}
+          </span>
+        </div>
+
+        <div class="profile-summary-card__item">
+          <span class="profile-summary-card__label">
+            {{ t("Роль на текущем проекте") }}:
+          </span>
+          <span class="profile-summary-card__value">
+            {{ employee.currentProject?.role ?? t("Не задана") }}
+          </span>
+        </div>
+
+        <div class="profile-summary-card__item">
+          <span class="profile-summary-card__label">
+            {{ t("Бизнес Аккаунт") }}:
+          </span>
+          <span class="profile-summary-card__value">
+            {{ employee.ba?.name ?? t("Не задан") }}
+          </span>
+        </div>
+
+        <div class="profile-summary-card__item">
+          <span class="profile-summary-card__label">
+            {{ t("Почтовый адрес") }}:
+          </span>
+          <span class="profile-summary-card__value">
+            {{ employee.email ?? t("Не задан") }}
+          </span>
+        </div>
+
+        <div class="profile-summary-card__item">
+          <span class="profile-summary-card__label">
+            {{ t("Позиция") }}:
+          </span>
+          <span class="profile-summary-card__value">
+            {{ employee.position?.name ?? t("Не задана") }}
+          </span>
+        </div>
+
+        <div class="profile-summary-card__item">
+          <span class="profile-summary-card__label">
+            {{ t("Кабинет") }}:
+          </span>
+          <span class="profile-summary-card__value">
+            {{ employee.officeLocation?.name ?? t("Не задан") }}
+          </span>
+        </div>
+
+        <div class="profile-summary-card__item">
+          <span class="profile-summary-card__label">
+            {{ t("Телеграм") }}:
+          </span>
+          <span class="profile-summary-card__value">
+            <profile-telegram-editor
+              :employee-id="employee.id"
+              :account="employee.telegram"
+              :confirmed-at="employee.telegramConfirmedAt"
+              :read-only="readOnly"
+              @edit="emitEditTelegram"
+            />
+          </span>
         </div>
       </v-col>
     </v-row>
@@ -31,26 +99,34 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
-import type { WithAvatar } from "@/services/employee.service";
+import ProfileTelegramEditor from "@/views/profile/components/ProfileTelegramEditor.vue";
+import type { Employee } from "@/services/employee.service";
 
-interface SummaryItem {
-  key: string;
-  label: string;
-  value: string;
-}
-
-defineProps<{
-  employee: WithAvatar;
-  items: SummaryItem[];
-}>();
+const { employee, readOnly } = withDefaults(
+  defineProps<{
+    employee: Employee;
+    readOnly?: boolean;
+  }>(),
+  {
+    readOnly: true,
+  },
+);
 
 const emit = defineEmits<{
   (event: "avatar-updated"): void;
+  (event: "edit-telegram"): void;
 }>();
+
+const { t } = useI18n();
 
 function onAvatarUpdated() {
   emit("avatar-updated");
+}
+
+function emitEditTelegram() {
+  emit("edit-telegram");
 }
 </script>
 
@@ -74,5 +150,9 @@ function onAvatarUpdated() {
 
 .profile-summary-card__value {
   font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
+
 </style>
