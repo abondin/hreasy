@@ -7,9 +7,9 @@
     <v-row align="center" no-gutters>
       <v-col cols="auto" class="mr-6">
         <profile-avatar
-          :owner="employee"
-          :read-only="readOnly"
-          @updated="onAvatarUpdated"
+            :owner="employee"
+            :read-only="readOnly"
+            @updated="onAvatarUpdated"
         />
       </v-col>
 
@@ -76,6 +76,11 @@
           </span>
           <span class="profile-summary-card__value">
             {{ employee.officeLocation?.name ?? t("Не задан") }}
+            <v-btn v-if="canShowMap" variant="plain" density="compact" size="small"
+                :title="t('Посмотреть карту')"
+                icon="mdi-map"
+                @click.stop="openMap"
+            />
           </span>
         </div>
 
@@ -85,41 +90,54 @@
           </span>
           <span class="profile-summary-card__value">
             <profile-telegram-editor
-              :employee-id="employee.id"
-              :account="employee.telegram"
-              :confirmed-at="employee.telegramConfirmedAt"
-              :read-only="readOnly"
-              @edit="emitEditTelegram"
+                :employee-id="employee.id"
+                :account="employee.telegram"
+                :confirmed-at="employee.telegramConfirmedAt"
+                :read-only="readOnly"
+                @edit="emitEditTelegram"
             />
           </span>
         </div>
       </v-col>
     </v-row>
   </v-card>
+  <office-map-preview-dialog
+      v-model="mapDialogOpen"
+      :map-name="mapName"
+      :map-title="mapTitle"
+      :workplace="highlightedWorkplace"
+  />
 </template>
 
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
+import {computed, ref} from "vue";
+import {useI18n} from "vue-i18n";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import ProfileTelegramEditor from "@/views/profile/components/ProfileTelegramEditor.vue";
-import type { Employee } from "@/services/employee.service";
+import type {Employee} from "@/services/employee.service";
+import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
 
-const { employee, readOnly } = withDefaults(
-  defineProps<{
-    employee: Employee;
-    readOnly?: boolean;
-  }>(),
-  {
-    readOnly: true,
-  },
-);
+const {employee, readOnly = true} = defineProps<{
+  employee: Employee;
+  readOnly?: boolean;
+}>();
 
 const emit = defineEmits<{
   (event: "avatar-updated"): void;
   (event: "edit-telegram"): void;
 }>();
 
-const { t } = useI18n();
+const {t} = useI18n();
+const mapDialogOpen = ref(false);
+
+const mapName = computed(() => employee.officeLocation?.mapName ?? null);
+const mapTitle = computed(() => employee.officeLocation?.name ?? null);
+const highlightedWorkplace = computed(
+    () => employee.officeWorkplace ?? null,
+);
+const canShowMap = computed(
+    () => Boolean(mapName.value),
+);
 
 function onAvatarUpdated() {
   emit("avatar-updated");
@@ -127,6 +145,12 @@ function onAvatarUpdated() {
 
 function emitEditTelegram() {
   emit("edit-telegram");
+}
+
+function openMap() {
+  if (canShowMap.value) {
+    mapDialogOpen.value = true;
+  }
 }
 </script>
 
@@ -154,5 +178,6 @@ function emitEditTelegram() {
   align-items: center;
   gap: 4px;
 }
+
 
 </style>

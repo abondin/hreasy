@@ -5,6 +5,10 @@ export interface Dict {
   name: string;
 }
 
+export interface OfficeLocationDict extends Dict {
+  mapName?: string | null;
+}
+
 export interface CurrentProjectDict extends Dict {
   role: string | null;
 }
@@ -20,12 +24,11 @@ export interface Employee extends WithAvatar {
   ba?: Dict | null;
   department?: Dict | null;
   position?: Dict | null;
-  officeLocation?: Dict | null;
+  officeLocation?: OfficeLocationDict | null;
   officeWorkplace?: string | null;
   email?: string | null;
   telegram?: string | null;
   telegramConfirmedAt?: string | null;
-  hasOfficeLocationMap?: boolean;
 }
 
 export interface UpdateTelegramBody {
@@ -34,6 +37,11 @@ export interface UpdateTelegramBody {
 
 export async function findEmployee(id: number): Promise<Employee> {
   const response = await http.get<Employee>(`v1/employee/${id}`);
+  return response.data;
+}
+
+export async function listEmployees(): Promise<Employee[]> {
+  const response = await http.get<Employee[]>("v1/employee");
   return response.data;
 }
 
