@@ -1,65 +1,65 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- App code in `src/` (Vue 2 + TypeScript): `components/`, `store/`, `router/`, `plugins/`, `locales/`.
-- Static assets in `public/`; built artifacts in `dist/`.
-- Unit tests in `tests/unit/` with `*.spec.ts` files.
-- Dev tooling: `devops/` (Docker scripts), `.localdev/` (local docker-compose), root configs (`tsconfig.json`, `.eslintrc.js`, `jest.config.js`).
+- Application code lives under `src/` (Vue 2 + TypeScript): `components/`, `store/`, `router/`, `plugins/`, `locales/`.
+- Static assets belong to `public/`; build artifacts go to `dist/`.
+- Unit tests reside in `tests/unit/` and follow the `*.spec.ts` naming.
+- Dev tooling sits in `devops/` (Docker scripts), `.localdev/` (local docker-compose), and root configs such as `tsconfig.json`, `.eslintrc.js`, `jest.config.js`.
 
 ## Build, Test, and Development Commands
-- `npm run serve` — start local dev server. Example: `BACKEND_API_BASE_URL=http://localhost:8081 npm run serve`.
-- `npm run build` — production build to `dist/`.
-- `npm run test:unit` — run Jest unit tests.
-- `npm run lint` — run ESLint checks and report issues.
-- `npm run i18n-add-missing-keys` — add missing i18n keys to `src/locales/*.json`.
+- `npm run serve` — start the Vue CLI dev server (set `BACKEND_API_BASE_URL` when needed).
+- `npm run build` — create the production bundle in `dist/`.
+- `npm run test:unit` — execute Jest unit tests.
+- `npm run lint` — run ESLint.
+- `npm run i18n-add-missing-keys` — sync i18n keys into `src/locales/*.json`.
 
 ## Coding Style & Naming Conventions
-- TypeScript + Vue SFCs, 2-space indentation, semicolons required.
-- Components: PascalCase file names (e.g., `SharedArticlesWindow.vue`). Utilities/constants: `kebab-case` or `camelCase` `.ts` as in repo.
-- Follow ESLint config (`plugin:vue/essential`, `@vue/typescript/recommended`). Fix lints before PRs.
-- Prefer `@/` alias for imports (configured via `tsconfig.json`).
+- Vue SFCs use TypeScript, 2-space indentation, mandatory semicolons.
+- Components follow PascalCase (e.g. `SharedArticlesWindow.vue`). Utilities/constants use kebab-case or camelCase `.ts` files as in the repo.
+- Respect the ESLint config (`plugin:vue/essential`, `@vue/typescript/recommended`). Fix lint issues before committing.
+- Prefer the `@/` alias for imports.
+- **All inline comments and doc comments must be written in English.**
 
 ## i18n Usage
-- Use `vue-i18n` for all user-facing text. Do not hardcode strings in templates or scripts.
-- Templates: `{{ $t('KEY') }}` or `:label="$t('KEY')"`. Scripts: `this.$t('KEY')`.
-- Add/maintain keys in `src/locales/*.json`. Use `npm run i18n-add-missing-keys` to sync.
+- Use `vue-i18n` for every user-facing string—no hardcoded text in templates or scripts.
+- Templates: `{{ $t('KEY') }}` or bindings such as `:label="$t('KEY')"`; scripts: `this.$t('KEY')`.
+- Add and maintain keys in `src/locales/*.json`; run `npm run i18n-add-missing-keys` to sync.
 
 ## TypeScript Style Rules
-- Avoid trivial annotations: do not annotate types that are inferred.
-  - Prefer `let ready = false` over `let ready: boolean = false`.
-  - Prefer `let text = ''` over `let text: string = ''`.
-- Add types when inference is unclear (public APIs, unions, generics) or improves readability.
-- Vue 2 + class components: declare reactive fields as public class properties and initialize in `created()` when derived from props to ensure reactivity with `useDefineForClassFields`.
+- Avoid trivial annotations (let inference work). Example: `let ready = false`, not `let ready: boolean = false`.
+- Add types when inference is unclear (public APIs, unions, generics) or when readability improves.
+- Vue 2 + class components: declare reactive fields as public properties and initialize derived-from-props fields inside `created()` to keep reactivity with `useDefineForClassFields`.
 
 ## UI Stack & Key Libraries
-- UI: Vuetify 2 as the base component framework and grid (`src/plugins/vuetify.ts`), icons via `@mdi/font` with `mdiSvg`.
-- Routing/State: `vue-router`, `vuex` + `vuex-class`; class-based components via `vue-class-component` + `vue-property-decorator`.
-- HTTP: `axios` with a shared client in `src/components/http.service.ts`.
-- Dates: `moment` for parsing/formatting; prefer ISO strings at boundaries.
+- UI: Vuetify 2 (legacy) via `src/plugins/vuetify.ts`, icons from `@mdi/font` with `mdiSvg`.
+- Routing/State: `vue-router`, `vuex` + `vuex-class`; class-based components with `vue-class-component` + `vue-property-decorator`.
+- HTTP: Axios singleton in `src/components/http.service.ts`.
+- Dates: Moment.js currently; prefer ISO strings at boundaries.
 - i18n: `vue-i18n` configured in `src/i18n.ts` with JSON locales under `src/locales/`.
-- Rich text: `vue2-editor` (Quill) with image drop/resize modules.
-- Visualization: `vis-timeline` for vacation timelines; `svg-pan-zoom` for SVG maps.
-- UX helpers: `vue-clipboard2` for clipboard, `vue-avatar-cropper` for avatar upload/crop.
-- Security: `dompurify` for sanitizing user/content HTML/SVG.
+- Rich text: `vue2-editor` (Quill) with image modules.
+- Visualization: `vis-timeline` (vacations) and `svg-pan-zoom` (maps).
+- UX helpers: `vue-clipboard2`, `vue-avatar-cropper`.
+- Security: `dompurify` for sanitizing HTML/SVG.
 
 ## Testing Guidelines
-- Framework: Jest with `@vue/test-utils` (`@vue/cli-plugin-unit-jest`).
-- Place tests under `tests/unit/` and name as `xxx.spec.ts`.
-- Write focused unit tests for components, stores, and utils. No hard coverage gate enforced; aim for meaningful coverage on new/changed code.
-- Run `npm run test:unit` locally before pushing.
+- Framework: Jest via `@vue/test-utils` (`@vue/cli-plugin-unit-jest`).
+- Tests belong to `tests/unit/` and use the `xxx.spec.ts` naming.
+- Target meaningful coverage on new/changed code.
+- Run `npm run test:unit` before pushing.
 
 ## Commit & Pull Request Guidelines
-- Commits: short, imperative summaries (e.g., "Fix vacation filtering"). Reference issues/PRs (e.g., `#82`) when relevant. Group logical changes.
-- PRs: include description, linked issues, screenshots/GIFs for UI changes, and test notes/steps to verify.
-- Keep diffs minimal and lint-clean. Update i18n keys and docs when applicable.
+- Commits: short imperative summaries (e.g. “Fix vacation filtering”). Reference issues/PRs when helpful.
+- PRs must describe changes, link issues, include screenshots/GIFs for UI updates, and list test steps.
+- Keep diffs minimal and lint-clean. Update i18n keys/docs when needed.
 
 ## Security & Configuration Tips
-- Backend URL via `BACKEND_API_BASE_URL` (see README). For Docker, use `devops/build.sh` and run with `HREASY_API_HOST` as needed.
-- Avoid committing secrets; use `.env` for local-only values (already gitignored).
+- Backend URL comes from `BACKEND_API_BASE_URL` (see README). Docker builds rely on `devops/build.sh` and `HREASY_API_HOST`.
+- Never commit secrets; use `.env` for local-only values.
 
 ## Agent Notes
-- Не оставлять сгенерированные `vue-tsc` артефакты (`*.js`, `*.d.ts`) рядом с исходниками; после проверок типов обязательно чистить или настраивать `--noEmit`.
-- При работе с `vue-router` в Vue 3-скелете проверять версии пакета: пока основной проект на `vue-router@3`, использовать доступ через `getCurrentInstance().appContext.config.globalProperties.$router`/`$route` и гонять `npx vue-tsc --noEmit`, чтобы исключить конфликт типов.
-- Для Vue 3 компонентов придерживаемся HTML-форматирования как в `ProfileSummaryCard.vue`: верхний многострочный комментарий с описанием, блоки обёрнуты в `<!--<editor-fold desc="…">--> … <!-- </editor-fold> -->` и тег закрывается на той же строке, где открыт.
-- Перед добавлением или обновлением зависимостей сначала уточнять их актуальные стабильные версии (`npm view <package> version`) и фиксировать именно их.
-- После существенных изменений в коде обязательно запускать `npm run type-check` и `npm run lint`, чтобы ловить ошибки до коммита.
+- Do not leave generated `vue-tsc` artifacts (`*.js`, `*.d.ts`) near sources; use `--noEmit` or clean them afterward.
+- When touching `vue-router` in the Vue 3 skeleton, remember the legacy app still runs `vue-router@3`. Access `$router`/`$route` via `getCurrentInstance().appContext.config.globalProperties` and run `npx vue-tsc --noEmit` to catch type conflicts.
+- Vue 3 components should follow the formatting used in `ProfileSummaryCard.vue`: file-level comment, `<editor-fold>` wrappers, closing tags on the same line.
+- Before adding/updating dependencies, inspect their latest stable versions with `npm view <package> version` and pin exactly that.
+- After substantial code changes, always run `npm run type-check` and `npm run lint`.
+- For interactive chips (tech profiles, skills, etc.) never rely on `v-chip`’s `closable` flag. Render a dedicated close button, show a confirmation dialog, and delete the record only after the user confirms.

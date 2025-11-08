@@ -7,7 +7,11 @@
     <div class="file-attachments__row">
       <div class="file-attachments__content">
         <template v-if="!loading && !permissionDenied && !loadError">
-          <div v-if="displayFiles.length" class="file-attachments__chips">
+          <div
+            v-if="displayFiles.length"
+            :class="chipsContainerClass"
+            :style="chipsContainerStyle"
+          >
             <v-tooltip
               v-for="file in displayFiles"
               :key="file.key"
@@ -18,7 +22,6 @@
                 <v-chip
                   v-bind="tooltipProps"
                   class="file-attachments__chip"
-                  color="primary"
                   variant="outlined"
                 >
                   <template v-if="isDownloadAllowed(file.source)">
@@ -185,6 +188,7 @@ const props = withDefaults(
     accept?: string;
     maximumSize?: number;
     uploadTimeout?: number;
+    chipsPerColumn?: number;
   }>(),
   {
     listUrl: null,
@@ -199,6 +203,7 @@ const props = withDefaults(
     accept: "",
     maximumSize: 10 * 1024 * 1024,
     uploadTimeout: 30_000,
+    chipsPerColumn: 0
   },
 );
 
@@ -252,6 +257,18 @@ const permissionMessageComputed = computed(
 const emptyMessageComputed = computed(
   () => props.emptyMessage || t("Нет доступных файлов"),
 );
+
+const chipsContainerClass = computed(() => ({
+  "file-attachments__chips": true,
+  "file-attachments__chips--columnized": props.chipsPerColumn > 0,
+}));
+
+const chipsContainerStyle = computed(() => {
+  if (props.chipsPerColumn > 0) {
+    return { "--chips-per-column": String(props.chipsPerColumn) };
+  }
+  return undefined;
+});
 
 const displayFiles = computed(() =>
   attachments.value.map((item: AttachmentItem) => ({
@@ -392,6 +409,15 @@ defineExpose({
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.file-attachments__chips--columnized {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(var(--chips-per-column, 3), minmax(0, auto));
+  row-gap: 8px;
+  column-gap: 16px;
+  align-items: start;
 }
 
 .file-attachments__chip {

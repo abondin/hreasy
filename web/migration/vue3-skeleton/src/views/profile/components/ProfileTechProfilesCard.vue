@@ -9,7 +9,7 @@
       <span>{{ t("Квалификационные карточки") }}</span>
     </v-card-title>
     <v-card-text>
-      <file-attachments-card
+      <file-attachments
         :list-url="listUrl"
         :upload-url="uploadUrl"
         :build-download-url="buildDownloadUrl"
@@ -24,6 +24,7 @@
         :maximum-size="MAX_FILE_SIZE"
         :upload-timeout="UPLOAD_TIMEOUT"
         :upload-title="t('Загрузить квалификационную карточку')"
+        :chips-per-column="3"
         @updated="handleUpdated"
       />
     </v-card-text>
@@ -41,9 +42,9 @@ import {
   getTechProfileDownloadUrl,
   getTechProfileUploadUrl,
 } from "@/services/techprofile.service";
-import FileAttachmentsCard, {
+import FileAttachments, {
   type AttachmentItem,
-} from "@/components/FileAttachmentsCard.vue";
+} from "@/components/FileAttachments.vue";
 
 const props = defineProps<{
   employeeId: number | null;
