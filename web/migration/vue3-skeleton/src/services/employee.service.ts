@@ -29,6 +29,7 @@ export interface Employee extends WithAvatar {
   email?: string | null;
   telegram?: string | null;
   telegramConfirmedAt?: string | null;
+  skills?: Array<{ name: string }>;
 }
 
 export interface UpdateTelegramBody {

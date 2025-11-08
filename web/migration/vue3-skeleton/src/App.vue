@@ -31,7 +31,7 @@
         @click="drawer = !drawer"
       />
       <v-app-bar-title class="font-weight-medium">
-        HREasy Vue 3 Skeleton
+        HR Easy
       </v-app-bar-title>
       <v-spacer />
       <template v-if="!isAuthenticated">
@@ -92,6 +92,12 @@ const navigationItems = computed(() => {
         label: t("Профиль"),
         icon: "mdi-account",
         to: { name: "profile-main" },
+      },
+      {
+        key: "employees",
+        label: t("Сотрудники"),
+        icon: "mdi-account-group",
+        to: { name: "employees" },
       },
     ];
   }

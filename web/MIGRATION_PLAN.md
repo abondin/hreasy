@@ -40,6 +40,7 @@ Use the checkboxes to mark completion; add notes/dates next to items as you prog
 - [ ] Wrap global singletons (logger, permissions, http service) into plugin factories to ease DI _(Vue 3 skeleton still exports Axios singleton from `migration/vue3-skeleton/src/lib/http.ts`; plan to promote to `app.provide` plugin so both builds can share DI/mocking)_.
 - [ ] Start extracting domain-specific composables (auth, permissions, vacations) mirroring Vuex modules _(Auth store + `useEmployeeProfile` composable live in `migration/vue3-skeleton/src/stores/auth.ts` and `migration/vue3-skeleton/src/composables/useEmployeeProfile.ts`; need parity for vacations, overtime, salaries, dictionaries)_.
 - [ ] Replace Moment.js usage with Day.js or date-fns while staying on Vue 2 where possible _(Vue 3 skeleton ships ad-hoc formatters in `migration/vue3-skeleton/src/lib/datetime.ts`, legacy modules still rely on Moment)_.
+- [ ] Implement Vue 3 employees directory: new `useEmployeesDirectory` composable + `EmployeesVirtualTable` (based on Vuetify virtual table docs) + route/filters/dialog to browse all employees with card view. Document progress here as work lands.
 
 ### Phase C – Store & Routing Transition
 
