@@ -3,53 +3,41 @@
 -->
 <template>
   <!--<editor-fold desc="File attachments inline">-->
-  <div class="file-attachments">
-    <div class="file-attachments__row">
-      <div class="file-attachments__content">
+  <div class="d-flex flex-column ga-4">
+    <div class="d-flex flex-wrap align-center ga-3">
+      <div class="flex-grow-1 min-w-0">
         <template v-if="!loading && !permissionDenied && !loadError">
-          <div
-            v-if="displayFiles.length"
-            :class="chipsContainerClass"
-            :style="chipsContainerStyle"
-          >
+          <div v-if="displayFiles.length" class="d-flex flex-wrap ga-2 align-center">
             <v-tooltip
-              v-for="file in displayFiles"
-              :key="file.key"
-              :text="file.tooltip"
-              location="bottom"
+                v-for="file in displayFiles"
+                :key="file.key"
+                :text="file.tooltip"
+                location="bottom"
             >
               <template #activator="{ props: tooltipProps }">
-                <v-chip
-                  v-bind="tooltipProps"
-                  class="file-attachments__chip"
-                  variant="outlined"
-                >
-                  <template v-if="isDownloadAllowed(file.source)">
-                    <a
-                      :href="file.downloadUrl"
-                      class="file-attachments__link"
-                      download
-                    >
+                <v-chip v-bind="tooltipProps" variant="outlined" class="px-3">
+                  <span class="text-truncate" style="max-width: 200px">
+                    <template v-if="isDownloadAllowed(file.source)">
+                      <a
+                          :href="file.downloadUrl"
+                          class="text-truncate text-decoration-none"
+                          download>
+                        {{ file.filename }}
+                      </a>
+                    </template>
+                    <template v-else>
                       {{ file.filename }}
-                    </a>
+                    </template>
+                  </span>
+                  <template v-if="canDelete" #append>
+                    <v-btn
+                        icon="mdi-close"
+                        size="x-small"
+                        variant="text"
+                        density="comfortable"
+                        @click.stop.prevent="requestDelete(file.source)"
+                    />
                   </template>
-                  <template v-else>
-                    <span class="file-attachments__link">
-                      {{ file.filename }}
-                    </span>
-                  </template>
-                  <v-btn
-                    v-if="canDelete"
-                    icon
-                    density="compact"
-                    variant="text"
-                    size="x-small"
-                    class="file-attachments__close"
-                    :aria-label="t('Удалить')"
-                    @click.stop.prevent="requestDelete(file.source)"
-                  >
-                    <v-icon icon="mdi-close" size="x-small" />
-                  </v-btn>
                 </v-chip>
               </template>
             </v-tooltip>
@@ -59,52 +47,48 @@
           </div>
         </template>
         <v-progress-circular
-          v-else-if="loading"
-          size="20"
-          width="2"
-          color="primary"
+            v-else-if="loading"
+            size="20"
+            width="2"
+            color="primary"
         />
       </div>
 
       <v-btn
-        v-if="canUpload"
-        class="file-attachments__add"
-        color="primary"
-        variant="tonal"
-        icon="mdi-plus"
-        :aria-label="uploadButtonLabel"
-        :title="uploadButtonLabel"
-        :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
-        @click="openUploadDialog"
+          v-if="canUpload"
+          color="primary"
+          variant="tonal"
+          icon="mdi-plus"
+          :aria-label="uploadButtonLabel"
+          :title="uploadButtonLabel"
+          :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
+          @click="openUploadDialog"
       />
     </div>
 
     <v-alert
-      v-if="permissionDenied && !loading"
-      type="warning"
-      variant="tonal"
-      border="start"
-      class="mt-3"
+        v-if="permissionDenied && !loading"
+        type="warning"
+        variant="tonal"
+        border="start"
     >
-      <v-icon icon="mdi-lock-alert" class="mr-2" />
+      <v-icon icon="mdi-lock-alert" class="mr-2"/>
       {{ permissionMessageComputed }}
     </v-alert>
 
     <v-alert
-      v-else-if="loadError && !loading"
-      type="error"
-      variant="tonal"
-      border="start"
-      class="mt-3"
+        v-else-if="loadError && !loading"
+        type="error"
+        variant="tonal"
+        border="start"
     >
       {{ loadError }}
     </v-alert>
 
     <v-progress-linear
-      v-if="loading"
-      color="primary"
-      indeterminate
-      class="mt-3"
+        v-if="loading"
+        color="primary"
+        indeterminate
     />
   </div>
   <!-- </editor-fold> -->
@@ -114,13 +98,12 @@
       <v-card-title>{{ uploadTitleComputed }}</v-card-title>
       <v-card-text>
         <file-upload-zone
-          v-if="uploadDialog && uploadUrl"
-          :post-action="uploadUrl"
-          :file-id="`attachments-${dialogUid}`"
-          :accept="accept"
-          :maximum-size="maximumSize"
-          :timeout="uploadTimeout"
-          @close="handleUploadClose"
+            v-if="uploadDialog && uploadUrl"
+            :post-action="uploadUrl"
+            :file-id="`attachments-${dialogUid}`"
+            :accept="accept"
+            :timeout="uploadTimeout"
+            @close="handleUploadClose"
         />
       </v-card-text>
     </v-card>
@@ -132,10 +115,10 @@
       <v-card-text>
         {{ t("Вы уверены, что хотите удалить запись?") }}
         <v-alert
-          v-if="deleteError"
-          type="error"
-          variant="tonal"
-          class="mt-4"
+            v-if="deleteError"
+            type="error"
+            variant="tonal"
+            class="mt-4"
         >
           {{ deleteError }}
         </v-alert>
@@ -144,12 +127,12 @@
         <v-btn variant="text" :disabled="deleteLoading" @click="closeDeleteDialog">
           {{ t("Нет") }}
         </v-btn>
-        <v-spacer />
+        <v-spacer/>
         <v-btn
-          color="primary"
-          :loading="deleteLoading"
-          :disabled="deleteLoading"
-          @click="confirmDelete"
+            color="primary"
+            :loading="deleteLoading"
+            :disabled="deleteLoading"
+            @click="confirmDelete"
         >
           {{ t("Да") }}
         </v-btn>
@@ -159,13 +142,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
+import {computed, onMounted, ref, watch} from "vue";
+import {useI18n} from "vue-i18n";
 import http from "@/lib/http";
-import { errorUtils } from "@/lib/errors";
-import FileUploadZone, {
-  type UploadCompleteEvent,
-} from "@/components/FileUploadZone.vue";
+import {errorUtils} from "@/lib/errors";
+import FileUploadZone, {type UploadCompleteEvent,} from "@/components/FileUploadZone.vue";
 
 export type AttachmentItem = {
   filename: string;
@@ -173,45 +154,41 @@ export type AttachmentItem = {
 };
 
 const props = withDefaults(
-  defineProps<{
-    listUrl?: string | null;
-    uploadUrl?: string | null;
-    buildDownloadUrl: (item: AttachmentItem) => string;
-    buildDeleteUrl?: (item: AttachmentItem) => string | null;
-    canView?: () => boolean;
-    canDownload?: (item: AttachmentItem) => boolean;
-    canUpload?: () => boolean;
-    readOnly?: boolean;
-    emptyMessage?: string;
-    permissionMessage?: string;
-    uploadTitle?: string;
-    accept?: string;
-    maximumSize?: number;
-    uploadTimeout?: number;
-    chipsPerColumn?: number;
-  }>(),
-  {
-    listUrl: null,
-    uploadUrl: null,
-    buildDeleteUrl: undefined,
-    canView: () => true,
-    canDownload: () => true,
-    readOnly: false,
-    emptyMessage: "",
-    permissionMessage: "",
-    uploadTitle: "",
-    accept: "",
-    maximumSize: 10 * 1024 * 1024,
-    uploadTimeout: 30_000,
-    chipsPerColumn: 0
-  },
+    defineProps<{
+      listUrl?: string | null;
+      uploadUrl?: string | null;
+      buildDownloadUrl: (item: AttachmentItem) => string;
+      buildDeleteUrl?: (item: AttachmentItem) => string | null;
+      canView?: () => boolean;
+      canDownload?: (item: AttachmentItem) => boolean;
+      canUpload?: () => boolean;
+      readOnly?: boolean;
+      emptyMessage?: string;
+      permissionMessage?: string;
+      uploadTitle?: string;
+      accept?: string;
+      uploadTimeout?: number;
+    }>(),
+    {
+      listUrl: null,
+      uploadUrl: null,
+      buildDeleteUrl: undefined,
+      canView: () => true,
+      canDownload: () => true,
+      readOnly: false,
+      emptyMessage: "",
+      permissionMessage: "",
+      uploadTitle: "",
+      accept: "",
+      uploadTimeout: 30_000,
+    },
 );
 
 const emit = defineEmits<{
   (event: "updated"): void;
 }>();
 
-const { t } = useI18n();
+const {t} = useI18n();
 
 const attachments = ref<AttachmentItem[]>([]);
 const loading = ref(false);
@@ -245,39 +222,27 @@ const canDelete = computed(() => {
 });
 
 const uploadTitleComputed = computed(
-  () => props.uploadTitle || t("Загрузить файл"),
+    () => props.uploadTitle || t("Загрузить файл"),
 );
 
 const uploadButtonLabel = computed(() => uploadTitleComputed.value);
 
 const permissionMessageComputed = computed(
-  () => props.permissionMessage || t("Не достаточно прав"),
+    () => props.permissionMessage || t("Не достаточно прав"),
 );
 
 const emptyMessageComputed = computed(
-  () => props.emptyMessage || t("Нет доступных файлов"),
+    () => props.emptyMessage || t("Нет доступных файлов"),
 );
 
-const chipsContainerClass = computed(() => ({
-  "file-attachments__chips": true,
-  "file-attachments__chips--columnized": props.chipsPerColumn > 0,
-}));
-
-const chipsContainerStyle = computed(() => {
-  if (props.chipsPerColumn > 0) {
-    return { "--chips-per-column": String(props.chipsPerColumn) };
-  }
-  return undefined;
-});
-
 const displayFiles = computed(() =>
-  attachments.value.map((item: AttachmentItem) => ({
-    key: `${item.filename}-${(item as { id?: string | number }).id ?? ""}`,
-    filename: item.filename,
-    downloadUrl: props.buildDownloadUrl(item),
-    tooltip: `${t("Скачать документ")} '${item.filename}'`,
-    source: item,
-  })),
+    attachments.value.map((item: AttachmentItem) => ({
+      key: `${item.filename}-${(item as { id?: string | number }).id ?? ""}`,
+      filename: item.filename,
+      downloadUrl: props.buildDownloadUrl(item),
+      tooltip: `${t("Скачать документ")} '${item.filename}'`,
+      source: item,
+    })),
 );
 
 const deletingFilename = computed(() => attachmentToDelete.value?.filename ?? "");
@@ -370,10 +335,10 @@ async function reloadAttachments() {
 }
 
 watch(
-  () => props.listUrl,
-  () => {
-    reloadAttachments().catch(() => undefined);
-  },
+    () => props.listUrl,
+    () => {
+      reloadAttachments().catch(() => undefined);
+    },
 );
 
 onMounted(() => {
@@ -384,67 +349,3 @@ defineExpose({
   reload: reloadAttachments,
 });
 </script>
-
-<style scoped>
-.file-attachments {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.file-attachments__row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-}
-
-.file-attachments__content {
-  flex: 1 1 auto;
-  min-width: 160px;
-}
-
-.file-attachments__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.file-attachments__chips--columnized {
-  display: grid;
-  grid-auto-flow: column;
-  grid-template-rows: repeat(var(--chips-per-column, 3), minmax(0, auto));
-  row-gap: 8px;
-  column-gap: 16px;
-  align-items: start;
-}
-
-.file-attachments__chip {
-  max-width: 220px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding-right: 8px;
-}
-
-.file-attachments__link {
-  color: inherit;
-  text-decoration: none;
-  display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 170px;
-}
-
-.file-attachments__close {
-  margin-left: 2px;
-  min-width: 24px;
-  padding: 0;
-}
-
-.file-attachments__add {
-  flex: 0 0 auto;
-}
-</style>

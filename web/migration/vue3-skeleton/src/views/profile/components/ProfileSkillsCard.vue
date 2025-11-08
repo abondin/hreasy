@@ -51,33 +51,29 @@
                       <span class="profile-skills-card__chip-name" :title="skill.name">
                         {{ skill.name }}
                       </span>
-                      <span class="profile-skills-card__chip-rating">
-                        • {{ t("Средний рейтинг") }}:
-                        {{ skill.ratings.averageRating ?? t("Нет оценок") }}
-                      </span>
-
-                      <template #append>
-                        <v-btn
-                            v-if="canEdit"
-                            icon="mdi-close"
-                            size="x-small"
-                            variant="text"
-                            class="profile-skills-card__chip-close"
-                            @click.stop.prevent="() => emitDelete(skill)"
-                        />
-                      </template>
                     </v-chip>
                   </template>
 
                   <v-sheet class="profile-skills-card__menu pa-4" width="320">
-                    <div class="profile-skills-card__menu-title">
-                      {{ skill.name }}
+                    <div class="profile-skills-card__menu-header">
+                      <div class="profile-skills-card__menu-title">
+                        {{ skill.name }}
+                      </div>
+                      <v-btn
+                        v-if="canEdit"
+                        icon="mdi-close"
+                        size="small"
+                        variant="text"
+                        color="error"
+                        class="profile-skills-card__menu-delete"
+                        @click.stop.prevent="() => emitDelete(skill)"
+                      />
                     </div>
                     <v-rating
-                        half-increments
-                        hover
-                        color="amber"
-                        :model-value="skill.ratings.myRating ?? 0"
+                      half-increments
+                      hover
+                      color="amber"
+                      :model-value="skill.ratings.myRating ?? 0"
                         :disabled="!canEdit"
                         @update:model-value="(value) => emitRate(skill, value)"
                     />
@@ -282,9 +278,20 @@ function ratingCountLabel(count: number): string {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
+.profile-skills-card__menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .profile-skills-card__menu-title {
   font-weight: 600;
   margin-bottom: 8px;
   word-break: break-word;
+}
+
+.profile-skills-card__menu-delete {
+  min-width: auto;
 }
 </style>
