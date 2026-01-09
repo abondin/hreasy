@@ -3,14 +3,14 @@
 -->
 <template>
   <v-card>
-    <v-card-title class="d-flex flex-wrap ga-3 align-center">
+    <v-card-title class="d-flex flex-wrap ga-3 align-center employees-filters">
       <v-text-field
         v-model="localSearch"
         :label="t('Поиск')"
         prepend-inner-icon="mdi-magnify"
         variant="outlined"
         density="compact"
-        class="flex-grow-1 min-w-0"
+        class="employees-filters__item"
         clearable
       />
       <v-autocomplete
@@ -24,6 +24,7 @@
         chips
         item-title="title"
         item-value="value"
+        class="employees-filters__item"
       />
       <v-autocomplete
         v-model="selectedBa"
@@ -36,38 +37,79 @@
         chips
         item-title="title"
         item-value="value"
+        class="employees-filters__item"
       />
     </v-card-title>
 
     <v-card-text>
-      <v-data-table-virtual
+      <v-data-table
+        v-if="expandedId !== null"
         :headers="headers"
         :items="items"
         item-key="id"
         :height="tableHeight"
         fixed-header
+        fixed-footer
         density="compact"
         :loading="loading"
         :loading-text="t('Загрузка_данных')"
+        :items-per-page="-1"
+        hide-default-footer
       >
-        <template #item="{ columns, internalItem, props, itemRef }">
+        <template #item="{ columns, internalItem, item, props, itemRef }">
           <tr
             v-bind="props"
             :ref="itemRef"
             class="cursor-pointer"
-            @click="toggleRow(internalItem.raw)"
+            @click="toggleRow(resolveItem(item, internalItem))"
           >
             <td
               v-for="column in columns"
               :key="column.key ?? column.title"
             >
-              {{ toDisplay(column.key ?? "", internalItem.raw) }}
+              {{ toDisplay(column.key ?? "", resolveItem(item, internalItem)) }}
             </td>
           </tr>
-          <tr v-if="isExpanded(internalItem.raw)">
+          <tr v-if="isExpanded(resolveItem(item, internalItem))">
             <td :colspan="columns.length">
               <employee-details-card
-                :employee="internalItem.raw"
+                :employee="resolveItem(item, internalItem)"
+                @employee-updated="emitEmployeeUpdated"
+              />
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
+      <v-data-table-virtual
+        v-else
+        :headers="headers"
+        :items="items"
+        item-key="id"
+        :height="tableHeight"
+        fixed-header
+        fixed-footer
+        density="compact"
+        :loading="loading"
+        :loading-text="t('Загрузка_данных')"
+      >
+        <template #item="{ columns, internalItem, item, props, itemRef }">
+          <tr
+            v-bind="props"
+            :ref="itemRef"
+            class="cursor-pointer"
+            @click="toggleRow(resolveItem(item, internalItem))"
+          >
+            <td
+              v-for="column in columns"
+              :key="column.key ?? column.title"
+            >
+              {{ toDisplay(column.key ?? "", resolveItem(item, internalItem)) }}
+            </td>
+          </tr>
+          <tr v-if="isExpanded(resolveItem(item, internalItem))">
+            <td :colspan="columns.length">
+              <employee-details-card
+                :employee="resolveItem(item, internalItem)"
                 @employee-updated="emitEmployeeUpdated"
               />
             </td>
@@ -146,15 +188,15 @@ watch(
 
 const headers = computed(() => {
   const items = [
-    { title: t("ФИО"), key: "displayName" },
-    { title: t("Отдел"), key: "department.name" },
-    { title: t("E-mail"), key: "email" },
-    { title: t("Текущий проект"), key: "currentProject.name" },
+    { title: t("ФИО"), key: "displayName", width: "240px" },
+    { title: t("Отдел"), key: "department.name", width: "260px" },
+    { title: t("E-mail"), key: "email", width: "172px" },
+    { title: t("Текущий проект"), key: "currentProject.name", width: "192px" },
   ];
   if (permissions.canViewEmplCurrentProjectRole()) {
-    items.push({ title: t("Роль на проекте"), key: "currentProject.role" });
+    items.push({ title: t("Роль на проекте"), key: "currentProject.role", width: "172px" });
   }
-  items.push({ title: t("Бизнес Аккаунт"), key: "ba.name" });
+  items.push({ title: t("Бизнес Аккаунт"), key: "ba.name", width: "152px" });
   return items;
 });
 
@@ -187,6 +229,13 @@ function resolveKey(item: Employee, key: string): unknown {
   }, item);
 }
 
+function resolveItem(item: unknown, internalItem?: { raw?: Employee }): Employee {
+  if (internalItem?.raw) {
+    return internalItem.raw;
+  }
+  return item as Employee;
+}
+
 function toggleRow(employee: Employee) {
   expandedId.value = expandedId.value === employee.id ? null : employee.id;
 }
@@ -199,3 +248,10 @@ function emitEmployeeUpdated() {
   emit("employee-updated");
 }
 </script>
+
+<style scoped>
+.employees-filters__item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+</style>
