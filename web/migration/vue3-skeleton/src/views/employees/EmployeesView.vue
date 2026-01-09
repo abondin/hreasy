@@ -9,11 +9,12 @@
       :project-options="projectOptions"
       :business-account-options="baOptions"
       :search="filter.search"
-      :project="projectFilter"
-      :business-account="baFilter"
+      :project="filter.projects"
+      :business-account="filter.businessAccounts"
       @update:search="updateSearch"
       @update:project="updateProject"
       @update:ba="updateBa"
+      @employee-updated="handleEmployeeUpdated"
     />
   </v-container>
 </template>
@@ -30,32 +31,30 @@ const { t } = useI18n();
 
 const projectOptions = computed(() => {
   const map = new Map<number | null, string>();
-  map.set(null, t("Все"));
+  map.set(null, t("Без проекта"));
   employees.value.forEach((employee) => {
-    const id = employee.currentProject?.id ?? null;
-    const label = employee.currentProject?.name ?? t("Без проекта");
-    if (!map.has(id)) {
-      map.set(id, label);
+    if (!employee.currentProject) {
+      return;
+    }
+    if (!map.has(employee.currentProject.id)) {
+      map.set(employee.currentProject.id, employee.currentProject.name);
     }
   });
   return Array.from(map.entries()).map(([value, title]) => ({ title, value }));
 });
 
 const baOptions = computed(() => {
-  const map = new Map<number | null, string>();
-  map.set(null, t("Все"));
+  const map = new Map<number, string>();
   employees.value.forEach((employee) => {
-    const id = employee.ba?.id ?? null;
-    const label = employee.ba?.name ?? t("Без БА");
-    if (!map.has(id)) {
-      map.set(id, label);
+    if (!employee.ba) {
+      return;
+    }
+    if (!map.has(employee.ba.id)) {
+      map.set(employee.ba.id, employee.ba.name);
     }
   });
   return Array.from(map.entries()).map(([value, title]) => ({ title, value }));
 });
-
-const projectFilter = computed(() => filter.value.projects[0] ?? null);
-const baFilter = computed(() => filter.value.businessAccounts[0] ?? null);
 
 onMounted(() => {
   reload().catch(() => undefined);
@@ -65,12 +64,16 @@ function updateSearch(value: string) {
   filter.value.search = value;
 }
 
-function updateProject(value: number | null) {
-  filter.value.projects = typeof value === "number" ? [value] : [];
+function updateProject(value: Array<number | null>) {
+  filter.value.projects = value;
 }
 
-function updateBa(value: number | null) {
-  filter.value.businessAccounts = typeof value === "number" ? [value] : [];
+function updateBa(value: number[]) {
+  filter.value.businessAccounts = value;
+}
+
+function handleEmployeeUpdated() {
+  reload().catch(() => undefined);
 }
 
 </script>

@@ -225,6 +225,14 @@ export function usePermissions() {
     );
   }
 
+  function canAddSkills(employeeId: number): boolean {
+    return canEditSkills(employeeId);
+  }
+
+  function canDeleteSkills(employeeId: number): boolean {
+    return canEditSkills(employeeId);
+  }
+
   function canAdminBusinessAccounts(): boolean {
     return simplePermissionCheck(Permissions.EditBusinessAccount);
   }
@@ -345,6 +353,10 @@ export function usePermissions() {
     );
   }
 
+  function canRateSkills(employeeId: number): boolean {
+    return canViewEmplSkills(employeeId);
+  }
+
   function canAdminManagers(): boolean {
     return simplePermissionCheck(Permissions.AdminManagers);
   }
@@ -367,6 +379,8 @@ export function usePermissions() {
     canAdminEmployees,
     canAdminUsers,
     canEditSkills,
+    canAddSkills,
+    canDeleteSkills,
     canAdminBusinessAccounts,
     canAdminArticles,
     canAdminSalaryRequests,
@@ -388,6 +402,7 @@ export function usePermissions() {
     canAdminDictOffices,
     canViewEmplSkills,
     canViewEmplCurrentProjectRole,
+    canRateSkills,
     canAdminManagers,
   };
 }

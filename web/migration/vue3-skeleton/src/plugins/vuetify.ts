@@ -1,7 +1,9 @@
 import { createVuetify } from "vuetify";
 import { aliases, mdi } from "vuetify/iconsets/mdi";
+import { fa } from "vuetify/iconsets/fa";
 import "vuetify/styles";
 import "@mdi/font/css/materialdesignicons.css";
+import "@fortawesome/fontawesome-free/css/all.css";
 
 const vuetify = createVuetify({
   theme: {
@@ -20,6 +22,7 @@ const vuetify = createVuetify({
     aliases,
     sets: {
       mdi,
+      fa,
     },
   },
 });

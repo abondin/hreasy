@@ -4,7 +4,7 @@
 -->
 <template>
   <div class="profile-skills-card">
-    <v-skeleton-loader v-if="loading" type="chip" class="my-4"/>
+    <v-skeleton-loader v-if="loading" type="chip" class="my-2"/>
 
     <v-alert
         v-else-if="errorMessage"
@@ -17,23 +17,27 @@
     </v-alert>
 
     <div v-else class="profile-skills-card__layout">
-      <div v-if="groupedSkills.length === 0" class="profile-skills-card__empty">
-        {{ t("Нет навыков") }}
-      </div>
+      <div class="profile-skills-card__list">
+        <div v-if="groupedSkills.length === 0" class="profile-skills-card__empty">
+          {{ t("Нет навыков") }}
+        </div>
 
-      <template v-else>
-        <div class="profile-skills-card__list">
-          <v-row dense>
+        <v-row v-else :dense="isDense">
             <v-col
                 v-for="group in groupedSkills"
                 :key="group.group.id"
-                cols="12"
-                lg="6"
-                xl="3">
-              <div class="profile-skills-card__group-title">
+                cols="auto"
+                class="profile-skills-card__group"
+            >
+              <div
+                :class="[
+                  'font-weight-medium',
+                  isDense ? 'mb-1' : 'mb-2',
+                ]"
+              >
                 {{ group.group.name }}
               </div>
-              <div class="profile-skills-card__chips">
+              <div class="profile-skills-card__skills-grid">
                 <v-menu
                     v-for="skill in group.skills"
                     :key="skill.id"
@@ -46,7 +50,7 @@
                     <v-chip
                         v-bind="menuProps"
                         variant="outlined"
-                        class="profile-skills-card__chip"
+                        class="profile-skills-card__chip ma-0"
                     >
                       <span class="profile-skills-card__chip-name" :title="skill.name">
                         {{ skill.name }}
@@ -54,13 +58,13 @@
                     </v-chip>
                   </template>
 
-                  <v-sheet class="profile-skills-card__menu pa-4" width="320">
+                    <v-sheet class="profile-skills-card__menu pa-4" width="320">
                     <div class="profile-skills-card__menu-header">
                       <div class="profile-skills-card__menu-title">
                         {{ skill.name }}
                       </div>
                       <v-btn
-                        v-if="canEdit"
+                        v-if="canDelete"
                         icon="mdi-close"
                         size="small"
                         variant="text"
@@ -69,12 +73,13 @@
                         @click.stop.prevent="() => emitDelete(skill)"
                       />
                     </div>
-                    <v-rating
-                      half-increments
-                      hover
-                      color="amber"
-                      :model-value="skill.ratings.myRating ?? 0"
-                        :disabled="!canEdit"
+                      <v-rating
+                        half-increments
+                        hover
+                        color="amber"
+                        :model-value="skill.ratings.myRating ?? 0"
+                        :disabled="!canRate"
+                        :size="isDense ? 18 : 24"
                         @update:model-value="(value) => emitRate(skill, value)"
                     />
 
@@ -98,24 +103,23 @@
                 </v-menu>
               </div>
             </v-col>
+            <v-col v-if="canAdd" cols="auto" class="profile-skills-card__actions">
+              <v-tooltip location="top">
+                <template #activator="{ props: tooltipProps }">
+                  <v-btn
+                      v-bind="tooltipProps"
+                      icon="mdi-plus"
+                      color="primary"
+                      variant="tonal"
+                      @click="emitAdd"
+                  />
+                </template>
+                {{ t("Добавить навык") }}
+              </v-tooltip>
+            </v-col>
           </v-row>
         </div>
 
-        <div v-if="canEdit">
-          <v-tooltip location="top">
-            <template #activator="{ props: tooltipProps }">
-              <v-btn
-                  v-bind="tooltipProps"
-                  icon="mdi-plus"
-                  color="primary"
-                  variant="tonal"
-                  @click="emitAdd"
-              />
-            </template>
-            {{ t("Добавить навык") }}
-          </v-tooltip>
-        </div>
-      </template>
     </div>
   </div>
 </template>
@@ -131,6 +135,10 @@ const props = defineProps<{
   loading?: boolean;
   error?: unknown;
   canEdit: boolean;
+  canAdd?: boolean;
+  canDelete?: boolean;
+  canRate?: boolean;
+  dense?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -141,6 +149,10 @@ const emit = defineEmits<{
 
 const {t} = useI18n();
 const activeSkillId = ref<number | null>(null);
+const canAdd = computed(() => props.canAdd ?? props.canEdit);
+const canDelete = computed(() => props.canDelete ?? props.canEdit);
+const canRate = computed(() => props.canRate ?? props.canEdit);
+const isDense = computed(() => Boolean(props.dense));
 
 const errorMessage = computed(() => {
   if (!props.error) {
@@ -175,7 +187,7 @@ function emitRate(
     skill: Skill,
     value: number | string | null | undefined,
 ) {
-  if (!props.canEdit) {
+  if (!canRate.value) {
     return;
   }
   const numericValue =
@@ -187,7 +199,7 @@ function emitRate(
 }
 
 function emitDelete(skill: Skill) {
-  if (!props.canEdit) {
+  if (!canDelete.value) {
     return;
   }
   emit("delete", skill);
@@ -213,8 +225,9 @@ function ratingCountLabel(count: number): string {
 
 .profile-skills-card__layout {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 24px;
+  gap: 8px;
 }
 
 .profile-skills-card__list {
@@ -222,20 +235,23 @@ function ratingCountLabel(count: number): string {
   min-width: 0;
 }
 
-
 .profile-skills-card__empty {
   color: rgba(0, 0, 0, 0.6);
 }
 
-.profile-skills-card__group-title {
-  font-weight: 500;
-  margin-bottom: 6px;
+.profile-skills-card__group {
+  min-width: 220px;
 }
 
-.profile-skills-card__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.profile-skills-card__skills-grid {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  gap: 6px;
+  align-items: start;
+}
+
+.profile-skills-card__actions {
+  align-self: center;
 }
 
 .profile-skills-card__chip {

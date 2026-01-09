@@ -4,11 +4,13 @@
 -->
 <template>
   <!--<editor-fold desc="Tech profiles card">-->
-  <v-card class="profile-tech-profiles-card">
-    <v-card-title class="d-flex align-center">
-      <span>{{ t("Квалификационные карточки") }}</span>
-    </v-card-title>
-    <v-card-text>
+  <component :is="wrapperTag" class="profile-tech-profiles-card">
+    <template v-if="showTitle">
+      <component :is="titleTag" class="d-flex align-center">
+        <span>{{ t("Квалификационные карточки") }}</span>
+      </component>
+    </template>
+    <component :is="contentTag">
       <file-attachments
         :list-url="listUrl"
         :upload-url="uploadUrl"
@@ -25,10 +27,11 @@
         :upload-timeout="UPLOAD_TIMEOUT"
         :upload-title="t('Загрузить квалификационную карточку')"
         :chips-per-column="3"
+        :dense="dense"
         @updated="handleUpdated"
       />
-    </v-card-text>
-  </v-card>
+    </component>
+  </component>
   <!-- </editor-fold> -->
 </template>
 
@@ -46,9 +49,16 @@ import FileAttachments, {
   type AttachmentItem,
 } from "@/components/FileAttachments.vue";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   employeeId: number | null;
-}>();
+  withCard?: boolean;
+  showTitle?: boolean;
+  dense?: boolean;
+}>(), {
+  withCard: true,
+  showTitle: true,
+  dense: false,
+});
 
 const emit = defineEmits<{
   (event: "updated"): void;
@@ -63,6 +73,9 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const UPLOAD_TIMEOUT = 30_000;
 
 const currentEmployeeId = computed(() => props.employeeId ?? null);
+const wrapperTag = computed(() => (props.withCard ? "v-card" : "div"));
+const titleTag = computed(() => (props.withCard ? "v-card-title" : "div"));
+const contentTag = computed(() => (props.withCard ? "v-card-text" : "div"));
 
 const listUrl = computed(() => {
   const id = currentEmployeeId.value;

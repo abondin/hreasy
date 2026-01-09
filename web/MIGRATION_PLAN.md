@@ -1,6 +1,6 @@
 # Vue 3 Migration Tracker
 
-_Last updated: 2025-11-05_
+_Last updated: 2026-01-09_
 
 This document records the current technical baseline and the roadmap for migrating the HREasy web client from Vue 2 to Vue 3, together with related ecosystem upgrades. Keep it updated as work progresses so future sessions can resume from the latest state.
 
@@ -40,7 +40,7 @@ Use the checkboxes to mark completion; add notes/dates next to items as you prog
 - [ ] Wrap global singletons (logger, permissions, http service) into plugin factories to ease DI _(Vue 3 skeleton still exports Axios singleton from `migration/vue3-skeleton/src/lib/http.ts`; plan to promote to `app.provide` plugin so both builds can share DI/mocking)_.
 - [ ] Start extracting domain-specific composables (auth, permissions, vacations) mirroring Vuex modules _(Auth store + `useEmployeeProfile` composable live in `migration/vue3-skeleton/src/stores/auth.ts` and `migration/vue3-skeleton/src/composables/useEmployeeProfile.ts`; need parity for vacations, overtime, salaries, dictionaries)_.
 - [ ] Replace Moment.js usage with Day.js or date-fns while staying on Vue 2 where possible _(Vue 3 skeleton ships ad-hoc formatters in `migration/vue3-skeleton/src/lib/datetime.ts`, legacy modules still rely on Moment)_.
-- [ ] Implement Vue 3 employees directory: new `useEmployeesDirectory` composable + `EmployeesVirtualTable` (based on Vuetify virtual table docs) + route/filters/dialog to browse all employees with card view. Document progress here as work lands.
+- [ ] Implement Vue 3 employees directory: new `useEmployeesDirectory` composable + `EmployeesVirtualTable` (based on Vuetify virtual table docs) + route/filters/dialog to browse all employees with card view. _Progress: added multi-select filters, permission-gated “Роль на проекте” column, expanded details card with avatar + project info/update + office map preview + vacations chips + tech profiles card + skills add/delete/rating (vue3-skeleton employees view). Remaining gaps: dictionary-backed filters (projects/BA) and full tech profiles chips UX parity._
 
 ### Phase C – Store & Routing Transition
 
@@ -81,6 +81,7 @@ Keep this file under version control to track progress between sessions.
 
 - **Runtime baseline**: Adopt Node.js 20 LTS (current CLI tested on 18.16, upgrade recommended) and npm 10+. Document any Docker changes under `devops/`.
 - **Local services**: Frontend dev server expects `BACKEND_API_BASE_URL` to point to the API (`README.md`); ensure backend mock or staging endpoint is available for migration smoke tests.
+- **Local access**: Vue 3 dev app is served at `http://localhost:5173/app-v3`, Vue 2 dev app at `http://localhost:8080/`. Both builds point to the same backend API. Test login credentials: `alexander.bondin` / `qwe123`.
 - **Testing status**: Only three Jest unit specs exist (`tests/unit/*.spec.ts`); integration coverage absent. Need manual regression checklist for auth, vacations, overtime, salaries, admin flows.
 - **Short-term actions**: Draft target matrix of browsers/devices post-Vue 3 upgrade and decide on E2E tooling (Cypress or Playwright) before major refactors begin.
 

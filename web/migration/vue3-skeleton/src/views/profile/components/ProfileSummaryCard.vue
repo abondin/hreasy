@@ -104,11 +104,11 @@
           </span>
         </div>
 
-        <div class="profile-summary-card__item">
+        <div class="profile-summary-card__item align-center d-flex">
           <span class="profile-summary-card__label">
             {{ t("Телеграм") }}:
           </span>
-          <span class="profile-summary-card__value">
+          <span class="profile-summary-card__value d-inline-flex align-center">
             <profile-telegram-editor
                 :employee-id="employee.id"
                 :account="employee.telegram"
@@ -217,15 +217,15 @@ function emitProjectUpdated() {
 
 <style scoped>
 .profile-summary-card__name {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .profile-summary-card__item {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: rgba(0, 0, 0, 0.72);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .profile-summary-card__label {

@@ -8,11 +8,12 @@
     <template v-if="account">
       <a
         :href="accountUrl"
-        class="telegram-editor__link"
+        class="telegram-editor__link text-info d-inline-flex align-center"
         rel="noopener noreferrer"
         target="_blank"
         data-testid="telegram-link"
       >
+        <v-icon size="small" class="mr-1" color="info" icon="fa:fab fa-telegram" />
         {{ account }}
       </a>
       <button
@@ -104,10 +105,10 @@ function emitEdit() {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  line-height: 1;
 }
 
 .telegram-editor__link {
-  color: rgb(33, 150, 243);
   text-decoration: none;
 }
 

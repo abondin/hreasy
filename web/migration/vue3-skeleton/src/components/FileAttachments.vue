@@ -5,7 +5,7 @@
   <!--<editor-fold desc="File attachments inline">-->
   <div class="d-flex flex-column ga-4">
     <div class="d-flex flex-wrap align-center ga-3">
-      <div class="flex-grow-1 min-w-0">
+      <div class="min-w-0">
         <template v-if="!loading && !permissionDenied && !loadError">
           <div v-if="displayFiles.length" class="d-flex flex-wrap ga-2 align-center">
             <v-tooltip
@@ -15,7 +15,11 @@
                 location="bottom"
             >
               <template #activator="{ props: tooltipProps }">
-                <v-chip v-bind="tooltipProps" variant="outlined" class="px-3">
+                    <v-chip
+                        v-bind="tooltipProps"
+                        variant="outlined"
+                        class="px-3"
+                    >
                   <span class="text-truncate" style="max-width: 200px">
                     <template v-if="isDownloadAllowed(file.source)">
                       <a
@@ -34,13 +38,23 @@
                         icon="mdi-close"
                         size="x-small"
                         variant="text"
-                        density="comfortable"
+                        density="compact"
                         @click.stop.prevent="requestDelete(file.source)"
                     />
                   </template>
                 </v-chip>
               </template>
             </v-tooltip>
+            <v-btn
+                v-if="canUpload"
+                color="primary"
+                variant="tonal"
+                icon="mdi-plus"
+                :aria-label="uploadButtonLabel"
+                :title="uploadButtonLabel"
+                :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
+                @click="openUploadDialog"
+            />
           </div>
           <div v-else class="text-medium-emphasis">
             {{ emptyMessageComputed }}
@@ -55,7 +69,7 @@
       </div>
 
       <v-btn
-          v-if="canUpload"
+          v-if="canUpload && !displayFiles.length && !loading && !permissionDenied && !loadError"
           color="primary"
           variant="tonal"
           icon="mdi-plus"
@@ -97,14 +111,15 @@
     <v-card>
       <v-card-title>{{ uploadTitleComputed }}</v-card-title>
       <v-card-text>
-        <file-upload-zone
-            v-if="uploadDialog && uploadUrl"
-            :post-action="uploadUrl"
-            :file-id="`attachments-${dialogUid}`"
-            :accept="accept"
-            :timeout="uploadTimeout"
-            @close="handleUploadClose"
-        />
+	        <file-upload-zone
+	            v-if="uploadDialog && uploadUrl"
+	            :post-action="uploadUrl"
+	            :file-id="`attachments-${dialogUid}`"
+	            :accept="accept"
+	            :timeout="uploadTimeout"
+	            :maximum-size="maximumSize"
+	            @close="handleUploadClose"
+	        />
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -168,6 +183,9 @@ const props = withDefaults(
       uploadTitle?: string;
       accept?: string;
       uploadTimeout?: number;
+      maximumSize?: number;
+      chipsPerColumn?: number;
+      dense?: boolean;
     }>(),
     {
       listUrl: null,
@@ -181,6 +199,9 @@ const props = withDefaults(
       uploadTitle: "",
       accept: "",
       uploadTimeout: 30_000,
+      maximumSize: 10 * 1024 * 1024,
+      chipsPerColumn: undefined,
+      dense: false,
     },
 );
 

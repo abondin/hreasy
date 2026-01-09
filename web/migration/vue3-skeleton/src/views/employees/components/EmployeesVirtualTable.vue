@@ -9,25 +9,33 @@
         :label="t('Поиск')"
         prepend-inner-icon="mdi-magnify"
         variant="outlined"
-        density="comfortable"
+        density="compact"
         class="flex-grow-1 min-w-0"
         clearable
       />
-      <v-select
+      <v-autocomplete
         v-model="selectedProject"
         :items="projectOptions"
         :label="t('Текущий проект')"
         variant="outlined"
-        density="comfortable"
+        density="compact"
         clearable
+        multiple
+        chips
+        item-title="title"
+        item-value="value"
       />
-      <v-select
+      <v-autocomplete
         v-model="selectedBa"
         :items="baOptions"
         :label="t('Бизнес Аккаунт')"
         variant="outlined"
-        density="comfortable"
+        density="compact"
         clearable
+        multiple
+        chips
+        item-title="title"
+        item-value="value"
       />
     </v-card-title>
 
@@ -38,6 +46,7 @@
         item-key="id"
         :height="tableHeight"
         fixed-header
+        density="compact"
         :loading="loading"
         :loading-text="t('Загрузка_данных')"
       >
@@ -57,7 +66,10 @@
           </tr>
           <tr v-if="isExpanded(internalItem.raw)">
             <td :colspan="columns.length">
-              <employee-details-card :employee="internalItem.raw" />
+              <employee-details-card
+                :employee="internalItem.raw"
+                @employee-updated="emitEmployeeUpdated"
+              />
             </td>
           </tr>
         </template>
@@ -71,29 +83,32 @@ import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { Employee } from "@/services/employee.service";
 import EmployeeDetailsCard from "@/views/employees/components/EmployeeDetailsDialog.vue";
+import { usePermissions } from "@/lib/permissions";
 
 const props = defineProps<{
   items: Employee[];
   loading: boolean;
   projectOptions: Array<{ title: string; value: number | null }>;
-  businessAccountOptions: Array<{ title: string; value: number | null }>;
+  businessAccountOptions: Array<{ title: string; value: number }>;
   search?: string;
-  project?: number | null;
-  businessAccount?: number | null;
+  project?: Array<number | null>;
+  businessAccount?: number[];
   tableHeight?: number | string;
 }>();
 
 const emit = defineEmits<{
   (event: "update:search", value: string): void;
-  (event: "update:project", value: number | null): void;
-  (event: "update:ba", value: number | null): void;
+  (event: "update:project", value: Array<number | null>): void;
+  (event: "update:ba", value: number[]): void;
+  (event: "employee-updated"): void;
 }>();
 
 const { t } = useI18n();
+const permissions = usePermissions();
 
 const localSearch = ref(props.search ?? "");
-const selectedProject = ref<number | null>(props.project ?? null);
-const selectedBa = ref<number | null>(props.businessAccount ?? null);
+const selectedProject = ref<Array<number | null>>(props.project ?? []);
+const selectedBa = ref<number[]>(props.businessAccount ?? []);
 const expandedId = ref<number | null>(null);
 
 watch(localSearch, (value) => emit("update:search", value));
@@ -112,8 +127,9 @@ watch(
 watch(
   () => props.project,
   (value) => {
-    if (value !== selectedProject.value) {
-      selectedProject.value = value ?? null;
+    const nextValue = value ?? [];
+    if (nextValue !== selectedProject.value) {
+      selectedProject.value = nextValue;
     }
   },
 );
@@ -121,20 +137,26 @@ watch(
 watch(
   () => props.businessAccount,
   (value) => {
-    if (value !== selectedBa.value) {
-      selectedBa.value = value ?? null;
+    const nextValue = value ?? [];
+    if (nextValue !== selectedBa.value) {
+      selectedBa.value = nextValue;
     }
   },
 );
 
-const headers = computed(() => [
-  { title: t("ФИО"), key: "displayName" },
-  { title: t("Отдел"), key: "department.name" },
-  { title: t("E-mail"), key: "email" },
-  { title: t("Текущий проект"), key: "currentProject.name" },
-  { title: t("Роль на проекте"), key: "currentProject.role" },
-  { title: t("Бизнес Аккаунт"), key: "ba.name" },
-]);
+const headers = computed(() => {
+  const items = [
+    { title: t("ФИО"), key: "displayName" },
+    { title: t("Отдел"), key: "department.name" },
+    { title: t("E-mail"), key: "email" },
+    { title: t("Текущий проект"), key: "currentProject.name" },
+  ];
+  if (permissions.canViewEmplCurrentProjectRole()) {
+    items.push({ title: t("Роль на проекте"), key: "currentProject.role" });
+  }
+  items.push({ title: t("Бизнес Аккаунт"), key: "ba.name" });
+  return items;
+});
 
 const tableHeight = computed(() => props.tableHeight ?? "70vh");
 
@@ -171,5 +193,9 @@ function toggleRow(employee: Employee) {
 
 function isExpanded(employee: Employee): boolean {
   return expandedId.value === employee.id;
+}
+
+function emitEmployeeUpdated() {
+  emit("employee-updated");
 }
 </script>

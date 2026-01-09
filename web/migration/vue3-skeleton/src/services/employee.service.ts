@@ -1,4 +1,5 @@
 import http from "@/lib/http";
+import type { Skill } from "@/services/skills.service";
 
 export interface Dict {
   id: number;
@@ -29,7 +30,7 @@ export interface Employee extends WithAvatar {
   email?: string | null;
   telegram?: string | null;
   telegramConfirmedAt?: string | null;
-  skills?: Array<{ name: string }>;
+  skills?: Skill[];
 }
 
 export interface UpdateTelegramBody {

@@ -46,6 +46,10 @@
                   :loading="skillsSectionLoading"
                   :error="skillsSectionError"
                   :can-edit="canEditSkills"
+                  :can-add="canAddSkills"
+                  :can-delete="canDeleteSkills"
+                  :can-rate="canRateSkills"
+                  :dense="true"
                   @add="handleAddSkillRequested"
                   @rate="handleRateSkill"
                   @delete="handleDeleteSkillRequested"
@@ -54,10 +58,20 @@
             </v-card>
           </v-col>
           <v-col cols="12">
-            <profile-tech-profiles-card
-              :employee-id="employee.id"
-              @updated="handleEmployeeUpdated"
-            />
+            <v-card>
+              <v-card-title class="d-flex align-center justify-space-between">
+                <span>{{ t("Квалификационные карточки") }}</span>
+              </v-card-title>
+              <v-card-text>
+                <profile-tech-profiles-card
+                  :employee-id="employee.id"
+                  :with-card="false"
+                  :show-title="false"
+                  :dense="true"
+                  @updated="handleEmployeeUpdated"
+                />
+              </v-card-text>
+            </v-card>
           </v-col>
         </v-row>
       </section>
@@ -181,6 +195,30 @@ const canViewSkills = computed(() => {
   return permissions.canViewEmplSkills(id);
 });
 
+const canAddSkills = computed(() => {
+  const id = employeeId.value;
+  if (typeof id !== "number") {
+    return false;
+  }
+  return permissions.canAddSkills(id);
+});
+
+const canDeleteSkills = computed(() => {
+  const id = employeeId.value;
+  if (typeof id !== "number") {
+    return false;
+  }
+  return permissions.canDeleteSkills(id);
+});
+
+const canRateSkills = computed(() => {
+  const id = employeeId.value;
+  if (typeof id !== "number") {
+    return false;
+  }
+  return permissions.canRateSkills(id);
+});
+
 onMounted(() => {
   void skillsDictionaryStore.loadSkillMetadata();
 });
@@ -199,7 +237,7 @@ function openTelegramDialog() {
 }
 
 async function handleAddSkillRequested() {
-  if (!canEditSkills.value) {
+  if (!canAddSkills.value) {
     return;
   }
   actionError.value = null;
@@ -223,7 +261,7 @@ async function handleRateSkill({
   skill: Skill;
   rating: number;
 }) {
-  if (!canEditSkills.value || rating <= 0) {
+  if (!canRateSkills.value || rating <= 0) {
     return;
   }
   actionError.value = null;
@@ -235,7 +273,7 @@ async function handleRateSkill({
 }
 
 function handleDeleteSkillRequested(skill: Skill) {
-  if (!canEditSkills.value) {
+  if (!canDeleteSkills.value) {
     return;
   }
   skillPendingDeletion.value = skill;
