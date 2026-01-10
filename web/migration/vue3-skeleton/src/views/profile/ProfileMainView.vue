@@ -23,11 +23,8 @@
 
       <section class="mt-6">
         <v-row dense>
-          <v-col cols="12" md="6">
-            <legacy-feature-card
-              :title="t('Отпуска')"
-              :description="t('Раздел_пока_доступен_в_legacy')"
-            />
+          <v-col cols="12">
+            <my-vacations />
           </v-col>
           <v-col cols="12" md="6">
             <legacy-feature-card
@@ -106,6 +103,7 @@ import { useEmployeeProfile } from "@/composables/useEmployeeProfile";
 import { useEmployeeSkills } from "@/composables/useEmployeeSkills";
 import { usePermissions } from "@/lib/permissions";
 import LegacyFeatureCard from "@/components/LegacyFeatureCard.vue";
+import MyVacations from "@/components/vacations/MyVacations.vue";
 import ProfileSummaryCard from "@/views/profile/components/ProfileSummaryCard.vue";
 import ProfileTelegramDialog from "@/views/profile/components/ProfileTelegramDialog.vue";
 import ProfileTechProfilesCard from "@/views/profile/components/ProfileTechProfilesCard.vue";

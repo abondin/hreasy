@@ -1,4 +1,5 @@
 import { createVuetify } from "vuetify";
+import { ru } from "vuetify/locale";
 import { aliases, mdi } from "vuetify/iconsets/mdi";
 import { fa } from "vuetify/iconsets/fa";
 import "vuetify/styles";
@@ -16,6 +17,10 @@ const vuetify = createVuetify({
         },
       },
     },
+  },
+  locale: {
+    locale: "ru",
+    messages: { ru },
   },
   icons: {
     defaultSet: "mdi",

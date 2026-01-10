@@ -7,6 +7,7 @@ import NotFoundView from "@/views/NotFoundView.vue";
 import LoginView from "@/views/LoginView.vue";
 import ProfileMainView from "@/views/profile/ProfileMainView.vue";
 import EmployeesView from "@/views/employees/EmployeesView.vue";
+import VacationsView from "@/views/vacations/VacationsView.vue";
 import { useAuthStore } from "@/stores/auth";
 
 const router = createRouter({
@@ -32,6 +33,12 @@ const router = createRouter({
       path: "/employees",
       name: "employees",
       component: EmployeesView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/vacations",
+      name: "vacations",
+      component: VacationsView,
       meta: { requiresAuth: true },
     },
     {

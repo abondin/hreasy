@@ -70,8 +70,10 @@ import { RouterView } from "vue-router";
 import { computed, getCurrentInstance, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
+import { usePermissions } from "@/lib/permissions";
 
 const authStore = useAuthStore();
+const permissions = usePermissions();
 const instance = getCurrentInstance();
 const globalProperties = instance?.appContext.config.globalProperties as {
   $router?: { push: (location: unknown) => Promise<unknown> };
@@ -86,7 +88,7 @@ const currentYear = new Date().getFullYear();
 
 const navigationItems = computed(() => {
   if (isAuthenticated.value) {
-    return [
+    const items = [
       {
         key: "profile-main",
         label: t("Профиль"),
@@ -100,6 +102,15 @@ const navigationItems = computed(() => {
         to: { name: "employees" },
       },
     ];
+    if (permissions.canViewAllVacations()) {
+      items.push({
+        key: "vacations",
+        label: t("Отпуска"),
+        icon: "mdi-calendar-range",
+        to: { name: "vacations" },
+      });
+    }
+    return items;
   }
 
   return [

@@ -1,6 +1,6 @@
 # Vue 3 Migration Tracker
 
-_Last updated: 2026-01-09_
+_Last updated: 2026-01-10_
 
 This document records the current technical baseline and the roadmap for migrating the HREasy web client from Vue 2 to Vue 3, together with related ecosystem upgrades. Keep it updated as work progresses so future sessions can resume from the latest state.
 
@@ -41,6 +41,7 @@ Use the checkboxes to mark completion; add notes/dates next to items as you prog
 - [ ] Start extracting domain-specific composables (auth, permissions, vacations) mirroring Vuex modules _(Auth store + `useEmployeeProfile` composable live in `migration/vue3-skeleton/src/stores/auth.ts` and `migration/vue3-skeleton/src/composables/useEmployeeProfile.ts`; need parity for vacations, overtime, salaries, dictionaries)_.
 - [ ] Replace Moment.js usage with Day.js or date-fns while staying on Vue 2 where possible _(Vue 3 skeleton ships ad-hoc formatters in `migration/vue3-skeleton/src/lib/datetime.ts`, legacy modules still rely on Moment)_.
 - [ ] Implement Vue 3 employees directory: new `useEmployeesDirectory` composable + `EmployeesVirtualTable` (based on Vuetify virtual table docs) + route/filters/dialog to browse all employees with card view. _Progress: added multi-select filters, permission-gated “Роль на проекте” column, expanded details card with avatar + project info/update + office map preview + vacations chips + tech profiles card + skills add/delete/rating (vue3-skeleton employees view). Remaining gaps: dictionary-backed filters (projects/BA) and full tech profiles chips UX parity._
+- [ ] Port vacations module: list/summary/timeline view + MyVacations + request/edit dialogs + date-range filters + export. _Progress: Vue 3 skeleton now includes VacationsView route, MyVacations block in profile, request + edit forms, timeline using `vis-timeline`, and services/utilities matching Vue 2; needs QA and UI parity review._
 
 ### Phase C – Store & Routing Transition
 
@@ -58,7 +59,7 @@ Use the checkboxes to mark completion; add notes/dates next to items as you prog
 ### Phase E – UI Stack Upgrade
 
 - [ ] Upgrade Vuetify to v3 and refactor affected components/templates (navigation, forms, dialogs) _(Vue 3 skeleton already renders auth + profile flows on Vuetify 3; bulk port of legacy modules still pending)_.
-- [ ] Replace deprecated Vue 2 plugins: `vue-clipboard2`, `vue-upload-component`, `vue-avatar-cropper` _(Custom replacements delivered in Vue 3 skeleton: `FileAttachmentsCard` + `FileUploadZone` + `ProfileAvatar`; migrate vacations clipboard usage next)_.
+- [ ] Replace deprecated Vue 2 plugins: `vue-clipboard2`, `vue-upload-component`, `vue-avatar-cropper` _(Custom replacements delivered in Vue 3 skeleton: `FileAttachmentsCard` + `FileUploadZone` + `ProfileAvatar`; vacations now use native Clipboard API)_.
 - [ ] Validate styling/theme parity and rebuild global theming config via `createVuetify` _(Skeleton theme configured in `migration/vue3-skeleton/src/plugins/vuetify.ts`; align tokens with legacy before cutover)_.
 
 ### Phase F – Final Cutover & Cleanup
@@ -70,7 +71,7 @@ Use the checkboxes to mark completion; add notes/dates next to items as you prog
 
 ## 4. Open Questions / Risks
 
-- Confirm availability of Vue 3 compatible replacements for vacations timeline (`vis-timeline`) and clipboard helpers; evaluate whether custom Composition API wrappers or alternative libraries are needed.
+- Validate `vis-timeline` integration under Vue 3 and confirm performance with large datasets (timeline now ported in Vue 3 skeleton).
 - Validate new uploader/cropper implementations (`migration/vue3-skeleton/src/components/FileUploadZone.vue`, `.../ProfileAvatar.vue`) against production API limits and security requirements.
 - Assess backend API contract changes required (if any) when upgrading Axios/interceptors.
 - Determine whether to adopt TypeScript strictness increases (e.g., `exactOptionalPropertyTypes`) during tooling upgrade.
@@ -91,7 +92,7 @@ Use this list as a smoke suite before/after significant migration steps. Expand 
 
 - **Authentication**: Login with valid/invalid credentials, verify return path redirect and logout flow (`src/components/login/Login.vue:46`).
 - **Employee profile & navigation**: Load profile dashboard, toggle navigation drawer, validate permission-gated menu visibility (`src/App.vue:24`, `src/store/modules/permission.service.ts:5`).
-- **Vacations**: Request new vacation, edit/auto-calc dates, review timeline view and filters (high Moment.js dependency) (`src/components/vacations/VacationEditForm.vue:244`, `src/components/vacations/VacationsTimeline.vue:90`).
+- **Vacations**: Request new vacation, edit/auto-calc dates, review timeline view and filters (now also in Vue 3 skeleton under `migration/vue3-skeleton/src/views/vacations/VacationsView.vue`).
 - **Overtimes & Timesheets**: Add overtime entry, approve/reject, export summaries; ensure month navigation and formatting works (`src/components/overtimes/AddOvertimeItemDialog.vue:204`, `src/components/ts/TimesheetTableComponent.vue:68`).
 - **Salary requests**: Submit/approve flows, inspect overview tables (`src/components/salary/SalaryRequestsTable.vue`, `src/components/salary/details/SalaryRequestDetailsView.vue`).
 - **Admin modules**: Projects CRUD, users/roles management, business account details, dictionary management, employees import workflows (`src/components/admin/**`).
@@ -125,12 +126,12 @@ Focus migration spikes here before tackling the long tail.
   export VITE_API_BASE_URL=/api/
   npm run dev
   ```
-- **Current scope**: authenticated shell with guarded router (`migration/vue3-skeleton/src/router/index.ts`), Pinia auth store, Vuetify 3 navigation (`migration/vue3-skeleton/src/App.vue`). Employee profile view now ports avatar upload with cropper, Telegram edit dialog, tech profile attachments, office map preview, and permissions logic (`migration/vue3-skeleton/src/views/profile/**`, `src/components/FileAttachmentsCard.vue`, `src/components/office-map/OfficeMapPreviewDialog.vue`).
+- **Current scope**: authenticated shell with guarded router (`migration/vue3-skeleton/src/router/index.ts`), Pinia auth store, Vuetify 3 navigation (`migration/vue3-skeleton/src/App.vue`). Employee profile view now ports avatar upload with cropper, Telegram edit dialog, tech profile attachments, office map preview, permissions logic, and MyVacations (`migration/vue3-skeleton/src/views/profile/**`). Vacations module now includes list/summary/timeline view + request/edit dialogs (`migration/vue3-skeleton/src/views/vacations/VacationsView.vue`, `src/components/vacations/**`).
 - **Testing status**: Vitest configured but no component specs yet; Playwright E2E covers unauthenticated redirect (`migration/vue3-skeleton/e2e/login.spec.ts`). ResizeObserver polyfill wired via `tests/setup.ts`.
 - **Next actions**:
-  1. Port vacations and overtime flows into composables/Pinia stores, replacing legacy placeholders in `ProfileMainView.vue` and validating Moment.js-free date helpers.
-  2. Backfill unit tests for new profile components (avatar, telegram, attachments, permissions) using Vitest + Vue Test Utils; decide on API mocking strategy for HTTP services.
-  3. Implement clipboard replacement (likely VueUse `useClipboard`) and ensure shared DI plugins (http, logger, permissions) can be consumed by both Vue 2 and Vue 3 builds.
-  4. Document deployment toggle and add CI jobs to run `npm run lint`, `npm run type-check`, and `npm run test:e2e` for the skeleton.
+  1. QA the Vue 3 vacations module (filters, add/edit, timeline, export) and compare with legacy behaviors; refine date inputs if needed.
+  2. Port overtime flows into composables/Pinia stores, replacing legacy placeholders in `ProfileMainView.vue`.
+  3. Backfill unit tests for new profile/vacations components (avatar, telegram, attachments, vacations) using Vitest + Vue Test Utils; decide on API mocking strategy for HTTP services.
+  4. Ensure shared DI plugins (http, logger, permissions) can be consumed by both Vue 2 and Vue 3 builds; document deployment toggle and add CI jobs to run `npm run lint`, `npm run type-check`, and `npm run test:e2e` for the skeleton.
 - **Tooling note**: project targets latest stable toolchain (Vite 7 + `@vitejs/plugin-vue` 6 + `vite-plugin-vuetify` 2.1 + optional devtools). Ensure Node 20+ before running installs; revisit dependencies if new breaking releases appear.
 - **Docs note**: before implementing or adjusting Vuetify components, consult the upstream documentation mirrored under `migration/vuetify/packages/docs`; reference the full `migration/vuetify` repo for implementation details when needed.
