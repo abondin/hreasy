@@ -56,9 +56,16 @@
                 @click="openUploadDialog"
             />
           </div>
-          <div v-else class="text-medium-emphasis">
-            {{ emptyMessageComputed }}
-          </div>
+          <v-btn
+              v-else-if="canUpload"
+              color="primary"
+              variant="tonal"
+              icon="mdi-plus"
+              :aria-label="uploadButtonLabel"
+              :title="uploadButtonLabel"
+              :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
+              @click="openUploadDialog"
+          />
         </template>
         <v-progress-circular
             v-else-if="loading"
@@ -68,16 +75,6 @@
         />
       </div>
 
-      <v-btn
-          v-if="canUpload && !displayFiles.length && !loading && !permissionDenied && !loadError"
-          color="primary"
-          variant="tonal"
-          icon="mdi-plus"
-          :aria-label="uploadButtonLabel"
-          :title="uploadButtonLabel"
-          :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
-          @click="openUploadDialog"
-      />
     </div>
 
     <v-alert
@@ -252,9 +249,7 @@ const permissionMessageComputed = computed(
     () => props.permissionMessage || t("Не достаточно прав"),
 );
 
-const emptyMessageComputed = computed(
-    () => props.emptyMessage || t("Нет доступных файлов"),
-);
+const emptyMessageComputed = computed(() => props.emptyMessage ?? "");
 
 const displayFiles = computed(() =>
     attachments.value.map((item: AttachmentItem) => ({

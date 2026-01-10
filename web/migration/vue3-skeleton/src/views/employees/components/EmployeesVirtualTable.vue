@@ -72,7 +72,7 @@
           </tr>
           <tr v-if="isExpanded(resolveItem(item, internalItem))">
             <td :colspan="columns.length">
-              <employee-details-card
+              <employee-details-expanded-row
                 :employee="resolveItem(item, internalItem)"
                 @employee-updated="emitEmployeeUpdated"
               />
@@ -108,7 +108,7 @@
           </tr>
           <tr v-if="isExpanded(resolveItem(item, internalItem))">
             <td :colspan="columns.length">
-              <employee-details-card
+              <employee-details-expanded-row
                 :employee="resolveItem(item, internalItem)"
                 @employee-updated="emitEmployeeUpdated"
               />
@@ -124,7 +124,7 @@
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { Employee } from "@/services/employee.service";
-import EmployeeDetailsCard from "@/views/employees/components/EmployeeDetailsDialog.vue";
+import EmployeeDetailsExpandedRow from "@/views/employees/components/EmployeeDetailsExpandedRow.vue";
 import { usePermissions } from "@/lib/permissions";
 
 const props = defineProps<{

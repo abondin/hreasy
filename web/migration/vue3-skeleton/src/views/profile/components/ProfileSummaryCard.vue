@@ -142,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref} from "vue";
+import { computed, toRef } from "vue";
 import {useI18n} from "vue-i18n";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import ProfileTelegramEditor from "@/views/profile/components/ProfileTelegramEditor.vue";
@@ -150,12 +150,18 @@ import type {Employee} from "@/services/employee.service";
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
 import ProjectInfoDialog from "@/components/project/ProjectInfoDialog.vue";
 import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialog.vue";
-import {usePermissions} from "@/lib/permissions";
+import { useOfficeMapPreview } from "@/composables/useOfficeMapPreview";
+import { useEmployeeProjectActions } from "@/composables/useEmployeeProjectActions";
 
-const {employee, readOnly = true} = defineProps<{
-  employee: Employee;
-  readOnly?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    employee: Employee;
+    readOnly?: boolean;
+  }>(),
+  {
+    readOnly: true,
+  },
+);
 
 const emit = defineEmits<{
   (event: "avatar-updated"): void;
@@ -163,26 +169,28 @@ const emit = defineEmits<{
   (event: "update-project"): void;
 }>();
 
-const {t} = useI18n();
-const mapDialogOpen = ref(false);
-const projectInfoDialogOpen = ref(false);
-const projectUpdateDialogOpen = ref(false);
-const permissions = usePermissions();
+const { t } = useI18n();
+const employee = toRef(props, "employee");
+const readOnly = computed(() => props.readOnly);
 
-const mapName = computed(() => employee.officeLocation?.mapName ?? null);
-const mapTitle = computed(() => employee.officeLocation?.name ?? null);
-const highlightedWorkplace = computed(
-    () => employee.officeWorkplace ?? null,
-);
-const canShowMap = computed(
-    () => Boolean(mapName.value),
-);
-const canShowProjectInfo = computed(
-    () => Boolean(employee.currentProject?.id),
-);
-const canEditProject = computed(
-    () => Boolean(employee.id && permissions.canUpdateCurrentProject(employee.id)),
-);
+const {
+  mapDialogOpen,
+  mapName,
+  mapTitle,
+  highlightedWorkplace,
+  openMap,
+} = useOfficeMapPreview(employee);
+
+const {
+  canShowProjectInfo,
+  canEditProject,
+  projectInfoDialogOpen,
+  projectUpdateDialogOpen,
+  openProjectInfo,
+  openProjectUpdate,
+} = useEmployeeProjectActions(employee);
+
+const canShowMap = computed(() => Boolean(mapName.value));
 
 function onAvatarUpdated() {
   emit("avatar-updated");
@@ -190,24 +198,6 @@ function onAvatarUpdated() {
 
 function emitEditTelegram() {
   emit("edit-telegram");
-}
-
-function openMap() {
-  if (canShowMap.value) {
-    mapDialogOpen.value = true;
-  }
-}
-
-function openProjectInfo() {
-  if (canShowProjectInfo.value) {
-    projectInfoDialogOpen.value = true;
-  }
-}
-
-function openProjectUpdate() {
-  if (canEditProject.value) {
-    projectUpdateDialogOpen.value = true;
-  }
 }
 
 function emitProjectUpdated() {

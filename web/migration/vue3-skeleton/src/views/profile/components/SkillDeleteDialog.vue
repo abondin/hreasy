@@ -4,54 +4,18 @@
   -->
 <template>
   <!--<editor-fold desc="Delete skill dialog">-->
-  <v-dialog
-    :model-value="open"
-    max-width="480"
-    persistent
-    @update:model-value="onModelChange"
-  >
-    <v-card>
-      <v-card-title>
-        {{ t("Удаление") }}
-      </v-card-title>
-      <v-card-text>
-        <p>
-          {{ t("Вы уверены, что хотите удалить запись?") }}
-        </p>
-        <p class="font-weight-medium">
-          {{ skillName }}
-        </p>
-        <v-alert
-          v-if="errorMessage"
-          type="error"
-          variant="tonal"
-          border="start"
-          class="mt-2"
-        >
-          {{ errorMessage }}
-        </v-alert>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn
-          variant="text"
-          color="secondary"
-          :disabled="loading"
-          @click="emitClose"
-        >
-          {{ t("Нет") }}
-        </v-btn>
-        <v-btn
-          color="primary"
-          :loading="loading"
-          :disabled="loading"
-          @click="confirm"
-        >
-          {{ t("Да") }}
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <confirm-delete-dialog
+    :open="open"
+    :title="t('Удаление')"
+    :message="t('Вы уверены, что хотите удалить запись?')"
+    :item-label="skillName"
+    :confirm-label="t('Да')"
+    :cancel-label="t('Нет')"
+    :loading="loading"
+    :error-message="errorMessage"
+    @close="emitClose"
+    @confirm="confirm"
+  />
   <!-- </editor-fold> -->
 </template>
 
@@ -59,6 +23,7 @@
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";
+import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
 import type { Skill } from "@/services/skills.service";
 
 const props = defineProps<{
@@ -87,12 +52,6 @@ watch(
 
 function emitClose() {
   emit("close");
-}
-
-function onModelChange(value: boolean) {
-  if (!value) {
-    emitClose();
-  }
 }
 
 async function confirm() {

@@ -20,7 +20,6 @@
         :can-download="canDownload"
         :can-upload="canUpload"
         :read-only="readOnly"
-        :empty-message="t('Квалификационные_карточки_отсутствуют')"
         :permission-message="t('Не достаточно прав')"
         :accept="ACCEPTED_FILE_TYPES"
         :maximum-size="MAX_FILE_SIZE"

@@ -41,7 +41,7 @@
                 <span>{{ t("Навыки") }}</span>
               </v-card-title>
               <v-card-text>
-                <profile-skills-card
+                <employee-skills-section
                   :grouped-skills="groupedSkills"
                   :loading="skillsSectionLoading"
                   :error="skillsSectionError"
@@ -50,9 +50,10 @@
                   :can-delete="canDeleteSkills"
                   :can-rate="canRateSkills"
                   :dense="true"
-                  @add="handleAddSkillRequested"
-                  @rate="handleRateSkill"
-                  @delete="handleDeleteSkillRequested"
+                  :submit-skill="submitNewSkill"
+                  :rate-skill="handleRateSkill"
+                  :delete-skill="confirmDeleteSkill"
+                  @deleted="handleSkillDeleted"
                 />
               </v-card-text>
             </v-card>
@@ -85,20 +86,6 @@
         @close="telegramDialogOpen = false"
         @updated="handleTelegramUpdated"
       />
-      <skill-create-dialog
-        :open="createSkillDialogOpen"
-        :skill-groups="skillGroups"
-        :shared-skill-names="sharedSkillNames"
-        :submit-skill="submitNewSkill"
-        @close="createSkillDialogOpen = false"
-      />
-      <skill-delete-dialog
-        :open="deleteSkillDialogOpen"
-        :skill="skillPendingDeletion"
-        :delete-skill="confirmDeleteSkill"
-        @close="closeDeleteDialog"
-        @deleted="handleSkillDeleted"
-      />
     </template>
 
     <v-alert v-else-if="hasError" type="error" variant="tonal" border="start">
@@ -117,15 +104,12 @@ import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
 import { useEmployeeProfile } from "@/composables/useEmployeeProfile";
 import { useEmployeeSkills } from "@/composables/useEmployeeSkills";
-import { useSkillsDictionaryStore } from "@/stores/skills-dictionary";
 import { usePermissions } from "@/lib/permissions";
 import LegacyFeatureCard from "@/components/LegacyFeatureCard.vue";
 import ProfileSummaryCard from "@/views/profile/components/ProfileSummaryCard.vue";
 import ProfileTelegramDialog from "@/views/profile/components/ProfileTelegramDialog.vue";
 import ProfileTechProfilesCard from "@/views/profile/components/ProfileTechProfilesCard.vue";
-import ProfileSkillsCard from "@/views/profile/components/ProfileSkillsCard.vue";
-import SkillCreateDialog from "@/views/profile/components/SkillCreateDialog.vue";
-import SkillDeleteDialog from "@/views/profile/components/SkillDeleteDialog.vue";
+import EmployeeSkillsSection from "@/components/skills/EmployeeSkillsSection.vue";
 import type { Skill, AddSkillBody } from "@/services/skills.service";
 
 const { t } = useI18n();
@@ -150,31 +134,19 @@ const {
   deleteSkill,
 } = useEmployeeSkills(() => employeeId.value);
 
-const skillsDictionaryStore = useSkillsDictionaryStore();
-const {
-  skillGroups,
-  sharedSkillNames,
-  loading: skillsMetadataLoading,
-  error: skillsMetadataError,
-} = storeToRefs(skillsDictionaryStore);
-
 const isLoading = computed(() => profileLoading.value);
 const hasError = computed(() => Boolean(profileError.value));
 const telegramDialogOpen = ref(false);
-const createSkillDialogOpen = ref(false);
-const deleteSkillDialogOpen = ref(false);
-const skillPendingDeletion = ref<Skill | null>(null);
 const actionError = ref<unknown>(null);
 
 const skillsSectionLoading = computed(
-  () => skillsLoading.value || skillsMetadataLoading.value,
+  () => skillsLoading.value,
 );
 
 const skillsSectionError = computed(() => {
   return (
     actionError.value ??
     skillsError.value ??
-    skillsMetadataError.value ??
     null
   );
 });
@@ -219,10 +191,6 @@ const canRateSkills = computed(() => {
   return permissions.canRateSkills(id);
 });
 
-onMounted(() => {
-  void skillsDictionaryStore.loadSkillMetadata();
-});
-
 function handleEmployeeUpdated() {
   reloadEmployeeProfile().catch(() => undefined);
 }
@@ -234,19 +202,6 @@ function handleTelegramUpdated() {
 
 function openTelegramDialog() {
   telegramDialogOpen.value = true;
-}
-
-async function handleAddSkillRequested() {
-  if (!canAddSkills.value) {
-    return;
-  }
-  actionError.value = null;
-  try {
-    await skillsDictionaryStore.loadSkillMetadata();
-    createSkillDialogOpen.value = true;
-  } catch (error) {
-    actionError.value = error;
-  }
 }
 
 async function submitNewSkill(payload: AddSkillBody) {
@@ -273,23 +228,11 @@ async function handleRateSkill({
 }
 
 function handleDeleteSkillRequested(skill: Skill) {
-  if (!canDeleteSkills.value) {
-    return;
-  }
-  skillPendingDeletion.value = skill;
-  deleteSkillDialogOpen.value = true;
-}
-
-function closeDeleteDialog() {
-  deleteSkillDialogOpen.value = false;
-  skillPendingDeletion.value = null;
 }
 
 async function confirmDeleteSkill(skill: Skill) {
   await deleteSkill(skill.id);
 }
 
-function handleSkillDeleted() {
-  closeDeleteDialog();
-}
+function handleSkillDeleted() {}
 </script>

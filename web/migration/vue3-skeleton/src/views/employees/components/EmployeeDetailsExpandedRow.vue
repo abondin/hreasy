@@ -125,7 +125,7 @@
               {{ t("Навыки") }}:
             </span>
           </div>
-          <profile-skills-card
+          <employee-skills-section
             :grouped-skills="groupedSkills"
             :loading="skillsSectionLoading"
             :error="skillsSectionError"
@@ -134,9 +134,10 @@
             :can-delete="canDeleteSkills"
             :can-rate="canRateSkills"
             :dense="true"
-            @add="handleAddSkillRequested"
-            @rate="handleRateSkill"
-            @delete="handleDeleteSkillRequested"
+            :submit-skill="submitNewSkill"
+            :rate-skill="handleRateSkill"
+            :delete-skill="confirmDeleteSkill"
+            @deleted="handleSkillDeleted"
           />
         </div>
       </v-col>
@@ -161,42 +162,26 @@
     :current-project="employee.currentProject ?? null"
     @updated="handleProjectUpdated"
   />
-  <skill-create-dialog
-    :open="createSkillDialogOpen"
-    :skill-groups="skillGroups"
-    :shared-skill-names="sharedSkillNames"
-    :submit-skill="submitNewSkill"
-    @close="createSkillDialogOpen = false"
-  />
-  <skill-delete-dialog
-    :open="deleteSkillDialogOpen"
-    :skill="skillPendingDeletion"
-    :delete-skill="confirmDeleteSkill"
-    @close="closeDeleteDialog"
-    @deleted="handleSkillDeleted"
-  />
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { storeToRefs } from "pinia";
+import { computed, ref, toRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { Employee } from "@/services/employee.service";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import ProfileTechProfilesCard from "@/views/profile/components/ProfileTechProfilesCard.vue";
-import ProfileSkillsCard from "@/views/profile/components/ProfileSkillsCard.vue";
-import SkillCreateDialog from "@/views/profile/components/SkillCreateDialog.vue";
-import SkillDeleteDialog from "@/views/profile/components/SkillDeleteDialog.vue";
+import EmployeeSkillsSection from "@/components/skills/EmployeeSkillsSection.vue";
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
 import ProjectInfoDialog from "@/components/project/ProjectInfoDialog.vue";
 import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialog.vue";
 import { usePermissions } from "@/lib/permissions";
 import { formatDate } from "@/lib/datetime";
+import { useOfficeMapPreview } from "@/composables/useOfficeMapPreview";
+import { useEmployeeProjectActions } from "@/composables/useEmployeeProjectActions";
 import {
   fetchCurrentOrFutureVacations,
   type EmployeeVacationShort,
 } from "@/services/vacation.service";
-import { useSkillsDictionaryStore } from "@/stores/skills-dictionary";
 import {
   addSkill,
   deleteSkill,
@@ -216,17 +201,24 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const permissions = usePermissions();
-const skillsDictionaryStore = useSkillsDictionaryStore();
-const {
-  skillGroups,
-  sharedSkillNames,
-  loading: skillsMetadataLoading,
-  error: skillsMetadataError,
-} = storeToRefs(skillsDictionaryStore);
+const employeeRef = toRef(props, "employee");
 
-const mapDialogOpen = ref(false);
-const projectInfoDialogOpen = ref(false);
-const projectUpdateDialogOpen = ref(false);
+const {
+  mapDialogOpen,
+  mapName,
+  mapTitle,
+  highlightedWorkplace,
+  openMap,
+} = useOfficeMapPreview(employeeRef);
+
+const {
+  canShowProjectInfo,
+  canEditProject,
+  projectInfoDialogOpen,
+  projectUpdateDialogOpen,
+  openProjectInfo,
+  openProjectUpdate,
+} = useEmployeeProjectActions(employeeRef);
 
 const vacationsLoading = ref(false);
 const employeeVacations = ref<EmployeeVacationShort[]>([]);
@@ -234,25 +226,7 @@ const employeeVacations = ref<EmployeeVacationShort[]>([]);
 const skills = ref<Skill[]>([]);
 const skillsLoading = ref(false);
 const skillsActionError = ref<unknown>(null);
-const createSkillDialogOpen = ref(false);
-const deleteSkillDialogOpen = ref(false);
-const skillPendingDeletion = ref<Skill | null>(null);
 
-const mapName = computed(() => props.employee.officeLocation?.mapName ?? null);
-const mapTitle = computed(() => props.employee.officeLocation?.name ?? null);
-const highlightedWorkplace = computed(
-  () => props.employee.officeWorkplace ?? null,
-);
-
-const canShowProjectInfo = computed(
-  () => Boolean(props.employee.currentProject?.id),
-);
-const canEditProject = computed(
-  () =>
-    Boolean(
-      props.employee.id && permissions.canUpdateCurrentProject(props.employee.id),
-    ),
-);
 const canViewTechProfiles = computed(() =>
   permissions.canDownloadTechProfiles(props.employee.id),
 );
@@ -272,12 +246,8 @@ const canRateSkills = computed(() =>
   permissions.canRateSkills(props.employee.id),
 );
 
-const skillsSectionLoading = computed(
-  () => skillsLoading.value || skillsMetadataLoading.value,
-);
-const skillsSectionError = computed(
-  () => skillsActionError.value ?? skillsMetadataError.value ?? null,
-);
+const skillsSectionLoading = computed(() => skillsLoading.value);
+const skillsSectionError = computed(() => skillsActionError.value ?? null);
 
 const groupedSkills = computed<GroupedSkillsItem[]>(() => {
   const groups = new Map<number, GroupedSkillsItem>();
@@ -314,9 +284,6 @@ watch(
       vacationsLoading.value = false;
       skills.value = [];
       skillsActionError.value = null;
-      createSkillDialogOpen.value = false;
-      deleteSkillDialogOpen.value = false;
-      skillPendingDeletion.value = null;
       return;
     }
     vacationsLoading.value = true;
@@ -342,39 +309,8 @@ watch(
   { immediate: true },
 );
 
-function openMap() {
-  if (mapName.value) {
-    mapDialogOpen.value = true;
-  }
-}
-
-function openProjectInfo() {
-  if (canShowProjectInfo.value) {
-    projectInfoDialogOpen.value = true;
-  }
-}
-
-function openProjectUpdate() {
-  if (canEditProject.value) {
-    projectUpdateDialogOpen.value = true;
-  }
-}
-
 function handleProjectUpdated() {
   emit("employee-updated");
-}
-
-async function handleAddSkillRequested() {
-  if (!canAddSkills.value) {
-    return;
-  }
-  skillsActionError.value = null;
-  try {
-    await skillsDictionaryStore.loadSkillMetadata();
-    createSkillDialogOpen.value = true;
-  } catch (error) {
-    skillsActionError.value = error;
-  }
 }
 
 async function submitNewSkill(payload: AddSkillBody) {
@@ -399,9 +335,6 @@ async function handleRateSkill({
   skill: Skill;
   rating: number;
 }) {
-  if (!canRateSkills.value) {
-    return;
-  }
   skillsActionError.value = null;
   skillsLoading.value = true;
   try {
@@ -416,15 +349,6 @@ async function handleRateSkill({
   }
 }
 
-function handleDeleteSkillRequested(skill: Skill) {
-  if (!canDeleteSkills.value) {
-    return;
-  }
-  skillsActionError.value = null;
-  skillPendingDeletion.value = skill;
-  deleteSkillDialogOpen.value = true;
-}
-
 async function confirmDeleteSkill(skill: Skill) {
   skillsLoading.value = true;
   try {
@@ -434,18 +358,8 @@ async function confirmDeleteSkill(skill: Skill) {
   }
 }
 
-function handleSkillDeleted() {
-  const skill = skillPendingDeletion.value;
-  if (!skill) {
-    return;
-  }
+function handleSkillDeleted(skill: Skill) {
   skills.value = skills.value.filter((item) => item.id !== skill.id);
-  closeDeleteDialog();
-}
-
-function closeDeleteDialog() {
-  deleteSkillDialogOpen.value = false;
-  skillPendingDeletion.value = null;
 }
 </script>
 

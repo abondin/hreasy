@@ -18,8 +18,19 @@
 
     <div v-else class="profile-skills-card__layout">
       <div class="profile-skills-card__list">
-        <div v-if="groupedSkills.length === 0" class="profile-skills-card__empty">
-          {{ t("Нет навыков") }}
+        <div v-if="groupedSkills.length === 0 && canAdd" class="profile-skills-card__actions mt-2">
+          <v-tooltip location="top">
+            <template #activator="{ props: tooltipProps }">
+              <v-btn
+                  v-bind="tooltipProps"
+                  icon="mdi-plus"
+                  color="primary"
+                  variant="tonal"
+                  @click="emitAdd"
+              />
+            </template>
+            {{ t("Добавить навык") }}
+          </v-tooltip>
         </div>
 
         <v-row v-else :dense="isDense">
@@ -64,13 +75,11 @@
                         {{ skill.name }}
                       </div>
                       <v-btn
-                        v-if="canDelete"
                         icon="mdi-close"
                         size="small"
                         variant="text"
-                        color="error"
-                        class="profile-skills-card__menu-delete"
-                        @click.stop.prevent="() => emitDelete(skill)"
+                        class="profile-skills-card__menu-close"
+                        @click.stop.prevent="() => onMenuToggle(skill.id, false)"
                       />
                     </div>
                       <v-rating
@@ -99,6 +108,16 @@
                         </template>
                       </li>
                     </ul>
+                    <div v-if="canDelete" class="profile-skills-card__menu-actions">
+                      <v-btn
+                        color="error"
+                        variant="text"
+                        prepend-icon="mdi-delete"
+                        @click.stop.prevent="() => emitDelete(skill)"
+                      >
+                        {{ t("Удалить") }}
+                      </v-btn>
+                    </div>
                   </v-sheet>
                 </v-menu>
               </div>
@@ -307,7 +326,13 @@ function ratingCountLabel(count: number): string {
   word-break: break-word;
 }
 
-.profile-skills-card__menu-delete {
+.profile-skills-card__menu-close {
   min-width: auto;
+}
+
+.profile-skills-card__menu-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 </style>
