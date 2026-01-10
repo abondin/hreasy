@@ -7,7 +7,9 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { DataSet, Timeline } from "vis-timeline/standalone";
+import { DataSet } from "vis-data";
+import { Timeline } from "vis-timeline/standalone";
+import type { DataGroup, DataItem, TimelineOptions } from "vis-timeline";
 import type { Vacation, VacationStatus } from "@/services/vacation.service";
 import { formatDate } from "@/lib/datetime";
 import { addDays, getEndOfYear, getStartOfYear } from "@/lib/vacation-dates";
@@ -22,14 +24,14 @@ const emit = defineEmits<{ (event: "year-navigation", year: number): void }>();
 const { t } = useI18n();
 const timelineRef = ref<HTMLElement | null>(null);
 const timeline = ref<Timeline | null>(null);
-const items = new DataSet();
-const groups = new DataSet();
+const items = new DataSet<DataItem>();
+const groups = new DataSet<DataGroup>();
 
 function initTimeline() {
   if (!timelineRef.value) {
     return;
   }
-  const options = {
+  const options: TimelineOptions = {
     stack: false,
     groupOrder: (a: { content: string }, b: { content: string }) =>
       a.content.localeCompare(b.content),

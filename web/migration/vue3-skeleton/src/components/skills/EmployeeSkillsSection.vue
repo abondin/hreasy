@@ -39,7 +39,7 @@ import ProfileSkillsCard from "@/views/profile/components/ProfileSkillsCard.vue"
 import SkillCreateDialog from "@/views/profile/components/SkillCreateDialog.vue";
 import SkillDeleteDialog from "@/views/profile/components/SkillDeleteDialog.vue";
 import { useSkillsDictionaryStore } from "@/stores/skills-dictionary";
-import type { GroupedSkillsItem } from "@/composables/useEmployeeSkills";
+import type { GroupedSkillsItem } from "@/lib/skills";
 import type { Skill, AddSkillBody } from "@/services/skills.service";
 
 const props = defineProps<{

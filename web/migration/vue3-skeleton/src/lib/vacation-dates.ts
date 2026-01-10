@@ -1,6 +1,4 @@
-function pad(value: number): string {
-  return value.toString().padStart(2, "0");
-}
+import { formatIsoDate } from "@/lib/datetime";
 
 export function parseDateOnly(value?: string | null): Date | null {
   if (!value) {
@@ -19,7 +17,7 @@ export function parseDateOnly(value?: string | null): Date | null {
 }
 
 export function formatDateOnly(date: Date): string {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return formatIsoDate(date);
 }
 
 export function addDays(date: Date, days: number): Date {

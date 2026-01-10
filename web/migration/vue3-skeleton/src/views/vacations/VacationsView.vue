@@ -143,7 +143,7 @@
             :items-per-page="defaultItemsPerPage"
             class="text-truncate"
           >
-            <template #item.employeeDisplayName="{ item }">
+            <template v-slot:[`item.employeeDisplayName`]="{ item }">
               <v-menu>
                 <template #activator="{ props }">
                   <v-btn size="small" variant="text" v-bind="props">
@@ -175,19 +175,19 @@
                 </v-list>
               </v-menu>
             </template>
-            <template #item.startDate="{ item }">
+            <template v-slot:[`item.startDate`]="{ item }">
               {{ formatDate(item.startDate) }}
             </template>
-            <template #item.endDate="{ item }">
+            <template v-slot:[`item.endDate`]="{ item }">
               {{ formatDate(item.endDate) }}
             </template>
-            <template #item.plannedStartDate="{ item }">
+            <template v-slot:[`item.plannedStartDate`]="{ item }">
               {{ formatDate(item.plannedStartDate) }}
             </template>
-            <template #item.plannedEndDate="{ item }">
+            <template v-slot:[`item.plannedEndDate`]="{ item }">
               {{ formatDate(item.plannedEndDate) }}
             </template>
-            <template #item.status="{ item }">
+            <template v-slot:[`item.status`]="{ item }">
               {{ t(`VACATION_STATUS_ENUM.${item.status}`) }}
             </template>
           </v-data-table>
@@ -205,12 +205,12 @@
             :items-per-page="defaultItemsPerPage"
             class="text-truncate"
           >
-            <template #item.employeeDisplayName="{ item }">
+            <template v-slot:[`item.employeeDisplayName`]="{ item }">
               <v-btn size="small" variant="text" @click="selectEmployee(item)">
                 {{ item.employeeDisplayName }}
               </v-btn>
             </template>
-            <template #item.upcomingVacation="{ item }">
+            <template v-slot:[`item.upcomingVacation`]="{ item }">
               <span v-if="item.upcomingVacation">
                 {{ formatDate(item.upcomingVacation.startDate) }} -
                 {{ formatDate(item.upcomingVacation.endDate) }}
@@ -275,8 +275,6 @@ import {
   isDateInRange,
 } from "@/lib/vacation-dates";
 import { usePermissions } from "@/lib/permissions";
-import { listEmployees, type Dict } from "@/services/employee.service";
-import { fetchDaysNotIncludedInVacations } from "@/services/dict.service";
 import {
   exportVacations,
   fetchVacations,
@@ -284,11 +282,7 @@ import {
   type VacationStatus,
   vacationStatuses,
 } from "@/services/vacation.service";
-import {
-  fetchCurrentProjectRoles,
-  fetchProjects,
-  type ProjectDictDto,
-} from "@/services/projects.service";
+import { useVacationsDictionaries } from "@/components/vacations/useVacationsDictionaries";
 
 const { t } = useI18n();
 const permissions = usePermissions();
@@ -343,10 +337,15 @@ const filter = reactive({
 
 const loading = ref(false);
 const vacations = ref<Vacation[]>([]);
-const allEmployees = ref<Dict[]>([]);
-const projectOptions = ref<ProjectDictDto[]>([]);
-const projectRoles = ref<string[]>([]);
-const daysNotIncludedInVacations = ref<string[]>([]);
+const {
+  projectOptions,
+  projectRoles,
+  employees: allEmployees,
+  daysNotIncludedInVacations,
+  loadProjectsAndRoles,
+  loadEmployees,
+  loadDaysNotIncluded,
+} = useVacationsDictionaries();
 
 const vacationDialog = ref(false);
 const selectedVacation = ref<Vacation | null>(null);
@@ -381,19 +380,11 @@ watch(canViewVacations, (value) => {
 async function bootstrapData() {
   loading.value = true;
   try {
-    const [projects, roles, employees, days] = await Promise.all([
-      fetchProjects(),
-      fetchCurrentProjectRoles(),
-      listEmployees(),
-      fetchDaysNotIncludedInVacations(allYears),
+    await Promise.all([
+      loadProjectsAndRoles(),
+      loadEmployees(),
+      loadDaysNotIncluded(allYears),
     ]);
-    projectOptions.value = projects.filter((project) => project.active !== false);
-    projectRoles.value = roles.map((role) => role.value).sort();
-    allEmployees.value = employees.map((employee) => ({
-      id: employee.id,
-      name: employee.displayName,
-    }));
-    daysNotIncludedInVacations.value = days;
     await fetchData(true);
   } catch (error) {
     snackbarMessage.value = errorUtils.shortMessage(error);
@@ -429,13 +420,19 @@ function filterItem(item: Vacation | EmployeeVacationSummary) {
   filtered =
     filtered &&
     (filter.selectedProjects.length === 0 ||
-      (item.employeeCurrentProject &&
-        filter.selectedProjects.includes(item.employeeCurrentProject.id)));
+      Boolean(
+        item.employeeCurrentProject &&
+          filter.selectedProjects.includes(item.employeeCurrentProject.id),
+      ));
   filtered =
     filtered &&
     (filter.selectedProjectRoles.length === 0 ||
-      (item.employeeCurrentProject?.role &&
-        filter.selectedProjectRoles.includes(item.employeeCurrentProject.role)));
+      Boolean(
+        item.employeeCurrentProject?.role &&
+          filter.selectedProjectRoles.includes(
+            item.employeeCurrentProject.role,
+          ),
+      ));
 
   if ("status" in item) {
     filtered =

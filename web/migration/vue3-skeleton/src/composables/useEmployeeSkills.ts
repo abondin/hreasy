@@ -5,19 +5,10 @@ import {
   fetchCurrentEmployeeSkills,
   type AddSkillBody,
   type Skill,
-  type SkillGroup,
   type UpdateRatingBody,
   updateSkillRating as updateSkillRatingApi,
 } from "@/services/skills.service";
-
-export interface GroupedSkillsItem {
-  group: SkillGroup;
-  skills: Skill[];
-}
-
-function sortByName(lhs: string, rhs: string): number {
-  return lhs.localeCompare(rhs, "ru", { sensitivity: "base" });
-}
+import { groupSkillsByGroup, type GroupedSkillsItem } from "@/lib/skills";
 
 export function useEmployeeSkills(
   employeeIdGetter: () => number | null | undefined,
@@ -86,28 +77,9 @@ export function useEmployeeSkills(
     { immediate: true },
   );
 
-  const groupedSkills = computed<GroupedSkillsItem[]>(() => {
-    const groups = new Map<number, GroupedSkillsItem>();
-    skills.value.forEach((skill) => {
-      const key = skill.group.id;
-      const entry = groups.get(key);
-      if (entry) {
-        entry.skills.push(skill);
-      } else {
-        groups.set(key, {
-          group: skill.group,
-          skills: [skill],
-        });
-      }
-    });
-
-    return Array.from(groups.values())
-      .map((item) => ({
-        group: item.group,
-        skills: [...item.skills].sort((a, b) => sortByName(a.name, b.name)),
-      }))
-      .sort((a, b) => sortByName(a.group.name, b.group.name));
-  });
+  const groupedSkills = computed<GroupedSkillsItem[]>(() =>
+    groupSkillsByGroup(skills.value),
+  );
 
   return {
     skills: computed(() => skills.value),

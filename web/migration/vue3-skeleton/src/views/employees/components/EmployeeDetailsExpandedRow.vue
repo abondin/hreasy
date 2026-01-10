@@ -175,6 +175,7 @@ import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDial
 import ProjectInfoDialog from "@/components/project/ProjectInfoDialog.vue";
 import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialog.vue";
 import { usePermissions } from "@/lib/permissions";
+import { useEmployeeSkillPermissions } from "@/composables/useEmployeeSkillPermissions";
 import { formatDate } from "@/lib/datetime";
 import { useOfficeMapPreview } from "@/composables/useOfficeMapPreview";
 import { useEmployeeProjectActions } from "@/composables/useEmployeeProjectActions";
@@ -189,7 +190,7 @@ import {
   type AddSkillBody,
   type Skill,
 } from "@/services/skills.service";
-import type { GroupedSkillsItem } from "@/composables/useEmployeeSkills";
+import { groupSkillsByGroup, type GroupedSkillsItem } from "@/lib/skills";
 
 const props = defineProps<{
   employee: Employee;
@@ -230,51 +231,20 @@ const skillsActionError = ref<unknown>(null);
 const canViewTechProfiles = computed(() =>
   permissions.canDownloadTechProfiles(props.employee.id),
 );
-const canViewSkills = computed(() =>
-  permissions.canViewEmplSkills(props.employee.id),
-);
-const canEditSkills = computed(() =>
-  permissions.canEditSkills(props.employee.id),
-);
-const canAddSkills = computed(() =>
-  permissions.canAddSkills(props.employee.id),
-);
-const canDeleteSkills = computed(() =>
-  permissions.canDeleteSkills(props.employee.id),
-);
-const canRateSkills = computed(() =>
-  permissions.canRateSkills(props.employee.id),
-);
+const {
+  canViewSkills,
+  canEditSkills,
+  canAddSkills,
+  canDeleteSkills,
+  canRateSkills,
+} = useEmployeeSkillPermissions(() => props.employee.id);
 
 const skillsSectionLoading = computed(() => skillsLoading.value);
 const skillsSectionError = computed(() => skillsActionError.value ?? null);
 
-const groupedSkills = computed<GroupedSkillsItem[]>(() => {
-  const groups = new Map<number, GroupedSkillsItem>();
-  skills.value.forEach((skill) => {
-    const key = skill.group.id;
-    const entry = groups.get(key);
-    if (entry) {
-      entry.skills.push(skill);
-    } else {
-      groups.set(key, {
-        group: skill.group,
-        skills: [skill],
-      });
-    }
-  });
-
-  return Array.from(groups.values())
-    .map((item) => ({
-      group: item.group,
-      skills: [...item.skills].sort((a, b) =>
-        a.name.localeCompare(b.name, "ru", { sensitivity: "base" }),
-      ),
-    }))
-    .sort((a, b) =>
-      a.group.name.localeCompare(b.group.name, "ru", { sensitivity: "base" }),
-    );
-});
+const groupedSkills = computed<GroupedSkillsItem[]>(() =>
+  groupSkillsByGroup(skills.value),
+);
 
 watch(
   () => props.employee.id,

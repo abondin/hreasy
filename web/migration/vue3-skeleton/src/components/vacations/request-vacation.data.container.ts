@@ -76,8 +76,13 @@ export function useRequestVacationAction() {
     if (formData.dates.length < 2) {
       return;
     }
-    const start = parseDateOnly(formData.dates[0]);
-    const end = parseDateOnly(formData.dates[1]);
+    const startValue = formData.dates[0];
+    const endValue = formData.dates[1];
+    if (!startValue || !endValue) {
+      return;
+    }
+    const start = parseDateOnly(startValue);
+    const end = parseDateOnly(endValue);
     if (start && end && end < start) {
       formData.dates = [formatDateOnly(end), formatDateOnly(start)];
     }
@@ -88,7 +93,11 @@ export function useRequestVacationAction() {
     if (formData.dates.length < 2) {
       return;
     }
-    const [start, end] = formData.dates;
+    const start = formData.dates[0];
+    const end = formData.dates[1];
+    if (!start || !end) {
+      return;
+    }
     formData.daysNumber = calculateVacationDays(
       start,
       end,
@@ -100,8 +109,13 @@ export function useRequestVacationAction() {
     if (formData.dates.length < 2) {
       return "";
     }
-    const start = formatDate(formData.dates[0]);
-    const end = formatDate(formData.dates[1]);
+    const startValue = formData.dates[0];
+    const endValue = formData.dates[1];
+    if (!startValue || !endValue) {
+      return "";
+    }
+    const start = formatDate(startValue);
+    const end = formatDate(endValue);
     return start && end ? `${start} - ${end}` : "";
   }
 
@@ -114,7 +128,12 @@ export function useRequestVacationAction() {
       return;
     }
 
-    const [startDate, endDate] = formData.dates;
+    const startDate = formData.dates[0];
+    const endDate = formData.dates[1];
+    if (!startDate || !endDate) {
+      error.value = t("Выберите даты");
+      return;
+    }
     const payload: RequestOrUpdateMyVacation = {
       year: formData.year,
       startDate,

@@ -146,7 +146,7 @@
 <script setup lang="ts">
 import {computed, ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
-import type {GroupedSkillsItem} from "@/composables/useEmployeeSkills";
+import type {GroupedSkillsItem} from "@/lib/skills";
 import type {Skill} from "@/services/skills.service";
 
 const props = defineProps<{

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <!--
   Form fields for requesting or updating planned vacations.
 -->
@@ -37,6 +38,7 @@
       @update:model-value="handleManualToggle"
     />
 
+    <!-- eslint-disable-next-line vue/no-mutating-props -->
     <v-slider
       v-if="manualDays"
       v-model="data.formData.daysNumber"
@@ -47,6 +49,7 @@
       :label="t('Количество дней')"
     />
 
+    <!-- eslint-disable-next-line vue/no-mutating-props -->
     <v-textarea
         v-model="data.formData.notes"
         rows="3"
@@ -58,6 +61,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable vue/no-mutating-props */
 import {computed} from "vue";
 import {useI18n} from "vue-i18n";
 import type {RequestVacationAction} from "@/components/vacations/request-vacation.data.container";
@@ -72,8 +76,8 @@ const {t} = useI18n();
 const formattedDates = computed(() => props.data.formattedDates());
 const manualDays = computed({
   get: () => props.data.daysNumberSetManually.value,
-  set: (value: boolean) => {
-    props.data.daysNumberSetManually.value = value;
+  set: (value: boolean | null) => {
+    props.data.daysNumberSetManually.value = Boolean(value);
   },
 });
 
@@ -94,13 +98,18 @@ const pickerRange = computed({
       .sort((a, b) => a.getTime() - b.getTime());
     const start = sorted[0];
     const end = sorted[sorted.length - 1];
+    if (!start || !end) {
+      props.data.formData.dates = [];
+      props.data.datesUpdated();
+      return;
+    }
     props.data.formData.dates = [formatDateOnly(start), formatDateOnly(end)];
     props.data.datesUpdated();
   },
 });
 
 
-function handleManualToggle(value: boolean) {
+function handleManualToggle(value: boolean | null) {
   if (!value) {
     props.data.updateDaysNumber();
   }

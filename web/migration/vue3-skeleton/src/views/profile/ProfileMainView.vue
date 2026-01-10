@@ -95,13 +95,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import { storeToRefs } from "pinia";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
 import { useEmployeeProfile } from "@/composables/useEmployeeProfile";
 import { useEmployeeSkills } from "@/composables/useEmployeeSkills";
-import { usePermissions } from "@/lib/permissions";
+import { useEmployeeSkillPermissions } from "@/composables/useEmployeeSkillPermissions";
 import LegacyFeatureCard from "@/components/LegacyFeatureCard.vue";
 import MyVacations from "@/components/vacations/MyVacations.vue";
 import ProfileSummaryCard from "@/views/profile/components/ProfileSummaryCard.vue";
@@ -112,7 +111,6 @@ import type { Skill, AddSkillBody } from "@/services/skills.service";
 
 const { t } = useI18n();
 const authStore = useAuthStore();
-const permissions = usePermissions();
 
 const employeeId = computed(() => authStore.employeeId ?? null);
 
@@ -137,9 +135,7 @@ const hasError = computed(() => Boolean(profileError.value));
 const telegramDialogOpen = ref(false);
 const actionError = ref<unknown>(null);
 
-const skillsSectionLoading = computed(
-  () => skillsLoading.value,
-);
+const skillsSectionLoading = computed(() => skillsLoading.value);
 
 const skillsSectionError = computed(() => {
   return (
@@ -149,45 +145,13 @@ const skillsSectionError = computed(() => {
   );
 });
 
-const canEditSkills = computed(() => {
-  const id = employeeId.value;
-  if (typeof id !== "number") {
-    return false;
-  }
-  return permissions.canEditSkills(id);
-});
-
-const canViewSkills = computed(() => {
-  const id = employeeId.value;
-  if (typeof id !== "number") {
-    return false;
-  }
-  return permissions.canViewEmplSkills(id);
-});
-
-const canAddSkills = computed(() => {
-  const id = employeeId.value;
-  if (typeof id !== "number") {
-    return false;
-  }
-  return permissions.canAddSkills(id);
-});
-
-const canDeleteSkills = computed(() => {
-  const id = employeeId.value;
-  if (typeof id !== "number") {
-    return false;
-  }
-  return permissions.canDeleteSkills(id);
-});
-
-const canRateSkills = computed(() => {
-  const id = employeeId.value;
-  if (typeof id !== "number") {
-    return false;
-  }
-  return permissions.canRateSkills(id);
-});
+const {
+  canViewSkills,
+  canEditSkills,
+  canAddSkills,
+  canDeleteSkills,
+  canRateSkills,
+} = useEmployeeSkillPermissions(() => employeeId.value);
 
 function handleEmployeeUpdated() {
   reloadEmployeeProfile().catch(() => undefined);
@@ -223,9 +187,6 @@ async function handleRateSkill({
   } catch (error) {
     actionError.value = error;
   }
-}
-
-function handleDeleteSkillRequested(skill: Skill) {
 }
 
 async function confirmDeleteSkill(skill: Skill) {

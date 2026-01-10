@@ -249,8 +249,6 @@ const permissionMessageComputed = computed(
     () => props.permissionMessage || t("Не достаточно прав"),
 );
 
-const emptyMessageComputed = computed(() => props.emptyMessage ?? "");
-
 const displayFiles = computed(() =>
     attachments.value.map((item: AttachmentItem) => ({
       key: `${item.filename}-${(item as { id?: string | number }).id ?? ""}`,

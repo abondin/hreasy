@@ -12,6 +12,10 @@ function parseIso(value: string | undefined | null): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+export function formatIsoDate(date: Date): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 export function formatDate(value: string | undefined | null): string {
   const date = parseIso(value);
   if (!date) {

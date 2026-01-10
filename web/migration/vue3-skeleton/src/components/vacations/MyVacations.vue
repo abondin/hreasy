@@ -57,16 +57,16 @@
         hide-default-footer
         :items-per-page="-1"
       >
-        <template #item.startDate="{ item }">
+        <template v-slot:[`item.startDate`]="{ item }">
           {{ formatDate(item.startDate) }}
         </template>
-        <template #item.endDate="{ item }">
+        <template v-slot:[`item.endDate`]="{ item }">
           {{ formatDate(item.endDate) }}
         </template>
-        <template #item.status="{ item }">
+        <template v-slot:[`item.status`]="{ item }">
           {{ t(`VACATION_STATUS_ENUM.${item.status}`) }}
         </template>
-        <template #item.notes="{ item }">
+        <template v-slot:[`item.notes`]="{ item }">
           <div class="d-flex justify-space-between align-center">
             <span>{{ item.notes || "" }}</span>
             <v-tooltip location="bottom">
@@ -147,11 +147,11 @@ import {
   type MyVacation,
   type VacPlanningPeriod,
 } from "@/services/vacation.service";
-import { fetchDaysNotIncludedInVacations } from "@/services/dict.service";
 import { formatDate } from "@/lib/datetime";
 import { getDefaultYears } from "@/lib/vacation-dates";
 import { useRequestVacationAction } from "@/components/vacations/request-vacation.data.container";
 import { errorUtils } from "@/lib/errors";
+import { useVacationsDictionaries } from "@/components/vacations/useVacationsDictionaries";
 
 const { t } = useI18n();
 
@@ -167,6 +167,7 @@ const loading = ref(false);
 const vacations = ref<MyVacation[]>([]);
 const openedPeriods = ref<VacPlanningPeriod[]>([]);
 const requestAction = useRequestVacationAction();
+const { daysNotIncludedInVacations, loadDaysNotIncluded } = useVacationsDictionaries();
 const loadError = ref("");
 const requestDialogOpen = computed({
   get: () => requestAction.open.value,
@@ -198,8 +199,8 @@ async function fetchData() {
   try {
     const periods = await openPlanningPeriods();
     openedPeriods.value = periods;
-    const days = await fetchDaysNotIncludedInVacations(getDefaultYears());
-    requestAction.setDaysNotIncluded(days);
+    await loadDaysNotIncluded(getDefaultYears());
+    requestAction.setDaysNotIncluded(daysNotIncludedInVacations.value);
     const data = await fetchMyVacations();
     vacations.value = data.filter((item) => item.startDate && item.endDate);
   } catch (error) {

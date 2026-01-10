@@ -43,7 +43,6 @@
 
     <v-card-text>
       <v-data-table
-        v-if="expandedId !== null"
         :headers="headers"
         :items="items"
         item-key="id"
@@ -56,10 +55,9 @@
         :items-per-page="-1"
         hide-default-footer
       >
-        <template #item="{ columns, internalItem, item, props, itemRef }">
+        <template #item="{ columns, internalItem, item, props }">
           <tr
             v-bind="props"
-            :ref="itemRef"
             class="cursor-pointer"
             @click="toggleRow(resolveItem(item, internalItem))"
           >
@@ -80,42 +78,7 @@
           </tr>
         </template>
       </v-data-table>
-      <v-data-table-virtual
-        v-else
-        :headers="headers"
-        :items="items"
-        item-key="id"
-        :height="tableHeight"
-        fixed-header
-        fixed-footer
-        density="compact"
-        :loading="loading"
-        :loading-text="t('Загрузка_данных')"
-      >
-        <template #item="{ columns, internalItem, item, props, itemRef }">
-          <tr
-            v-bind="props"
-            :ref="itemRef"
-            class="cursor-pointer"
-            @click="toggleRow(resolveItem(item, internalItem))"
-          >
-            <td
-              v-for="column in columns"
-              :key="column.key ?? column.title"
-            >
-              {{ toDisplay(column.key ?? "", resolveItem(item, internalItem)) }}
-            </td>
-          </tr>
-          <tr v-if="isExpanded(resolveItem(item, internalItem))">
-            <td :colspan="columns.length">
-              <employee-details-expanded-row
-                :employee="resolveItem(item, internalItem)"
-                @employee-updated="emitEmployeeUpdated"
-              />
-            </td>
-          </tr>
-        </template>
-      </v-data-table-virtual>
+
     </v-card-text>
   </v-card>
 </template>
