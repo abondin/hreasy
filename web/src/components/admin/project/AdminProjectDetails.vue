@@ -1,8 +1,8 @@
 <!-- Project detailed page -->
 <template>
   <v-container>
+    <v-alert v-if="error" type="error" @click="routeToProjects()">{{ error }}</v-alert>
     <v-card v-if="project">
-
       <v-card-title>
         <v-btn text icon to="/admin/projects">
           <v-icon>mdi-arrow-left</v-icon>
@@ -68,7 +68,7 @@ import {SimpleDict} from "@/store/modules/dict";
 import {DateTimeUtils} from "@/components/datetimeutils";
 import AdminProjectForm from "@/components/admin/project/AdminProjectForm.vue";
 import ProjectInfoComponent from "@/components/shared/ProjectInfoComponent.vue";
-import {AccessDeniedError} from "@/components/errors";
+import {AccessDeniedError, errorUtils, ErrorUtils} from "@/components/errors";
 import router from "@/router";
 
 
@@ -81,6 +81,7 @@ const namespace_dict = 'dict';
 export default class AdminProjectDetails extends Vue {
   loading = false;
   updateDialog = false;
+  error: string|null = null
 
   @Prop({required: true})
   private projectId!: number;
@@ -107,6 +108,7 @@ export default class AdminProjectDetails extends Vue {
 
   private fetchDetails(showLoadingBar = true) {
     if (showLoadingBar) this.loading = true;
+    this.error = null;
     this.project = null;
     return adminProjectService.get(this.projectId)
         .then(project => {
@@ -116,11 +118,7 @@ export default class AdminProjectDetails extends Vue {
           }
         })
         .catch(ex => {
-          if (ex instanceof AccessDeniedError) {
-            logger.error(`Has no access to see project ${this.projectId}. Return to project list`)
-            this.$nextTick(() => router.push("/admin/projects"))
-          }
-          throw ex;
+          this.error = errorUtils.shortMessage(ex);
         })
         .finally(() => {
           if (showLoadingBar) this.loading = false;
@@ -137,6 +135,10 @@ export default class AdminProjectDetails extends Vue {
       id: this.project.id,
       type: 'project'
     } : null;
+  }
+
+  private routeToProjects(){
+    this.$router.push('/admin/projects');
   }
 
   private formatDate(date: string | undefined): string | undefined {

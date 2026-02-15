@@ -57,7 +57,7 @@ public class EmployeeProjectSecurityValidator {
 
         var hasViewCurrentProjectRolePerm = auth.getAuthorities().contains("view_empl_current_project_role");
         var hasViewSkillsPerm = auth.getAuthorities().contains("view_empl_skills");
-        boolean isManager = projectHierarchyService.isManager(auth,
+        boolean isManager = projectHierarchyService.isManager(auth, empl.getDepartment() == null ? null : empl.getDepartment().getId(),
                 empl.getCurrentProject() == null ? null
                         :
                         new ProjectHierarchyAccessor.ProjectInfo(empl.getCurrentProject().getId(),
