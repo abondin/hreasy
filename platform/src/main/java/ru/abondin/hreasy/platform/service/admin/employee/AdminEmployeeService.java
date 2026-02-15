@@ -17,6 +17,7 @@ import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo
 import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
@@ -39,12 +40,15 @@ public class AdminEmployeeService {
     private final AdminSecurityValidator securityValidator;
     private final EmployeeAllFieldsMapper mapper;
     private final EmployeeKidRepo kidsRepo;
+    private final FileStorage fileStorage;
 
 
     public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth, boolean includeFired) {
         log.info("Get full information for all employees by {}", auth.getUsername());
         return securityValidator.validateViewEmployeeFull(auth)
-                .flatMapMany(sec -> employeeRepo.findAllDetailed()).map(m -> mapper.fromView(m, dateTimeService.now())).filter(e -> includeFired || e.isActive());
+                .flatMapMany(sec -> employeeRepo.findAllDetailed())
+                .map(m -> mapper.fromView(m, hasAvatar(m.getId()), dateTimeService.now()))
+                .filter(e -> includeFired || e.isActive());
     }
 
     public Flux<EmployeeKidDto> findAllKids(AuthContext auth) {
@@ -66,7 +70,8 @@ public class AdminEmployeeService {
     public Mono<EmployeeWithAllDetailsDto> get(AuthContext auth, int employeeId) {
         log.info("Get all information about employee {} by {}", employeeId, auth.getUsername());
         return securityValidator.validateViewEmployeeFull(auth)
-                .flatMap(sec -> employeeRepo.findDetailedById(employeeId)).map(m -> mapper.fromView(m, dateTimeService.now()));
+                .flatMap(sec -> employeeRepo.findDetailedById(employeeId)).map(m ->
+                        mapper.fromView(m, hasAvatar(employeeId), dateTimeService.now()));
     }
 
     @Transactional
@@ -188,5 +193,8 @@ public class AdminEmployeeService {
         });
     }
 
+    private boolean hasAvatar(int emplId){
+        return fileStorage.fileExists("avatars", emplId + ".png");
+    }
 
 }
