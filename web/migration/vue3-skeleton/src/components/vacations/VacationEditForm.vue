@@ -27,16 +27,14 @@
           :label="t('Год')"
         />
 
-        <v-text-field
+        <my-date-form-component
           v-model="form.startDate"
-          type="date"
           :label="`${t('Начало')}*`"
           :rules="[requiredRule]"
         />
 
-        <v-text-field
+        <my-date-form-component
           v-model="form.endDate"
-          type="date"
           :label="`${t('Окончание')}*`"
           :rules="[requiredRule]"
         />
@@ -94,6 +92,7 @@
 import { reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";
+import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import {
   createVacation,
   updateVacation,
@@ -105,6 +104,7 @@ import {
   addDays,
   calculateVacationDays,
   formatDateOnly,
+  parseDateOnly,
 } from "@/lib/vacation-dates";
 import type { Dict } from "@/services/employee.service";
 
@@ -145,7 +145,7 @@ const form = reactive({
 function resetForm() {
   const baseYear = props.defaultYear ?? new Date().getFullYear();
   const defaultStart =
-    baseYear !== new Date().getFullYear() ? new Date(baseYear, 1, 1) : null;
+    baseYear !== new Date().getFullYear() ? new Date(baseYear, 0, 1) : null;
 
   form.isNew = true;
   form.id = undefined;
@@ -192,9 +192,12 @@ watch(
       return;
     }
     if (!form.endDate) {
-      const start = new Date(value);
+      const start = parseDateOnly(value);
+      if (!start) {
+        return;
+      }
       const end = addDays(start, defaultNumberOrDays - 1);
-      form.endDate = end.toISOString().slice(0, 10);
+      form.endDate = formatDateOnly(end);
     }
     updateDaysNumber();
   },

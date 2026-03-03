@@ -8,6 +8,24 @@ function parseIso(value: string | undefined | null): Date | null {
   if (!value) {
     return null;
   }
+  const dateOnly = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateOnly) {
+    const year = Number(dateOnly[1]);
+    const month = Number(dateOnly[2]);
+    const day = Number(dateOnly[3]);
+    const localDate = new Date(year, month - 1, day);
+    if (Number.isNaN(localDate.getTime())) {
+      return null;
+    }
+    if (
+      localDate.getFullYear() !== year ||
+      localDate.getMonth() !== month - 1 ||
+      localDate.getDate() !== day
+    ) {
+      return null;
+    }
+    return localDate;
+  }
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
 }

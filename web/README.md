@@ -47,8 +47,20 @@ export VITE_API_BASE_URL=/api/
 npm run dev
 ```
 
-The sandbox currently exposes a simplified layout, router, and Vuetify 3 theme so that individual features can be ported
-incrementally from the legacy Vue 2 application.
+Current status (2026-03-03):
+
+- Fully ready in Vue 3 skeleton:
+  - App shell + auth flow (login/logout/guarded routes/navigation).
+  - Employees directory.
+  - Profile main flow (avatar, telegram edit, skills, tech profiles, my vacations).
+  - Vacations module (list/summary/timeline/request/edit/export).
+- Not ready at all in Vue 3:
+  - Overtimes, salary requests, timesheets, assessments, articles, UDR/junior registry.
+  - Full admin area parity (projects/users/managers/dictionaries/import/business account/salary admin).
+  - Dedicated Telegram confirmation page parity.
+  - Final production cutover from Vue 2 to Vue 3.
+
+Detailed tracker: `MIGRATION_PLAN.md`.
 
 For production hosting alongside the legacy Vue 2 build, output the Vue 3 bundle under `/app-v3/`:
 
