@@ -58,6 +58,9 @@
         <v-row>
           <v-col cols="12" class="text-end text-body-2">
             {{ currentYear }} — <strong>Alexander Bondin</strong>
+            <a href="/" class="footer-link ml-4">
+              {{ t("Перейти_в_старую_версию_интерфейса") }}
+            </a>
           </v-col>
         </v-row>
       </v-container>
@@ -136,3 +139,9 @@ async function logout() {
   await router.push({ name: "login" });
 }
 </script>
+
+<style scoped>
+.footer-link {
+  color: inherit;
+}
+</style>

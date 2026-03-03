@@ -204,6 +204,9 @@
           cols="12"
       >
         {{ new Date().getFullYear() }} — <strong>Alexander Bondin</strong>
+        <a href="/new/" class="ml-4">
+          {{ $t('Перейти_в_новую_версию_интерфейса') }}
+        </a>
       </v-col>
     </v-footer>
   </v-app>

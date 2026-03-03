@@ -23,7 +23,10 @@ try {
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const proxyTarget = env.VITE_DEV_SERVER_PROXY || env.BACKEND_API_BASE_URL;
+  const proxyTarget =
+    env.VITE_DEV_SERVER_PROXY ||
+    env.BACKEND_API_BASE_URL ||
+    (mode === 'development' ? 'http://localhost:8081' : undefined);
   const basePath = env.VITE_APP_BASE_PATH ?? (mode === 'development' ? '/' : '/new/');
 
   return {

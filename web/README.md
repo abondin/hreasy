@@ -1,4 +1,4 @@
-# hreasy-web
+# HR Easy Web
 
 ## Current layout
 
