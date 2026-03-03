@@ -45,7 +45,8 @@ export interface EmployeeWithAllDetails {
     documentFull?: string,
     positionId?: number,
     officeLocationId?: number,
-    officeWorkplace?: string | null
+    officeWorkplace?: string | null,
+    hasAvatar: boolean
 }
 
 export interface CreateOrUpdateEmployeeBody {

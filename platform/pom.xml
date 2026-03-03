@@ -17,7 +17,7 @@
     <properties>
         <java.version>25</java.version>
         <lombok.version>1.18.42</lombok.version>
-        <testcontainers.version>1.21.3</testcontainers.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <git-commit-plugin.version>9.0.2</git-commit-plugin.version>
         <commons-collections4.version>4.5.0</commons-collections4.version>

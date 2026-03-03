@@ -60,7 +60,7 @@
 
         <v-list-group
             no-action
-            v-if="canReportSalaryRequest"
+            v-if="canReportSalaryRequest()"
         >
           <template v-slot:activator>
             <v-list-item-action>
