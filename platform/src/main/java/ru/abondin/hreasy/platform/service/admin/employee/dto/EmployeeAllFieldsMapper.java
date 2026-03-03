@@ -66,12 +66,14 @@ public interface EmployeeAllFieldsMapper extends MapperBase {
          */
         result.setActive(entry.getDateOfDismissal() == null ||
                 entry.getDateOfDismissal().isAfter(now.toLocalDate()));
+
         return result;
     }
 
-    default EmployeeWithAllDetailsDto fromView(EmployeeWithAllDetailsWithBaView entry, OffsetDateTime now) {
+    default EmployeeWithAllDetailsDto fromView(EmployeeWithAllDetailsWithBaView entry, boolean hasAvatar, OffsetDateTime now) {
         var result = fromEntry(entry, now);
         result.setBaId(entry.getBaId());
+        result.setHasAvatar(hasAvatar);
         return result;
     }
 

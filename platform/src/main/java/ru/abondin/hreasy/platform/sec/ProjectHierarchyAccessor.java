@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
+import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class ProjectHierarchyAccessor {
     }
 
     private final DictProjectRepo projectRepo;
+    private final EmployeeRepo employeeRepo;
 
 
     /**
@@ -37,11 +39,18 @@ public class ProjectHierarchyAccessor {
      * <ul>
      *     <li>Manager of current project of employee</li>
      *     <li>Manager of department of current project of employee</li>
+     *     <li>Manager of department of employee</li>
      * </ul>
      */
     public Mono<Boolean> isManager(AuthContext managerAuth, int employeeId) {
-        return projectRepo.getEmployeeCurrentProject(employeeId)
-                .map(entry -> isManager(managerAuth, new ProjectInfo(entry.getId(), entry.getDepartmentId(), entry.getBaId())))
+        return Mono.zip(projectRepo.getEmployeeCurrentProject(employeeId),
+                        employeeRepo.findById(employeeId))
+                .map(tuple -> {
+                    var project = tuple.getT1();
+                    var employee = tuple.getT2();
+                    return isManager(managerAuth, employee.getDepartmentId(),
+                            new ProjectInfo(project.getId(), project.getDepartmentId(), project.getBaId()));
+                })
                 .defaultIfEmpty(true);
     }
 
@@ -49,14 +58,16 @@ public class ProjectHierarchyAccessor {
      * Check if manager without additional access to database
      *
      * @param auth
+     * @param employeeDepartmentId
      * @param currentProject
      * @return
      */
-    public Boolean isManager(AuthContext auth, ProjectInfo currentProject) {
+    public Boolean isManager(AuthContext auth, Integer employeeDepartmentId, ProjectInfo currentProject) {
         return currentProject == null ||
                 (
                         auth.getEmployeeInfo().getAccessibleProjects().contains(currentProject.getId())
                                 || (currentProject.getDepartmentId() != null && auth.getEmployeeInfo().getAccessibleDepartments().contains(currentProject.getDepartmentId()))
+                                || (employeeDepartmentId != null && auth.getEmployeeInfo().getAccessibleDepartments().contains(employeeDepartmentId))
                                 || (currentProject.getBaId() != null && auth.getEmployeeInfo().getAccessibleBas().contains(currentProject.getBaId()))
                 );
     }

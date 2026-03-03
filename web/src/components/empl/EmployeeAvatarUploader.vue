@@ -57,7 +57,7 @@ export default class EmployeeAvatarUploader extends Vue {
   private uploadError: string | null = null;
 
   @Prop({required: true})
-  employee!: Employee;
+  employee!: { id: number, hasAvatar: boolean };
 
   @Prop({required:false, default:false})
   readOnly!: boolean;

@@ -26,4 +26,6 @@ public class EmployeeWithAllDetailsDto extends EmployeeAllFields {
      */
     private boolean active;
 
+    private boolean hasAvatar;
+
 }
