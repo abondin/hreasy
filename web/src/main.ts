@@ -1,26 +1,16 @@
-import Vue from 'vue'
-import App from '@/App.vue'
-import vuetify from '@/plugins/vuetify';
-import store from '@/store'
-import router from "@/router"
-import logger from "@/logger";
-import i18n from "@/i18n";
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import App from "./App.vue";
+import router from "./router";
+import vuetify from "./plugins/vuetify";
+import i18n from "./i18n";
+import "./assets/main.scss";
 
-Vue.config.productionTip = false
+const app = createApp(App);
 
-const vue = new Vue({
-    i18n,
-    store,
-    router,
-    vuetify,
-    render: h => h(App),
-    renderError(h, err) {
-        return h('pre', {style: {color: 'red'}}, err.stack)
-    }
-}).$mount('#app')
+app.use(createPinia());
+app.use(router);
+app.use(vuetify);
+app.use(i18n);
 
-window.addEventListener('unhandledrejection', function (event) {
-    logger.log('Dispatch unhandledrejection', event);
-    vue.$store.dispatch('error/unhandledrejection', event.reason);
-});
-
+app.mount("#app");
