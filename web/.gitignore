@@ -20,3 +20,16 @@ yarn-error.log*
 *.sln
 *.sw?
 *.*~
+
+# TypeScript incremental build output
+tsconfig.tsbuildinfo
+src/**/*.js
+src/**/*.d.ts
+
+# Keep ambient declarations that belong in source
+!env.d.ts
+
+# Tooling caches and reports
+.eslintcache
+test-results/
+playwright-report/

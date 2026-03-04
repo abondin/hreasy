@@ -1,143 +1,86 @@
-import Vue from 'vue'
-import VueRouter, {NavigationGuard} from 'vue-router'
-import Login from "@/components/login/Login.vue";
-import Employees from "@/components/empl/Employees.vue";
-import store from '@/store';
-import logger from "@/logger";
-import VacationsList from "@/components/vacations/VacationsList.vue";
-import EmployeeProfile from "@/components/empl/EmployeeProfile.vue";
-import AllOvertimes from "@/components/overtimes/AllOvertimes.vue";
-import AdminProjects from "@/components/admin/project/AdminProjects.vue";
-import AdminUsers from "@/components/admin/users/AdminUsers.vue";
-import AdminBusinessAccounts from "@/components/admin/business_account/AdminBusinessAccounts.vue";
-import AdminBusinessAccountDetails from "@/components/admin/business_account/AdminBusinessAccountDetails.vue";
-import AdminArticlesList from "@/components/admin/article/AdminArticlesList.vue";
-import AdminEmployees from "@/components/admin/employee/AdminEmployees.vue";
-import AssessmentShortList from "@/components/assessment/AssessmentShortList.vue";
-import EmployeeAssessmentProfile from "@/components/assessment/EmployeeAssessmentProfile.vue";
-import AssessmentDetailedVue from "@/components/assessment/AssessmentDetailedVue.vue";
-import AdminEmployeeKids from "@/components/admin/employee/AdminEmployeeKids.vue";
-import DictAdminMain from "@/components/admin/dict/DictAdminMain.vue";
-import DictAdminLevels from "@/components/admin/dict/DictAdminLevels.vue";
-import DictAdminDepartments from "@/components/admin/dict/DictAdminDepartments.vue";
-import DictAdminPositions from "@/components/admin/dict/DictAdminPositions.vue";
-import DictAdminOfficeLocations from "@/components/admin/dict/office/DictAdminOfficeLocations.vue";
-import PageNotFoundComponent from "@/components/PageNotFoundComponent.vue";
-import AdminEmployeeAndKidsTabs from "@/components/admin/employee/AdminEmployeeAndKidsTabs.vue";
-import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
-import AdminProjectDetails from "@/components/admin/project/AdminProjectDetails.vue";
-import AdminEmployeesImportWorkflowComponent from "@/components/admin/employee/imp/AdminEmployeesImportWorkflow.vue";
-import TimesheetTableComponent from "@/components/ts/TimesheetTableComponent.vue";
-import DictAdminOrganizations from "@/components/admin/dict/DictAdminOrganizations.vue";
-import AdminEmployeesKidsImportWorkflowComponent
-    from "@/components/admin/employee/imp/AdminEmployeesKidsImportWorkflow.vue";
-import TelegramConfirmationPage from "@/components/telegram/TelegramConfirmationPage.vue";
-import JuniorRegistryTable from "@/components/udr/JuniorRegistryTable.vue";
-import JuniorRegistryDetailedView from "@/components/udr/JuniorRegistryDetailedView.vue";
-import SalaryRequestsTable from "@/components/salary/SalaryRequestsTable.vue";
-import SalaryRequestDetailsView from "@/components/salary/details/SalaryRequestDetailsView.vue";
-import DictAdminOffices from "@/components/admin/dict/office/DictAdminOffices.vue";
-import DictAdminMaps from "@/components/admin/dict/office/maps/DictAdminMaps.vue";
-import EmployeeWithLatestSalaryRequestTable
-    from "@/components/salary/overview/EmployeeWithLatestSalaryRequestTable.vue";
+import {
+  createRouter,
+  createWebHistory,
+  type RouteLocationNormalized,
+} from "vue-router";
+import NotFoundView from "@/views/NotFoundView.vue";
+import LoginView from "@/views/LoginView.vue";
+import ProfileMainView from "@/views/profile/ProfileMainView.vue";
+import EmployeesView from "@/views/employees/EmployeesView.vue";
+import VacationsView from "@/views/vacations/VacationsView.vue";
+import { useAuthStore } from "@/stores/auth";
 
-Vue.use(VueRouter)
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: "/",
+      redirect: { name: "profile-main" },
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: LoginView,
+      meta: { requiresAuth: false },
+    },
+    {
+      path: "/profile",
+      name: "profile-main",
+      component: ProfileMainView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/employees",
+      name: "employees",
+      component: EmployeesView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/vacations",
+      name: "vacations",
+      component: VacationsView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      name: "not-found",
+      component: NotFoundView,
+      meta: { requiresAuth: false },
+    },
+  ],
+});
 
-const routes = [
-    {path: "/", redirect: '/profile/main'},
-    {path: "/404", component: PageNotFoundComponent},
-    {path: "*", redirect: "/404"},
-    {path: "/login", component: Login},
-    {
-        name: "TelegramConfirmationPage",
-        path: "/telegram/confirm/:employeeId/:telegramAccount/:confirmationCode",
-        component: TelegramConfirmationPage,
-        props: true
-    },
-    {name: "employees", path: "/employees", component: Employees},
-    {name: 'employeeProfile', path: "/profile/main", component: EmployeeProfile, props: true},
-    {path: "/vacations", component: VacationsList},
-    {path: "/overtimes", component: AllOvertimes},
-    {path: "/assessments", component: AssessmentShortList},
-    {path: "/assessments/:employeeId", component: EmployeeAssessmentProfile, props: true},
-    {
-        path: "/assessments/:employeeId/:assessmentId",
-        component: AssessmentDetailedVue,
-        name: 'AssessmentDetailedVue',
-        props: true
-    },
-    {path: "/salaries/requests", component: SalaryRequestsTable, name: "SalaryRequestsTable"},
-    {path: "/salaries/latest", component: EmployeeWithLatestSalaryRequestTable, name: "EmployeeWithLatestSalaryRequestTable"},
-    {
-        path: "/salaries/requests/:period/:requestId",
-        component: SalaryRequestDetailsView,
-        name: "salariesRequestsDetails",
-        props: true
-    },
-    {path: "/timesheet", component: TimesheetTableComponent},
-    {path: "/juniors", component: JuniorRegistryTable},
-    {path: "/juniors/:juniorRegistryId", component: JuniorRegistryDetailedView, props: true},
-    {path: "/admin/projects", component: AdminProjects},
-    {path: "/admin/projects/:projectId", component: AdminProjectDetails, props: true},
-    {path: "/admin/users", component: AdminUsers},
-    {path: "/admin/ba", component: AdminBusinessAccounts},
-    {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true},
-    {path: "/admin/managers", component: AdminManagers},
-    {path: "/admin/articles", component: AdminArticlesList},
-    {
-        path: "/admin/employees",
-        component: AdminEmployeeAndKidsTabs,
-        children: [
-            {path: '', redirect: 'list'},
-            {path: 'list', component: AdminEmployees},
-            {path: 'kids', component: AdminEmployeeKids},
-            {path: 'import', component: AdminEmployeesImportWorkflowComponent},
-            {path: 'kids-import', component: AdminEmployeesKidsImportWorkflowComponent}
-        ]
-    },
-    {
-        path: "/admin/dicts",
-        component: DictAdminMain,
-        children: [
-            {path: '', redirect: {name: "admin_dict_organizations"}},
-            {name: "admin_dict_organizations", path: "organizations", component: DictAdminOrganizations},
-            {name: "admin_dict_departments", path: "departments", component: DictAdminDepartments},
-            {path: "positions", component: DictAdminPositions},
-            {path: "office_locations", component: DictAdminOfficeLocations},
-            {path: "offices", component: DictAdminOffices},
-            {path: "office_maps", component: DictAdminMaps},
-            {path: "levels", component: DictAdminLevels}
-        ]
-    },
-]
-const router = new VueRouter({
-    mode: 'history',
-    base: process.env.BASE_URL,
-    routes
-})
+router.beforeEach(async (to: RouteLocationNormalized) => {
+  const authStore = useAuthStore();
 
-const authGuard: NavigationGuard = (to, from, next) => {
-    if (to.path == '/login' || to.name == 'TelegramConfirmationPage') {
-        next();
-        return;
+  try {
+    await authStore.fetchCurrentUser();
+  } catch (error) {
+    console.error(error);
+    authStore.clearAuth();
+  }
+
+  const requiresAuth = to.meta.requiresAuth !== false;
+
+  if (!requiresAuth) {
+    if (to.name === "login" && authStore.isAuthenticated) {
+      return { name: "profile-main" };
     }
-    logger.debug("authGuard: Validate route", from, to);
-    return store.dispatch("auth/getCurrentUser").then(currentUser => {
-        if (currentUser) {
-            logger.debug("authGuard: Current user ", currentUser);
-            next();
-        } else {
-            logger.debug("authGuard: Not logged in. Redirect to login page");
-            if (to && from.path) {
-                next({path: '/login', query: {'returnPath': to.path}});
-            } else {
-                next({path: 'login'});
-            }
-        }
-        return Promise.resolve();
-    })
-};
+    return true;
+  }
 
-router.beforeEach(authGuard);
+  if (!authStore.isAuthenticated) {
+    const redirect = { name: "login" } as {
+      name: string;
+      query?: Record<string, string>;
+    };
+    if (to.fullPath && to.fullPath !== "/login") {
+      redirect.query = { returnPath: to.fullPath };
+    }
+    return redirect;
+  }
 
-export default router
+  return true;
+});
+
+export default router;
