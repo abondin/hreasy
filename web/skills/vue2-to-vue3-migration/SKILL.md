@@ -28,6 +28,15 @@ For a detailed checklist and mapping table, read `references/hreasy-migration-ch
 3. Keep route visibility, action visibility, and server-side action eligibility aligned with legacy intent.
 4. Do not silently simplify or drop behavior just because implementation is large.
 5. If as-is migration is expensive or risky, stop and ask the user before proceeding with a reduced implementation.
+6. Exception for table UI: when legacy tables differ across modules, unify Vue 3 table structure to the shared project standard instead of copying each legacy variant.
+7. If implementation required to satisfy a UX request significantly increases code size or conceptual complexity, pause and align with the user before proceeding.
+8. When migrating Vuetify UI, prefer built-in Vuetify features/props/slots over custom CSS/JS overrides unless there is a documented blocker.
+
+Table UI standard reference:
+
+- Source pattern: `legacy/vue2/src/components/salary/SalaryRequestsTable.vue` ("Повышения и бонусы").
+- Preserve table behavior parity (data, permissions, actions, filters logic), but align Vue 3 table layout/interaction patterns across modules (toolbar/actions/filters/loading/empty states).
+- Verify component capabilities in Vuetify docs before custom implementation: `https://vuetifyjs.com/en/components/`.
 
 When asking the user, present explicit options and tradeoffs:
 

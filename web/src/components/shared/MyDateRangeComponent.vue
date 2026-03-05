@@ -18,6 +18,7 @@
         readonly
         clearable
         density="compact"
+        :disabled="props.disabled"
         v-bind="activatorProps"
         @click:clear.stop="clearRange"
       />
@@ -29,6 +30,7 @@
         multiple="range"
         :first-day-of-week="1"
         show-adjacent-months
+        :disabled="props.disabled"
         width="520"
       />
       <v-card-actions class="px-1 pt-1 pb-0">
@@ -37,6 +39,7 @@
             v-if="isShortcutAllowed('todayPlus5Days')"
             size="x-small"
             variant="text"
+            :disabled="props.disabled"
             @click="selectTodayPlus5Days"
           >
             {{ t("Текущая дата +5 дней") }}
@@ -45,6 +48,7 @@
             v-if="isShortcutAllowed('month')"
             size="x-small"
             variant="text"
+            :disabled="props.disabled"
             @click="selectCurrentMonth"
           >
             {{ t("Текущий месяц") }}
@@ -53,6 +57,7 @@
             v-if="isShortcutAllowed('week')"
             size="x-small"
             variant="text"
+            :disabled="props.disabled"
             @click="selectCurrentWeek"
           >
             {{ t("Текущая неделя") }}
@@ -61,16 +66,22 @@
             v-if="isShortcutAllowed('year')"
             size="x-small"
             variant="text"
+            :disabled="props.disabled"
             @click="selectCurrentYear"
           >
             {{ t("Год") }}
           </v-btn>
         </div>
         <v-spacer />
-        <v-btn variant="text" @click="menuOpen = false">
+        <v-btn variant="text" :disabled="props.disabled" @click="menuOpen = false">
           {{ t("Закрыть") }}
         </v-btn>
-        <v-btn color="primary" variant="text" @click="applyRange">
+        <v-btn
+          color="primary"
+          variant="text"
+          :disabled="props.disabled"
+          @click="applyRange"
+        >
           {{ t("Применить") }}
         </v-btn>
       </v-card-actions>
@@ -91,10 +102,12 @@ const props = withDefaults(
     modelValue: string[];
     label: string;
     allowedShortCut?: AllowedShortCut[];
+    disabled?: boolean;
   }>(),
   {
     modelValue: () => [],
     allowedShortCut: () => ["year", "month", "todayPlus5Days"],
+    disabled: false,
   },
 );
 

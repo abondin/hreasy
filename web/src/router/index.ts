@@ -8,6 +8,7 @@ import LoginView from "@/views/LoginView.vue";
 import ProfileMainView from "@/views/profile/ProfileMainView.vue";
 import EmployeesView from "@/views/employees/EmployeesView.vue";
 import VacationsView from "@/views/vacations/VacationsView.vue";
+import OvertimesView from "@/views/overtimes/OvertimesView.vue";
 import { useAuthStore } from "@/stores/auth";
 
 const router = createRouter({
@@ -39,6 +40,12 @@ const router = createRouter({
       path: "/vacations",
       name: "vacations",
       component: VacationsView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/overtimes",
+      name: "overtimes",
+      component: OvertimesView,
       meta: { requiresAuth: true },
     },
     {

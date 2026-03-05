@@ -24,13 +24,18 @@
       <section class="mt-6">
         <v-row dense>
           <v-col cols="12">
-            <my-vacations />
-          </v-col>
-          <v-col cols="12" md="6">
+            <employee-overtime-card
+              v-if="canViewMyOvertimes && employee"
+              :employee-id="employee.id"
+            />
             <legacy-feature-card
+              v-else
               :title="t('Овертаймы')"
               :description="t('Раздел_пока_доступен_в_legacy')"
             />
+          </v-col>
+          <v-col cols="12">
+            <my-vacations />
           </v-col>
           <v-col cols="12" v-if="canViewSkills">
             <v-card>
@@ -101,8 +106,10 @@ import { useAuthStore } from "@/stores/auth";
 import { useEmployeeProfile } from "@/composables/useEmployeeProfile";
 import { useEmployeeSkills } from "@/composables/useEmployeeSkills";
 import { useEmployeeSkillPermissions } from "@/composables/useEmployeeSkillPermissions";
+import { usePermissions } from "@/lib/permissions";
 import LegacyFeatureCard from "@/components/LegacyFeatureCard.vue";
 import MyVacations from "@/components/vacations/MyVacations.vue";
+import EmployeeOvertimeCard from "@/components/overtimes/EmployeeOvertimeCard.vue";
 import ProfileSummaryCard from "@/views/profile/components/ProfileSummaryCard.vue";
 import ProfileTelegramDialog from "@/views/profile/components/ProfileTelegramDialog.vue";
 import ProfileTechProfilesCard from "@/views/profile/components/ProfileTechProfilesCard.vue";
@@ -111,6 +118,7 @@ import type { Skill, AddSkillBody } from "@/services/skills.service";
 
 const { t } = useI18n();
 const authStore = useAuthStore();
+const permissions = usePermissions();
 
 const employeeId = computed(() => authStore.employeeId ?? null);
 
@@ -132,6 +140,12 @@ const {
 
 const isLoading = computed(() => profileLoading.value);
 const hasError = computed(() => Boolean(profileError.value));
+const canViewMyOvertimes = computed(() => {
+  if (!employeeId.value) {
+    return false;
+  }
+  return permissions.canViewOvertimes(employeeId.value);
+});
 const telegramDialogOpen = ref(false);
 const actionError = ref<unknown>(null);
 

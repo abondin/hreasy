@@ -113,6 +113,14 @@ const navigationItems = computed(() => {
         to: { name: "vacations" },
       });
     }
+    if (permissions.canViewAllOvertimes()) {
+      items.push({
+        key: "overtimes",
+        label: t("Овертаймы"),
+        icon: "mdi-briefcase-clock",
+        to: { name: "overtimes" },
+      });
+    }
     return items;
   }
 

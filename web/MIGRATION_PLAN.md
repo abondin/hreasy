@@ -59,6 +59,15 @@ Repository layout update (2026-03-03):
 5. Switch build tooling from Vue CLI/webpack to Vite 5, update TS/ESLint/Jest stacks.
 6. Reduce bundle size by replacing Moment.js and other deprecated Vue 2 plugins.
 
+### Migration Exception: Table UI Standardization (added 2026-03-05)
+
+- Behavioral parity with Vue 2 remains mandatory.
+- Table visual/layout parity is **not** required per-screen when legacy tables differ from each other.
+- For Vue 3, table structure must be unified across modules (toolbar layout, filters placement, actions area, loading/disabled behavior, density/pagination defaults, empty/loading states).
+- Reference pattern for this unification: Vue 2 page **"Повышения и бонусы"** (`legacy/vue2/src/components/salary/SalaryRequestsTable.vue`).
+- If a legacy table conflicts with the standard pattern, keep business behavior and permissions, but align UI structure with the standard Vue 3 table pattern.
+- If implementing a UI request would noticeably increase code size/complexity, pause and align with the user on scope before applying a large refactor.
+
 ## 4. Roadmap & Status
 
 Use the checkboxes to mark completion; add notes/dates next to items as you progress.

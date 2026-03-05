@@ -17,6 +17,15 @@ Apply a reuse-first strategy: extend existing components, composables, stores, a
 3. Keep all user-facing text in i18n keys (`src/locales/*.json`).
 4. Keep comments and doc comments in English.
 5. Keep `type-check` and `lint` clean for Vue 3 app.
+6. For data tables, prefer project-wide UI consistency over legacy per-page visual differences.
+7. Keep implementation transparent and simple; if a requested change pushes toward a large or complex refactor, stop and confirm scope with the user first.
+8. Prefer built-in Vuetify component capabilities over custom CSS/JS workarounds whenever possible.
+
+Table standardization note:
+
+- Use the Vue 2 "Повышения и бонусы" table (`legacy/vue2/src/components/salary/SalaryRequestsTable.vue`) as a structural reference for Vue 3 table UI.
+- Keep business behavior/permissions intact while aligning table skeleton (toolbar, action placement, filters block, loading/disabled/empty states).
+- Before adding custom behavior/styles, check Vuetify component docs first: `https://vuetifyjs.com/en/components/`.
 
 ## Reuse-First Protocol
 

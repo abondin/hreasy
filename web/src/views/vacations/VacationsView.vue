@@ -23,12 +23,13 @@
         <v-row align="center">
           <v-col cols="auto" class="pb-0">
             <div>
-              <v-tooltip location="bottom" v-if="canEditVacations">
+              <v-tooltip location="bottom">
                 <template #activator="{ props }">
                   <v-btn
                     v-bind="props"
                     icon="mdi-refresh"
                     variant="text"
+                    :disabled="loading"
                     @click="fetchData(false)"
                   />
                 </template>
@@ -69,6 +70,7 @@
               v-model="selectedYear"
               density="compact"
               :items="allYears"
+              :disabled="loading"
               :label="t('Год')"
             />
           </v-col>
@@ -76,6 +78,7 @@
           <v-col cols="12" sm="4" class="pb-0">
             <my-date-range-component
               v-model="filter.selectedDates"
+              :disabled="loading"
               :label="t('Дата начала отпуска')"
             />
           </v-col>
@@ -86,6 +89,7 @@
               density="compact"
               clearable
               multiple
+              :disabled="loading"
               :items="allStatuses"
               item-title="title"
               item-value="value"
@@ -100,6 +104,7 @@
               v-model="filter.search"
               density="compact"
               clearable
+              :disabled="loading"
               :label="t('Поиск')"
             />
           </v-col>
@@ -110,6 +115,7 @@
               density="compact"
               clearable
               multiple
+              :disabled="loading"
               :items="projectOptions"
               item-title="name"
               item-value="id"
@@ -123,6 +129,7 @@
               density="compact"
               clearable
               multiple
+              :disabled="loading"
               :items="projectRoles"
               :label="t('Роль на проекте')"
             />
@@ -135,6 +142,7 @@
           <v-data-table
             :loading="loading"
             :loading-text="t('Загрузка_данных')"
+            :no-data-text="t('Отсутствуют данные')"
             :headers="headers"
             :items="filteredItems"
             :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
@@ -142,11 +150,13 @@
             multi-sort
             :items-per-page="defaultItemsPerPage"
             class="text-truncate"
+            hover
+            @click:row="onVacationRowClick"
           >
             <template v-slot:[`item.employeeDisplayName`]="{ item }">
               <v-menu>
                 <template #activator="{ props }">
-                  <v-btn size="small" variant="text" v-bind="props">
+                  <v-btn size="small" variant="text" v-bind="props" @click.stop>
                     {{ item.employeeDisplayName }}
                   </v-btn>
                 </template>
@@ -155,7 +165,7 @@
                     <v-btn
                       size="small"
                       variant="text"
-                      @click="copyToClipboard(item)"
+                      @click.stop="copyToClipboard(item)"
                     >
                       <v-icon icon="mdi-content-copy" class="mr-1" />
                       {{ t("Копировать") }}
@@ -166,7 +176,7 @@
                       size="small"
                       variant="text"
                       :disabled="!canEditVacations"
-                      @click="openVacationDialog(item)"
+                      @click.stop="openVacationDialog(item)"
                     >
                       <v-icon icon="mdi-pencil" class="mr-1" />
                       {{ t("Редактировать") }}
@@ -197,6 +207,7 @@
           <v-data-table
             :loading="loading"
             :loading-text="t('Загрузка_данных')"
+            :no-data-text="t('Отсутствуют данные')"
             :headers="summaryHeaders"
             :items="filteredSummaryItems"
             :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
@@ -204,9 +215,16 @@
             multi-sort
             :items-per-page="defaultItemsPerPage"
             class="text-truncate"
+            hover
+            @click:row="onSummaryRowClick"
           >
             <template v-slot:[`item.employeeDisplayName`]="{ item }">
-              <v-btn size="small" variant="text" @click="selectEmployee(item)">
+              <v-btn
+                size="small"
+                variant="text"
+                :disabled="loading"
+                @click.stop="selectEmployee(item)"
+              >
                 {{ item.employeeDisplayName }}
               </v-btn>
             </template>
@@ -480,6 +498,49 @@ function handleVacationDialogClose() {
 function selectEmployee(item: { employeeDisplayName: string }) {
   filter.search = item.employeeDisplayName;
   selectedTab.value = 0;
+}
+
+function onVacationRowClick(
+  _event: Event,
+  payload: { item?: { raw?: Vacation } | Vacation } | Vacation,
+) {
+  const row = extractRow<Vacation>(payload);
+  if (!row || !canEditVacations.value) {
+    return;
+  }
+  openVacationDialog(row);
+}
+
+function onSummaryRowClick(
+  _event: Event,
+  payload:
+    | { item?: { raw?: EmployeeVacationSummary } | EmployeeVacationSummary }
+    | EmployeeVacationSummary,
+) {
+  const row = extractRow<EmployeeVacationSummary>(payload);
+  if (!row) {
+    return;
+  }
+  selectEmployee(row);
+}
+
+function extractRow<T>(
+  payload: { item?: { raw?: T } | T } | T,
+): T | null {
+  if (!payload) {
+    return null;
+  }
+  if (typeof payload === "object" && "item" in payload) {
+    const item = payload.item as { raw?: T } | T | undefined;
+    if (!item) {
+      return null;
+    }
+    if (typeof item === "object" && item !== null && "raw" in item) {
+      return (item as { raw?: T }).raw ?? null;
+    }
+    return item as T;
+  }
+  return payload as T;
 }
 
 function statusesForForm(vacation?: Vacation | null) {

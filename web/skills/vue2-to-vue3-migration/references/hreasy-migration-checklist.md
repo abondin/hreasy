@@ -29,6 +29,7 @@
 8. Add at least one unit test for non-trivial logic.
 9. Run `npm run type-check` and `npm run lint`.
 10. Manually verify core happy path + error path.
+11. For table-heavy pages: keep behavior parity, but align table UI to the shared Vue 3 standard (reference: `legacy/vue2/src/components/salary/SalaryRequestsTable.vue`).
 
 ## Parity Risks to Check Explicitly
 
@@ -37,6 +38,7 @@
 - Missing confirmation dialogs before destructive actions.
 - Missing loading and empty states.
 - Changed table sorting/filtering defaults.
+- Diverging table layout patterns between migrated pages (toolbar/actions/filters placement mismatch).
 - Differences in file upload and avatar workflows.
 
 ## Definition of Done
