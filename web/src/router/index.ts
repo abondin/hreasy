@@ -10,6 +10,7 @@ import EmployeesView from "@/views/employees/EmployeesView.vue";
 import VacationsView from "@/views/vacations/VacationsView.vue";
 import OvertimesView from "@/views/overtimes/OvertimesView.vue";
 import MentorshipView from "@/views/mentorship/MentorshipView.vue";
+import MentorshipDetailsView from "@/views/mentorship/MentorshipDetailsView.vue";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/lib/permissions";
 
@@ -57,6 +58,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/juniors/:juniorRegistryId",
+      name: "mentorship-details",
+      component: MentorshipDetailsView,
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/:pathMatch(.*)*",
       name: "not-found",
       component: NotFoundView,
@@ -97,6 +104,7 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
   }
 
   if (
+    (to.name === "mentorship" || to.name === "mentorship-details")
     to.name === "mentorship"
     && !permissions.canAccessJuniorsRegistry()
     && !permissions.canAdminJuniorRegistry()
