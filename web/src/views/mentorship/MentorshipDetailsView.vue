@@ -15,6 +15,12 @@
           <v-spacer />
           <v-btn
             v-if="canEditRegistry"
+            icon="mdi-pencil"
+            variant="text"
+            @click="openEditDialog"
+          />
+          <v-btn
+            v-if="canEditRegistry"
             icon="mdi-school"
             variant="text"
             :color="junior.graduation ? '' : 'success'"
@@ -75,6 +81,13 @@
             <v-spacer />
             <v-btn
               v-if="canEditReport(report.createdBy.id)"
+              icon="mdi-pencil"
+              variant="text"
+              :disabled="Boolean(junior.graduation)"
+              @click="openEditReport(report.id)"
+            />
+            <v-btn
+              v-if="canEditReport(report.createdBy.id)"
               icon="mdi-delete"
               variant="text"
               :disabled="Boolean(junior.graduation)"
@@ -87,7 +100,7 @@
           </div>
           <div class="mt-2 d-flex flex-wrap ga-2">
             <v-chip v-for="(value, key) in report.ratings" :key="key" size="small" variant="outlined">
-              {{ key }}: {{ value }}
+              {{ t(`JUNIOR_REPORT_RATING.${key}.title`) }}: {{ value }}
             </v-chip>
           </div>
           <markdown-text-renderer class="mt-3" :content="report.comment" />
@@ -95,9 +108,46 @@
       </v-card>
     </template>
 
+    <v-dialog v-model="editDialog" max-width="760">
+      <v-card>
+        <v-card-title>{{ t("Обновление записи в реестре") }}</v-card-title>
+        <v-card-text>
+          <v-autocomplete
+            v-model="updateForm.mentorId"
+            :items="employees"
+            item-title="displayName"
+            item-value="id"
+            clearable
+            :label="t('Ментор')"
+          />
+          <v-autocomplete
+            v-model="updateForm.budgetingAccount"
+            :items="allBusinessAccounts"
+            item-title="name"
+            item-value="id"
+            clearable
+            :label="t('Бюджет из бизнес аккаунта')"
+          />
+          <v-combobox
+            v-model="updateForm.role"
+            :items="projectRoles"
+            item-title="value"
+            item-value="value"
+            clearable
+            :label="t('Роль')"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="editDialog = false">{{ t("Отмена") }}</v-btn>
+          <v-btn color="primary" :loading="actionLoading" @click="submitUpdateJunior">{{ t("Применить") }}</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-dialog v-model="reportDialog" max-width="800">
       <v-card>
-        <v-card-title>{{ t("Создать отчёт") }}</v-card-title>
+        <v-card-title>{{ editingReportId ? t("Применить") : t("Создать отчёт") }}</v-card-title>
         <v-card-text>
           <v-select
             v-model="reportForm.progress"
@@ -114,7 +164,7 @@
                 max="5"
                 step="1"
                 thumb-label
-                :label="field"
+                :label="t(`JUNIOR_REPORT_RATING.${field}.title`)"
               />
             </v-col>
           </v-row>
@@ -123,7 +173,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="reportDialog = false">{{ t("Отмена") }}</v-btn>
-          <v-btn color="primary" :loading="actionLoading" @click="submitReport">{{ t("Создать") }}</v-btn>
+          <v-btn color="primary" :loading="actionLoading" @click="submitReport">{{ editingReportId ? t("Применить") : t("Создать") }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -185,13 +235,22 @@ import {
   createJuniorReport,
   deleteJuniorFromRegistry,
   deleteJuniorReport,
+  fetchBusinessAccounts,
+  fetchCurrentProjectRoles,
+  fetchEmployeesForRegistry,
   fetchJuniorDetails,
   graduateJunior,
   JuniorProgressType,
   juniorProgressTypes,
+  updateJuniorRegistry,
+  updateJuniorReport,
   type AddOrUpdateJuniorReportBody,
+  type CurrentProjectRole,
   type JuniorDto,
+  type SimpleDict,
+  type UpdateJuniorRegistryBody,
 } from "@/services/junior-registry.service";
+import type { Employee } from "@/services/employee.service";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -206,8 +265,13 @@ const deleteDialog = ref(false);
 const graduateDialog = ref(false);
 const deleteReportDialog = ref(false);
 const reportDialog = ref(false);
+const editDialog = ref(false);
 const reportToDelete = ref<number | null>(null);
+const editingReportId = ref<number | null>(null);
 const graduationComment = ref("");
+const employees = ref<Employee[]>([]);
+const allBusinessAccounts = ref<SimpleDict[]>([]);
+const projectRoles = ref<CurrentProjectRole[]>([]);
 
 const ratingFields: (keyof AddOrUpdateJuniorReportBody["ratings"])[] = [
   "overallReadiness",
@@ -231,6 +295,12 @@ const reportForm = reactive<AddOrUpdateJuniorReportBody>({
   },
 });
 
+const updateForm = reactive<UpdateJuniorRegistryBody>({
+  mentorId: null,
+  role: "",
+  budgetingAccount: null,
+});
+
 const canViewMentorship = computed(
   () => permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry(),
 );
@@ -244,10 +314,10 @@ const canEditRegistry = computed(() => {
 
 const sortedReports = computed(() => [...(junior.value?.reports ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
 
-const progressOptions = juniorProgressTypes.map((type) => ({
+const progressOptions = computed(() => juniorProgressTypes.map((type) => ({
   title: t(`JUNIOR_PROGRESS_TYPE.${type}`),
   value: type,
-}));
+})));
 
 function getProgressIcon(type: JuniorProgressType): { icon: string; color: string } {
   switch (type) {
@@ -284,8 +354,69 @@ async function loadJunior(): Promise<void> {
   }
 }
 
+async function loadDictionaries(): Promise<void> {
+  const [employeesList, baList, rolesList] = await Promise.all([
+    fetchEmployeesForRegistry(),
+    fetchBusinessAccounts(),
+    fetchCurrentProjectRoles(),
+  ]);
+  employees.value = employeesList;
+  allBusinessAccounts.value = baList;
+  projectRoles.value = rolesList;
+}
+
 function openCreateReport() {
+  editingReportId.value = null;
+  reportForm.progress = JuniorProgressType.NO_PROGRESS;
+  reportForm.comment = "";
+  reportForm.ratings.overallReadiness = 3;
+  reportForm.ratings.competence = 3;
+  reportForm.ratings.process = 3;
+  reportForm.ratings.teamwork = 3;
+  reportForm.ratings.contribution = 3;
+  reportForm.ratings.motivation = 3;
   reportDialog.value = true;
+}
+
+function openEditReport(reportId: number): void {
+  const report = junior.value?.reports.find((item) => item.id === reportId);
+  if (!report) {
+    return;
+  }
+  editingReportId.value = report.id;
+  reportForm.progress = report.progress;
+  reportForm.comment = report.comment;
+  reportForm.ratings.overallReadiness = report.ratings.overallReadiness;
+  reportForm.ratings.competence = report.ratings.competence;
+  reportForm.ratings.process = report.ratings.process;
+  reportForm.ratings.teamwork = report.ratings.teamwork;
+  reportForm.ratings.contribution = report.ratings.contribution;
+  reportForm.ratings.motivation = report.ratings.motivation;
+  reportDialog.value = true;
+}
+
+function openEditDialog(): void {
+  if (!junior.value) {
+    return;
+  }
+  updateForm.mentorId = junior.value.mentor?.id ?? null;
+  updateForm.role = junior.value.role ?? "";
+  updateForm.budgetingAccount = junior.value.budgetingAccount?.id ?? null;
+  editDialog.value = true;
+}
+
+async function submitUpdateJunior(): Promise<void> {
+  if (!junior.value) {
+    return;
+  }
+  actionLoading.value = true;
+  try {
+    await updateJuniorRegistry(junior.value.id, updateForm);
+    editDialog.value = false;
+    await loadJunior();
+  } finally {
+    actionLoading.value = false;
+  }
 }
 
 async function submitReport() {
@@ -294,8 +425,13 @@ async function submitReport() {
   }
   actionLoading.value = true;
   try {
-    await createJuniorReport(junior.value.id, reportForm);
+    if (editingReportId.value) {
+      await updateJuniorReport(junior.value.id, editingReportId.value, reportForm);
+    } else {
+      await createJuniorReport(junior.value.id, reportForm);
+    }
     reportDialog.value = false;
+    editingReportId.value = null;
     await loadJunior();
   } finally {
     actionLoading.value = false;
@@ -360,7 +496,7 @@ async function submitGraduation() {
 }
 
 onMounted(() => {
-  loadJunior().catch((err: unknown) => {
+  Promise.all([loadJunior(), loadDictionaries()]).catch((err: unknown) => {
     error.value = errorUtils.shortMessage(err);
   });
 });

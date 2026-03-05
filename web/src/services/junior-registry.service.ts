@@ -1,4 +1,5 @@
 import http from "@/lib/http";
+import type { Employee } from "@/services/employee.service";
 
 export enum JuniorProgressType {
   DEGRADATION = 1,
@@ -77,8 +78,16 @@ export interface UpdateJuniorRegistryBody {
   budgetingAccount: number | null;
 }
 
+export interface AddJuniorRegistryBody extends UpdateJuniorRegistryBody {
+  juniorEmplId: number | null;
+}
+
 export interface GraduateBody {
   comment: string | null;
+}
+
+export interface CurrentProjectRole {
+  value: string;
 }
 
 export async function fetchJuniorsRegistry(): Promise<JuniorDto[]> {
@@ -88,6 +97,11 @@ export async function fetchJuniorsRegistry(): Promise<JuniorDto[]> {
 
 export async function fetchJuniorDetails(juniorId: number): Promise<JuniorDto> {
   const response = await http.get<JuniorDto>(`v1/udr/juniors/${juniorId}`);
+  return response.data;
+}
+
+export async function addJuniorToRegistry(payload: AddJuniorRegistryBody): Promise<number> {
+  const response = await http.post<number>("v1/udr/juniors", payload);
   return response.data;
 }
 
@@ -125,10 +139,44 @@ export async function createJuniorReport(
   return response.data;
 }
 
+export async function updateJuniorReport(
+  juniorId: number,
+  reportId: number,
+  payload: AddOrUpdateJuniorReportBody,
+): Promise<number> {
+  const response = await http.put<number>(`v1/udr/juniors/${juniorId}/reports/${reportId}`, payload);
+  return response.data;
+}
+
 export async function deleteJuniorReport(
   juniorId: number,
   reportId: number,
 ): Promise<number> {
   const response = await http.delete<number>(`v1/udr/juniors/${juniorId}/reports/${reportId}`);
   return response.data;
+}
+
+export async function fetchBusinessAccounts(): Promise<SimpleDict[]> {
+  const response = await http.get<SimpleDict[]>("v1/business_account");
+  return response.data;
+}
+
+export async function fetchCurrentProjectRoles(): Promise<CurrentProjectRole[]> {
+  const response = await http.get<CurrentProjectRole[]>("v1/employee/current_project_roles");
+  return response.data;
+}
+
+export async function fetchEmployeesForRegistry(): Promise<Employee[]> {
+  const response = await http.get<Employee[]>("v1/employee");
+  return response.data;
+}
+
+export async function exportJuniorsRegistry(includeGraduated: boolean): Promise<Blob> {
+  const response = await http.get<ArrayBuffer>("v1/udr/juniors/export", {
+    params: { includeGraduated },
+    responseType: "arraybuffer",
+  });
+  return new Blob([response.data], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
 }

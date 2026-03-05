@@ -73,6 +73,27 @@
               {{ t("Обновить данные") }}
             </v-btn>
           </v-col>
+          <v-col cols="auto">
+            <v-btn
+              color="primary"
+              prepend-icon="mdi-plus"
+              :loading="actionLoading"
+              @click="openAddDialog"
+            >
+              {{ t("Добавление в реестр") }}
+            </v-btn>
+          </v-col>
+          <v-col cols="auto">
+            <v-btn
+              color="secondary"
+              variant="tonal"
+              prepend-icon="mdi-download"
+              :loading="exportLoading"
+              @click="downloadExport"
+            >
+              {{ t("Экспорт в Excel") }}
+            </v-btn>
+          </v-col>
         </v-row>
       </v-container>
 
@@ -126,22 +147,75 @@
         </template>
       </v-data-table>
     </v-card>
+
+    <v-dialog v-model="addDialog" max-width="760">
+      <v-card>
+        <v-card-title>{{ t("Добавление в реестр") }}</v-card-title>
+        <v-card-text>
+          <v-autocomplete
+            v-model="addForm.juniorEmplId"
+            :items="employees"
+            item-title="displayName"
+            item-value="id"
+            :label="t('Молодой специалист')"
+          />
+          <v-autocomplete
+            v-model="addForm.mentorId"
+            :items="employees"
+            item-title="displayName"
+            item-value="id"
+            clearable
+            :label="t('Ментор')"
+          />
+          <v-autocomplete
+            v-model="addForm.budgetingAccount"
+            :items="allBusinessAccounts"
+            item-title="name"
+            item-value="id"
+            clearable
+            :label="t('Бюджет из бизнес аккаунта')"
+          />
+          <v-combobox
+            v-model="addForm.role"
+            :items="projectRoles"
+            item-title="value"
+            item-value="value"
+            clearable
+            :label="t('Роль')"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="addDialog = false">{{ t("Отмена") }}</v-btn>
+          <v-btn color="primary" :loading="actionLoading" @click="submitAddJunior">{{ t("Создать") }}</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { usePermissions } from "@/lib/permissions";
 import { formatDateTime } from "@/lib/datetime";
+import { errorUtils } from "@/lib/errors";
 import {
+  addJuniorToRegistry,
+  exportJuniorsRegistry,
+  fetchBusinessAccounts,
+  fetchCurrentProjectRoles,
+  fetchEmployeesForRegistry,
   fetchJuniorsRegistry,
   JuniorProgressType,
+  type AddJuniorRegistryBody,
+  type CurrentProjectRole,
   type JuniorDto,
   type JuniorReport,
   type SimpleDict,
 } from "@/services/junior-registry.service";
+import type { Employee } from "@/services/employee.service";
 
 interface JuniorFilter {
   search: string;
@@ -154,7 +228,20 @@ const { t } = useI18n();
 const permissions = usePermissions();
 const router = useRouter();
 const loading = ref(false);
+const actionLoading = ref(false);
+const exportLoading = ref(false);
 const juniors = ref<JuniorDto[]>([]);
+const addDialog = ref(false);
+const allBusinessAccounts = ref<SimpleDict[]>([]);
+const projectRoles = ref<CurrentProjectRole[]>([]);
+const employees = ref<Employee[]>([]);
+
+const addForm = reactive<AddJuniorRegistryBody>({
+  juniorEmplId: null,
+  mentorId: null,
+  budgetingAccount: null,
+  role: "",
+});
 
 const filter = reactive<JuniorFilter>({
   search: "",
@@ -232,6 +319,15 @@ const filteredItems = computed(() => {
   });
 });
 
+watch(() => addForm.juniorEmplId, (juniorId) => {
+  const employee = employees.value.find((item) => item.id === juniorId);
+  if (!employee) {
+    return;
+  }
+  addForm.budgetingAccount = employee.ba?.id ?? null;
+  addForm.role = employee.currentProject?.role ?? "";
+  addForm.mentorId = null;
+});
 
 function buildRowProps({ item }: { item: JuniorDto }): Record<string, unknown> {
   return {
@@ -241,6 +337,7 @@ function buildRowProps({ item }: { item: JuniorDto }): Record<string, unknown> {
     },
   };
 }
+
 function getProgressIcon(type: JuniorProgressType): { icon: string; color: string } {
   switch (type) {
     case JuniorProgressType.DEGRADATION:
@@ -260,6 +357,21 @@ function reportsOrderedAsc(reports: JuniorReport[]): JuniorReport[] {
   return [...(reports ?? [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
+function openAddDialog() {
+  addDialog.value = true;
+}
+
+async function loadDictionaries(): Promise<void> {
+  const [bas, rolesList, employeesList] = await Promise.all([
+    fetchBusinessAccounts(),
+    fetchCurrentProjectRoles(),
+    fetchEmployeesForRegistry(),
+  ]);
+  allBusinessAccounts.value = bas;
+  projectRoles.value = rolesList;
+  employees.value = employeesList;
+}
+
 async function loadJuniors(): Promise<void> {
   if (!canViewMentorship.value) {
     return;
@@ -272,9 +384,42 @@ async function loadJuniors(): Promise<void> {
   }
 }
 
+async function submitAddJunior(): Promise<void> {
+  if (!addForm.juniorEmplId) {
+    return;
+  }
+  actionLoading.value = true;
+  try {
+    await addJuniorToRegistry(addForm);
+    addDialog.value = false;
+    addForm.juniorEmplId = null;
+    addForm.mentorId = null;
+    addForm.budgetingAccount = null;
+    addForm.role = "";
+    await loadJuniors();
+  } catch (error: unknown) {
+    console.error(errorUtils.shortMessage(error));
+  } finally {
+    actionLoading.value = false;
+  }
+}
+
+async function downloadExport(): Promise<void> {
+  exportLoading.value = true;
+  try {
+    const blob = await exportJuniorsRegistry(!filter.onlyNotGraduated);
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `JuniorsRegistry_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    link.click();
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
 onMounted(() => {
-  loadJuniors().catch((error: unknown) => {
-    console.error(error);
+  Promise.all([loadJuniors(), loadDictionaries()]).catch((error: unknown) => {
+    console.error(errorUtils.shortMessage(error));
   });
 });
 </script>
