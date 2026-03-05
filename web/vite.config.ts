@@ -8,7 +8,6 @@ import vuetify from 'vite-plugin-vuetify';
 
 const projectRoot = fileURLToPath(new URL('.', import.meta.url));
 const srcAlias = fileURLToPath(new URL('./src', import.meta.url));
-const legacyLocalesDir = fileURLToPath(new URL('./legacy/vue2/src/locales', import.meta.url));
 const require = createRequire(import.meta.url);
 
 let vueDevToolsPlugin: PluginOption | null = null;
@@ -40,8 +39,7 @@ export default defineConfig(({mode}) => {
     ],
     resolve: {
       alias: {
-        '@': srcAlias,
-        '@locales': legacyLocalesDir
+        '@': srcAlias
       }
     },
     server: {
@@ -55,10 +53,7 @@ export default defineConfig(({mode}) => {
           }
         : undefined,
       fs: {
-        allow: [
-          projectRoot,
-          legacyLocalesDir
-        ]
+        allow: [projectRoot]
       }
     }
   };

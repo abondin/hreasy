@@ -1,16 +1,17 @@
 # HR Easy Web
 
-## Current layout
+## Repository layout
 
-- Vue 3 (main project): root directory (`./`)
-- Vue 2 (legacy project): `legacy/vue2/`
+- Vue 3 app (main): repository root (`./`)
+- Vue 2 app (legacy): `legacy/vue2/`
+- Legacy docs: `legacy/README.md`
 
 ## Prerequisites
 
 - Node.js 20.x LTS
 - npm 10.x
 
-## Vue 3 (main) - local run
+## Vue 3 (main) - local development
 
 ```shell
 npm ci
@@ -19,13 +20,14 @@ export VITE_API_BASE_URL=/api/
 npm run dev
 ```
 
-## Vue 2 (legacy) - local run
+Useful commands:
 
 ```shell
-cd legacy/vue2
-npm ci
-export BACKEND_API_BASE_URL=http://localhost:8081
-npm run serve
+npm run type-check
+npm run lint
+npm run test:unit
+npm run test:e2e
+npm run build
 ```
 
 ## Docker build (both frontends)

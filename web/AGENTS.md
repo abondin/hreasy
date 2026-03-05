@@ -1,65 +1,74 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Application code lives under `src/` (Vue 2 + TypeScript): `components/`, `store/`, `router/`, `plugins/`, `locales/`.
-- Static assets belong to `public/`; build artifacts go to `dist/`.
-- Unit tests reside in `tests/unit/` and follow the `*.spec.ts` naming.
-- Dev tooling sits in `devops/` (Docker scripts), `.localdev/` (local docker-compose), and root configs such as `tsconfig.json`, `.eslintrc.js`, `jest.config.js`.
+- Main application code (Vue 3 + TypeScript) lives in `src/`: `views/`, `components/`, `composables/`, `stores/`, `services/`, `router/`, `plugins/`, `locales/`.
+- Legacy Vue 2 application is isolated in `legacy/vue2/` and documented in `legacy/README.md`.
+- End-to-end tests live in `e2e/`, unit tests in `tests/`.
+- Static entry files/configs are in repository root (`vite.config.ts`, `eslint.config.ts`, `tsconfig*.json`, `playwright.config.ts`, `vitest.config.ts`).
 
 ## Build, Test, and Development Commands
-- `npm run serve` — start the Vue CLI dev server (set `BACKEND_API_BASE_URL` when needed).
-- `npm run build` — create the production bundle in `dist/`.
-- `npm run test:unit` — execute Jest unit tests.
-- `npm run lint` — run ESLint.
-- `npm run i18n-add-missing-keys` — sync i18n keys into `src/locales/*.json`.
+- `npm run dev` — start Vue 3 Vite dev server.
+- `npm run build` — type-check and produce Vue 3 production bundle.
+- `npm run type-check` — run `vue-tsc --build`.
+- `npm run lint` — run ESLint for the Vue 3 codebase.
+- `npm run test:unit` — run Vitest unit tests.
+- `npm run test:e2e` — run Playwright E2E tests.
 
 ## Coding Style & Naming Conventions
 - Vue SFCs use TypeScript, 2-space indentation, mandatory semicolons.
-- Components follow PascalCase (e.g. `SharedArticlesWindow.vue`). Utilities/constants use kebab-case or camelCase `.ts` files as in the repo.
-- Respect the ESLint config (`plugin:vue/essential`, `@vue/typescript/recommended`). Fix lint issues before committing.
-- Prefer the `@/` alias for imports.
-- **All inline comments and doc comments must be written in English.**
+- Components use PascalCase filenames (for example `ProfileSummaryCard.vue`).
+- Prefer `@/` imports from `src`.
+- Keep comments concise and in English.
+- Do not hardcode user-facing text; use i18n keys.
 
 ## i18n Usage
-- Use `vue-i18n` for every user-facing string—no hardcoded text in templates or scripts.
-- Templates: `{{ $t('KEY') }}` or bindings such as `:label="$t('KEY')"`; scripts: `this.$t('KEY')`.
-- Add and maintain keys in `src/locales/*.json`; run `npm run i18n-add-missing-keys` to sync.
+- Use `vue-i18n` for all user-facing strings.
+- In templates: `{{ $t('KEY') }}` or bindings like `:label="$t('KEY')"`.
+- In scripts: `t('KEY')` from `useI18n`.
+- Vue 3 locales are stored in `src/locales/*.json`.
 
-## TypeScript Style Rules
-- Avoid trivial annotations (let inference work). Example: `let ready = false`, not `let ready: boolean = false`.
-- Add types when inference is unclear (public APIs, unions, generics) or when readability improves.
-- Vue 2 + class components: declare reactive fields as public properties and initialize derived-from-props fields inside `created()` to keep reactivity with `useDefineForClassFields`.
+## TypeScript & Vue Rules
+- Avoid redundant type annotations when inference is clear.
+- Add explicit types for public APIs, unions, generics, and complex return values.
+- Prefer Composition API patterns (`composables`, `script setup`) for Vue 3 code.
 
-## UI Stack & Key Libraries
-- UI: Vuetify 2 (legacy) via `src/plugins/vuetify.ts`, icons from `@mdi/font` with `mdiSvg`.
-- Routing/State: `vue-router`, `vuex` + `vuex-class`; class-based components with `vue-class-component` + `vue-property-decorator`.
-- HTTP: Axios singleton in `src/components/http.service.ts`.
-- Dates: Moment.js currently; prefer ISO strings at boundaries.
-- i18n: `vue-i18n` configured in `src/i18n.ts` with JSON locales under `src/locales/`.
-- Rich text: `vue2-editor` (Quill) with image modules.
-- Visualization: `vis-timeline` (vacations) and `svg-pan-zoom` (maps).
-- UX helpers: `vue-clipboard2`, `vue-avatar-cropper`.
-- Security: `dompurify` for sanitizing HTML/SVG.
+## UI Stack & Libraries (Vue 3)
+- UI: Vuetify 3 (`src/plugins/vuetify.ts`), icons from `@mdi/font`.
+- Routing/State: `vue-router@4`, `pinia`.
+- HTTP: Axios instance in `src/lib/http.ts`.
+- i18n: `vue-i18n@11` via `src/i18n.ts`.
+- Rich text: Markdown editor/renderer components in `src/components/shared`.
 
 ## Testing Guidelines
-- Framework: Jest via `@vue/test-utils` (`@vue/cli-plugin-unit-jest`).
-- Tests belong to `tests/unit/` and use the `xxx.spec.ts` naming.
-- Target meaningful coverage on new/changed code.
-- Run `npm run test:unit` before pushing.
+- Unit tests: Vitest + Vue Test Utils.
+- E2E tests: Playwright.
+- Add or update tests for every non-trivial feature migration.
+- Before PR: run `npm run type-check`, `npm run lint`, and relevant tests.
 
-## Commit & Pull Request Guidelines
-- Commits: short imperative summaries (e.g. “Fix vacation filtering”). Reference issues/PRs when helpful.
-- PRs must describe changes, link issues, include screenshots/GIFs for UI updates, and list test steps.
-- Keep diffs minimal and lint-clean. Update i18n keys/docs when needed.
+## Migration Workflow (Vue 2 -> Vue 3)
+- Treat `legacy/vue2` as source of behavior and API contracts.
+- Port by domains: `services` -> `stores/composables` -> `views/components` -> `router`.
+- Preserve route and permission behavior parity unless change is explicitly requested.
+- Keep Vue 3 and legacy docs in sync when moving modules.
 
-## Security & Configuration Tips
-- Backend URL comes from `BACKEND_API_BASE_URL` (see README). Docker builds rely on `devops/build.sh` and `HREASY_API_HOST`.
-- Never commit secrets; use `.env` for local-only values.
+## Security & Config
+- API base URL for Vue 3: `VITE_API_BASE_URL`.
+- Dev proxy target: `VITE_DEV_SERVER_PROXY`.
+- Do not commit secrets. Use local env variables.
 
 ## Agent Notes
-- Do not leave generated `vue-tsc` artifacts (`*.js`, `*.d.ts`) near sources; use `--noEmit` or clean them afterward.
-- When touching `vue-router` in the Vue 3 skeleton, remember the legacy app still runs `vue-router@3`. Access `$router`/`$route` via `getCurrentInstance().appContext.config.globalProperties` and run `npx vue-tsc --noEmit` to catch type conflicts.
-- Vue 3 components should follow the formatting used in `ProfileSummaryCard.vue`: file-level comment, `<editor-fold>` wrappers, closing tags on the same line.
-- Before adding/updating dependencies, inspect their latest stable versions with `npm view <package> version` and pin exactly that.
-- After substantial code changes, always run `npm run type-check` and `npm run lint`.
-- For interactive chips (tech profiles, skills, etc.) never rely on `v-chip`’s `closable` flag. Render a dedicated close button, show a confirmation dialog, and delete the record only after the user confirms.
+- Do not run root lint/type-check against `legacy/**`; legacy is maintained separately.
+- Do not generate emitted TS artifacts (`*.js`, `*.d.ts`) inside `src/`.
+- If you change shared docs or commands, update both root `README.md` and `legacy/README.md` when relevant.
+
+## Skills Policy
+- Use `$hreasy-vue3-development` by default for all Vue 3 implementation/refactor/bugfix tasks in this repository.
+- Use `$vue2-to-vue3-migration` only when the task explicitly includes migration/parity from `legacy/vue2`.
+- For migration work, combine both skills: `$hreasy-vue3-development` + `$vue2-to-vue3-migration`.
+- Follow reuse-first behavior from `$hreasy-vue3-development`: extend existing components/services/composables/stores before creating new ones.
+
+## Context Hygiene
+- Keep working context lean: load only files directly related to the current task.
+- Read skill `references/` files only when needed for the current step; avoid bulk-loading all references.
+- Prefer targeted searches (`rg` by domain/path) over broad scans of the whole repository.
+- Do not restate large docs in chat; keep summaries short and actionable.

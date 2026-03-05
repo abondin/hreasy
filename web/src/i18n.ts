@@ -6,7 +6,7 @@ type LocaleModule = {
   default: MessageSchema;
 };
 
-const localeModules = import.meta.glob<LocaleModule>("@locales/*.json", {
+const localeModules = import.meta.glob<LocaleModule>("./locales/*.json", {
   eager: true,
 });
 
