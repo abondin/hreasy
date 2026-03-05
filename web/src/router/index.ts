@@ -105,6 +105,7 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
 
   if (
     (to.name === "mentorship" || to.name === "mentorship-details")
+    to.name === "mentorship"
     && !permissions.canAccessJuniorsRegistry()
     && !permissions.canAdminJuniorRegistry()
   ) {

@@ -211,6 +211,13 @@ import {
   JuniorProgressType,
   type AddJuniorRegistryBody,
   type CurrentProjectRole,
+import { computed, onMounted, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { usePermissions } from "@/lib/permissions";
+import { formatDateTime } from "@/lib/datetime";
+import {
+  fetchJuniorsRegistry,
+  JuniorProgressType,
   type JuniorDto,
   type JuniorReport,
   type SimpleDict,
@@ -242,6 +249,8 @@ const addForm = reactive<AddJuniorRegistryBody>({
   budgetingAccount: null,
   role: "",
 });
+const loading = ref(false);
+const juniors = ref<JuniorDto[]>([]);
 
 const filter = reactive<JuniorFilter>({
   search: "",
@@ -420,6 +429,9 @@ async function downloadExport(): Promise<void> {
 onMounted(() => {
   Promise.all([loadJuniors(), loadDictionaries()]).catch((error: unknown) => {
     console.error(errorUtils.shortMessage(error));
+onMounted(() => {
+  loadJuniors().catch((error: unknown) => {
+    console.error(error);
   });
 });
 </script>
