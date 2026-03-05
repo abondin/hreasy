@@ -121,6 +121,14 @@ const navigationItems = computed(() => {
         to: { name: "overtimes" },
       });
     }
+    if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
+      items.push({
+        key: "mentorship",
+        label: t("Менторство"),
+        icon: "mdi-account-school",
+        to: { name: "mentorship" },
+      });
+    }
     return items;
   }
 

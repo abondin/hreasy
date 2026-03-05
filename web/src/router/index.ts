@@ -9,7 +9,10 @@ import ProfileMainView from "@/views/profile/ProfileMainView.vue";
 import EmployeesView from "@/views/employees/EmployeesView.vue";
 import VacationsView from "@/views/vacations/VacationsView.vue";
 import OvertimesView from "@/views/overtimes/OvertimesView.vue";
+import MentorshipView from "@/views/mentorship/MentorshipView.vue";
+import MentorshipDetailsView from "@/views/mentorship/MentorshipDetailsView.vue";
 import { useAuthStore } from "@/stores/auth";
+import { usePermissions } from "@/lib/permissions";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -49,6 +52,18 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/juniors",
+      name: "mentorship",
+      component: MentorshipView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/juniors/:juniorRegistryId",
+      name: "mentorship-details",
+      component: MentorshipDetailsView,
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/:pathMatch(.*)*",
       name: "not-found",
       component: NotFoundView,
@@ -59,6 +74,7 @@ const router = createRouter({
 
 router.beforeEach(async (to: RouteLocationNormalized) => {
   const authStore = useAuthStore();
+  const permissions = usePermissions();
 
   try {
     await authStore.fetchCurrentUser();
@@ -85,6 +101,14 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
       redirect.query = { returnPath: to.fullPath };
     }
     return redirect;
+  }
+
+  if (
+    (to.name === "mentorship" || to.name === "mentorship-details")
+    && !permissions.canAccessJuniorsRegistry()
+    && !permissions.canAdminJuniorRegistry()
+  ) {
+    return { name: "profile-main" };
   }
 
   return true;
