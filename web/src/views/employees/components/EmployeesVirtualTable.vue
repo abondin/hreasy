@@ -1,5 +1,5 @@
 <!--
-  Virtualized employees table with filters and row actions.
+  Employees table with filters and details drawer.
 -->
 <template>
   <v-card>
@@ -43,6 +43,7 @@
 
     <v-card-text>
       <v-data-table
+        class="employees-table"
         :headers="headers"
         :items="items"
         item-key="id"
@@ -56,40 +57,54 @@
         :items-per-page="-1"
         hide-default-footer
         hover
+        :row-props="rowProps"
+        @click:row="openEmployeeDetails"
       >
-        <template #item="{ columns, internalItem, item, props }">
-          <tr
-            v-bind="props"
-            class="cursor-pointer"
-            @click="toggleRow(resolveItem(item, internalItem))"
-          >
-            <td
-              v-for="column in columns"
-              :key="column.key ?? column.title"
-            >
-              {{ toDisplay(column.key ?? "", resolveItem(item, internalItem)) }}
-            </td>
-          </tr>
-          <tr v-if="isExpanded(resolveItem(item, internalItem))">
-            <td :colspan="columns.length">
-              <employee-details-expanded-row
-                :employee="resolveItem(item, internalItem)"
-                @employee-updated="emitEmployeeUpdated"
-              />
-            </td>
-          </tr>
+        <template #[`item.department.name`]="{ item }">
+          {{ item.department?.name ?? t("Не задан") }}
+        </template>
+        <template #[`item.currentProject.name`]="{ item }">
+          {{ item.currentProject?.name ?? t("Не задан") }}
+        </template>
+        <template #[`item.currentProject.role`]="{ item }">
+          {{ item.currentProject?.role ?? t("Не задан") }}
+        </template>
+        <template #[`item.ba.name`]="{ item }">
+          {{ item.ba?.name ?? t("Не задан") }}
         </template>
       </v-data-table>
-
     </v-card-text>
   </v-card>
+
+  <v-navigation-drawer
+    v-model="detailsOpen"
+    location="right"
+    temporary
+    :width="drawerWidth"
+  >
+    <div class="d-flex align-center justify-space-between px-4 py-3 border-b">
+      <div class="text-subtitle-1 font-weight-medium">
+        {{ selectedEmployee?.displayName ?? "" }}
+      </div>
+      <v-btn icon="mdi-close" variant="text" @click="detailsOpen = false" />
+    </div>
+
+    <div class="pa-2">
+      <employee-details-panel
+        v-if="selectedEmployee"
+        :employee="selectedEmployee"
+        @employee-updated="emitEmployeeUpdated"
+      />
+    </div>
+  </v-navigation-drawer>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useDisplay } from "vuetify";
 import type { Employee } from "@/services/employee.service";
-import EmployeeDetailsExpandedRow from "@/views/employees/components/EmployeeDetailsExpandedRow.vue";
+import EmployeeDetailsPanel from "@/views/employees/components/EmployeeDetailsPanel.vue";
 import { usePermissions } from "@/lib/permissions";
 
 const props = defineProps<{
@@ -112,11 +127,14 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const permissions = usePermissions();
+const display = useDisplay();
 
 const localSearch = ref(props.search ?? "");
 const selectedProject = ref<Array<number | null>>(props.project ?? []);
 const selectedBa = ref<number[]>(props.businessAccount ?? []);
-const expandedId = ref<number | null>(null);
+
+const detailsOpen = ref(false);
+const selectedEmployee = ref<Employee | null>(null);
 
 watch(localSearch, (value) => emit("update:search", value));
 watch(selectedProject, (value) => emit("update:project", value));
@@ -151,6 +169,19 @@ watch(
   },
 );
 
+watch(
+  () => props.items,
+  (nextItems) => {
+    if (!selectedEmployee.value) {
+      return;
+    }
+    const updated = nextItems.find((item) => item.id === selectedEmployee.value?.id);
+    if (updated) {
+      selectedEmployee.value = updated;
+    }
+  },
+);
+
 const headers = computed(() => {
   const items = [
     { title: t("ФИО"), key: "displayName", width: "240px" },
@@ -166,47 +197,55 @@ const headers = computed(() => {
 });
 
 const tableHeight = computed(() => props.tableHeight ?? "70vh");
+const drawerWidth = computed(() => {
+  const width = Number(display.width.value);
+  if (display.smAndDown.value) {
+    return width;
+  }
+  if (display.xlAndUp.value) {
+    return Math.round(width / 3);
+  }
+  return Math.round(width / 2);
+});
 
 const projectOptions = computed(() => props.projectOptions);
 const baOptions = computed(() => props.businessAccountOptions);
 
-function toDisplay(key: string, item: Employee): string {
-  switch (key) {
-    case "department.name":
-      return item.department?.name ?? t("Не задан");
-    case "currentProject.name":
-      return item.currentProject?.name ?? t("Не задан");
-    case "currentProject.role":
-      return item.currentProject?.role ?? t("Не задан");
-    case "ba.name":
-      return item.ba?.name ?? t("Не задан");
-    default:
-      return String(resolveKey(item, key) ?? "");
-  }
+function rowProps() {
+  return {
+    class: "cursor-pointer",
+  };
 }
 
-function resolveKey(item: Employee, key: string): unknown {
-  return key.split(".").reduce<unknown>((value, part) => {
-    if (value && typeof value === "object") {
-      return (value as Record<string, unknown>)[part];
+function openEmployeeDetails(
+  _event: Event,
+  payload: { item?: { raw?: Employee } | Employee } | Employee,
+) {
+  const row = extractRow(payload);
+  if (!row) {
+    return;
+  }
+  selectedEmployee.value = row;
+  detailsOpen.value = true;
+}
+
+function extractRow(
+  payload: { item?: { raw?: Employee } | Employee } | Employee,
+): Employee | null {
+  if (!payload) {
+    return null;
+  }
+  if (typeof payload === "object" && "item" in payload) {
+    const item = payload.item as { raw?: Employee } | Employee | undefined;
+    if (!item) {
+      return null;
     }
-    return undefined;
-  }, item);
-}
-
-function resolveItem(item: unknown, internalItem?: { raw?: Employee }): Employee {
-  if (internalItem?.raw) {
-    return internalItem.raw;
+    if (typeof item === "object" && item !== null && "raw" in item) {
+      return (item as { raw?: Employee }).raw ?? null;
+    }
+    return item as Employee;
   }
-  return item as Employee;
-}
-
-function toggleRow(employee: Employee) {
-  expandedId.value = expandedId.value === employee.id ? null : employee.id;
-}
-
-function isExpanded(employee: Employee): boolean {
-  return expandedId.value === employee.id;
+  return payload as Employee;
 }
 
 function emitEmployeeUpdated() {

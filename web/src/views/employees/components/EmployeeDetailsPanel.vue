@@ -1,32 +1,40 @@
 <!--
-  Inline employee details card for table expansion.
-  Mirrors the legacy EmployeeCard behaviour where possible.
+  Employee details drawer panel.
 -->
 <template>
-  <v-card flat class="pa-4" v-if="employee">
-    <v-row no-gutters align="start" class="ga-2">
-      <v-col cols="auto">
+  <div v-if="employee" class="employee-panel">
+    <section class="employee-panel__primary">
+      <div class="employee-panel__avatar">
         <profile-avatar :owner="employee" :read-only="false" />
-      </v-col>
-      <v-col>
-        <div class="text-subtitle-1 font-weight-medium mb-1">
-          {{ employee.displayName }}
-        </div>
-        <div v-if="employee.position" class="text-body-2 text-medium-emphasis">
+      </div>
+
+      <div class="employee-panel__summary">
+        <div v-if="employee.position" class="text-body-1 font-weight-medium">
           {{ employee.position.name }}
         </div>
-        <div v-if="employee.officeLocation" class="text-body-2 text-medium-emphasis">
-          {{ employee.officeLocation.name }}
+
+        <div class="text-body-2 text-medium-emphasis">
+          {{ t("Отдел") }}: {{ employee.department?.name ?? t("Не задан") }}
+        </div>
+
+        <div class="text-body-2 text-medium-emphasis">
+          {{ t("E-mail") }}: {{ employee.email ?? t("Не задан") }}
+        </div>
+
+        <div v-if="employee.officeLocation" class="text-body-2 text-medium-emphasis d-flex align-center ga-1">
+          <span>
+            {{ employee.officeLocation.name }}
+          </span>
           <v-btn
             v-if="employee.officeLocation.mapName"
             icon="mdi-map"
             size="x-small"
             variant="text"
             density="compact"
-            class="ml-1"
             @click.stop="openMap"
           />
         </div>
+
         <div v-if="employee.telegram" class="text-body-2 d-flex align-center">
           <a
             :href="t('telegram_url', { account: employee.telegram })"
@@ -39,129 +47,121 @@
           </a>
         </div>
 
-        <div class="d-flex flex-wrap align-center ga-1 text-body-2 text-medium-emphasis mt-1">
-          <span class="font-weight-medium">
-            {{ t("Текущий проект") }}:
-          </span>
-          <span class="d-inline-flex align-center ga-1">
-            <v-btn
-              v-if="canShowProjectInfo"
-              icon="mdi-information"
-              color="info"
-              variant="text"
-              density="compact"
-              size="small"
-              :title="t('Подробная информация по проекту ')"
-              @click.stop="openProjectInfo"
-            />
-            <span>
-              {{ employee.currentProject?.name ?? t("Проект не задан") }}
-            </span>
-            <span v-if="employee.ba" class="ml-1">
-              ({{ employee.ba.name }})
-            </span>
-            <span v-if="employee.currentProject?.role">
-              - {{ employee.currentProject.role }}
-            </span>
-            <v-btn
-              v-if="canEditProject"
-              icon="mdi-pencil"
-              variant="text"
-              density="compact"
-              size="small"
-              class="ml-1"
-              :title="t('Обновление текущего проекта')"
-              @click.stop="openProjectUpdate"
-            />
-          </span>
-        </div>
-
-        <div class="d-flex flex-wrap align-center ga-1 text-body-2 text-medium-emphasis mt-1">
-          <span class="font-weight-medium">
-            {{ t("Текущие и планируемые отпуска") }}:
-          </span>
-          <v-progress-circular
-            v-if="vacationsLoading"
-            indeterminate
-            size="18"
-            width="2"
-            class="ml-2"
+        <div class="text-body-2 d-flex align-center ga-1 flex-wrap">
+          <span class="font-weight-medium">{{ t("Текущий проект") }}:</span>
+          <span>{{ employee.currentProject?.name ?? t("Не задан") }}</span>
+          <span v-if="employee.ba">({{ employee.ba.name }})</span>
+          <v-btn
+            v-if="canShowProjectInfo"
+            icon="mdi-information"
+            color="info"
+            variant="text"
+            density="compact"
+            size="small"
+            :title="t('Подробная информация по проекту ')"
+            @click.stop="openProjectInfo"
           />
-          <div
-            v-else-if="employeeVacations.length"
-            class="d-flex flex-wrap align-center ga-1"
-          >
-            <v-chip
-              v-for="vacation in employeeVacations"
-              :key="vacation.id"
-              size="small"
-              density="compact"
-              class="mr-1 mb-1"
-              :color="vacation.current ? 'primary' : undefined"
-            >
-              {{ formatDate(vacation.startDate) }} -
-              {{ formatDate(vacation.endDate) }}
-            </v-chip>
-          </div>
-        </div>
-
-        <div v-if="canViewTechProfiles" class="mt-2">
-          <div class="d-flex flex-wrap align-center ga-1 text-body-2 text-medium-emphasis mt-1">
-            <span class="font-weight-medium">
-              {{ t("Квалификационные карточки") }}:
-            </span>
-          </div>
-          <profile-tech-profiles-card
-            :employee-id="employee.id"
-            :with-card="false"
-            :show-title="false"
-            :dense="true"
+          <v-btn
+            v-if="canEditProject"
+            icon="mdi-pencil"
+            variant="text"
+            density="compact"
+            size="small"
+            :title="t('Обновление текущего проекта')"
+            @click.stop="openProjectUpdate"
           />
         </div>
 
-        <div v-if="canViewSkills" class="mt-2">
-          <div class="d-flex flex-wrap align-center ga-1 text-body-2 text-medium-emphasis mt-1">
-            <span class="font-weight-medium">
-              {{ t("Навыки") }}:
-            </span>
-          </div>
-          <employee-skills-section
-            :grouped-skills="groupedSkills"
-            :loading="skillsSectionLoading"
-            :error="skillsSectionError"
-            :can-edit="canEditSkills"
-            :can-add="canAddSkills"
-            :can-delete="canDeleteSkills"
-            :can-rate="canRateSkills"
-            :dense="true"
-            :submit-skill="submitNewSkill"
-            :rate-skill="handleRateSkill"
-            :delete-skill="confirmDeleteSkill"
-            @deleted="handleSkillDeleted"
-          />
+        <div v-if="permissions.canViewEmplCurrentProjectRole()" class="text-body-2 text-medium-emphasis">
+          {{ t("Роль на проекте") }}: {{ employee.currentProject?.role ?? t("Не задан") }}
         </div>
-      </v-col>
-    </v-row>
-  </v-card>
 
-  <office-map-preview-dialog
-    v-model="mapDialogOpen"
-    :map-name="mapName"
-    :map-title="mapTitle"
-    :workplace="highlightedWorkplace"
-  />
-  <project-info-dialog
-    v-model="projectInfoDialogOpen"
-    :project-id="employee.currentProject?.id ?? null"
-    :employee-id="employee.id ?? null"
-  />
-  <project-assignment-dialog
-    v-model="projectUpdateDialogOpen"
-    :employee-id="employee.id ?? null"
-    :employee-name="employee.displayName"
-    :current-project="employee.currentProject ?? null"
-    @updated="handleProjectUpdated"
-  />
+        <div class="text-body-2 text-medium-emphasis">
+          {{ t("Бизнес Аккаунт") }}: {{ employee.ba?.name ?? t("Не задан") }}
+        </div>
+      </div>
+    </section>
+
+    <v-divider class="my-3" />
+
+    <section class="employee-panel__section">
+      <div class="text-body-2 font-weight-medium mb-2">
+        {{ t("Текущие и планируемые отпуска") }}
+      </div>
+      <v-progress-circular
+        v-if="vacationsLoading"
+        indeterminate
+        size="18"
+        width="2"
+      />
+      <div v-else-if="employeeVacations.length" class="d-flex flex-wrap align-center ga-1">
+        <v-chip
+          v-for="vacation in employeeVacations"
+          :key="vacation.id"
+          size="small"
+          density="compact"
+          :color="vacation.current ? 'primary' : undefined"
+        >
+          {{ formatDate(vacation.startDate) }} -
+          {{ formatDate(vacation.endDate) }}
+        </v-chip>
+      </div>
+      <div v-else class="text-body-2 text-medium-emphasis">
+        {{ t("Отсутствуют данные") }}
+      </div>
+    </section>
+
+    <section v-if="canViewTechProfiles" class="employee-panel__section mt-4">
+      <div class="text-body-2 font-weight-medium mb-2">
+        {{ t("Квалификационные карточки") }}
+      </div>
+      <profile-tech-profiles-card
+        :employee-id="employee.id"
+        :with-card="false"
+        :show-title="false"
+        :dense="true"
+      />
+    </section>
+
+    <section v-if="canViewSkills" class="employee-panel__section mt-4">
+      <div class="text-body-2 font-weight-medium mb-2">
+        {{ t("Навыки") }}
+      </div>
+      <employee-skills-section
+        :grouped-skills="groupedSkills"
+        :loading="skillsSectionLoading"
+        :error="skillsSectionError"
+        :can-edit="canEditSkills"
+        :can-add="canAddSkills"
+        :can-delete="canDeleteSkills"
+        :can-rate="canRateSkills"
+        :dense="true"
+        :submit-skill="submitNewSkill"
+        :rate-skill="handleRateSkill"
+        :delete-skill="confirmDeleteSkill"
+        @deleted="handleSkillDeleted"
+      />
+    </section>
+
+    <office-map-preview-dialog
+      v-model="mapDialogOpen"
+      :map-name="mapName"
+      :map-title="mapTitle"
+      :workplace="highlightedWorkplace"
+    />
+    <project-info-dialog
+      v-model="projectInfoDialogOpen"
+      :project-id="employee.currentProject?.id ?? null"
+      :employee-id="employee.id ?? null"
+    />
+    <project-assignment-dialog
+      v-model="projectUpdateDialogOpen"
+      :employee-id="employee.id ?? null"
+      :employee-name="employee.displayName"
+      :current-project="employee.currentProject ?? null"
+      @updated="handleProjectUpdated"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -334,4 +334,31 @@ function handleSkillDeleted(skill: Skill) {
 </script>
 
 <style scoped>
+.employee-panel {
+  padding: 12px;
+}
+
+.employee-panel__primary {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.employee-panel__avatar {
+  flex: 0 0 auto;
+}
+
+.employee-panel__summary {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .employee-panel__primary {
+    flex-direction: column;
+  }
+}
 </style>
