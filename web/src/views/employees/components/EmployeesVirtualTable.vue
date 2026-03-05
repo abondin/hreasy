@@ -52,6 +52,7 @@
         density="compact"
         :loading="loading"
         :loading-text="t('Загрузка_данных')"
+        :no-data-text="t('Отсутствуют данные')"
         :items-per-page="-1"
         hide-default-footer
       >

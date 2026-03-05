@@ -60,7 +60,7 @@
                     @click="exportToExcel"
                   />
                 </template>
-                <span>{{ t("Экспорт в excel") }}</span>
+                <span>{{ t("Экспорт в Excel") }}</span>
               </v-tooltip>
             </div>
           </v-col>

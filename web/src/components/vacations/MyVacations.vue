@@ -47,6 +47,7 @@
         class="vacations-table"
         :loading="loading"
         :loading-text="t('Загрузка_данных')"
+        :no-data-text="t('Отсутствуют данные')"
         :headers="headers"
         :items="filteredVacations"
         :sort-by="[

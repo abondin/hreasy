@@ -53,6 +53,7 @@
       :items="items"
       :loading="loading"
       :loading-text="t('Загрузка_данных')"
+      :no-data-text="t('Отсутствуют данные')"
       :sort-by="[{ key: 'createdAt', order: 'desc' }]"
       hide-default-footer
       :items-per-page="-1"
