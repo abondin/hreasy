@@ -55,6 +55,7 @@
         :no-data-text="t('Отсутствуют данные')"
         :items-per-page="-1"
         hide-default-footer
+        hover
       >
         <template #item="{ columns, internalItem, item, props }">
           <tr

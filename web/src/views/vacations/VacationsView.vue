@@ -22,47 +22,18 @@
       <v-container class="pt-4">
         <v-row align="center">
           <v-col cols="auto" class="pb-0">
-            <div>
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon="mdi-refresh"
-                    variant="text"
-                    :disabled="loading"
-                    @click="fetchData(false)"
-                  />
-                </template>
-                <span>{{ t("Обновить данные") }}</span>
-              </v-tooltip>
-
-              <v-tooltip location="bottom" v-if="canEditVacations">
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon="mdi-plus"
-                    color="primary"
-                    variant="text"
-                    :disabled="loading"
-                    @click="openVacationDialog(null)"
-                  />
-                </template>
-                <span>{{ t("Добавить отпуск") }}</span>
-              </v-tooltip>
-
-              <v-tooltip location="bottom" v-if="canExportVacations">
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon="mdi-file-excel"
-                    variant="text"
-                    :disabled="loading"
-                    @click="exportToExcel"
-                  />
-                </template>
-                <span>{{ t("Экспорт в Excel") }}</span>
-              </v-tooltip>
-            </div>
+            <table-toolbar-actions
+              :disabled="loading"
+              show-refresh
+              :show-add="canEditVacations"
+              :show-export="canExportVacations"
+              :refresh-label="t('Обновить данные')"
+              :add-label="t('Добавить отпуск')"
+              :export-label="t('Экспорт в Excel')"
+              @refresh="fetchData(false)"
+              @add="openVacationDialog(null)"
+              @export="exportToExcel"
+            />
           </v-col>
 
           <v-col cols="12" sm="2" class="pb-0">
@@ -140,6 +111,7 @@
       <v-window v-model="selectedTab">
         <v-window-item>
           <v-data-table
+            class="vacations-list-table text-truncate"
             :loading="loading"
             :loading-text="t('Загрузка_данных')"
             :no-data-text="t('Отсутствуют данные')"
@@ -149,41 +121,28 @@
             density="compact"
             multi-sort
             :items-per-page="defaultItemsPerPage"
-            class="text-truncate"
             hover
             @click:row="onVacationRowClick"
           >
             <template v-slot:[`item.employeeDisplayName`]="{ item }">
-              <v-menu>
-                <template #activator="{ props }">
-                  <v-btn size="small" variant="text" v-bind="props" @click.stop>
-                    {{ item.employeeDisplayName }}
-                  </v-btn>
-                </template>
-                <v-list density="compact">
-                  <v-list-item>
-                    <v-btn
-                      size="small"
-                      variant="text"
-                      @click.stop="copyToClipboard(item)"
-                    >
-                      <v-icon icon="mdi-content-copy" class="mr-1" />
-                      {{ t("Копировать") }}
-                    </v-btn>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-btn
-                      size="small"
-                      variant="text"
-                      :disabled="!canEditVacations"
-                      @click.stop="openVacationDialog(item)"
-                    >
-                      <v-icon icon="mdi-pencil" class="mr-1" />
-                      {{ t("Редактировать") }}
-                    </v-btn>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
+              <div class="vacation-employee-cell">
+                <span class="vacation-employee-cell__copy-slot">
+                  <v-tooltip location="bottom">
+                    <template #activator="{ props }">
+                      <v-btn
+                        v-bind="props"
+                        icon="mdi-content-copy"
+                        size="x-small"
+                        variant="text"
+                        class="vacation-employee-cell__copy"
+                        @click.stop="copyToClipboard(item)"
+                      />
+                    </template>
+                    <span>{{ t("Скопировать в буфер обмена") }}</span>
+                  </v-tooltip>
+                </span>
+                <span>{{ item.employeeDisplayName }}</span>
+              </div>
             </template>
             <template v-slot:[`item.startDate`]="{ item }">
               {{ formatDate(item.startDate) }}
@@ -219,14 +178,7 @@
             @click:row="onSummaryRowClick"
           >
             <template v-slot:[`item.employeeDisplayName`]="{ item }">
-              <v-btn
-                size="small"
-                variant="text"
-                :disabled="loading"
-                @click.stop="selectEmployee(item)"
-              >
-                {{ item.employeeDisplayName }}
-              </v-btn>
+              <span>{{ item.employeeDisplayName }}</span>
             </template>
             <template v-slot:[`item.upcomingVacation`]="{ item }">
               <span v-if="item.upcomingVacation">
@@ -277,6 +229,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import MyDateRangeComponent from "@/components/shared/MyDateRangeComponent.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
 import VacationsTimeline from "@/components/vacations/VacationsTimeline.vue";
 import {
@@ -575,3 +528,31 @@ async function copyToClipboard(vacation: Vacation | null) {
   }
 }
 </script>
+
+<style scoped>
+.vacation-employee-cell {
+  display: inline-flex;
+  align-items: center;
+}
+
+.vacation-employee-cell__copy-slot {
+  display: inline-flex;
+  width: 20px;
+  margin-right: 4px;
+}
+
+.vacation-employee-cell__copy {
+  visibility: hidden;
+}
+
+.vacations-list-table :deep(tbody tr:hover) .vacation-employee-cell__copy,
+.vacations-list-table :deep(tbody tr:focus-within) .vacation-employee-cell__copy {
+  visibility: visible;
+}
+
+@media (hover: none) {
+  .vacation-employee-cell__copy {
+    visibility: visible;
+  }
+}
+</style>

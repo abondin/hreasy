@@ -13,7 +13,12 @@
       <v-card-title>
         <v-row align="center" class="w-100">
           <v-col cols="12" md="8" class="d-flex align-center ga-2">
-            <v-btn icon="mdi-refresh" variant="text" :disabled="loading" @click="fetchData" />
+            <table-toolbar-actions
+              :disabled="loading"
+              show-refresh
+              :refresh-label="t('Обновить данные')"
+              @refresh="fetchData"
+            />
             <v-btn icon="mdi-chevron-left" variant="text" :disabled="loading" @click="decrementPeriod" />
             <span>{{ selectedPeriod.toString() }}</span>
             <v-icon
@@ -25,18 +30,13 @@
             <v-btn icon="mdi-chevron-right" variant="text" :disabled="loading" @click="incrementPeriod" />
           </v-col>
           <v-col cols="12" md="4" class="d-flex justify-end ga-2">
-            <v-tooltip location="bottom" v-if="canExportOvertimes">
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  icon="mdi-file-excel"
-                  variant="text"
-                  :disabled="loading"
-                  @click="exportToExcel"
-                />
-              </template>
-              <span>{{ t("Экспорт в Excel") }}</span>
-            </v-tooltip>
+            <table-toolbar-actions
+              v-if="canExportOvertimes"
+              :disabled="loading"
+              show-export
+              :export-label="t('Экспорт в Excel')"
+              @export="exportToExcel"
+            />
 
             <v-tooltip location="bottom" v-if="canAdminOvertimes">
               <template #activator="{ props }">
@@ -121,7 +121,7 @@
           :no-data-text="t('Отсутствуют данные')"
           :sort-by="[{ key: 'totalHours', order: 'desc' }]"
           density="compact"
-          :items-per-page="50"
+          :items-per-page="defaultItemsPerPage"
           hover
           @click:row="onRowClick"
         >
@@ -203,6 +203,7 @@ import {
   type OvertimeEmployeeSummary,
 } from "@/services/overtime.service";
 import EmployeeOvertimeCard from "@/components/overtimes/EmployeeOvertimeCard.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 
 interface EmployeeRef {
   id: number;
@@ -221,6 +222,7 @@ const permissions = usePermissions();
 
 const loading = ref(false);
 const exportCompleted = ref(false);
+const defaultItemsPerPage = 15;
 
 const selectedPeriodId = ref(ReportPeriod.currentPeriod().periodId());
 const selectedPeriod = computed(() => ReportPeriod.fromPeriodId(selectedPeriodId.value));
