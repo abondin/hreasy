@@ -26,6 +26,7 @@ Table standardization note:
 - Use the Vue 2 "Повышения и бонусы" table (`legacy/vue2/src/components/salary/SalaryRequestsTable.vue`) as a structural reference for Vue 3 table UI.
 - Keep business behavior/permissions intact while aligning table skeleton (toolbar, action placement, filters block, loading/disabled/empty states).
 - Before adding custom behavior/styles, check Vuetify component docs first: `https://vuetifyjs.com/en/components/`.
+- For employee list pages (for example `/employees`, `/admin/employees`, and similar directories), use `src/components/shared/HREasyTableBase.vue` by default. Differences between pages should be expressed via columns, filters, and row-click behavior rather than custom table layouts.
 
 ## Reuse-First Protocol
 

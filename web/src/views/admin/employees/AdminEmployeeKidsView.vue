@@ -6,11 +6,16 @@
       <v-text-field v-model="search" density="compact" :label="t('Поиск')" hide-details class="ml-2" />
     </v-card-title>
 
-    <v-data-table
+    <HREasyTableBase
       :headers="headers"
       :items="filteredItems"
+      height="62vh"
+      fixed-header
       :loading="loading"
       :loading-text="t('Загрузка_данных')"
+      :no-data-text="t('Отсутствуют данные')"
+      density="compact"
+      hover
       @click:row="onClickRow"
     />
 
@@ -41,6 +46,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import { listEmployees, type Employee } from "@/services/employee.service";
 import {
   createEmployeeKid,
@@ -85,9 +91,13 @@ function fillForm(item?: EmployeeKid): void {
   employeeId.value = item?.parent?.id ?? null;
 }
 
-function onClickRow(_: unknown, row: { item: EmployeeKid }): void {
-  current.value = row.item;
-  fillForm(row.item);
+function onClickRow(_event: Event, payload: unknown): void {
+  const row = extractRow(payload);
+  if (!row) {
+    return;
+  }
+  current.value = row;
+  fillForm(row);
   dialog.value = true;
 }
 
@@ -95,6 +105,31 @@ function openCreate(): void {
   current.value = null;
   fillForm();
   dialog.value = true;
+}
+
+function extractRow(payload: unknown): EmployeeKid | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+  if ("item" in payload) {
+    const rowItem = (payload as { item?: { raw?: EmployeeKid } | EmployeeKid }).item;
+    if (!rowItem) {
+      return null;
+    }
+    if (typeof rowItem === "object" && "raw" in rowItem) {
+      const rawRow = rowItem.raw;
+      return isEmployeeKid(rawRow) ? rawRow : null;
+    }
+    return isEmployeeKid(rowItem) ? rowItem : null;
+  }
+  return isEmployeeKid(payload) ? payload : null;
+}
+
+function isEmployeeKid(value: unknown): value is EmployeeKid {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  return "id" in value && "displayName" in value && "parent" in value;
 }
 
 async function load(): Promise<void> {

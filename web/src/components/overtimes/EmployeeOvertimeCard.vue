@@ -48,15 +48,15 @@
       </div>
     </v-card-subtitle>
 
-    <v-data-table
+    <HREasyTableBase
       :headers="headers"
       :items="items"
+      height="420"
+      fixed-header
       :loading="loading"
       :loading-text="t('Загрузка_данных')"
       :no-data-text="t('Отсутствуют данные')"
       :sort-by="[{ key: 'createdAt', order: 'desc' }]"
-      hide-default-footer
-      :items-per-page="-1"
       density="compact"
     >
       <template #[`item.date`]="{ item }">
@@ -77,7 +77,7 @@
       <template #[`item.createdAt`]="{ item }">
         {{ formatDateTime(item.createdAt) }}
       </template>
-    </v-data-table>
+    </HREasyTableBase>
   </v-card>
 
   <v-dialog v-model="deleteDialog" width="520">
@@ -118,6 +118,7 @@ import {
 import AddOvertimeItemDialog from "@/components/overtimes/AddOvertimeItemDialog.vue";
 import ApproveOvertimeReportDialog from "@/components/overtimes/ApproveOvertimeReportDialog.vue";
 import OvertimeApprovalChip from "@/components/overtimes/OvertimeApprovalChip.vue";
+import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 
 const props = withDefaults(
   defineProps<{

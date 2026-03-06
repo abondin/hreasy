@@ -41,3 +41,8 @@ export async function fetchOfficeLocations(): Promise<DictItem[]> {
   const response = await http.get<DictItem[]>("v1/dict/office_locations");
   return response.data;
 }
+
+export async function fetchBusinessAccounts(): Promise<DictItem[]> {
+  const response = await http.get<DictItem[]>("v1/business_account");
+  return response.data;
+}

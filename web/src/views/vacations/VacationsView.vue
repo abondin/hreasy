@@ -110,8 +110,10 @@
 
       <v-window v-model="selectedTab">
         <v-window-item>
-          <v-data-table
+          <HREasyTableBase
             class="vacations-list-table text-truncate"
+            height="60vh"
+            fixed-header
             :loading="loading"
             :loading-text="t('Загрузка_данных')"
             :no-data-text="t('Отсутствуют данные')"
@@ -120,7 +122,6 @@
             :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
             density="compact"
             multi-sort
-            :items-per-page="defaultItemsPerPage"
             hover
             @click:row="onVacationRowClick"
           >
@@ -159,11 +160,13 @@
             <template v-slot:[`item.status`]="{ item }">
               {{ t(`VACATION_STATUS_ENUM.${item.status}`) }}
             </template>
-          </v-data-table>
+          </HREasyTableBase>
         </v-window-item>
 
         <v-window-item>
-          <v-data-table
+          <HREasyTableBase
+            height="60vh"
+            fixed-header
             :loading="loading"
             :loading-text="t('Загрузка_данных')"
             :no-data-text="t('Отсутствуют данные')"
@@ -172,7 +175,6 @@
             :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
             density="compact"
             multi-sort
-            :items-per-page="defaultItemsPerPage"
             class="text-truncate"
             hover
             @click:row="onSummaryRowClick"
@@ -187,7 +189,7 @@
                 ({{ t(`VACATION_STATUS_ENUM.${item.upcomingVacation.status}`) }})
               </span>
             </template>
-          </v-data-table>
+          </HREasyTableBase>
         </v-window-item>
 
         <v-window-item>
@@ -229,6 +231,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import MyDateRangeComponent from "@/components/shared/MyDateRangeComponent.vue";
+import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
 import VacationsTimeline from "@/components/vacations/VacationsTimeline.vue";
@@ -263,8 +266,6 @@ const canEditVacations = computed(() => permissions.canEditAllVacations());
 const canExportVacations = computed(() => permissions.canExportAllVacations());
 
 const selectedTab = ref(0);
-const defaultItemsPerPage = 15;
-
 const headers = computed(() => [
   { title: t("ФИО"), key: "employeeDisplayName" },
   { title: t("Текущий проект"), key: "employeeCurrentProject.name" },
@@ -455,7 +456,7 @@ function selectEmployee(item: { employeeDisplayName: string }) {
 
 function onVacationRowClick(
   _event: Event,
-  payload: { item?: { raw?: Vacation } | Vacation } | Vacation,
+  payload: unknown,
 ) {
   const row = extractRow<Vacation>(payload);
   if (!row || !canEditVacations.value) {
@@ -466,9 +467,7 @@ function onVacationRowClick(
 
 function onSummaryRowClick(
   _event: Event,
-  payload:
-    | { item?: { raw?: EmployeeVacationSummary } | EmployeeVacationSummary }
-    | EmployeeVacationSummary,
+  payload: unknown,
 ) {
   const row = extractRow<EmployeeVacationSummary>(payload);
   if (!row) {
@@ -477,13 +476,11 @@ function onSummaryRowClick(
   selectEmployee(row);
 }
 
-function extractRow<T>(
-  payload: { item?: { raw?: T } | T } | T,
-): T | null {
-  if (!payload) {
+function extractRow<T>(payload: unknown): T | null {
+  if (!payload || typeof payload !== "object") {
     return null;
   }
-  if (typeof payload === "object" && "item" in payload) {
+  if ("item" in payload) {
     const item = payload.item as { raw?: T } | T | undefined;
     if (!item) {
       return null;

@@ -63,8 +63,8 @@
       </v-card-title>
 
       <v-card-text>
-        <v-row>
-          <v-col cols="12" md="3">
+        <v-row align="center">
+          <v-col cols="12" md="3" class="pb-0">
             <v-text-field
               v-model="filter.search"
               density="compact"
@@ -73,7 +73,7 @@
               :label="t('ФИО Сотрудника')"
             />
           </v-col>
-          <v-col cols="12" md="3">
+          <v-col cols="12" md="3" class="pb-0">
             <v-autocomplete
               v-model="filter.selectedEmployeeCurrentProjects"
               density="compact"
@@ -83,10 +83,10 @@
               :items="activeProjects"
               item-title="name"
               item-value="id"
-              :label="t('Текущий проект сотрудника')"
+              :label="t('Текущий проект')"
             />
           </v-col>
-          <v-col cols="12" md="3">
+          <v-col cols="12" md="3" class="pb-0">
             <v-autocomplete
               v-model="filter.selectedProjectsWithOvertimes"
               density="compact"
@@ -96,16 +96,18 @@
               :items="projectsWithOvertimes"
               item-title="name"
               item-value="id"
-              :label="t('Проекты, в которые списаны овертаймы')"
+              :label="t('Проект овертайма')"
             />
           </v-col>
-          <v-col cols="12" md="3" class="d-flex align-center">
-            <v-checkbox
-              v-model="filter.showEmpty"
-              :disabled="loading"
-              :label="t('Сотрудники без овертаймов')"
-              hide-details
-            />
+          <v-col cols="12" md="3" class="d-flex align-center pb-0">
+            <div class="d-flex align-center ga-2">
+              <v-checkbox-btn
+                v-model="filter.showEmpty"
+                :disabled="loading"
+                density="compact"
+              />
+              <span class="text-body-2">{{ t("Сотрудники без овертаймов") }}</span>
+            </div>
           </v-col>
         </v-row>
 
@@ -113,15 +115,16 @@
           {{ t("Итого (с учётом фильтров)") }}: {{ t("hours", totalHours) }}
         </div>
 
-        <v-data-table
+        <HREasyTableBase
           :headers="headers"
           :items="filteredOvertimes"
+          height="60vh"
+          fixed-header
           :loading="loading"
           :loading-text="t('Загрузка_данных')"
           :no-data-text="t('Отсутствуют данные')"
           :sort-by="[{ key: 'totalHours', order: 'desc' }]"
           density="compact"
-          :items-per-page="defaultItemsPerPage"
           hover
           @click:row="onRowClick"
         >
@@ -146,7 +149,7 @@
             </v-chip>
             <span v-else>{{ t("Отсутствуют") }}</span>
           </template>
-        </v-data-table>
+        </HREasyTableBase>
       </v-card-text>
     </v-card>
 
@@ -203,6 +206,7 @@ import {
   type OvertimeEmployeeSummary,
 } from "@/services/overtime.service";
 import EmployeeOvertimeCard from "@/components/overtimes/EmployeeOvertimeCard.vue";
+import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 
 interface EmployeeRef {
@@ -212,6 +216,8 @@ interface EmployeeRef {
 
 interface OvertimeRow {
   employee: EmployeeRef;
+  employeeCurrentProject: string;
+  overtimeProjects: string;
   totalHours: number;
   commonApprovalStatus: CommonApprovalStatus;
   overtimeProjectIds: number[];
@@ -222,8 +228,6 @@ const permissions = usePermissions();
 
 const loading = ref(false);
 const exportCompleted = ref(false);
-const defaultItemsPerPage = 15;
-
 const selectedPeriodId = ref(ReportPeriod.currentPeriod().periodId());
 const selectedPeriod = computed(() => ReportPeriod.fromPeriodId(selectedPeriodId.value));
 
@@ -248,6 +252,8 @@ const canAdminOvertimes = computed(() => permissions.canAdminOvertimes());
 
 const headers = computed(() => [
   { title: t("Сотрудник"), key: "employee.name" },
+  { title: t("Текущий проект"), key: "employeeCurrentProject" },
+  { title: t("Проекты овертаймов"), key: "overtimeProjects" },
   { title: t("Всего"), key: "totalHours" },
   { title: t("Статус согласования"), key: "commonApprovalStatus" },
 ]);
@@ -270,6 +276,11 @@ const baseRows = computed<OvertimeRow[]>(() => {
         id: employee.id,
         name: employee.displayName,
       },
+      employeeCurrentProject: employee.currentProject?.name ?? t("Без проекта"),
+      overtimeProjects: items
+        .map((item) => projectNameById(item.projectId))
+        .filter((name, index, array) => array.indexOf(name) === index)
+        .join(", "),
       totalHours: items.reduce((sum, item) => sum + item.hours, 0),
       commonApprovalStatus: employeeSummary?.commonApprovalStatus ?? "NO_DECISIONS",
       overtimeProjectIds: [...new Set(items.map((item) => item.projectId))],
@@ -380,12 +391,45 @@ function closeEmployeeDialog(): void {
 
 function onRowClick(
   _event: Event,
-  payload: { item?: OvertimeRow } | OvertimeRow,
+  payload: unknown,
 ): void {
-  const row = (payload as { item?: OvertimeRow }).item ?? (payload as OvertimeRow);
+  const row = extractRow(payload);
   if (row?.employee) {
     showEmployeeDialog(row.employee);
   }
+}
+
+function extractRow(payload: unknown): OvertimeRow | null {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+  if ("item" in payload) {
+    const rowItem = (payload as { item?: { raw?: OvertimeRow } | OvertimeRow }).item;
+    if (!rowItem) {
+      return null;
+    }
+    if (typeof rowItem === "object" && "raw" in rowItem) {
+      const rawRow = rowItem.raw;
+      return isOvertimeRow(rawRow) ? rawRow : null;
+    }
+    return isOvertimeRow(rowItem) ? rowItem : null;
+  }
+  return isOvertimeRow(payload) ? payload : null;
+}
+
+function isOvertimeRow(value: unknown): value is OvertimeRow {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  return "employee" in value && "totalHours" in value;
+}
+
+function projectNameById(projectId: number): string {
+  const project = projects.value.find((item) => item.id === projectId);
+  if (!project) {
+    return `${t("Не найден: ")}${projectId}`;
+  }
+  return project.name;
 }
 
 async function exportToExcel(): Promise<void> {

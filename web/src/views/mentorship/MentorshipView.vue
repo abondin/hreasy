@@ -97,7 +97,9 @@
         </v-row>
       </v-container>
 
-      <v-data-table
+      <HREasyTableBase
+        height="62vh"
+        fixed-header
         :loading="loading"
         :loading-text="t('Загрузка_данных')"
         :no-data-text="t('Отсутствуют данные')"
@@ -106,7 +108,6 @@
         density="compact"
         multi-sort
         :sort-by="[{ key: 'juniorEmpl.name', order: 'asc' }]"
-        :items-per-page="25"
         :row-props="buildRowProps"
       >
         <template #[`item.progress`]="{ item }">
@@ -145,7 +146,7 @@
         <template #[`item.graduation.graduatedAt`]="{ item }">
           {{ formatDateTime(item.graduation?.graduatedAt) }}
         </template>
-      </v-data-table>
+      </HREasyTableBase>
     </v-card>
 
     <v-dialog v-model="addDialog" max-width="760">
@@ -199,6 +200,7 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { usePermissions } from "@/lib/permissions";
+import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import { formatDateTime } from "@/lib/datetime";
 import { errorUtils } from "@/lib/errors";
 import {

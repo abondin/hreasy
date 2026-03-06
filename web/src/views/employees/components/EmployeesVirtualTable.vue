@@ -3,77 +3,73 @@
 -->
 <template>
   <v-card>
-    <v-card-title class="d-flex flex-wrap ga-3 align-center employees-filters">
-      <v-text-field
-        v-model="localSearch"
-        :label="t('Поиск')"
-        prepend-inner-icon="mdi-magnify"
-        variant="outlined"
-        density="compact"
-        class="employees-filters__item"
-        clearable
-      />
-      <v-autocomplete
-        v-model="selectedProject"
-        :items="projectOptions"
-        :label="t('Текущий проект')"
-        variant="outlined"
-        density="compact"
-        clearable
-        multiple
-        chips
-        item-title="title"
-        item-value="value"
-        class="employees-filters__item"
-      />
-      <v-autocomplete
-        v-model="selectedBa"
-        :items="baOptions"
-        :label="t('Бизнес Аккаунт')"
-        variant="outlined"
-        density="compact"
-        clearable
-        multiple
-        chips
-        item-title="title"
-        item-value="value"
-        class="employees-filters__item"
-      />
-    </v-card-title>
+    <HREasyTableBase
+      table-class="employees-table"
+      :headers="headers"
+      :items="items"
+      :height="tableHeight"
+      :fixed-header="true"
+      density="compact"
+      :loading="loading"
+      :loading-text="t('Загрузка_данных')"
+      :no-data-text="t('Отсутствуют данные')"
+      :hover="true"
+      :row-props="rowProps"
+      @click:row="openEmployeeDetails"
+    >
+      <template #filters>
+        <v-card-title class="d-flex flex-wrap ga-3 align-center employees-filters">
+          <v-text-field
+            v-model="localSearch"
+            :label="t('Поиск')"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            density="compact"
+            class="employees-filters__item"
+            clearable
+          />
+          <v-autocomplete
+            v-model="selectedProject"
+            :items="projectOptions"
+            :label="t('Текущий проект')"
+            variant="outlined"
+            density="compact"
+            clearable
+            multiple
+            chips
+            item-title="title"
+            item-value="value"
+            class="employees-filters__item"
+          />
+          <v-autocomplete
+            v-model="selectedBa"
+            :items="baOptions"
+            :label="t('Бизнес Аккаунт')"
+            variant="outlined"
+            density="compact"
+            clearable
+            multiple
+            chips
+            item-title="title"
+            item-value="value"
+            class="employees-filters__item"
+          />
+        </v-card-title>
+      </template>
 
-    <v-card-text>
-      <v-data-table
-        class="employees-table"
-        :headers="headers"
-        :items="items"
-        item-key="id"
-        :height="tableHeight"
-        fixed-header
-        fixed-footer
-        density="compact"
-        :loading="loading"
-        :loading-text="t('Загрузка_данных')"
-        :no-data-text="t('Отсутствуют данные')"
-        :items-per-page="-1"
-        hide-default-footer
-        hover
-        :row-props="rowProps"
-        @click:row="openEmployeeDetails"
-      >
-        <template #[`item.department.name`]="{ item }">
-          {{ item.department?.name ?? t("Не задан") }}
-        </template>
-        <template #[`item.currentProject.name`]="{ item }">
-          {{ item.currentProject?.name ?? t("Не задан") }}
-        </template>
-        <template #[`item.currentProject.role`]="{ item }">
-          {{ item.currentProject?.role ?? t("Не задан") }}
-        </template>
-        <template #[`item.ba.name`]="{ item }">
-          {{ item.ba?.name ?? t("Не задан") }}
-        </template>
-      </v-data-table>
-    </v-card-text>
+      <template #[`item.department.name`]="{ item }">
+        {{ item.department?.name ?? t("Не задан") }}
+      </template>
+      <template #[`item.currentProject.name`]="{ item }">
+        {{ item.currentProject?.name ?? t("Не задан") }}
+      </template>
+      <template #[`item.currentProject.role`]="{ item }">
+        {{ item.currentProject?.role ?? t("Не задан") }}
+      </template>
+      <template #[`item.ba.name`]="{ item }">
+        {{ item.ba?.name ?? t("Не задан") }}
+      </template>
+    </HREasyTableBase>
   </v-card>
 
   <v-navigation-drawer
@@ -101,6 +97,7 @@ import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDisplay } from "vuetify";
 import type { Employee } from "@/services/employee.service";
+import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import EmployeeDetailsPanel from "@/views/employees/components/EmployeeDetailsPanel.vue";
 import { usePermissions } from "@/lib/permissions";
 
@@ -216,7 +213,7 @@ function rowProps() {
 
 function openEmployeeDetails(
   _event: Event,
-  payload: { item?: { raw?: Employee } | Employee } | Employee,
+  payload: unknown,
 ) {
   const row = extractRow(payload);
   if (!row) {
@@ -226,14 +223,12 @@ function openEmployeeDetails(
   detailsOpen.value = true;
 }
 
-function extractRow(
-  payload: { item?: { raw?: Employee } | Employee } | Employee,
-): Employee | null {
-  if (!payload) {
+function extractRow(payload: unknown): Employee | null {
+  if (!payload || typeof payload !== "object") {
     return null;
   }
-  if (typeof payload === "object" && "item" in payload) {
-    const item = payload.item as { raw?: Employee } | Employee | undefined;
+  if ("item" in payload) {
+    const item = (payload as { item?: { raw?: Employee } | Employee }).item;
     if (!item) {
       return null;
     }

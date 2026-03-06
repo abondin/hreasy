@@ -43,20 +43,20 @@
       >
         {{ loadError }}
       </v-alert>
-      <v-data-table
+      <HREasyTableBase
         class="vacations-table"
         :loading="loading"
         :loading-text="t('Загрузка_данных')"
         :no-data-text="t('Отсутствуют данные')"
         :headers="headers"
         :items="filteredVacations"
+        height="420"
+        fixed-header
         :sort-by="[
           { key: 'startDate', order: 'asc' },
           { key: 'endDate', order: 'asc' },
         ]"
         density="compact"
-        hide-default-footer
-        :items-per-page="-1"
       >
         <template v-slot:[`item.startDate`]="{ item }">
           {{ formatDate(item.startDate) }}
@@ -85,7 +85,7 @@
             </v-tooltip>
           </div>
         </template>
-      </v-data-table>
+      </HREasyTableBase>
     </v-card-text>
 
     <v-dialog v-model="requestDialogOpen" max-width="640">
@@ -141,6 +141,7 @@ import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import RequestVacationsFormFields from "@/components/vacations/RequestVacationsFormFields.vue";
 import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
+import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import {
   fetchMyVacations,
   openPlanningPeriods,
