@@ -218,6 +218,18 @@ export function usePermissions() {
     return simplePermissionCheck(Permissions.AdminViewEmployeeFull);
   }
 
+  function canEditEmployees(): boolean {
+    return canAdminEmployees();
+  }
+
+  function canExportEmployees(): boolean {
+    return canAdminEmployees();
+  }
+
+  function canImportEmployees(): boolean {
+    return canAdminEmployees();
+  }
+
   function canEditSkills(employeeId: number): boolean {
     return simplePermissionCheckOrCurrentEmployee(
       Permissions.EditSkills,
@@ -377,6 +389,9 @@ export function usePermissions() {
     canAdminOvertimes,
     canAdminProjects,
     canAdminEmployees,
+    canEditEmployees,
+    canExportEmployees,
+    canImportEmployees,
     canAdminUsers,
     canEditSkills,
     canAddSkills,

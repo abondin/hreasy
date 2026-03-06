@@ -11,52 +11,24 @@ import VacationsView from "@/views/vacations/VacationsView.vue";
 import OvertimesView from "@/views/overtimes/OvertimesView.vue";
 import MentorshipView from "@/views/mentorship/MentorshipView.vue";
 import MentorshipDetailsView from "@/views/mentorship/MentorshipDetailsView.vue";
+import AdminEmployeesTabsView from "@/views/admin/employees/AdminEmployeesTabsView.vue";
+import AdminEmployeesListView from "@/views/admin/employees/AdminEmployeesListView.vue";
+import AdminEmployeeKidsView from "@/views/admin/employees/AdminEmployeeKidsView.vue";
+import AdminEmployeesImportView from "@/views/admin/employees/AdminEmployeesImportView.vue";
+import AdminEmployeeKidsImportView from "@/views/admin/employees/AdminEmployeeKidsImportView.vue";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/lib/permissions";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: "/",
-      redirect: { name: "profile-main" },
-    },
-    {
-      path: "/login",
-      name: "login",
-      component: LoginView,
-      meta: { requiresAuth: false },
-    },
-    {
-      path: "/profile",
-      name: "profile-main",
-      component: ProfileMainView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: "/employees",
-      name: "employees",
-      component: EmployeesView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: "/vacations",
-      name: "vacations",
-      component: VacationsView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: "/overtimes",
-      name: "overtimes",
-      component: OvertimesView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: "/juniors",
-      name: "mentorship",
-      component: MentorshipView,
-      meta: { requiresAuth: true },
-    },
+    { path: "/", redirect: { name: "profile-main" } },
+    { path: "/login", name: "login", component: LoginView, meta: { requiresAuth: false } },
+    { path: "/profile", name: "profile-main", component: ProfileMainView, meta: { requiresAuth: true } },
+    { path: "/employees", name: "employees", component: EmployeesView, meta: { requiresAuth: true } },
+    { path: "/vacations", name: "vacations", component: VacationsView, meta: { requiresAuth: true } },
+    { path: "/overtimes", name: "overtimes", component: OvertimesView, meta: { requiresAuth: true } },
+    { path: "/juniors", name: "mentorship", component: MentorshipView, meta: { requiresAuth: true } },
     {
       path: "/juniors/:juniorRegistryId",
       name: "mentorship-details",
@@ -64,11 +36,18 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: "/:pathMatch(.*)*",
-      name: "not-found",
-      component: NotFoundView,
-      meta: { requiresAuth: false },
+      path: "/admin/employees",
+      component: AdminEmployeesTabsView,
+      meta: { requiresAuth: true },
+      children: [
+        { path: "", redirect: { name: "admin-employees-list" } },
+        { path: "list", name: "admin-employees-list", component: AdminEmployeesListView },
+        { path: "kids", name: "admin-employees-kids", component: AdminEmployeeKidsView },
+        { path: "import", name: "admin-employees-import", component: AdminEmployeesImportView },
+        { path: "kids-import", name: "admin-employees-kids-import", component: AdminEmployeeKidsImportView },
+      ],
     },
+    { path: "/:pathMatch(.*)*", name: "not-found", component: NotFoundView, meta: { requiresAuth: false } },
   ],
 });
 
@@ -93,10 +72,7 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
   }
 
   if (!authStore.isAuthenticated) {
-    const redirect = { name: "login" } as {
-      name: string;
-      query?: Record<string, string>;
-    };
+    const redirect = { name: "login" } as { name: string; query?: Record<string, string> };
     if (to.fullPath && to.fullPath !== "/login") {
       redirect.query = { returnPath: to.fullPath };
     }
@@ -105,9 +81,15 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
 
   if (
     (to.name === "mentorship" || to.name === "mentorship-details")
-    to.name === "mentorship"
     && !permissions.canAccessJuniorsRegistry()
     && !permissions.canAdminJuniorRegistry()
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (
+    String(to.name ?? "").startsWith("admin-employees")
+    && !permissions.canAdminEmployees()
   ) {
     return { name: "profile-main" };
   }

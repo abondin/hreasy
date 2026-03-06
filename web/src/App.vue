@@ -121,6 +121,14 @@ const navigationItems = computed(() => {
         to: { name: "overtimes" },
       });
     }
+    if (permissions.canAdminEmployees()) {
+      items.push({
+        key: "admin-employees",
+        label: t("Админка сотрудников"),
+        icon: "mdi-account-cog",
+        to: { name: "admin-employees-list" },
+      });
+    }
     if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
       items.push({
         key: "mentorship",
