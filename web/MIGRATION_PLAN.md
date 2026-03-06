@@ -126,7 +126,7 @@ Keep this file under version control to track progress between sessions.
 ## 6. Environment & Testing Notes
 
 - **Runtime baseline**: Adopt Node.js 20 LTS (current CLI tested on 18.16, upgrade recommended) and npm 10+. Document any Docker changes under `devops/`.
-- **Local services**: Frontend dev server expects `BACKEND_API_BASE_URL` to point to the API (`README.md`); ensure backend mock or staging endpoint is available for migration smoke tests.
+- **Local services**: Frontend dev server expects `VITE_DEV_SERVER_PROXY` to point to the API (`README.md`); ensure backend mock or staging endpoint is available for migration smoke tests.
 - **Local access**: Vue 3 dev app is served at `http://localhost:5173/`, Vue 2 dev app at `http://localhost:8080/` (from `legacy/vue2`). Both builds point to the same backend API. Test login credentials: `alexander.bondin` / `qwe123`.
 - **Testing status**: Only three Jest unit specs exist (`tests/unit/*.spec.ts`); integration coverage absent. Need manual regression checklist for auth, vacations, overtime, salaries, admin flows.
 - **Short-term actions**: Draft target matrix of browsers/devices post-Vue 3 upgrade and decide on E2E tooling (Cypress or Playwright) before major refactors begin.

@@ -4,8 +4,12 @@
   -->
 <template>
   <v-card class="profile-summary-card pa-6">
-    <v-row align="center" no-gutters>
-      <v-col cols="auto" class="mr-6">
+    <v-row
+      align="center"
+      no-gutters
+      :class="['profile-summary-card__layout', { 'profile-summary-card__layout--stacked': isMobile }]"
+    >
+      <v-col cols="auto" :class="isMobile ? 'mb-4' : 'mr-6'">
         <profile-avatar
             :owner="employee"
             :read-only="readOnly"
@@ -77,7 +81,13 @@
             {{ t("Почтовый адрес") }}:
           </span>
           <span class="profile-summary-card__value">
-            {{ employee.email ?? t("Не задан") }}
+            <hover-action-wrapper
+              :show-action="Boolean(emailToCopy)"
+              :tooltip="copyTooltip('email')"
+              @action="copyToClipboard(emailToCopy, 'email')"
+            >
+              <span>{{ employee.email ?? t("Не задан") }}</span>
+            </hover-action-wrapper>
           </span>
         </div>
 
@@ -109,13 +119,19 @@
             {{ t("Телеграм") }}:
           </span>
           <span class="profile-summary-card__value d-inline-flex align-center">
-            <profile-telegram-editor
-                :employee-id="employee.id"
-                :account="employee.telegram"
-                :confirmed-at="employee.telegramConfirmedAt"
-                :read-only="readOnly"
-                @edit="emitEditTelegram"
-            />
+            <hover-action-wrapper
+              :show-action="Boolean(telegramToCopy)"
+              :tooltip="copyTooltip('telegram')"
+              @action="copyToClipboard(telegramToCopy, 'telegram')"
+            >
+              <profile-telegram-editor
+                  :employee-id="employee.id"
+                  :account="employee.telegram"
+                  :confirmed-at="employee.telegramConfirmedAt"
+                  :read-only="readOnly"
+                  @edit="emitEditTelegram"
+              />
+            </hover-action-wrapper>
           </span>
         </div>
       </v-col>
@@ -142,16 +158,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, toRef } from "vue";
+import { computed, onBeforeUnmount, ref, toRef } from "vue";
 import {useI18n} from "vue-i18n";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import ProfileTelegramEditor from "@/views/profile/components/ProfileTelegramEditor.vue";
 import type {Employee} from "@/services/employee.service";
+import HoverActionWrapper from "@/components/shared/HoverActionWrapper.vue";
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
 import ProjectInfoDialog from "@/components/project/ProjectInfoDialog.vue";
 import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialog.vue";
 import { useOfficeMapPreview } from "@/composables/useOfficeMapPreview";
 import { useEmployeeProjectActions } from "@/composables/useEmployeeProjectActions";
+import { extractTelegramAccount } from "@/lib/telegram";
+import { useDisplay } from "vuetify";
 
 const props = withDefaults(
   defineProps<{
@@ -170,8 +189,10 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const display = useDisplay();
 const employee = toRef(props, "employee");
 const readOnly = computed(() => props.readOnly);
+const isMobile = computed(() => display.smAndDown.value);
 
 const {
   mapDialogOpen,
@@ -191,6 +212,12 @@ const {
 } = useEmployeeProjectActions(employee);
 
 const canShowMap = computed(() => Boolean(mapName.value));
+const copiedField = ref<"email" | "telegram" | null>(null);
+const emailToCopy = computed(() => employee.value.email?.trim() || null);
+const telegramToCopy = computed(
+  () => extractTelegramAccount(employee.value.telegram) ?? employee.value.telegram?.trim() ?? null,
+);
+let copiedResetTimer: ReturnType<typeof setTimeout> | null = null;
 
 function onAvatarUpdated() {
   emit("avatar-updated");
@@ -203,6 +230,38 @@ function emitEditTelegram() {
 function emitProjectUpdated() {
   emit("update-project");
 }
+
+function copyTooltip(field: "email" | "telegram") {
+  return copiedField.value === field
+    ? t("Скопировано в буфер обмена")
+    : t("Скопировать в буфер обмена");
+}
+
+async function copyToClipboard(value: string | null, field: "email" | "telegram") {
+  if (!value || !navigator.clipboard?.writeText) {
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(value);
+    copiedField.value = field;
+    if (copiedResetTimer) {
+      clearTimeout(copiedResetTimer);
+    }
+    copiedResetTimer = setTimeout(() => {
+      copiedField.value = null;
+      copiedResetTimer = null;
+    }, 1500);
+  } catch {
+    // Keep silent in this compact UI block.
+  }
+}
+
+onBeforeUnmount(() => {
+  if (copiedResetTimer) {
+    clearTimeout(copiedResetTimer);
+    copiedResetTimer = null;
+  }
+});
 </script>
 
 <style scoped>
@@ -230,7 +289,13 @@ function emitProjectUpdated() {
   gap: 4px;
 }
 
+/* Keep avatar and text side by side in narrow containers like employees right drawer. */
+.profile-summary-card__layout {
+  flex-wrap: nowrap;
+}
 
-
+.profile-summary-card__layout--stacked {
+  flex-wrap: wrap;
+}
 
 </style>

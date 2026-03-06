@@ -82,10 +82,7 @@
     temporary
     :width="drawerWidth"
   >
-    <div class="d-flex align-center justify-space-between px-4 py-3 border-b">
-      <div class="text-subtitle-1 font-weight-medium">
-        {{ selectedEmployee?.displayName ?? "" }}
-      </div>
+    <div class="d-flex align-center justify-end px-4 py-3 border-b">
       <v-btn icon="mdi-close" variant="text" @click="detailsOpen = false" />
     </div>
 
