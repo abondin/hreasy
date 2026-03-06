@@ -211,13 +211,6 @@ import {
   JuniorProgressType,
   type AddJuniorRegistryBody,
   type CurrentProjectRole,
-import { computed, onMounted, reactive, ref } from "vue";
-import { useI18n } from "vue-i18n";
-import { usePermissions } from "@/lib/permissions";
-import { formatDateTime } from "@/lib/datetime";
-import {
-  fetchJuniorsRegistry,
-  JuniorProgressType,
   type JuniorDto,
   type JuniorReport,
   type SimpleDict,
@@ -249,8 +242,6 @@ const addForm = reactive<AddJuniorRegistryBody>({
   budgetingAccount: null,
   role: "",
 });
-const loading = ref(false);
-const juniors = ref<JuniorDto[]>([]);
 
 const filter = reactive<JuniorFilter>({
   search: "",
@@ -298,33 +289,21 @@ const filteredItems = computed(() => {
     if (filter.onlyNotGraduated && item.graduation) {
       return false;
     }
-
-    if (
-      filter.selectedBas.length > 0
-      && (!item.budgetingAccount || !filter.selectedBas.includes(item.budgetingAccount.id))
-    ) {
+    if (filter.selectedBas.length > 0 && (!item.budgetingAccount || !filter.selectedBas.includes(item.budgetingAccount.id))) {
       return false;
     }
-
     if (filter.selectedRoles.length > 0 && !filter.selectedRoles.includes(item.role)) {
       return false;
     }
-
     if (!search) {
       return true;
     }
 
-    const searchText = [
-      item.juniorEmpl?.name,
-      item.mentor?.name,
-      item.latestReport?.createdBy?.name,
-      item.role,
-    ]
+    return [item.juniorEmpl?.name, item.mentor?.name, item.latestReport?.createdBy?.name, item.role]
       .filter(Boolean)
       .join(" ")
-      .toLowerCase();
-
-    return searchText.includes(search);
+      .toLowerCase()
+      .includes(search);
   });
 });
 
@@ -342,7 +321,7 @@ function buildRowProps({ item }: { item: JuniorDto }): Record<string, unknown> {
   return {
     class: "cursor-pointer",
     onClick: () => {
-      router.push({ name: "mentorship-details", params: { juniorRegistryId: item.id } }).catch(() => {});
+      router.push({ name: "mentorship-details", params: { juniorRegistryId: item.id } }).catch(() => undefined);
     },
   };
 }
@@ -366,7 +345,7 @@ function reportsOrderedAsc(reports: JuniorReport[]): JuniorReport[] {
   return [...(reports ?? [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
-function openAddDialog() {
+function openAddDialog(): void {
   addDialog.value = true;
 }
 
@@ -429,9 +408,6 @@ async function downloadExport(): Promise<void> {
 onMounted(() => {
   Promise.all([loadJuniors(), loadDictionaries()]).catch((error: unknown) => {
     console.error(errorUtils.shortMessage(error));
-onMounted(() => {
-  loadJuniors().catch((error: unknown) => {
-    console.error(error);
   });
 });
 </script>
