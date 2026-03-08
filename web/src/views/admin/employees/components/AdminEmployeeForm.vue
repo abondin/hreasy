@@ -1,6 +1,6 @@
 <template>
   <v-form ref="employeeEditForm">
-    <v-card>
+    <v-card class="admin-employee-form">
       <v-card-title class="d-flex align-center">
         <span>
           {{
@@ -13,278 +13,289 @@
         <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
       </v-card-title>
 
-      <v-card-text>
-        <v-row>
-          <v-col
-            v-if="input"
-            cols="12"
-            lg="auto"
-            class="d-flex justify-center justify-lg-start pr-lg-6 flex-grow-0"
-          >
-            <ProfileAvatar
-              :owner="input"
-              :read-only="false"
-              @updated="onAvatarUpdated"
-            />
+      <v-card-text class="admin-employee-form__content">
+        <v-row class="align-start">
+          <v-col cols="12">
+            <v-card class="pa-4 elevation-0 bg-transparent">
+              <v-row class="align-start">
+                <v-col
+                  v-if="input"
+                  cols="12"
+                  md="auto"
+                  class="d-flex justify-center justify-md-start pr-md-6 flex-grow-0"
+                >
+                  <ProfileAvatar
+                    :owner="input"
+                    :read-only="false"
+                    @updated="onAvatarUpdated"
+                  />
+                </v-col>
+                <v-col cols="12" md>
+                  <v-row class="admin-employee-form__grid">
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="employeeForm.displayName"
+                        :counter="255"
+                        :rules="displayNameRules"
+                        :label="t('ФИО')"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6" lg="4">
+                      <v-text-field
+                        v-model="employeeForm.email"
+                        :counter="255"
+                        :rules="emailRules"
+                        :label="t('Email')"
+                        required
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6" lg="4">
+                      <v-text-field
+                        v-model="employeeForm.phone"
+                        :counter="12"
+                        :rules="phoneRules"
+                        :label="t('Телефон')"
+                        hint="+71112223344"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6" lg="4">
+                      <v-text-field
+                        v-model="employeeForm.telegram"
+                        :counter="255"
+                        :rules="string255Rules"
+                        :label="t('Telegram')"
+                      />
+                    </v-col>
+                  </v-row>
+                </v-col>
+              </v-row>
+            </v-card>
           </v-col>
 
           <v-col cols="12" class="col-lg">
-            <v-row dense>
-              <v-col cols="12">
-            <v-text-field
-              v-model="employeeForm.displayName"
-              :counter="255"
-              :rules="displayNameRules"
-              :label="t('ФИО')"
-            />
+            <v-row class="admin-employee-form__grid">
+              <v-col cols="12"><v-divider /></v-col>
+
+              <v-col cols="12" md="6" lg="3">
+                <v-autocomplete
+                  v-model="employeeForm.organizationId"
+                  :items="organizationsWithCurrent"
+                  item-title="name"
+                  item-value="id"
+                  :label="t('Организация')"
+                  clearable
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <v-autocomplete
+                  v-model="employeeForm.departmentId"
+                  :items="departmentsWithCurrent"
+                  item-title="name"
+                  item-value="id"
+                  :label="t('Подразделение')"
+                  clearable
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <v-autocomplete
+                  v-model="employeeForm.currentProjectId"
+                  :items="projectsWithCurrent"
+                  item-title="name"
+                  item-value="id"
+                  :label="t('Текущий проект')"
+                  clearable
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <v-text-field
+                  v-model="employeeForm.currentProjectRole"
+                  :counter="64"
+                  :rules="string64Rules"
+                  :label="t('Роль на проекте')"
+                />
               </v-col>
 
-              <v-col cols="12" md="6" lg="4">
-            <v-text-field
-              v-model="employeeForm.email"
-              :counter="255"
-              :rules="emailRules"
-              :label="t('Email')"
-              required
-            />
+              <v-col cols="12"><v-divider /></v-col>
+
+              <v-col cols="12" md="6" lg="3">
+                <v-autocomplete
+                  v-model="employeeForm.levelId"
+                  :items="levelsWithCurrent"
+                  item-title="name"
+                  item-value="id"
+                  :label="t('Уровень экспертизы')"
+                  clearable
+                />
               </v-col>
-              <v-col cols="12" md="6" lg="4">
-            <v-text-field
-              v-model="employeeForm.phone"
-              :counter="12"
-              :rules="phoneRules"
-              :label="t('Телефон')"
-              hint="+71112223344"
-              persistent-hint
-            />
+              <v-col cols="12" md="6" lg="3">
+                <v-autocomplete
+                  v-model="employeeForm.positionId"
+                  :items="positionsWithCurrent"
+                  item-title="name"
+                  item-value="id"
+                  :label="t('Позиция')"
+                  clearable
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <v-autocomplete
+                  v-model="employeeForm.officeLocationId"
+                  :items="officeLocationsWithCurrent"
+                  item-title="name"
+                  item-value="id"
+                  :label="t('Кабинет')"
+                  clearable
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <v-text-field
+                  v-model="employeeForm.officeWorkplace"
+                  :counter="64"
+                  :rules="string64Rules"
+                  :label="t('Рабочее место')"
+                />
+              </v-col>
+
+              <v-col cols="12"><v-divider /></v-col>
+
+              <v-col cols="12" md="6" lg="3">
+                <MyDateFormComponent
+                  v-model="employeeForm.dateOfEmployment"
+                  :label="t('Дата трудоустройства')"
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <MyDateFormComponent
+                  v-model="employeeForm.dateOfDismissal"
+                  :label="t('Дата увольнения')"
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <MyDateFormComponent
+                  v-model="employeeForm.birthday"
+                  :label="t('День рождения')"
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <v-text-field
+                  v-model="employeeForm.sex"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Пол')"
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="6">
+                <v-text-field
+                  v-model="employeeForm.workType"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Место работы')"
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="6">
+                <v-text-field
+                  v-model="employeeForm.workDay"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Рабочий день (Полный/Неполный)')"
+                />
+              </v-col>
+
+              <v-col cols="12"><v-divider /></v-col>
+
+              <v-col cols="12" md="6" lg="3">
+                <v-text-field
+                  v-model="employeeForm.documentSeries"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Серия документа')"
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <v-text-field
+                  v-model="employeeForm.documentNumber"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Номер документа')"
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <MyDateFormComponent
+                  v-model="employeeForm.documentIssuedDate"
+                  :label="t('Документ выдан (когда)')"
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="3">
+                <v-text-field
+                  v-model="employeeForm.documentIssuedBy"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Документ выдан (кем)')"
+                />
+              </v-col>
+
+              <v-col cols="12"><v-divider /></v-col>
+
+              <v-col cols="12" lg="6">
+                <v-text-field
+                  v-model="employeeForm.registrationAddress"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Адрес по регистрации')"
+                />
               </v-col>
               <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.skype"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Skype')"
-            />
+                <v-text-field
+                  v-model="employeeForm.cityOfResidence"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Город проживания')"
+                />
               </v-col>
               <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.telegram"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Telegram')"
-            />
+                <v-text-field
+                  v-model="employeeForm.foreignPassport"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Загранпаспорт')"
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="2">
+                <v-text-field
+                  v-model="employeeForm.englishLevel"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Уровень английского')"
+                />
               </v-col>
 
-          <v-col cols="12" md="6" lg="3">
-            <v-autocomplete
-              v-model="employeeForm.organizationId"
-              :items="organizationsWithCurrent"
-              item-title="name"
-              item-value="id"
-              :label="t('Организация')"
-              clearable
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="3">
-            <v-autocomplete
-              v-model="employeeForm.departmentId"
-              :items="departmentsWithCurrent"
-              item-title="name"
-              item-value="id"
-              :label="t('Подразделение')"
-              clearable
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="3">
-            <v-autocomplete
-              v-model="employeeForm.currentProjectId"
-              :items="projectsWithCurrent"
-              item-title="name"
-              item-value="id"
-              :label="t('Текущий проект')"
-              clearable
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="3">
-            <v-text-field
-              v-model="employeeForm.currentProjectRole"
-              :counter="64"
-              :rules="string64Rules"
-              :label="t('Роль на проекте')"
-            />
-          </v-col>
+              <v-col cols="12"><v-divider /></v-col>
 
-          <v-col cols="12" md="6" lg="3">
-            <v-autocomplete
-              v-model="employeeForm.levelId"
-              :items="levelsWithCurrent"
-              item-title="name"
-              item-value="id"
-              :label="t('Уровень экспертизы')"
-              clearable
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="3">
-            <v-autocomplete
-              v-model="employeeForm.positionId"
-              :items="positionsWithCurrent"
-              item-title="name"
-              item-value="id"
-              :label="t('Позиция')"
-              clearable
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="3">
-            <v-autocomplete
-              v-model="employeeForm.officeLocationId"
-              :items="officeLocationsWithCurrent"
-              item-title="name"
-              item-value="id"
-              :label="t('Кабинет')"
-              clearable
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="3">
-            <v-text-field
-              v-model="employeeForm.officeWorkplace"
-              :counter="64"
-              :rules="string64Rules"
-              :label="t('Рабочее место')"
-            />
-          </v-col>
-
-          <v-col cols="12" md="6" lg="2">
-            <MyDateFormComponent
-              v-model="employeeForm.dateOfEmployment"
-              :label="t('Дата трудоустройства')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="2">
-            <MyDateFormComponent
-              v-model="employeeForm.dateOfDismissal"
-              :label="t('Дата увольнения')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.workType"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Место работы')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.workDay"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Рабочий день (Полный/Неполный)')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="2">
-            <MyDateFormComponent
-              v-model="employeeForm.birthday"
-              :label="t('День рождения')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.sex"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Пол')"
-            />
-          </v-col>
-
-          <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.documentSeries"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Серия документа')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.documentNumber"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Номер документа')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="2">
-            <MyDateFormComponent
-              v-model="employeeForm.documentIssuedDate"
-              :label="t('Документ выдан (когда)')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="6">
-            <v-text-field
-              v-model="employeeForm.documentIssuedBy"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Документ выдан (кем)')"
-            />
-          </v-col>
-
-          <v-col cols="12" lg="6">
-            <v-text-field
-              v-model="employeeForm.registrationAddress"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Адрес по регистрации')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.cityOfResidence"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Город проживания')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.foreignPassport"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Загранпаспорт')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.englishLevel"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Уровень английского')"
-            />
-          </v-col>
-
-          <v-col cols="12" md="6" lg="2">
-            <v-text-field
-              v-model="employeeForm.familyStatus"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('Семейный статус')"
-            />
-          </v-col>
-          <v-col cols="12" md="6" lg="4">
-            <v-text-field
-              v-model="employeeForm.spouseName"
-              :counter="255"
-              :rules="string255Rules"
-              :label="t('ФИО супруга/супруги')"
-            />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <v-text-field
-              v-model="employeeForm.children"
-              disabled
-              :counter="1024"
-              :rules="string1024Rules"
-              :label="t('Дети')"
-            />
-          </v-col>
+              <v-col cols="12" md="6" lg="2">
+                <v-text-field
+                  v-model="employeeForm.familyStatus"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('Семейный статус')"
+                />
+              </v-col>
+              <v-col cols="12" md="6" lg="4">
+                <v-text-field
+                  v-model="employeeForm.spouseName"
+                  :counter="255"
+                  :rules="string255Rules"
+                  :label="t('ФИО супруга/супруги')"
+                />
+              </v-col>
+              <v-col cols="12" lg="6">
+                <v-text-field
+                  v-model="employeeForm.children"
+                  disabled
+                  :counter="1024"
+                  :rules="string1024Rules"
+                  :label="t('Дети')"
+                />
+              </v-col>
             </v-row>
           </v-col>
         </v-row>
@@ -592,3 +603,23 @@ function closeDialog() {
   emit("close");
 }
 </script>
+
+<style scoped>
+.admin-employee-form__content {
+  max-height: 72vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.admin-employee-form__grid {
+  row-gap: 6px;
+}
+
+.admin-employee-form :deep(.v-field) {
+  --v-input-control-height: 42px;
+}
+
+.admin-employee-form :deep(.v-card-actions) {
+  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
+</style>

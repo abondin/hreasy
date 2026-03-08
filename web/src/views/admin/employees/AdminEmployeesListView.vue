@@ -163,7 +163,12 @@
       </HREasyTableBase>
     </v-card>
 
-    <v-dialog v-model="dialog" persistent max-width="1280">
+    <v-dialog
+      v-model="dialog"
+      persistent
+      width="96vw"
+      max-width="1800"
+    >
       <AdminEmployeeForm
         :input="current"
         :departments="departments"
