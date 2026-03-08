@@ -12,16 +12,18 @@ export interface EmployeeKidImportConfig extends ImportConfig {
 }
 
 export interface EmployeeKidImportConfigColumns {
+  [key: string]: string | null;
   displayName: string | null;
   birthday: string | null;
   parentEmail: string | null;
 }
 
 export interface ImportEmployeeKidExcelRow extends ImportExcelRow {
+  rowNumber: number;
   employeeKidId: number | null;
   displayName: string;
   parentEmail: string;
-  parent: Dict;
+  parent: Dict & { active?: boolean };
   birthday: ExcelRowDataProperty<string>;
 }
 

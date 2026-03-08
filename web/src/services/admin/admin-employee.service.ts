@@ -80,7 +80,7 @@ export interface EmployeeKid {
   displayName: string;
   birthday?: string;
   age?: number;
-  parent: Dict;
+  parent: Dict & { active?: boolean };
 }
 
 export interface CreateOrUpdateEmployeeKidBody {

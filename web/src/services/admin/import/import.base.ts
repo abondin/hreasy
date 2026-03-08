@@ -6,6 +6,7 @@ export interface ImportConfig {
 }
 
 export interface ImportExcelRow {
+  rowNumber?: number;
   new: boolean;
   errorCount: number;
   updatedCellsCount: number;
@@ -41,6 +42,7 @@ export interface ImportService<C extends ImportConfig, R extends ImportExcelRow>
   uploadFile(processId: number, file: File): Promise<void>;
   applyConfigAndPreview(processId: number, config: C): Promise<ImportWorkflow<C, R>>;
   commit(processId: number): Promise<ImportWorkflow<C, R>>;
+  abort(processId: number): Promise<ImportWorkflow<C, R>>;
   cancel(processId: number): Promise<ImportWorkflow<C, R>>;
 }
 
@@ -72,6 +74,13 @@ export class RestImportService<C extends ImportConfig, R extends ImportExcelRow>
     const response = await http.post<ImportWorkflow<C, R>>(
       `${this.baseUrl}/${processId}/config`,
       config,
+    );
+    return response.data;
+  }
+
+  async abort(processId: number): Promise<ImportWorkflow<C, R>> {
+    const response = await http.post<ImportWorkflow<C, R>>(
+      `${this.baseUrl}/${processId}/abort`,
     );
     return response.data;
   }

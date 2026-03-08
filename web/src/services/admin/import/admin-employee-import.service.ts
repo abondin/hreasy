@@ -11,6 +11,7 @@ export interface EmployeeImportConfig extends ImportConfig {
 }
 
 export interface EmployeeImportConfigColumns {
+  [key: string]: string | null;
   displayName: string | null;
   externalErpId: string | null;
   email: string | null;
@@ -29,11 +30,13 @@ export interface EmployeeImportConfigColumns {
 }
 
 export interface ImportEmployeeExcelRow extends ImportExcelRow {
+  rowNumber: number;
   email: string;
   employeeId: number | null;
   displayName: ExcelRowDataProperty<string>;
   externalErpId: ExcelRowDataProperty<string>;
   phone: ExcelRowDataProperty<string>;
+  organization?: ExcelRowDataProperty<{ id?: number; name?: string } | string | number>;
   department: ExcelRowDataProperty<number>;
   position: ExcelRowDataProperty<number>;
   dateOfEmployment: ExcelRowDataProperty<string>;
