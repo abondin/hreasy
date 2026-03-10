@@ -10,6 +10,16 @@
     </v-alert>
 
     <v-card v-else>
+      <v-alert
+        v-if="error"
+        type="error"
+        variant="tonal"
+        border="start"
+        class="ma-4 mb-0"
+      >
+        {{ error }}
+      </v-alert>
+
       <v-container class="pt-4">
         <v-row align="center">
           <v-col cols="12" sm="4" class="pb-0">
@@ -63,41 +73,24 @@
 
         <v-row>
           <v-col cols="auto">
-            <v-btn
-              color="primary"
-              variant="tonal"
-              prepend-icon="mdi-refresh"
-              :loading="loading"
-              @click="loadJuniors"
-            >
-              {{ t("Обновить данные") }}
-            </v-btn>
-          </v-col>
-          <v-col cols="auto">
-            <v-btn
-              color="primary"
-              prepend-icon="mdi-plus"
-              :loading="actionLoading"
-              @click="openAddDialog"
-            >
-              {{ t("Добавление в реестр") }}
-            </v-btn>
-          </v-col>
-          <v-col cols="auto">
-            <v-btn
-              color="secondary"
-              variant="tonal"
-              prepend-icon="mdi-download"
-              :loading="exportLoading"
-              @click="downloadExport"
-            >
-              {{ t("Экспорт в Excel") }}
-            </v-btn>
+            <table-toolbar-actions
+              :disabled="loading || actionLoading || exportLoading"
+              show-refresh
+              :show-add="canManageRegistry"
+              :show-export="canManageRegistry"
+              :refresh-label="t('Обновить данные')"
+              :add-label="t('Добавление в реестр')"
+              :export-label="t('Экспорт в Excel')"
+              @refresh="loadJuniors"
+              @add="openAddDialog"
+              @export="downloadExport"
+            />
           </v-col>
         </v-row>
       </v-container>
 
       <HREasyTableBase
+        table-class="mentorship-table"
         height="62vh"
         fixed-header
         :loading="loading"
@@ -132,15 +125,35 @@
         </template>
 
         <template #[`item.juniorInCompanyMonths.value`]="{ item }">
-          {{ item.juniorInCompanyMonths?.value ?? "" }}
+          <value-with-status-chip :value="item.juniorInCompanyMonths" dense />
         </template>
 
         <template #[`item.monthsWithoutReport.value`]="{ item }">
-          {{ item.monthsWithoutReport?.value ?? "" }}
+          <value-with-status-chip :value="item.monthsWithoutReport" dense />
+        </template>
+
+        <template #[`item.juniorEmpl.name`]="{ item }">
+          <span class="mentorship-name-cell">{{ item.juniorEmpl?.name ?? "" }}</span>
+        </template>
+
+        <template #[`item.mentor.name`]="{ item }">
+          <span class="mentorship-name-cell">{{ item.mentor?.name ?? "" }}</span>
         </template>
 
         <template #[`item.latestReport.createdAt`]="{ item }">
           {{ formatDateTime(item.latestReport?.createdAt) }}
+        </template>
+
+        <template #[`item.latestReport.comment`]="{ item }">
+          <v-tooltip v-if="item.latestReport?.comment" location="bottom" max-width="33vw">
+            <template #activator="{ props }">
+              <span v-bind="props" class="mentorship-comment-cell">
+                {{ item.latestReport.comment }}
+              </span>
+            </template>
+            <span class="mentorship-comment-tooltip">{{ item.latestReport.comment }}</span>
+          </v-tooltip>
+          <span v-else class="mentorship-comment-cell"></span>
         </template>
 
         <template #[`item.graduation.graduatedAt`]="{ item }">
@@ -153,36 +166,12 @@
       <v-card>
         <v-card-title>{{ t("Добавление в реестр") }}</v-card-title>
         <v-card-text>
-          <v-autocomplete
-            v-model="addForm.juniorEmplId"
-            :items="employees"
-            item-title="displayName"
-            item-value="id"
-            :label="t('Молодой специалист')"
-          />
-          <v-autocomplete
-            v-model="addForm.mentorId"
-            :items="employees"
-            item-title="displayName"
-            item-value="id"
-            clearable
-            :label="t('Ментор')"
-          />
-          <v-autocomplete
-            v-model="addForm.budgetingAccount"
-            :items="allBusinessAccounts"
-            item-title="name"
-            item-value="id"
-            clearable
-            :label="t('Бюджет из бизнес аккаунта')"
-          />
-          <v-combobox
-            v-model="addForm.role"
-            :items="projectRoles"
-            item-title="value"
-            item-value="value"
-            clearable
-            :label="t('Роль')"
+          <junior-registry-form-fields
+            :form="addForm"
+            mode="add"
+            :employees="employees"
+            :business-accounts="allBusinessAccounts"
+            :project-roles="projectRoles"
           />
         </v-card-text>
         <v-card-actions>
@@ -196,220 +185,66 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from "vue";
-import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { usePermissions } from "@/lib/permissions";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import JuniorRegistryFormFields from "@/components/mentorship/JuniorRegistryFormFields.vue";
+import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 import { formatDateTime } from "@/lib/datetime";
-import { errorUtils } from "@/lib/errors";
-import {
-  addJuniorToRegistry,
-  exportJuniorsRegistry,
-  fetchBusinessAccounts,
-  fetchCurrentProjectRoles,
-  fetchEmployeesForRegistry,
-  fetchJuniorsRegistry,
-  JuniorProgressType,
-  type AddJuniorRegistryBody,
-  type CurrentProjectRole,
-  type JuniorDto,
-  type JuniorReport,
-  type SimpleDict,
-} from "@/services/junior-registry.service";
-import type { Employee } from "@/services/employee.service";
-
-interface JuniorFilter {
-  search: string;
-  onlyNotGraduated: boolean;
-  selectedBas: number[];
-  selectedRoles: string[];
-}
+import { useJuniorRegistry } from "@/composables/useJuniorRegistry";
 
 const { t } = useI18n();
-const permissions = usePermissions();
-const router = useRouter();
-const loading = ref(false);
-const actionLoading = ref(false);
-const exportLoading = ref(false);
-const juniors = ref<JuniorDto[]>([]);
-const addDialog = ref(false);
-const allBusinessAccounts = ref<SimpleDict[]>([]);
-const projectRoles = ref<CurrentProjectRole[]>([]);
-const employees = ref<Employee[]>([]);
-
-const addForm = reactive<AddJuniorRegistryBody>({
-  juniorEmplId: null,
-  mentorId: null,
-  budgetingAccount: null,
-  role: "",
-});
-
-const filter = reactive<JuniorFilter>({
-  search: "",
-  onlyNotGraduated: true,
-  selectedBas: [],
-  selectedRoles: [],
-});
-
-const canViewMentorship = computed(
-  () => permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry(),
-);
-
-const headers = computed(() => [
-  { title: t("Молодой специалист"), key: "juniorEmpl.name" },
-  { title: t("Ментор"), key: "mentor.name" },
-  { title: t("Роль"), key: "role" },
-  { title: t("Бюджет"), key: "budgetingAccount.name" },
-  { title: t("Текущий проект"), key: "currentProject.name" },
-  { title: t("Месяцев в компании"), key: "juniorInCompanyMonths.value" },
-  { title: t("Месяцев без отчёта"), key: "monthsWithoutReport.value" },
-  { title: t("Прогресс"), key: "progress", sortable: false },
-  { title: t("Последний срез (Когда)"), key: "latestReport.createdAt" },
-  { title: t("Последний срез (Кто)"), key: "latestReport.createdBy.name" },
-  { title: t("Последний срез (Комментарий)"), key: "latestReport.comment" },
-  { title: t("Завершил обучение"), key: "graduation.graduatedAt" },
-]);
-
-const baOptions = computed<SimpleDict[]>(() => {
-  const map = new Map<number, SimpleDict>();
-  juniors.value.forEach((item) => {
-    if (item.budgetingAccount?.id && item.budgetingAccount?.name) {
-      map.set(item.budgetingAccount.id, item.budgetingAccount);
-    }
-  });
-  return [...map.values()];
-});
-
-const roles = computed<string[]>(() =>
-  [...new Set(juniors.value.map((item) => item.role).filter(Boolean))].sort(),
-);
-
-const filteredItems = computed(() => {
-  const search = filter.search.trim().toLowerCase();
-  return juniors.value.filter((item) => {
-    if (filter.onlyNotGraduated && item.graduation) {
-      return false;
-    }
-    if (filter.selectedBas.length > 0 && (!item.budgetingAccount || !filter.selectedBas.includes(item.budgetingAccount.id))) {
-      return false;
-    }
-    if (filter.selectedRoles.length > 0 && !filter.selectedRoles.includes(item.role)) {
-      return false;
-    }
-    if (!search) {
-      return true;
-    }
-
-    return [item.juniorEmpl?.name, item.mentor?.name, item.latestReport?.createdBy?.name, item.role]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(search);
-  });
-});
-
-watch(() => addForm.juniorEmplId, (juniorId) => {
-  const employee = employees.value.find((item) => item.id === juniorId);
-  if (!employee) {
-    return;
-  }
-  addForm.budgetingAccount = employee.ba?.id ?? null;
-  addForm.role = employee.currentProject?.role ?? "";
-  addForm.mentorId = null;
-});
-
-function buildRowProps({ item }: { item: JuniorDto }): Record<string, unknown> {
-  return {
-    class: "cursor-pointer",
-    onClick: () => {
-      router.push({ name: "mentorship-details", params: { juniorRegistryId: item.id } }).catch(() => undefined);
-    },
-  };
-}
-
-function getProgressIcon(type: JuniorProgressType): { icon: string; color: string } {
-  switch (type) {
-    case JuniorProgressType.DEGRADATION:
-      return { icon: "mdi-arrow-bottom-left", color: "error" };
-    case JuniorProgressType.NO_PROGRESS:
-      return { icon: "mdi-minus", color: "" };
-    case JuniorProgressType.PROGRESS:
-      return { icon: "mdi-arrow-top-right", color: "success" };
-    case JuniorProgressType.GOOD_PROGRESS:
-      return { icon: "mdi-arrow-up-bold", color: "success" };
-    default:
-      return { icon: "mdi-help", color: "warning" };
-  }
-}
-
-function reportsOrderedAsc(reports: JuniorReport[]): JuniorReport[] {
-  return [...(reports ?? [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-}
-
-function openAddDialog(): void {
-  addDialog.value = true;
-}
-
-async function loadDictionaries(): Promise<void> {
-  const [bas, rolesList, employeesList] = await Promise.all([
-    fetchBusinessAccounts(),
-    fetchCurrentProjectRoles(),
-    fetchEmployeesForRegistry(),
-  ]);
-  allBusinessAccounts.value = bas;
-  projectRoles.value = rolesList;
-  employees.value = employeesList;
-}
-
-async function loadJuniors(): Promise<void> {
-  if (!canViewMentorship.value) {
-    return;
-  }
-  loading.value = true;
-  try {
-    juniors.value = await fetchJuniorsRegistry();
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function submitAddJunior(): Promise<void> {
-  if (!addForm.juniorEmplId) {
-    return;
-  }
-  actionLoading.value = true;
-  try {
-    await addJuniorToRegistry(addForm);
-    addDialog.value = false;
-    addForm.juniorEmplId = null;
-    addForm.mentorId = null;
-    addForm.budgetingAccount = null;
-    addForm.role = "";
-    await loadJuniors();
-  } catch (error: unknown) {
-    console.error(errorUtils.shortMessage(error));
-  } finally {
-    actionLoading.value = false;
-  }
-}
-
-async function downloadExport(): Promise<void> {
-  exportLoading.value = true;
-  try {
-    const blob = await exportJuniorsRegistry(!filter.onlyNotGraduated);
-    const link = document.createElement("a");
-    link.href = window.URL.createObjectURL(blob);
-    link.download = `JuniorsRegistry_${new Date().toISOString().slice(0, 10)}.xlsx`;
-    link.click();
-  } finally {
-    exportLoading.value = false;
-  }
-}
-
-onMounted(() => {
-  Promise.all([loadJuniors(), loadDictionaries()]).catch((error: unknown) => {
-    console.error(errorUtils.shortMessage(error));
-  });
-});
+const {
+  loading,
+  actionLoading,
+  exportLoading,
+  error,
+  addDialog,
+  allBusinessAccounts,
+  projectRoles,
+  employees,
+  addForm,
+  filter,
+  canViewMentorship,
+  canManageRegistry,
+  headers,
+  baOptions,
+  roles,
+  filteredItems,
+  buildRowProps,
+  getProgressIcon,
+  reportsOrderedAsc,
+  openAddDialog,
+  loadJuniors,
+  submitAddJunior,
+  downloadExport,
+} = useJuniorRegistry(t);
 </script>
+
+<style scoped>
+.mentorship-name-cell {
+  display: inline-block;
+  min-width: 220px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.mentorship-comment-cell {
+  display: inline-block;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.mentorship-comment-tooltip {
+  display: inline-block;
+  max-width: 33vw;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+</style>
