@@ -3,6 +3,7 @@
     :title="t('Импорт детей из Excel')"
     :service="adminEmployeeKidImportService"
     :config="defaultConfig"
+    :stats-labels="statsLabels"
     :preview-headers-loader="previewHeadersLoader"
     :preview-filter-function="previewFilterFunction"
     :on-complete-action="onCompleteAction"
@@ -30,6 +31,11 @@ const defaultConfig: EmployeeKidImportConfig = {
     birthday: "I",
     parentEmail: "K",
   },
+};
+
+const statsLabels = {
+  newItems: t("Новых детей"),
+  updatedItems: t("Детей с изменениями"),
 };
 
 function onCompleteAction() {

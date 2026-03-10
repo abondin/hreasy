@@ -17,56 +17,40 @@
         <v-row class="align-start">
           <v-col cols="12">
             <v-card class="pa-4 elevation-0 bg-transparent">
-              <v-row class="align-start">
-                <v-col
-                  v-if="input"
-                  cols="12"
-                  md="auto"
-                  class="d-flex justify-center justify-md-start pr-md-6 flex-grow-0"
-                >
-                  <ProfileAvatar
-                    :owner="input"
-                    :read-only="false"
-                    @updated="onAvatarUpdated"
+              <v-row class="admin-employee-form__grid">
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="employeeForm.displayName"
+                    :counter="255"
+                    :rules="displayNameRules"
+                    :label="t('ФИО')"
                   />
                 </v-col>
-                <v-col cols="12" md>
-                  <v-row class="admin-employee-form__grid">
-                    <v-col cols="12">
-                      <v-text-field
-                        v-model="employeeForm.displayName"
-                        :counter="255"
-                        :rules="displayNameRules"
-                        :label="t('ФИО')"
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6" lg="4">
-                      <v-text-field
-                        v-model="employeeForm.email"
-                        :counter="255"
-                        :rules="emailRules"
-                        :label="t('Email')"
-                        required
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6" lg="4">
-                      <v-text-field
-                        v-model="employeeForm.phone"
-                        :counter="12"
-                        :rules="phoneRules"
-                        :label="t('Телефон')"
-                        hint="+71112223344"
-                      />
-                    </v-col>
-                    <v-col cols="12" md="6" lg="4">
-                      <v-text-field
-                        v-model="employeeForm.telegram"
-                        :counter="255"
-                        :rules="string255Rules"
-                        :label="t('Telegram')"
-                      />
-                    </v-col>
-                  </v-row>
+                <v-col cols="12" md="6" lg="4">
+                  <v-text-field
+                    v-model="employeeForm.email"
+                    :counter="255"
+                    :rules="emailRules"
+                    :label="t('Email')"
+                    required
+                  />
+                </v-col>
+                <v-col cols="12" md="6" lg="4">
+                  <v-text-field
+                    v-model="employeeForm.phone"
+                    :counter="12"
+                    :rules="phoneRules"
+                    :label="t('Телефон')"
+                    hint="+71112223344"
+                  />
+                </v-col>
+                <v-col cols="12" md="6" lg="4">
+                  <v-text-field
+                    v-model="employeeForm.telegram"
+                    :counter="255"
+                    :rules="string255Rules"
+                    :label="t('Telegram')"
+                  />
                 </v-col>
               </v-row>
             </v-card>
@@ -326,7 +310,6 @@
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
-import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import { errorUtils } from "@/lib/errors";
 import {
   createAdminEmployee,
@@ -593,10 +576,6 @@ async function submit() {
   } finally {
     saving.value = false;
   }
-}
-
-function onAvatarUpdated() {
-  emit("saved");
 }
 
 function closeDialog() {

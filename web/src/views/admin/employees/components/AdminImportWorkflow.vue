@@ -144,12 +144,12 @@
             </v-col>
             <v-col cols="12" md="3">
               <v-chip label>
-                {{ t("Новых сотрудников") }}: {{ workflow.importProcessStats?.newItems ?? 0 }}
+                {{ statsLabels.newItems }}: {{ workflow.importProcessStats?.newItems ?? 0 }}
               </v-chip>
             </v-col>
             <v-col cols="12" md="3">
               <v-chip label>
-                {{ t("Сотрудников с изменениями") }}: {{ workflow.importProcessStats?.updatedItems ?? 0 }}
+                {{ statsLabels.updatedItems }}: {{ workflow.importProcessStats?.updatedItems ?? 0 }}
               </v-chip>
             </v-col>
           </v-row>
@@ -323,6 +323,11 @@ interface PreviewHeader {
   format?: CellFormat;
 }
 
+interface ImportStatsLabels {
+  newItems: string;
+  updatedItems: string;
+}
+
 const props = defineProps<{
   title: string;
   service: ImportService<C, R>;
@@ -333,6 +338,7 @@ const props = defineProps<{
     filter: { search: string; hideNotUpdatedWithoutErrors: boolean },
   ) => R[];
   onCompleteAction?: () => void;
+  statsLabels?: ImportStatsLabels;
 }>();
 
 const { t } = useI18n();
@@ -383,6 +389,11 @@ const previewHeaders = computed(() => {
 const formattedPreviewHeaders = computed(() =>
   previewHeaders.value.filter((header) => header.format),
 );
+
+const statsLabels = computed<ImportStatsLabels>(() => props.statsLabels ?? {
+  newItems: t("Новых сотрудников"),
+  updatedItems: t("Сотрудников с изменениями"),
+});
 
 const filteredPreviewRows = computed(() => {
   const items = (workflow.value?.importedRows ?? []) as R[];

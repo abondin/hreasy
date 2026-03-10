@@ -9,6 +9,7 @@ export interface EmployeeWithAllDetails {
   sex?: string;
   email?: string;
   phone?: string;
+  /** @deprecated Skype is no longer editable in Vue 3 admin UI. */
   skype?: string;
   telegram?: string;
   skills?: Skill[];
@@ -51,6 +52,7 @@ export interface CreateOrUpdateEmployeeBody {
   sex?: string | null;
   email?: string | null;
   phone?: string | null;
+  /** @deprecated Kept for backend compatibility during migration. */
   skype?: string | null;
   telegram?: string | null;
   dateOfEmployment?: string | null;

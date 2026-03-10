@@ -3,7 +3,7 @@
     <v-navigation-drawer v-model="drawer" temporary class="app-navigation">
       <v-list density="comfortable" nav>
         <v-list-item
-          v-for="item in navigationItems"
+          v-for="item in mainNavigationItems"
           :key="item.key"
           :prepend-icon="item.icon"
           :to="item.to"
@@ -12,6 +12,21 @@
         >
           <v-list-item-title>{{ item.label }}</v-list-item-title>
         </v-list-item>
+
+        <template v-if="adminNavigationItems.length">
+          <v-divider class="my-2" />
+          <v-list-subheader>{{ t("Админка") }}</v-list-subheader>
+          <v-list-item
+            v-for="item in adminNavigationItems"
+            :key="item.key"
+            :prepend-icon="item.icon"
+            :to="item.to"
+            link
+            @click="drawer = false"
+          >
+            <v-list-item-title>{{ item.label }}</v-list-item-title>
+          </v-list-item>
+        </template>
 
         <v-divider v-if="isAuthenticated" class="my-2" />
 
@@ -89,7 +104,7 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
 const drawer = ref(false);
 const currentYear = new Date().getFullYear();
 
-const navigationItems = computed(() => {
+const mainNavigationItems = computed(() => {
   if (isAuthenticated.value) {
     const items = [
       {
@@ -121,14 +136,6 @@ const navigationItems = computed(() => {
         to: { name: "overtimes" },
       });
     }
-    if (permissions.canAdminEmployees()) {
-      items.push({
-        key: "admin-employees",
-        label: t("Админка сотрудников"),
-        icon: "mdi-account-cog",
-        to: { name: "admin-employees-list" },
-      });
-    }
     if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
       items.push({
         key: "mentorship",
@@ -148,6 +155,25 @@ const navigationItems = computed(() => {
       to: { name: "login" },
     },
   ];
+});
+
+const adminNavigationItems = computed(() => {
+  if (!isAuthenticated.value) {
+    return [];
+  }
+
+  const items = [];
+
+  if (permissions.canAdminEmployees()) {
+    items.push({
+      key: "admin-employees",
+      label: t("Админка сотрудников"),
+      icon: "mdi-account-cog",
+      to: { name: "admin-employees-list" },
+    });
+  }
+
+  return items;
 });
 
 onMounted(() => {
