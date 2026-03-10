@@ -84,19 +84,15 @@
 </template>
 
 <script setup lang="ts">
-import { RouterView } from "vue-router";
-import { computed, getCurrentInstance, onMounted, ref } from "vue";
+import { RouterView, useRouter } from "vue-router";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/lib/permissions";
 
 const authStore = useAuthStore();
 const permissions = usePermissions();
-const instance = getCurrentInstance();
-const globalProperties = instance?.appContext.config.globalProperties as {
-  $router?: { push: (location: unknown) => Promise<unknown> };
-};
-const router = globalProperties?.$router;
+const router = useRouter();
 const { t } = useI18n();
 
 const displayName = computed(() => authStore.displayName);
@@ -182,9 +178,6 @@ onMounted(() => {
 
 async function logout() {
   drawer.value = false;
-  if (!router) {
-    return;
-  }
   await authStore.logout();
   await router.push({ name: "login" });
 }

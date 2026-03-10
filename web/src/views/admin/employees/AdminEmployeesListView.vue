@@ -198,6 +198,7 @@ import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import AdminEmployeeForm from "@/views/admin/employees/components/AdminEmployeeForm.vue";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
+import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
 import {
   fetchBusinessAccounts,
@@ -351,21 +352,7 @@ function onClickRow(
 }
 
 function extractRow(payload: unknown): EmployeeWithAllDetails | null {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-  if ("item" in payload) {
-    const rowItem = payload.item;
-    if (!rowItem) {
-      return null;
-    }
-    if (typeof rowItem === "object" && "raw" in rowItem) {
-      const rawRow = rowItem.raw;
-      return isEmployeeWithAllDetails(rawRow) ? rawRow : null;
-    }
-    return isEmployeeWithAllDetails(rowItem) ? rowItem : null;
-  }
-  return isEmployeeWithAllDetails(payload) ? payload : null;
+  return extractDataTableRow(payload, isEmployeeWithAllDetails);
 }
 
 function isEmployeeWithAllDetails(value: unknown): value is EmployeeWithAllDetails {

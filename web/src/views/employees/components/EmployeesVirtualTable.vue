@@ -100,6 +100,7 @@ import type { Employee } from "@/services/employee.service";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import EmployeeDetailsPanel from "@/views/employees/components/EmployeeDetailsPanel.vue";
 import { usePermissions } from "@/lib/permissions";
+import { extractDataTableRow } from "@/lib/data-table";
 
 const props = defineProps<{
   items: Employee[];
@@ -224,20 +225,7 @@ function openEmployeeDetails(
 }
 
 function extractRow(payload: unknown): Employee | null {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-  if ("item" in payload) {
-    const item = (payload as { item?: { raw?: Employee } | Employee }).item;
-    if (!item) {
-      return null;
-    }
-    if (typeof item === "object" && item !== null && "raw" in item) {
-      return (item as { raw?: Employee }).raw ?? null;
-    }
-    return item as Employee;
-  }
-  return payload as Employee;
+  return extractDataTableRow<Employee>(payload);
 }
 
 function emitEmployeeUpdated() {

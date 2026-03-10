@@ -7,7 +7,11 @@
     <div class="d-flex flex-wrap align-center ga-3">
       <div class="min-w-0">
         <template v-if="!loading && !permissionDenied && !loadError">
-          <div v-if="displayFiles.length" class="d-flex flex-wrap ga-2 align-center">
+          <div
+            v-if="displayFiles.length"
+            class="d-flex flex-wrap align-center"
+            :class="filesContainerClass"
+          >
             <v-tooltip
                 v-for="file in displayFiles"
                 :key="file.key"
@@ -19,6 +23,7 @@
                         v-bind="tooltipProps"
                         variant="outlined"
                         class="px-3"
+                        :size="chipSize"
                     >
                   <span class="text-truncate" style="max-width: 200px">
                     <template v-if="isDownloadAllowed(file.source)">
@@ -36,7 +41,7 @@
                   <template v-if="canDelete" #append>
                     <v-btn
                         icon="mdi-close"
-                        size="x-small"
+                        :size="chipActionSize"
                         variant="text"
                         density="compact"
                         @click.stop.prevent="requestDelete(file.source)"
@@ -50,6 +55,7 @@
                 color="primary"
                 variant="tonal"
                 icon="mdi-plus"
+                :size="uploadButtonSize"
                 :aria-label="uploadButtonLabel"
                 :title="uploadButtonLabel"
                 :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
@@ -61,11 +67,15 @@
               color="primary"
               variant="tonal"
               icon="mdi-plus"
+              :size="uploadButtonSize"
               :aria-label="uploadButtonLabel"
               :title="uploadButtonLabel"
               :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
               @click="openUploadDialog"
           />
+          <div v-else-if="emptyMessageComputed" class="text-body-2 text-medium-emphasis">
+            {{ emptyMessageComputed }}
+          </div>
         </template>
         <v-progress-circular
             v-else-if="loading"
@@ -181,7 +191,6 @@ const props = withDefaults(
       accept?: string;
       uploadTimeout?: number;
       maximumSize?: number;
-      chipsPerColumn?: number;
       dense?: boolean;
     }>(),
     {
@@ -197,7 +206,6 @@ const props = withDefaults(
       accept: "",
       uploadTimeout: 30_000,
       maximumSize: 10 * 1024 * 1024,
-      chipsPerColumn: undefined,
       dense: false,
     },
 );
@@ -244,6 +252,14 @@ const uploadTitleComputed = computed(
 );
 
 const uploadButtonLabel = computed(() => uploadTitleComputed.value);
+const emptyMessageComputed = computed(() => props.emptyMessage || "");
+const chipSize = computed(() => (props.dense ? "small" : "default"));
+const chipActionSize = computed(() => (props.dense ? "x-small" : "small"));
+const uploadButtonSize = computed(() => (props.dense ? "small" : "default"));
+const filesContainerClass = computed(() => ({
+  "ga-1": props.dense,
+  "ga-2": !props.dense,
+}));
 
 const permissionMessageComputed = computed(
     () => props.permissionMessage || t("Не достаточно прав"),

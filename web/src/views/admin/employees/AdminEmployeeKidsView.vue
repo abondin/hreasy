@@ -83,6 +83,7 @@ import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import AdminEmployeeKidForm from "@/views/admin/employees/components/AdminEmployeeKidForm.vue";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
+import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
 import { listEmployees, type Employee } from "@/services/employee.service";
 import {
@@ -151,21 +152,7 @@ function openCreate(): void {
 }
 
 function extractRow(payload: unknown): EmployeeKid | null {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-  if ("item" in payload) {
-    const rowItem = (payload as { item?: { raw?: EmployeeKid } | EmployeeKid }).item;
-    if (!rowItem) {
-      return null;
-    }
-    if (typeof rowItem === "object" && "raw" in rowItem) {
-      const rawRow = rowItem.raw;
-      return isEmployeeKid(rawRow) ? rawRow : null;
-    }
-    return isEmployeeKid(rowItem) ? rowItem : null;
-  }
-  return isEmployeeKid(payload) ? payload : null;
+  return extractDataTableRow(payload, isEmployeeKid);
 }
 
 function isEmployeeKid(value: unknown): value is EmployeeKid {

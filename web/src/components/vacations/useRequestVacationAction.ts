@@ -41,6 +41,22 @@ export function useRequestVacationAction() {
     daysNotIncludedInVacations.value = days;
   }
 
+  function setDates(dates: string[]) {
+    formData.dates = dates;
+  }
+
+  function setNotes(notes: string) {
+    formData.notes = notes;
+  }
+
+  function setDaysNumber(daysNumber: number) {
+    formData.daysNumber = daysNumber;
+  }
+
+  function setDaysNumberManually(value: boolean) {
+    daysNumberSetManually.value = value;
+  }
+
   function openRequestVacationDialog(year: number) {
     vacationId.value = null;
     daysNumberSetManually.value = false;
@@ -171,6 +187,10 @@ export function useRequestVacationAction() {
     formattedDates,
     updateDaysNumber,
     submit,
+    setDates,
+    setNotes,
+    setDaysNumber,
+    setDaysNumberManually,
     setDaysNotIncluded,
   };
 }

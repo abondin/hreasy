@@ -25,7 +25,6 @@
         :maximum-size="MAX_FILE_SIZE"
         :upload-timeout="UPLOAD_TIMEOUT"
         :upload-title="t('Загрузить квалификационную карточку')"
-        :chips-per-column="3"
         :dense="dense"
         @updated="handleUpdated"
       />

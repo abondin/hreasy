@@ -103,22 +103,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, getCurrentInstance, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
 import { errorUtils } from "@/lib/errors";
 
 const authStore = useAuthStore();
-const instance = getCurrentInstance();
-const globalProperties = instance?.appContext.config.globalProperties as {
-  $router?: {
-    push: (location: unknown) => Promise<unknown>;
-    currentRoute?: { value?: { query?: Record<string, unknown> } };
-  };
-  $route?: { query?: Record<string, unknown> };
-};
-const router = globalProperties?.$router;
-const currentRoute = globalProperties?.$route;
+const router = useRouter();
+const route = useRoute();
 
 const { t } = useI18n();
 
@@ -145,16 +138,13 @@ async function onSubmit() {
       username: loginField.value,
       password: passwordField.value,
     });
-    const routeQuery =
-      currentRoute?.query ?? router?.currentRoute?.value?.query;
+    const routeQuery = route.query;
     const returnPath =
       typeof routeQuery?.returnPath === "string"
         ? routeQuery.returnPath
         : undefined;
     const target = returnPath ? { path: returnPath } : { name: "profile-main" };
-    if (router) {
-      await router.push(target);
-    }
+    await router.push(target);
   } catch (error) {
     responseError.value = errorUtils.shortMessage(error);
   }

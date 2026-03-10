@@ -208,6 +208,7 @@ import {
 import EmployeeOvertimeCard from "@/components/overtimes/EmployeeOvertimeCard.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import { extractDataTableRow } from "@/lib/data-table";
 
 interface EmployeeRef {
   id: number;
@@ -400,21 +401,7 @@ function onRowClick(
 }
 
 function extractRow(payload: unknown): OvertimeRow | null {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-  if ("item" in payload) {
-    const rowItem = (payload as { item?: { raw?: OvertimeRow } | OvertimeRow }).item;
-    if (!rowItem) {
-      return null;
-    }
-    if (typeof rowItem === "object" && "raw" in rowItem) {
-      const rawRow = rowItem.raw;
-      return isOvertimeRow(rawRow) ? rawRow : null;
-    }
-    return isOvertimeRow(rowItem) ? rowItem : null;
-  }
-  return isOvertimeRow(payload) ? payload : null;
+  return extractDataTableRow(payload, isOvertimeRow);
 }
 
 function isOvertimeRow(value: unknown): value is OvertimeRow {

@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/no-mutating-props -->
 <!--
   Form fields for requesting or updating planned vacations.
 -->
@@ -36,10 +35,9 @@
       @update:model-value="handleManualToggle"
     />
 
-    <!-- eslint-disable-next-line vue/no-mutating-props -->
     <v-slider
       v-if="manualDays"
-      v-model="data.formData.daysNumber"
+      v-model="daysNumber"
       min="0"
       max="31"
       step="1"
@@ -47,9 +45,8 @@
       :label="t('Количество дней')"
     />
 
-    <!-- eslint-disable-next-line vue/no-mutating-props -->
     <v-textarea
-        v-model="data.formData.notes"
+        v-model="notes"
         rows="3"
         :label="t('Примечание')"
         :counter="255"
@@ -59,10 +56,9 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable vue/no-mutating-props */
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import type {RequestVacationAction} from "@/components/vacations/request-vacation.data.container";
+import type { RequestVacationAction } from "@/components/vacations/useRequestVacationAction";
 import { addDays, formatDateOnly, parseDateOnly } from "@/lib/vacation-dates";
 
 const props = defineProps<{
@@ -84,7 +80,19 @@ const formattedDates = computed(() => props.data.formattedDates());
 const manualDays = computed({
   get: () => props.data.daysNumberSetManually.value,
   set: (value: boolean | null) => {
-    props.data.daysNumberSetManually.value = Boolean(value);
+    props.data.setDaysNumberManually(Boolean(value));
+  },
+});
+const daysNumber = computed({
+  get: () => props.data.formData.daysNumber,
+  set: (value: number) => {
+    props.data.setDaysNumber(value);
+  },
+});
+const notes = computed({
+  get: () => props.data.formData.notes,
+  set: (value: string) => {
+    props.data.setNotes(value);
   },
 });
 
@@ -95,7 +103,7 @@ const pickerRange = computed({
       .filter((value): value is Date => Boolean(value)),
   set: (value: Date[] | null) => {
     draftDates.value = normalizeSelection(value);
-    props.data.formData.dates = normalizeBoundaryRange(draftDates.value);
+    props.data.setDates(normalizeBoundaryRange(draftDates.value));
     props.data.datesUpdated();
   },
 });

@@ -248,6 +248,7 @@ import {
   getStartOfYear,
   isDateInRange,
 } from "@/lib/vacation-dates";
+import { extractDataTableRow } from "@/lib/data-table";
 import { usePermissions } from "@/lib/permissions";
 import {
   exportVacations,
@@ -477,20 +478,7 @@ function onSummaryRowClick(
 }
 
 function extractRow<T>(payload: unknown): T | null {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-  if ("item" in payload) {
-    const item = payload.item as { raw?: T } | T | undefined;
-    if (!item) {
-      return null;
-    }
-    if (typeof item === "object" && item !== null && "raw" in item) {
-      return (item as { raw?: T }).raw ?? null;
-    }
-    return item as T;
-  }
-  return payload as T;
+  return extractDataTableRow<T>(payload);
 }
 
 function statusesForForm(vacation?: Vacation | null) {

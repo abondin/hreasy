@@ -151,7 +151,7 @@ import {
 } from "@/services/vacation.service";
 import { formatDate } from "@/lib/datetime";
 import { getDefaultYears } from "@/lib/vacation-dates";
-import { useRequestVacationAction } from "@/components/vacations/request-vacation.data.container";
+import { useRequestVacationAction } from "@/components/vacations/useRequestVacationAction";
 import { errorUtils } from "@/lib/errors";
 import { useVacationsDictionaries } from "@/components/vacations/useVacationsDictionaries";
 
