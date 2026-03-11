@@ -13,7 +13,7 @@
       <v-card-text>
         <v-autocomplete
           v-model="form.employeeId"
-          :items="allEmployees"
+          :items="employeeOptions"
           item-title="name"
           item-value="id"
           :disabled="!form.isNew"
@@ -89,9 +89,10 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";
+import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import {
   createVacation,
@@ -140,6 +141,20 @@ const form = reactive({
   notes: "",
   documents: "",
   daysNumber: 0,
+});
+
+const employeeOptions = computed(() => {
+  const currentEmployee = props.input
+    ? {
+      id: props.input.employee,
+      name: props.input.employeeDisplayName,
+    }
+    : null;
+  const withCurrent = withCurrentOptionById(props.allEmployees, currentEmployee);
+  return withArchivedOptionById(withCurrent, form.employeeId ?? null, (id) => ({
+    id,
+    name: `${t("Архив")} #${id}`,
+  }));
 });
 
 function resetForm() {

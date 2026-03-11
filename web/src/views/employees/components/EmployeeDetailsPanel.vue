@@ -7,6 +7,8 @@
       <profile-summary-card
         :employee="employee"
         :read-only="true"
+        :avatar-read-only="false"
+        :project-read-only="false"
         @avatar-updated="emit('employee-updated')"
         @update-project="emit('employee-updated')"
       />

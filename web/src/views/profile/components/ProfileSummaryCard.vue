@@ -6,6 +6,8 @@
     <profile-summary
       :employee="employee"
       :read-only="readOnly"
+      :avatar-read-only="avatarReadOnly"
+      :project-read-only="projectReadOnly"
       :show-name="showName"
       @avatar-updated="$emit('avatar-updated')"
       @edit-telegram="$emit('edit-telegram')"
@@ -22,10 +24,14 @@ withDefaults(
   defineProps<{
     employee: Employee;
     readOnly?: boolean;
+    avatarReadOnly?: boolean;
+    projectReadOnly?: boolean;
     showName?: boolean;
   }>(),
   {
     readOnly: true,
+    avatarReadOnly: undefined,
+    projectReadOnly: undefined,
     showName: true,
   },
 );

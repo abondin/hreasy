@@ -65,6 +65,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";
 import { errorUtils } from "@/lib/errors";
 import { formatIsoDate } from "@/lib/datetime";
 import {
@@ -95,7 +96,20 @@ const errorMessage = ref<string | null>(null);
 
 const item = reactive<OvertimeItem>(createDefaultItem());
 
-const activeProjects = computed(() => props.allProjects.filter((project) => project.active !== false));
+const activeProjects = computed(() => {
+  const selectedProjectId = item.projectId ?? props.defaultProject ?? null;
+  const activeOnly = props.allProjects.filter((project) => project.active !== false);
+  const selectedProject = selectedProjectId == null
+    ? null
+    : props.allProjects.find((project) => project.id === selectedProjectId) ?? null;
+
+  const withCurrent = withCurrentOptionById(activeOnly, selectedProject);
+  return withArchivedOptionById(withCurrent, selectedProjectId, (id) => ({
+    id,
+    name: `${t("Архив")} #${id}`,
+    active: false,
+  }));
+});
 
 watch(dialog, (value) => {
   if (value) {

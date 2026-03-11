@@ -10,7 +10,7 @@
     <v-col cols="auto" :class="isMobile ? 'mb-4' : 'mr-6'">
       <profile-avatar
           :owner="employee"
-          :read-only="readOnly"
+          :read-only="avatarReadOnly"
           @updated="onAvatarUpdated"
       />
     </v-col>
@@ -138,10 +138,14 @@ const props = withDefaults(
   defineProps<{
     employee: Employee;
     readOnly?: boolean;
+    avatarReadOnly?: boolean;
+    projectReadOnly?: boolean;
     showName?: boolean;
   }>(),
   {
     readOnly: true,
+    avatarReadOnly: undefined,
+    projectReadOnly: undefined,
     showName: true,
   },
 );
@@ -156,6 +160,8 @@ const { t } = useI18n();
 const display = useDisplay();
 const employee = toRef(props, "employee");
 const readOnly = computed(() => props.readOnly);
+const avatarReadOnly = computed(() => props.avatarReadOnly ?? props.readOnly);
+const projectReadOnly = computed(() => props.projectReadOnly ?? props.readOnly);
 const isMobile = computed(() => display.smAndDown.value);
 
 const {
@@ -173,7 +179,7 @@ const {
   projectUpdateDialogOpen,
   openProjectInfo,
   openProjectUpdate,
-} = useEmployeeProjectActions(employee, readOnly);
+} = useEmployeeProjectActions(employee, projectReadOnly);
 
 const canShowMap = computed(() => Boolean(mapName.value));
 const copiedField = ref<"email" | "telegram" | null>(null);

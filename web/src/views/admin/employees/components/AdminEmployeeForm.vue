@@ -17,40 +17,52 @@
         <v-row class="align-start">
           <v-col cols="12">
             <v-card class="pa-4 elevation-0 bg-transparent">
-              <v-row class="admin-employee-form__grid">
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="employeeForm.displayName"
-                    :counter="255"
-                    :rules="displayNameRules"
-                    :label="t('ФИО')"
-                  />
+              <v-row class="admin-employee-form__grid align-start">
+                <v-col
+                  v-if="avatarOwner"
+                  cols="12"
+                  md="auto"
+                  class="d-flex justify-center justify-md-start"
+                >
+                  <profile-avatar :owner="avatarOwner" :read-only="true" />
                 </v-col>
-                <v-col cols="12" md="6" lg="4">
-                  <v-text-field
-                    v-model="employeeForm.email"
-                    :counter="255"
-                    :rules="emailRules"
-                    :label="t('Email')"
-                    required
-                  />
-                </v-col>
-                <v-col cols="12" md="6" lg="4">
-                  <v-text-field
-                    v-model="employeeForm.phone"
-                    :counter="12"
-                    :rules="phoneRules"
-                    :label="t('Телефон')"
-                    hint="+71112223344"
-                  />
-                </v-col>
-                <v-col cols="12" md="6" lg="4">
-                  <v-text-field
-                    v-model="employeeForm.telegram"
-                    :counter="255"
-                    :rules="string255Rules"
-                    :label="t('Telegram')"
-                  />
+                <v-col cols="12" :md="avatarOwner ? true : 12">
+                  <v-row class="admin-employee-form__grid">
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="employeeForm.displayName"
+                        :counter="255"
+                        :rules="displayNameRules"
+                        :label="t('ФИО')"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6" lg="4">
+                      <v-text-field
+                        v-model="employeeForm.email"
+                        :counter="255"
+                        :rules="emailRules"
+                        :label="t('Email')"
+                        required
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6" lg="4">
+                      <v-text-field
+                        v-model="employeeForm.phone"
+                        :counter="12"
+                        :rules="phoneRules"
+                        :label="t('Телефон')"
+                        hint="+71112223344"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6" lg="4">
+                      <v-text-field
+                        v-model="employeeForm.telegram"
+                        :counter="255"
+                        :rules="string255Rules"
+                        :label="t('Telegram')"
+                      />
+                    </v-col>
+                  </v-row>
                 </v-col>
               </v-row>
             </v-card>
@@ -310,6 +322,7 @@
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
+import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import { errorUtils } from "@/lib/errors";
 import {
   createAdminEmployee,
@@ -419,6 +432,16 @@ const string1024Rules = computed<Rule[]>(() => [maxLenRule(1024)]);
 const displayNameRules = computed<Rule[]>(() => [maxLenRule(255)]);
 const emailRules = computed<Rule[]>(() => [requiredMaxLenRule(255)]);
 const phoneRules = computed<Rule[]>(() => [maxLenRule(12)]);
+const avatarOwner = computed(() => {
+  if (!employeeForm.id) {
+    return null;
+  }
+  return {
+    id: employeeForm.id,
+    displayName: employeeForm.displayName,
+    hasAvatar: Boolean(props.input?.hasAvatar),
+  };
+});
 
 const departmentsWithCurrent = computed(() =>
   withCurrent(props.departments, employeeForm.departmentId),

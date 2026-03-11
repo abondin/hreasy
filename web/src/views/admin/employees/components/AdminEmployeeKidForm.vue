@@ -17,7 +17,7 @@
           <v-col cols="12">
             <v-autocomplete
               v-model="kidForm.parentId"
-              :items="employees"
+              :items="parentOptions"
               item-title="displayName"
               item-value="id"
               :label="t('Сотрудник')"
@@ -69,6 +69,7 @@
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
+import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";
 import { errorUtils } from "@/lib/errors";
 import type { Employee } from "@/services/employee.service";
 import {
@@ -111,6 +112,19 @@ const kidForm = reactive<KidFormState>({
 });
 
 const isNew = computed(() => !kidForm.id);
+const parentOptions = computed(() => {
+  const currentParent = props.input?.parent
+    ? {
+      id: props.input.parent.id,
+      displayName: props.input.parent.name,
+    }
+    : null;
+  const withCurrent = withCurrentOptionById(props.employees, currentParent);
+  return withArchivedOptionById(withCurrent, kidForm.parentId, (id) => ({
+    id,
+    displayName: `${t("Архив")} #${id}`,
+  }));
+});
 
 const requiredRules = computed<Rule[]>(() => [
   (value) => Boolean(value) || t("Обязательное поле"),

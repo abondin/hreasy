@@ -74,6 +74,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";
 import type { CurrentProjectDict } from "@/services/employee.service";
 import {
   fetchCurrentProjectRoles,
@@ -121,9 +122,25 @@ const projectRoles = ref<CurrentProjectRole[]>([]);
 const selectedProjectId = ref<number | null>(null);
 const roleOnProject = ref<string | null>(null);
 
-const projectItems = computed(() =>
-  projects.value.filter((project) => project.active !== false),
-);
+const projectItems = computed(() => {
+  const activeProjects = projects.value.filter((project) => project.active !== false);
+  const currentProject = props.currentProject
+    ? projects.value.find((project) => project.id === props.currentProject?.id) ?? {
+      id: props.currentProject.id,
+      name: props.currentProject.name,
+      baId: -1,
+      active: false,
+    }
+    : null;
+
+  const withCurrent = withCurrentOptionById(activeProjects, currentProject);
+  return withArchivedOptionById(withCurrent, selectedProjectId.value, (id) => ({
+    id,
+    name: `${t("Архив")} #${id}`,
+    baId: -1,
+    active: false,
+  }));
+});
 const roleItems = computed(() =>
   projectRoles.value.map((role) => role.value),
 );
