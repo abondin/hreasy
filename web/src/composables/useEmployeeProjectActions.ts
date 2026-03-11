@@ -2,7 +2,10 @@ import { computed, ref, type Ref } from "vue";
 import type { Employee } from "@/services/employee.service";
 import { usePermissions } from "@/lib/permissions";
 
-export function useEmployeeProjectActions(employee: Ref<Employee>) {
+export function useEmployeeProjectActions(
+  employee: Ref<Employee>,
+  readOnly?: Ref<boolean>,
+) {
   const projectInfoDialogOpen = ref(false);
   const projectUpdateDialogOpen = ref(false);
   const permissions = usePermissions();
@@ -12,7 +15,9 @@ export function useEmployeeProjectActions(employee: Ref<Employee>) {
   );
 
   const canEditProject = computed(
-    () => Boolean(employee.value.id && permissions.canUpdateCurrentProject(employee.value.id)),
+    () =>
+      !Boolean(readOnly?.value) &&
+      Boolean(employee.value.id && permissions.canUpdateCurrentProject(employee.value.id)),
   );
 
   function openProjectInfo() {

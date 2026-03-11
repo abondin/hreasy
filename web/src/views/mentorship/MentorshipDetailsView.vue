@@ -29,17 +29,19 @@
             :can-view-mentorship="canViewMentorship"
             :sorted-reports="sortedReports"
             :can-edit-report="canEditReport"
+            :can-delete-report="canDeleteReport"
             :get-progress-icon="getProgressIcon"
             :report-dialog="reportDialog"
             :delete-report-dialog="deleteReportDialog"
             :editing-report-id="editingReportId"
             :report-form="reportForm"
+            :report-form-error="reportFormError"
             :progress-options="progressOptions"
             :rating-fields="ratingFields"
             @open-create-report="openCreateReport"
             @open-edit-report="openEditReport"
             @open-delete-report="openDeleteReport"
-            @close-report="reportDialog = false"
+            @close-report="closeReportDialog"
             @submit-report="submitReport"
             @close-delete-report="closeDeleteReport"
             @confirm-delete-report="confirmDeleteReport"
@@ -58,6 +60,9 @@
             :employees="employees"
             :business-accounts="allBusinessAccounts"
             :project-roles="projectRoles"
+            :current-mentor="junior?.mentor ?? null"
+            :current-budgeting-account="junior?.budgetingAccount ?? null"
+            :current-role="junior?.role ?? null"
           />
         </v-card-text>
         <v-card-actions>
@@ -122,6 +127,7 @@ const {
   reportDialog,
   editDialog,
   editingReportId,
+  reportFormError,
   graduationComment,
   employees,
   allBusinessAccounts,
@@ -135,8 +141,10 @@ const {
   progressOptions,
   getProgressIcon,
   canEditReport,
+  canDeleteReport,
   openCreateReport,
   openEditReport,
+  closeReportDialog,
   openEditDialog,
   submitUpdateJunior,
   submitReport,

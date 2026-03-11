@@ -173,7 +173,7 @@ const {
   projectUpdateDialogOpen,
   openProjectInfo,
   openProjectUpdate,
-} = useEmployeeProjectActions(employee);
+} = useEmployeeProjectActions(employee, readOnly);
 
 const canShowMap = computed(() => Boolean(mapName.value));
 const copiedField = ref<"email" | "telegram" | null>(null);

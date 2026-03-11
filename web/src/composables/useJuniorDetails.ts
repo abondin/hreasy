@@ -4,6 +4,7 @@ import type { ComposerTranslation } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";
 import { juniorReportRatingFields, fillJuniorReportForm, getJuniorProgressIcon } from "@/lib/mentorship";
 import { usePermissions } from "@/lib/permissions";
+import { useAuthStore } from "@/stores/auth";
 import {
   cancelJuniorGraduation,
   createJuniorReport,
@@ -30,6 +31,7 @@ export function useJuniorDetails(t: ComposerTranslation) {
   const route = useRoute();
   const router = useRouter();
   const permissions = usePermissions();
+  const authStore = useAuthStore();
 
   const loading = ref(false);
   const actionLoading = ref(false);
@@ -43,6 +45,7 @@ export function useJuniorDetails(t: ComposerTranslation) {
   const editDialog = ref(false);
   const reportToDelete = ref<number | null>(null);
   const editingReportId = ref<number | null>(null);
+  const reportFormError = ref("");
   const graduationComment = ref("");
   const employees = ref<Employee[]>([]);
   const allBusinessAccounts = ref<SimpleDict[]>([]);
@@ -90,6 +93,11 @@ export function useJuniorDetails(t: ComposerTranslation) {
   );
 
   function canEditReport(reportCreatorId: number): boolean {
+    const currentEmployeeId = authStore.employeeId;
+    return typeof currentEmployeeId === "number" && currentEmployeeId === reportCreatorId;
+  }
+
+  function canDeleteReport(reportCreatorId: number): boolean {
     return permissions.canUpdateJuniorReport(reportCreatorId);
   }
 
@@ -125,18 +133,28 @@ export function useJuniorDetails(t: ComposerTranslation) {
 
   function openCreateReport() {
     editingReportId.value = null;
-    fillJuniorReportForm(reportForm);
+    reportFormError.value = "";
+    fillJuniorReportForm(reportForm, junior.value?.latestReport ?? null);
+    reportForm.comment = "";
     reportDialog.value = true;
   }
 
   function openEditReport(reportId: number): void {
-    const report = junior.value?.reports.find((item) => item.id === reportId);
+    const normalizedReportId = Number(reportId);
+    const report = junior.value?.reports.find((item) => Number(item.id) === normalizedReportId);
     if (!report) {
       return;
     }
-    editingReportId.value = report.id;
+    reportFormError.value = "";
+    editingReportId.value = Number(report.id);
     fillJuniorReportForm(reportForm, report);
     reportDialog.value = true;
+  }
+
+  function closeReportDialog(): void {
+    reportDialog.value = false;
+    editingReportId.value = null;
+    reportFormError.value = "";
   }
 
   function openEditDialog(): void {
@@ -167,16 +185,19 @@ export function useJuniorDetails(t: ComposerTranslation) {
     if (!junior.value) {
       return;
     }
+    const juniorId = Number(junior.value.id);
     actionLoading.value = true;
+    reportFormError.value = "";
     try {
-      if (editingReportId.value) {
-        await updateJuniorReport(junior.value.id, editingReportId.value, reportForm);
+      if (editingReportId.value !== null) {
+        await updateJuniorReport(juniorId, Number(editingReportId.value), reportForm);
       } else {
-        await createJuniorReport(junior.value.id, reportForm);
+        await createJuniorReport(juniorId, reportForm);
       }
-      reportDialog.value = false;
-      editingReportId.value = null;
+      closeReportDialog();
       await loadJunior();
+    } catch (err: unknown) {
+      reportFormError.value = errorUtils.shortMessage(err);
     } finally {
       actionLoading.value = false;
     }
@@ -197,7 +218,7 @@ export function useJuniorDetails(t: ComposerTranslation) {
   }
 
   function openDeleteReport(reportId: number) {
-    reportToDelete.value = reportId;
+    reportToDelete.value = Number(reportId);
     deleteReportDialog.value = true;
   }
 
@@ -207,12 +228,13 @@ export function useJuniorDetails(t: ComposerTranslation) {
   }
 
   async function confirmDeleteReport() {
-    if (!junior.value || !reportToDelete.value) {
+    if (!junior.value || reportToDelete.value === null) {
       return;
     }
+    const juniorId = Number(junior.value.id);
     actionLoading.value = true;
     try {
-      await deleteJuniorReport(junior.value.id, reportToDelete.value);
+      await deleteJuniorReport(juniorId, Number(reportToDelete.value));
       closeDeleteReport();
       await loadJunior();
     } finally {
@@ -257,6 +279,7 @@ export function useJuniorDetails(t: ComposerTranslation) {
     reportDialog,
     editDialog,
     editingReportId,
+    reportFormError,
     graduationComment,
     employees,
     allBusinessAccounts,
@@ -270,8 +293,10 @@ export function useJuniorDetails(t: ComposerTranslation) {
     progressOptions,
     getProgressIcon: getJuniorProgressIcon,
     canEditReport,
+    canDeleteReport,
     openCreateReport,
     openEditReport,
+    closeReportDialog,
     openEditDialog,
     submitUpdateJunior,
     submitReport,

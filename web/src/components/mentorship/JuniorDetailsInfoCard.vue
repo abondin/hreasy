@@ -96,9 +96,14 @@ const props = defineProps<{
   canEditRegistry: boolean;
 }>();
 
+function dictTitle(value?: { name?: string | null; value?: string | null } | null): string {
+  return value?.name?.trim() || value?.value?.trim() || t("Нет");
+}
+
 const detailItems = computed(() => [
   { label: t("Ментор"), value: props.junior.mentor?.name || t("Нет") },
-  { label: t("Бюджет"), value: props.junior.budgetingAccount?.name || t("Нет") },
+  { label: t("Роль"), value: props.junior.role || t("Нет") },
+  { label: t("Бюджет"), value: dictTitle(props.junior.budgetingAccount) },
   { label: t("Дата трудоустройства"), value: formatDate(props.junior.juniorDateOfEmployment) },
   {
     label: t("Месяцев в компании"),

@@ -19,6 +19,7 @@
 - Components use PascalCase filenames (for example `ProfileSummaryCard.vue`).
 - Prefer `@/` imports from `src`.
 - Keep comments concise and in English.
+- Add concise comments to all key domain structures and core abstractions (public interfaces, shared helpers, composables with business logic, and reusable components) describing intent and usage constraints.
 - Do not hardcode user-facing text; use i18n keys.
 
 ## i18n Usage

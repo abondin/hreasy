@@ -53,7 +53,7 @@
                 @click="$emit('open-edit-report', report.id)"
               />
               <v-btn
-                v-if="canEditReport(report.createdBy.id)"
+                v-if="canDeleteReport(report.createdBy.id)"
                 icon="mdi-delete"
                 variant="text"
                 size="default"
@@ -105,28 +105,40 @@
     <v-card>
       <v-card-title>{{ editingReportId ? t("Применить") : t("Создать отчёт") }}</v-card-title>
       <v-card-text>
+        <v-form ref="reportFormRef">
         <v-select
           v-model="reportForm.progress"
           :items="progressOptions"
           item-title="title"
           item-value="value"
           :label="t('Динамика роста')"
+          :rules="progressRules"
         />
-        <div class="mt-4 d-flex flex-column ga-4">
+        <div class="mt-4 d-flex flex-column ga-1">
           <junior-report-rating-field
             v-for="field in ratingFields"
             :key="field"
             :field="field"
             v-model="reportForm.ratings[field]"
             :prev="junior.latestReport?.ratings[field] ?? null"
+            compact
           />
         </div>
-        <markdown-text-editor v-model="reportForm.comment" :label="t('Комментарий')" :counter="4096" />
+        <markdown-text-editor
+          v-model="reportForm.comment"
+          :label="t('Комментарий')"
+          :counter="4096"
+          :rules="commentRules"
+        />
+        </v-form>
+        <v-alert v-if="reportFormError" type="error" class="mt-4" variant="tonal" border="start">
+          {{ reportFormError }}
+        </v-alert>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="$emit('close-report')">{{ t("Отмена") }}</v-btn>
-        <v-btn color="primary" :loading="actionLoading" @click="$emit('submit-report')">
+        <v-btn color="primary" :loading="actionLoading" @click="onSubmitReport">
           {{ editingReportId ? t("Применить") : t("Создать") }}
         </v-btn>
       </v-card-actions>
@@ -145,6 +157,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { formatDateTime } from "@/lib/datetime";
 import JuniorReportRatingField from "@/components/mentorship/JuniorReportRatingField.vue";
@@ -166,11 +179,13 @@ const props = defineProps<{
   canViewMentorship: boolean;
   sortedReports: JuniorReport[];
   canEditReport: (reportCreatorId: number) => boolean;
+  canDeleteReport: (reportCreatorId: number) => boolean;
   getProgressIcon: (type: JuniorProgressType) => { icon: string; color: string };
   reportDialog: boolean;
   deleteReportDialog: boolean;
   editingReportId: number | null;
   reportForm: AddOrUpdateJuniorReportBody;
+  reportFormError: string;
   progressOptions: Array<{ title: string; value: JuniorProgressType }>;
   ratingFields: (keyof AddOrUpdateJuniorReportBody["ratings"])[];
 }>();
@@ -186,13 +201,38 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const reportFormRef = ref();
 
 const isGraduated = computed(() => Boolean(props.junior.graduation));
+const progressRules = computed(() => [
+  (value: JuniorProgressType | null | undefined) => value !== null && value !== undefined || t("Обязательное поле"),
+]);
+const commentRules = computed(() => [
+  (value: unknown) => {
+    const text = typeof value === "string" ? value : "";
+    if (!text || text.length > 4096) {
+      return t("Обязательное поле. Не более N символов", { n: 4096 });
+    }
+    return true;
+  },
+]);
 
 function onReportDialogChange(value: boolean) {
   if (!value) {
     emit("close-report");
   }
+}
+
+async function onSubmitReport() {
+  const validationResult = await reportFormRef.value?.validate?.();
+  const isValid = typeof validationResult === "object"
+    ? Boolean(validationResult?.valid)
+    : Boolean(validationResult);
+
+  if (!isValid) {
+    return;
+  }
+  emit("submit-report");
 }
 
 function previousReport(report: JuniorReport): JuniorReport | null {
