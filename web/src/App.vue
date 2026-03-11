@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <v-app>
     <v-navigation-drawer v-model="drawer" temporary class="app-navigation">
       <v-list density="comfortable" nav>
@@ -15,7 +15,7 @@
 
         <template v-if="adminNavigationItems.length">
           <v-divider class="my-2" />
-          <v-list-subheader>{{ t("Админка") }}</v-list-subheader>
+          <v-list-subheader>{{ t("РђРґРјРёРЅРєР°") }}</v-list-subheader>
           <v-list-item
             v-for="item in adminNavigationItems"
             :key="item.key"
@@ -33,33 +33,34 @@
         <v-list-item
           v-if="isAuthenticated"
           prepend-icon="mdi-logout"
+          data-testid="logout-button"
           @click="logout"
         >
-          <v-list-item-title>{{ t("Выход") }}</v-list-item-title>
+          <v-list-item-title>{{ t("Р’С‹С…РѕРґ") }}</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
     <v-app-bar app elevation="1" density="comfortable">
       <v-app-bar-nav-icon
-        :aria-label="t('Открыть_меню')"
+        :aria-label="t('РћС‚РєСЂС‹С‚СЊ_РјРµРЅСЋ')"
         @click="drawer = !drawer"
       />
-      <v-app-bar-title class="font-weight-medium">
+      <v-app-bar-title class="font-weight-medium" data-testid="app-title">
         HR Easy
       </v-app-bar-title>
       <v-spacer />
       <template v-if="!isAuthenticated">
         <v-btn variant="tonal" color="primary" :to="{ name: 'login' }">
-          {{ t("Вход") }}
+          {{ t("Р’С…РѕРґ") }}
         </v-btn>
       </template>
       <template v-else>
         <v-chip class="mr-2" color="primary" variant="outlined">
           {{ displayName }}
         </v-chip>
-        <v-btn variant="text" color="primary" @click="logout">
-          {{ t("Выход") }}
+        <v-btn variant="text" color="primary" data-testid="logout-button" @click="logout">
+          {{ t("Р’С‹С…РѕРґ") }}
         </v-btn>
       </template>
     </v-app-bar>
@@ -72,9 +73,9 @@
       <v-container>
         <v-row>
           <v-col cols="12" class="text-end text-body-2">
-            {{ currentYear }} — <strong>Alexander Bondin</strong>
+            {{ currentYear }} вЂ” <strong>Alexander Bondin</strong>
             <a href="/" class="footer-link ml-4">
-              {{ t("Перейти_в_старую_версию_интерфейса") }}
+              {{ t("РџРµСЂРµР№С‚Рё_РІ_СЃС‚Р°СЂСѓСЋ_РІРµСЂСЃРёСЋ_РёРЅС‚РµСЂС„РµР№СЃР°") }}
             </a>
           </v-col>
         </v-row>
@@ -105,13 +106,13 @@ const mainNavigationItems = computed(() => {
     const items = [
       {
         key: "profile-main",
-        label: t("Профиль"),
+        label: t("РџСЂРѕС„РёР»СЊ"),
         icon: "mdi-account",
         to: { name: "profile-main" },
       },
       {
         key: "employees",
-        label: t("Сотрудники"),
+        label: t("РЎРѕС‚СЂСѓРґРЅРёРєРё"),
         icon: "mdi-account-group",
         to: { name: "employees" },
       },
@@ -119,7 +120,7 @@ const mainNavigationItems = computed(() => {
     if (permissions.canViewAllVacations()) {
       items.push({
         key: "vacations",
-        label: t("Отпуска"),
+        label: t("РћС‚РїСѓСЃРєР°"),
         icon: "mdi-calendar-range",
         to: { name: "vacations" },
       });
@@ -127,7 +128,7 @@ const mainNavigationItems = computed(() => {
     if (permissions.canViewAllOvertimes()) {
       items.push({
         key: "overtimes",
-        label: t("Овертаймы"),
+        label: t("РћРІРµСЂС‚Р°Р№РјС‹"),
         icon: "mdi-briefcase-clock",
         to: { name: "overtimes" },
       });
@@ -135,7 +136,7 @@ const mainNavigationItems = computed(() => {
     if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
       items.push({
         key: "mentorship",
-        label: t("Менторство"),
+        label: t("РњРµРЅС‚РѕСЂСЃС‚РІРѕ"),
         icon: "mdi-account-school",
         to: { name: "mentorship" },
       });
@@ -146,7 +147,7 @@ const mainNavigationItems = computed(() => {
   return [
     {
       key: "login",
-      label: t("Вход"),
+      label: t("Р’С…РѕРґ"),
       icon: "mdi-login",
       to: { name: "login" },
     },
@@ -163,7 +164,7 @@ const adminNavigationItems = computed(() => {
   if (permissions.canAdminEmployees()) {
     items.push({
       key: "admin-employees",
-      label: t("Админка сотрудников"),
+      label: t("РђРґРјРёРЅРєР° СЃРѕС‚СЂСѓРґРЅРёРєРѕРІ"),
       icon: "mdi-account-cog",
       to: { name: "admin-employees-list" },
     });
@@ -188,3 +189,4 @@ async function logout() {
   color: inherit;
 }
 </style>
+

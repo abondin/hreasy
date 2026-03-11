@@ -1,6 +1,18 @@
 import process from 'node:process';
 import {defineConfig, devices} from '@playwright/test';
 
+const isCi = !!process.env.CI;
+const defaultPort = isCi ? 4173 : 5173;
+const port = Number(process.env.PLAYWRIGHT_PORT ?? defaultPort);
+const configuredBasePath = process.env.PLAYWRIGHT_BASE_PATH ?? process.env.VITE_APP_BASE_PATH ?? '';
+const normalizedBasePath = configuredBasePath
+  ? `/${configuredBasePath.replace(/^\/+|\/+$/g, '')}`
+  : '';
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${port}${normalizedBasePath}`;
+const webServerCommand = isCi
+  ? `npm run preview -- --port ${port}`
+  : `npm run dev -- --port ${port}`;
+
 export default defineConfig({
   testDir: './e2e',
   timeout: 30 * 1000,
@@ -13,9 +25,9 @@ export default defineConfig({
   reporter: 'html',
   use: {
     actionTimeout: 0,
-    baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:5173',
+    baseURL,
     trace: 'on-first-retry',
-    headless: !!process.env.CI
+    headless: isCi
   },
   projects: [
     {
@@ -38,8 +50,8 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: process.env.CI ? 'npm run preview' : 'npm run dev',
-    port: process.env.CI ? 4173 : 5173,
-    reuseExistingServer: !process.env.CI
+    command: webServerCommand,
+    port,
+    reuseExistingServer: !isCi
   }
 });

@@ -30,6 +30,10 @@ npm run test:e2e
 npm run build
 ```
 
+E2E docs:
+
+- [`e2e/README.md`](./e2e/README.md)
+
 ## Docker build (both frontends)
 
 Container serves:
