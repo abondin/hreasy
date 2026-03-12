@@ -41,7 +41,7 @@ export default {
   setup() {
     return () => {
       // WRONG: Reusing vnode in different parts of tree
-      const icon = h('span', { class: 'icon' }, '★')
+      const icon = h('span', { class: 'icon' }, '*')
       return h('div', [
         h('button', [icon, ' Save']),    // Uses icon
         h('button', [icon, ' Delete'])   // Reuses same icon - Bug!
@@ -75,7 +75,7 @@ export default {
   setup() {
     return () => {
       // CORRECT: Factory function creates new vnode each time
-      const createIcon = () => h('span', { class: 'icon' }, '★')
+      const createIcon = () => h('span', { class: 'icon' }, '*')
       return h('div', [
         h('button', [createIcon(), ' Save']),
         h('button', [createIcon(), ' Delete'])

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6">
+  <v-container class="py-6" data-testid="overtimes-view">
     <v-alert
       v-if="!canViewAllOvertimes"
       type="warning"
@@ -9,7 +9,7 @@
       {{ t("Не достаточно прав") }}
     </v-alert>
 
-    <v-card v-else>
+    <v-card v-else data-testid="overtimes-card">
       <v-card-title>
         <v-row align="center" class="w-100">
           <v-col cols="12" md="8" class="d-flex align-center ga-2">
@@ -20,14 +20,14 @@
               @refresh="fetchData"
             />
             <v-btn icon="mdi-chevron-left" variant="text" :disabled="loading" @click="decrementPeriod" />
-            <span>{{ selectedPeriod.toString() }}</span>
+            <span data-testid="overtimes-period-label">{{ selectedPeriod.toString() }}</span>
             <v-icon
               v-if="periodClosed"
               color="primary"
               icon="mdi-lock"
               :title="t('Период закрыт для внесения изменений')"
             />
-            <v-btn icon="mdi-chevron-right" variant="text" :disabled="loading" @click="incrementPeriod" />
+            <v-btn icon="mdi-chevron-right" variant="text" :disabled="loading" @click="incrementPeriod" data-testid="overtimes-next-period" />
           </v-col>
           <v-col cols="12" md="4" class="d-flex justify-end ga-2">
             <table-toolbar-actions
@@ -45,6 +45,7 @@
                   :icon="periodClosed ? 'mdi-lock-open' : 'mdi-lock'"
                   variant="text"
                   :disabled="loading"
+                  data-testid="overtimes-period-toggle"
                   @click="periodClosed ? reopenPeriod() : closePeriod()"
                 />
               </template>
@@ -67,6 +68,7 @@
           <v-col cols="12" md="3" class="pb-0">
             <v-text-field
               v-model="filter.search"
+              data-testid="overtimes-filter-search"
               density="compact"
               clearable
               :disabled="loading"
@@ -153,7 +155,7 @@
       </v-card-text>
     </v-card>
 
-    <v-dialog v-model="employeeDialog" max-width="1280">
+    <v-dialog v-model="employeeDialog" max-width="1280" data-testid="overtimes-employee-dialog">
       <v-card v-if="selectedEmployee">
         <v-card-title class="d-flex align-center">
           {{

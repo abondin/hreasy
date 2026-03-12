@@ -4,6 +4,7 @@
       <template #activator="{ props }">
         <v-btn
           v-bind="props"
+          data-testid="toolbar-refresh"
           icon="mdi-refresh"
           variant="text"
           :disabled="disabled"
@@ -17,6 +18,7 @@
       <template #activator="{ props }">
         <v-btn
           v-bind="props"
+          data-testid="toolbar-add"
           icon="mdi-plus"
           color="primary"
           variant="text"
@@ -31,6 +33,7 @@
       <template #activator="{ props }">
         <v-btn
           v-bind="props"
+          data-testid="toolbar-export"
           icon="mdi-file-excel"
           variant="text"
           :disabled="disabled"

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <v-app>
     <v-navigation-drawer v-model="drawer" temporary class="app-navigation">
       <v-list density="comfortable" nav>
@@ -15,7 +15,7 @@
 
         <template v-if="adminNavigationItems.length">
           <v-divider class="my-2" />
-          <v-list-subheader>{{ t("РђРґРјРёРЅРєР°") }}</v-list-subheader>
+          <v-list-subheader>{{ t("Админка") }}</v-list-subheader>
           <v-list-item
             v-for="item in adminNavigationItems"
             :key="item.key"
@@ -36,14 +36,14 @@
           data-testid="logout-button"
           @click="logout"
         >
-          <v-list-item-title>{{ t("Р’С‹С…РѕРґ") }}</v-list-item-title>
+          <v-list-item-title>{{ t("Выход") }}</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
     <v-app-bar app elevation="1" density="comfortable">
       <v-app-bar-nav-icon
-        :aria-label="t('РћС‚РєСЂС‹С‚СЊ_РјРµРЅСЋ')"
+        :aria-label="t('Открыть_меню')"
         @click="drawer = !drawer"
       />
       <v-app-bar-title class="font-weight-medium" data-testid="app-title">
@@ -52,7 +52,7 @@
       <v-spacer />
       <template v-if="!isAuthenticated">
         <v-btn variant="tonal" color="primary" :to="{ name: 'login' }">
-          {{ t("Р’С…РѕРґ") }}
+          {{ t("Вход") }}
         </v-btn>
       </template>
       <template v-else>
@@ -60,7 +60,7 @@
           {{ displayName }}
         </v-chip>
         <v-btn variant="text" color="primary" data-testid="logout-button" @click="logout">
-          {{ t("Р’С‹С…РѕРґ") }}
+          {{ t("Выход") }}
         </v-btn>
       </template>
     </v-app-bar>
@@ -73,9 +73,9 @@
       <v-container>
         <v-row>
           <v-col cols="12" class="text-end text-body-2">
-            {{ currentYear }} вЂ” <strong>Alexander Bondin</strong>
+            {{ currentYear }} - <strong>Alexander Bondin</strong>
             <a href="/" class="footer-link ml-4">
-              {{ t("РџРµСЂРµР№С‚Рё_РІ_СЃС‚Р°СЂСѓСЋ_РІРµСЂСЃРёСЋ_РёРЅС‚РµСЂС„РµР№СЃР°") }}
+              {{ t("Перейти_в_старую_версию_интерфейса") }}
             </a>
           </v-col>
         </v-row>
@@ -106,13 +106,13 @@ const mainNavigationItems = computed(() => {
     const items = [
       {
         key: "profile-main",
-        label: t("РџСЂРѕС„РёР»СЊ"),
+        label: t("Профиль"),
         icon: "mdi-account",
         to: { name: "profile-main" },
       },
       {
         key: "employees",
-        label: t("РЎРѕС‚СЂСѓРґРЅРёРєРё"),
+        label: t("Сотрудники"),
         icon: "mdi-account-group",
         to: { name: "employees" },
       },
@@ -120,7 +120,7 @@ const mainNavigationItems = computed(() => {
     if (permissions.canViewAllVacations()) {
       items.push({
         key: "vacations",
-        label: t("РћС‚РїСѓСЃРєР°"),
+        label: t("Отпуска"),
         icon: "mdi-calendar-range",
         to: { name: "vacations" },
       });
@@ -128,7 +128,7 @@ const mainNavigationItems = computed(() => {
     if (permissions.canViewAllOvertimes()) {
       items.push({
         key: "overtimes",
-        label: t("РћРІРµСЂС‚Р°Р№РјС‹"),
+        label: t("Овертаймы"),
         icon: "mdi-briefcase-clock",
         to: { name: "overtimes" },
       });
@@ -136,7 +136,7 @@ const mainNavigationItems = computed(() => {
     if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
       items.push({
         key: "mentorship",
-        label: t("РњРµРЅС‚РѕСЂСЃС‚РІРѕ"),
+        label: t("Менторство"),
         icon: "mdi-account-school",
         to: { name: "mentorship" },
       });
@@ -147,7 +147,7 @@ const mainNavigationItems = computed(() => {
   return [
     {
       key: "login",
-      label: t("Р’С…РѕРґ"),
+      label: t("Вход"),
       icon: "mdi-login",
       to: { name: "login" },
     },
@@ -164,7 +164,7 @@ const adminNavigationItems = computed(() => {
   if (permissions.canAdminEmployees()) {
     items.push({
       key: "admin-employees",
-      label: t("РђРґРјРёРЅРєР° СЃРѕС‚СЂСѓРґРЅРёРєРѕРІ"),
+      label: t("Админка сотрудников"),
       icon: "mdi-account-cog",
       to: { name: "admin-employees-list" },
     });

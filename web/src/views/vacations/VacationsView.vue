@@ -2,7 +2,7 @@
   Vacations management view with list, summary, and timeline tabs.
 -->
 <template>
-  <v-container class="py-6">
+  <v-container class="py-6" data-testid="vacations-view">
     <v-alert
       v-if="!canViewVacations"
       type="warning"
@@ -12,11 +12,11 @@
       {{ t("Не достаточно прав") }}
     </v-alert>
 
-    <v-card v-else>
-      <v-tabs v-model="selectedTab">
-        <v-tab>{{ t("Все отпуска") }}</v-tab>
-        <v-tab>{{ t("Сводная по сотрудникам") }}</v-tab>
-        <v-tab>{{ t("График отпусков") }}</v-tab>
+    <v-card v-else data-testid="vacations-card">
+      <v-tabs v-model="selectedTab" data-testid="vacations-tabs">
+        <v-tab data-testid="vacations-tab-list">{{ t("Все отпуска") }}</v-tab>
+        <v-tab data-testid="vacations-tab-summary">{{ t("Сводная по сотрудникам") }}</v-tab>
+        <v-tab data-testid="vacations-tab-timeline">{{ t("График отпусков") }}</v-tab>
       </v-tabs>
 
       <v-container class="pt-4">
@@ -39,6 +39,7 @@
           <v-col cols="12" sm="2" class="pb-0">
             <v-select
               v-model="selectedYear"
+              data-testid="vacations-filter-year"
               density="compact"
               :items="allYears"
               :disabled="loading"
@@ -73,6 +74,7 @@
           <v-col cols="12" sm="4" class="pb-0 pt-0">
             <v-text-field
               v-model="filter.search"
+              data-testid="vacations-filter-search"
               density="compact"
               clearable
               :disabled="loading"

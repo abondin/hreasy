@@ -1,6 +1,6 @@
 <template>
-  <div class="mt-4">
-    <v-card>
+  <div class="mt-4" data-testid="admin-employees-list-view">
+    <v-card data-testid="admin-employees-list-card">
       <HREasyTableBase
         table-class="admin-employees-table text-truncate"
         :headers="headers"
@@ -18,13 +18,14 @@
       >
         <template #filters>
           <v-card-title class="d-flex ga-2 align-center flex-wrap">
-            <v-btn icon="mdi-refresh" variant="text" :loading="loading" @click="load" />
+            <v-btn icon="mdi-refresh" variant="text" :loading="loading" @click="load" data-testid="admin-employees-refresh" />
 
             <v-tooltip v-if="permissions.canEditEmployees()" location="bottom">
               <template #activator="{ props: tooltipProps }">
                 <v-btn
                   v-bind="tooltipProps"
                   icon="mdi-plus"
+                  data-testid="admin-employees-add"
                   color="primary"
                   variant="text"
                   :disabled="loading"
@@ -39,6 +40,7 @@
                 <v-btn
                   v-bind="tooltipProps"
                   icon="mdi-file-excel"
+                  data-testid="admin-employees-export"
                   color="success"
                   variant="text"
                   :loading="exportLoading"
@@ -58,6 +60,7 @@
               <v-col cols="12" lg="3">
                 <v-text-field
                   v-model="search"
+                  data-testid="admin-employees-search"
                   append-inner-icon="mdi-magnify"
                   :label="t('Поиск')"
                   variant="outlined"
@@ -69,6 +72,7 @@
               <v-col cols="12" lg="3">
                 <v-autocomplete
                   v-model="selectedDepartments"
+                  data-testid="admin-employees-filter-departments"
                   :items="activeDepartments"
                   item-title="name"
                   item-value="id"
@@ -84,6 +88,7 @@
               <v-col cols="12" lg="3">
                 <v-autocomplete
                   v-model="selectedProjects"
+                  data-testid="admin-employees-filter-projects"
                   :items="activeProjects"
                   item-title="name"
                   item-value="id"
@@ -99,6 +104,7 @@
               <v-col cols="12" lg="2">
                 <v-autocomplete
                   v-model="selectedPositions"
+                  data-testid="admin-employees-filter-positions"
                   :items="activePositions"
                   item-title="name"
                   item-value="id"
@@ -114,6 +120,7 @@
               <v-col cols="12" lg="1" class="d-flex align-center">
                 <v-checkbox
                   v-model="hideDismissed"
+                  data-testid="admin-employees-hide-dismissed"
                   density="compact"
                   hide-details
                   :label="t('Скрыть уволенных')"
@@ -163,7 +170,7 @@
       </HREasyTableBase>
     </v-card>
 
-    <v-dialog
+    <v-dialog data-testid="admin-employees-edit-dialog"
       v-model="dialog"
       persistent
       width="96vw"

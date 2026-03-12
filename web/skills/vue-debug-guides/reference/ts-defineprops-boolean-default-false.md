@@ -147,8 +147,8 @@ defineProps({
   disabled: [Boolean, String]
 })
 
-// <MyComponent disabled /> → disabled = true
-// <MyComponent disabled="" /> → disabled = true
+// <MyComponent disabled />  disabled = true
+// <MyComponent disabled="" />  disabled = true
 ```
 
 ```typescript
@@ -157,8 +157,8 @@ defineProps({
   disabled: [String, Boolean]
 })
 
-// <MyComponent disabled /> → disabled = ''
-// <MyComponent disabled="" /> → disabled = ''
+// <MyComponent disabled />  disabled = ''
+// <MyComponent disabled="" />  disabled = ''
 ```
 
 With type-based declaration, Boolean always takes priority for absent props.

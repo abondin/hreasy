@@ -2,8 +2,8 @@
   Employees table with filters and details drawer.
 -->
 <template>
-  <v-card>
-    <HREasyTableBase
+  <v-card data-testid="employees-table-card">
+    <HREasyTableBase data-testid="employees-table"
       table-class="employees-table"
       :headers="headers"
       :items="items"
@@ -21,6 +21,7 @@
         <v-card-title class="d-flex flex-wrap ga-3 align-center employees-filters">
           <v-text-field
             v-model="localSearch"
+            data-testid="employees-filter-search"
             :label="t('Поиск')"
             prepend-inner-icon="mdi-magnify"
             variant="outlined"
@@ -30,6 +31,7 @@
           />
           <v-autocomplete
             v-model="selectedProject"
+            data-testid="employees-filter-project"
             :items="projectOptions"
             :label="t('Текущий проект')"
             variant="outlined"
@@ -43,6 +45,7 @@
           />
           <v-autocomplete
             v-model="selectedBa"
+            data-testid="employees-filter-ba"
             :items="baOptions"
             :label="t('Бизнес Аккаунт')"
             variant="outlined"
@@ -72,7 +75,7 @@
     </HREasyTableBase>
   </v-card>
 
-  <v-navigation-drawer
+  <v-navigation-drawer data-testid="employees-details-drawer"
     v-model="detailsOpen"
     location="right"
     temporary

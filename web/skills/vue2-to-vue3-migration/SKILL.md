@@ -34,7 +34,7 @@ For a detailed checklist and mapping table, read `references/hreasy-migration-ch
 
 Table UI standard reference:
 
-- Source pattern: `legacy/vue2/src/components/salary/SalaryRequestsTable.vue` ("Повышения и бонусы").
+- Source pattern: `legacy/vue2/src/components/salary/SalaryRequestsTable.vue` ("Raises and Bonuses").
 - Preserve table behavior parity (data, permissions, actions, filters logic), but align Vue 3 table layout/interaction patterns across modules (toolbar/actions/filters/loading/empty states).
 - Verify component capabilities in Vuetify docs before custom implementation: `https://vuetifyjs.com/en/components/`.
 

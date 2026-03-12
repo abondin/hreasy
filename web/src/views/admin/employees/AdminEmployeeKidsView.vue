@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mt-4">
+  <v-card class="mt-4" data-testid="admin-kids-view">
     <HREasyTableBase
       table-class="admin-kids-table text-truncate"
       :headers="headers"
@@ -17,12 +17,13 @@
     >
       <template #filters>
         <v-card-title class="d-flex ga-3 align-center flex-wrap">
-          <v-btn icon="mdi-refresh" variant="text" :loading="loading" @click="load" />
+          <v-btn icon="mdi-refresh" variant="text" :loading="loading" @click="load" data-testid="admin-kids-refresh" />
           <v-tooltip v-if="permissions.canEditEmployees()" location="bottom">
             <template #activator="{ props: tooltipProps }">
               <v-btn
                 v-bind="tooltipProps"
                 icon="mdi-plus"
+                data-testid="admin-kids-add"
                 color="primary"
                 variant="text"
                 :disabled="loading"
@@ -33,6 +34,7 @@
           </v-tooltip>
           <v-text-field
             v-model="search"
+            data-testid="admin-kids-search"
             append-inner-icon="mdi-magnify"
             density="compact"
             :label="t('Поиск')"
@@ -43,6 +45,7 @@
           />
           <v-checkbox
             v-model="hideDismissed"
+            data-testid="admin-kids-hide-dismissed"
             density="compact"
             hide-details
             :label="t('Скрыть детей уволенных сотрудников')"
@@ -65,7 +68,7 @@
       </template>
     </HREasyTableBase>
 
-    <v-dialog v-model="dialog" persistent max-width="760">
+    <v-dialog v-model="dialog" persistent max-width="760" data-testid="admin-kids-edit-dialog">
       <AdminEmployeeKidForm
         :input="current"
         :employees="employees"

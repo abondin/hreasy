@@ -1,7 +1,18 @@
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { credentialsOrSkip, loginViaUi } from "../fixtures/auth";
+import { appPath } from "../support/navigation";
+import { routes } from "../support/test-data";
+import { selectors } from "../support/selectors";
 
 test.describe("Overtime Admin Actions", () => {
-  test.skip("closes overtime period for editing", async () => {});
-  test.skip("reopens overtime period", async () => {});
-  test.skip("gates period admin actions by permission", async () => {});
+  test("shows period admin toggle for overtime admin", async ({ page }) => {
+    const credentials = credentialsOrSkip("overtime_admin");
+    test.skip(!credentials, "Set E2E_OVERTIME_ADMIN_USERNAME and E2E_OVERTIME_ADMIN_PASSWORD");
+
+    await loginViaUi(page, credentials!);
+    await page.goto(appPath(routes.overtimes));
+
+    await expect(page.getByTestId(selectors.overtimesPeriodToggle)).toBeVisible();
+  });
 });
+

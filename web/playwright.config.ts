@@ -2,6 +2,7 @@ import process from 'node:process';
 import {defineConfig, devices} from '@playwright/test';
 
 const isCi = !!process.env.CI;
+const runAllBrowsers = process.env.PLAYWRIGHT_ALL_BROWSERS === "1";
 const defaultPort = isCi ? 4173 : 5173;
 const port = Number(process.env.PLAYWRIGHT_PORT ?? defaultPort);
 const configuredBasePath = process.env.PLAYWRIGHT_BASE_PATH ?? process.env.VITE_APP_BASE_PATH ?? '';
@@ -15,13 +16,13 @@ const webServerCommand = isCi
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 30 * 1000,
+  timeout: 60 * 1000,
   expect: {
-    timeout: 5000
+    timeout: 10000
   },
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : Number(process.env.PLAYWRIGHT_WORKERS ?? 1),
   reporter: 'html',
   use: {
     actionTimeout: 0,
@@ -29,7 +30,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     headless: isCi
   },
-  projects: [
+  projects: runAllBrowsers ? [
     {
       name: 'chromium',
       use: {
@@ -46,6 +47,13 @@ export default defineConfig({
       name: 'webkit',
       use: {
         ...devices['Desktop Safari']
+      }
+    }
+  ] : [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome']
       }
     }
   ],

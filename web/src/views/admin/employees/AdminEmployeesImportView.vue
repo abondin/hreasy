@@ -1,12 +1,14 @@
 <template>
-  <admin-import-workflow
-    :title="t('Импорт сотрудников из Excel')"
-    :service="adminEmployeeImportService"
-    :config="defaultConfig"
-    :preview-headers-loader="previewHeadersLoader"
-    :preview-filter-function="previewFilterFunction"
-    :on-complete-action="onCompleteAction"
-  />
+  <div data-testid="admin-employees-import-view">
+    <admin-import-workflow
+      :title="t('Импорт сотрудников из Excel')"
+      :service="adminEmployeeImportService"
+      :config="defaultConfig"
+      :preview-headers-loader="previewHeadersLoader"
+      :preview-filter-function="previewFilterFunction"
+      :on-complete-action="onCompleteAction"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

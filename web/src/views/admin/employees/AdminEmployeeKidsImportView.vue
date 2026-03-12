@@ -1,13 +1,15 @@
 <template>
-  <admin-import-workflow
-    :title="t('Импорт детей из Excel')"
-    :service="adminEmployeeKidImportService"
-    :config="defaultConfig"
-    :stats-labels="statsLabels"
-    :preview-headers-loader="previewHeadersLoader"
-    :preview-filter-function="previewFilterFunction"
-    :on-complete-action="onCompleteAction"
-  />
+  <div data-testid="admin-kids-import-view">
+    <admin-import-workflow
+      :title="t('Импорт детей из Excel')"
+      :service="adminEmployeeKidImportService"
+      :config="defaultConfig"
+      :stats-labels="statsLabels"
+      :preview-headers-loader="previewHeadersLoader"
+      :preview-filter-function="previewFilterFunction"
+      :on-complete-action="onCompleteAction"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

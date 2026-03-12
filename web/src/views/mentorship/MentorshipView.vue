@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6">
+  <v-container class="py-6" data-testid="mentorship-view">
     <v-alert
       v-if="!canViewMentorship"
       type="warning"
@@ -9,7 +9,7 @@
       {{ t("Не достаточно прав") }}
     </v-alert>
 
-    <v-card v-else>
+    <v-card v-else data-testid="mentorship-card">
       <v-alert
         v-if="error"
         type="error"
@@ -25,6 +25,7 @@
           <v-col cols="12" sm="4" class="pb-0">
             <v-text-field
               v-model="filter.search"
+              data-testid="mentorship-filter-search"
               density="compact"
               clearable
               :disabled="loading"
@@ -72,7 +73,7 @@
         </v-row>
 
         <v-row>
-          <v-col cols="auto">
+          <v-col cols="auto" data-testid="mentorship-toolbar">
             <table-toolbar-actions
               :disabled="loading || actionLoading || exportLoading"
               show-refresh

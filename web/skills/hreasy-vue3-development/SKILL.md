@@ -20,10 +20,11 @@ Apply a reuse-first strategy: extend existing components, composables, stores, a
 6. For data tables, prefer project-wide UI consistency over legacy per-page visual differences.
 7. Keep implementation transparent and simple; if a requested change pushes toward a large or complex refactor, stop and confirm scope with the user first.
 8. Prefer built-in Vuetify component capabilities over custom CSS/JS workarounds whenever possible.
+9. For key interactive UI controls used in user flows, add stable E2E markers (`data-testid`) and keep marker naming semantic and reusable.
 
 Table standardization note:
 
-- Use the Vue 2 "Повышения и бонусы" table (`legacy/vue2/src/components/salary/SalaryRequestsTable.vue`) as a structural reference for Vue 3 table UI.
+- Use the Vue 2 "Raises and Bonuses" table (`legacy/vue2/src/components/salary/SalaryRequestsTable.vue`) as a structural reference for Vue 3 table UI.
 - Keep business behavior/permissions intact while aligning table skeleton (toolbar, action placement, filters block, loading/disabled/empty states).
 - Before adding custom behavior/styles, check Vuetify component docs first: `https://vuetifyjs.com/en/components/`.
 - For employee list pages (for example `/employees`, `/admin/employees`, and similar directories), use `src/components/shared/HREasyTableBase.vue` by default. Differences between pages should be expressed via columns, filters, and row-click behavior rather than custom table layouts.
@@ -63,6 +64,8 @@ If reuse is not chosen, explicitly state why in task output.
 - Reusable blocks in `src/components/**`.
 - Use Vuetify 3 patterns consistent with existing project code.
 - Do not hardcode user text.
+- For controls that E2E scenarios interact with (auth actions, primary navigation, submit/cancel buttons, critical dialogs/forms), prefer explicit `data-testid` markers over text-based selectors.
+- Keep shared selector ids centralized in `e2e/support/selectors.ts` when they are reused across specs.
 
 ### 4. Routing and access
 

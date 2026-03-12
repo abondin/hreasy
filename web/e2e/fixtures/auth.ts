@@ -4,13 +4,23 @@ import { appPath } from "../support/navigation";
 import { selectors } from "../support/selectors";
 
 function envCredentials(role: TestRole): TestCredentials | null {
-  const prefix = `E2E_${role.toUpperCase()}`.replaceAll("-", "_");
-  const username = process.env[`${prefix}_USERNAME`];
-  const password = process.env[`${prefix}_PASSWORD`];
-  if (!username || !password) {
-    return null;
+  const rolePrefix = `E2E_${role.toUpperCase()}`.replaceAll("-", "_");
+  const roleUsername = process.env[`${rolePrefix}_USERNAME`];
+  const rolePassword = process.env[`${rolePrefix}_PASSWORD`];
+
+  if (roleUsername && rolePassword) {
+    return { username: roleUsername, password: rolePassword };
   }
-  return { username, password };
+
+  if (role !== "employee") {
+    const fallbackUsername = process.env.E2E_EMPLOYEE_USERNAME;
+    const fallbackPassword = process.env.E2E_EMPLOYEE_PASSWORD;
+    if (fallbackUsername && fallbackPassword) {
+      return { username: fallbackUsername, password: fallbackPassword };
+    }
+  }
+
+  return null;
 }
 
 export function credentialsOrSkip(role: TestRole): TestCredentials | null {
@@ -21,11 +31,52 @@ export async function loginViaUi(
   page: Page,
   credentials: TestCredentials,
 ): Promise<void> {
-  await page.goto(appPath("/login"));
-  await page.getByTestId(selectors.loginInput).locator("input").fill(credentials.username);
-  await page.getByTestId(selectors.passwordInput).locator("input").fill(credentials.password);
-  await page.getByTestId(selectors.loginSubmit).click();
-  await expect(page).not.toHaveURL(/\/login$/);
+  await page.goto(appPath("/login"), { waitUntil: "domcontentloaded" });
+
+  // Some environments restore auth session automatically and skip the login form.
+  if (!page.url().includes("/login")) {
+    return;
+  }
+
+  const loginInput = page.locator('input[name="login"]').first();
+  const passwordInput = page.locator('input[name="password"]').first();
+
+  const loginInputVisible = await loginInput.isVisible().catch(() => false);
+  const passwordInputVisible = await passwordInput.isVisible().catch(() => false);
+  if (!loginInputVisible || !passwordInputVisible) {
+    const loginLink = page.getByRole("link", { name: /Вход/i }).first();
+    if (await loginLink.isVisible().catch(() => false)) {
+      await loginLink.click();
+      await page.waitForTimeout(200);
+    }
+  }
+
+  if (!page.url().includes("/login")) {
+    return;
+  }
+
+  await expect(loginInput).toBeVisible({ timeout: 15000 });
+  await expect(passwordInput).toBeVisible({ timeout: 15000 });
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    await loginInput.fill(credentials.username);
+    await passwordInput.fill(credentials.password);
+
+    const submitButton = page.getByTestId(selectors.loginSubmit);
+    await expect(submitButton).toBeEnabled();
+    await submitButton.click();
+
+    try {
+      await expect(page).not.toHaveURL(/\/login(?:$|\?)/, { timeout: 15000 });
+      return;
+    } catch {
+      if (attempt === 2) {
+        const errorText = (await page.locator('[role="alert"]').first().textContent().catch(() => null)) ?? "";
+        throw new Error(`Login failed, stayed on /login. Response error: ${errorText.trim()}`);
+      }
+      await page.reload({ waitUntil: "domcontentloaded" });
+    }
+  }
 }
 
 export async function logoutViaUi(page: Page): Promise<void> {
@@ -35,4 +86,3 @@ export async function logoutViaUi(page: Page): Promise<void> {
   }
   await expect(page).toHaveURL(/\/login/);
 }
-

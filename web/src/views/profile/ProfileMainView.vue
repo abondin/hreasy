@@ -1,5 +1,5 @@
 <template>
-  <v-container class="profile-view py-6">
+  <v-container class="profile-view py-6" data-testid="profile-view">
     <v-skeleton-loader
       v-if="isLoading"
       type="card, list-item-two-line, actions"
@@ -7,7 +7,7 @@
     />
 
     <template v-else-if="employee">
-      <section>
+      <section data-testid="profile-summary-section">
         <v-row dense>
           <v-col cols="12">
             <profile-summary-card
@@ -21,7 +21,7 @@
         </v-row>
       </section>
 
-      <section class="mt-6">
+      <section class="mt-6" data-testid="profile-secondary-section">
         <v-row dense>
           <v-col cols="12">
             <employee-overtime-card
