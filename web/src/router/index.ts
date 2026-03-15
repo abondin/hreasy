@@ -9,6 +9,8 @@ import ProfileMainView from "@/views/profile/ProfileMainView.vue";
 import EmployeesView from "@/views/employees/EmployeesView.vue";
 import VacationsView from "@/views/vacations/VacationsView.vue";
 import OvertimesView from "@/views/overtimes/OvertimesView.vue";
+import SalaryRequestsView from "@/views/salary/SalaryRequestsView.vue";
+import SalaryRequestDetailsView from "@/views/salary/SalaryRequestDetailsView.vue";
 import MentorshipView from "@/views/mentorship/MentorshipView.vue";
 import MentorshipDetailsView from "@/views/mentorship/MentorshipDetailsView.vue";
 import AdminEmployeesTabsView from "@/views/admin/employees/AdminEmployeesTabsView.vue";
@@ -28,6 +30,13 @@ const router = createRouter({
     { path: "/employees", name: "employees", component: EmployeesView, meta: { requiresAuth: true } },
     { path: "/vacations", name: "vacations", component: VacationsView, meta: { requiresAuth: true } },
     { path: "/overtimes", name: "overtimes", component: OvertimesView, meta: { requiresAuth: true } },
+    { path: "/salaries/requests", name: "salary-requests", component: SalaryRequestsView, meta: { requiresAuth: true } },
+    {
+      path: "/salaries/requests/:period/:requestId",
+      name: "salary-request-details",
+      component: SalaryRequestDetailsView,
+      meta: { requiresAuth: true },
+    },
     { path: "/juniors", name: "mentorship", component: MentorshipView, meta: { requiresAuth: true } },
     {
       path: "/juniors/:juniorRegistryId",
@@ -77,6 +86,14 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
       redirect.query = { returnPath: to.fullPath };
     }
     return redirect;
+  }
+
+  if (
+    (to.name === "salary-requests" || to.name === "salary-request-details")
+    && !permissions.canReportSalaryRequest()
+    && !permissions.canAdminSalaryRequests()
+  ) {
+    return { name: "profile-main" };
   }
 
   if (

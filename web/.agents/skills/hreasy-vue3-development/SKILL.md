@@ -21,6 +21,7 @@ Apply a reuse-first strategy: extend existing components, composables, stores, a
 7. Keep implementation transparent and simple; if a requested change pushes toward a large or complex refactor, stop and confirm scope with the user first.
 8. Prefer built-in Vuetify component capabilities over custom CSS/JS workarounds whenever possible.
 9. For key interactive UI controls used in user flows, add stable E2E markers (`data-testid`) and keep marker naming semantic and reusable.
+10. Before changing page layout or grid behavior, verify official Vuetify docs first (especially Grid usage: `https://vuetifyjs.com/en/components/grids/#usage`) and prefer `v-container`/`v-row`/`v-col` props (`auto`, breakpoint columns, alignment) over custom CSS layout fixes.
 
 Table standardization note:
 

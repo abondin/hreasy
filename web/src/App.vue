@@ -133,6 +133,14 @@ const mainNavigationItems = computed(() => {
         to: { name: "overtimes" },
       });
     }
+    if (permissions.canReportSalaryRequest()) {
+      items.push({
+        key: "salary-requests",
+        label: t("Повышения и бонусы"),
+        icon: "mdi-currency-rub",
+        to: { name: "salary-requests" },
+      });
+    }
     if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
       items.push({
         key: "mentorship",
@@ -189,4 +197,3 @@ async function logout() {
   color: inherit;
 }
 </style>
-

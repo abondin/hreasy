@@ -31,6 +31,7 @@ For a detailed checklist and mapping table, read `references/hreasy-migration-ch
 6. Exception for table UI: when legacy tables differ across modules, unify Vue 3 table structure to the shared project standard instead of copying each legacy variant.
 7. If implementation required to satisfy a UX request significantly increases code size or conceptual complexity, pause and align with the user before proceeding.
 8. When migrating Vuetify UI, prefer built-in Vuetify features/props/slots over custom CSS/JS overrides unless there is a documented blocker.
+9. Before migrating or adjusting layout/grid behavior, check official Vuetify Grid docs first (`https://vuetifyjs.com/en/components/grids/#usage`) and prefer `v-container`/`v-row`/`v-col` props (`auto`, breakpoint columns, alignment) over custom CSS-based layout overrides.
 
 Table UI standard reference:
 
