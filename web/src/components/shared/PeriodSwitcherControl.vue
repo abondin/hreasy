@@ -11,15 +11,23 @@
       <span class="period-switcher-label" :data-testid="props.labelTestId">
         {{ props.label }}
       </span>
-      <button
-        v-if="!props.isCurrent"
-        type="button"
-        class="period-switcher-go-current"
-        :disabled="props.disabled"
-        @click="$emit('go-current')"
-      >
-        {{ props.goCurrentLabel }}
-      </button>
+      <div class="period-switcher-action-slot">
+        <v-tooltip v-if="!props.isCurrent" location="bottom">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              icon="mdi-calendar-refresh"
+              size="x-small"
+              color="primary"
+              variant="text"
+              :disabled="props.disabled"
+              class="period-switcher-go-current-icon"
+              @click="$emit('go-current')"
+            />
+          </template>
+          <span>{{ props.goCurrentLabel }}</span>
+        </v-tooltip>
+      </div>
     </div>
     <v-btn
       icon="mdi-chevron-right"
@@ -61,38 +69,31 @@ defineEmits<{
 <style scoped>
 .period-switcher-control {
   display: inline-flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
 .period-switcher-center {
+  width: calc(11rem + 18px);
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
 }
 
 .period-switcher-label {
-  display: inline-block;
-  min-width: 11rem;
-  max-width: 11rem;
+  width: 11rem;
   text-align: center;
 }
 
-.period-switcher-go-current {
-  margin-top: 2px;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  font-size: 11px;
-  line-height: 1;
-  color: rgb(var(--v-theme-primary));
-  text-decoration: underline;
-  cursor: pointer;
+.period-switcher-action-slot {
+  width: 18px;
+  min-width: 18px;
+  display: flex;
+  justify-content: center;
+  margin-left: -1px;
 }
 
-.period-switcher-go-current:disabled {
-  opacity: 0.55;
-  cursor: default;
-  text-decoration: none;
+.period-switcher-go-current-icon {
+  margin: 0;
 }
 </style>
