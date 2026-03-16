@@ -22,6 +22,8 @@ Apply a reuse-first strategy: extend existing components, composables, stores, a
 8. Prefer built-in Vuetify component capabilities over custom CSS/JS workarounds whenever possible.
 9. For key interactive UI controls used in user flows, add stable E2E markers (`data-testid`) and keep marker naming semantic and reusable.
 10. Before changing page layout or grid behavior, verify official Vuetify docs first (especially Grid usage: `https://vuetifyjs.com/en/components/grids/#usage`) and prefer `v-container`/`v-row`/`v-col` props (`auto`, breakpoint columns, alignment) over custom CSS layout fixes.
+11. Detail pages (route `.../:id` style pages) must follow one shared visual structure across modules; do not invent per-page layouts.
+12. On Windows, all edited files must remain UTF-8 (prefer no BOM); avoid PowerShell 5.1 write commands with implicit encoding (`Set-Content`, `Add-Content`, `Out-File`, `>`, `>>`) unless encoding is explicitly controlled.
 
 Table standardization note:
 
@@ -29,6 +31,16 @@ Table standardization note:
 - Keep business behavior/permissions intact while aligning table skeleton (toolbar, action placement, filters block, loading/disabled/empty states).
 - Before adding custom behavior/styles, check Vuetify component docs first: `https://vuetifyjs.com/en/components/`.
 - For employee list pages (for example `/employees`, `/admin/employees`, and similar directories), use `src/components/shared/HREasyTableBase.vue` by default. Differences between pages should be expressed via columns, filters, and row-click behavior rather than custom table layouts.
+
+Detail page standardization note:
+
+- Use a centered content frame with limited width (target around `max-width: 1280-1360px`) for all detail pages.
+- First detail card must use a two-column layout:
+  - left column: standard profile block (`ProfileSummary` or equivalent reusable profile card) with natural/fixed width (`lg="auto"`).
+  - right column: all domain-specific fields taking the remaining width (`lg` grow column).
+- Keep section ordering consistent: summary/info -> domain actions (implementation/approvals/etc.) -> history/related entities.
+- Prefer `v-row`/`v-col` responsive composition over ad-hoc CSS widths.
+- If detail pages in multiple modules share the same skeleton, extract/reuse a shared layout wrapper in `src/components/shared` instead of duplicating structure.
 
 ## Reuse-First Protocol
 
@@ -86,6 +98,8 @@ Run after substantial changes:
 - Main active app is Vue 3 in repository root.
 - Legacy app lives in `legacy/vue2/` and should not be modified unless explicitly requested.
 - Root lint/type-check should target Vue 3 codebase, not legacy.
+- If scripted file writes are needed on Windows, use explicit UTF-8 no BOM writes:
+  - `[System.IO.File]::WriteAllText($path, $text, [System.Text.UTF8Encoding]::new($false))`
 
 ## Required Output Format
 

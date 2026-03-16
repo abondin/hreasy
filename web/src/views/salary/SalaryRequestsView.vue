@@ -7,7 +7,7 @@
       class="mb-4"
       data-testid="salary-requests-no-access"
     >
-      {{ t("Не достаточно прав") }}
+      {{ t("Недостаточно прав") }}
     </v-alert>
 
     <v-alert
@@ -28,7 +28,10 @@
               :disabled="loading"
               show-refresh
               :refresh-label="t('Обновить данные')"
+              :show-add="canCreateSalaryRequest"
+              :add-label="createNewTitle"
               @refresh="fetchData"
+              @add="openCreateDialog"
             />
             <v-btn
               icon="mdi-chevron-left"
@@ -68,7 +71,7 @@
                   variant="text"
                   :disabled="loading"
                   data-testid="salary-requests-period-toggle"
-                  @click="periodClosed ? reopenPeriod() : closePeriod()"
+                  @click="openPeriodToggleDialog"
                 />
               </template>
               <span>
@@ -211,32 +214,181 @@
         </HREasyTableBase>
       </v-card-text>
     </v-card>
+
+    <v-dialog v-model="createDialog" max-width="920" data-testid="salary-requests-create-dialog">
+      <v-card>
+        <v-card-title>{{ createNewTitle }}</v-card-title>
+        <v-card-text>
+          <v-alert v-if="createError" type="error" variant="tonal" class="mb-4">
+            {{ createError }}
+          </v-alert>
+          <v-form ref="createFormRef">
+            <v-autocomplete
+              v-model="createForm.employeeId"
+              :items="employees"
+              item-title="displayName"
+              item-value="id"
+              :label="t('Сотрудник')"
+              :rules="[requiredRule]"
+              clearable
+              data-testid="salary-requests-create-employee"
+            />
+            <v-autocomplete
+              v-model="createForm.budgetBusinessAccount"
+              :items="bas"
+              item-title="name"
+              item-value="id"
+              :label="t('Бюджет из бизнес аккаунта')"
+              :rules="[requiredRule]"
+              clearable
+              data-testid="salary-requests-create-ba"
+            />
+            <v-autocomplete
+              v-if="filter.type === 1 && employeeAssessments.length > 0"
+              v-model="createForm.assessmentId"
+              :items="employeeAssessments"
+              item-title="plannedDate"
+              item-value="id"
+              :label="t('Ассессмент')"
+              clearable
+              data-testid="salary-requests-create-assessment"
+            />
+            <my-date-form-component
+              v-if="filter.type === 1"
+              v-model="createForm.budgetExpectedFundingUntil"
+              :label="t('Планируемая дата окончания финансирования')"
+            />
+            <v-text-field
+              v-if="filter.type === 1"
+              v-model.number="createForm.currentSalaryAmount"
+              type="number"
+              hide-spin-buttons
+              :label="t('Текущая заработная плата')"
+              data-testid="salary-requests-create-current-salary"
+            />
+            <v-text-field
+              v-model.number="createForm.increaseAmount"
+              type="number"
+              hide-spin-buttons
+              :rules="[requiredNumberRule]"
+              :label="filter.type === 1 ? t('Предполагаемое изменение на') : t('Сумма бонуса')"
+              data-testid="salary-requests-create-increase"
+            />
+            <v-text-field
+              v-if="filter.type === 1"
+              v-model.number="createForm.plannedSalaryAmount"
+              type="number"
+              hide-spin-buttons
+              :rules="[plannedSalaryRule]"
+              :label="t('Предполагаемая заработная плата после повышения')"
+              data-testid="salary-requests-create-planned-salary"
+            />
+            <v-text-field
+              v-model="createForm.reason"
+              counter="256"
+              :rules="[requiredReasonRule]"
+              :label="t('Обоснование')"
+              data-testid="salary-requests-create-reason"
+            />
+            <v-textarea
+              v-model="createForm.comment"
+              :rules="[maxCommentRule]"
+              :label="t('Примечание')"
+              data-testid="salary-requests-create-comment"
+            />
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" :disabled="createLoading" @click="closeCreateDialog">
+            {{ t("Отмена") }}
+          </v-btn>
+          <v-btn color="primary" :loading="createLoading" @click="submitCreate">
+            {{ t("Создать") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="periodToggleDialog" max-width="560" data-testid="salary-requests-period-toggle-dialog">
+      <v-card>
+        <v-card-title>
+          {{ periodClosed ? t("Переоткрыть период") : t("Закрыть период") }}
+        </v-card-title>
+        <v-card-text>
+          {{
+            periodClosed
+              ? t("Переоткрыть период. Вернуть возможность вносить изменения")
+              : t("Закрыть период. Запретить внесение изменений.")
+          }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" :disabled="loading" @click="periodToggleDialog = false">
+            {{ t("Отмена") }}
+          </v-btn>
+          <v-btn color="primary" :loading="loading" @click="confirmPeriodToggle">
+            {{ t("Применить") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
+import type { VForm } from "vuetify/components";
 import { formatDateTime } from "@/lib/datetime";
+import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import { useSalaryRequests } from "@/composables/useSalaryRequests";
-import type { SalaryApprovalState, SalaryRequestApproval } from "@/services/salary.service";
+import { listEmployees, type Employee } from "@/services/employee.service";
+import { fetchProjectInfo } from "@/services/projects.service";
+import { fetchEmployeeAssessments } from "@/services/assessment.service";
+import {
+  reportSalaryRequest,
+  type SalaryApprovalState,
+  type SalaryRequestApproval,
+  type SalaryRequestReportBody,
+} from "@/services/salary.service";
+
+type VFormInstance = InstanceType<typeof VForm>;
+
+interface SalaryCreateForm {
+  employeeId: number | null;
+  budgetBusinessAccount: number | null;
+  budgetExpectedFundingUntil: string;
+  increaseAmount: number | null;
+  currentSalaryAmount: number | null;
+  previousSalaryIncreaseDate: string;
+  previousSalaryIncreaseText: string | null;
+  plannedSalaryAmount: number | null;
+  assessmentId: number | null;
+  reason: string;
+  comment: string | null;
+}
 
 const { t } = useI18n();
+const router = useRouter();
 const {
   loading,
   error,
   bas,
   filter,
   selectedPeriod,
+  selectedPeriodId,
   headers,
   filteredItems,
   periodClosed,
   canViewSalaryRequests,
   canAdminSalaryRequests,
+  canCreateSalaryRequest,
   increaseImplementedCount,
   increaseTotalCount,
   bonusImplementedCount,
@@ -248,18 +400,98 @@ const {
   reopenPeriod,
   exportToExcel,
 } = useSalaryRequests(t);
-const router = useRouter();
 
 const implementedOptions = computed(() => [
   { title: t("Нет"), value: false },
   { title: t("Да"), value: true },
 ]);
 
+const createDialog = ref(false);
+const periodToggleDialog = ref(false);
+const createLoading = ref(false);
+const createError = ref("");
+const createFormRef = ref<VFormInstance | null>(null);
+const employees = ref<Employee[]>([]);
+const employeeAssessments = ref<{ id: number; plannedDate: string }[]>([]);
+
+const createForm = reactive<SalaryCreateForm>({
+  employeeId: null,
+  budgetBusinessAccount: null,
+  budgetExpectedFundingUntil: "",
+  increaseAmount: null,
+  currentSalaryAmount: null,
+  previousSalaryIncreaseDate: "",
+  previousSalaryIncreaseText: null,
+  plannedSalaryAmount: null,
+  assessmentId: null,
+  reason: "",
+  comment: null,
+});
+
+const createNewTitle = computed(() =>
+  filter.type === 1 ? t("Создание запроса на индексацию ЗП") : t("Создание запроса на бонус"),
+);
+
+const requiredRule = (value: unknown) => Boolean(value) || t("Обязательное поле");
+const requiredNumberRule = (value: unknown) =>
+  (value != null && value !== "" && !Number.isNaN(Number(value))) || t("Обязательное числовое поле");
+const requiredReasonRule = (value: string) =>
+  (Boolean(value?.trim()) && value.length <= 256) || t("Обязательное поле. Не более N символов", { n: 256 });
+const maxCommentRule = (value: string | null) =>
+  (!value || value.length <= 4096) || t("Не более N символов", { n: 4096 });
+const plannedSalaryRule = () =>
+  validateIncreaseAndSalary() || t("Запланированная заработная плата должна совпадать с суммой текущей и изменением");
+
+watch(
+  () => createForm.employeeId,
+  async (employeeId) => {
+    if (!employeeId) {
+      employeeAssessments.value = [];
+      return;
+    }
+
+    const employee = employees.value.find((item) => item.id === employeeId);
+    if (!employee) {
+      return;
+    }
+
+    createForm.budgetBusinessAccount = employee.ba?.id ?? null;
+    createForm.increaseAmount = null;
+    createForm.plannedSalaryAmount = null;
+    createForm.currentSalaryAmount = null;
+    createForm.reason = "";
+    createForm.comment = null;
+    createForm.assessmentId = null;
+    createForm.budgetExpectedFundingUntil = "";
+
+    try {
+      const assessments = await fetchEmployeeAssessments(employee.id);
+      employeeAssessments.value = assessments
+        .filter((item) => !item.canceledAt)
+        .map((item) => ({
+          id: item.id,
+          plannedDate: item.plannedDate ?? "",
+        }));
+    } catch {
+      employeeAssessments.value = [];
+    }
+
+    if (employee.currentProject?.id) {
+      try {
+        const project = await fetchProjectInfo(employee.currentProject.id);
+        createForm.budgetExpectedFundingUntil = project.endDate ?? project.planEndDate ?? "";
+      } catch {
+        createForm.budgetExpectedFundingUntil = "";
+      }
+    }
+  },
+);
+
 function formatMoney(value: number | null | undefined): string {
   if (value == null) {
     return "";
   }
-  return Number(value).toLocaleString();
+  return Number(value).toLocaleString("ru-RU");
 }
 
 function orderedApprovals(approvals: SalaryRequestApproval[]): SalaryRequestApproval[] {
@@ -279,9 +511,7 @@ function approvalIcon(state: SalaryApprovalState): { icon: string; color: string
 }
 
 function rowProps() {
-  return {
-    class: "cursor-pointer",
-  };
+  return { class: "cursor-pointer" };
 }
 
 function onRowClick(_event: Event, payload: unknown): void {
@@ -296,5 +526,119 @@ function onRowClick(_event: Event, payload: unknown): void {
       requestId: String(row.id),
     },
   }).catch(() => undefined);
+}
+
+async function openCreateDialog(): Promise<void> {
+  if (!canCreateSalaryRequest.value) {
+    return;
+  }
+
+  if (employees.value.length === 0) {
+    createLoading.value = true;
+    createError.value = "";
+    try {
+      employees.value = await listEmployees();
+    } catch (err: unknown) {
+      createError.value = errorUtils.shortMessage(err);
+      createLoading.value = false;
+      return;
+    } finally {
+      createLoading.value = false;
+    }
+  }
+
+  resetCreateForm();
+  createDialog.value = true;
+}
+
+function openPeriodToggleDialog(): void {
+  periodToggleDialog.value = true;
+}
+
+async function confirmPeriodToggle(): Promise<void> {
+  periodToggleDialog.value = false;
+  if (periodClosed.value) {
+    await reopenPeriod();
+    return;
+  }
+  await closePeriod();
+}
+
+function closeCreateDialog(): void {
+  createDialog.value = false;
+  createError.value = "";
+  createFormRef.value?.resetValidation();
+}
+
+function resetCreateForm(): void {
+  createForm.employeeId = null;
+  createForm.budgetBusinessAccount = null;
+  createForm.budgetExpectedFundingUntil = "";
+  createForm.increaseAmount = null;
+  createForm.currentSalaryAmount = null;
+  createForm.previousSalaryIncreaseDate = "";
+  createForm.previousSalaryIncreaseText = null;
+  createForm.plannedSalaryAmount = null;
+  createForm.assessmentId = null;
+  createForm.reason = "";
+  createForm.comment = null;
+  employeeAssessments.value = [];
+}
+
+function validateIncreaseAndSalary(): boolean {
+  if (filter.type !== 1) {
+    return true;
+  }
+  if (
+    createForm.currentSalaryAmount == null
+    || createForm.increaseAmount == null
+    || createForm.plannedSalaryAmount == null
+  ) {
+    return true;
+  }
+  return Number(createForm.plannedSalaryAmount)
+    === Number(createForm.currentSalaryAmount) + Number(createForm.increaseAmount);
+}
+
+async function submitCreate(): Promise<void> {
+  if (!createFormRef.value) {
+    return;
+  }
+
+  const validation = await createFormRef.value.validate();
+  if (!validation.valid || !validateIncreaseAndSalary()) {
+    return;
+  }
+
+  createLoading.value = true;
+  createError.value = "";
+  try {
+    const payload: SalaryRequestReportBody = {
+      employeeId: Number(createForm.employeeId),
+      type: filter.type,
+      budgetBusinessAccount: createForm.budgetBusinessAccount,
+      budgetExpectedFundingUntil: toNullableDate(createForm.budgetExpectedFundingUntil),
+      increaseAmount: createForm.increaseAmount,
+      currentSalaryAmount: filter.type === 1 ? createForm.currentSalaryAmount : null,
+      previousSalaryIncreaseDate: toNullableDate(createForm.previousSalaryIncreaseDate),
+      previousSalaryIncreaseText: createForm.previousSalaryIncreaseText,
+      plannedSalaryAmount: filter.type === 1 ? createForm.plannedSalaryAmount : null,
+      increaseStartPeriod: selectedPeriodId.value,
+      assessmentId: filter.type === 1 ? createForm.assessmentId : null,
+      reason: createForm.reason.trim(),
+      comment: createForm.comment,
+    };
+    await reportSalaryRequest(payload);
+    closeCreateDialog();
+    await fetchData();
+  } catch (err: unknown) {
+    createError.value = errorUtils.shortMessage(err);
+  } finally {
+    createLoading.value = false;
+  }
+}
+
+function toNullableDate(value: string): string | null {
+  return value ? value : null;
 }
 </script>

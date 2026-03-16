@@ -32,12 +32,24 @@ For a detailed checklist and mapping table, read `references/hreasy-migration-ch
 7. If implementation required to satisfy a UX request significantly increases code size or conceptual complexity, pause and align with the user before proceeding.
 8. When migrating Vuetify UI, prefer built-in Vuetify features/props/slots over custom CSS/JS overrides unless there is a documented blocker.
 9. Before migrating or adjusting layout/grid behavior, check official Vuetify Grid docs first (`https://vuetifyjs.com/en/components/grids/#usage`) and prefer `v-container`/`v-row`/`v-col` props (`auto`, breakpoint columns, alignment) over custom CSS-based layout overrides.
+10. Detail pages must be visually standardized across domains; when legacy pages differ, migrate behavior but align to one shared Vue 3 detail-page layout pattern.
+11. On Windows, preserve UTF-8 encoding for all migrated files (prefer no BOM); avoid PowerShell 5.1 implicit-encoding write commands (`Set-Content`, `Add-Content`, `Out-File`, `>`, `>>`) for source files.
 
 Table UI standard reference:
 
 - Source pattern: `legacy/vue2/src/components/salary/SalaryRequestsTable.vue` ("Raises and Bonuses").
 - Preserve table behavior parity (data, permissions, actions, filters logic), but align Vue 3 table layout/interaction patterns across modules (toolbar/actions/filters/loading/empty states).
 - Verify component capabilities in Vuetify docs before custom implementation: `https://vuetifyjs.com/en/components/`.
+
+Detail page UI standard reference:
+
+- Use a centered and width-limited detail container (target around `max-width: 1280-1360px`).
+- In the primary info card, keep a stable two-column layout:
+  - left: reusable employee/profile summary block with natural/fixed width.
+  - right: business/domain details filling remaining width.
+- Keep card sequence consistent across migrated modules: primary info -> action cards -> history/relations.
+- Prefer extracting a shared detail layout wrapper in `src/components/shared` when 2+ modules follow this pattern.
+- Treat current mentorship detail page proportions as the baseline visual rhythm for future detail pages.
 
 When asking the user, present explicit options and tradeoffs:
 
@@ -140,6 +152,8 @@ If full as-is parity is not feasible in current scope:
   5. Admin modules
 - Keep comments/doc comments in English.
 - Prefer `@/` imports.
+- For scripted writes on Windows, enforce UTF-8 explicitly:
+  - `[System.IO.File]::WriteAllText($path, $text, [System.Text.UTF8Encoding]::new($false))`
 
 ## Output Format for Migration Tasks
 

@@ -33,6 +33,14 @@
 - Add explicit types for public APIs, unions, generics, and complex return values.
 - Prefer Composition API patterns (`composables`, `script setup`) for Vue 3 code.
 
+## Text Encoding (Windows)
+- Keep source and markdown files in `UTF-8` (prefer no BOM).
+- In Windows PowerShell 5.1, do not use `Set-Content`, `Add-Content`, `Out-File`, `>` or `>>` for source file writes because defaults may produce UTF-16 LE or mixed encodings.
+- For scripted writes, use explicit UTF-8 no BOM:
+  - `[System.IO.File]::WriteAllText($path, $text, [System.Text.UTF8Encoding]::new($false))`
+- If a file was scripted or rewritten, normalize encoding to UTF-8 before `type-check`/`lint`.
+- Before commit, run an encoding sanity check on changed files.
+
 ## UI Stack & Libraries (Vue 3)
 - UI: Vuetify 3 (`src/plugins/vuetify.ts`), icons from `@mdi/font`.
 - Routing/State: `vue-router@4`, `pinia`.

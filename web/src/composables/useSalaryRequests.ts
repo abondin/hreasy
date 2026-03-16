@@ -27,7 +27,7 @@ interface SalaryFilter {
 }
 
 /**
- * Salary requests state and business filtering for list page migration.
+ * Salary requests list data with shared filters and period controls.
  */
 export function useSalaryRequests(t: ComposerTranslation) {
   const permissions = usePermissions();
@@ -53,52 +53,53 @@ export function useSalaryRequests(t: ComposerTranslation) {
   const canViewSalaryRequests = computed(
     () => canReportSalaryRequest.value || canAdminSalaryRequests.value,
   );
-
   const periodClosed = computed(() => closedPeriods.value.includes(selectedPeriodId.value));
+  const canCreateSalaryRequest = computed(
+    () => canReportSalaryRequest.value && !periodClosed.value,
+  );
 
   const headers = computed(() => {
     const wrapped = (title: string, key: string, width: string) => ({
       title,
       key,
       width,
-      headerProps: {
-        class: "text-wrap",
-      },
+      headerProps: { class: "text-wrap" },
     });
 
     const requestSpecificHeaders = filter.type === 1
       ? [
-        wrapped(t("Предполагаемое изменение на"), "req.increaseAmount", "110px"),
+        wrapped(t("Предполагаемое изменение на"), "req.increaseAmount", "120px"),
         wrapped(
           t("Предполагаемая заработная плата после повышения"),
           "req.plannedSalaryAmount",
-          "130px",
+          "160px",
         ),
       ]
-      : [wrapped(t("Предполагаемая сумма бонуса"), "req.increaseAmount", "120px")];
+      : [wrapped(t("Предполагаемая сумма бонуса"), "req.increaseAmount", "140px")];
 
     const resultSpecificHeaders = filter.type === 1
       ? [
-        wrapped(t("Итоговое изменение на"), "impl.increaseAmount", "110px"),
-        wrapped(t("Итоговая сумма"), "impl.salaryAmount", "120px"),
-        wrapped(t("Сообщение об изменениях"), "impl.increaseText", "180px"),
+        wrapped(t("Итоговое изменение на"), "impl.increaseAmount", "120px"),
+        wrapped(t("Итоговая сумма"), "impl.salaryAmount", "140px"),
+        wrapped(t("Сообщение об изменениях"), "impl.increaseText", "220px"),
       ]
-      : [wrapped(t("Итоговая сумма бонуса"), "impl.increaseAmount", "120px")];
+      : [wrapped(t("Итоговая сумма бонуса"), "impl.increaseAmount", "140px")];
 
     return [
       wrapped(t("Сотрудник"), "employee.name", "320px"),
       ...requestSpecificHeaders,
       wrapped(t("Решение"), "impl.state", "120px"),
       ...resultSpecificHeaders,
-      wrapped(t("Бюджет из бизнес аккаунта"), "budgetBusinessAccount.name", "220px"),
+      wrapped(t("Бюджет из бизнес аккаунта"), "budgetBusinessAccount.name", "240px"),
       wrapped(t("Инициатор"), "createdBy.name", "240px"),
-      wrapped(t("Согласования"), "approvals", "120px"),
+      wrapped(t("Согласования"), "approvals", "140px"),
       wrapped(t("Создано (время)"), "createdAt", "180px"),
     ];
   });
 
   const filteredItems = computed(() => {
     const search = filter.search.toLowerCase().trim();
+
     return items.value.filter((item) => {
       if (item.type !== filter.type) {
         return false;
@@ -141,13 +142,11 @@ export function useSalaryRequests(t: ComposerTranslation) {
   });
 
   const increaseImplementedCount = computed(
-    () =>
-      items.value.filter((item) => item.type === 1 && Boolean(item.impl?.implementedAt)).length,
+    () => items.value.filter((item) => item.type === 1 && Boolean(item.impl?.implementedAt)).length,
   );
   const increaseTotalCount = computed(() => items.value.filter((item) => item.type === 1).length);
   const bonusImplementedCount = computed(
-    () =>
-      items.value.filter((item) => item.type === 2 && Boolean(item.impl?.implementedAt)).length,
+    () => items.value.filter((item) => item.type === 2 && Boolean(item.impl?.implementedAt)).length,
   );
   const bonusTotalCount = computed(() => items.value.filter((item) => item.type === 2).length);
 
@@ -260,6 +259,7 @@ export function useSalaryRequests(t: ComposerTranslation) {
     canViewSalaryRequests,
     canReportSalaryRequest,
     canAdminSalaryRequests,
+    canCreateSalaryRequest,
     increaseImplementedCount,
     increaseTotalCount,
     bonusImplementedCount,

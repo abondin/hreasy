@@ -11,6 +11,7 @@ import VacationsView from "@/views/vacations/VacationsView.vue";
 import OvertimesView from "@/views/overtimes/OvertimesView.vue";
 import SalaryRequestsView from "@/views/salary/SalaryRequestsView.vue";
 import SalaryRequestDetailsView from "@/views/salary/SalaryRequestDetailsView.vue";
+import SalaryLatestRequestsView from "@/views/salary/SalaryLatestRequestsView.vue";
 import MentorshipView from "@/views/mentorship/MentorshipView.vue";
 import MentorshipDetailsView from "@/views/mentorship/MentorshipDetailsView.vue";
 import AdminEmployeesTabsView from "@/views/admin/employees/AdminEmployeesTabsView.vue";
@@ -31,6 +32,7 @@ const router = createRouter({
     { path: "/vacations", name: "vacations", component: VacationsView, meta: { requiresAuth: true } },
     { path: "/overtimes", name: "overtimes", component: OvertimesView, meta: { requiresAuth: true } },
     { path: "/salaries/requests", name: "salary-requests", component: SalaryRequestsView, meta: { requiresAuth: true } },
+    { path: "/salaries/latest", name: "salary-latest", component: SalaryLatestRequestsView, meta: { requiresAuth: true } },
     {
       path: "/salaries/requests/:period/:requestId",
       name: "salary-request-details",
@@ -93,6 +95,10 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
     && !permissions.canReportSalaryRequest()
     && !permissions.canAdminSalaryRequests()
   ) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "salary-latest" && !permissions.canAdminSalaryRequests()) {
     return { name: "profile-main" };
   }
 

@@ -13,6 +13,23 @@
           <v-list-item-title>{{ item.label }}</v-list-item-title>
         </v-list-item>
 
+        <v-list-group v-if="salaryNavigationItems.length" value="salary-navigation-group">
+          <template #activator="{ props }">
+            <v-list-item v-bind="props" prepend-icon="mdi-currency-rub">
+              <v-list-item-title>{{ t("Повышения") }}</v-list-item-title>
+            </v-list-item>
+          </template>
+          <v-list-item
+            v-for="item in salaryNavigationItems"
+            :key="item.key"
+            :to="item.to"
+            link
+            @click="drawer = false"
+          >
+            <v-list-item-title>{{ item.label }}</v-list-item-title>
+          </v-list-item>
+        </v-list-group>
+
         <template v-if="adminNavigationItems.length">
           <v-divider class="my-2" />
           <v-list-subheader>{{ t("Админка") }}</v-list-subheader>
@@ -133,14 +150,6 @@ const mainNavigationItems = computed(() => {
         to: { name: "overtimes" },
       });
     }
-    if (permissions.canReportSalaryRequest()) {
-      items.push({
-        key: "salary-requests",
-        label: t("Повышения и бонусы"),
-        icon: "mdi-currency-rub",
-        to: { name: "salary-requests" },
-      });
-    }
     if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
       items.push({
         key: "mentorship",
@@ -160,6 +169,32 @@ const mainNavigationItems = computed(() => {
       to: { name: "login" },
     },
   ];
+});
+
+const salaryNavigationItems = computed(() => {
+  if (!isAuthenticated.value) {
+    return [];
+  }
+
+  const items = [];
+
+  if (permissions.canReportSalaryRequest()) {
+    items.push({
+      key: "salary-requests",
+      label: t("Повышения и бонусы"),
+      to: { name: "salary-requests" },
+    });
+  }
+
+  if (permissions.canAdminSalaryRequests()) {
+    items.push({
+      key: "salary-latest",
+      label: t("Последние повышения"),
+      to: { name: "salary-latest" },
+    });
+  }
+
+  return items;
 });
 
 const adminNavigationItems = computed(() => {
