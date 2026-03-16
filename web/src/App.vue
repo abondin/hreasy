@@ -150,6 +150,14 @@ const mainNavigationItems = computed(() => {
         to: { name: "overtimes" },
       });
     }
+    if (permissions.canCreateAssessments()) {
+      items.push({
+        key: "assessments",
+        label: t("Ассессменты"),
+        icon: "mdi-book-check-outline",
+        to: { name: "assessments" },
+      });
+    }
     if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
       items.push({
         key: "mentorship",

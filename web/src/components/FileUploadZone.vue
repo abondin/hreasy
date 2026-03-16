@@ -247,7 +247,7 @@ async function startUpload(file: File) {
   formData.append("file", file);
 
   try {
-    await http.post(props.postAction, formData, {
+    const requestConfig = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -262,7 +262,20 @@ async function startUpload(file: File) {
           (progressEvent.loaded / total) * 100,
         );
       },
-    });
+    };
+
+    if (isDirectUploadUrl(props.postAction)) {
+      await axios.post(props.postAction, formData, {
+        ...requestConfig,
+        withCredentials: true,
+        headers: {
+          ...http.defaults.headers.common,
+          ...requestConfig.headers,
+        },
+      });
+    } else {
+      await http.post(props.postAction, formData, requestConfig);
+    }
     uploadSuccess.value = true;
     currentFile.value = null;
   } catch (error) {
@@ -316,6 +329,10 @@ function resetState() {
   abortController.value?.abort();
   abortController.value = null;
   lastUploadedFileName.value = "";
+}
+
+function isDirectUploadUrl(url: string): boolean {
+  return url.startsWith("/") || /^(https?:)?\/\//.test(url);
 }
 </script>
 

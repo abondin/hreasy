@@ -9,6 +9,9 @@ import ProfileMainView from "@/views/profile/ProfileMainView.vue";
 import EmployeesView from "@/views/employees/EmployeesView.vue";
 import VacationsView from "@/views/vacations/VacationsView.vue";
 import OvertimesView from "@/views/overtimes/OvertimesView.vue";
+import AssessmentsView from "@/views/assessment/AssessmentsView.vue";
+import EmployeeAssessmentsView from "@/views/assessment/EmployeeAssessmentsView.vue";
+import AssessmentDetailsView from "@/views/assessment/AssessmentDetailsView.vue";
 import SalaryRequestsView from "@/views/salary/SalaryRequestsView.vue";
 import SalaryRequestDetailsView from "@/views/salary/SalaryRequestDetailsView.vue";
 import SalaryLatestRequestsView from "@/views/salary/SalaryLatestRequestsView.vue";
@@ -31,6 +34,19 @@ const router = createRouter({
     { path: "/employees", name: "employees", component: EmployeesView, meta: { requiresAuth: true } },
     { path: "/vacations", name: "vacations", component: VacationsView, meta: { requiresAuth: true } },
     { path: "/overtimes", name: "overtimes", component: OvertimesView, meta: { requiresAuth: true } },
+    { path: "/assessments", name: "assessments", component: AssessmentsView, meta: { requiresAuth: true } },
+    {
+      path: "/assessments/:employeeId",
+      name: "employee-assessments",
+      component: EmployeeAssessmentsView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/assessments/:employeeId/:assessmentId",
+      name: "assessment-details",
+      component: AssessmentDetailsView,
+      meta: { requiresAuth: true },
+    },
     { path: "/salaries/requests", name: "salary-requests", component: SalaryRequestsView, meta: { requiresAuth: true } },
     { path: "/salaries/latest", name: "salary-latest", component: SalaryLatestRequestsView, meta: { requiresAuth: true } },
     {
@@ -88,6 +104,13 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
       redirect.query = { returnPath: to.fullPath };
     }
     return redirect;
+  }
+
+  if (
+    (to.name === "assessments" || to.name === "employee-assessments" || to.name === "assessment-details")
+    && !permissions.canCreateAssessments()
+  ) {
+    return { name: "profile-main" };
   }
 
   if (
