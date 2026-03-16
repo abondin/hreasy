@@ -28,31 +28,31 @@
               :disabled="loading"
               show-refresh
               :refresh-label="t('Обновить данные')"
-              :show-add="canCreateSalaryRequest"
-              :add-label="createNewTitle"
               @refresh="fetchData"
+            />
+            <table-toolbar-actions
+              :disabled="loading || !canCreateSalaryRequest"
+              :show-add="canReportSalaryRequest"
+              :add-label="createNewTitle"
               @add="openCreateDialog"
             />
-            <v-btn
-              icon="mdi-chevron-left"
-              variant="text"
+            <period-switcher-control
+              :label="selectedPeriod.toString()"
+              :is-current="isCurrentPeriod"
+              :go-current-label="t('Перейти к текущему')"
               :disabled="loading"
-              @click="decrementPeriod"
-              data-testid="salary-requests-period-prev"
+              prev-test-id="salary-requests-period-prev"
+              next-test-id="salary-requests-period-next"
+              label-test-id="salary-requests-period-label"
+              @prev="decrementPeriod"
+              @next="incrementPeriod"
+              @go-current="goToCurrentPeriod"
             />
-            <span data-testid="salary-requests-period-label">{{ selectedPeriod.toString() }}</span>
             <v-icon
               v-if="periodClosed"
               color="primary"
               icon="mdi-lock"
               :title="t('Период закрыт для внесения изменений')"
-            />
-            <v-btn
-              icon="mdi-chevron-right"
-              variant="text"
-              :disabled="loading"
-              @click="incrementPeriod"
-              data-testid="salary-requests-period-next"
             />
           </v-col>
           <v-col cols="12" md="4" class="d-flex justify-end ga-2">
@@ -347,7 +347,9 @@ import { extractDataTableRow } from "@/lib/data-table";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
+import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
 import { useSalaryRequests } from "@/composables/useSalaryRequests";
+import { ReportPeriod } from "@/services/overtime.service";
 import { listEmployees, type Employee } from "@/services/employee.service";
 import { fetchProjectInfo } from "@/services/projects.service";
 import { fetchEmployeeAssessments } from "@/services/assessment.service";
@@ -387,6 +389,7 @@ const {
   filteredItems,
   periodClosed,
   canViewSalaryRequests,
+  canReportSalaryRequest,
   canAdminSalaryRequests,
   canCreateSalaryRequest,
   increaseImplementedCount,
@@ -431,6 +434,7 @@ const createForm = reactive<SalaryCreateForm>({
 const createNewTitle = computed(() =>
   filter.type === 1 ? t("Создание запроса на индексацию ЗП") : t("Создание запроса на бонус"),
 );
+const isCurrentPeriod = computed(() => selectedPeriodId.value === ReportPeriod.currentPeriod().periodId());
 
 const requiredRule = (value: unknown) => Boolean(value) || t("Обязательное поле");
 const requiredNumberRule = (value: unknown) =>
@@ -562,6 +566,15 @@ async function confirmPeriodToggle(): Promise<void> {
     return;
   }
   await closePeriod();
+}
+
+async function goToCurrentPeriod(): Promise<void> {
+  const currentPeriodId = ReportPeriod.currentPeriod().periodId();
+  if (selectedPeriodId.value === currentPeriodId) {
+    return;
+  }
+  selectedPeriodId.value = currentPeriodId;
+  await fetchData();
 }
 
 function closeCreateDialog(): void {

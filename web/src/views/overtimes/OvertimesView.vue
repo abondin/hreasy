@@ -19,15 +19,23 @@
               :refresh-label="t('Обновить данные')"
               @refresh="fetchData"
             />
-            <v-btn icon="mdi-chevron-left" variant="text" :disabled="loading" @click="decrementPeriod" />
-            <span data-testid="overtimes-period-label">{{ selectedPeriod.toString() }}</span>
+            <period-switcher-control
+              :label="selectedPeriod.toString()"
+              :is-current="isCurrentPeriod"
+              :go-current-label="t('Перейти к текущему')"
+              :disabled="loading"
+              label-test-id="overtimes-period-label"
+              next-test-id="overtimes-next-period"
+              @prev="decrementPeriod"
+              @next="incrementPeriod"
+              @go-current="goToCurrentPeriod"
+            />
             <v-icon
               v-if="periodClosed"
               color="primary"
               icon="mdi-lock"
               :title="t('Период закрыт для внесения изменений')"
             />
-            <v-btn icon="mdi-chevron-right" variant="text" :disabled="loading" @click="incrementPeriod" data-testid="overtimes-next-period" />
           </v-col>
           <v-col cols="12" md="4" class="d-flex justify-end ga-2">
             <table-toolbar-actions
@@ -189,11 +197,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import EmployeeOvertimeCard from "@/components/overtimes/EmployeeOvertimeCard.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { useOvertimesSummary } from "@/composables/useOvertimesSummary";
+import { ReportPeriod } from "@/services/overtime.service";
 
 const { t } = useI18n();
 const {
@@ -223,6 +234,17 @@ const {
   closePeriod,
   reopenPeriod,
 } = useOvertimesSummary(t);
+
+const isCurrentPeriod = computed(() => selectedPeriodId.value === ReportPeriod.currentPeriod().periodId());
+
+async function goToCurrentPeriod(): Promise<void> {
+  const currentPeriodId = ReportPeriod.currentPeriod().periodId();
+  if (selectedPeriodId.value === currentPeriodId) {
+    return;
+  }
+  selectedPeriodId.value = currentPeriodId;
+  await fetchData();
+}
 </script>
 
 <style scoped>

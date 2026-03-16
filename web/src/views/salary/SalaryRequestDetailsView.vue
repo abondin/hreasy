@@ -12,6 +12,7 @@
         <v-card class="mt-4">
           <v-card-title class="d-flex flex-wrap align-center ga-2">
             <span>{{ request.type === 1 ? t("Запрос на повышение") : t("Запрос на бонус") }}</span>
+            <span class="text-subtitle-1">(+{{ formatMoneyCompact(request.req.increaseAmount) }})</span>
             <v-chip size="small" :color="request.impl?.state === 2 ? 'error' : request.impl ? 'success' : 'default'" variant="tonal">
               {{ request.impl?.state ? t(`SALARY_REQUEST_STAT.${request.impl.state}`) : t("На рассмотрении") }}
             </v-chip>
@@ -163,7 +164,16 @@
           </v-card-title>
           <v-card-text>
             <v-alert v-if="historyError" type="error" variant="tonal" class="mb-3">{{ historyError }}</v-alert>
-            <v-data-table :headers="historyHeaders" :items="filteredHistoryItems" :loading="historyLoading" :items-per-page="-1" density="compact">
+            <HREasyTableBase
+              :headers="historyHeaders"
+              :items="filteredHistoryItems"
+              :loading="historyLoading"
+              :loading-text="t('Загрузка_данных')"
+              :no-data-text="t('Отсутствуют данные')"
+              density="compact"
+              table-class="text-truncate"
+              data-testid="salary-request-history-table"
+            >
               <template #[`item.req.increaseStartPeriod`]="{ item }">
                 <router-link v-if="item.id !== request.id" :to="{ name: 'salary-request-details', params: { period: String(item.req.increaseStartPeriod), requestId: String(item.id) } }">
                   {{ formatPeriod(item.req.increaseStartPeriod) }}
@@ -221,7 +231,7 @@
                 {{ formatMoney(item.impl?.increaseAmount) }}
                 <span v-if="item.impl?.salaryAmount"> / {{ formatMoney(item.impl.salaryAmount) }}</span>
               </template>
-            </v-data-table>
+            </HREasyTableBase>
           </v-card-text>
         </v-card>
       </template>
@@ -385,6 +395,7 @@ import { findEmployee, type Employee } from "@/services/employee.service";
 import { fetchPositions, type DictItem } from "@/services/dict.service";
 import { fetchEmployeeAssessments, type AssessmentBase } from "@/services/assessment.service";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
+import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import ProfileSummary from "@/views/profile/components/ProfileSummary.vue";
 import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
 import {
@@ -624,6 +635,13 @@ function formatMoney(value: number | null | undefined): string {
     return "";
   }
   return `${Number(value).toLocaleString("ru-RU")} руб.`;
+}
+
+function formatMoneyCompact(value: number | null | undefined): string {
+  if (value == null) {
+    return "";
+  }
+  return Number(value).toLocaleString("ru-RU");
 }
 
 function formatPeriod(period: number): string {
