@@ -50,7 +50,7 @@
         :no-data-text="t('Отсутствуют данные')"
         :headers="headers"
         :items="filteredVacations"
-        height="420"
+        height="240"
         fixed-header
         :sort-by="[
           { key: 'startDate', order: 'asc' },

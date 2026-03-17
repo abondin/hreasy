@@ -10,6 +10,11 @@
         class="mt-4"
       >
         {{ t("Недостаточно прав для просмотра детальной информации по ассессменту") }}
+        <div class="mt-2">
+          <router-link :to="{ name: 'employee-assessments', params: { employeeId: String(employeeId) } }">
+            {{ t("Вернуться к карточке сотрудника") }}
+          </router-link>
+        </div>
       </v-alert>
 
       <template v-else-if="assessment">

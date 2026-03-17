@@ -3,15 +3,20 @@
     <v-card-title class="d-flex align-center flex-wrap ga-2">
       <div>{{ t("Овертаймы") }}</div>
       <template v-if="props.changePeriodAllowed">
-        <v-btn size="small" icon="mdi-chevron-left" variant="text" @click="decrementPeriod" />
-        <span>{{ selectedPeriod.toString() }}</span>
+        <period-switcher-control
+          :label="selectedPeriodLabel"
+          :is-current="isCurrentPeriod"
+          :disabled="loading"
+          @prev="decrementPeriod"
+          @next="incrementPeriod"
+          @go-current="goToCurrentPeriod"
+        />
         <v-icon
           v-if="isPeriodClosed"
           color="primary"
           icon="mdi-lock"
           :title="t('Период закрыт для внесения изменений')"
         />
-        <v-btn size="small" icon="mdi-chevron-right" variant="text" @click="incrementPeriod" />
       </template>
       <v-spacer />
       <span>
@@ -51,7 +56,7 @@
     <HREasyTableBase
       :headers="headers"
       :items="items"
-      height="420"
+      height="240"
       fixed-header
       :loading="loading"
       :loading-text="t('Загрузка_данных')"
@@ -119,6 +124,7 @@ import AddOvertimeItemDialog from "@/components/overtimes/AddOvertimeItemDialog.
 import ApproveOvertimeReportDialog from "@/components/overtimes/ApproveOvertimeReportDialog.vue";
 import OvertimeApprovalChip from "@/components/overtimes/OvertimeApprovalChip.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -149,6 +155,9 @@ const itemToDelete = ref<OvertimeItem | null>(null);
 
 const selectedPeriodId = ref(props.fixedPeriodId ?? ReportPeriod.currentPeriod().periodId());
 const selectedPeriod = computed(() => ReportPeriod.fromPeriodId(selectedPeriodId.value));
+const currentPeriodId = ReportPeriod.currentPeriod().periodId();
+const selectedPeriodLabel = computed(() => selectedPeriod.value.toString());
+const isCurrentPeriod = computed(() => selectedPeriodId.value === currentPeriodId);
 
 const allProjects = ref<SimpleDict[]>([]);
 const internalClosedPeriods = ref<ClosedOvertimePeriod[]>([]);
@@ -285,6 +294,10 @@ function incrementPeriod(): void {
 
 function decrementPeriod(): void {
   shiftPeriod(-1);
+}
+
+function goToCurrentPeriod(): void {
+  selectedPeriodId.value = currentPeriodId;
 }
 
 function projectName(projectId?: number): string {

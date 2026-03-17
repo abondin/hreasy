@@ -3,7 +3,20 @@
     <v-navigation-drawer v-model="drawer" temporary class="app-navigation">
       <v-list density="comfortable" nav>
         <v-list-item
-          v-for="item in mainNavigationItems"
+          v-for="item in profileNavigationItems"
+          :key="item.key"
+          :prepend-icon="item.icon"
+          :to="item.to"
+          link
+          @click="drawer = false"
+        >
+          <v-list-item-title>{{ item.label }}</v-list-item-title>
+        </v-list-item>
+
+        <v-divider v-if="isAuthenticated" class="my-2" />
+
+        <v-list-item
+          v-for="item in primaryNavigationItems"
           :key="item.key"
           :prepend-icon="item.icon"
           :to="item.to"
@@ -30,23 +43,35 @@
           </v-list-item>
         </v-list-group>
 
-        <template v-if="adminNavigationItems.length">
-          <v-divider class="my-2" />
-          <v-list-subheader>{{ t("Админка") }}</v-list-subheader>
+        <v-list-item
+          v-for="item in postSalaryNavigationItems"
+          :key="item.key"
+          :prepend-icon="item.icon"
+          :to="item.to"
+          link
+          @click="drawer = false"
+        >
+          <v-list-item-title>{{ item.label }}</v-list-item-title>
+        </v-list-item>
+
+        <v-list-group v-if="adminNavigationItems.length" value="admin-navigation-group">
+          <template #activator="{ props }">
+            <v-list-item v-bind="props" prepend-icon="mdi-cogs">
+              <v-list-item-title>{{ t("Админка") }}</v-list-item-title>
+            </v-list-item>
+          </template>
           <v-list-item
             v-for="item in adminNavigationItems"
             :key="item.key"
-            :prepend-icon="item.icon"
             :to="item.to"
             link
             @click="drawer = false"
           >
             <v-list-item-title>{{ item.label }}</v-list-item-title>
           </v-list-item>
-        </template>
+        </v-list-group>
 
         <v-divider v-if="isAuthenticated" class="my-2" />
-
         <v-list-item
           v-if="isAuthenticated"
           prepend-icon="mdi-logout"
@@ -118,55 +143,16 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
 const drawer = ref(false);
 const currentYear = new Date().getFullYear();
 
-const mainNavigationItems = computed(() => {
+const profileNavigationItems = computed(() => {
   if (isAuthenticated.value) {
-    const items = [
+    return [
       {
         key: "profile-main",
         label: t("Профиль"),
         icon: "mdi-account",
         to: { name: "profile-main" },
       },
-      {
-        key: "employees",
-        label: t("Сотрудники"),
-        icon: "mdi-account-group",
-        to: { name: "employees" },
-      },
     ];
-    if (permissions.canViewAllVacations()) {
-      items.push({
-        key: "vacations",
-        label: t("Отпуска"),
-        icon: "mdi-calendar-range",
-        to: { name: "vacations" },
-      });
-    }
-    if (permissions.canViewAllOvertimes()) {
-      items.push({
-        key: "overtimes",
-        label: t("Овертаймы"),
-        icon: "mdi-briefcase-clock",
-        to: { name: "overtimes" },
-      });
-    }
-    if (permissions.canCreateAssessments()) {
-      items.push({
-        key: "assessments",
-        label: t("Ассессменты"),
-        icon: "mdi-book-check-outline",
-        to: { name: "assessments" },
-      });
-    }
-    if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
-      items.push({
-        key: "mentorship",
-        label: t("Менторство"),
-        icon: "mdi-account-school",
-        to: { name: "mentorship" },
-      });
-    }
-    return items;
   }
 
   return [
@@ -177,6 +163,50 @@ const mainNavigationItems = computed(() => {
       to: { name: "login" },
     },
   ];
+});
+
+const primaryNavigationItems = computed(() => {
+  if (!isAuthenticated.value) {
+    return [];
+  }
+
+  const items = [
+    {
+      key: "employees",
+      label: t("Сотрудники"),
+      icon: "mdi-account-group",
+      to: { name: "employees" },
+    },
+  ];
+
+  if (permissions.canViewAllOvertimes()) {
+    items.push({
+      key: "overtimes",
+      label: t("Овертаймы"),
+      icon: "mdi-briefcase-clock",
+      to: { name: "overtimes" },
+    });
+  }
+
+  if (permissions.canViewAllVacations()) {
+    items.push({
+      key: "vacations",
+      label: t("Отпуска"),
+      icon: "mdi-calendar-range",
+      to: { name: "vacations" },
+    });
+  }
+
+  if (permissions.canCreateAssessments()) {
+    items.push({
+      key: "assessments",
+      label: t("Ассессменты"),
+      icon: "mdi-book-check-outline",
+      to: { name: "assessments" },
+    });
+  }
+
+  return items;
 });
 
 const salaryNavigationItems = computed(() => {
@@ -205,6 +235,25 @@ const salaryNavigationItems = computed(() => {
   return items;
 });
 
+const postSalaryNavigationItems = computed(() => {
+  if (!isAuthenticated.value) {
+    return [];
+  }
+
+  const items = [];
+
+  if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
+    items.push({
+      key: "mentorship",
+      label: t("Менторство"),
+      icon: "mdi-account-school",
+      to: { name: "mentorship" },
+    });
+  }
+
+  return items;
+});
+
 const adminNavigationItems = computed(() => {
   if (!isAuthenticated.value) {
     return [];
@@ -218,6 +267,22 @@ const adminNavigationItems = computed(() => {
       label: t("Админка сотрудников"),
       icon: "mdi-account-cog",
       to: { name: "admin-employees-list" },
+    });
+  }
+
+  if (
+    permissions.canAdminDictOrganizations()
+    || permissions.canAdminDictDepartments()
+    || permissions.canAdminDictPositions()
+    || permissions.canAdminDictLevels()
+    || permissions.canAdminDictOffices()
+    || permissions.canAdminDictOfficeLocations()
+  ) {
+    items.push({
+      key: "admin-dicts",
+      label: t("Справочники"),
+      icon: "mdi-book-open-variant",
+      to: "/admin/dicts",
     });
   }
 

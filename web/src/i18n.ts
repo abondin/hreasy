@@ -22,7 +22,7 @@ Object.entries(localeModules).forEach(([path, module]) => {
 const i18n = createI18n({
   legacy: false,
   locale: "ru",
-  fallbackLocale: "en",
+  fallbackLocale: "ru",
   globalInjection: true,
   messages,
   pluralRules: {

@@ -22,14 +22,54 @@ import AdminEmployeesListView from "@/views/admin/employees/AdminEmployeesListVi
 import AdminEmployeeKidsView from "@/views/admin/employees/AdminEmployeeKidsView.vue";
 import AdminEmployeesImportView from "@/views/admin/employees/AdminEmployeesImportView.vue";
 import AdminEmployeeKidsImportView from "@/views/admin/employees/AdminEmployeeKidsImportView.vue";
+import AdminDictsTabsView from "@/views/admin/dicts/AdminDictsTabsView.vue";
+import AdminDictOrganizationsView from "@/views/admin/dicts/AdminDictOrganizationsView.vue";
+import AdminDictDepartmentsView from "@/views/admin/dicts/AdminDictDepartmentsView.vue";
+import AdminDictPositionsView from "@/views/admin/dicts/AdminDictPositionsView.vue";
+import AdminDictLevelsView from "@/views/admin/dicts/AdminDictLevelsView.vue";
+import AdminDictOfficesView from "@/views/admin/dicts/AdminDictOfficesView.vue";
+import AdminDictOfficeLocationsView from "@/views/admin/dicts/AdminDictOfficeLocationsView.vue";
+import AdminDictOfficeMapsView from "@/views/admin/dicts/AdminDictOfficeMapsView.vue";
+import TelegramConfirmationView from "@/views/TelegramConfirmationView.vue";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/lib/permissions";
+
+function resolveAdminDictsDefaultRoute() {
+  const permissions = usePermissions();
+
+  if (permissions.canAdminDictOrganizations()) {
+    return { name: "admin-dicts-organizations" };
+  }
+  if (permissions.canAdminDictDepartments()) {
+    return { name: "admin-dicts-departments" };
+  }
+  if (permissions.canAdminDictPositions()) {
+    return { name: "admin-dicts-positions" };
+  }
+  if (permissions.canAdminDictLevels()) {
+    return { name: "admin-dicts-levels" };
+  }
+  if (permissions.canAdminDictOffices()) {
+    return { name: "admin-dicts-offices" };
+  }
+  if (permissions.canAdminDictOfficeLocations()) {
+    return { name: "admin-dicts-office-locations" };
+  }
+
+  return { name: "profile-main" };
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: "/", redirect: { name: "profile-main" } },
     { path: "/login", name: "login", component: LoginView, meta: { requiresAuth: false } },
+    {
+      path: "/telegram/confirm/:employeeId/:telegramAccount/:confirmationCode",
+      name: "telegram-confirmation",
+      component: TelegramConfirmationView,
+      meta: { requiresAuth: false },
+    },
     { path: "/profile", name: "profile-main", component: ProfileMainView, meta: { requiresAuth: true } },
     { path: "/employees", name: "employees", component: EmployeesView, meta: { requiresAuth: true } },
     { path: "/vacations", name: "vacations", component: VacationsView, meta: { requiresAuth: true } },
@@ -72,6 +112,21 @@ const router = createRouter({
         { path: "kids", name: "admin-employees-kids", component: AdminEmployeeKidsView },
         { path: "import", name: "admin-employees-import", component: AdminEmployeesImportView },
         { path: "kids-import", name: "admin-employees-kids-import", component: AdminEmployeeKidsImportView },
+      ],
+    },
+    {
+      path: "/admin/dicts",
+      component: AdminDictsTabsView,
+      meta: { requiresAuth: true },
+      children: [
+        { path: "", redirect: () => resolveAdminDictsDefaultRoute() },
+        { path: "organizations", name: "admin-dicts-organizations", component: AdminDictOrganizationsView },
+        { path: "departments", name: "admin-dicts-departments", component: AdminDictDepartmentsView },
+        { path: "positions", name: "admin-dicts-positions", component: AdminDictPositionsView },
+        { path: "levels", name: "admin-dicts-levels", component: AdminDictLevelsView },
+        { path: "offices", name: "admin-dicts-offices", component: AdminDictOfficesView },
+        { path: "office_locations", name: "admin-dicts-office-locations", component: AdminDictOfficeLocationsView },
+        { path: "office_maps", name: "admin-dicts-office-maps", component: AdminDictOfficeMapsView },
       ],
     },
     { path: "/:pathMatch(.*)*", name: "not-found", component: NotFoundView, meta: { requiresAuth: false } },
@@ -138,6 +193,47 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
     && !permissions.canAdminEmployees()
   ) {
     return { name: "profile-main" };
+  }
+
+  if (
+    String(to.name ?? "").startsWith("admin-dicts")
+    && !(
+      permissions.canAdminDictOrganizations()
+      || permissions.canAdminDictDepartments()
+      || permissions.canAdminDictPositions()
+      || permissions.canAdminDictLevels()
+      || permissions.canAdminDictOffices()
+      || permissions.canAdminDictOfficeLocations()
+    )
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "admin-dicts-organizations" && !permissions.canAdminDictOrganizations()) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  if (to.name === "admin-dicts-departments" && !permissions.canAdminDictDepartments()) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  if (to.name === "admin-dicts-positions" && !permissions.canAdminDictPositions()) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  if (to.name === "admin-dicts-levels" && !permissions.canAdminDictLevels()) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  if (to.name === "admin-dicts-offices" && !permissions.canAdminDictOffices()) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  if (
+    (to.name === "admin-dicts-office-locations" || to.name === "admin-dicts-office-maps")
+    && !permissions.canAdminDictOfficeLocations()
+  ) {
+    return resolveAdminDictsDefaultRoute();
   }
 
   return true;

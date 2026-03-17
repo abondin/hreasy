@@ -1,9 +1,19 @@
 <template>
   <v-container fluid class="py-6" data-testid="employee-assessments-view">
     <div class="mx-auto" style="max-width: 1360px;">
-      <v-btn variant="text" prepend-icon="mdi-arrow-left" :to="{ name: 'assessments' }">
-        {{ t("Ассессменты") }}
-      </v-btn>
+      <v-breadcrumbs
+        class="px-0"
+        density="compact"
+        divider="/"
+        :items="breadcrumbs"
+      >
+        <template #item="{ item }">
+          <router-link v-if="item.to" :to="item.to" class="text-decoration-none">
+            {{ item.title }}
+          </router-link>
+          <span v-else>{{ item.title }}</span>
+        </template>
+      </v-breadcrumbs>
 
       <v-skeleton-loader v-if="loading" type="heading, paragraph, paragraph" class="mt-4" />
       <v-alert v-else-if="error" type="error" variant="tonal" class="mt-4">{{ error }}</v-alert>
@@ -95,9 +105,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter, type RouteLocationRaw } from "vue-router";
 import type { VForm } from "vuetify/components";
 import { formatDate, formatDateTime, formatIsoDate } from "@/lib/datetime";
 import { errorUtils } from "@/lib/errors";
@@ -142,6 +152,15 @@ const includeCanceledOptions = computed(() => [
   { title: t("Нет"), value: false },
   { title: t("Да"), value: true },
 ]);
+const breadcrumbs = computed<Array<{ title: string; to?: RouteLocationRaw }>>(() => [
+  {
+    title: t("Ассессменты"),
+    to: { name: "assessments" },
+  },
+  {
+    title: employee.value?.displayName ?? "-",
+  },
+]);
 
 const filteredItems = computed(() =>
   assessments.value.filter((item) => includeCanceled.value || !item.canceledAt),
@@ -149,9 +168,9 @@ const filteredItems = computed(() =>
 
 const requiredDateRule = (value: unknown) => Boolean(value) || t("Обязательное поле");
 
-onMounted(() => {
+watch(() => route.params.employeeId, () => {
   load().catch(() => undefined);
-});
+}, { immediate: true });
 
 async function load(): Promise<void> {
   const employeeId = Number(route.params.employeeId);

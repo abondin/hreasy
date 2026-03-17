@@ -1,28 +1,26 @@
 <template>
-  <v-container class="profile-view py-6" data-testid="profile-view">
+  <v-container fluid class="py-6" data-testid="profile-view">
     <v-skeleton-loader
       v-if="isLoading"
       type="card, list-item-two-line, actions"
-      class="mt-6"
+      class="mx-auto mt-6"
+      style="max-width: 1360px;"
     />
 
     <template v-else-if="employee">
-      <section data-testid="profile-summary-section">
-        <v-row dense>
-          <v-col cols="12">
-            <profile-summary-card
-              :employee="employee"
-              :read-only="false"
-              @avatar-updated="handleEmployeeUpdated"
-              @edit-telegram="openTelegramDialog"
-              @update-project="handleEmployeeUpdated"
-            />
-          </v-col>
-        </v-row>
-      </section>
+      <div class="mx-auto" style="max-width: 1360px;">
+        <section data-testid="profile-summary-section">
+          <profile-summary-card
+            :employee="employee"
+            :read-only="false"
+            @avatar-updated="handleEmployeeUpdated"
+            @edit-telegram="openTelegramDialog"
+            @update-project="handleEmployeeUpdated"
+          />
+        </section>
 
-      <section class="mt-6" data-testid="profile-secondary-section">
-        <v-row dense>
+        <section class="mt-5 profile-secondary-section" data-testid="profile-secondary-section">
+          <v-row align="stretch">
           <v-col cols="12">
             <employee-overtime-card
               v-if="canViewMyOvertimes && employee"
@@ -37,8 +35,8 @@
           <v-col cols="12">
             <my-vacations />
           </v-col>
-          <v-col cols="12" v-if="canViewSkills">
-            <v-card>
+            <v-col cols="12" v-if="canViewSkills">
+            <v-card class="h-100">
               <v-card-title class="d-flex align-center justify-space-between">
                 <span>{{ t("Навыки") }}</span>
               </v-card-title>
@@ -60,8 +58,8 @@
               </v-card-text>
             </v-card>
           </v-col>
-          <v-col cols="12">
-            <v-card>
+            <v-col cols="12">
+            <v-card class="h-100">
               <v-card-title class="d-flex align-center justify-space-between">
                 <span>{{ t("Квалификационные карточки") }}</span>
               </v-card-title>
@@ -76,24 +74,39 @@
               </v-card-text>
             </v-card>
           </v-col>
-        </v-row>
-      </section>
+          </v-row>
+        </section>
 
-      <profile-telegram-dialog
-        :open="telegramDialogOpen"
-        :employee-id="employee.id"
-        :display-name="employee.displayName"
-        :initial-telegram="employee.telegram"
-        :telegram-confirmed-at="employee.telegramConfirmedAt"
-        @close="telegramDialogOpen = false"
-        @updated="handleTelegramUpdated"
-      />
+        <profile-telegram-dialog
+          :open="telegramDialogOpen"
+          :employee-id="employee.id"
+          :display-name="employee.displayName"
+          :initial-telegram="employee.telegram"
+          :telegram-confirmed-at="employee.telegramConfirmedAt"
+          @close="telegramDialogOpen = false"
+          @updated="handleTelegramUpdated"
+        />
+      </div>
     </template>
 
-    <v-alert v-else-if="hasError" type="error" variant="tonal" border="start">
+    <v-alert
+      v-else-if="hasError"
+      type="error"
+      variant="tonal"
+      border="start"
+      class="mx-auto"
+      style="max-width: 1360px;"
+    >
       {{ t("Не_удалось_загрузить_профиль") }}
     </v-alert>
-    <v-alert v-else type="info" variant="tonal" border="start">
+    <v-alert
+      v-else
+      type="info"
+      variant="tonal"
+      border="start"
+      class="mx-auto"
+      style="max-width: 1360px;"
+    >
       {{ t("Профиль_недоступен") }}
     </v-alert>
   </v-container>
@@ -209,3 +222,17 @@ async function confirmDeleteSkill(skill: Skill) {
 
 function handleSkillDeleted() {}
 </script>
+
+<style scoped>
+.profile-secondary-section :deep(.v-card-title) {
+  padding: 18px 20px 10px;
+}
+
+.profile-secondary-section :deep(.v-card-text) {
+  padding: 0 20px 18px;
+}
+
+.profile-secondary-section :deep(.v-card > .v-card-title + .v-card-text) {
+  padding-top: 0;
+}
+</style>

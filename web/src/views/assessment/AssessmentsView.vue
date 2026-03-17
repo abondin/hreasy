@@ -11,6 +11,9 @@
     </v-alert>
 
     <v-card v-else data-testid="assessments-card">
+      <v-snackbar v-model="exportCompleted" timeout="5000">
+        {{ t("Экспорт успешно завершён. Файл скачен.") }}
+      </v-snackbar>
       <v-card-title>
         <v-row align="center" class="w-100">
           <v-col cols="12" md="8" class="d-flex align-center ga-2">
@@ -153,6 +156,7 @@ const permissions = usePermissions();
 
 const loading = ref(false);
 const error = ref("");
+const exportCompleted = ref(false);
 const items = ref<AssessmentEmployeeSummary[]>([]);
 const businessAccounts = ref<DictItem[]>([]);
 const projects = ref<ProjectDictDto[]>([]);
@@ -234,6 +238,7 @@ async function runExport(): Promise<void> {
   error.value = "";
   try {
     await exportAssessments();
+    exportCompleted.value = true;
   } catch (err: unknown) {
     error.value = errorUtils.shortMessage(err);
   } finally {
