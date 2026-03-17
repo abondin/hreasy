@@ -41,6 +41,19 @@
 - If a file was scripted or rewritten, normalize encoding to UTF-8 before `type-check`/`lint`.
 - Before commit, run an encoding sanity check on changed files.
 
+### Critical Encoding Rule
+- For any source or markdown file containing non-ASCII text, treat PowerShell content rewrites as unsafe by default.
+- Do not use PowerShell here-strings, regex replacements, pipeline-based text transforms, or intermediate shell variables to rewrite `.vue`, `.ts`, `.js`, `.json`, `.md`, or other source files with Cyrillic/non-ASCII text.
+- `apply_patch` is the default edit path for such files.
+- If `apply_patch` is not feasible, use a Unicode-safe writer and prefer ASCII-only scripted edits with `\\uXXXX` escapes for non-ASCII literals.
+- Do not trust PowerShell console output as proof that encoding is correct.
+- If you accidentally used an unsafe rewrite on a non-ASCII file, stop and repair the file encoding/content before any further edits.
+- After any scripted edit of a non-ASCII file, explicitly verify:
+  - file encoding is UTF-8 (no BOM preferred)
+  - there is no UTF-16 LE/BOM regression
+  - there are no replacement characters, question marks, or mojibake sequences in place of Cyrillic
+  - only then run `type-check`, `lint`, or tests
+
 ## UI Stack & Libraries (Vue 3)
 - UI: Vuetify 3 (`src/plugins/vuetify.ts`), icons from `@mdi/font`.
 - Routing/State: `vue-router@4`, `pinia`.

@@ -16,54 +16,10 @@
             @avatar-updated="handleEmployeeUpdated"
             @edit-telegram="openTelegramDialog"
             @update-project="handleEmployeeUpdated"
-          />
-        </section>
-
-        <section class="mt-5 profile-secondary-section" data-testid="profile-secondary-section">
-          <v-row align="stretch">
-          <v-col cols="12">
-            <employee-overtime-card
-              v-if="canViewMyOvertimes && employee"
-              :employee-id="employee.id"
-            />
-            <legacy-feature-card
-              v-else
-              :title="t('Овертаймы')"
-              :description="t('Раздел_пока_доступен_в_legacy')"
-            />
-          </v-col>
-          <v-col cols="12">
-            <my-vacations />
-          </v-col>
-            <v-col cols="12" v-if="canViewSkills">
-            <v-card class="h-100">
-              <v-card-title class="d-flex align-center justify-space-between">
-                <span>{{ t("Навыки") }}</span>
-              </v-card-title>
-              <v-card-text>
-                <employee-skills-section
-                  :grouped-skills="groupedSkills"
-                  :loading="skillsSectionLoading"
-                  :error="skillsSectionError"
-                  :can-edit="canEditSkills"
-                  :can-add="canAddSkills"
-                  :can-delete="canDeleteSkills"
-                  :can-rate="canRateSkills"
-                  :dense="true"
-                  :submit-skill="submitNewSkill"
-                  :rate-skill="handleRateSkill"
-                  :delete-skill="confirmDeleteSkill"
-                  @deleted="handleSkillDeleted"
-                />
-              </v-card-text>
-            </v-card>
-          </v-col>
-            <v-col cols="12">
-            <v-card class="h-100">
-              <v-card-title class="d-flex align-center justify-space-between">
-                <span>{{ t("Квалификационные карточки") }}</span>
-              </v-card-title>
-              <v-card-text>
+          >
+            <div class="profile-tech-profiles-block">
+              <div class="profile-summary__label mb-1">{{ t("Квалификационные карточки") }}:</div>
+              <div class="profile-summary-tech-profiles">
                 <profile-tech-profiles-card
                   :employee-id="employee.id"
                   :with-card="false"
@@ -71,9 +27,50 @@
                   :dense="true"
                   @updated="handleEmployeeUpdated"
                 />
-              </v-card-text>
-            </v-card>
-          </v-col>
+              </div>
+            </div>
+          </profile-summary-card>
+        </section>
+
+        <section class="mt-5 profile-secondary-section" data-testid="profile-secondary-section">
+          <v-row align="stretch">
+            <v-col cols="12">
+              <employee-overtime-card
+                v-if="canViewMyOvertimes && employee"
+                :employee-id="employee.id"
+              />
+              <legacy-feature-card
+                v-else
+                :title="t('Овертаймы')"
+                :description="t('Раздел_пока_доступен_в_legacy')"
+              />
+            </v-col>
+            <v-col cols="12">
+              <my-vacations />
+            </v-col>
+            <v-col cols="12" v-if="canViewSkills">
+              <v-card class="h-100">
+                <v-card-title class="d-flex align-center justify-space-between">
+                  <span>{{ t("Навыки") }}</span>
+                </v-card-title>
+                <v-card-text>
+                  <employee-skills-section
+                    :grouped-skills="groupedSkills"
+                    :loading="skillsSectionLoading"
+                    :error="skillsSectionError"
+                    :can-edit="canEditSkills"
+                    :can-add="canAddSkills"
+                    :can-delete="canDeleteSkills"
+                    :can-rate="canRateSkills"
+                    :dense="true"
+                    :submit-skill="submitNewSkill"
+                    :rate-skill="handleRateSkill"
+                    :delete-skill="confirmDeleteSkill"
+                    @deleted="handleSkillDeleted"
+                  />
+                </v-card-text>
+              </v-card>
+            </v-col>
           </v-row>
         </section>
 
@@ -224,6 +221,33 @@ function handleSkillDeleted() {}
 </script>
 
 <style scoped>
+.profile-summary-tech-profiles {
+  min-width: 0;
+}
+
+.profile-summary-tech-profiles :deep(.d-flex.flex-column.ga-4) {
+  gap: 0 !important;
+}
+
+.profile-summary-tech-profiles :deep(.d-flex.flex-wrap.align-center.ga-3) {
+  gap: 8px !important;
+}
+
+.profile-tech-profiles-block {
+  font-size: 0.92rem;
+  color: rgba(0, 0, 0, 0.72);
+}
+
+@media (min-width: 1280px) {
+  .profile-tech-profiles-block {
+    padding-top: 34px;
+  }
+}
+
+.profile-tech-profiles-block :deep(.v-btn) {
+  margin-top: 2px;
+}
+
 .profile-secondary-section :deep(.v-card-title) {
   padding: 18px 20px 10px;
 }

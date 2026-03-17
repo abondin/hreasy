@@ -25,6 +25,15 @@ Apply a reuse-first strategy: extend existing components, composables, stores, a
 11. Detail pages (route `.../:id` style pages) must follow one shared visual structure across modules; do not invent per-page layouts.
 12. On Windows, all edited files must remain UTF-8 (prefer no BOM); avoid PowerShell 5.1 write commands with implicit encoding (`Set-Content`, `Add-Content`, `Out-File`, `>`, `>>`) unless encoding is explicitly controlled.
 
+### Stop Rule: Non-ASCII File Safety
+
+- If a file contains Cyrillic or any non-ASCII text, do not use PowerShell regex/content rewrites, here-strings, pipeline-based text transforms, or intermediate shell variables to rewrite the file.
+- Use `apply_patch` by default for non-ASCII source/markdown files.
+- If a scripted edit is unavoidable, use a Unicode-safe writer and prefer ASCII-only literals with `\uXXXX` escapes for inserted non-ASCII text.
+- Do not trust console output as encoding verification.
+- If you already performed an unsafe rewrite on a non-ASCII file, stop and repair the file before continuing with feature work.
+- After any scripted edit of a non-ASCII file, run an explicit encoding sanity check before `type-check`/`lint`/tests.
+
 Table standardization note:
 
 - Use the Vue 2 "Raises and Bonuses" table (`legacy/vue2/src/components/salary/SalaryRequestsTable.vue`) as a structural reference for Vue 3 table UI.
