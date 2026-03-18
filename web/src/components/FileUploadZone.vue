@@ -103,6 +103,8 @@ import http from "@/lib/http";
 
 export interface UploadCompleteEvent {
   uploaded: boolean;
+  filename?: string;
+  responseData?: unknown;
 }
 
 type UploadErrorCode =
@@ -144,6 +146,7 @@ const uploadSuccess = ref(false);
 const dropCounter = ref(0);
 const abortController = ref<AbortController | null>(null);
 const lastUploadedFileName = ref("");
+const uploadResponseData = ref<unknown>(null);
 
 const dropActive = computed(() => dropCounter.value > 0);
 
@@ -265,7 +268,7 @@ async function startUpload(file: File) {
     };
 
     if (isDirectUploadUrl(props.postAction)) {
-      await axios.post(props.postAction, formData, {
+      const response = await axios.post(props.postAction, formData, {
         ...requestConfig,
         withCredentials: true,
         headers: {
@@ -273,8 +276,10 @@ async function startUpload(file: File) {
           ...requestConfig.headers,
         },
       });
+      uploadResponseData.value = response.data;
     } else {
-      await http.post(props.postAction, formData, requestConfig);
+      const response = await http.post(props.postAction, formData, requestConfig);
+      uploadResponseData.value = response.data;
     }
     uploadSuccess.value = true;
     currentFile.value = null;
@@ -314,7 +319,11 @@ function resolveErrorCode(e: unknown): UploadErrorCode {
 
 function closeUploader() {
   const uploaded = uploadSuccess.value;
-  emit("close", { uploaded });
+  emit("close", {
+    uploaded,
+    filename: uploaded ? lastUploadedFileName.value : undefined,
+    responseData: uploaded ? uploadResponseData.value : undefined,
+  });
   if (!uploading.value) {
     resetState();
   }
@@ -329,6 +338,7 @@ function resetState() {
   abortController.value?.abort();
   abortController.value = null;
   lastUploadedFileName.value = "";
+  uploadResponseData.value = null;
 }
 
 function isDirectUploadUrl(url: string): boolean {

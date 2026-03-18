@@ -1,48 +1,54 @@
 <template>
-  <div data-testid="admin-dict-office-maps-view">
+  <div class="mt-4" data-testid="admin-dict-office-maps-view">
     <v-card>
       <HREasyTableBase
+        table-class="admin-office-maps-table text-truncate"
         :headers="headers"
         :items="filteredItems"
+        height="70vh"
+        :fixed-header="true"
         density="compact"
         :loading="loading"
-        :loading-text="t('Загрузка_данных')"
-        :no-data-text="t('Отсутствуют данные')"
+        :loading-text="t('\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430_\u0434\u0430\u043D\u043D\u044B\u0445')"
+        :no-data-text="t('\u041E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044E\u0442 \u0434\u0430\u043D\u043D\u044B\u0435')"
         :hover="true"
         :sort-by="[{ key: 'mapName', order: 'asc' }]"
+        :row-props="rowProps"
         @click:row="onClickRow"
       >
         <template #filters>
           <v-card-title class="d-flex align-center ga-2 flex-wrap">
-            <span>{{ t("Карты офисов и кабинетов") }}</span>
+            <span>{{ t("\u041A\u0430\u0440\u0442\u044B \u043E\u0444\u0438\u0441\u043E\u0432 \u0438 \u043A\u0430\u0431\u0438\u043D\u0435\u0442\u043E\u0432") }}</span>
             <v-spacer />
-            <TableToolbarActions
+            <v-btn
+              data-testid="toolbar-refresh"
+              icon="mdi-refresh"
+              variant="text"
               :disabled="loading"
-              :show-refresh="true"
-              :refresh-label="t('Обновить данные')"
-              @refresh="load"
+              @click="load"
             />
             <v-tooltip location="bottom">
               <template #activator="{ props: tooltipProps }">
                 <v-btn
                   v-bind="tooltipProps"
                   icon="mdi-upload"
+                  data-testid="toolbar-add"
                   color="primary"
                   variant="text"
                   :disabled="loading"
                   @click="uploadDialog = true"
                 />
               </template>
-              <span>{{ t("Загрузить карту") }}</span>
+              <span>{{ t("\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u043A\u0430\u0440\u0442\u0443") }}</span>
             </v-tooltip>
           </v-card-title>
 
-          <v-card-text class="pt-0">
+          <v-card-text class="pb-0">
             <v-row dense>
               <v-col cols="12" md="6" lg="4">
                 <v-text-field
                   v-model="search"
-                  :label="t('Поиск')"
+                  :label="t('\u041F\u043E\u0438\u0441\u043A')"
                   append-inner-icon="mdi-magnify"
                   variant="outlined"
                   density="compact"
@@ -75,7 +81,7 @@
                   @click.stop="openDeleteDialog(item.mapName)"
                 />
               </template>
-              <span>{{ t("Удалить карту") }}</span>
+              <span>{{ t("\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u043A\u0430\u0440\u0442\u0443") }}</span>
             </v-tooltip>
           </div>
         </template>
@@ -84,7 +90,7 @@
 
     <v-dialog v-model="uploadDialog" max-width="720" persistent>
       <v-card>
-        <v-card-title>{{ t("Загрузить карту") }}</v-card-title>
+        <v-card-title>{{ t("\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \u043A\u0430\u0440\u0442\u0443") }}</v-card-title>
         <v-card-text>
           <FileUploadZone
             file-id="admin-office-map-upload"
@@ -98,13 +104,13 @@
 
     <ConfirmDeleteDialog
       :open="deleteDialog"
-      :title="t('Удалить карту офиса')"
-      :message="t('Вы уверены, что хотите удалить карту офиса?')"
+      :title="t('\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u043A\u0430\u0440\u0442\u0443 \u043E\u0444\u0438\u0441\u0430')"
+      :message="t('\u0412\u044B \u0443\u0432\u0435\u0440\u0435\u043D\u044B, \u0447\u0442\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u0443\u0434\u0430\u043B\u0438\u0442\u044C \u043A\u0430\u0440\u0442\u0443 \u043E\u0444\u0438\u0441\u0430?')"
       :item-label="deleteMapName"
       :loading="deleteLoading"
       :error-message="deleteError"
-      :confirm-label="t('Удалить')"
-      :cancel-label="t('Отменить')"
+      :confirm-label="t('\u0423\u0434\u0430\u043B\u0438\u0442\u044C')"
+      :cancel-label="t('\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C')"
       @close="closeDeleteDialog"
       @confirm="confirmDelete"
     />
@@ -121,7 +127,6 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
-import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
 import FileUploadZone, { type UploadCompleteEvent } from "@/components/FileUploadZone.vue";
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
@@ -150,7 +155,7 @@ const previewMapName = ref<string | null>(null);
 
 const uploadPath = getAdminOfficeMapUploadPath();
 const headers = computed(() => [
-  { title: t("Файл"), key: "mapName", width: "420px" },
+  { title: t("\u0424\u0430\u0439\u043B"), key: "mapName", width: "420px" },
 ]);
 const filteredItems = computed(() => {
   const query = search.value.trim().toLowerCase();
@@ -159,6 +164,10 @@ const filteredItems = computed(() => {
   }
   return items.value.filter((item) => item.mapName.toLowerCase().includes(query));
 });
+
+function rowProps() {
+  return { class: "cursor-pointer" };
+}
 
 async function load(): Promise<void> {
   loading.value = true;

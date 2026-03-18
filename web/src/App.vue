@@ -286,6 +286,51 @@ const adminNavigationItems = computed(() => {
     });
   }
 
+  if (permissions.canAdminProjects()) {
+    items.push({
+      key: "admin-projects",
+      label: t("Все проекты"),
+      icon: "mdi-briefcase-edit-outline",
+      to: { name: "admin-projects" },
+    });
+  }
+
+  if (permissions.canAdminBusinessAccounts()) {
+    items.push({
+      key: "admin-business-accounts",
+      label: t("Бизнес Аккаунты"),
+      icon: "mdi-domain",
+      to: { name: "admin-business-accounts" },
+    });
+  }
+
+  if (permissions.canAdminUsers()) {
+    items.push({
+      key: "admin-users",
+      label: t("Пользователи и роли"),
+      icon: "mdi-shield-account",
+      to: { name: "admin-users" },
+    });
+  }
+
+  if (permissions.canAdminArticles()) {
+    items.push({
+      key: "admin-articles",
+      label: t("Статьи и новости"),
+      icon: "mdi-newspaper-variant-outline",
+      to: { name: "admin-articles" },
+    });
+  }
+
+  if (permissions.canAdminManagers()) {
+    items.push({
+      key: "admin-managers",
+      label: t("Все менеджеры"),
+      icon: "mdi-account-tie",
+      to: { name: "admin-managers" },
+    });
+  }
+
   return items;
 });
 

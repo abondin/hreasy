@@ -30,6 +30,13 @@ import AdminDictLevelsView from "@/views/admin/dicts/AdminDictLevelsView.vue";
 import AdminDictOfficesView from "@/views/admin/dicts/AdminDictOfficesView.vue";
 import AdminDictOfficeLocationsView from "@/views/admin/dicts/AdminDictOfficeLocationsView.vue";
 import AdminDictOfficeMapsView from "@/views/admin/dicts/AdminDictOfficeMapsView.vue";
+import AdminBusinessAccountsView from "@/views/admin/business-accounts/AdminBusinessAccountsView.vue";
+import AdminBusinessAccountDetailsView from "@/views/admin/business-accounts/AdminBusinessAccountDetailsView.vue";
+import AdminManagersView from "@/views/admin/managers/AdminManagersView.vue";
+import AdminArticlesView from "@/views/admin/articles/AdminArticlesView.vue";
+import AdminUsersView from "@/views/admin/users/AdminUsersView.vue";
+import AdminProjectsView from "@/views/admin/projects/AdminProjectsView.vue";
+import AdminProjectDetailsView from "@/views/admin/projects/AdminProjectDetailsView.vue";
 import TelegramConfirmationView from "@/views/TelegramConfirmationView.vue";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/lib/permissions";
@@ -102,6 +109,23 @@ const router = createRouter({
       component: MentorshipDetailsView,
       meta: { requiresAuth: true },
     },
+    { path: "/admin/projects", name: "admin-projects", component: AdminProjectsView, meta: { requiresAuth: true } },
+    {
+      path: "/admin/projects/:projectId",
+      name: "admin-project-details",
+      component: AdminProjectDetailsView,
+      meta: { requiresAuth: true },
+    },
+    { path: "/admin/ba", name: "admin-business-accounts", component: AdminBusinessAccountsView, meta: { requiresAuth: true } },
+    {
+      path: "/admin/ba/:businessAccountId",
+      name: "admin-business-account-details",
+      component: AdminBusinessAccountDetailsView,
+      meta: { requiresAuth: true },
+    },
+    { path: "/admin/managers", name: "admin-managers", component: AdminManagersView, meta: { requiresAuth: true } },
+    { path: "/admin/articles", name: "admin-articles", component: AdminArticlesView, meta: { requiresAuth: true } },
+    { path: "/admin/users", name: "admin-users", component: AdminUsersView, meta: { requiresAuth: true } },
     {
       path: "/admin/employees",
       component: AdminEmployeesTabsView,
@@ -185,6 +209,32 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
     && !permissions.canAccessJuniorsRegistry()
     && !permissions.canAdminJuniorRegistry()
   ) {
+    return { name: "profile-main" };
+  }
+
+  if (
+    (to.name === "admin-projects" || to.name === "admin-project-details")
+    && !permissions.canAdminProjects()
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (
+    (to.name === "admin-business-accounts" || to.name === "admin-business-account-details")
+    && !permissions.canAdminBusinessAccounts()
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "admin-managers" && !permissions.canAdminManagers()) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "admin-users" && !permissions.canAdminUsers()) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "admin-articles" && !permissions.canAdminArticles()) {
     return { name: "profile-main" };
   }
 

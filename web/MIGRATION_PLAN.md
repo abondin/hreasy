@@ -1,6 +1,6 @@
 # Vue 3 Migration Tracker
 
-_Last updated: 2026-03-03_
+_Last updated: 2026-03-18_
 
 This document records the current technical baseline and the roadmap for migrating the HREasy web client from Vue 2 to Vue 3, together with related ecosystem upgrades. Keep it updated as work progresses so future sessions can resume from the latest state.
 
@@ -9,7 +9,7 @@ Repository layout update (2026-03-03):
 - Legacy Vue 2 app moved to `legacy/vue2`.
 - Docker serves Vue 2 at `/` and Vue 3 at `/new/`.
 
-## 1. Actual Migration Status (as of 2026-03-03)
+## 1. Actual Migration Status (as of 2026-03-18)
 
 ### Fully ready in Vue 3 skeleton
 
@@ -19,26 +19,39 @@ Repository layout update (2026-03-03):
   - Employees directory view with virtual table, filters, and expanded employee card details.
   - Profile main view with avatar editing, Telegram edit dialog, tech profiles card, and skills section.
   - Vacations module: list, summary, timeline, request/edit dialogs, and profile-side MyVacations block.
-- **Primary service layer for migrated screens**: auth, employees, skills, vacations, projects, dictionary, office map, tech profile services exist in Vue 3 skeleton.
+- **Primary service layer for migrated screens**: auth, employees, skills, vacations, projects, dictionary, office map, tech profile, overtime, assessment, salary, junior registry, and core admin services exist in Vue 3 skeleton.
+
+### Implemented in Vue 3, but parity and regression coverage still incomplete
+
+- **Overtimes**: Vue 3 summary page, employee details dialog, period switching, export, and period close/reopen flows are implemented.
+- **Assessments**: Vue 3 list, employee details, and assessment details routes are implemented, but still require parity QA and broader test coverage.
+- **Salary requests**: Vue 3 request list, latest requests view, details route, create flow, export, and period controls are implemented, but still require parity QA and broader test coverage.
+- **UDR / Junior registry / Mentorship**: Vue 3 registry list and details flows are implemented, but still require parity QA and broader test coverage.
+- **Admin employees and dictionaries**: Vue 3 employees admin, kids admin/import flows, and dictionaries area (including office locations/maps) are implemented, but still require parity QA and broader test coverage.
+- **Admin projects**: Vue 3 projects list, details route, create/edit flow, and project-scoped managers CRUD are implemented, but still require parity QA and broader test coverage.
+- **Admin managers and business accounts**: Vue 3 standalone managers page plus business accounts list/details/forms/positions flows are implemented, but still require parity QA and broader test coverage.
+- **Admin users**: Vue 3 users/roles management page is implemented, but still requires parity QA and broader test coverage.
+- **Articles/news**: Vue 3 admin articles CRUD and shared profile articles feed are implemented, but still require parity QA and broader test coverage. Remaining known gap: admin article image upload UI is not yet ported.
+- **Telegram confirmation route**: dedicated Vue 3 confirmation view and route are implemented.
 
 ### Not ready at all in Vue 3 (no implemented module parity yet)
 
-- **Overtimes**: no Vue 3 screen/module; profile still shows legacy placeholder card.
-- **Salary requests**: no Vue 3 screens/services/stores.
-- **Admin area**: no Vue 3 parity for admin projects/users/managers/dictionaries/import/business account/salary admin.
-- **Timesheets**: no Vue 3 screens/services.
-- **Assessments**: no Vue 3 screens/services.
-- **Articles/news module**: no Vue 3 screens/services.
-- **UDR/Junior registry flows**: no Vue 3 screens/services.
-- **Telegram confirmation page route parity**: no dedicated Vue 3 confirmation view equivalent to legacy module.
+- **Timesheets**: no Vue 3 screens/services. This module is explicitly excluded from the current migration scope for now because the legacy Vue 2 implementation is itself not sufficiently worked through to serve as a stable parity target.
 - **Global cutover readiness**: Vue 2 app remains the default app; there is no production switch-over to Vue 3 as primary frontend.
 
 ### In progress, but not complete
 
 - **Testing**: Vue 3 has baseline Vitest/Playwright setup, but automated coverage is still minimal (single component unit test + single login redirect E2E).
-- **State migration completeness**: only auth store is fully migrated to Pinia; broad Vuex module parity is pending.
+- **State migration completeness**: auth is fully migrated; most remaining domain logic lives in composables/service orchestration, but broad store/composable parity and test coverage are still pending.
 - **DI/plugin convergence**: shared dependency injection pattern between Vue 2 and Vue 3 is not finalized.
-- **UI/UX parity**: migrated features still require side-by-side parity QA against legacy behavior.
+- **UI/UX parity**: migrated features still require side-by-side parity QA against legacy behavior, especially in overtime, salary, assessments, mentorship, and admin modules.
+
+### Explicit scope decision: Timesheets
+
+- **Do not migrate `timesheet` yet.**
+- The legacy Vue 2 timesheet area (`legacy/vue2/src/components/ts/**`) is not treated as a mature or sufficiently validated baseline for parity work.
+- Until the product expectations for timesheets are clarified, this module stays outside the active Vue 2 -> Vue 3 migration queue.
+- Timesheet-related references may remain in planning or QA notes for historical context, but they must not drive near-term implementation priorities.
 
 ## 2. Current Stack Snapshot
 
@@ -87,10 +100,19 @@ Use the checkboxes to mark completion; add notes/dates next to items as you prog
 - [ ] Replace Moment.js usage with Day.js or date-fns while staying on Vue 2 where possible _(Vue 3 skeleton ships ad-hoc formatters in `src/lib/datetime.ts`, legacy modules still rely on Moment)_.
 - [x] Implement Vue 3 employees directory: new `useEmployeesDirectory` composable + `EmployeesVirtualTable` + route/filters/dialog to browse all employees with card view. _Delivered in `src/views/employees/**`; still needs parity QA and broader regression testing._
 - [x] Port vacations module: list/summary/timeline view + MyVacations + request/edit dialogs + date-range filters + export. _Delivered in `src/views/vacations/VacationsView.vue` and `src/components/vacations/**`; still needs parity QA and broader regression testing._
+- [x] Port overtime module: summary page, employee details dialog, export, and period management. _Delivered in `src/views/overtimes/**` and `src/components/overtimes/**`; still needs parity QA and broader regression testing._
+- [x] Port assessments module: summary, employee assessments, and assessment details flows. _Delivered in `src/views/assessment/**` and related services/components; still needs parity QA and broader regression testing._
+- [x] Port salary module: requests list, latest requests, details, create flow, export, and period management. _Delivered in `src/views/salary/**` and related composables/services; still needs parity QA and broader regression testing._
+- [x] Port mentorship / junior registry module. _Delivered in `src/views/mentorship/**` and related composables/services; still needs parity QA and broader regression testing._
+- [x] Port admin employees and dictionaries modules. _Delivered in `src/views/admin/employees/**`, `src/views/admin/dicts/**`, and related services/components; still needs parity QA and broader regression testing._
+- [x] Port admin projects module. _Delivered in `src/views/admin/projects/**` and related admin services/components; still needs parity QA and broader regression testing._
+- [x] Port admin managers and business accounts modules. _Delivered in `src/views/admin/managers/**`, `src/views/admin/business-accounts/**`, and related services/components; still needs parity QA and broader regression testing._
+- [x] Port admin users module. _Delivered in `src/views/admin/users/**` and related services/components; still needs parity QA and broader regression testing._
+- [x] Port articles/news module. _Delivered in `src/views/admin/articles/**`, `src/components/article/SharedArticlesCard.vue`, and related services; still needs parity QA and broader regression testing. Known follow-up: admin article image upload UI parity._
 
 ### Phase C – Store & Routing Transition
 
-- [ ] Scaffold Pinia stores equivalent to existing Vuex modules; provide adapters for legacy decorator access _(Auth store + permissions helpers migrated under `src/stores/auth.ts` & `src/lib/permissions.ts`; next modules: vacations, overtime, salaries, admin dictionaries)_.
+- [ ] Scaffold Pinia stores equivalent to existing Vuex modules; provide adapters for legacy decorator access _(Auth store + permissions helpers migrated under `src/stores/auth.ts` & `src/lib/permissions.ts`; most new domain logic currently sits in composables; evaluate where shared state should move into Pinia next)_.
 - [x] Refactor router setup to Vue 3-compatible factory (`createRouter`, `createWebHistory`), remove `Vue.use` _(Implemented in Vue 3 skeleton `src/router/index.ts`; legacy Vue 2 router still exists in the main app)_.
 - [ ] Move guard logic to composables/testable units; ensure auth flow covered by unit/integration tests _(Route guard now centralised in Vue 3 skeleton; add unit specs + synchronise logout/login flows with Vue 2 app)_.
 
@@ -120,6 +142,7 @@ Use the checkboxes to mark completion; add notes/dates next to items as you prog
 - Validate new uploader/cropper implementations (`src/components/FileUploadZone.vue`, `.../ProfileAvatar.vue`) against production API limits and security requirements.
 - Assess backend API contract changes required (if any) when upgrading Axios/interceptors.
 - Determine whether to adopt TypeScript strictness increases (e.g., `exactOptionalPropertyTypes`) during tooling upgrade.
+- Clarify future product scope for timesheets before any Vue 3 implementation starts; current migration plan intentionally excludes this module.
 
 Keep this file under version control to track progress between sessions.
 
@@ -128,7 +151,7 @@ Keep this file under version control to track progress between sessions.
 - **Runtime baseline**: Adopt Node.js 20 LTS (current CLI tested on 18.16, upgrade recommended) and npm 10+. Document any Docker changes under `devops/`.
 - **Local services**: Frontend dev server expects `VITE_DEV_SERVER_PROXY` to point to the API (`README.md`); ensure backend mock or staging endpoint is available for migration smoke tests.
 - **Local access**: Vue 3 dev app is served at `http://localhost:5173/`, Vue 2 dev app at `http://localhost:8080/` (from `legacy/vue2`). Both builds point to the same backend API. Test login credentials: `alexander.bondin` / `qwe123`.
-- **Testing status**: Only three Jest unit specs exist (`tests/unit/*.spec.ts`); integration coverage absent. Need manual regression checklist for auth, vacations, overtime, salaries, admin flows.
+- **Testing status**: Legacy Jest coverage is still sparse, and Vue 3 automated coverage is also still thin. Need manual regression checklist and targeted automated coverage for auth, vacations, overtime, salaries, assessments, mentorship, admin flows, and articles/news.
 - **Short-term actions**: Draft target matrix of browsers/devices post-Vue 3 upgrade and decide on E2E tooling (Cypress or Playwright) before major refactors begin.
 
 ## 7. Regression Scenarios & QA Plan
@@ -138,15 +161,18 @@ Use this list as a smoke suite before/after significant migration steps. Expand 
 - **Authentication**: Login with valid/invalid credentials, verify return path redirect and logout flow (`src/components/login/Login.vue:46`).
 - **Employee profile & navigation**: Load profile dashboard, toggle navigation drawer, validate permission-gated menu visibility (`src/App.vue:24`, `src/store/modules/permission.service.ts:5`).
 - **Vacations**: Request new vacation, edit/auto-calc dates, review timeline view and filters (now also in Vue 3 skeleton under `src/views/vacations/VacationsView.vue`).
-- **Overtimes & Timesheets**: Add overtime entry, approve/reject, export summaries; ensure month navigation and formatting works (`src/components/overtimes/AddOvertimeItemDialog.vue:204`, `src/components/ts/TimesheetTableComponent.vue:68`).
+- **Overtimes**: Add overtime entry, approve/reject, export summaries; ensure month navigation and formatting works (`src/components/overtimes/AddOvertimeItemDialog.vue:204`).
 - **Salary requests**: Submit/approve flows, inspect overview tables (`src/components/salary/SalaryRequestsTable.vue`, `src/components/salary/details/SalaryRequestDetailsView.vue`).
+- **Assessments**: Validate summary filters, scheduling, details view actions, attachments, and export behavior.
+- **Mentorship / UDR**: Validate registry filtering, add/update flows, reports history, and graduation behavior.
 - **Admin modules**: Projects CRUD, users/roles management, business account details, dictionary management, employees import workflows (`src/components/admin/**`).
+- **Articles/news**: Validate admin article CRUD, markdown rendering, publication visibility, and profile-side shared articles feed.
 - **Uploads & assets**: File uploader success/error states, avatar cropper, tech profile download/upload permissions (`src/components/shared/MyFileUploader.vue:45`).
 - **Telegram confirmation**: Validate deep link route and success/failure messaging (`src/components/telegram/TelegramConfirmationPage.vue`).
 - **Error handling**: Trigger forced backend errors to confirm global alert surface (`src/components/http.service.ts:14`, `src/App.vue:215`).
 - **i18n toggles**: Switch locales and confirm translations load correctly once dynamic imports are introduced (`src/i18n.ts:8`).
 
-_Automation gaps_: existing Jest specs cover only helper utilities (`tests/unit/datetimeutils.spec.ts`, etc.). Plan to add unit tests around new composables and Pinia stores, and introduce E2E (Cypress/Playwright) for the high-risk flows above.
+_Automation gaps_: existing Jest specs cover only helper utilities (`tests/unit/datetimeutils.spec.ts`, etc.). Plan to add unit tests around new composables and Pinia stores, and introduce E2E (Cypress/Playwright) for the high-risk migrated flows above. Do not schedule timesheet automation work until the module is brought back into scope.
 
 ## 8. Vuetify & Legacy Plugin Hotspots
 
@@ -170,12 +196,15 @@ Focus migration spikes here before tackling the long tail.
   export VITE_API_BASE_URL=/api/
   npm run dev
   ```
-- **Current scope**: authenticated shell with guarded router (`src/router/index.ts`), Pinia auth store, Vuetify 3 navigation (`src/App.vue`). Employee profile view now ports avatar upload with cropper, Telegram edit dialog, tech profile attachments, office map preview, permissions logic, and MyVacations (`src/views/profile/**`). Vacations module now includes list/summary/timeline view + request/edit dialogs (`src/views/vacations/VacationsView.vue`, `src/components/vacations/**`).
+- **Current scope**: authenticated shell with guarded router (`src/router/index.ts`), Pinia auth store, Vuetify 3 navigation (`src/App.vue`). Employee profile view now ports avatar upload with cropper, Telegram edit dialog, tech profile attachments, office map preview, permissions logic, MyVacations, and shared articles feed (`src/views/profile/**`, `src/components/article/SharedArticlesCard.vue`). Vacations module now includes list/summary/timeline view + request/edit dialogs (`src/views/vacations/VacationsView.vue`, `src/components/vacations/**`).
+- **Expanded migrated scope**: Vue 3 also includes overtime, assessments, salary requests, mentorship/junior registry, telegram confirmation, admin employees, admin dictionaries, admin projects, admin managers, admin business accounts, admin users, and admin articles flows under `src/views/**`.
 - **Testing status**: Vitest configured but no component specs yet; Playwright E2E covers unauthenticated redirect (`e2e/login.spec.ts`). ResizeObserver polyfill wired via `tests/setup.ts`.
 - **Next actions**:
-  1. QA the Vue 3 vacations module (filters, add/edit, timeline, export) and compare with legacy behaviors; refine date inputs if needed.
-  2. Port overtime flows into composables/Pinia stores, replacing legacy placeholders in `ProfileMainView.vue`.
-  3. Backfill unit tests for new profile/vacations components (avatar, telegram, attachments, vacations) using Vitest + Vue Test Utils; decide on API mocking strategy for HTTP services.
-  4. Ensure shared DI plugins (http, logger, permissions) can be consumed by both Vue 2 and Vue 3 builds; document deployment toggle and add CI jobs to run `npm run lint`, `npm run type-check`, and `npm run test:e2e` for the skeleton.
+  1. Run parity QA on already migrated Vue 3 modules: vacations, overtimes, assessments, salary, mentorship, admin employees, and admin dictionaries.
+  2. Backfill unit tests for migrated composables and route-level flows; prioritize the highest-risk business logic before adding broad UI coverage.
+  3. Run parity QA on the newly migrated admin/article areas: admin projects, admin managers, admin business accounts, admin users, admin articles, and profile-side shared articles.
+  4. Close the remaining known article parity gap: admin article image upload UI.
+  5. Keep `timesheet` out of implementation scope until product expectations and a reliable baseline are clarified.
+  6. Ensure shared DI plugins (http, logger, permissions) can be consumed by both Vue 2 and Vue 3 builds; document deployment toggle and add CI jobs to run `npm run lint`, `npm run type-check`, and `npm run test:e2e` for the skeleton.
 - **Tooling note**: project targets latest stable toolchain (Vite 7 + `@vitejs/plugin-vue` 6 + `vite-plugin-vuetify` 2.1 + optional devtools). Ensure Node 20+ before running installs; revisit dependencies if new breaking releases appear.
 - **Docs note**: before implementing or adjusting Vuetify components, consult the upstream documentation mirrored under `migration/vuetify/packages/docs`; reference the full `migration/vuetify` repo for implementation details when needed.

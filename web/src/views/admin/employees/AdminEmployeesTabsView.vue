@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-4" data-testid="admin-employees-tabs-view">
+  <v-container class="py-6" data-testid="admin-employees-tabs-view">
     <v-tabs color="primary" data-testid="admin-employees-tabs">
       <v-tab :to="{ name: 'admin-employees-list' }" data-testid="admin-tab-list">{{ t("Сотрудники") }}</v-tab>
       <v-tab :to="{ name: 'admin-employees-import' }" data-testid="admin-tab-import">{{ t("Импорт сотрудников из Excel") }}</v-tab>

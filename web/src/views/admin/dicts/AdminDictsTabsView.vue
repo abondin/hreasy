@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-4" data-testid="admin-dicts-tabs-view">
+  <v-container class="py-6" data-testid="admin-dicts-tabs-view">
     <v-tabs color="primary" data-testid="admin-dicts-tabs">
       <v-tab
         v-for="tab in tabs"

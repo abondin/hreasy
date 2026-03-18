@@ -48,6 +48,9 @@
             <v-col cols="12">
               <my-vacations />
             </v-col>
+            <v-col cols="12">
+              <shared-articles-card />
+            </v-col>
             <v-col cols="12" v-if="canViewSkills">
               <v-card class="h-100">
                 <v-card-title class="d-flex align-center justify-space-between">
@@ -117,6 +120,7 @@ import { useEmployeeProfile } from "@/composables/useEmployeeProfile";
 import { useEmployeeSkills } from "@/composables/useEmployeeSkills";
 import { useEmployeeSkillPermissions } from "@/composables/useEmployeeSkillPermissions";
 import { usePermissions } from "@/lib/permissions";
+import SharedArticlesCard from "@/components/article/SharedArticlesCard.vue";
 import LegacyFeatureCard from "@/components/LegacyFeatureCard.vue";
 import MyVacations from "@/components/vacations/MyVacations.vue";
 import EmployeeOvertimeCard from "@/components/overtimes/EmployeeOvertimeCard.vue";
