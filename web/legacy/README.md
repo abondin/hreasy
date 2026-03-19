@@ -32,4 +32,5 @@ npm run i18n-add-missing-keys
 ## Notes
 
 - Legacy app is kept for production parity while pages are migrated to Vue 3.
+- Main app in repository root now runs on Vue 3.5 + Vuetify 4.
 - New feature development should go to the root Vue 3 app unless explicitly required in legacy.

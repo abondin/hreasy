@@ -2,7 +2,7 @@
   <v-container class="login-container" fluid>
     <v-row class="fill-height" align="center" justify="center">
       <v-col cols="12" sm="10" md="8" lg="6" xl="5">
-        <v-card class="login-card overflow-hidden" elevation="10">
+        <v-card class="login-card overflow-hidden" elevation="5">
           <v-row no-gutters>
             <v-col
               md="5"

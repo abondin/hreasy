@@ -35,7 +35,7 @@
           </v-card-title>
 
           <v-card-text class="pb-0">
-            <v-row dense>
+            <v-row density="comfortable">
               <v-col cols="12" lg="4">
                 <v-text-field
                   v-model="search"

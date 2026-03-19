@@ -33,7 +33,7 @@
           </v-tooltip>
         </div>
 
-        <v-row v-else :dense="isDense">
+        <v-row v-else :density="isDense ? 'comfortable' : 'default'">
             <v-col
                 v-for="group in groupedSkills"
                 :key="group.group.id"

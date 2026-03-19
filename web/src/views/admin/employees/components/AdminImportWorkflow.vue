@@ -130,7 +130,7 @@
         </div>
 
         <div v-else-if="step === 3" class="mt-4">
-          <v-row dense class="mb-2">
+          <v-row density="comfortable" class="mb-2">
             <v-col cols="12" md="3">
               <v-chip label>
                 {{ t("Количество обработанных строк") }}:
@@ -154,7 +154,7 @@
             </v-col>
           </v-row>
 
-          <v-row dense class="mb-3">
+          <v-row density="comfortable" class="mb-3">
             <v-col cols="12" md="8">
               <v-text-field
                 v-model="previewFilter.search"

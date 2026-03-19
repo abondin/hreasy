@@ -55,7 +55,7 @@
   - only then run `type-check`, `lint`, or tests
 
 ## UI Stack & Libraries (Vue 3)
-- UI: Vuetify 3 (`src/plugins/vuetify.ts`), icons from `@mdi/font`.
+- UI: Vuetify 4 (`src/plugins/vuetify.ts`), icons from `@mdi/font`.
 - Routing/State: `vue-router@4`, `pinia`.
 - HTTP: Axios instance in `src/lib/http.ts`.
 - i18n: `vue-i18n@11` via `src/i18n.ts`.

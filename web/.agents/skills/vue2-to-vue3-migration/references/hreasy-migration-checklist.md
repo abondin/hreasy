@@ -14,7 +14,7 @@
 
 - `vue-router@3` -> `vue-router@4`
 - `vuex@3` -> `pinia`
-- `vuetify@2` -> `vuetify@3`
+- `vuetify@2` -> `vuetify@4`
 - Vue class components -> Composition API (`script setup` + composables)
 
 ## Per-Page Porting Checklist

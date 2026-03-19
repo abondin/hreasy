@@ -1,6 +1,6 @@
 ---
 name: hreasy-vue3-development
-description: Develop and refactor features in the HREasy Vue 3 application (root project) using project conventions, Vuetify 3, Pinia, Vue Router 4, and vue-i18n. Use for any Vue 3 coding task in this repository, including new pages, component updates, service/store changes, bug fixes, and UI behavior changes.
+description: Develop and refactor features in the HREasy Vue 3 application (root project) using project conventions, Vuetify 4, Pinia, Vue Router 4, and vue-i18n. Use for any Vue 3 coding task in this repository, including new pages, component updates, service/store changes, bug fixes, and UI behavior changes.
 ---
 
 # HREasy Vue3 Development
@@ -84,7 +84,8 @@ If reuse is not chosen, explicitly state why in task output.
 
 - Route-level components in `src/views/**`.
 - Reusable blocks in `src/components/**`.
-- Use Vuetify 3 patterns consistent with existing project code.
+- Use Vuetify 4 patterns consistent with existing project code.
+- Do not use deprecated `dense` props on Vuetify layout components; prefer the current `density` API where applicable.
 - Do not hardcode user text.
 - For controls that E2E scenarios interact with (auth actions, primary navigation, submit/cancel buttons, critical dialogs/forms), prefer explicit `data-testid` markers over text-based selectors.
 - Keep shared selector ids centralized in `e2e/support/selectors.ts` when they are reused across specs.

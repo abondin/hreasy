@@ -21,7 +21,7 @@
     </v-card-title>
 
     <v-card-text class="px-6 pb-5 pt-0">
-      <v-row dense class="mb-2">
+      <v-row density="comfortable" class="mb-2">
         <v-col cols="12" md="6">
           <v-text-field
             v-model="search"

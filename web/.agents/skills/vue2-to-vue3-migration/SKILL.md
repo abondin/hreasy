@@ -1,6 +1,6 @@
 ---
 name: vue2-to-vue3-migration
-description: Migrate frontend modules from Vue 2 to Vue 3 with behavior parity, including router/store/service/component/test updates. Use when requests mention porting pages from legacy Vue 2 codebases (Vue Router 3, Vuex, Vuetify 2) into Vue 3 stacks (Vite, Vue Router 4, Pinia, Vuetify 3), or when planning/implementing a phased migration.
+description: Migrate frontend modules from Vue 2 to Vue 3 with behavior parity, including router/store/service/component/test updates. Use when requests mention porting pages from legacy Vue 2 codebases (Vue Router 3, Vuex, Vuetify 2) into Vue 3 stacks (Vite, Vue Router 4, Pinia, Vuetify 4), or when planning/implementing a phased migration.
 ---
 
 # Vue2 To Vue3 Migration
@@ -16,7 +16,7 @@ Treat user-facing behavior and access-control behavior as strict parity targets 
 1. Inspect legacy route and all directly related components/services/store modules.
 2. Port contracts and API calls to Vue 3 `services/` first.
 3. Port state to Pinia/composables.
-4. Port UI to Vue 3/Vuetify 3 and wire route guards/permissions.
+4. Port UI to Vue 3/Vuetify 4 and wire route guards/permissions.
 5. Run parity checks and minimum tests before marking done.
 
 For a detailed checklist and mapping table, read `references/hreasy-migration-checklist.md`.
@@ -92,7 +92,8 @@ When asking the user, present explicit options and tradeoffs:
 
 - Build route-level page in `src/views/<domain>/`.
 - Extract reusable blocks into `src/components/<domain>/`.
-- Replace legacy Vuetify 2 patterns with Vuetify 3 equivalents.
+- Replace legacy Vuetify 2 patterns with Vuetify 4 equivalents.
+- Avoid deprecated compatibility props from earlier Vuetify migrations (for example `dense` on layout/grid primitives); prefer current Vuetify 4 APIs.
 - Keep all user text in i18n keys; do not hardcode strings.
 
 ### 5. Wire routing and permissions

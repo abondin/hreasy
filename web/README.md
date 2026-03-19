@@ -5,6 +5,7 @@
 - Vue 3 app (main): repository root (`./`)
 - Vue 2 app (legacy): `legacy/vue2/`
 - Legacy docs: `legacy/README.md`
+- Main UI stack: Vue 3.5 + Vuetify 4 + Pinia 3 + Vue Router 4
 
 ## Prerequisites
 

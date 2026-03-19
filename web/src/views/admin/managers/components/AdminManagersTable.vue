@@ -22,7 +22,7 @@
     </v-card-title>
 
     <v-card-text :class="mode === 'full' ? 'px-6 pb-0 pt-0' : 'px-6 pb-5 pt-0'">
-      <v-row v-if="mode === 'full'" dense class="mb-2">
+      <v-row v-if="mode === 'full'" density="comfortable" class="mb-2">
         <v-col cols="12" md="6" lg="4">
           <v-text-field
             v-model="filter.search"
