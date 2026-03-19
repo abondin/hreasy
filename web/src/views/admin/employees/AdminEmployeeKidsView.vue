@@ -7,8 +7,8 @@
       height="70vh"
       fixed-header
       :loading="loading"
-      :loading-text="t('\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430_\u0434\u0430\u043D\u043D\u044B\u0445')"
-      :no-data-text="t('\u041E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044E\u0442 \u0434\u0430\u043D\u043D\u044B\u0435')"
+      :loading-text="t('Загрузка_данных')"
+      :no-data-text="t('Отсутствуют данные')"
       density="compact"
       hover
       :sort-by="[{ key: 'displayName', order: 'asc' }]"
@@ -30,7 +30,7 @@
                 @click="openCreate"
               />
             </template>
-            <span>{{ t("\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044E \u043E \u0440\u0435\u0431\u0451\u043D\u043A\u0435") }}</span>
+            <span>{{ t("Добавить информацию о ребёнке") }}</span>
           </v-tooltip>
         </v-card-title>
 
@@ -42,7 +42,7 @@
                 data-testid="admin-kids-search"
                 append-inner-icon="mdi-magnify"
                 density="compact"
-                :label="t('\u041F\u043E\u0438\u0441\u043A')"
+                :label="t('Поиск')"
                 variant="outlined"
                 hide-details
                 clearable
@@ -54,7 +54,7 @@
                 data-testid="admin-kids-hide-dismissed"
                 density="compact"
                 hide-details
-                :label="t('\u0421\u043A\u0440\u044B\u0442\u044C \u0434\u0435\u0442\u0435\u0439 \u0443\u0432\u043E\u043B\u0435\u043D\u043D\u044B\u0445 \u0441\u043E\u0442\u0440\u0443\u0434\u043D\u0438\u043A\u043E\u0432')"
+                :label="t('Скрыть детей уволенных сотрудников')"
               />
             </v-col>
           </v-row>
@@ -71,7 +71,7 @@
         {{ formatDate(item.birthday) }}
       </template>
       <template #[`item.parent.active`]="{ item }">
-        {{ item.parent?.active ? t("\u041D\u0435\u0442") : t("\u0414\u0430") }}
+        {{ item.parent?.active ? t("Нет") : t("Да") }}
       </template>
     </HREasyTableBase>
 
@@ -113,11 +113,11 @@ const employees = ref<Employee[]>([]);
 const current = ref<EmployeeKid | null>(null);
 
 const headers = computed(() => [
-  { title: t("\u0424\u0418\u041E"), key: "displayName", width: 280 },
-  { title: t("\u0414\u0435\u043D\u044C \u0440\u043E\u0436\u0434\u0435\u043D\u0438\u044F"), key: "birthday", width: 150 },
-  { title: t("\u0412\u043E\u0437\u0440\u0430\u0441\u0442 (\u043B\u0435\u0442)"), key: "age", width: 150 },
-  { title: t("\u0420\u043E\u0434\u0438\u0442\u0435\u043B\u044C"), key: "parent.name", width: 280 },
-  { title: t("\u0420\u043E\u0434\u0438\u0442\u0435\u043B\u044C \u0443\u0432\u043E\u043B\u0435\u043D"), key: "parent.active", width: 120 },
+  { title: t("ФИО"), key: "displayName", width: 280 },
+  { title: t("День рождения"), key: "birthday", width: 150 },
+  { title: t("Возраст (лет)"), key: "age", width: 150 },
+  { title: t("Родитель"), key: "parent.name", width: 280 },
+  { title: t("Родитель уволен"), key: "parent.active", width: 120 },
 ]);
 
 const filteredItems = computed(() => {

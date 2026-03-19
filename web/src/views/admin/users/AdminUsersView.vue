@@ -9,8 +9,8 @@
         :fixed-header="true"
         density="compact"
         :loading="loading"
-        :loading-text="t('\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430_\u0434\u0430\u043d\u043d\u044b\u0445')"
-        :no-data-text="t('\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044e\u0442 \u0434\u0430\u043d\u043d\u044b\u0435')"
+        :loading-text="t('Загрузка_данных')"
+        :no-data-text="t('Отсутствуют данные')"
         :row-props="rowProps"
         hover
         @click:row="onClickRow"
@@ -31,7 +31,7 @@
               <v-col cols="12" lg="4">
                 <v-text-field
                   v-model="search"
-                  :label="t('\u041f\u043e\u0438\u0441\u043a')"
+                  :label="t('Поиск')"
                   append-inner-icon="mdi-magnify"
                   variant="outlined"
                   density="compact"
@@ -157,11 +157,11 @@ const roles = ref<RoleDict[]>(getAdminUserRolesDictionary(t));
 const activeDepartments = computed(() => departments.value.filter((item) => item.active !== false));
 const activeProjects = computed(() => projects.value.filter((item) => item.active !== false));
 const headers = computed(() => [
-  { title: t("\u0424\u0418\u041e"), key: "employee.name", width: "240px" },
-  { title: t("\u0420\u043e\u043b\u0438"), key: "roles", width: "260px" },
-  { title: t("\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0435 \u043e\u0442\u0434\u0435\u043b\u044b"), key: "accessibleDepartments", width: "320px" },
-  { title: t("\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0435 \u0431\u0438\u0437\u043d\u0435\u0441 \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u044b"), key: "accessibleBas", width: "320px" },
-  { title: t("\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0435 \u043f\u0440\u043e\u0435\u043a\u0442\u044b"), key: "accessibleProjects", width: "320px" },
+  { title: t("ФИО"), key: "employee.name", width: "240px" },
+  { title: t("Роли"), key: "roles", width: "260px" },
+  { title: t("Доступные отделы"), key: "accessibleDepartments", width: "320px" },
+  { title: t("Доступные бизнес аккаунты"), key: "accessibleBas", width: "320px" },
+  { title: t("Доступные проекты"), key: "accessibleProjects", width: "320px" },
 ]);
 
 const filteredItems = computed(() => {
@@ -204,7 +204,7 @@ function getById(
     return "-";
   }
   const found = source.find((item) => item.id === id);
-  return found ? found.name : `${t("\u041d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d: ")}${id}`;
+  return found ? found.name : `${t("Не найден: ")}${id}`;
 }
 
 function getRoleName(roleId: string): string {

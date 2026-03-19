@@ -15,6 +15,7 @@
     "test:e2e": "playwright test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
+    "check:win-text-integrity": "powershell -ExecutionPolicy Bypass -File .agents/skills/hreasy-vue3-development/scripts/check-text-integrity-windows.ps1",
     "lint": "eslint . --fix --cache",
     "format": "prettier --write src/"
   },

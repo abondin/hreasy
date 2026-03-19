@@ -1,7 +1,7 @@
 <template>
   <v-container class="py-6" data-testid="admin-managers-view">
     <admin-managers-table
-      :title="t('\u041c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u044b')"
+      :title="t('Менеджеры')"
       :editable="permissions.canAdminManagers()"
       test-id="admin-managers"
     />

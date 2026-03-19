@@ -9,8 +9,8 @@
         :fixed-header="true"
         density="compact"
         :loading="loading"
-        :loading-text="t('\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430_\u0434\u0430\u043d\u043d\u044b\u0445')"
-        :no-data-text="t('\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044e\u0442 \u0434\u0430\u043d\u043d\u044b\u0435')"
+        :loading-text="t('Загрузка_данных')"
+        :no-data-text="t('Отсутствуют данные')"
         :row-props="rowProps"
         hover
         @click:row="onClickRow"
@@ -39,7 +39,7 @@
               <v-col cols="12" lg="4">
                 <v-text-field
                   v-model="filter.search"
-                  :label="t('\u041f\u043e\u0438\u0441\u043a')"
+                  :label="t('Поиск')"
                   append-inner-icon="mdi-magnify"
                   variant="outlined"
                   density="compact"
@@ -53,7 +53,7 @@
                   :items="groupOptions"
                   item-title="title"
                   item-value="value"
-                  :label="t('\u0413\u0440\u0443\u043f\u043f\u0430')"
+                  :label="t('Группа')"
                   variant="outlined"
                   density="compact"
                   multiple
@@ -68,7 +68,7 @@
                   :items="booleanOptions"
                   item-title="title"
                   item-value="value"
-                  :label="t('\u0422\u043e\u043b\u044c\u043a\u043e \u043c\u043e\u0434\u0435\u0440\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435')"
+                  :label="t('Только модерированные')"
                   variant="outlined"
                   density="compact"
                   clearable
@@ -81,7 +81,7 @@
                   :items="booleanOptions"
                   item-title="title"
                   item-value="value"
-                  :label="t('\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0430\u0440\u0445\u0438\u0432')"
+                  :label="t('Показать архив')"
                   variant="outlined"
                   density="compact"
                   clearable
@@ -99,10 +99,10 @@
         </template>
 
         <template #[`item.moderated`]="{ item }">
-          {{ item.moderated ? t("\u0414\u0430") : t("\u041d\u0435\u0442") }}
+          {{ item.moderated ? t("Да") : t("Нет") }}
         </template>
         <template #[`item.archived`]="{ item }">
-          {{ item.archived ? t("\u0414\u0430") : t("\u041d\u0435\u0442") }}
+          {{ item.archived ? t("Да") : t("Нет") }}
         </template>
         <template #[`item.articleGroup`]="{ item }">
           {{ t(`ARTICLE_GROUP.${item.articleGroup}`) }}
@@ -153,8 +153,8 @@ const filter = reactive({
 });
 
 const booleanOptions = computed(() => [
-  { title: t("\u041d\u0435\u0442"), value: false },
-  { title: t("\u0414\u0430"), value: true },
+  { title: t("Нет"), value: false },
+  { title: t("Да"), value: true },
 ]);
 const groupOptions = computed(() =>
   ALL_ARTICLES_GROUPS.map((value) => ({
@@ -163,11 +163,11 @@ const groupOptions = computed(() =>
   })),
 );
 const headers = computed(() => [
-  { title: t("\u0421\u0442\u0430\u0442\u044c\u044f"), key: "name", width: "320px" },
-  { title: t("\u0413\u0440\u0443\u043f\u043f\u0430"), key: "articleGroup", width: "180px" },
-  { title: t("\u041c\u043e\u0434\u0435\u0440\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u0430\u044f"), key: "moderated", width: "150px" },
-  { title: t("\u0410\u0440\u0445\u0438\u0432\u043d\u0430\u044f"), key: "archived", width: "140px" },
-  { title: t("\u041e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0430"), key: "updatedAt", width: "190px" },
+  { title: t("Статья"), key: "name", width: "320px" },
+  { title: t("Группа"), key: "articleGroup", width: "180px" },
+  { title: t("Модерированная"), key: "moderated", width: "150px" },
+  { title: t("Архивная"), key: "archived", width: "140px" },
+  { title: t("Обновлена"), key: "updatedAt", width: "190px" },
 ]);
 
 const filteredItems = computed(() => {

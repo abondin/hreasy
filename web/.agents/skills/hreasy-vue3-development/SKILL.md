@@ -103,6 +103,28 @@ Run after substantial changes:
 - `npm run lint`
 - `npm run test:unit` when logic changed
 
+### 6. Text Integrity Check
+
+For Windows-safe text hygiene, use the bundled Windows script before or after risky file rewrites:
+
+- `powershell -ExecutionPolicy Bypass -File .agents/skills/hreasy-vue3-development/scripts/check-text-integrity-windows.ps1`
+
+What it checks:
+
+- UTF-8 validity
+- absence of UTF-8 BOM
+- absence of `\uXXXX` escape sequences in source/docs/locales
+- absence of Unicode replacement character (`U+FFFD`)
+
+Default scope:
+
+- `src`
+- `.agents`
+- `AGENTS.md`
+- `README.md`
+- `MIGRATION_PLAN.md`
+- `legacy/README.md`
+
 ## Project-Specific Constraints
 
 - Main active app is Vue 3 in repository root.

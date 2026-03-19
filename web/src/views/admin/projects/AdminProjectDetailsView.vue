@@ -1,8 +1,8 @@
 <template>
   <admin-detail-page-layout
     :back-to="{ name: 'admin-projects' }"
-    :back-label="t('\u0412\u0441\u0435 \u043F\u0440\u043E\u0435\u043A\u0442\u044B')"
-    :title="project?.name ?? t('\u041E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044E\u0442 \u0434\u0430\u043D\u043D\u044B\u0435')"
+    :back-label="t('Все проекты')"
+    :title="project?.name ?? t('Отсутствуют данные')"
     :subtitle="projectSubtitle"
     :error="error"
     :show-primary-card="Boolean(project)"
@@ -48,7 +48,7 @@
           v-else
           class="text-body-2 text-medium-emphasis py-2"
         >
-          {{ t("\u041D\u0435 \u0437\u0430\u0434\u0430\u043D") }}
+          {{ t("Не задан") }}
         </div>
       </div>
     </template>
@@ -56,7 +56,7 @@
     <admin-managers-table
       v-if="project"
       :selected-object="{ id: project.id, type: 'project' }"
-      :title="t('\u041C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u044B \u043F\u0440\u043E\u0435\u043A\u0442\u0430')"
+      :title="t('Менеджеры проекта')"
       :editable="permissions.canAdminProjects()"
       mode="compact"
       test-id="admin-project-managers"
@@ -111,7 +111,7 @@ const projectSubtitle = computed(() => {
   return [
     project.value.department?.name,
     project.value.businessAccount?.name,
-  ].filter(Boolean).join(" \u2022 ");
+  ].filter(Boolean).join(" • ");
 });
 
 const summaryItems = computed<AdminDetailSummaryItem[]>(() => {
@@ -120,19 +120,19 @@ const summaryItems = computed<AdminDetailSummaryItem[]>(() => {
   }
 
   return [
-    { label: t("\u041D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435"), value: project.value.name },
-    { label: t("\u041E\u0442\u0434\u0435\u043B"), value: project.value.department?.name ?? t("\u041D\u0435 \u0437\u0430\u0434\u0430\u043D") },
-    { label: t("\u0411\u0438\u0437\u043D\u0435\u0441 \u0430\u043A\u043A\u0430\u0443\u043D\u0442"), value: project.value.businessAccount?.name ?? t("\u041D\u0435 \u0437\u0430\u0434\u0430\u043D") },
-    { label: t("\u0417\u0430\u043A\u0430\u0437\u0447\u0438\u043A"), value: project.value.customer ?? t("\u041D\u0435 \u0437\u0430\u0434\u0430\u043D") },
-    { label: t("\u041D\u0430\u0447\u0430\u043B\u043E"), value: formatPlanActual(project.value.planStartDate, project.value.startDate) },
-    { label: t("\u041E\u043A\u043E\u043D\u0447\u0430\u043D\u0438\u0435"), value: formatPlanActual(project.value.planEndDate, project.value.endDate) },
+    { label: t("Наименование"), value: project.value.name },
+    { label: t("Отдел"), value: project.value.department?.name ?? t("Не задан") },
+    { label: t("Бизнес аккаунт"), value: project.value.businessAccount?.name ?? t("Не задан") },
+    { label: t("Заказчик"), value: project.value.customer ?? t("Не задан") },
+    { label: t("Начало"), value: formatPlanActual(project.value.planStartDate, project.value.startDate) },
+    { label: t("Окончание"), value: formatPlanActual(project.value.planEndDate, project.value.endDate) },
   ];
 });
 
 async function load(): Promise<void> {
   const projectId = Number(route.params.projectId);
   if (!projectId) {
-    error.value = t("\u041E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044E\u0442 \u0434\u0430\u043D\u043D\u044B\u0435");
+    error.value = t("Отсутствуют данные");
     return;
   }
 
@@ -164,14 +164,14 @@ function formatPlanActual(plan?: string, actual?: string): string {
   const parts: string[] = [];
   const actualFormatted = formatDate(actual);
   if (actualFormatted) {
-    parts.push(`${actualFormatted} (${t("\u0444\u0430\u043A\u0442")})`);
+    parts.push(`${actualFormatted} (${t("факт")})`);
   }
   const planFormatted = formatDate(plan);
   if (planFormatted) {
-    parts.push(`${planFormatted} (${t("\u043F\u043B\u0430\u043D")})`);
+    parts.push(`${planFormatted} (${t("план")})`);
   }
   if (parts.length === 0) {
-    return t("\u041D\u0435 \u0437\u0430\u0434\u0430\u043D");
+    return t("Не задан");
   }
   return parts.join(", ");
 }

@@ -34,11 +34,11 @@
 
         <v-card v-if="articleId" variant="outlined" class="mt-4">
           <v-card-title class="text-subtitle-1">
-            {{ t("\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435") }}
+            {{ t("Загрузить изображение") }}
           </v-card-title>
           <v-card-text class="pt-0">
             <div class="text-body-2 text-medium-emphasis mb-4">
-              {{ t("\u041f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u044e\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f") }}
+              {{ t("Поддерживаются только изображения") }}
             </div>
             <v-btn
               color="primary"
@@ -47,7 +47,7 @@
               :disabled="saving"
               @click="uploadDialog = true"
             >
-              {{ t("\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435") }}
+              {{ t("Загрузить изображение") }}
             </v-btn>
           </v-card-text>
         </v-card>
@@ -59,7 +59,7 @@
           border="start"
           class="mt-4"
         >
-          {{ t("\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u0435 \u0441\u0442\u0430\u0442\u044c\u044e, \u0437\u0430\u0442\u0435\u043c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u0435 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435") }}
+          {{ t("Сохраните статью, затем загрузите изображение") }}
         </v-alert>
 
         <v-select
@@ -115,7 +115,7 @@
 
   <v-dialog v-model="uploadDialog" max-width="720" persistent>
     <v-card>
-      <v-card-title>{{ t("\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435") }}</v-card-title>
+      <v-card-title>{{ t("Загрузить изображение") }}</v-card-title>
       <v-card-text>
         <file-upload-zone
           v-if="articleId"
@@ -262,7 +262,7 @@ function handleUploadClose(event: UploadCompleteEvent): void {
 
   const imageUrl = parseAdminArticleImageUploadResponse(event.responseData);
   if (!imageUrl) {
-    uploadError.value = t("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u0430\u0442\u044c \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435");
+    uploadError.value = t("Не удалось обработать изображение");
     return;
   }
 

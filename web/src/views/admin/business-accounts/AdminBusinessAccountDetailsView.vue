@@ -1,8 +1,8 @@
 <template>
   <admin-detail-page-layout
     :back-to="{ name: 'admin-business-accounts' }"
-    :back-label="t('\u0411\u0438\u0437\u043D\u0435\u0441 \u0410\u043A\u043A\u0430\u0443\u043D\u0442\u044B')"
-    :title="businessAccount?.name ?? t('\u041E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044E\u0442 \u0434\u0430\u043D\u043D\u044B\u0435')"
+    :back-label="t('Бизнес Аккаунты')"
+    :title="businessAccount?.name ?? t('Отсутствуют данные')"
     :error="error"
     :show-primary-card="Boolean(businessAccount)"
     test-id="admin-business-account-details-view"
@@ -36,7 +36,7 @@
           v-if="!businessAccount?.description"
           class="text-body-2 text-medium-emphasis py-2"
         >
-          {{ t("\u041D\u0435 \u0437\u0430\u0434\u0430\u043D") }}
+          {{ t("Не задан") }}
         </div>
         <div v-else>{{ businessAccount.description }}</div>
       </div>
@@ -45,7 +45,7 @@
     <admin-managers-table
       v-if="businessAccount"
       :selected-object="{ id: businessAccount.id, type: 'business_account' }"
-      :title="t('\u041C\u0435\u043D\u0435\u0434\u0436\u0435\u0440\u044B \u0431\u0438\u0437\u043D\u0435\u0441 \u0430\u043A\u043A\u0430\u0443\u043D\u0442\u0430')"
+      :title="t('Менеджеры бизнес аккаунта')"
       :editable="permissions.canAdminManagers()"
       mode="compact"
       test-id="admin-business-account-managers"
@@ -97,10 +97,10 @@ const summaryItems = computed<AdminDetailSummaryItem[]>(() => {
   }
 
   return [
-    { label: t("\u041D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435"), value: businessAccount.value.name },
+    { label: t("Наименование"), value: businessAccount.value.name },
     {
-      label: t("\u0410\u0440\u0445\u0438\u0432"),
-      value: businessAccount.value.archived ? t("\u0414\u0430") : t("\u041D\u0435\u0442"),
+      label: t("Архив"),
+      value: businessAccount.value.archived ? t("Да") : t("Нет"),
       valueClass: businessAccount.value.archived ? "text-decoration-line-through" : undefined,
     },
   ];
@@ -109,7 +109,7 @@ const summaryItems = computed<AdminDetailSummaryItem[]>(() => {
 async function load(): Promise<void> {
   const businessAccountId = Number(route.params.businessAccountId);
   if (!businessAccountId) {
-    error.value = t("\u041E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044E\u0442 \u0434\u0430\u043D\u043D\u044B\u0435");
+    error.value = t("Отсутствуют данные");
     return;
   }
 

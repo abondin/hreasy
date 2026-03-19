@@ -9,8 +9,8 @@
         :fixed-header="true"
         density="compact"
         :loading="loading"
-        :loading-text="t('\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430_\u0434\u0430\u043d\u043d\u044b\u0445')"
-        :no-data-text="t('\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044e\u0442 \u0434\u0430\u043d\u043d\u044b\u0435')"
+        :loading-text="t('Загрузка_данных')"
+        :no-data-text="t('Отсутствуют данные')"
         :row-props="rowProps"
         hover
         @click:row="onClickRow"
@@ -39,7 +39,7 @@
               <v-col cols="12" lg="4">
                 <v-text-field
                   v-model="search"
-                  :label="t('\u041f\u043e\u0438\u0441\u043a')"
+                  :label="t('Поиск')"
                   append-inner-icon="mdi-magnify"
                   variant="outlined"
                   density="compact"
@@ -50,7 +50,7 @@
               <v-col cols="12" lg="4" class="d-flex align-center">
                 <v-checkbox
                   v-model="showArchived"
-                  :label="t('\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0430\u0440\u0445\u0438\u0432\u043d\u044b\u0435 \u0431\u0438\u0437\u043d\u0435\u0441 \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u044b')"
+                  :label="t('Показать архивные бизнес аккаунты')"
                   density="compact"
                   hide-details
                 />
@@ -122,9 +122,9 @@ const showArchived = ref(false);
 const items = ref<BusinessAccountInfo[]>([]);
 
 const headers = computed(() => [
-  { title: t("\u041d\u0430\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u043d\u0438\u0435"), key: "name", width: "280px" },
-  { title: t("\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435"), key: "description" },
-  { title: t("\u041c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u044b"), key: "managers", width: "360px" },
+  { title: t("Наименование"), key: "name", width: "280px" },
+  { title: t("Описание"), key: "description" },
+  { title: t("Менеджеры"), key: "managers", width: "360px" },
 ]);
 const filteredItems = computed(() => {
   const query = search.value.trim().toLowerCase();

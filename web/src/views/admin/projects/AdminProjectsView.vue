@@ -9,8 +9,8 @@
         :fixed-header="true"
         density="compact"
         :loading="loading"
-        :loading-text="t('\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430_\u0434\u0430\u043d\u043d\u044b\u0445')"
-        :no-data-text="t('\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044e\u0442 \u0434\u0430\u043d\u043d\u044b\u0435')"
+        :loading-text="t('Загрузка_данных')"
+        :no-data-text="t('Отсутствуют данные')"
         hover
         :sort-by="[{ key: 'name', order: 'asc' }]"
         :row-props="rowProps"
@@ -38,7 +38,7 @@
                   @click="openCreate"
                 />
               </template>
-              <span>{{ t("\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u043d\u043e\u0432\u044b\u0439 \u043f\u0440\u043e\u0435\u043a\u0442") }}</span>
+              <span>{{ t("Создать новый проект") }}</span>
             </v-tooltip>
           </v-card-title>
 
@@ -48,7 +48,7 @@
                 <v-text-field
                   v-model="search"
                   append-inner-icon="mdi-magnify"
-                  :label="t('\u041f\u043e\u0438\u0441\u043a')"
+                  :label="t('Поиск')"
                   variant="outlined"
                   density="compact"
                   hide-details
@@ -62,7 +62,7 @@
                   :items="businessAccounts"
                   item-title="name"
                   item-value="id"
-                  :label="t('\u0411\u0438\u0437\u043d\u0435\u0441 \u0430\u043a\u043a\u0430\u0443\u043d\u0442')"
+                  :label="t('Бизнес аккаунт')"
                   variant="outlined"
                   density="compact"
                   multiple
@@ -78,7 +78,7 @@
                   :items="departments"
                   item-title="name"
                   item-value="id"
-                  :label="t('\u041e\u0442\u0434\u0435\u043b')"
+                  :label="t('Отдел')"
                   variant="outlined"
                   density="compact"
                   multiple
@@ -91,7 +91,7 @@
               <v-col cols="12" lg="3" class="d-flex align-center">
                 <v-checkbox
                   v-model="showClosed"
-                  :label="t('\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u0437\u0430\u043a\u0440\u044b\u0442\u044b\u0435 \u043f\u0440\u043e\u0435\u043a\u0442\u044b')"
+                  :label="t('Показать закрытые проекты')"
                   density="compact"
                   hide-details
                   data-testid="admin-projects-show-closed"
@@ -178,14 +178,14 @@ const departments = ref<DictItem[]>([]);
 const businessAccounts = ref<DictItem[]>([]);
 
 const headers = computed(() => [
-  { title: t("\u041d\u0430\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u043d\u0438\u0435"), key: "name", width: "240px" },
-  { title: t("\u0411\u0438\u0437\u043d\u0435\u0441 \u0430\u043a\u043a\u0430\u0443\u043d\u0442"), key: "businessAccount.name", width: "220px" },
-  { title: t("\u0417\u0430\u043a\u0430\u0437\u0447\u0438\u043a"), key: "customer", width: "220px" },
-  { title: t("\u041d\u0430\u0447\u0430\u043b\u043e (\u043f\u043b\u0430\u043d)"), key: "planStartDate", width: "150px" },
-  { title: t("\u041d\u0430\u0447\u0430\u043b\u043e (\u0444\u0430\u043a\u0442)"), key: "startDate", width: "150px" },
-  { title: t("\u041e\u043a\u043e\u043d\u0447\u0430\u043d\u0438\u0435 (\u043f\u043b\u0430\u043d)"), key: "planEndDate", width: "170px" },
-  { title: t("\u041e\u043a\u043e\u043d\u0447\u0430\u043d\u0438\u0435 (\u0444\u0430\u043a\u0442)"), key: "endDate", width: "170px" },
-  { title: t("\u041e\u0442\u0434\u0435\u043b"), key: "department.name", width: "220px" },
+  { title: t("Наименование"), key: "name", width: "240px" },
+  { title: t("Бизнес аккаунт"), key: "businessAccount.name", width: "220px" },
+  { title: t("Заказчик"), key: "customer", width: "220px" },
+  { title: t("Начало (план)"), key: "planStartDate", width: "150px" },
+  { title: t("Начало (факт)"), key: "startDate", width: "150px" },
+  { title: t("Окончание (план)"), key: "planEndDate", width: "170px" },
+  { title: t("Окончание (факт)"), key: "endDate", width: "170px" },
+  { title: t("Отдел"), key: "department.name", width: "220px" },
 ]);
 
 const filteredItems = computed(() => {

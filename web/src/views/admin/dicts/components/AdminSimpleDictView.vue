@@ -13,8 +13,8 @@
         :fixed-header="true"
         density="compact"
         :loading="loading"
-        :loading-text="t('\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430_\u0434\u0430\u043D\u043D\u044B\u0445')"
-        :no-data-text="t('\u041E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u044E\u0442 \u0434\u0430\u043D\u043D\u044B\u0435')"
+        :loading-text="t('Загрузка_данных')"
+        :no-data-text="t('Отсутствуют данные')"
         :hover="editable"
         :sort-by="[{ key: 'name', order: 'asc' }]"
         :row-props="rowProps"
@@ -47,7 +47,7 @@
               <v-col cols="12" md="6" lg="4">
                 <v-text-field
                   v-model="search"
-                  :label="t('\u041F\u043E\u0438\u0441\u043A')"
+                  :label="t('Поиск')"
                   append-inner-icon="mdi-magnify"
                   variant="outlined"
                   density="compact"
@@ -58,7 +58,7 @@
               <v-col cols="12" md="6" lg="3" class="d-flex align-center">
                 <v-checkbox
                   v-model="hideArchived"
-                  :label="t('\u0421\u043A\u0440\u044B\u0442\u044C \u0430\u0440\u0445\u0438\u0432\u043D\u044B\u0435')"
+                  :label="t('Скрыть архивные')"
                   density="compact"
                   hide-details
                 />
@@ -80,7 +80,7 @@
         </template>
 
         <template #[`item.archived`]="{ item }">
-          {{ item.archived ? t("\u0414\u0430") : t("\u041D\u0435\u0442") }}
+          {{ item.archived ? t("Да") : t("Нет") }}
         </template>
 
         <template
@@ -96,13 +96,13 @@
     <v-dialog v-model="dialog" persistent max-width="640">
       <v-card>
         <v-card-title>
-          {{ dialogMode === "create" ? t("\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C") : t("\u0418\u0437\u043C\u0435\u043D\u0438\u0442\u044C") }}: {{ title }}
+          {{ dialogMode === "create" ? t("Добавить") : t("Изменить") }}: {{ title }}
         </v-card-title>
         <v-card-text>
           <v-form ref="formRef" @submit.prevent="save">
             <v-text-field
               v-model="form.name"
-              :label="t('\u041D\u0430\u0438\u043C\u0435\u043D\u043E\u0432\u0430\u043D\u0438\u0435')"
+              :label="t('Наименование')"
               :rules="nameRules"
               :counter="255"
               variant="outlined"
@@ -113,7 +113,7 @@
 
             <v-select
               v-model="form.archived"
-              :label="t('\u0410\u0440\u0445\u0438\u0432')"
+              :label="t('Архив')"
               :items="archivedOptions"
               item-title="title"
               item-value="value"
@@ -134,10 +134,10 @@
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" :disabled="saving" @click="closeDialog">
-            {{ t("\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C") }}
+            {{ t("Отменить") }}
           </v-btn>
           <v-btn color="primary" :loading="saving" :disabled="saving" @click="save">
-            {{ t("\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C") }}
+            {{ t("Сохранить") }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -187,8 +187,8 @@ const formRef = ref<VForm | null>(null);
 
 const editable = computed(() => props.editable !== false);
 const archivedOptions = computed(() => [
-  { title: t("\u041D\u0435\u0442"), value: false },
-  { title: t("\u0414\u0430"), value: true },
+  { title: t("Нет"), value: false },
+  { title: t("Да"), value: true },
 ]);
 const filteredItems = computed(() => {
   const query = search.value.trim().toLowerCase();
@@ -208,7 +208,7 @@ const forwardedSlots = computed(() =>
 const nameRules = computed(() => [
   (value: string) =>
     Boolean(value && value.length <= 255)
-    || t("\u041E\u0431\u044F\u0437\u0430\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043F\u043E\u043B\u0435. \u041D\u0435 \u0431\u043E\u043B\u0435\u0435 N \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432", { n: 255 }),
+    || t("Обязательное поле. Не более N символов", { n: 255 }),
 ]);
 
 function rowProps() {
