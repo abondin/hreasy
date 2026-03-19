@@ -134,7 +134,13 @@
         </template>
 
         <template #[`item.juniorEmpl.name`]="{ item }">
-          <span class="mentorship-name-cell">{{ item.juniorEmpl?.name ?? "" }}</span>
+          <router-link
+            class="mentorship-name-cell"
+            :to="{ name: 'mentorship-details', params: { juniorRegistryId: String(item.id) } }"
+            @click.stop
+          >
+            {{ item.juniorEmpl?.name ?? "" }}
+          </router-link>
         </template>
 
         <template #[`item.mentor.name`]="{ item }">

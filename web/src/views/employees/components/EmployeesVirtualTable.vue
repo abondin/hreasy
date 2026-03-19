@@ -196,14 +196,16 @@ const headers = computed(() => {
 
 const tableHeight = computed(() => props.tableHeight ?? "70vh");
 const drawerWidth = computed(() => {
-  const width = Number(display.width.value);
   if (display.smAndDown.value) {
-    return width;
+    return "100%";
   }
-  if (display.xlAndUp.value) {
-    return Math.round(width / 3);
+  if (display.lg.value) {
+    return 960;
   }
-  return Math.round(width / 2);
+  if (display.md.value) {
+    return 900;
+  }
+  return 1040;
 });
 
 const projectOptions = computed(() => props.projectOptions);

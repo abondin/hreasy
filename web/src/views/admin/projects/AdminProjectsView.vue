@@ -110,6 +110,14 @@
         <template #[`item.businessAccount.name`]="{ item }">
           {{ item.businessAccount?.name ?? "-" }}
         </template>
+        <template #[`item.name`]="{ item }">
+          <router-link
+            :to="{ name: 'admin-project-details', params: { projectId: String(item.id) } }"
+            @click.stop
+          >
+            {{ item.name }}
+          </router-link>
+        </template>
         <template #[`item.department.name`]="{ item }">
           {{ item.department?.name ?? "-" }}
         </template>

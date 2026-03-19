@@ -167,6 +167,20 @@
           data-testid="salary-requests-table"
           @click:row="onRowClick"
         >
+          <template #[`item.employee.name`]="{ item }">
+            <router-link
+              :to="{
+                name: 'salary-request-details',
+                params: {
+                  period: String(item.req?.increaseStartPeriod ?? selectedPeriodId),
+                  requestId: String(item.id),
+                },
+              }"
+              @click.stop
+            >
+              {{ item.employee?.name ?? "" }}
+            </router-link>
+          </template>
           <template #[`item.req.increaseAmount`]="{ item }">
             {{ formatMoney(item.req?.increaseAmount) }}
           </template>

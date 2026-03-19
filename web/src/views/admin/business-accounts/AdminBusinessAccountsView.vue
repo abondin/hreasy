@@ -66,7 +66,12 @@
         </template>
 
         <template #[`item.name`]="{ item }">
-          <span :class="{ 'text-decoration-line-through': item.archived }">{{ item.name }}</span>
+          <router-link
+            :to="{ name: 'admin-business-account-details', params: { businessAccountId: String(item.id) } }"
+            @click.stop
+          >
+            <span :class="{ 'text-decoration-line-through': item.archived }">{{ item.name }}</span>
+          </router-link>
         </template>
         <template #[`item.managers`]="{ item }">
           <div class="d-flex flex-wrap ga-1">
