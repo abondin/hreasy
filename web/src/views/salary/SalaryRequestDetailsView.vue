@@ -1,6 +1,5 @@
 <template>
-  <v-container fluid class="py-6" data-testid="salary-request-details-view">
-    <div class="mx-auto" style="max-width: 1360px;">
+  <v-container class="py-6" data-testid="salary-request-details-view">
       <v-btn variant="text" prepend-icon="mdi-arrow-left" :to="{ name: 'salary-requests' }">
         {{ t("Повышения и бонусы") }}
       </v-btn>
@@ -40,59 +39,61 @@
           </v-card-title>
           <v-card-subtitle>{{ formatPeriod(request.req.increaseStartPeriod) }}</v-card-subtitle>
           <v-card-text class="pa-6">
-            <v-row>
-              <v-col cols="12" md="12" lg="auto">
+            <v-row class="salary-request-details__employee-row">
+              <v-col cols="12" lg="6" xl="5">
                 <profile-summary v-if="employee" :employee="employee" :read-only="true" />
                 <div v-else class="pa-6 text-body-2 text-medium-emphasis">{{ t("Отсутствуют данные") }}</div>
               </v-col>
-              <v-col cols="12" md="12" lg class="pt-0 pt-lg-3">
-                <div class="text-subtitle-2 mb-2">{{ t("Информация о сотруднике") }}</div>
-                <profile-summary-item :label="t('Дата трудоустройства')">
-                  {{ formatDate(request.employeeInfo.dateOfEmployment) || "-" }}
-                </profile-summary-item>
-                <profile-summary-item v-if="request.type === 1" :label="t('Предыдущий реализованный пересмотр')">
-                  {{ formatDate(request.employeeInfo.previousSalaryIncreaseDate) || "-" }}
-                  <span v-if="request.employeeInfo.previousSalaryIncreaseText">
-                    ({{ request.employeeInfo.previousSalaryIncreaseText }})
-                  </span>
-                </profile-summary-item>
-                <profile-summary-item v-if="request.type === 1" :label="t('Текущая заработная плата')">
-                  {{ formatMoney(request.employeeInfo.currentSalaryAmount) || "-" }}
-                </profile-summary-item>
-                <profile-summary-item v-if="request.type === 1" :label="t('Ассессмент')">
-                  <router-link
-                    v-if="request.assessment"
-                    target="_blank"
-                    :to="`/assessments/${request.employee.id}/${request.assessment.id}`"
-                  >
-                    {{ request.assessment.name }}
-                  </router-link>
-                  <span v-else>-</span>
-                </profile-summary-item>
+              <v-col cols="12" lg="6" xl="7" class="pt-0 pt-lg-2">
+                <property-list variant="aligned" density="wide">
+                  <profile-summary-item :label="t('Дата трудоустройства')">
+                    {{ formatDate(request.employeeInfo.dateOfEmployment) || "-" }}
+                  </profile-summary-item>
+                  <profile-summary-item v-if="request.type === 1" :label="t('Предыдущий реализованный пересмотр')">
+                    {{ formatDate(request.employeeInfo.previousSalaryIncreaseDate) || "-" }}
+                    <span v-if="request.employeeInfo.previousSalaryIncreaseText">
+                      ({{ request.employeeInfo.previousSalaryIncreaseText }})
+                    </span>
+                  </profile-summary-item>
+                  <profile-summary-item v-if="request.type === 1" :label="t('Текущая заработная плата')">
+                    {{ formatMoney(request.employeeInfo.currentSalaryAmount) || "-" }}
+                  </profile-summary-item>
+                  <profile-summary-item v-if="request.type === 1" :label="t('Ассессмент')">
+                    <router-link
+                      v-if="request.assessment"
+                      target="_blank"
+                      :to="`/assessments/${request.employee.id}/${request.assessment.id}`"
+                    >
+                      {{ request.assessment.name }}
+                    </router-link>
+                    <span v-else>-</span>
+                  </profile-summary-item>
+                </property-list>
 
                 <v-divider class="my-3" />
 
-                <div class="text-subtitle-2 mb-2">{{ t("Запрос") }}</div>
-                <profile-summary-item :label="t('Инициатор')">
-                  {{ request.createdBy.name }} ({{ formatDateTime(request.createdAt) }})
-                </profile-summary-item>
-                <profile-summary-item :label="t('Бюджет из бизнес аккаунта')">
-                  {{ request.budgetBusinessAccount?.name ?? "-" }}
-                </profile-summary-item>
-                <profile-summary-item v-if="request.type === 1" :label="t('Перспективы биллинга')">
-                  {{ formatDate(request.budgetExpectedFundingUntil) || "-" }}
-                </profile-summary-item>
-                <profile-summary-item :label="request.type === 1 ? t('Изменение на') : t('Сумма бонуса')">
-                  {{ formatMoney(request.req.increaseAmount) }}
-                </profile-summary-item>
-                <profile-summary-item v-if="request.type === 1" :label="t('Заработная плата после повышения')">
-                  {{ formatMoney(request.req.plannedSalaryAmount) || "-" }}
-                </profile-summary-item>
-                <profile-summary-item v-if="request.type === 1" :label="t('Запрошенная позиция')">
-                  {{ request.req.newPosition?.name || "-" }}
-                </profile-summary-item>
-                <profile-summary-item :label="t('Обоснование')">{{ request.req.reason || "-" }}</profile-summary-item>
-                <profile-summary-item :label="t('Примечание')">{{ request.req.comment || "-" }}</profile-summary-item>
+                <property-list variant="aligned" density="wide">
+                  <profile-summary-item :label="t('Инициатор')">
+                    {{ request.createdBy.name }} ({{ formatDateTime(request.createdAt) }})
+                  </profile-summary-item>
+                  <profile-summary-item :label="t('Бюджет из бизнес аккаунта')">
+                    {{ request.budgetBusinessAccount?.name ?? "-" }}
+                  </profile-summary-item>
+                  <profile-summary-item v-if="request.type === 1" :label="t('Перспективы биллинга')">
+                    {{ formatDate(request.budgetExpectedFundingUntil) || "-" }}
+                  </profile-summary-item>
+                  <profile-summary-item :label="request.type === 1 ? t('Изменение на') : t('Сумма бонуса')">
+                    {{ formatMoney(request.req.increaseAmount) }}
+                  </profile-summary-item>
+                  <profile-summary-item v-if="request.type === 1" :label="t('Заработная плата после повышения')">
+                    {{ formatMoney(request.req.plannedSalaryAmount) || "-" }}
+                  </profile-summary-item>
+                  <profile-summary-item v-if="request.type === 1" :label="t('Запрошенная позиция')">
+                    {{ request.req.newPosition?.name || "-" }}
+                  </profile-summary-item>
+                  <profile-summary-item :label="t('Обоснование')">{{ request.req.reason || "-" }}</profile-summary-item>
+                  <profile-summary-item :label="t('Примечание')">{{ request.req.comment || "-" }}</profile-summary-item>
+                </property-list>
               </v-col>
             </v-row>
           </v-card-text>
@@ -110,17 +111,19 @@
             </template>
           </v-card-title>
           <v-card-text v-if="request.impl">
-            <profile-summary-item :label="t('Результат')">{{ t(`SALARY_REQUEST_STAT.${request.impl.state}`) }}</profile-summary-item>
-            <profile-summary-item v-if="request.impl.implementedBy" :label="t('Принял решение')">
-              {{ request.impl.implementedBy.name }} ({{ formatDateTime(request.impl.implementedAt) }})
-            </profile-summary-item>
-            <profile-summary-item v-if="request.impl.increaseAmount" :label="request.type === 1 ? t('Изменение на') : t('Сумма бонуса')">{{ formatMoney(request.impl.increaseAmount) }}</profile-summary-item>
-            <profile-summary-item v-if="request.impl.salaryAmount" :label="t('Заработная плата после повышения')">{{ formatMoney(request.impl.salaryAmount) }}</profile-summary-item>
-            <profile-summary-item v-if="request.impl.newPosition" :label="t('Новая позиция')">{{ request.impl.newPosition.name }}</profile-summary-item>
-            <profile-summary-item v-if="request.impl.rejectReason" :label="t('Обоснование отказа')">{{ request.impl.rejectReason }}</profile-summary-item>
-            <profile-summary-item v-if="request.impl.increaseStartPeriod" :label="t('Месяц старта изменений')">{{ formatPeriod(request.impl.increaseStartPeriod) }}</profile-summary-item>
-            <profile-summary-item v-if="request.impl.comment" :label="t('Примечание')">{{ request.impl.comment }}</profile-summary-item>
-            <profile-summary-item v-if="request.impl.increaseText" :label="t('Сообщение об изменениях')">{{ request.impl.increaseText }}</profile-summary-item>
+            <property-list variant="aligned" density="wide">
+              <profile-summary-item :label="t('Результат')">{{ t(`SALARY_REQUEST_STAT.${request.impl.state}`) }}</profile-summary-item>
+              <profile-summary-item v-if="request.impl.implementedBy" :label="t('Принял решение')">
+                {{ request.impl.implementedBy.name }} ({{ formatDateTime(request.impl.implementedAt) }})
+              </profile-summary-item>
+              <profile-summary-item v-if="request.impl.increaseAmount" :label="request.type === 1 ? t('Изменение на') : t('Сумма бонуса')">{{ formatMoney(request.impl.increaseAmount) }}</profile-summary-item>
+              <profile-summary-item v-if="request.impl.salaryAmount" :label="t('Заработная плата после повышения')">{{ formatMoney(request.impl.salaryAmount) }}</profile-summary-item>
+              <profile-summary-item v-if="request.impl.newPosition" :label="t('Новая позиция')">{{ request.impl.newPosition.name }}</profile-summary-item>
+              <profile-summary-item v-if="request.impl.rejectReason" :label="t('Обоснование отказа')">{{ request.impl.rejectReason }}</profile-summary-item>
+              <profile-summary-item v-if="request.impl.increaseStartPeriod" :label="t('Месяц старта изменений')">{{ formatPeriod(request.impl.increaseStartPeriod) }}</profile-summary-item>
+              <profile-summary-item v-if="request.impl.comment" :label="t('Примечание')">{{ request.impl.comment }}</profile-summary-item>
+              <profile-summary-item v-if="request.impl.increaseText" :label="t('Сообщение об изменениях')">{{ request.impl.increaseText }}</profile-summary-item>
+            </property-list>
           </v-card-text>
           <v-card-text v-else>{{ t("На рассмотрении") }}</v-card-text>
         </v-card>
@@ -235,7 +238,6 @@
           </v-card-text>
         </v-card>
       </template>
-    </div>
 
     <v-dialog v-model="deleteDialog" max-width="480">
       <v-card>
@@ -396,6 +398,7 @@ import { fetchPositions, type DictItem } from "@/services/dict.service";
 import { fetchEmployeeAssessments, type AssessmentBase } from "@/services/assessment.service";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import PropertyList from "@/components/shared/PropertyList.vue";
 import ProfileSummary from "@/views/profile/components/ProfileSummary.vue";
 import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
 import {
@@ -980,6 +983,10 @@ function toNullable(value: string | null | undefined): string | null {
 </script>
 
 <style scoped>
+.salary-request-details__employee-row {
+  align-items: start;
+}
+
 .history-links-cell {
   display: inline-flex;
   align-items: center;

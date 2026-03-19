@@ -1,6 +1,6 @@
 <template>
   <v-card data-testid="admin-business-account-positions-card">
-    <v-card-title class="d-flex align-center ga-2 flex-wrap">
+    <v-card-title class="d-flex align-center ga-2 flex-wrap px-6 pt-5 pb-2">
       <span>{{ t("Позиции бизнес аккаунта") }}</span>
       <v-spacer />
       <v-btn
@@ -20,7 +20,7 @@
       />
     </v-card-title>
 
-    <v-card-text class="pt-0">
+    <v-card-text class="px-6 pb-5 pt-0">
       <v-row dense class="mb-2">
         <v-col cols="12" md="6">
           <v-text-field

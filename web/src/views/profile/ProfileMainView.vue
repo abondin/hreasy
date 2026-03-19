@@ -1,14 +1,12 @@
 <template>
-  <v-container fluid class="py-6" data-testid="profile-view">
+  <v-container class="py-6" data-testid="profile-view">
     <v-skeleton-loader
       v-if="isLoading"
       type="card, list-item-two-line, actions"
-      class="mx-auto mt-6"
-      style="max-width: 1360px;"
+      class="mt-6"
     />
 
     <template v-else-if="employee">
-      <div class="mx-auto" style="max-width: 1360px;">
         <section data-testid="profile-summary-section">
           <profile-summary-card
             :employee="employee"
@@ -86,7 +84,6 @@
           @close="telegramDialogOpen = false"
           @updated="handleTelegramUpdated"
         />
-      </div>
     </template>
 
     <v-alert
@@ -94,8 +91,6 @@
       type="error"
       variant="tonal"
       border="start"
-      class="mx-auto"
-      style="max-width: 1360px;"
     >
       {{ t("Не_удалось_загрузить_профиль") }}
     </v-alert>
@@ -104,8 +99,6 @@
       type="info"
       variant="tonal"
       border="start"
-      class="mx-auto"
-      style="max-width: 1360px;"
     >
       {{ t("Профиль_недоступен") }}
     </v-alert>

@@ -1,6 +1,5 @@
 <template>
-  <v-container fluid class="py-6" data-testid="mentorship-details-view">
-    <div class="mx-auto" style="max-width: 1360px">
+  <v-container class="py-6" data-testid="mentorship-details-view">
       <v-btn variant="text" prepend-icon="mdi-arrow-left" :to="{ name: 'mentorship' }" data-testid="mentorship-details-back">
         {{ t("Менторство") }}
       </v-btn>
@@ -48,7 +47,6 @@
           />
         </div>
       </template>
-    </div>
 
     <v-dialog v-model="editDialog" max-width="760">
       <v-card>

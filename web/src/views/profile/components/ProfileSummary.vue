@@ -20,6 +20,7 @@
         {{ employee.displayName }}
       </div>
 
+      <property-list>
       <profile-summary-item :label="t('Отдел')">
           {{ employee.department?.name ?? t("Не задан") }}
       </profile-summary-item>
@@ -96,6 +97,7 @@
           </hover-action-wrapper>
         </span>
       </profile-summary-item>
+      </property-list>
     </v-col>
   </v-row>
   <office-map-preview-dialog
@@ -121,6 +123,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, toRef } from "vue";
 import {useI18n} from "vue-i18n";
+import PropertyList from "@/components/shared/PropertyList.vue";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
 import ProfileTelegramEditor from "@/views/profile/components/ProfileTelegramEditor.vue";

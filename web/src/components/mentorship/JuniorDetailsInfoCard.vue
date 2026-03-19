@@ -44,27 +44,29 @@
         </v-col>
 
         <v-col cols="12" lg="4" class="pt-0 pt-lg-3">
-          <profile-summary-item
-            v-for="item in detailItems"
-            :key="item.label"
-            :label="item.label"
-          >
-            <component :is="item.component" v-if="item.component" v-bind="item.componentProps">
-              {{ item.value }}
-            </component>
-            <span v-else>{{ item.value }}</span>
-          </profile-summary-item>
+          <property-list variant="aligned" density="compact">
+            <profile-summary-item
+              v-for="item in detailItems"
+              :key="item.label"
+              :label="item.label"
+            >
+              <component :is="item.component" v-if="item.component" v-bind="item.componentProps">
+                {{ item.value }}
+              </component>
+              <span v-else>{{ item.value }}</span>
+            </profile-summary-item>
 
-          <profile-summary-item v-if="junior.graduation" :label="t('Обучение завершил')">
-            <span>
-              {{ junior.graduation.graduatedBy?.name }}
-              ({{ formatDateTime(junior.graduation.graduatedAt) }})
-            </span>
-          </profile-summary-item>
+            <profile-summary-item v-if="junior.graduation" :label="t('Обучение завершил')">
+              <span>
+                {{ junior.graduation.graduatedBy?.name }}
+                ({{ formatDateTime(junior.graduation.graduatedAt) }})
+              </span>
+            </profile-summary-item>
 
-          <profile-summary-item v-if="junior.graduation" :label="t('Комментарий')">
-            <span>{{ junior.graduation.comment || t("Нет") }}</span>
-          </profile-summary-item>
+            <profile-summary-item v-if="junior.graduation" :label="t('Комментарий')">
+              <span>{{ junior.graduation.comment || t("Нет") }}</span>
+            </profile-summary-item>
+          </property-list>
         </v-col>
       </v-row>
     </v-card-text>
@@ -75,6 +77,7 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { formatDate, formatDateTime } from "@/lib/datetime";
+import PropertyList from "@/components/shared/PropertyList.vue";
 import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
 import ProfileSummary from "@/views/profile/components/ProfileSummary.vue";

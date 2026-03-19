@@ -1,6 +1,5 @@
 <template>
-  <v-container fluid class="py-6" data-testid="assessment-details-view">
-    <div class="mx-auto" style="max-width: 1360px;">
+  <v-container class="py-6" data-testid="assessment-details-view">
       <v-skeleton-loader v-if="loading" type="heading, paragraph, paragraph" class="mt-4" />
       <v-alert v-else-if="fetchError" type="error" variant="tonal" class="mt-4">{{ fetchError }}</v-alert>
       <v-alert
@@ -66,20 +65,22 @@
                 />
               </v-col>
               <v-col cols="12" lg class="pt-2">
-                <profile-summary-item :label="t('Дата ассессмента')">
-                  <span :class="{ 'text-medium-emphasis text-decoration-line-through': Boolean(assessment.canceledBy) }">
-                    {{ formatDate(assessment.plannedDate) }}
-                  </span>
-                </profile-summary-item>
-                <profile-summary-item :label="t('Создано')">
-                  {{ assessment.createdBy ? `${formatDateTime(assessment.createdAt)} (${assessment.createdBy.name})` : "-" }}
-                </profile-summary-item>
-                <profile-summary-item :label="t('Завершено')">
-                  {{ assessment.completedBy ? `${formatDateTime(assessment.completedAt)} (${assessment.completedBy.name})` : "-" }}
-                </profile-summary-item>
-                <profile-summary-item :label="t('Отменено')">
-                  {{ assessment.canceledBy ? `${formatDateTime(assessment.canceledAt)} (${assessment.canceledBy.name})` : "-" }}
-                </profile-summary-item>
+                <property-list variant="aligned">
+                  <profile-summary-item :label="t('Дата ассессмента')">
+                    <span :class="{ 'text-medium-emphasis text-decoration-line-through': Boolean(assessment.canceledBy) }">
+                      {{ formatDate(assessment.plannedDate) }}
+                    </span>
+                  </profile-summary-item>
+                  <profile-summary-item :label="t('Создано')">
+                    {{ assessment.createdBy ? `${formatDateTime(assessment.createdAt)} (${assessment.createdBy.name})` : "-" }}
+                  </profile-summary-item>
+                  <profile-summary-item :label="t('Завершено')">
+                    {{ assessment.completedBy ? `${formatDateTime(assessment.completedAt)} (${assessment.completedBy.name})` : "-" }}
+                  </profile-summary-item>
+                  <profile-summary-item :label="t('Отменено')">
+                    {{ assessment.canceledBy ? `${formatDateTime(assessment.canceledAt)} (${assessment.canceledBy.name})` : "-" }}
+                  </profile-summary-item>
+                </property-list>
               </v-col>
             </v-row>
           </v-card-text>
@@ -126,7 +127,6 @@
           </v-card-text>
         </v-card>
       </template>
-    </div>
 
     <v-dialog v-model="uploadDialog" max-width="720" persistent>
       <v-card>
@@ -197,6 +197,7 @@ import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, type RouteLocationRaw } from "vue-router";
 import FileUploadZone, { type UploadCompleteEvent } from "@/components/FileUploadZone.vue";
+import PropertyList from "@/components/shared/PropertyList.vue";
 import { formatDate, formatDateTime } from "@/lib/datetime";
 import { errorUtils } from "@/lib/errors";
 import { findEmployee, type Employee } from "@/services/employee.service";
