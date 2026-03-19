@@ -39,61 +39,79 @@
           </v-card-title>
           <v-card-subtitle>{{ formatPeriod(request.req.increaseStartPeriod) }}</v-card-subtitle>
           <v-card-text class="pa-6">
-            <v-row class="salary-request-details__employee-row">
-              <v-col cols="12" lg="6" xl="5">
-                <profile-summary v-if="employee" :employee="employee" :read-only="true" />
-                <div v-else class="pa-6 text-body-2 text-medium-emphasis">{{ t("Отсутствуют данные") }}</div>
+            <v-row class="salary-request-details__summary" align="start">
+              <v-col cols="12" sm="auto" class="salary-request-details__avatar-col">
+                <profile-avatar
+                  v-if="employee"
+                  :owner="employee"
+                  :read-only="true"
+                />
               </v-col>
-              <v-col cols="12" lg="6" xl="7" class="pt-0 pt-lg-2">
-                <property-list variant="aligned" density="wide">
-                  <profile-summary-item :label="t('Дата трудоустройства')">
-                    {{ formatDate(request.employeeInfo.dateOfEmployment) || "-" }}
-                  </profile-summary-item>
-                  <profile-summary-item v-if="request.type === 1" :label="t('Предыдущий реализованный пересмотр')">
-                    {{ formatDate(request.employeeInfo.previousSalaryIncreaseDate) || "-" }}
-                    <span v-if="request.employeeInfo.previousSalaryIncreaseText">
-                      ({{ request.employeeInfo.previousSalaryIncreaseText }})
-                    </span>
-                  </profile-summary-item>
-                  <profile-summary-item v-if="request.type === 1" :label="t('Текущая заработная плата')">
-                    {{ formatMoney(request.employeeInfo.currentSalaryAmount) || "-" }}
-                  </profile-summary-item>
-                  <profile-summary-item v-if="request.type === 1" :label="t('Ассессмент')">
-                    <router-link
-                      v-if="request.assessment"
-                      target="_blank"
-                      :to="`/assessments/${request.employee.id}/${request.assessment.id}`"
-                    >
-                      {{ request.assessment.name }}
-                    </router-link>
-                    <span v-else>-</span>
-                  </profile-summary-item>
-                </property-list>
 
-                <v-divider class="my-3" />
+              <v-col cols="12" sm class="min-width-0">
+                <v-row align="start">
+                  <v-col cols="12" xl="6">
+                    <profile-summary
+                      v-if="employee"
+                      :employee="employee"
+                      :read-only="true"
+                      :show-avatar="false"
+                    />
+                    <div v-else class="pa-6 text-body-2 text-medium-emphasis">{{ t("Отсутствуют данные") }}</div>
+                  </v-col>
 
-                <property-list variant="aligned" density="wide">
-                  <profile-summary-item :label="t('Инициатор')">
-                    {{ request.createdBy.name }} ({{ formatDateTime(request.createdAt) }})
-                  </profile-summary-item>
-                  <profile-summary-item :label="t('Бюджет из бизнес аккаунта')">
-                    {{ request.budgetBusinessAccount?.name ?? "-" }}
-                  </profile-summary-item>
-                  <profile-summary-item v-if="request.type === 1" :label="t('Перспективы биллинга')">
-                    {{ formatDate(request.budgetExpectedFundingUntil) || "-" }}
-                  </profile-summary-item>
-                  <profile-summary-item :label="request.type === 1 ? t('Изменение на') : t('Сумма бонуса')">
-                    {{ formatMoney(request.req.increaseAmount) }}
-                  </profile-summary-item>
-                  <profile-summary-item v-if="request.type === 1" :label="t('Заработная плата после повышения')">
-                    {{ formatMoney(request.req.plannedSalaryAmount) || "-" }}
-                  </profile-summary-item>
-                  <profile-summary-item v-if="request.type === 1" :label="t('Запрошенная позиция')">
-                    {{ request.req.newPosition?.name || "-" }}
-                  </profile-summary-item>
-                  <profile-summary-item :label="t('Обоснование')">{{ request.req.reason || "-" }}</profile-summary-item>
-                  <profile-summary-item :label="t('Примечание')">{{ request.req.comment || "-" }}</profile-summary-item>
-                </property-list>
+                  <v-col cols="12" xl="6" class="pt-0 pt-xl-12">
+                    <property-list variant="aligned" density="wide">
+                      <profile-summary-item :label="t('Дата трудоустройства')">
+                        {{ formatDate(request.employeeInfo.dateOfEmployment) || "-" }}
+                      </profile-summary-item>
+                      <profile-summary-item v-if="request.type === 1" :label="t('Предыдущий реализованный пересмотр')">
+                        {{ formatDate(request.employeeInfo.previousSalaryIncreaseDate) || "-" }}
+                        <span v-if="request.employeeInfo.previousSalaryIncreaseText">
+                          ({{ request.employeeInfo.previousSalaryIncreaseText }})
+                        </span>
+                      </profile-summary-item>
+                      <profile-summary-item v-if="request.type === 1" :label="t('Текущая заработная плата')">
+                        {{ formatMoney(request.employeeInfo.currentSalaryAmount) || "-" }}
+                      </profile-summary-item>
+                      <profile-summary-item v-if="request.type === 1" :label="t('Ассессмент')">
+                        <router-link
+                          v-if="request.assessment"
+                          target="_blank"
+                          :to="`/assessments/${request.employee.id}/${request.assessment.id}`"
+                        >
+                          {{ request.assessment.name }}
+                        </router-link>
+                        <span v-else>-</span>
+                      </profile-summary-item>
+                    </property-list>
+
+                    <v-divider class="my-3" />
+
+                    <property-list variant="aligned" density="wide">
+                      <profile-summary-item :label="t('Инициатор')">
+                        {{ request.createdBy.name }} ({{ formatDateTime(request.createdAt) }})
+                      </profile-summary-item>
+                      <profile-summary-item :label="t('Бюджет из бизнес аккаунта')">
+                        {{ request.budgetBusinessAccount?.name ?? "-" }}
+                      </profile-summary-item>
+                      <profile-summary-item v-if="request.type === 1" :label="t('Перспективы биллинга')">
+                        {{ formatDate(request.budgetExpectedFundingUntil) || "-" }}
+                      </profile-summary-item>
+                      <profile-summary-item :label="request.type === 1 ? t('Изменение на') : t('Сумма бонуса')">
+                        {{ formatMoney(request.req.increaseAmount) }}
+                      </profile-summary-item>
+                      <profile-summary-item v-if="request.type === 1" :label="t('Заработная плата после повышения')">
+                        {{ formatMoney(request.req.plannedSalaryAmount) || "-" }}
+                      </profile-summary-item>
+                      <profile-summary-item v-if="request.type === 1" :label="t('Запрошенная позиция')">
+                        {{ request.req.newPosition?.name || "-" }}
+                      </profile-summary-item>
+                      <profile-summary-item :label="t('Обоснование')">{{ request.req.reason || "-" }}</profile-summary-item>
+                      <profile-summary-item :label="t('Примечание')">{{ request.req.comment || "-" }}</profile-summary-item>
+                    </property-list>
+                  </v-col>
+                </v-row>
               </v-col>
             </v-row>
           </v-card-text>
@@ -399,6 +417,7 @@ import { fetchEmployeeAssessments, type AssessmentBase } from "@/services/assess
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import PropertyList from "@/components/shared/PropertyList.vue";
+import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import ProfileSummary from "@/views/profile/components/ProfileSummary.vue";
 import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
 import {
@@ -983,8 +1002,12 @@ function toNullable(value: string | null | undefined): string | null {
 </script>
 
 <style scoped>
-.salary-request-details__employee-row {
+.salary-request-details__summary {
   align-items: start;
+}
+
+.salary-request-details__avatar-col {
+  flex: 0 0 auto;
 }
 
 .history-links-cell {

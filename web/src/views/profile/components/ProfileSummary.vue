@@ -7,7 +7,7 @@
     no-gutters
     :class="['profile-summary__layout', { 'profile-summary__layout--stacked': isMobile }]"
   >
-    <v-col cols="auto" :class="isMobile ? 'mb-4' : 'mr-6'">
+    <v-col v-if="showAvatar" cols="auto" :class="isMobile ? 'mb-4' : 'mr-6'">
       <profile-avatar
           :owner="employee"
           :read-only="avatarReadOnly"
@@ -144,12 +144,14 @@ const props = withDefaults(
     avatarReadOnly?: boolean;
     projectReadOnly?: boolean;
     showName?: boolean;
+    showAvatar?: boolean;
   }>(),
   {
     readOnly: true,
     avatarReadOnly: undefined,
     projectReadOnly: undefined,
     showName: true,
+    showAvatar: true,
   },
 );
 
@@ -166,6 +168,7 @@ const readOnly = computed(() => props.readOnly);
 const avatarReadOnly = computed(() => props.avatarReadOnly ?? props.readOnly);
 const projectReadOnly = computed(() => props.projectReadOnly ?? props.readOnly);
 const isMobile = computed(() => display.smAndDown.value);
+const showAvatar = computed(() => props.showAvatar);
 
 const {
   mapDialogOpen,
