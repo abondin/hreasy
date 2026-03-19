@@ -6,136 +6,119 @@
 <template>
   <v-dialog v-model="dialogOpen" max-width="960" scrollable>
     <v-card>
-      <v-card-title class="d-flex align-center">
-        <span>{{ t("Подробная информация по проекту ") }}</span>
-        <v-spacer/>
-        <v-btn icon="mdi-close" variant="text" @click="closeDialog"/>
+      <v-card-title class="d-flex align-center ga-2">
+        <span>{{ t("Подробная информация по проекту") }}</span>
+        <v-spacer />
+        <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
       </v-card-title>
 
-      <v-card-text>
+      <v-card-text class="pa-6">
         <v-alert
-            v-if="errorMessage"
-            type="error"
-            variant="tonal"
-            border="start"
-            class="mb-4"
+          v-if="errorMessage"
+          type="error"
+          variant="tonal"
+          border="start"
+          class="mb-4"
         >
           {{ errorMessage }}
         </v-alert>
 
         <v-progress-linear
-            v-else-if="loading"
-            color="primary"
-            indeterminate
-            class="mb-4"
+          v-else-if="loading"
+          color="primary"
+          indeterminate
+          class="mb-4"
         />
 
         <div v-else-if="project">
-          <v-row class="mb-4" dense>
-            <v-col cols="12" md="6">
-              <v-list density="comfortable">
-                <v-list-item>
-                  <v-list-item-title>{{ t("Наименование") }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ project.name }}</v-list-item-subtitle>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-title>{{ t("Отдел") }}</v-list-item-title>
-                  <v-list-item-subtitle>
-                    {{ project.department?.name ?? t("Не задан") }}
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-title>
-                    {{ t("Бизнес аккаунт") }}
-                  </v-list-item-title>
-                  <v-list-item-subtitle>
-                    {{ project.businessAccount?.name ?? t("Не задан") }}
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-title>{{ t("Заказчик") }}</v-list-item-title>
-                  <v-list-item-subtitle>
-                    {{ project.customer ?? t("Не задан") }}
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-title>{{ t("Начало") }}</v-list-item-title>
-                  <v-list-item-subtitle>
+          <v-row class="mb-6" align="start">
+            <v-col cols="12" md="5">
+              <property-list variant="aligned" density="compact">
+                <profile-summary-item :label="t('Наименование')">
+                  {{ project.name }}
+                </profile-summary-item>
+                <profile-summary-item :label="t('Отдел')">
+                  {{ project.department?.name ?? t("Не задан") }}
+                </profile-summary-item>
+                <profile-summary-item :label="t('Бизнес аккаунт')">
+                  {{ project.businessAccount?.name ?? t("Не задан") }}
+                </profile-summary-item>
+                <profile-summary-item :label="t('Заказчик')">
+                  {{ project.customer ?? t("Не задан") }}
+                </profile-summary-item>
+                <profile-summary-item :label="t('Начало')">
                   {{ formatPlanActual(project.planStartDate, project.startDate) }}
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-title>{{ t("Окончание") }}</v-list-item-title>
-                  <v-list-item-subtitle>
+                </profile-summary-item>
+                <profile-summary-item :label="t('Окончание')">
                   {{ formatPlanActual(project.planEndDate, project.endDate) }}
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-list-item v-for="group in managerGroups" :key="group.type">
-                  <v-list-item-title>
-                    {{
-                      group.type === "project"
-                          ? t("Менеджеры проекта")
-                          : t("Менеджеры бизнес аккаунта")
-                    }}
-                  </v-list-item-title>
-                  <v-list-item-subtitle>
+                </profile-summary-item>
+                <profile-summary-item
+                  v-for="group in managerGroups"
+                  :key="group.type"
+                  :label="group.type === 'project' ? t('Менеджеры проекта') : t('Менеджеры бизнес аккаунта')"
+                >
+                  <div class="d-flex flex-wrap ga-1">
                     <v-chip
-                        v-for="manager in group.managers"
-                        :key="manager.id"
-                        class="mr-1 mb-1"
-                        size="small"
-                        variant="outlined"
+                      v-for="manager in group.managers"
+                      :key="manager.id"
+                      size="small"
+                      variant="outlined"
                     >
                       {{ manager.employeeName }}
                       <v-tooltip location="bottom">
                         <template #activator="{ props: tooltipProps }">
                           <v-icon
-                              v-bind="tooltipProps"
-                              icon="mdi-help-circle"
-                              size="x-small"
-                              class="ml-1"
+                            v-bind="tooltipProps"
+                            icon="mdi-help-circle"
+                            size="x-small"
+                            class="ml-1"
                           />
                         </template>
                         <span>
                           {{
                             `${t("Основное направление")}: ${t(
-                                `MANAGER_RESPONSIBILITY_TYPE.${manager.responsibilityType}`,
+                              `MANAGER_RESPONSIBILITY_TYPE.${manager.responsibilityType}`,
                             )}`
                           }}
                         </span>
                       </v-tooltip>
                     </v-chip>
-                  </v-list-item-subtitle>
-                </v-list-item>
-              </v-list>
+                  </div>
+                </profile-summary-item>
+              </property-list>
             </v-col>
 
-            <v-col v-if="project.info" cols="12" md="6">
+            <v-col cols="12" md="7">
               <markdown-text-renderer
-                  class="project-info__description"
-                  :content="project.info"
+                v-if="project.info"
+                :content="project.info"
               />
+              <div v-else class="text-body-2 text-medium-emphasis">
+                {{ t("Не задан") }}
+              </div>
             </v-col>
           </v-row>
 
           <v-timeline align="start">
             <v-timeline-item
-                v-for="change in projectChanges"
-                :key="change.id"
-                dot-color="primary"
-                size="small"
+              v-for="change in projectChanges"
+              :key="change.id"
+              dot-color="primary"
+              size="small"
             >
               <template #opposite>
                 <div class="text-caption font-weight-medium">
                   {{ formatDateLocalized(change.changedAt) }}
                 </div>
                 <div
-                    v-if="change.changedBy" class="text-caption text-medium-emphasis">
+                  v-if="change.changedBy"
+                  class="text-caption text-medium-emphasis"
+                >
                   {{ change.changedBy.name }}
                 </div>
               </template>
 
-              <div class="project-history-entry">
+              <div class="py-2 d-flex flex-column ga-1">
                 <div class="text-subtitle-2 font-weight-medium">
                   {{ change.project?.name ?? "-" }}
                 </div>
@@ -155,25 +138,27 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref, watch} from "vue";
-import {useI18n} from "vue-i18n";
-import type {ManagerOfObject, ProjectInfo} from "@/services/projects.service";
-import {fetchProjectInfo} from "@/services/projects.service";
+import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import type { ManagerOfObject, ProjectInfo } from "@/services/projects.service";
+import { fetchProjectInfo } from "@/services/projects.service";
 import MarkdownTextRenderer from "@/components/shared/MarkdownTextRenderer.vue";
-import {type EmployeeProjectChange, fetchEmployeeProjectChanges,} from "@/services/employee.service";
+import PropertyList from "@/components/shared/PropertyList.vue";
+import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
+import { type EmployeeProjectChange, fetchEmployeeProjectChanges } from "@/services/employee.service";
 import { formatDate } from "@/lib/datetime";
 
 const props = withDefaults(
-    defineProps<{
-      modelValue: boolean;
-      projectId: number | null;
-      employeeId: number | null;
-    }>(),
-    {
-      modelValue: false,
-      projectId: null,
-      employeeId: null,
-    },
+  defineProps<{
+    modelValue: boolean;
+    projectId: number | null;
+    employeeId: number | null;
+  }>(),
+  {
+    modelValue: false,
+    projectId: null,
+    employeeId: null,
+  },
 );
 
 const emit = defineEmits<{
@@ -185,7 +170,7 @@ const dialogOpen = computed({
   set: (value: boolean) => emit("update:modelValue", value),
 });
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const loading = ref(false);
 const errorMessage = ref("");
@@ -196,8 +181,8 @@ const managerGroups = computed(() => {
   if (!project.value) {
     return [];
   }
-  const groups: { type: "project" | "business_account"; managers: ManagerOfObject[] }[] =
-      [];
+
+  const groups: { type: "project" | "business_account"; managers: ManagerOfObject[] }[] = [];
   if (project.value.managers?.length) {
     groups.push({
       type: "project",
@@ -214,23 +199,23 @@ const managerGroups = computed(() => {
 });
 
 watch(
-    () => dialogOpen.value,
-    (open) => {
-      if (open) {
-        void loadData();
-      } else {
-        resetState();
-      }
-    },
+  () => dialogOpen.value,
+  (open) => {
+    if (open) {
+      void loadData();
+    } else {
+      resetState();
+    }
+  },
 );
 
 watch(
-    () => props.projectId,
-    (newId, oldId) => {
-      if (dialogOpen.value && newId && newId !== oldId) {
-        void loadData();
-      }
-    },
+  () => props.projectId,
+  (newId, oldId) => {
+    if (dialogOpen.value && newId && newId !== oldId) {
+      void loadData();
+    }
+  },
 );
 
 async function loadData() {
@@ -291,20 +276,3 @@ function formatPlanActual(
   return parts.join(", ");
 }
 </script>
-
-<style scoped>
-.project-info__description {
-  white-space: pre-wrap;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  color: rgba(0, 0, 0, 0.78);
-}
-
-
-.project-history-entry {
-  padding: 8px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-</style>

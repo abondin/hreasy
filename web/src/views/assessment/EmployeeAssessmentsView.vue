@@ -1,85 +1,88 @@
 <template>
-  <v-container fluid class="py-6" data-testid="employee-assessments-view">
-    <div class="mx-auto" style="max-width: 1360px;">
-      <v-breadcrumbs
-        class="px-0"
-        density="compact"
-        divider="/"
-        :items="breadcrumbs"
-      >
-        <template #item="{ item }">
-          <router-link v-if="item.to" :to="item.to" class="text-decoration-none">
-            {{ item.title }}
-          </router-link>
-          <span v-else>{{ item.title }}</span>
-        </template>
-      </v-breadcrumbs>
-
-      <v-skeleton-loader v-if="loading" type="heading, paragraph, paragraph" class="mt-4" />
-      <v-alert v-else-if="error" type="error" variant="tonal" class="mt-4">{{ error }}</v-alert>
-
-      <template v-else-if="employee">
-        <v-card class="mt-4">
-          <v-card-text class="pa-6">
-            <profile-summary :employee="employee" :read-only="true" />
-          </v-card-text>
-        </v-card>
-
-        <v-card class="mt-5">
-          <v-card-title class="d-flex align-center ga-3 flex-wrap">
-            <v-select
-              v-model="includeCanceled"
-              :items="includeCanceledOptions"
-              item-title="title"
-              item-value="value"
-              :label="t('Учитывать отмененные')"
-              density="compact"
-              hide-details
-              style="max-width: 260px;"
-            />
-            <v-spacer />
-            <v-btn
-              color="primary"
-              icon="mdi-plus"
-              variant="text"
-              :disabled="loading"
-              data-testid="employee-assessments-add"
-              @click="openCreateDialog"
-            />
-          </v-card-title>
-          <v-card-text>
-            <HREasyTableBase
-              table-class="text-truncate"
-              :headers="headers"
-              :items="filteredItems"
-              :loading="loading"
-              :loading-text="t('Загрузка_данных')"
-              :no-data-text="t('Отсутствуют данные')"
-              density="compact"
-              :sort-by="[{ key: 'plannedDate', order: 'desc' }]"
-              data-testid="employee-assessments-table"
-            >
-              <template #[`item.plannedDate`]="{ item }">
-                <router-link
-                  :to="{ name: 'assessment-details', params: { employeeId: String(employee.id), assessmentId: String(item.id) } }"
-                >
-                  {{ formatDate(item.plannedDate) }}
-                </router-link>
-              </template>
-              <template #[`item.createdAt`]="{ item }">
-                {{ item.createdBy ? `${formatDateTime(item.createdAt)} (${item.createdBy.name})` : "" }}
-              </template>
-              <template #[`item.completedAt`]="{ item }">
-                {{ item.completedBy ? `${formatDateTime(item.completedAt)} (${item.completedBy.name})` : "" }}
-              </template>
-              <template #[`item.canceledAt`]="{ item }">
-                {{ item.canceledBy ? `${formatDateTime(item.canceledAt)} (${item.canceledBy.name})` : "" }}
-              </template>
-            </HREasyTableBase>
-          </v-card-text>
-        </v-card>
+  <v-container class="py-6" data-testid="employee-assessments-view">
+    <v-breadcrumbs
+      class="px-0"
+      density="compact"
+      divider="/"
+      :items="breadcrumbs"
+    >
+      <template #item="{ item }">
+        <router-link v-if="item.to" :to="item.to" class="text-decoration-none">
+          {{ item.title }}
+        </router-link>
+        <span v-else>{{ item.title }}</span>
       </template>
-    </div>
+    </v-breadcrumbs>
+
+    <v-skeleton-loader v-if="loading" type="heading, paragraph, paragraph" class="mt-4" />
+    <v-alert v-else-if="error" type="error" variant="tonal" class="mt-4">{{ error }}</v-alert>
+
+    <template v-else-if="employee">
+      <v-card class="mt-4">
+        <v-card-text class="pa-6">
+          <profile-summary :employee="employee" :read-only="true" />
+        </v-card-text>
+      </v-card>
+
+      <v-card class="mt-5">
+        <v-card-title class="pb-2">
+          <v-row align="center" class="w-100">
+            <v-col cols="12" sm="5" md="4">
+              <v-select
+                v-model="includeCanceled"
+                :items="includeCanceledOptions"
+                item-title="title"
+                item-value="value"
+                :label="t('Учитывать отмененные')"
+                density="compact"
+                hide-details
+              />
+            </v-col>
+            <v-col cols="12" sm="7" md="8" class="d-flex justify-end">
+              <v-btn
+                color="primary"
+                icon="mdi-plus"
+                variant="text"
+                :disabled="loading"
+                data-testid="employee-assessments-add"
+                @click="openCreateDialog"
+              />
+            </v-col>
+          </v-row>
+        </v-card-title>
+
+        <v-card-text>
+          <HREasyTableBase
+            table-class="text-truncate"
+            :headers="headers"
+            :items="filteredItems"
+            :loading="loading"
+            :loading-text="t('Загрузка_данных')"
+            :no-data-text="t('Отсутствуют данные')"
+            density="compact"
+            :sort-by="[{ key: 'plannedDate', order: 'desc' }]"
+            data-testid="employee-assessments-table"
+          >
+            <template #[`item.plannedDate`]="{ item }">
+              <router-link
+                :to="{ name: 'assessment-details', params: { employeeId: String(employee.id), assessmentId: String(item.id) } }"
+              >
+                {{ formatDate(item.plannedDate) }}
+              </router-link>
+            </template>
+            <template #[`item.createdAt`]="{ item }">
+              {{ item.createdBy ? `${formatDateTime(item.createdAt)} (${item.createdBy.name})` : "" }}
+            </template>
+            <template #[`item.completedAt`]="{ item }">
+              {{ item.completedBy ? `${formatDateTime(item.completedAt)} (${item.completedBy.name})` : "" }}
+            </template>
+            <template #[`item.canceledAt`]="{ item }">
+              {{ item.canceledBy ? `${formatDateTime(item.canceledAt)} (${item.canceledBy.name})` : "" }}
+            </template>
+          </HREasyTableBase>
+        </v-card-text>
+      </v-card>
+    </template>
 
     <v-dialog v-model="createDialog" max-width="560">
       <v-card>
@@ -152,6 +155,7 @@ const includeCanceledOptions = computed(() => [
   { title: t("Нет"), value: false },
   { title: t("Да"), value: true },
 ]);
+
 const breadcrumbs = computed<Array<{ title: string; to?: RouteLocationRaw }>>(() => [
   {
     title: t("Ассессменты"),

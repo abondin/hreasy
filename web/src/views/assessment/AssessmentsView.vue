@@ -107,10 +107,15 @@
           :sort-by="[{ key: 'lastAssessmentDate', order: 'desc' }]"
           item-key="employeeId"
           height="calc(100vh - 280px)"
+          :row-props="rowProps"
           data-testid="assessments-table"
+          @click:row="onRowClick"
         >
           <template #[`item.displayName`]="{ item }">
-            <router-link :to="{ name: 'employee-assessments', params: { employeeId: String(item.employeeId) } }">
+            <router-link
+              :to="{ name: 'employee-assessments', params: { employeeId: String(item.employeeId) } }"
+              @click.stop
+            >
               {{ item.displayName }}
             </router-link>
           </template>
@@ -138,7 +143,9 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
 import { formatDate } from "@/lib/datetime";
+import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
@@ -152,6 +159,7 @@ import {
 } from "@/services/assessment.service";
 
 const { t } = useI18n();
+const router = useRouter();
 const permissions = usePermissions();
 
 const loading = ref(false);
@@ -206,6 +214,19 @@ const filteredItems = computed(() => {
   });
 });
 
+function rowProps() {
+  return { class: "cursor-pointer" };
+}
+
+function onRowClick(_event: Event, payload: unknown): void {
+  const row = extractDataTableRow<AssessmentEmployeeSummary>(payload);
+  if (!row?.employeeId) {
+    return;
+  }
+
+  router.push({ name: "employee-assessments", params: { employeeId: String(row.employeeId) } }).catch(() => undefined);
+}
+
 onMounted(() => {
   load().catch(() => undefined);
 });
@@ -246,3 +267,9 @@ async function runExport(): Promise<void> {
   }
 }
 </script>
+
+<style scoped>
+.assessments-table :deep(tbody tr:hover) {
+  cursor: pointer;
+}
+</style>

@@ -1,8 +1,8 @@
 <template>
-  <v-row no-gutters align="center">
-    <v-col class="py-0">
-      <div class="d-flex align-center ga-1">
-        <span class="text-body-1 text-no-wrap">{{ t(`JUNIOR_REPORT_RATING.${field}.title`) }}</span>
+  <div class="junior-report-rating-field">
+    <div class="junior-report-rating-field__label">
+      <div class="d-flex align-center ga-1 min-width-0">
+        <span class="text-body-1">{{ t(`JUNIOR_REPORT_RATING.${field}.title`) }}</span>
         <v-tooltip location="bottom" max-width="500">
           <template #activator="{ props }">
             <v-icon v-bind="props" size="default" icon="mdi-help-circle-outline" />
@@ -27,8 +27,9 @@
           <span>{{ t("По сравнению с последним результатом") }}</span>
         </v-tooltip>
       </div>
-    </v-col>
-    <v-col cols="auto" class="py-0">
+    </div>
+
+    <div class="junior-report-rating-field__value">
       <v-rating
         :model-value="modelValue"
         :readonly="readonly"
@@ -39,8 +40,8 @@
         active-color="warning"
         @update:model-value="onUpdate"
       />
-    </v-col>
-  </v-row>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -89,3 +90,27 @@ function onUpdate(value: string | number) {
   emit("update:modelValue", Number(value));
 }
 </script>
+
+<style scoped>
+.junior-report-rating-field {
+  display: grid;
+  grid-template-columns: 380px auto;
+  column-gap: 12px;
+  align-items: center;
+}
+
+.junior-report-rating-field__label {
+  min-width: 0;
+}
+
+.junior-report-rating-field__value {
+  justify-self: start;
+}
+
+@media (max-width: 599px) {
+  .junior-report-rating-field {
+    grid-template-columns: 1fr;
+    row-gap: 4px;
+  }
+}
+</style>

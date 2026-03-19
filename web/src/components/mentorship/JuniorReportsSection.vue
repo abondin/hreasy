@@ -78,7 +78,7 @@
               </v-tooltip>
             </v-col>
 
-            <v-col cols="12" lg="6" class="pl-0 pr-lg-6 pb-3 pb-lg-0">
+            <v-col cols="12" xl="4" class="pl-0 pr-xl-6 pb-3 pb-xl-0">
               <div class="d-flex flex-column ga-0">
                 <junior-report-rating-field
                   v-for="field in ratingFields"
@@ -92,7 +92,7 @@
               </div>
             </v-col>
 
-            <v-col cols="12" lg="5">
+            <v-col cols="12" xl="7">
               <markdown-text-renderer :content="report.comment" />
             </v-col>
           </v-row>
