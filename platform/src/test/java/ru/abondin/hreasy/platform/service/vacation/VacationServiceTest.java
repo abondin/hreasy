@@ -12,6 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import reactor.test.StepVerifier;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
+import ru.abondin.hreasy.platform.repo.notification.UpcomingVacationNotificationLogRepo;
 import ru.abondin.hreasy.platform.repo.vacation.VacPlanningPeriodEntry;
 import ru.abondin.hreasy.platform.repo.vacation.VacPlanningPeriodRepo;
 import ru.abondin.hreasy.platform.repo.vacation.VacationRepo;
@@ -41,6 +42,9 @@ class VacationServiceTest extends BaseServiceTest {
     private VacationRepo vacationRepo;
 
     @Autowired
+    private UpcomingVacationNotificationLogRepo upcomingVacationNotificationLogRepo;
+
+    @Autowired
     private R2dbcEntityTemplate db;
 
     @BeforeEach
@@ -49,6 +53,7 @@ class VacationServiceTest extends BaseServiceTest {
         ((TestFixedDataTimeConfig.TestFixedDataTimeService) dateTimeService).init(now);
         initEmployeesDataAndLogin();
         planningPeriodRepo.deleteAll()
+                .then(upcomingVacationNotificationLogRepo.deleteAll())
                 .then(vacationRepo.deleteAll())
                 .then(db.insert(new VacPlanningPeriodEntry(
                         now.getYear(),
