@@ -1,6 +1,6 @@
 # HREasy - HR Portal for STM Internal Uses
 
-@author Alexander Bondin 2019-2023
+@author Alexander Bondin 2019-2025
 
 # Technologies Stack
 

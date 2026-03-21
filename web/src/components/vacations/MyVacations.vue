@@ -1,213 +1,267 @@
-<!-- My planned vacations-->
+<!--
+  Planned vacations for the current employee.
+-->
 <template>
   <v-card>
-    <v-card-title>
-      <span>{{ $t('Планируемые отпуска') }}</span>
-      <v-spacer></v-spacer>
+    <v-card-title class="d-flex align-center">
+      <span>{{ t("Планируемые отпуска") }}</span>
+      <v-spacer />
 
-      <v-menu offset-y v-if="openedPeriods && openedPeriods.length>0">
-        <template v-slot:activator="{ on: menu, attrs }">
-          <v-tooltip top>
-            <template v-slot:activator="{ on: tooltip }">
-              <v-btn color="primary" v-bind="attrs" v-on="{ ...tooltip, ...menu }">
-                {{ $t('Запланировать') }}
+      <v-menu v-if="openedPeriods.length" location="bottom">
+        <template #activator="{ props: menuProps }">
+          <v-tooltip location="top">
+            <template #activator="{ props: tooltipProps }">
+              <v-btn
+                color="primary"
+                v-bind="{ ...menuProps, ...tooltipProps }"
+              >
+                {{ t("Запланировать") }}
               </v-btn>
             </template>
-            <span>{{ $t('Запланировать отпуск на будущий год') }}</span>
+            <span>{{ t("Запланировать отпуск на будущий год") }}</span>
           </v-tooltip>
         </template>
-        <v-list>
-          <v-list-item link v-for="(item, index) in openedPeriods" :key="index">
-            <v-list-item-title @click="requestAction.openRequestVacationDialog(item.year)">
-              {{ item.year }}
-            </v-list-item-title>
+        <v-list density="compact">
+          <v-list-item
+            v-for="period in openedPeriods"
+            :key="period.year"
+            @click="requestAction.openRequestVacationDialog(period.year)"
+          >
+            <v-list-item-title>{{ period.year }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
     </v-card-title>
 
     <v-card-text>
-      <v-data-table
-          :loading="loading"
-          :loading-text="$t('Загрузка_данных')"
-          :headers="headers"
-          :items="filteredItems()"
-          multi-sort
-          hide-default-footer
-          :sort-by="['startDate', 'endDate']"
-          class="hover-table"
-          disable-pagination>
-        <template
-            v-slot:item.startDate="{ item }">
+      <v-alert
+        v-if="loadError"
+        type="error"
+        variant="tonal"
+        border="start"
+        class="mb-4"
+      >
+        {{ loadError }}
+      </v-alert>
+      <HREasyTableBase
+        class="vacations-table"
+        :loading="loading"
+        :loading-text="t('Загрузка_данных')"
+        :no-data-text="t('Отсутствуют данные')"
+        :headers="headers"
+        :items="filteredVacations"
+        height="240"
+        fixed-header
+        :sort-by="[
+          { key: 'startDate', order: 'asc' },
+          { key: 'endDate', order: 'asc' },
+        ]"
+        density="compact"
+      >
+        <template v-slot:[`item.startDate`]="{ item }">
           {{ formatDate(item.startDate) }}
         </template>
-        <template
-            v-slot:item.endDate="{ item }">
+        <template v-slot:[`item.endDate`]="{ item }">
           {{ formatDate(item.endDate) }}
         </template>
-        <template
-            v-slot:item.status="{ item }">
-          {{ $t(`VACATION_STATUS_ENUM.${item.status}`) }}
+        <template v-slot:[`item.status`]="{ item }">
+          {{ t(`VACATION_STATUS_ENUM.${item.status}`) }}
         </template>
-        <template
-            v-slot:item.notes="{ item }">
+        <template v-slot:[`item.notes`]="{ item }">
           <div class="d-flex justify-space-between align-center">
-            <span>{{ item.notes || '' }}</span>
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn v-if="vacationCanBeRejected(item)"
-                    icon
-                    @click="rejectRequestAction.openDialog(item.id)"
-                    class="delete-btn"
-                    v-bind="attrs"
-                    v-on="on"
-                >
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
+            <span>{{ item.notes || "" }}</span>
+            <v-tooltip location="bottom">
+              <template #activator="{ props }">
+                <v-btn
+                  v-if="vacationCanBeRejected(item)"
+                  v-bind="props"
+                  icon="mdi-delete"
+                  variant="text"
+                  class="vacations-table__delete"
+                  @click="openRejectDialog(item.id)"
+                />
               </template>
-              <span>{{ $t('Отозвать') }}</span>
+              <span>{{ t("Отозвать") }}</span>
             </v-tooltip>
           </div>
         </template>
-      </v-data-table>
+      </HREasyTableBase>
     </v-card-text>
-    <in-dialog-form :title="$t('Запланировать отпуск на X год', {year: requestAction.formData.year})"
-                    :data="requestAction" form-ref="requestVacation"
-                    v-if="requestAction.formData" v-on:submit="fetchData()">
-      <template v-slot:fields>
-        <!-- start date -->
-        <request-vacations-form-fields :data="requestAction"></request-vacations-form-fields>
-      </template>
-    </in-dialog-form>
-    <in-dialog-form :title="$t('Отозвать отпуск')"
-                    :data="rejectRequestAction" form-ref="rejectRequestVacation"
-                    v-on:submit="fetchData()">
-      <template v-slot:fields>
-        <span>{{ $t('Вы уверены, что хотите отозвать отпуск?') }}</span>
-      </template>
-    </in-dialog-form>
+
+    <v-dialog v-model="requestDialogOpen" max-width="640">
+      <v-card>
+        <v-card-title>
+          {{ t("Запланировать отпуск на X год", { year: requestAction.formData.year }) }}
+        </v-card-title>
+        <v-card-text>
+          <request-vacations-form-fields :data="requestAction" />
+          <v-alert
+            v-if="requestError"
+            type="error"
+            variant="tonal"
+            border="start"
+            class="mt-4"
+          >
+            {{ requestError }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="requestAction.closeDialog">
+            {{ t("Закрыть") }}
+          </v-btn>
+          <v-btn
+            color="primary"
+            :loading="requestLoading"
+            :disabled="requestLoading"
+            @click="submitRequest"
+          >
+            {{ t("Создать") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <confirm-delete-dialog
+      :open="rejectDialogOpen"
+      :title="t('Отозвать отпуск')"
+      :message="t('Вы уверены, что хотите отозвать отпуск?')"
+      :confirm-label="t('Да')"
+      :cancel-label="t('Нет')"
+      :loading="rejectLoading"
+      :error-message="rejectError"
+      @close="closeRejectDialog"
+      @confirm="confirmReject"
+    />
   </v-card>
 </template>
 
-
-<script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component';
-import vacationService, {
-  MyVacation,
-  vacationStatuses,
-  VacPlanningPeriod
-} from "@/components/vacations/vacation.service";
-import {DataTableHeader} from "vuetify";
-import moment from 'moment';
-import {DateTimeUtils} from "@/components/datetimeutils";
-import InDialogForm from "@/components/shared/forms/InDialogForm.vue";
-import {RequestOrUpdateVacationActionDataContainer} from "@/components/vacations/request-vacation.data.container";
-import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
-import dictService from "@/store/modules/dict.service";
+<script setup lang="ts">
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import RequestVacationsFormFields from "@/components/vacations/RequestVacationsFormFields.vue";
-import {InDialogActionDataContainer} from "@/components/shared/forms/InDialogActionDataContainer";
+import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
+import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import {
+  fetchMyVacations,
+  openPlanningPeriods,
+  rejectVacationRequest,
+  type MyVacation,
+  type VacPlanningPeriod,
+} from "@/services/vacation.service";
+import { formatDate } from "@/lib/datetime";
+import { getDefaultYears } from "@/lib/vacation-dates";
+import { useRequestVacationAction } from "@/components/vacations/useRequestVacationAction";
+import { errorUtils } from "@/lib/errors";
+import { useVacationsDictionaries } from "@/components/vacations/useVacationsDictionaries";
 
+const { t } = useI18n();
 
-@Component({
-  components: {RequestVacationsFormFields, MyDateFormComponent, InDialogForm}
-})
-export default class MyVacations extends Vue {
-  headers: DataTableHeader[] = [];
-  loading = false;
-  vacations: MyVacation[] = [];
+const headers = computed(() => [
+  { title: t("Год"), key: "year" },
+  { title: t("Начало"), key: "startDate" },
+  { title: t("Окончание"), key: "endDate" },
+  { title: t("Статус"), key: "status" },
+  { title: t("Примечание"), key: "notes" },
+]);
 
-  public allStatuses: Array<any> = [];
-  public allYears: Array<number> = [];
-  public allMonths: Array<any> = [];
-  openedPeriods: Array<VacPlanningPeriod> = [];
-  requestAction = new RequestOrUpdateVacationActionDataContainer();
-  rejectRequestAction = new InDialogActionDataContainer<number, void>(
-      (id) => {
-        if (id) {
-          return vacationService.rejectVacationRequest(id);
-        }
-        return Promise.resolve();
-      }
-  );
+const loading = ref(false);
+const vacations = ref<MyVacation[]>([]);
+const openedPeriods = ref<VacPlanningPeriod[]>([]);
+const requestAction = useRequestVacationAction();
+const { daysNotIncludedInVacations, loadDaysNotIncluded } = useVacationsDictionaries();
+const loadError = ref("");
+const requestDialogOpen = computed({
+  get: () => requestAction.open.value,
+  set: (value) => {
+    requestAction.open.value = value;
+  },
+});
+const requestLoading = computed(() => requestAction.loading.value);
+const requestError = computed(() => requestAction.error.value);
 
-  /**
-   * Lifecycle hook
-   */
-  created() {
-    this.allStatuses = vacationStatuses.map(status => {
-      return {value: status, text: this.$tc(`VACATION_STATUS_ENUM.${status}`)}
-    });
-    const currentYear = new Date().getFullYear();
-    this.allYears = [(currentYear - 2), (currentYear - 1), currentYear, (currentYear + 1)];
-    this.allMonths = Array.from(Array(12).keys()).map(m => {
-      return {
-        value: m,
-        text: moment(m + 1, 'MM').format("MMMM")
-      }
-    });
-    this.reloadHeaders();
-    this.fetchData();
+const rejectDialogOpen = ref(false);
+const rejectLoading = ref(false);
+const rejectError = ref("");
+const rejectId = ref<number | null>(null);
+
+const filteredVacations = computed(() =>
+  vacations.value.filter((vacation) =>
+    ["PLANNED", "REQUESTED"].includes(vacation.status),
+  ),
+);
+
+onMounted(() => {
+  fetchData().catch(() => undefined);
+});
+
+async function fetchData() {
+  loading.value = true;
+  loadError.value = "";
+  try {
+    const periods = await openPlanningPeriods();
+    openedPeriods.value = periods;
+    await loadDaysNotIncluded(getDefaultYears());
+    requestAction.setDaysNotIncluded(daysNotIncludedInVacations.value);
+    const data = await fetchMyVacations();
+    vacations.value = data.filter((item) => item.startDate && item.endDate);
+  } catch (error) {
+    loadError.value = errorUtils.shortMessage(error);
+  } finally {
+    loading.value = false;
   }
+}
 
-  private reloadHeaders() {
-    this.headers.length = 0;
-    this.headers.push({text: this.$tc('Год'), value: 'year'});
-    this.headers.push({text: this.$tc('Начало'), value: 'startDate'});
-    this.headers.push({text: this.$tc('Окончание'), value: 'endDate'});
-    this.headers.push({text: this.$tc('Статус'), value: 'status'});
-    this.headers.push({text: this.$tc('Примечание'), value: 'notes'});
+function vacationCanBeRejected(vacation: MyVacation): boolean {
+  if (vacation.status !== "REQUESTED") {
+    return false;
   }
+  return openedPeriods.value.some((period) => period.year === vacation.year);
+}
 
+function openRejectDialog(id: number) {
+  rejectId.value = id;
+  rejectDialogOpen.value = true;
+}
 
-  private filteredItems() {
-    return this.vacations.filter(v=>['PLANNED', 'REQUESTED'].includes(v.status));
+function closeRejectDialog() {
+  rejectDialogOpen.value = false;
+  rejectLoading.value = false;
+  rejectError.value = "";
+  rejectId.value = null;
+}
+
+async function confirmReject() {
+  if (!rejectId.value || rejectLoading.value) {
+    return;
   }
-
-
-  private fetchData() {
-    this.loading = true;
-    return vacationService.openPlanningPeriods()
-        .then(periods => {
-          this.openedPeriods = periods;
-          return dictService.daysNotIncludedInVacations(this.allYears)
-              .then(days => {
-                    this.requestAction.daysNotIncludedInVacations = days;
-                    return vacationService.myFutureVacations()
-                        .then(data => {
-                          this.vacations = data.filter(m => m.startDate && m.endDate);
-                          return;
-                        });
-                  }
-              )
-        }).finally(() => {
-          this.loading = false
-        });
+  rejectLoading.value = true;
+  rejectError.value = "";
+  try {
+    await rejectVacationRequest(rejectId.value);
+    closeRejectDialog();
+    await fetchData();
+  } catch (error) {
+    rejectError.value = errorUtils.shortMessage(error);
+  } finally {
+    rejectLoading.value = false;
   }
+}
 
-  private formatDate(date: string): string | undefined {
-    return DateTimeUtils.formatFromIso(date);
+async function submitRequest() {
+  await requestAction.submit();
+  if (!requestDialogOpen.value) {
+    await fetchData();
   }
-
-  private validateDate(formattedDate: string, allowEmpty = true): boolean {
-    return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
-  }
-
-  private vacationCanBeRejected(vacation: MyVacation): boolean {
-    let result = vacation && vacation.status === 'REQUESTED';
-    result = result && this.openedPeriods && this.openedPeriods.some(period => period.year === vacation.year);
-    return result;
-  }
-
 }
 </script>
 
 <style scoped>
-.hover-table .v-btn.delete-btn {
+.vacations-table .vacations-table__delete {
   visibility: hidden;
 }
 
-.hover-table .v-data-table__wrapper tr:hover .v-btn.delete-btn {
+.vacations-table :deep(tbody tr:hover) .vacations-table__delete {
   visibility: visible;
 }
 </style>

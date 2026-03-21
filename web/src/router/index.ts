@@ -1,143 +1,292 @@
-import Vue from 'vue'
-import VueRouter, {NavigationGuard} from 'vue-router'
-import Login from "@/components/login/Login.vue";
-import Employees from "@/components/empl/Employees.vue";
-import store from '@/store';
-import logger from "@/logger";
-import VacationsList from "@/components/vacations/VacationsList.vue";
-import EmployeeProfile from "@/components/empl/EmployeeProfile.vue";
-import AllOvertimes from "@/components/overtimes/AllOvertimes.vue";
-import AdminProjects from "@/components/admin/project/AdminProjects.vue";
-import AdminUsers from "@/components/admin/users/AdminUsers.vue";
-import AdminBusinessAccounts from "@/components/admin/business_account/AdminBusinessAccounts.vue";
-import AdminBusinessAccountDetails from "@/components/admin/business_account/AdminBusinessAccountDetails.vue";
-import AdminArticlesList from "@/components/admin/article/AdminArticlesList.vue";
-import AdminEmployees from "@/components/admin/employee/AdminEmployees.vue";
-import AssessmentShortList from "@/components/assessment/AssessmentShortList.vue";
-import EmployeeAssessmentProfile from "@/components/assessment/EmployeeAssessmentProfile.vue";
-import AssessmentDetailedVue from "@/components/assessment/AssessmentDetailedVue.vue";
-import AdminEmployeeKids from "@/components/admin/employee/AdminEmployeeKids.vue";
-import DictAdminMain from "@/components/admin/dict/DictAdminMain.vue";
-import DictAdminLevels from "@/components/admin/dict/DictAdminLevels.vue";
-import DictAdminDepartments from "@/components/admin/dict/DictAdminDepartments.vue";
-import DictAdminPositions from "@/components/admin/dict/DictAdminPositions.vue";
-import DictAdminOfficeLocations from "@/components/admin/dict/office/DictAdminOfficeLocations.vue";
-import PageNotFoundComponent from "@/components/PageNotFoundComponent.vue";
-import AdminEmployeeAndKidsTabs from "@/components/admin/employee/AdminEmployeeAndKidsTabs.vue";
-import AdminManagers from "@/components/admin/manager/AdminManagers.vue";
-import AdminProjectDetails from "@/components/admin/project/AdminProjectDetails.vue";
-import AdminEmployeesImportWorkflowComponent from "@/components/admin/employee/imp/AdminEmployeesImportWorkflow.vue";
-import TimesheetTableComponent from "@/components/ts/TimesheetTableComponent.vue";
-import DictAdminOrganizations from "@/components/admin/dict/DictAdminOrganizations.vue";
-import AdminEmployeesKidsImportWorkflowComponent
-    from "@/components/admin/employee/imp/AdminEmployeesKidsImportWorkflow.vue";
-import TelegramConfirmationPage from "@/components/telegram/TelegramConfirmationPage.vue";
-import JuniorRegistryTable from "@/components/udr/JuniorRegistryTable.vue";
-import JuniorRegistryDetailedView from "@/components/udr/JuniorRegistryDetailedView.vue";
-import SalaryRequestsTable from "@/components/salary/SalaryRequestsTable.vue";
-import SalaryRequestDetailsView from "@/components/salary/details/SalaryRequestDetailsView.vue";
-import DictAdminOffices from "@/components/admin/dict/office/DictAdminOffices.vue";
-import DictAdminMaps from "@/components/admin/dict/office/maps/DictAdminMaps.vue";
-import EmployeeWithLatestSalaryRequestTable
-    from "@/components/salary/overview/EmployeeWithLatestSalaryRequestTable.vue";
+import {
+  createRouter,
+  createWebHistory,
+  type RouteLocationNormalized,
+} from "vue-router";
+import NotFoundView from "@/views/NotFoundView.vue";
+import LoginView from "@/views/LoginView.vue";
+import ProfileMainView from "@/views/profile/ProfileMainView.vue";
+import EmployeesView from "@/views/employees/EmployeesView.vue";
+import VacationsView from "@/views/vacations/VacationsView.vue";
+import OvertimesView from "@/views/overtimes/OvertimesView.vue";
+import AssessmentsView from "@/views/assessment/AssessmentsView.vue";
+import EmployeeAssessmentsView from "@/views/assessment/EmployeeAssessmentsView.vue";
+import AssessmentDetailsView from "@/views/assessment/AssessmentDetailsView.vue";
+import SalaryRequestsView from "@/views/salary/SalaryRequestsView.vue";
+import SalaryRequestDetailsView from "@/views/salary/SalaryRequestDetailsView.vue";
+import SalaryLatestRequestsView from "@/views/salary/SalaryLatestRequestsView.vue";
+import MentorshipView from "@/views/mentorship/MentorshipView.vue";
+import MentorshipDetailsView from "@/views/mentorship/MentorshipDetailsView.vue";
+import AdminEmployeesTabsView from "@/views/admin/employees/AdminEmployeesTabsView.vue";
+import AdminEmployeesListView from "@/views/admin/employees/AdminEmployeesListView.vue";
+import AdminEmployeeKidsView from "@/views/admin/employees/AdminEmployeeKidsView.vue";
+import AdminEmployeesImportView from "@/views/admin/employees/AdminEmployeesImportView.vue";
+import AdminEmployeeKidsImportView from "@/views/admin/employees/AdminEmployeeKidsImportView.vue";
+import AdminDictsTabsView from "@/views/admin/dicts/AdminDictsTabsView.vue";
+import AdminDictOrganizationsView from "@/views/admin/dicts/AdminDictOrganizationsView.vue";
+import AdminDictDepartmentsView from "@/views/admin/dicts/AdminDictDepartmentsView.vue";
+import AdminDictPositionsView from "@/views/admin/dicts/AdminDictPositionsView.vue";
+import AdminDictLevelsView from "@/views/admin/dicts/AdminDictLevelsView.vue";
+import AdminDictOfficesView from "@/views/admin/dicts/AdminDictOfficesView.vue";
+import AdminDictOfficeLocationsView from "@/views/admin/dicts/AdminDictOfficeLocationsView.vue";
+import AdminDictOfficeMapsView from "@/views/admin/dicts/AdminDictOfficeMapsView.vue";
+import AdminBusinessAccountsView from "@/views/admin/business-accounts/AdminBusinessAccountsView.vue";
+import AdminBusinessAccountDetailsView from "@/views/admin/business-accounts/AdminBusinessAccountDetailsView.vue";
+import AdminManagersView from "@/views/admin/managers/AdminManagersView.vue";
+import AdminArticlesView from "@/views/admin/articles/AdminArticlesView.vue";
+import AdminUsersView from "@/views/admin/users/AdminUsersView.vue";
+import AdminProjectsView from "@/views/admin/projects/AdminProjectsView.vue";
+import AdminProjectDetailsView from "@/views/admin/projects/AdminProjectDetailsView.vue";
+import TelegramConfirmationView from "@/views/TelegramConfirmationView.vue";
+import { useAuthStore } from "@/stores/auth";
+import { usePermissions } from "@/lib/permissions";
 
-Vue.use(VueRouter)
+function resolveAdminDictsDefaultRoute() {
+  const permissions = usePermissions();
 
-const routes = [
-    {path: "/", redirect: '/profile/main'},
-    {path: "/404", component: PageNotFoundComponent},
-    {path: "*", redirect: "/404"},
-    {path: "/login", component: Login},
-    {
-        name: "TelegramConfirmationPage",
-        path: "/telegram/confirm/:employeeId/:telegramAccount/:confirmationCode",
-        component: TelegramConfirmationPage,
-        props: true
-    },
-    {name: "employees", path: "/employees", component: Employees},
-    {name: 'employeeProfile', path: "/profile/main", component: EmployeeProfile, props: true},
-    {path: "/vacations", component: VacationsList},
-    {path: "/overtimes", component: AllOvertimes},
-    {path: "/assessments", component: AssessmentShortList},
-    {path: "/assessments/:employeeId", component: EmployeeAssessmentProfile, props: true},
-    {
-        path: "/assessments/:employeeId/:assessmentId",
-        component: AssessmentDetailedVue,
-        name: 'AssessmentDetailedVue',
-        props: true
-    },
-    {path: "/salaries/requests", component: SalaryRequestsTable, name: "SalaryRequestsTable"},
-    {path: "/salaries/latest", component: EmployeeWithLatestSalaryRequestTable, name: "EmployeeWithLatestSalaryRequestTable"},
-    {
-        path: "/salaries/requests/:period/:requestId",
-        component: SalaryRequestDetailsView,
-        name: "salariesRequestsDetails",
-        props: true
-    },
-    {path: "/timesheet", component: TimesheetTableComponent},
-    {path: "/juniors", component: JuniorRegistryTable},
-    {path: "/juniors/:juniorRegistryId", component: JuniorRegistryDetailedView, props: true},
-    {path: "/admin/projects", component: AdminProjects},
-    {path: "/admin/projects/:projectId", component: AdminProjectDetails, props: true},
-    {path: "/admin/users", component: AdminUsers},
-    {path: "/admin/ba", component: AdminBusinessAccounts},
-    {path: "/admin/ba/:businessAccountId", component: AdminBusinessAccountDetails, props: true},
-    {path: "/admin/managers", component: AdminManagers},
-    {path: "/admin/articles", component: AdminArticlesList},
-    {
-        path: "/admin/employees",
-        component: AdminEmployeeAndKidsTabs,
-        children: [
-            {path: '', redirect: 'list'},
-            {path: 'list', component: AdminEmployees},
-            {path: 'kids', component: AdminEmployeeKids},
-            {path: 'import', component: AdminEmployeesImportWorkflowComponent},
-            {path: 'kids-import', component: AdminEmployeesKidsImportWorkflowComponent}
-        ]
-    },
-    {
-        path: "/admin/dicts",
-        component: DictAdminMain,
-        children: [
-            {path: '', redirect: {name: "admin_dict_organizations"}},
-            {name: "admin_dict_organizations", path: "organizations", component: DictAdminOrganizations},
-            {name: "admin_dict_departments", path: "departments", component: DictAdminDepartments},
-            {path: "positions", component: DictAdminPositions},
-            {path: "office_locations", component: DictAdminOfficeLocations},
-            {path: "offices", component: DictAdminOffices},
-            {path: "office_maps", component: DictAdminMaps},
-            {path: "levels", component: DictAdminLevels}
-        ]
-    },
-]
-const router = new VueRouter({
-    mode: 'history',
-    base: process.env.BASE_URL,
-    routes
-})
+  if (permissions.canAdminDictOrganizations()) {
+    return { name: "admin-dicts-organizations" };
+  }
+  if (permissions.canAdminDictDepartments()) {
+    return { name: "admin-dicts-departments" };
+  }
+  if (permissions.canAdminDictPositions()) {
+    return { name: "admin-dicts-positions" };
+  }
+  if (permissions.canAdminDictLevels()) {
+    return { name: "admin-dicts-levels" };
+  }
+  if (permissions.canAdminDictOffices()) {
+    return { name: "admin-dicts-offices" };
+  }
+  if (permissions.canAdminDictOfficeLocations()) {
+    return { name: "admin-dicts-office-locations" };
+  }
 
-const authGuard: NavigationGuard = (to, from, next) => {
-    if (to.path == '/login' || to.name == 'TelegramConfirmationPage') {
-        next();
-        return;
+  return { name: "profile-main" };
+}
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    { path: "/", redirect: { name: "profile-main" } },
+    { path: "/login", name: "login", component: LoginView, meta: { requiresAuth: false } },
+    {
+      path: "/telegram/confirm/:employeeId/:telegramAccount/:confirmationCode",
+      name: "telegram-confirmation",
+      component: TelegramConfirmationView,
+      meta: { requiresAuth: false },
+    },
+    { path: "/profile", name: "profile-main", component: ProfileMainView, meta: { requiresAuth: true } },
+    { path: "/employees", name: "employees", component: EmployeesView, meta: { requiresAuth: true } },
+    { path: "/vacations", name: "vacations", component: VacationsView, meta: { requiresAuth: true } },
+    { path: "/overtimes", name: "overtimes", component: OvertimesView, meta: { requiresAuth: true } },
+    { path: "/assessments", name: "assessments", component: AssessmentsView, meta: { requiresAuth: true } },
+    {
+      path: "/assessments/:employeeId",
+      name: "employee-assessments",
+      component: EmployeeAssessmentsView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/assessments/:employeeId/:assessmentId",
+      name: "assessment-details",
+      component: AssessmentDetailsView,
+      meta: { requiresAuth: true },
+    },
+    { path: "/salaries/requests", name: "salary-requests", component: SalaryRequestsView, meta: { requiresAuth: true } },
+    { path: "/salaries/latest", name: "salary-latest", component: SalaryLatestRequestsView, meta: { requiresAuth: true } },
+    {
+      path: "/salaries/requests/:period/:requestId",
+      name: "salary-request-details",
+      component: SalaryRequestDetailsView,
+      meta: { requiresAuth: true },
+    },
+    { path: "/juniors", name: "mentorship", component: MentorshipView, meta: { requiresAuth: true } },
+    {
+      path: "/juniors/:juniorRegistryId",
+      name: "mentorship-details",
+      component: MentorshipDetailsView,
+      meta: { requiresAuth: true },
+    },
+    { path: "/admin/projects", name: "admin-projects", component: AdminProjectsView, meta: { requiresAuth: true } },
+    {
+      path: "/admin/projects/:projectId",
+      name: "admin-project-details",
+      component: AdminProjectDetailsView,
+      meta: { requiresAuth: true },
+    },
+    { path: "/admin/ba", name: "admin-business-accounts", component: AdminBusinessAccountsView, meta: { requiresAuth: true } },
+    {
+      path: "/admin/ba/:businessAccountId",
+      name: "admin-business-account-details",
+      component: AdminBusinessAccountDetailsView,
+      meta: { requiresAuth: true },
+    },
+    { path: "/admin/managers", name: "admin-managers", component: AdminManagersView, meta: { requiresAuth: true } },
+    { path: "/admin/articles", name: "admin-articles", component: AdminArticlesView, meta: { requiresAuth: true } },
+    { path: "/admin/users", name: "admin-users", component: AdminUsersView, meta: { requiresAuth: true } },
+    {
+      path: "/admin/employees",
+      component: AdminEmployeesTabsView,
+      meta: { requiresAuth: true },
+      children: [
+        { path: "", redirect: { name: "admin-employees-list" } },
+        { path: "list", name: "admin-employees-list", component: AdminEmployeesListView },
+        { path: "kids", name: "admin-employees-kids", component: AdminEmployeeKidsView },
+        { path: "import", name: "admin-employees-import", component: AdminEmployeesImportView },
+        { path: "kids-import", name: "admin-employees-kids-import", component: AdminEmployeeKidsImportView },
+      ],
+    },
+    {
+      path: "/admin/dicts",
+      component: AdminDictsTabsView,
+      meta: { requiresAuth: true },
+      children: [
+        { path: "", redirect: () => resolveAdminDictsDefaultRoute() },
+        { path: "organizations", name: "admin-dicts-organizations", component: AdminDictOrganizationsView },
+        { path: "departments", name: "admin-dicts-departments", component: AdminDictDepartmentsView },
+        { path: "positions", name: "admin-dicts-positions", component: AdminDictPositionsView },
+        { path: "levels", name: "admin-dicts-levels", component: AdminDictLevelsView },
+        { path: "offices", name: "admin-dicts-offices", component: AdminDictOfficesView },
+        { path: "office_locations", name: "admin-dicts-office-locations", component: AdminDictOfficeLocationsView },
+        { path: "office_maps", name: "admin-dicts-office-maps", component: AdminDictOfficeMapsView },
+      ],
+    },
+    { path: "/:pathMatch(.*)*", name: "not-found", component: NotFoundView, meta: { requiresAuth: false } },
+  ],
+});
+
+router.beforeEach(async (to: RouteLocationNormalized) => {
+  const authStore = useAuthStore();
+  const permissions = usePermissions();
+
+  try {
+    await authStore.fetchCurrentUser();
+  } catch (error) {
+    console.error(error);
+    authStore.clearAuth();
+  }
+
+  const requiresAuth = to.meta.requiresAuth !== false;
+
+  if (!requiresAuth) {
+    if (to.name === "login" && authStore.isAuthenticated) {
+      return { name: "profile-main" };
     }
-    logger.debug("authGuard: Validate route", from, to);
-    return store.dispatch("auth/getCurrentUser").then(currentUser => {
-        if (currentUser) {
-            logger.debug("authGuard: Current user ", currentUser);
-            next();
-        } else {
-            logger.debug("authGuard: Not logged in. Redirect to login page");
-            if (to && from.path) {
-                next({path: '/login', query: {'returnPath': to.path}});
-            } else {
-                next({path: 'login'});
-            }
-        }
-        return Promise.resolve();
-    })
-};
+    return true;
+  }
 
-router.beforeEach(authGuard);
+  if (!authStore.isAuthenticated) {
+    const redirect = { name: "login" } as { name: string; query?: Record<string, string> };
+    if (to.fullPath && to.fullPath !== "/login") {
+      redirect.query = { returnPath: to.fullPath };
+    }
+    return redirect;
+  }
 
-export default router
+  if (
+    (to.name === "assessments" || to.name === "employee-assessments" || to.name === "assessment-details")
+    && !permissions.canCreateAssessments()
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (
+    (to.name === "salary-requests" || to.name === "salary-request-details")
+    && !permissions.canReportSalaryRequest()
+    && !permissions.canAdminSalaryRequests()
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "salary-latest" && !permissions.canAdminSalaryRequests()) {
+    return { name: "profile-main" };
+  }
+
+  if (
+    (to.name === "mentorship" || to.name === "mentorship-details")
+    && !permissions.canAccessJuniorsRegistry()
+    && !permissions.canAdminJuniorRegistry()
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (
+    (to.name === "admin-projects" || to.name === "admin-project-details")
+    && !permissions.canAdminProjects()
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (
+    (to.name === "admin-business-accounts" || to.name === "admin-business-account-details")
+    && !permissions.canAdminBusinessAccounts()
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "admin-managers" && !permissions.canAdminManagers()) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "admin-users" && !permissions.canAdminUsers()) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "admin-articles" && !permissions.canAdminArticles()) {
+    return { name: "profile-main" };
+  }
+
+  if (
+    String(to.name ?? "").startsWith("admin-employees")
+    && !permissions.canAdminEmployees()
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (
+    String(to.name ?? "").startsWith("admin-dicts")
+    && !(
+      permissions.canAdminDictOrganizations()
+      || permissions.canAdminDictDepartments()
+      || permissions.canAdminDictPositions()
+      || permissions.canAdminDictLevels()
+      || permissions.canAdminDictOffices()
+      || permissions.canAdminDictOfficeLocations()
+    )
+  ) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "admin-dicts-organizations" && !permissions.canAdminDictOrganizations()) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  if (to.name === "admin-dicts-departments" && !permissions.canAdminDictDepartments()) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  if (to.name === "admin-dicts-positions" && !permissions.canAdminDictPositions()) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  if (to.name === "admin-dicts-levels" && !permissions.canAdminDictLevels()) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  if (to.name === "admin-dicts-offices" && !permissions.canAdminDictOffices()) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  if (
+    (to.name === "admin-dicts-office-locations" || to.name === "admin-dicts-office-maps")
+    && !permissions.canAdminDictOfficeLocations()
+  ) {
+    return resolveAdminDictsDefaultRoute();
+  }
+
+  return true;
+});
+
+export default router;

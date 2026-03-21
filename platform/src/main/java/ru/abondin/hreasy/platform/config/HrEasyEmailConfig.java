@@ -15,8 +15,9 @@ public class HrEasyEmailConfig {
     @Description("Thymeleaf Template Resolver")
     public SpringResourceTemplateResolver templateResolver() {
         var templateResolver = new SpringResourceTemplateResolver();
-        templateResolver.setPrefix("/mail/template/");
+        templateResolver.setPrefix("classpath:/mail/template/");
         templateResolver.setTemplateMode(TemplateMode.HTML);
+        templateResolver.setCharacterEncoding("UTF-8");
         return templateResolver;
     }
 

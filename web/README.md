@@ -1,37 +1,45 @@
-# hreasy-web - Internal company platform for HR and employees
+# HR Easy Web
 
-@author: Alexander Bondin 2020-2023
+## Repository layout
 
-## Frameworks
+- Vue 3 app: repository root (`./`)
+- Main stack: Vue 3 + Vuetify 4 + Pinia + Vue Router 4 + Vue I18n
 
-- **States** - vuex
-- **Route** - vue-router
-- **UI** - vuetify
-- **i18n** - vue-i18n + vue-i18n-extract + custom `i18n-add-missing-keys` script to add missing i18n keys to the locale files
+## Prerequisites
 
-Run dev server (with connection to backend on localhost).
+- Node.js 20.x LTS
+- npm 10.x
+
+## Local development
+
 ```shell
-# Backend started in docker container with name "hreasyplatform"
-# >> export BACKEND_API_BASE_URL=http://hreasyplatform
-# Backend started from IDE on localhost
-export BACKEND_API_BASE_URL=http://localhost:8081
-npm run serve
+npm ci
+export VITE_DEV_SERVER_PROXY=http://localhost:8081
+export VITE_API_BASE_URL=/api/
+npm run dev
 ```
 
-Add missing i18n keys to the locale files:
-```sh
-npm run i18n-add-missing-keys
+Useful commands:
+
+```shell
+npm run type-check
+npm run lint
+npm run test:unit
+npm run test:e2e
+npm run build
 ```
 
-## Run in docker
+E2E docs:
 
-- Build docker image `hreasyweb`
-In `devops` build docker image and then run it
-```shell script
+- [`e2e/README.md`](./e2e/README.md)
+
+## Docker build
+
+Container serves Vue 3 at `/`.
+
+```shell
+cd devops
 export CI_DEPLOY_TAG=test
 ./build.sh
 docker run -e HREASY_API_HOST=$BACKEND_HOST -p8080:80 --name hreasyweb hreasyweb:test
 ```
-
-**Important**: <<$BACKEND_HOST>> - hostname and probably port of your `hreasplatform` backend. 
-

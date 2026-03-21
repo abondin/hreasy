@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.sec;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.WebSession;
@@ -47,12 +48,20 @@ public class AuthService {
                     loginHistory.setLoginType(loggedType);
                     return loginHistoryRepo.save(loginHistory).map((r) -> loginResponse);
                 })
-                .onErrorResume((ex) -> {
+                .onErrorMap(this::normalizeAuthenticationError)
+                .onErrorResume(ex -> {
                     log.info("Logging attempt {} failed. Error={}", logAttemtId, ex.getLocalizedMessage());
                     // Replace to avoid PostgresqlBadGrammarException: [22021] invalid byte sequence for encoding "UTF8": 0x00
                     loginHistory.setError(ex.getMessage() == null ? null : ex.getMessage().replaceAll("\u0000", ""));
                     return loginHistoryRepo.save(loginHistory).flatMap((r) -> Mono.error(ex));
                 });
+    }
+
+    private Throwable normalizeAuthenticationError(Throwable ex) {
+        if (ex instanceof IllegalArgumentException iea) {
+            return new BadCredentialsException("Bad credentials", iea);
+        }
+        return ex;
     }
 
     public Mono<AuthHandler.LogoutResponse> logout(WebSession webSession) {

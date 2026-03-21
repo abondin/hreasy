@@ -1,0 +1,4 @@
+interface:
+  display_name: "HREasy Vue3 Development"
+  short_description: "Build and extend Vue3 features with strict reuse-first rules"
+  default_prompt: "Use $hreasy-vue3-development to implement this Vue3 task with maximum reuse of existing code."

@@ -170,7 +170,7 @@ public class JuniorRegistryService {
     @Transactional
     public Mono<Integer> updateJuniorReport(AuthContext auth, int registryId, int reportId, UpdateJuniorReportBody body) {
         log.info("Update report {} of junior {} by {}", reportId, registryId, auth.getUsername());
-        return doUpdateReport(auth, registryId, registryId, entry -> mapper.applyReportUpdate(entry, body));
+        return doUpdateReport(auth, registryId, reportId, entry -> mapper.applyReportUpdate(entry, body));
     }
 
     @Transactional

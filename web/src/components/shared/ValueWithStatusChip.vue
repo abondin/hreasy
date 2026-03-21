@@ -1,38 +1,45 @@
 <template>
-  <span>
-    <span v-if="isOk()"><slot>{{ value.value }}</slot></span>
-    <v-chip small v-else-if="isWaring()" color="warning"><slot>{{ value.value }}</slot></v-chip>
-    <v-chip small v-else-if="isError()" color="error"><slot>{{ value.value }}</slot></v-chip>
-    <span v-else>n/a</span>
+  <span v-if="value">
+    <span v-if="isOk"><slot>{{ value.value }}</slot></span>
+    <v-chip
+      v-else-if="isWarning"
+      :size="dense ? 'small' : 'default'"
+      :density="dense ? 'compact' : 'default'"
+      color="warning"
+      variant="tonal"
+    >
+      <slot>{{ value.value }}</slot>
+    </v-chip>
+    <v-chip
+      v-else-if="isError"
+      :size="dense ? 'small' : 'default'"
+      :density="dense ? 'compact' : 'default'"
+      color="error"
+      variant="tonal"
+    >
+      <slot>{{ value.value }}</slot>
+    </v-chip>
+    <span v-else><slot>{{ value.value }}</slot></span>
   </span>
+  <span v-else>-</span>
 </template>
 
-<script lang="ts">
+<script setup lang="ts" generic="T">
+import { computed } from "vue";
+import type { ValueWithStatus } from "@/services/junior-registry.service";
 
-import Component from "vue-class-component";
-import Vue from 'vue'
-import {Prop} from "vue-property-decorator";
-import {ValueWithStatus, ValueWithStatusEnum} from "@/store/modules/dict";
+const props = withDefaults(
+  defineProps<{
+    value: ValueWithStatus<T> | null | undefined;
+    dense?: boolean;
+  }>(),
+  {
+    dense: false,
+  },
+);
 
-
-@Component({})
-export default class ValueWithStatusChip<T> extends Vue {
-
-  @Prop({required: true})
-  private value!: ValueWithStatus<T>;
-
-
-  private isOk() {
-    return this.value && this.value.status === ValueWithStatusEnum.OK;
-  }
-
-  private isWaring() {
-    return this.value && this.value.status === ValueWithStatusEnum.WARNING;
-  }
-
-  private isError() {
-    return this.value && this.value.status === ValueWithStatusEnum.ERROR;
-  }
-}
-
+const normalizedStatus = computed(() => Number(props.value?.status ?? 0));
+const isOk = computed(() => normalizedStatus.value === 1);
+const isWarning = computed(() => normalizedStatus.value === 2);
+const isError = computed(() => normalizedStatus.value === 3);
 </script>

@@ -1,162 +1,182 @@
-<!--
-Simple dialog to approve or decline overtime report
-
-Emits:
-
-1) 'submit' when approved or declined
-2) 'close' when dialog closed
-
- -->
-
 <template>
-  <v-dialog
-      max-width="800"
-      v-model="dialog">
-    <template v-slot:activator="{on, attrs}">
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on: ton, attrs: tattrs}">
-          <div v-bind="tattrs" v-on="ton">
+  <v-dialog v-model="dialog" max-width="700">
+    <template #activator="{ props }">
+      <v-tooltip location="bottom">
+        <template #activator="{ props: tooltipProps }">
+          <div v-bind="tooltipProps">
             <v-btn-toggle>
-              <v-btn icon
-                     :disabled="periodClosed || (previousDecision && previousDecision.decision=='APPROVED' && !previousDecision.outdated)"
-                     @click="approveNoDialog()">
-                <v-icon color="success">mdi-checkbox-marked-circle-outline</v-icon>
-              </v-btn>
-              <v-btn :disabled="periodClosed || (previousDecision && previousDecision.decision=='APPROVED' && !previousDecision.outdated)"
-                      v-bind="attrs"
-                     v-on="on" icon>
-                <v-icon>mdi-dots-horizontal</v-icon>
-              </v-btn>
+              <v-btn
+                icon="mdi-checkbox-marked-circle-outline"
+                :disabled="approveDisabled"
+                @click="approveNoDialog"
+              />
+              <v-btn
+                v-bind="props"
+                icon="mdi-dots-horizontal"
+                :disabled="approveDisabled"
+              />
             </v-btn-toggle>
           </div>
         </template>
-        <span>{{ $t('Согласование овертаймов') }}</span>
+        <span>{{ t("Согласование овертаймов") }}</span>
       </v-tooltip>
     </template>
-    <v-form :ref="`overtime-approve-${employeeId}-${period.periodId()}`">
-      <v-card>
-        <v-card-title>{{ $t('Согласование овертаймов') }}</v-card-title>
-        <v-card-text>
-          <v-textarea
-              autofocus
-              v-model="comment"
-              :rules="[v=>(!v ||  v.length <= 1024 || $t('Не более N символов', {n:1024}))]"
-              :label="$t('Комментарий')">
-          </v-textarea>
-          <!-- Error block -->
-          <v-alert v-if="error" type="error">
-            {{ error }}
-          </v-alert>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn @click="closeDialog">{{ $t('Закрыть') }}</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn-toggle>
-            <v-btn @click="approve()" color="success">{{ $t('Согласовать') }}</v-btn>
-            <v-btn @click="decline()" color="error">{{ $t('Отклонить') }}</v-btn>
-          </v-btn-toggle>
-        </v-card-actions>
-      </v-card>
-    </v-form>
+
+    <v-card>
+      <v-card-title>{{ t("Согласование овертаймов") }}</v-card-title>
+      <v-card-text>
+        <v-textarea
+          v-model="comment"
+          autofocus
+          :label="t('Комментарий')"
+          rows="4"
+          :counter="1024"
+        />
+
+        <v-alert v-if="errorMessage" type="error" variant="tonal" class="mt-2">
+          {{ errorMessage }}
+        </v-alert>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn @click="closeDialog">{{ t("Закрыть") }}</v-btn>
+        <v-spacer />
+        <v-btn color="success" :loading="submitting" @click="approve">
+          {{ t("Согласовать") }}
+        </v-btn>
+        <v-btn color="error" :loading="submitting" @click="decline">
+          {{ t("Отклонить") }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
   </v-dialog>
 </template>
 
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { errorUtils } from "@/lib/errors";
+import {
+  approveOvertimeReport,
+  declineOvertimeReport,
+  type ApprovalDecision,
+  type OvertimeReport,
+} from "@/services/overtime.service";
 
-<script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component';
-import {Prop, Watch} from "vue-property-decorator";
-import overtimeService, {ApprovalDecision, ReportPeriod} from "@/components/overtimes/overtime.service";
-import {errorUtils} from "@/components/errors";
+const props = defineProps<{
+  employeeId: number;
+  periodId: number;
+  periodClosed: boolean;
+  previousDecision?: ApprovalDecision | null;
+}>();
 
+const emit = defineEmits<{
+  submitted: [report: OvertimeReport];
+  close: [];
+}>();
 
-@Component
-export default class ApproveOvertimeReportDialog extends Vue {
+const { t } = useI18n();
 
-  @Prop({required: true})
-  employeeId!: number;
+const dialog = ref(false);
+const comment = ref<string | null>(null);
+const errorMessage = ref<string | null>(null);
+const submitting = ref(false);
 
-  @Prop({required: true})
-  period!: ReportPeriod;
+const approveDisabled = computed(() => {
+  return Boolean(
+    props.periodClosed ||
+      (props.previousDecision?.decision === "APPROVED" && !props.previousDecision.outdated),
+  );
+});
 
-  @Prop({required: true})
-  periodClosed!: boolean;
+watch(dialog, (value) => {
+  if (value) {
+    errorMessage.value = null;
+    comment.value = null;
+  } else {
+    emit("close");
+  }
+});
 
-  /**
-   * Id of previous approval decisions to overide
-   */
-  @Prop({required: false, default: null})
-  previousDecision!: ApprovalDecision | null;
+function validateCommentLength(): string | null {
+  if (comment.value && comment.value.length > 1024) {
+    return t("Не более N символов", { n: 1024 });
+  }
+  return null;
+}
 
-
-  private dialog = false;
-
-  private error: string | null = null;
-  private comment: string | null = null;
-
-  @Watch("dialog")
-  private watch() {
-    if (this.dialog) {
-      this.reset();
-    }
+async function approve(): Promise<void> {
+  const validationError = validateCommentLength();
+  errorMessage.value = validationError;
+  if (validationError) {
+    return;
   }
 
-  private approve() {
-    const form: any = this.$refs[`overtime-approve-${this.employeeId}-${this.period.periodId()}`];
-    if (form.validate()) {
-      return overtimeService.approve(this.employeeId, this.period.periodId(), this.comment,
-          this.previousDecision ? this.previousDecision.id : null)
-          .then(() => {
-            this.$emit('submit', 'APPROVED');
-            this.closeDialog();
-          }).catch(error => {
-            this.error = errorUtils.shortMessage(error);
-          });
-    }
+  submitting.value = true;
+  try {
+    const report = await approveOvertimeReport(
+      props.employeeId,
+      props.periodId,
+      comment.value,
+      props.previousDecision?.id ?? null,
+    );
+    emit("submitted", report);
+    closeDialog();
+  } catch (error) {
+    errorMessage.value = errorUtils.shortMessage(error);
+  } finally {
+    submitting.value = false;
+  }
+}
+
+async function decline(): Promise<void> {
+  const validationError = validateCommentLength();
+  errorMessage.value = validationError;
+  if (validationError) {
+    return;
   }
 
-  private decline() {
-    const form: any = this.$refs[`overtime-approve-${this.employeeId}-${this.period.periodId()}`];
-    if (form.validate()) {
-      if (this.comment == null || this.comment.trim().length == 0) {
-        this.error = this.$tc('Комментарий обязателен при отклонении');
-        return;
-      }
-      return overtimeService.decline(this.employeeId, this.period.periodId(), this.comment!,
-          this.previousDecision ? this.previousDecision.id : null)
-          .then(() => {
-            this.$emit('submit', 'DECLINED');
-            this.closeDialog();
-          }).catch(error => {
-            this.error = errorUtils.shortMessage(error);
-          });
-    }
+  if (!comment.value || comment.value.trim().length === 0) {
+    errorMessage.value = t("Комментарий обязателен при отклонении");
+    return;
   }
 
-  private approveNoDialog() {
-    return overtimeService.approve(this.employeeId, this.period.periodId(), null,
-        this.previousDecision ? this.previousDecision.id : null)
-        .then(() => {
-          this.$emit('submit', 'APPROVED');
-          this.closeDialog();
-        }).catch(error => {
-          this.error = errorUtils.shortMessage(error);
-          this.dialog = true;
-        });
+  submitting.value = true;
+  try {
+    const report = await declineOvertimeReport(
+      props.employeeId,
+      props.periodId,
+      comment.value,
+      props.previousDecision?.id ?? null,
+    );
+    emit("submitted", report);
+    closeDialog();
+  } catch (error) {
+    errorMessage.value = errorUtils.shortMessage(error);
+  } finally {
+    submitting.value = false;
   }
+}
 
-  private closeDialog() {
-    this.dialog = false;
+async function approveNoDialog(): Promise<void> {
+  submitting.value = true;
+  try {
+    const report = await approveOvertimeReport(
+      props.employeeId,
+      props.periodId,
+      null,
+      props.previousDecision?.id ?? null,
+    );
+    emit("submitted", report);
+    closeDialog();
+  } catch (error) {
+    errorMessage.value = errorUtils.shortMessage(error);
+    dialog.value = true;
+  } finally {
+    submitting.value = false;
   }
+}
 
-  private reset() {
-    this.error = null;
-    this.comment = null;
-  }
-
+function closeDialog(): void {
+  dialog.value = false;
 }
 </script>
-
-<style scoped>
-
-</style>

@@ -93,6 +93,7 @@ public class VacationService {
     public Mono<Integer> requestVacation(AuthContext auth, VacationRequestDto request) {
         log.info("Request vacation {} by {}", request, auth.getUsername());
         var now = dateTimeService.now();
+        var today = now.toLocalDate();
         return validateOpenedPlanningPeriod(request.getYear())
                 .flatMap(v -> {
                     var entry = mapper.toEntry(request, auth.getEmployeeInfo().getEmployeeId(), now);
@@ -101,6 +102,12 @@ public class VacationService {
                     }
                     if (entry.getEndDate() == null){
                         return Mono.error(new BusinessError("errors.vacation.request.validation.end_date_null"));
+                    }
+                    if (entry.getStartDate().isBefore(today)) {
+                        return Mono.error(new BusinessError("errors.vacation.request.validation.start_date_in_past"));
+                    }
+                    if (entry.getEndDate().isBefore(today)) {
+                        return Mono.error(new BusinessError("errors.vacation.request.validation.end_date_in_past"));
                     }
                     return vacationRepo.save(entry).flatMap(vacation -> {
                         var history = mapper.history(vacation);

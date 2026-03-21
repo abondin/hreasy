@@ -1,22 +1,34 @@
-import '@mdi/font/css/materialdesignicons.css'
-import 'material-design-icons-iconfont/dist/material-design-icons.css'
-import Vue from 'vue';
-import Vuetify from 'vuetify/lib';
-import VueClipboard from 'vue-clipboard2'
-// Translation provided by Vuetify (typescript)
-import ru from 'vuetify/src/locale/ru';
-import en from 'vuetify/src/locale/en';
+import { createVuetify } from "vuetify";
+import { ru } from "vuetify/locale";
+import { aliases, mdi } from "vuetify/iconsets/mdi";
+import { fa } from "vuetify/iconsets/fa";
+import "@mdi/font/css/materialdesignicons.css";
+import "@fortawesome/fontawesome-free/css/all.css";
 
-
-Vue.use(Vuetify);
-Vue.use(VueClipboard)
-
-export default new Vuetify({
-    lang: {
-        locales: {ru, en},
-        current: 'ru',
+const vuetify = createVuetify({
+  theme: {
+    defaultTheme: "light",
+    themes: {
+      light: {
+        colors: {
+          primary: "#f4511e",
+          secondary: "#4a148c",
+        },
+      },
     },
-    icons: {
-        iconfont: 'mdiSvg'
-    }
+  },
+  locale: {
+    locale: "ru",
+    messages: { ru },
+  },
+  icons: {
+    defaultSet: "mdi",
+    aliases,
+    sets: {
+      mdi,
+      fa,
+    },
+  },
 });
+
+export default vuetify;

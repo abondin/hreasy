@@ -1,70 +1,192 @@
-<!-- Dialog to create or update my vacation requests for next year -->
+<!--
+  Form fields for requesting or updating planned vacations.
+-->
 <template>
-  <span>
-  <v-date-picker
-      full-width
-      first-day-of-week="1"
-      landscape
-      no-title
-      v-model="data.formData.dates"
-      range
-  ></v-date-picker>
-  <p :set="formatted=data.formattedDates()">
-    <span v-if="formatted">{{ formatted }}</span>
-    <span v-else class="error--text">{{ $t('Выберите даты') }}</span>
-  </p>
-  <p>{{ $t('Количество дней отпуска') }}: <span :class="{'warning--text':data.formData.daysNumber>28}">{{ data.formData.daysNumber }}</span></p>
+  <div class="vacation-request-fields">
+    <v-date-picker
+      v-model="pickerRange"
+      multiple="range"
+      :first-day-of-week="1"
+      show-adjacent-months
+      width="100%"
+      max-width="100%"
+    />
+    <div class="text-body-2">
+      <span v-if="formattedDates" class="text-medium-emphasis">
+        {{ formattedDates }}
+      </span>
+      <span v-else class="text-error">
+        {{ t("Выберите даты") }}
+      </span>
+    </div>
 
-  <v-checkbox
-      v-model="data.daysNumberSetManually"
-      :label="$t('Скорректировать количество дней вручную')"></v-checkbox>
+    <div
+        class="text-body-2 mt-2"
+        :class="{ 'text-warning': data.formData.daysNumber > 28 }"
+    >
+      {{ t("Количество дней отпуска") }}: {{ data.formData.daysNumber }}
+    </div>
 
-  <v-slider
-      v-if="data.daysNumberSetManually"
-      :label="$t('Количество дней')"
+    <v-checkbox
+      v-model="manualDays"
+      density="compact"
+      class="mt-2"
+      :label="t('Скорректировать количество дней вручную')"
+      @update:model-value="handleManualToggle"
+    />
+
+    <v-slider
+      v-if="manualDays"
+      v-model="daysNumber"
       min="0"
       max="31"
       step="1"
-      thumbLabel="always"
-      v-model="data.formData.daysNumber">
-  </v-slider>
+      thumb-label="always"
+      :label="t('Количество дней')"
+    />
 
-  <v-textarea
-      v-model="data.formData.notes"
-      row-height="5"
-      :counter="255"
-      :rules="[v=>(!v ||  v.length <= 255 || $t('Не более N символов', {n:255}))]"
-      :label="$t('Примечание')"
-  ></v-textarea>
-    </span>
+    <v-textarea
+        v-model="notes"
+        rows="3"
+        :label="t('Примечание')"
+        :counter="255"
+        :rules="[validateLength]"
+    />
+  </div>
 </template>
 
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import type { RequestVacationAction } from "@/components/vacations/useRequestVacationAction";
+import { addDays, formatDateOnly, parseDateOnly } from "@/lib/vacation-dates";
 
-<script lang="ts">
-import Vue from 'vue'
-import Component from "vue-class-component";
-import {Prop, Watch} from "vue-property-decorator";
-import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
-import {DateTimeUtils} from "@/components/datetimeutils";
-import {RequestOrUpdateVacationActionDataContainer} from "@/components/vacations/request-vacation.data.container";
+const props = defineProps<{
+  data: RequestVacationAction;
+}>();
 
+const {t} = useI18n();
+const draftDates = ref<string[]>([]);
 
-@Component(
-    {components: {MyDateFormComponent}}
-)
-export default class VacationEditForm extends Vue {
-  @Prop({required: true})
-  private data!: RequestOrUpdateVacationActionDataContainer;
+watch(
+  () => props.data.formData.dates,
+  (value) => {
+    draftDates.value = expandBoundaryRange(value);
+  },
+  { immediate: true },
+);
 
+const formattedDates = computed(() => props.data.formattedDates());
+const manualDays = computed({
+  get: () => props.data.daysNumberSetManually.value,
+  set: (value: boolean | null) => {
+    props.data.setDaysNumberManually(Boolean(value));
+  },
+});
+const daysNumber = computed({
+  get: () => props.data.formData.daysNumber,
+  set: (value: number) => {
+    props.data.setDaysNumber(value);
+  },
+});
+const notes = computed({
+  get: () => props.data.formData.notes,
+  set: (value: string) => {
+    props.data.setNotes(value);
+  },
+});
 
-  @Watch("data.formData.dates")
-  private watchStartDate() {
-    this.data.datesUpdated();
+const pickerRange = computed({
+  get: () =>
+    draftDates.value
+      .map((value) => (value ? parseDateOnly(value) : null))
+      .filter((value): value is Date => Boolean(value)),
+  set: (value: Date[] | null) => {
+    draftDates.value = normalizeSelection(value);
+    props.data.setDates(normalizeBoundaryRange(draftDates.value));
+    props.data.datesUpdated();
+  },
+});
+
+function normalizeSelection(value: unknown): string[] {
+  const asArray = Array.isArray(value) ? value : [];
+  return asArray
+    .map((item) => normalizeToIsoDate(item))
+    .filter((item): item is string => Boolean(item))
+    .sort((left, right) => left.localeCompare(right))
+    .filter((item, index, arr) => index === 0 || item !== arr[index - 1]);
+}
+
+function normalizeBoundaryRange(value: unknown): string[] {
+  const normalized = normalizeSelection(value);
+  if (normalized.length === 0) {
+    return [];
   }
-
-  private validateDate(formattedDate: string, allowEmpty = true): boolean {
-    return DateTimeUtils.validateFormattedDate(formattedDate, allowEmpty);
+  if (normalized.length === 1) {
+    const single = normalized[0];
+    return single ? [single] : [];
   }
+  const start = normalized[0];
+  const end = normalized[normalized.length - 1];
+  if (!start || !end) {
+    return [];
+  }
+  return [start, end];
+}
 
+function normalizeToIsoDate(value: unknown): string | null {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return formatDateOnly(value);
+  }
+  if (typeof value === "string") {
+    const parsed = parseDateOnly(value);
+    return parsed ? formatDateOnly(parsed) : null;
+  }
+  return null;
+}
+
+function buildRangeSelection(start: Date, end: Date): string[] {
+  const from = start <= end ? start : end;
+  const to = start <= end ? end : start;
+  const dates: string[] = [];
+  for (let cursor = new Date(from); cursor <= to; cursor = addDays(cursor, 1)) {
+    dates.push(formatDateOnly(cursor));
+  }
+  return dates;
+}
+
+function expandBoundaryRange(value: unknown): string[] {
+  const boundary = normalizeBoundaryRange(value);
+  if (boundary.length !== 2) {
+    return boundary;
+  }
+  const start = parseDateOnly(boundary[0]);
+  const end = parseDateOnly(boundary[1]);
+  if (!start || !end) {
+    return boundary;
+  }
+  return buildRangeSelection(start, end);
+}
+
+
+function handleManualToggle(value: boolean | null) {
+  if (!value) {
+    props.data.updateDaysNumber();
+  }
+}
+
+function validateLength(value: string | null): true | string {
+  if (!value || value.length <= 255) {
+    return true;
+  }
+  return t("Не более N символов", {n: 255});
 }
 </script>
+
+<style scoped>
+.vacation-request-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+</style>

@@ -1,328 +1,353 @@
 <template>
-  <v-app id="hreasy">
-    <v-navigation-drawer
-        app
-        v-if="username"
-        v-model="drawer">
-      <v-list dense>
-        <v-list-item @click.stop="drawer = !drawer">
-          <span class="text-body-2">{{ userDisplayName }}</span>
-        </v-list-item>
-
-        <v-list-item link to="/profile/main">
-          <v-list-item-action>
-            <v-icon>mdi-account</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>
-            {{ $tc('Мой профиль') }}
-          </v-list-item-title>
-        </v-list-item>
-
-        <v-divider></v-divider>
-
-
-        <v-list-item to="/employees">
-          <v-list-item-action>
-            <v-icon>mdi-account-multiple</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>
-            {{ $tc('Сотрудники') }}
-          </v-list-item-title>
-        </v-list-item>
-
-        <v-list-item to="/overtimes" v-if="canViewAllOvertimes()">
-          <v-list-item-action>
-            <v-icon>mdi-briefcase-clock</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>
-            {{ $tc('Овертаймы') }}
-          </v-list-item-title>
-        </v-list-item>
-
-        <v-list-item link to="/vacations" v-if="canViewVacations()">
-          <v-list-item-action>
-            <v-icon>mdi-calendar-text</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>
-            {{ $tc('Отпуска') }}
-          </v-list-item-title>
-        </v-list-item>
-
-        <v-list-item link to="/assessments" v-if="canCreateAssessments()">
-          <v-list-item-action>
-            <v-icon>mdi-book-check-outline</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>
-            {{ $tc('Ассессменты') }}
-          </v-list-item-title>
-        </v-list-item>
-
-
-        <v-list-group
-            no-action
-            v-if="canReportSalaryRequest()"
+  <v-app>
+    <v-navigation-drawer v-model="drawer" temporary class="app-navigation">
+      <v-list density="comfortable" nav>
+        <v-list-item
+          v-for="item in profileNavigationItems"
+          :key="item.key"
+          :prepend-icon="item.icon"
+          :to="item.to"
+          link
+          @click="drawer = false"
         >
-          <template v-slot:activator>
-            <v-list-item-action>
-              <v-icon>mdi-currency-rub</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>{{ $t('Повышения') }}</v-list-item-title>
-            </v-list-item-content>
-          </template>
-        <v-list-item to="/salaries/requests" v-if="canReportSalaryRequest()">
-          <v-list-item-title>
-            {{ $t('Повышения и бонусы') }}
-          </v-list-item-title>
+          <v-list-item-title>{{ item.label }}</v-list-item-title>
         </v-list-item>
-          <v-list-item to="/salaries/latest" v-if="canAdminSalaryRequests()">
-            <v-list-item-title>
-              {{ $t('Последние повышения') }}
-            </v-list-item-title>
+
+        <v-divider v-if="isAuthenticated" class="my-2" />
+
+        <v-list-item
+          v-for="item in primaryNavigationItems"
+          :key="item.key"
+          :prepend-icon="item.icon"
+          :to="item.to"
+          link
+          @click="drawer = false"
+        >
+          <v-list-item-title>{{ item.label }}</v-list-item-title>
+        </v-list-item>
+
+        <v-list-group v-if="salaryNavigationItems.length" value="salary-navigation-group">
+          <template #activator="{ props }">
+            <v-list-item v-bind="props" prepend-icon="mdi-currency-rub">
+              <v-list-item-title>{{ t("Повышения") }}</v-list-item-title>
+            </v-list-item>
+          </template>
+          <v-list-item
+            v-for="item in salaryNavigationItems"
+            :key="item.key"
+            :to="item.to"
+            link
+            @click="drawer = false"
+          >
+            <v-list-item-title>{{ item.label }}</v-list-item-title>
           </v-list-item>
         </v-list-group>
 
-        <v-list-item to="/juniors" v-if="canAccessJuniorsRegistry()">
-          <v-list-item-action>
-            <v-icon>mdi-school</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>
-            {{ $t('Менторство') }}
-          </v-list-item-title>
+        <v-list-item
+          v-for="item in postSalaryNavigationItems"
+          :key="item.key"
+          :prepend-icon="item.icon"
+          :to="item.to"
+          link
+          @click="drawer = false"
+        >
+          <v-list-item-title>{{ item.label }}</v-list-item-title>
         </v-list-item>
 
-
-        <v-divider></v-divider>
-        <v-list-group
-            no-action
-            v-if="canAdminEmployees() || canAdminProjects() || canAdminUsers() || canAdminBusinessAccounts() || canAdminArticles()"
-        >
-          <template v-slot:activator>
-            <v-list-item-action>
-              <v-icon>mdi-cogs</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>{{ $t('Админка') }}</v-list-item-title>
-            </v-list-item-content>
+        <v-list-group v-if="adminNavigationItems.length" value="admin-navigation-group">
+          <template #activator="{ props }">
+            <v-list-item v-bind="props" prepend-icon="mdi-cogs">
+              <v-list-item-title>{{ t("Админка") }}</v-list-item-title>
+            </v-list-item>
           </template>
-
-          <v-list-item to="/admin/employees" v-if="canAdminEmployees()">
-            <v-list-item-title>
-              {{ $t('Админка сотрудников') }}
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item :to="'/admin/dicts/'+firstAvialableDict()" v-if="firstAvialableDict()">
-            <v-list-item-title>
-              {{ $t('Справочники') }}
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item to="/admin/projects" v-if="canAdminProjects()">
-            <v-list-item-title>
-              {{ $t('Все проекты') }}
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item to="/admin/ba" v-if="canAdminBusinessAccounts()">
-            <v-list-item-title>
-              {{ $t('Бизнес Аккаунты') }}
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item to="/admin/users" v-if="canAdminUsers()">
-            <v-list-item-title>
-              {{ $t('Пользователи и роли') }}
-            </v-list-item-title>
-          </v-list-item>
-
-          <v-list-item to="/admin/articles" v-if="canAdminArticles()">
-            <v-list-item-title>
-              {{ $t('Статьи и новости') }}
-            </v-list-item-title>
-          </v-list-item>
-
-          <v-list-item to="/admin/managers" v-if="canAdminManagers()">
-            <v-list-item-title>
-              {{ $t('Все менеджеры') }}
-            </v-list-item-title>
+          <v-list-item
+            v-for="item in adminNavigationItems"
+            :key="item.key"
+            :to="item.to"
+            link
+            @click="drawer = false"
+          >
+            <v-list-item-title>{{ item.label }}</v-list-item-title>
           </v-list-item>
         </v-list-group>
 
-
-        <v-divider></v-divider>
-        <v-list-item link v-on:click.stop="logout">
-          <v-list-item-action>
-            <v-icon>mdi-logout</v-icon>
-          </v-list-item-action>
-          <v-list-item-title>
-            {{ $tc('Выход') }}
-          </v-list-item-title>
+        <v-divider v-if="isAuthenticated" class="my-2" />
+        <v-list-item
+          v-if="isAuthenticated"
+          prepend-icon="mdi-logout"
+          data-testid="logout-button"
+          @click="logout"
+        >
+          <v-list-item-title>{{ t("Выход") }}</v-list-item-title>
         </v-list-item>
       </v-list>
-      <template v-slot:append>
-        <v-img src="@/assets/illustration.jpg"></v-img>
-      </template>
     </v-navigation-drawer>
-    <v-app-bar
-        app>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer"/>
-      <v-icon class="mx-4">fab fa-youtube</v-icon>
-      <v-toolbar-title class="mr-12 align-center">
-        <span class="title">{{ $t('HR_Easy') }}</span>
-      </v-toolbar-title>
-      <v-spacer/>
-      <v-row
-          align="center"
-          style="max-width: 650px"
-      >
-      </v-row>
-      <v-spacer/>
 
-      <v-row v-if="!username">
-        <router-link to="/login">{{ $t('Вход') }}</router-link>
-      </v-row>
-      <v-img v-else max-width="70px" max-height="50px" contain src="@/assets/logo-nav.png"></v-img>
-
-      <v-alert
-          v-if="unhandledrejection"
-          type="error"
-          dismissible>
-        {{ unhandledrejection }}
-      </v-alert>
+    <v-app-bar app elevation="1" density="comfortable">
+      <v-app-bar-nav-icon
+        :aria-label="t('Открыть_меню')"
+        @click="drawer = !drawer"
+      />
+      <v-app-bar-title class="font-weight-medium" data-testid="app-title">
+        HR Easy
+      </v-app-bar-title>
+      <v-spacer />
+      <template v-if="!isAuthenticated">
+        <v-btn variant="tonal" color="primary" :to="{ name: 'login' }">
+          {{ t("Вход") }}
+        </v-btn>
+      </template>
+      <template v-else>
+        <v-chip class="mr-2" color="primary" variant="outlined">
+          {{ displayName }}
+        </v-chip>
+        <v-btn variant="text" color="primary" data-testid="logout-button" @click="logout">
+          {{ t("Выход") }}
+        </v-btn>
+      </template>
     </v-app-bar>
 
     <v-main>
-      <v-container>
-        <!-- Do not forget to add the component name in @Component decorator -->
-        <keep-alive :max="10"
-            include="AdminProjects,VacationsList,AssessmentShortList,JuniorRegistryTable,SalaryRequestsTable,EmployeeWithLatestSalaryRequestTable">
-          <router-view></router-view>
-        </keep-alive>
-      </v-container>
+      <RouterView />
     </v-main>
 
-    <v-footer>
-      <v-col
-          class="text-right"
-          cols="12"
-      >
-        {{ new Date().getFullYear() }} — <strong>Alexander Bondin</strong>
-      </v-col>
+    <v-footer app color="grey-lighten-4" border="top" height="60">
+      <v-container>
+        <v-row>
+          <v-col cols="12" class="text-end text-body-2">
+            {{ currentYear }} - <strong>Alexander Bondin</strong>
+            <a :href="vue2Url" class="footer-link ml-4">
+              {{ t("Перейти_в_старую_версию_интерфейса") }}
+            </a>
+          </v-col>
+        </v-row>
+      </v-container>
     </v-footer>
   </v-app>
 </template>
 
-<script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import {Action, Getter} from "vuex-class";
-import moment from "moment";
-import permissionService from "@/store/modules/permission.service";
-import colors from "vuetify/lib/util/colors";
+<script setup lang="ts">
+import { RouterView, useRouter } from "vue-router";
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { useAuthStore } from "@/stores/auth";
+import { usePermissions } from "@/lib/permissions";
 
-const namespace_auth = 'auth';
-const namespace_error = 'error';
+const authStore = useAuthStore();
+const permissions = usePermissions();
+const router = useRouter();
+const { t } = useI18n();
 
-@Component
-export default class App extends Vue {
-  drawer = false;
+const displayName = computed(() => authStore.displayName);
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const drawer = ref(false);
+const currentYear = new Date().getFullYear();
+const vue2Url = import.meta.env.VITE_VUE2_UI_URL ?? "/old/";
 
-  @Action("logout", {namespace: namespace_auth})
-  logoutAction!: () => Promise<any>;
-
-  @Getter("displayName", {namespace: namespace_auth})
-  userDisplayName: string | undefined;
-
-  @Getter("username", {namespace: namespace_auth})
-  username: string | undefined;
-
-  @Getter("unhandledrejection", {namespace: namespace_error})
-  unhandledrejection: undefined;
-
-  created() {
-    this.$vuetify.theme.dark = false;
-    this.$vuetify.theme.themes.light.primary = colors.deepOrange.darken1;
-    this.$vuetify.theme.themes.light.secondary = colors.deepPurple.darken3;
-    moment.locale(this.$i18n.locale);
+const profileNavigationItems = computed(() => {
+  if (isAuthenticated.value) {
+    return [
+      {
+        key: "profile-main",
+        label: t("Профиль"),
+        icon: "mdi-account",
+        to: { name: "profile-main" },
+      },
+    ];
   }
 
+  return [
+    {
+      key: "login",
+      label: t("Вход"),
+      icon: "mdi-login",
+      to: { name: "login" },
+    },
+  ];
+});
 
-  private logout() {
-    return this.logoutAction().then(() => this.$router.push('/login'));
+const primaryNavigationItems = computed(() => {
+  if (!isAuthenticated.value) {
+    return [];
   }
 
-  private canViewAllOvertimes() {
-    return permissionService.canViewAllOvertimes();
+  const items = [
+    {
+      key: "employees",
+      label: t("Сотрудники"),
+      icon: "mdi-account-group",
+      to: { name: "employees" },
+    },
+  ];
+
+  if (permissions.canViewAllOvertimes()) {
+    items.push({
+      key: "overtimes",
+      label: t("Овертаймы"),
+      icon: "mdi-briefcase-clock",
+      to: { name: "overtimes" },
+    });
   }
 
-  private canViewVacations() {
-    return permissionService.canViewAllVacations();
+  if (permissions.canViewAllVacations()) {
+    items.push({
+      key: "vacations",
+      label: t("Отпуска"),
+      icon: "mdi-calendar-range",
+      to: { name: "vacations" },
+    });
   }
 
-  private canCreateAssessments() {
-    return permissionService.canCreateAssessments();
+  if (permissions.canCreateAssessments()) {
+    items.push({
+      key: "assessments",
+      label: t("Ассессменты"),
+      icon: "mdi-book-check-outline",
+      to: { name: "assessments" },
+    });
   }
 
-  private canAdminProjects() {
-    return permissionService.canAdminProjects();
+  return items;
+});
+
+const salaryNavigationItems = computed(() => {
+  if (!isAuthenticated.value) {
+    return [];
   }
 
-  private canAdminEmployees() {
-    return permissionService.canAdminEmployees();
+  const items = [];
+
+  if (permissions.canReportSalaryRequest()) {
+    items.push({
+      key: "salary-requests",
+      label: t("Повышения и бонусы"),
+      to: { name: "salary-requests" },
+    });
   }
 
-  private canAdminManagers() {
-    return permissionService.canAdminManagers();
+  if (permissions.canAdminSalaryRequests()) {
+    items.push({
+      key: "salary-latest",
+      label: t("Последние повышения"),
+      to: { name: "salary-latest" },
+    });
   }
 
-  private canAdminBusinessAccounts() {
-    return permissionService.canAdminBusinessAccounts();
+  return items;
+});
+
+const postSalaryNavigationItems = computed(() => {
+  if (!isAuthenticated.value) {
+    return [];
   }
 
-  private canAdminUsers() {
-    return permissionService.canAdminUsers();
+  const items = [];
+
+  if (permissions.canAccessJuniorsRegistry() || permissions.canAdminJuniorRegistry()) {
+    items.push({
+      key: "mentorship",
+      label: t("Менторство"),
+      icon: "mdi-account-school",
+      to: { name: "mentorship" },
+    });
   }
 
-  private canAdminArticles() {
-    return permissionService.canAdminArticles();
+  return items;
+});
+
+const adminNavigationItems = computed(() => {
+  if (!isAuthenticated.value) {
+    return [];
   }
 
-  private canAdminSalaryRequests() {
-    return permissionService.canAdminSalaryRequests();
+  const items = [];
+
+  if (permissions.canAdminEmployees()) {
+    items.push({
+      key: "admin-employees",
+      label: t("Админка сотрудников"),
+      icon: "mdi-account-cog",
+      to: { name: "admin-employees-list" },
+    });
   }
 
-  private canReportSalaryRequest() {
-    return permissionService.canReportSalaryRequest();
+  if (
+    permissions.canAdminDictOrganizations()
+    || permissions.canAdminDictDepartments()
+    || permissions.canAdminDictPositions()
+    || permissions.canAdminDictLevels()
+    || permissions.canAdminDictOffices()
+    || permissions.canAdminDictOfficeLocations()
+  ) {
+    items.push({
+      key: "admin-dicts",
+      label: t("Справочники"),
+      icon: "mdi-book-open-variant",
+      to: "/admin/dicts",
+    });
   }
 
-  private canAccessJuniorsRegistry(){
-    return permissionService.canAccessJuniorsRegistry();
+  if (permissions.canAdminProjects()) {
+    items.push({
+      key: "admin-projects",
+      label: t("Все проекты"),
+      icon: "mdi-briefcase-edit-outline",
+      to: { name: "admin-projects" },
+    });
   }
 
-  private firstAvialableDict(): string | undefined {
-    if (permissionService.canAdminDictDepartments()) {
-      return "departments";
-    }
-    if (permissionService.canAdminDictLevels()) {
-      return "levels";
-    }
-    if (permissionService.canAdminDictPositions()) {
-      return "positions";
-    }
-    if (permissionService.canAdminDictOfficeLocations()) {
-      return "office_locations";
-    }
-    return undefined;
+  if (permissions.canAdminBusinessAccounts()) {
+    items.push({
+      key: "admin-business-accounts",
+      label: t("Бизнес Аккаунты"),
+      icon: "mdi-domain",
+      to: { name: "admin-business-accounts" },
+    });
   }
 
+  if (permissions.canAdminUsers()) {
+    items.push({
+      key: "admin-users",
+      label: t("Пользователи и роли"),
+      icon: "mdi-shield-account",
+      to: { name: "admin-users" },
+    });
+  }
+
+  if (permissions.canAdminArticles()) {
+    items.push({
+      key: "admin-articles",
+      label: t("Статьи и новости"),
+      icon: "mdi-newspaper-variant-outline",
+      to: { name: "admin-articles" },
+    });
+  }
+
+  if (permissions.canAdminManagers()) {
+    items.push({
+      key: "admin-managers",
+      label: t("Все менеджеры"),
+      icon: "mdi-account-tie",
+      to: { name: "admin-managers" },
+    });
+  }
+
+  return items;
+});
+
+onMounted(() => {
+  authStore.fetchCurrentUser().catch(() => undefined);
+});
+
+async function logout() {
+  drawer.value = false;
+  await authStore.logout();
+  await router.push({ name: "login" });
 }
 </script>
 
-<style lang="scss">
-@import '../node_modules/@fontsource/roboto/index.css';
-
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style scoped>
+.footer-link {
+  color: inherit;
 }
 </style>

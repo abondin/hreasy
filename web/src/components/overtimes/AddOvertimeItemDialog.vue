@@ -1,225 +1,206 @@
-<!--
-Simple dialog to add or update single overtime item
-
-Emits:
-
-1) 'submit' when item added/updated
-2) 'close' when dialog closed
-
- -->
-
 <template>
-  <v-dialog
-      max-width="800"
-      v-model="dialog">
-    <template v-slot:activator="{on, attrs}">
-      <v-btn :disabled="periodClosed" color="primary"
-             v-bind="attrs"
-             v-on="on">{{ $t('Добавить') }}
+  <v-dialog v-model="dialog" max-width="760">
+    <template #activator="{ props }">
+      <v-btn v-bind="props" color="primary" :disabled="periodClosed">
+        {{ t("Добавить") }}
       </v-btn>
     </template>
-    <v-form v-if="item"
-            :ref="`overtime-item-update-${employeeId}-${period.periodId()}`">
-      <v-card>
-        <v-card-title>{{ $t('Учёт овертаймов за день') }}</v-card-title>
-        <v-card-text>
-          <v-autocomplete
-              v-model="item.projectId"
-              :items="allProjects.filter(p=>p.active)"
-              item-value="id"
-              item-text="name"
-              :rules="[v => !!v || $t('Проект обязателен')]"
-              :label="$t('Проект')"
-              required
-          ></v-autocomplete>
 
+    <v-card>
+      <v-card-title>{{ t("Учёт овертаймов за день") }}</v-card-title>
+      <v-card-text>
+        <v-autocomplete
+          v-model="item.projectId"
+          :items="activeProjects"
+          item-title="name"
+          item-value="id"
+          :label="t('Проект')"
+          required
+        />
 
-          <v-menu
-              ref="dateMenu"
-              v-model="dateMenu"
-              :close-on-content-click="false"
-              :nudge-right="40"
-              transition="scale-transition"
-              offset-y
-              min-width="290px">
-            <template v-slot:activator="{ on, attrs }">
-              <v-text-field
-                  :label="$t('Дата')"
-                  v-model="item.date"
-                  :rules="[v=>(!!v || $t('Дата обязательна')), v=>(Date.parse(v) > 0 || $t('Дата в формате ГГГГ.ММ.ДД'))]">
-                <template v-slot:prepend>
-                  <v-btn x-small icon @click="item.date = prevDay(item.date)">
-                    <v-icon>mdi-chevron-left</v-icon>
-                  </v-btn>
-                  <v-btn x-small icon @click="item.date = nextDay(item.date)">
-                    <v-icon>mdi-chevron-right</v-icon>
-                  </v-btn>
-                </template>
-                <template v-slot:append>
-                  <v-btn x-small icon v-bind="attrs" v-on="on">
-                    <v-icon>mdi-calendar</v-icon>
-                  </v-btn>
-                </template>
-              </v-text-field>
+        <v-text-field
+          v-model="item.date"
+          type="date"
+          :label="t('Дата')"
+        >
+          <template #prepend>
+            <v-btn size="small" icon="mdi-chevron-left" @click="setPrevDay" />
+            <v-btn size="small" icon="mdi-chevron-right" @click="setNextDay" />
+          </template>
+        </v-text-field>
 
-            </template>
-            <v-date-picker
-                :first-day-of-week="1"
-                v-model="item.date"
-                @input="dateMenu=false">
-            </v-date-picker>
-          </v-menu>
+        <v-slider
+          v-model="item.hours"
+          :label="t('Часы')"
+          :min="0.5"
+          :max="24"
+          :step="0.5"
+          thumb-label="always"
+          class="px-3"
+        />
 
+        <v-textarea
+          v-model="item.notes"
+          :label="t('Комментарий')"
+          rows="3"
+        />
 
-          <v-slider
-              :label="$t('Часы')"
-              min="0.5"
-              max="24"
-              step="0.5"
-              thumbLabel="always"
-              class="mr-2"
-              v-model="item.hours"
-              :rules="[v=>(!!v || $t('Часы обязательны'))]">
-          </v-slider>
+        <v-alert v-if="errorMessage" type="error" variant="tonal" class="mt-2">
+          {{ errorMessage }}
+        </v-alert>
+      </v-card-text>
 
-          <!-- TODO: Add max length -->
-          <v-textarea
-              v-model="item.notes"
-              :label="$t('Комментарий')">
-          </v-textarea>
-
-          <!-- Error block -->
-          <v-alert v-if="error" type="error">
-            {{ error }}
-          </v-alert>
-
-        </v-card-text>
-        <v-card-actions>
-          <v-checkbox v-model="addMore" :label="$t('Добавить ещё')"></v-checkbox>
-          <v-spacer></v-spacer>
-          <v-btn @click="closeDialog">{{ $t('Закрыть') }}</v-btn>
-          <v-btn @click="addMore ? submitAndNext() : submit()" color="primary">{{ $t('Добавить') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-form>
+      <v-card-actions>
+        <v-checkbox v-model="addMore" :label="t('Добавить ещё')" hide-details />
+        <v-spacer />
+        <v-btn @click="closeDialog">{{ t("Закрыть") }}</v-btn>
+        <v-btn color="primary" :loading="submitting" @click="submit">
+          {{ t("Добавить") }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
   </v-dialog>
 </template>
 
+<script setup lang="ts">
+import { computed, reactive, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";
+import { errorUtils } from "@/lib/errors";
+import { formatIsoDate } from "@/lib/datetime";
+import {
+  addOvertimeItem,
+  type OvertimeItem,
+  type OvertimeReport,
+} from "@/services/overtime.service";
+import type { SimpleDict } from "@/services/projects.service";
 
-<script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component';
-import {Prop, Watch} from "vue-property-decorator";
-import overtimeService, {OvertimeItem, ReportPeriod} from "@/components/overtimes/overtime.service";
-import {SimpleDict} from "@/store/modules/dict";
-import moment from "moment";
-import {errorUtils} from "@/components/errors";
+const props = defineProps<{
+  employeeId: number;
+  periodId: number;
+  periodClosed: boolean;
+  allProjects: SimpleDict[];
+  defaultProject?: number | null;
+}>();
 
+const emit = defineEmits<{
+  submitted: [report: OvertimeReport];
+  close: [];
+}>();
 
-@Component
-export default class AddOvertimeItemDialog extends Vue {
+const { t } = useI18n();
+const dialog = ref(false);
+const submitting = ref(false);
+const addMore = ref(true);
+const errorMessage = ref<string | null>(null);
 
-  @Prop({required: true})
-  employeeId!: number;
+const item = reactive<OvertimeItem>(createDefaultItem());
 
-  @Prop({required: true})
-  period!: ReportPeriod;
+const activeProjects = computed(() => {
+  const selectedProjectId = item.projectId ?? props.defaultProject ?? null;
+  const activeOnly = props.allProjects.filter((project) => project.active !== false);
+  const selectedProject = selectedProjectId == null
+    ? null
+    : props.allProjects.find((project) => project.id === selectedProjectId) ?? null;
 
-  @Prop({required: true})
-  periodClosed!: boolean;
+  const withCurrent = withCurrentOptionById(activeOnly, selectedProject);
+  return withArchivedOptionById(withCurrent, selectedProjectId, (id) => ({
+    id,
+    name: `${t("Архив")} #${id}`,
+    active: false,
+  }));
+});
 
-  @Prop({required: true})
-  allProjects!: SimpleDict[];
+watch(dialog, (value) => {
+  if (value) {
+    resetItem();
+    errorMessage.value = null;
+  } else {
+    emit("close");
+  }
+});
 
-  @Prop({required: false})
-  defaultProject!: number | null;
+function createDefaultItem(
+  projectId?: number | null,
+  date?: string,
+  hours = 4,
+): OvertimeItem {
+  return {
+    projectId: projectId ?? props.defaultProject ?? undefined,
+    date: date ?? formatIsoDate(new Date()),
+    hours,
+    notes: undefined,
+  };
+}
 
-  item: OvertimeItem = this.default();
+function resetItem(projectId?: number | null, date?: string, hours = 4): void {
+  Object.assign(item, createDefaultItem(projectId, date, hours));
+}
 
-  private dialog = false;
+function shiftDate(days: number): void {
+  const date = new Date(item.date);
+  if (Number.isNaN(date.getTime())) {
+    item.date = formatIsoDate(new Date());
+    return;
+  }
+  date.setDate(date.getDate() + days);
+  item.date = formatIsoDate(date);
+}
 
-  private addMore = true;
+function setPrevDay(): void {
+  shiftDate(-1);
+}
 
-  private error: string | null = null;
+function setNextDay(): void {
+  shiftDate(1);
+}
 
-  private dateMenu = false;
+function validate(): string | null {
+  if (!item.projectId) {
+    return t("Проект обязателен");
+  }
+  if (!item.date) {
+    return t("Дата обязательна");
+  }
+  if (Number.isNaN(new Date(item.date).getTime())) {
+    return t("Дата в формате ГГГГ.ММ.ДД");
+  }
+  if (!item.hours || item.hours <= 0) {
+    return t("Часы обязательны");
+  }
+  return null;
+}
 
-  @Watch("dialog")
-  private watch() {
-    if (this.dialog) {
-      this.resetItem(undefined, undefined, undefined);
+async function submit(): Promise<void> {
+  const validationError = validate();
+  errorMessage.value = validationError;
+  if (validationError) {
+    return;
+  }
+
+  submitting.value = true;
+  try {
+    const report = await addOvertimeItem(props.employeeId, props.periodId, {
+      ...item,
+      createdAt: undefined,
+    });
+    emit("submitted", report);
+    if (addMore.value) {
+      const currentProject = item.projectId;
+      const nextDate = new Date(item.date);
+      nextDate.setDate(nextDate.getDate() + 1);
+      resetItem(currentProject ?? null, formatIsoDate(nextDate), item.hours);
+    } else {
+      closeDialog();
     }
+  } catch (error) {
+    errorMessage.value = errorUtils.shortMessage(error);
+  } finally {
+    submitting.value = false;
   }
+}
 
-  private submit() {
-    const form: any = this.$refs[`overtime-item-update-${this.employeeId}-${this.period.periodId()}`];
-    if (form.validate()) {
-      return overtimeService.addItem(this.employeeId, this.period.periodId(), this.item).then((report) => {
-        this.$emit('submit', report);
-        this.closeDialog();
-      }).catch(error => {
-        this.error = errorUtils.shortMessage(error);
-      });
-    }
-  }
-
-  private submitAndNext() {
-    const form: any = this.$refs[`overtime-item-update-${this.employeeId}-${this.period.periodId()}`];
-    if (form.validate()) {
-      return overtimeService.addItem(this.employeeId, this.period.periodId(), this.item).then((report) => {
-        this.$emit('submit', report);
-        this.$nextTick(() => {
-          this.resetItem(this.item.projectId, this.nextDay(this.item.date), this.item.hours);
-        });
-      }).catch(error => {
-        this.error = errorUtils.shortMessage(error);
-      });
-    }
-  }
-
-  private closeDialog() {
-    this.dialog = false;
-  }
-
-  private resetItem(projectId: number | undefined = undefined, date: string | undefined = undefined,
-                    hours: number | undefined) {
-    this.error = null;
-    const def = this.default(projectId, date, hours);
-    this.item = def;
-  }
-
-  private default(projectId: number | undefined = undefined,
-                  date: string | undefined = undefined,
-                  hours = 4): OvertimeItem {
-    return {
-      date: date ? date : this.dateToString(new Date()),
-      projectId: projectId ? projectId : this.defaultProject == null ? undefined : this.defaultProject,
-      hours: hours,
-      notes: undefined
-    };
-  }
-
-  private nextDay(date: string): string {
-    const day = new Date(date);
-    let m = moment(day);
-    m = m.add(1, "days");
-    return this.dateToString(m.toDate());
-  }
-
-  private prevDay(date: string): string {
-    const day = new Date(date);
-    let m = moment(day);
-    m = m.add(-1, "days");
-    return this.dateToString(m.toDate());
-  }
-
-  private dateToString(date: Date) {
-    return date.toISOString().substr(0, 10);
-  }
-
+function closeDialog(): void {
+  dialog.value = false;
 }
 </script>
-
-<style scoped>
-
-</style>

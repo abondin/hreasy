@@ -1,128 +1,259 @@
+<!--
+  Date range selector with presets and explicit apply action.
+-->
 <template>
-  <div>
-    <v-menu ref="menu" v-model="menu" :close-on-content-click="false"
-            :return-value.sync="selectedDates"
-            transition="scale-transition" offset-y>
-      <template v-slot:activator="{ on, attrs }">
-        <v-combobox v-model="selectedDates"
-                    :label="label"
-                    prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on">
-          <template v-slot:selection="{ item }">
-            <span v-on="on" v-bind="attrs">{{ parseDateRange(item) }}</span>
-          </template>
-        </v-combobox>
-      </template>
-      <v-date-picker v-model="selectedDates"
-                     :pickerDate.sync="pickerDate"
-                     :first-day-of-week="1"
-                     show-current
-                     show-week
-                     scrollable
-                     no-title
-                     range
-                     width="500px">
-        <v-btn-toggle rounded>
-          <v-btn x-small @click="today()" v-if="allowedShortCut && allowedShortCut.indexOf('todayPlus5Days')>=0">
-            {{ $t('Текущая дата +5 дней') }}
+  <v-menu
+    ref="menuRef"
+    v-model="menuOpen"
+    :close-on-content-click="false"
+    transition="scale-transition"
+    offset-y
+    max-width="560"
+  >
+    <template #activator="{ props: activatorProps }">
+      <v-text-field
+        :model-value="displayValue"
+        :label="label"
+        prepend-inner-icon="mdi-calendar"
+        readonly
+        clearable
+        density="compact"
+        :disabled="props.disabled"
+        v-bind="activatorProps"
+        @click:clear.stop="clearRange"
+      />
+    </template>
+
+    <v-card class="pa-2">
+      <v-date-picker
+        v-model="pickerRange"
+        multiple="range"
+        :first-day-of-week="1"
+        show-adjacent-months
+        :disabled="props.disabled"
+        width="520"
+      />
+      <v-card-actions class="px-1 pt-1 pb-0">
+        <div class="d-flex flex-wrap ga-2">
+          <v-btn
+            v-if="isShortcutAllowed('todayPlus5Days')"
+            size="x-small"
+            variant="text"
+            :disabled="props.disabled"
+            @click="selectTodayPlus5Days"
+          >
+            {{ t("Текущая дата +5 дней") }}
           </v-btn>
-          <v-btn x-small @click="currentMonth()" v-if="allowedShortCut && allowedShortCut.indexOf('month')>=0">
-            {{ $t('Текущий месяц') }}
+          <v-btn
+            v-if="isShortcutAllowed('month')"
+            size="x-small"
+            variant="text"
+            :disabled="props.disabled"
+            @click="selectCurrentMonth"
+          >
+            {{ t("Текущий месяц") }}
           </v-btn>
-          <v-btn x-small @click="currentWeek()" v-if="allowedShortCut && allowedShortCut.indexOf('week')>=0">
-            {{ $t('Текущая неделя') }}
+          <v-btn
+            v-if="isShortcutAllowed('week')"
+            size="x-small"
+            variant="text"
+            :disabled="props.disabled"
+            @click="selectCurrentWeek"
+          >
+            {{ t("Текущая неделя") }}
           </v-btn>
-          <v-btn x-small @click="currentYear()" v-if="allowedShortCut && allowedShortCut.indexOf('year')>=0">
-            {{ $t('Год') }}
+          <v-btn
+            v-if="isShortcutAllowed('year')"
+            size="x-small"
+            variant="text"
+            :disabled="props.disabled"
+            @click="selectCurrentYear"
+          >
+            {{ t("Год") }}
           </v-btn>
-        </v-btn-toggle>
-        <v-spacer></v-spacer>
-        <v-btn text @click="menu = false">
-          {{ $t('Закрыть') }}
+        </div>
+        <v-spacer />
+        <v-btn variant="text" :disabled="props.disabled" @click="menuOpen = false">
+          {{ t("Закрыть") }}
         </v-btn>
-        <v-btn text color="primary" @click="apply()">
-          {{ $t('Применить') }}
+        <v-btn
+          color="primary"
+          variant="text"
+          :disabled="props.disabled"
+          @click="applyRange"
+        >
+          {{ t("Применить") }}
         </v-btn>
-      </v-date-picker>
-    </v-menu>
-  </div>
+      </v-card-actions>
+    </v-card>
+  </v-menu>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { addDays, formatDateOnly, parseDateOnly } from "@/lib/vacation-dates";
+import { formatDate } from "@/lib/datetime";
 
-import Component from "vue-class-component";
-import Vue from 'vue'
-import {Prop} from "vue-property-decorator";
-import moment, {HTML5_FMT} from "moment";
-import {DateTimeUtils} from "@/components/datetimeutils";
+type AllowedShortCut = "year" | "month" | "week" | "todayPlus5Days";
 
+const props = withDefaults(
+  defineProps<{
+    modelValue: string[];
+    label: string;
+    allowedShortCut?: AllowedShortCut[];
+    disabled?: boolean;
+  }>(),
+  {
+    modelValue: () => [],
+    allowedShortCut: () => ["year", "month", "todayPlus5Days"],
+    disabled: false,
+  },
+);
 
-export type MyDateRangeComponentAllowedTypes='year'|'month'|'week'|'todayPlus5Days';
+const emit = defineEmits<{ (event: "update:modelValue", value: string[]): void }>();
+const { t } = useI18n();
 
-@Component
-export default class MyDateRangeComponent extends Vue {
+const menuOpen = ref(false);
+const draftRange = ref<string[]>([]);
 
-  @Prop()
-  private value!: string[];
-
-  @Prop({required: true})
-  private label!: string;
-
-  @Prop({required: false, type: Array})
-  private rules: any;
-
-  @Prop({type: Array, default:()=>['year', 'month', 'todayPlus5Days']})
-  private allowedShortCut!: Array<MyDateRangeComponentAllowedTypes>;
-
-  private menu = false;
-
-  private pickerDate: string | null = null;
-
-  public get selectedDates() {
-    return this.value;
+watch(menuOpen, (open) => {
+  if (open) {
+    draftRange.value = expandBoundaryRange(props.modelValue);
   }
+});
 
-  public set selectedDates(dates: string[]) {
-    this.pickerDate = dates && dates.length > 0 ? dates[0] : null;
-    this.$emit('input', dates);
+const displayValue = computed(() => {
+  const current = normalizeBoundaryRange(props.modelValue);
+  if (current.length === 0) {
+    return t("Не выбран");
   }
-
-  private parseDateRange(datesIso: Array<string>) {
-    if (!datesIso || datesIso.length == 0) {
-      return this.$t('Не выбран');
-    }
-    const from = datesIso[0];
-    let result = `${this.$i18n.t('с')} ${DateTimeUtils.formatFromIso(from)}`;
-    if (datesIso.length > 1) {
-      const to = datesIso[1];
-      result += ` ${this.$i18n.t('по')} ${DateTimeUtils.formatFromIso(to)}`;
-    }
-    return result;
+  const start = formatDate(current[0]);
+  const end = current[1] ? formatDate(current[1]) : "";
+  if (!end) {
+    return `${t("с")} ${start}`;
   }
+  return `${t("с")} ${start} ${t("по")} ${end}`;
+});
 
-  public today() {
-    this.selectedDates = [moment().format(HTML5_FMT.DATE), moment().add(5, 'day').format(HTML5_FMT.DATE)];
-  }
+const pickerRange = computed({
+  get: () =>
+    draftRange.value
+      .map((value) => parseDateOnly(value))
+      .filter((value): value is Date => Boolean(value)),
+  set: (value: unknown) => {
+    draftRange.value = normalizeSelection(value);
+  },
+});
 
-  public currentMonth() {
-    this.selectedDates = [moment().startOf('month').format(HTML5_FMT.DATE),
-      moment().endOf('month').format(HTML5_FMT.DATE)];
-  }
-
-  public currentWeek() {
-    this.selectedDates = [moment().startOf('week').format(HTML5_FMT.DATE),
-      moment().endOf('week').format(HTML5_FMT.DATE)];
-  }
-
-  public currentYear() {
-    this.selectedDates = [moment().startOf('year').format(HTML5_FMT.DATE),
-      moment().endOf('year').format(HTML5_FMT.DATE)];
-  }
-
-  private apply() {
-    (this.$refs.menu as any).save(this.selectedDates);
-  }
-
-
+function isShortcutAllowed(shortcut: AllowedShortCut) {
+  return props.allowedShortCut.includes(shortcut);
 }
 
+function normalizeSelection(value: unknown): string[] {
+  const asArray = Array.isArray(value) ? value : [];
+  const normalized = asArray
+    .map(normalizeToIsoDate)
+    .filter((item): item is string => Boolean(item))
+    .sort((left, right) => left.localeCompare(right))
+    .filter((item, index, arr) => index === 0 || item !== arr[index - 1]);
+
+  return normalized;
+}
+
+function normalizeBoundaryRange(value: unknown): string[] {
+  const normalized = normalizeSelection(value);
+  if (normalized.length === 0) {
+    return [];
+  }
+  if (normalized.length === 1) {
+    const single = normalized[0];
+    return single ? [single] : [];
+  }
+  const start = normalized[0];
+  const end = normalized[normalized.length - 1];
+  if (!start || !end) {
+    return [];
+  }
+  return [start, end];
+}
+
+function buildRangeSelection(start: Date, end: Date): string[] {
+  const normalizedStart = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const normalizedEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  const from = normalizedStart <= normalizedEnd ? normalizedStart : normalizedEnd;
+  const to = normalizedStart <= normalizedEnd ? normalizedEnd : normalizedStart;
+  const selection: string[] = [];
+  for (let cursor = new Date(from); cursor <= to; cursor = addDays(cursor, 1)) {
+    selection.push(formatDateOnly(cursor));
+  }
+  return selection;
+}
+
+function expandBoundaryRange(value: unknown): string[] {
+  const boundary = normalizeBoundaryRange(value);
+  if (boundary.length === 0) {
+    return [];
+  }
+  if (boundary.length === 1) {
+    return boundary;
+  }
+  const start = parseDateOnly(boundary[0]);
+  const end = parseDateOnly(boundary[1]);
+  if (!start || !end) {
+    return boundary;
+  }
+  return buildRangeSelection(start, end);
+}
+
+function normalizeToIsoDate(value: unknown): string | null {
+  if (typeof value === "string") {
+    const parsed = parseDateOnly(value);
+    return parsed ? formatDateOnly(parsed) : null;
+  }
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return formatDateOnly(value);
+  }
+  return null;
+}
+
+function clearRange() {
+  draftRange.value = [];
+  emit("update:modelValue", []);
+}
+
+function applyRange() {
+  emit("update:modelValue", normalizeBoundaryRange(draftRange.value));
+  menuOpen.value = false;
+}
+
+function selectTodayPlus5Days() {
+  const start = new Date();
+  const end = addDays(start, 5);
+  draftRange.value = buildRangeSelection(start, end);
+}
+
+function selectCurrentMonth() {
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), 1);
+  const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  draftRange.value = buildRangeSelection(start, end);
+}
+
+function selectCurrentWeek() {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const offsetToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const start = addDays(today, offsetToMonday);
+  const end = addDays(start, 6);
+  draftRange.value = buildRangeSelection(start, end);
+}
+
+function selectCurrentYear() {
+  const year = new Date().getFullYear();
+  draftRange.value = buildRangeSelection(
+    new Date(year, 0, 1),
+    new Date(year, 11, 31),
+  );
+}
 </script>

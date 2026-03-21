@@ -1,107 +1,100 @@
-<!--
-Expandable chip to show overtime report approve or decline decision
- -->
 <template>
-
-  <v-menu
-      v-model="menu"
-      bottom
-      right
-      transition="scale-transition"
-      origin="top left"
-  >
-    <template v-slot:activator="{ on }">
-      <v-chip outlined pill v-on="on">
-          <v-icon v-if="approval.decision==='APPROVED'"
-                  class="approved">mdi-checkbox-marked-circle
-          </v-icon>
-          <v-icon v-if="approval.decision==='DECLINED'"
-                  class="declined">mdi-do-not-disturb
-          </v-icon>
+  <v-menu>
+    <template #activator="{ props }">
+      <v-chip variant="outlined" pill v-bind="props">
+        <v-icon
+          v-if="approval.decision === 'APPROVED'"
+          class="approval-chip-icon approved"
+          icon="mdi-checkbox-marked-circle"
+        />
+        <v-icon
+          v-else
+          class="approval-chip-icon declined"
+          icon="mdi-do-not-disturb"
+        />
         {{ approval.approverDisplayName }}
-        <v-icon v-if="approval.outdated" class="outdated">mdi-clock-alert</v-icon>
+        <v-icon
+          v-if="approval.outdated"
+          class="approval-chip-icon outdated"
+          icon="mdi-clock-alert"
+        />
       </v-chip>
     </template>
-    <v-card width="400">
-      <v-list v-if="approval.outdated">
-        <v-list-item @click="() => {}">
-          <dl>
-            <dt class="font-weight-bold">{{ $t('Рассмотрено') }}:</dt><dd>{{formatDateTimeShort(approval.decisionTime)}}</dd>
-            <dt class="font-weight-bold">{{ $t('Внесены изменения') }}:</dt><dd class="error--text">{{formatDateTimeShort(reportLastUpdateTime)}}</dd>
-          </dl>
+
+    <v-card width="420">
+      <v-list density="compact">
+        <v-list-item v-if="approval.outdated">
+          <v-list-item-title class="font-weight-medium">
+            {{ t("Рассмотрено") }}: {{ formatDateTime(approval.decisionTime) }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ t("Внесены изменения") }}: {{ formatDateTime(reportLastUpdateTime) }}
+          </v-list-item-subtitle>
         </v-list-item>
-      </v-list>
-      <v-list>
-        <v-list-item @click="() => {}">
-          <v-list-item-action>
-            <v-icon>{{ approval.decision === 'APPROVED' ? 'mdi-checkbox-marked-circle' : 'mdi-alert-circle' }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-subtitle>{{ $t('APPROVAL_DECISION_ENUM.' + approval.decision) }}</v-list-item-subtitle>
+
+        <v-list-item>
+          <template #prepend>
+            <v-icon
+              :icon="
+                approval.decision === 'APPROVED'
+                  ? 'mdi-checkbox-marked-circle'
+                  : 'mdi-alert-circle'
+              "
+            />
+          </template>
+          <v-list-item-title>
+            {{ t(`APPROVAL_DECISION_ENUM.${approval.decision}`) }}
+          </v-list-item-title>
         </v-list-item>
-        <v-list-item @click="() => {}">
-          <v-list-item-action>
-            <v-icon>mdi-account</v-icon>
-          </v-list-item-action>
-          <v-list-item-subtitle>{{ approval.approverDisplayName }}</v-list-item-subtitle>
+
+        <v-list-item>
+          <template #prepend>
+            <v-icon icon="mdi-account" />
+          </template>
+          <v-list-item-title>{{ approval.approverDisplayName }}</v-list-item-title>
         </v-list-item>
-        <v-list-item @click="() => {}">
-          <v-list-item-action>
-            <v-icon>mdi-clock</v-icon>
-          </v-list-item-action>
-          <v-list-item-subtitle>{{ formatDateTime(approval.decisionTime) }}</v-list-item-subtitle>
+
+        <v-list-item>
+          <template #prepend>
+            <v-icon icon="mdi-clock" />
+          </template>
+          <v-list-item-title>{{ formatDateTime(approval.decisionTime) }}</v-list-item-title>
         </v-list-item>
-        <v-list-item @click="() => {}">
-          <v-list-item-action>
-            <v-icon>mdi-pencil</v-icon>
-          </v-list-item-action>
-          {{ approval.comment }}
+
+        <v-list-item>
+          <template #prepend>
+            <v-icon icon="mdi-pencil" />
+          </template>
+          <v-list-item-title>{{ approval.comment || "-" }}</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-card>
   </v-menu>
-
 </template>
 
+<script setup lang="ts">
+import { useI18n } from "vue-i18n";
+import { formatDateTime } from "@/lib/datetime";
+import type { ApprovalDecision } from "@/services/overtime.service";
 
-<script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component';
-import {Prop} from "vue-property-decorator";
-import {ApprovalDecision, OvertimeUtils} from "@/components/overtimes/overtime.service";
+defineProps<{
+  approval: ApprovalDecision;
+  reportLastUpdateTime?: string | null;
+}>();
 
-
-@Component
-export default class OvertimeApprovalChip extends Vue {
-
-  private menu = false;
-
-  @Prop({required: true})
-  approval!: ApprovalDecision;
-
-  @Prop({required: false})
-  reportLastUpdateTime!: string;
-
-
-  private formatDateTime(date: Date): string | undefined {
-    return OvertimeUtils.formatDateTime(date);
-  }
-
-  private formatDateTimeShort(date: Date): string | undefined {
-    return OvertimeUtils.formatDateTimeShort(date);
-  }
-}
+const { t } = useI18n();
 </script>
 
-<style scoped lang="scss">
-.v-chip.v-chip--outlined .v-icon.approved {
+<style scoped>
+.approval-chip-icon.approved {
   color: green;
 }
 
-.v-chip.v-chip--outlined .v-icon.declined {
-  color: red
+.approval-chip-icon.declined {
+  color: red;
 }
 
-.v-chip.v-chip--outlined .v-icon.outdated {
+.approval-chip-icon.outdated {
   color: orange;
 }
 </style>

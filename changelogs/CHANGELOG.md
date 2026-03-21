@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0 (Work in progress)
+
+- Full migration from vue2 to vue3 
+
 ## 1.3.1 (2026-03-21)
 
 Final web release on Vue 2, available under the `/old` base URL.

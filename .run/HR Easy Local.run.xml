@@ -1,5 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="HR Easy Local" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="25" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <envs>
       <env name="HREASY_COMMON_WEB-BASE-URL" value="http://localhost:8080" />
       <env name="SPRING_MAIL_HOST" value="192.168.10.11" />
