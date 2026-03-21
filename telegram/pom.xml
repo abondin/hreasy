@@ -18,7 +18,7 @@
 		<telegram.version>6.9.7.1</telegram.version>
 		<lombok.version>1.18.42</lombok.version>
 		<git-commit-plugin.version>9.0.2</git-commit-plugin.version>
-		<jib-maven-plugin.version>3.5.3</jib-maven-plugin.version>
+		<jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
 		<git-plugin.skip>false</git-plugin.skip>
 		<mapstruct.version>1.6.3</mapstruct.version>
 		<jjwt.version>0.12.6</jjwt.version>
