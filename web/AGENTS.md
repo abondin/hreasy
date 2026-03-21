@@ -51,3 +51,7 @@
 ## Security & Configuration Tips
 - Backend URL via `BACKEND_API_BASE_URL` (see README). For Docker, use `devops/build.sh` and run with `HREASY_API_HOST` as needed.
 - Avoid committing secrets; use `.env` for local-only values (already gitignored).
+
+## Product Constraints
+- Timesheet module is partially reworked and currently not available to end users.
+- There are no approved, clear end-user use cases for Timesheet yet; treat it as internal/inactive unless explicitly requested otherwise.
