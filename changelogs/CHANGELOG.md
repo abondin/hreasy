@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1 (2026-03-21)
+
+Final web release on Vue 2, available under the `/old` base URL.
+The next web release will be built on Vue 3.`
+
 ## 1.3.0 (2026-03-21)
 
 - Employee import from Excel extended (including organization data import).
