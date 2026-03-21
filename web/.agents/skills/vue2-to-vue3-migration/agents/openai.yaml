@@ -1,4 +1,0 @@
-interface:
-  display_name: "Vue2 to Vue3 Migration"
-  short_description: "Plan and execute safe Vue2 to Vue3 migrations"
-  default_prompt: "Use $vue2-to-vue3-migration to migrate a legacy Vue 2 page to Vue 3 with parity checks."

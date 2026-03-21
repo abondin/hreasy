@@ -36,7 +36,6 @@ Apply a reuse-first strategy: extend existing components, composables, stores, a
 
 Table standardization note:
 
-- Use the Vue 2 "Raises and Bonuses" table (`legacy/vue2/src/components/salary/SalaryRequestsTable.vue`) as a structural reference for Vue 3 table UI.
 - Keep business behavior/permissions intact while aligning table skeleton (toolbar, action placement, filters block, loading/disabled/empty states).
 - Before adding custom behavior/styles, check Vuetify component docs first: `https://vuetifyjs.com/en/components/`.
 - For employee list pages (for example `/employees`, `/admin/employees`, and similar directories), use `src/components/shared/HREasyTableBase.vue` by default. Differences between pages should be expressed via columns, filters, and row-click behavior rather than custom table layouts.
@@ -123,13 +122,10 @@ Default scope:
 - `AGENTS.md`
 - `README.md`
 - `MIGRATION_PLAN.md`
-- `legacy/README.md`
 
 ## Project-Specific Constraints
 
 - Main active app is Vue 3 in repository root.
-- Legacy app lives in `legacy/vue2/` and should not be modified unless explicitly requested.
-- Root lint/type-check should target Vue 3 codebase, not legacy.
 - If scripted file writes are needed on Windows, use explicit UTF-8 no BOM writes:
   - `[System.IO.File]::WriteAllText($path, $text, [System.Text.UTF8Encoding]::new($false))`
 

@@ -14,7 +14,7 @@ export const salaryRequestImplementationStates = [1, 2] as const;
 export type SalaryRequestImplementationState = (typeof salaryRequestImplementationStates)[number];
 
 /**
- * Main DTO for salary requests list/details. Keep this contract aligned with legacy backend responses.
+ * Main DTO for salary requests list/details. Keep this contract aligned with backend responses.
  */
 export interface SalaryIncreaseRequest {
   id: number;

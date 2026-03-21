@@ -52,7 +52,7 @@ export interface CreateOrUpdateEmployeeBody {
   sex?: string | null;
   email?: string | null;
   phone?: string | null;
-  /** @deprecated Kept for backend compatibility during migration. */
+  /** @deprecated Kept for backend compatibility. */
   skype?: string | null;
   telegram?: string | null;
   dateOfEmployment?: string | null;

@@ -235,7 +235,7 @@ export async function updateAdminOfficeLocation(
 }
 
 /**
- * Office maps are read from the public dictionary endpoint in legacy too.
+ * Office maps are read from the public dictionary endpoint in the public dictionary endpoint too.
  * Admin operations only differ for upload/delete.
  */
 export async function fetchAdminOfficeMaps(): Promise<AdminOfficeMap[]> {

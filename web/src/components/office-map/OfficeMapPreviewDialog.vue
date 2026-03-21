@@ -1,6 +1,6 @@
 <!--
   Fullscreen dialog for displaying office location maps.
-  Mirrors the legacy Vue 2 implementation: loads SVG maps, wires svg-pan-zoom,
+  Displays SVG maps, loads SVG maps, wires svg-pan-zoom,
   highlights workplaces, and opens colleague details.
   -->
 <template>

@@ -3,9 +3,7 @@ param(
     "src",
     ".agents",
     "AGENTS.md",
-    "README.md",
-    "MIGRATION_PLAN.md",
-    "legacy/README.md"
+    "README.md"
   ),
   [string[]]$Include = @("*.vue", "*.ts", "*.md", "*.json"),
   [switch]$SkipUnicodeEscapes,

@@ -1,11 +1,11 @@
 <!--
-  Renders Markdown content with legacy HTML compatibility.
-  Ported from the Vue 2 implementation.
+  Renders Markdown content with HTML compatibility mode.
+  
   -->
 <template>
   <div class="markdown-wrapper">
     <div class="markdown-body" v-html="computedHtml" />
-    <div v-if="isHtml" class="legacy-note">
+    <div v-if="isHtml" class="html-compat-note">
       {{ t("Режим совместимости HTML") }}
     </div>
   </div>
@@ -79,7 +79,7 @@ const computedHtml = computed(() => {
   text-decoration: underline;
 }
 
-.legacy-note {
+.html-compat-note {
   position: absolute;
   right: 8px;
   bottom: 4px;

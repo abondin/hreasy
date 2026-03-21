@@ -1,6 +1,5 @@
 <!--
   Dialog that allows updating the employee's current project and role.
-  Closely mirrors the legacy EmployeeUpdateCurrentProject behaviour.
 -->
 <template>
   <v-dialog v-model="dialogOpen" max-width="560" scrollable>

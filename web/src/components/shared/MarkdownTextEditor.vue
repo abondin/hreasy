@@ -1,6 +1,5 @@
 <!--
   Markdown editor with preview toggle.
-  Ported from the legacy implementation.
   -->
 <template>
   <div class="markdown-editor">

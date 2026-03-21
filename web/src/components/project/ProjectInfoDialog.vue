@@ -1,7 +1,6 @@
 <!--
   Dialog that shows detailed information about a project together with
   assignment history for the selected employee.
-  Mirrors the legacy ProjectInfoCardComponent behaviour.
 -->
 <template>
   <v-dialog v-model="dialogOpen" max-width="960" scrollable>

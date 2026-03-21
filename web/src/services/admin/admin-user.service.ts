@@ -41,7 +41,7 @@ export async function updateAdminUserRoles(
 }
 
 /**
- * Static role dictionary mirrored from legacy until a backend dictionary exists.
+ * Static role dictionary mirrored until a backend dictionary exists.
  */
 export function getAdminUserRolesDictionary(
   t: (key: string) => string,

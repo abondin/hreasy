@@ -53,7 +53,6 @@ For development best practices and common implementation guidance in this reposi
 - "Cannot read property of undefined" runtime errors -> See [v-if-null-check-order](reference/v-if-null-check-order.md)
 - Dynamic directive arguments not working properly -> See [dynamic-argument-constraints](reference/dynamic-argument-constraints.md)
 - v-else elements rendering unconditionally always -> See [v-else-must-follow-v-if](reference/v-else-must-follow-v-if.md)
-- Mixing v-if with v-for causes precedence bugs and migration breakage -> See [no-v-if-with-v-for](reference/no-v-if-with-v-for.md)
 - Template function calls mutating state cause unpredictable re-render bugs -> See [template-functions-no-side-effects](reference/template-functions-no-side-effects.md)
 - Child components in loops showing undefined data -> See [v-for-component-props](reference/v-for-component-props.md)
 - Array order changing after sorting or reversing -> See [v-for-computed-reverse-sort](reference/v-for-computed-reverse-sort.md)
@@ -144,7 +143,6 @@ For development best practices and common implementation guidance in this reposi
 - Reused vnode instances render incorrectly -> See [render-function-vnodes-must-be-unique](reference/render-function-vnodes-must-be-unique.md)
 - String component names render as HTML elements -> See [rendering-resolve-component-for-string-names](reference/rendering-resolve-component-for-string-names.md)
 - Accessing vnode internals breaks on Vue updates -> See [render-function-avoid-internal-vnode-properties](reference/render-function-avoid-internal-vnode-properties.md)
-- Vue 2 render function patterns crash in Vue 3 -> See [rendering-render-function-h-import-vue3](reference/rendering-render-function-h-import-vue3.md)
 - Slot content not rendering from h() -> See [rendering-render-function-slots-as-functions](reference/rendering-render-function-slots-as-functions.md)
 
 ### KeepAlive
@@ -155,7 +153,6 @@ For development best practices and common implementation guidance in this reposi
 - JavaScript transition hooks hang without done callback -> See [transition-js-hooks-done-callback](reference/transition-js-hooks-done-callback.md)
 - Move animations fail on inline list elements -> See [transition-group-flip-inline-elements](reference/transition-group-flip-inline-elements.md)
 - List items jump instead of smoothly animating -> See [transition-group-move-animation-position-absolute](reference/transition-group-move-animation-position-absolute.md)
-- Vue 2 to Vue 3 TransitionGroup wrapper changes break layout -> See [transition-group-no-default-wrapper-vue3](reference/transition-group-no-default-wrapper-vue3.md)
 - Nested transitions cut off before finishing -> See [transition-nested-duration](reference/transition-nested-duration.md)
 - Scoped styles stop working in reusable transition wrappers -> See [transition-reusable-scoped-style](reference/transition-reusable-scoped-style.md)
 - RouterView transitions animate unexpectedly on first render -> See [transition-router-view-appear](reference/transition-router-view-appear.md)

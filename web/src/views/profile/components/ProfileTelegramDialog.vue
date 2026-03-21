@@ -1,6 +1,5 @@
 <!--
   Dialog for editing employee Telegram account.
-  Mirrors legacy behaviour: pre-fills current value, validates format, writes via API, shows status messages.
   -->
 <template>
   <!--<editor-fold desc="Telegram update dialog">-->
