@@ -1,4 +1,4 @@
-FROM node:20-bullseye-slim AS base
+FROM node:25-bullseye-slim AS base
 RUN apt-get update \
  && apt-get install -y --no-install-recommends tini \
  && rm -rf /var/lib/apt/lists/* \
