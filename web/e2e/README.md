@@ -8,7 +8,6 @@ This folder contains end-to-end tests for the Vue 3 application.
 - `profile/`, `employees/`, `mentorship/`, `vacations/`, `overtimes/`, `admin-employees/` - domain specs.
 - `fixtures/` - auth and role helpers.
 - `support/` - shared selectors, test data constants.
-- `TEST_PLAN.md` - migration coverage roadmap and iteration plan.
 
 ## Run
 
@@ -39,8 +38,6 @@ Some scenarios require test credentials from environment variables:
 - `PLAYWRIGHT_PORT` (optional, default: `5173` in local runs)
 - `PLAYWRIGHT_BASE_PATH` (optional, for apps served from subpath, for example `/app-v3`)
 - `PLAYWRIGHT_BASE_URL` (optional override for full URL, has priority over port/base path)
-
-Optional role-specific credentials are described in [TEST_PLAN.md](./TEST_PLAN.md).
 
 If required credentials are missing, such tests are skipped.
 

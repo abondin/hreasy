@@ -37,11 +37,6 @@
                 v-if="canViewMyOvertimes && employee"
                 :employee-id="employee.id"
               />
-              <legacy-feature-card
-                v-else
-                :title="t('Овертаймы')"
-                :description="t('Раздел_пока_доступен_в_legacy')"
-              />
             </v-col>
             <v-col cols="12">
               <my-vacations />
@@ -114,7 +109,6 @@ import { useEmployeeSkills } from "@/composables/useEmployeeSkills";
 import { useEmployeeSkillPermissions } from "@/composables/useEmployeeSkillPermissions";
 import { usePermissions } from "@/lib/permissions";
 import SharedArticlesCard from "@/components/article/SharedArticlesCard.vue";
-import LegacyFeatureCard from "@/components/LegacyFeatureCard.vue";
 import MyVacations from "@/components/vacations/MyVacations.vue";
 import EmployeeOvertimeCard from "@/components/overtimes/EmployeeOvertimeCard.vue";
 import ProfileSummaryCard from "@/views/profile/components/ProfileSummaryCard.vue";

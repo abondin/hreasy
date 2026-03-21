@@ -2,17 +2,15 @@
 
 ## Repository layout
 
-- Vue 3 app (main): repository root (`./`)
-- Vue 2 app (legacy): `legacy/vue2/`
-- Legacy docs: `legacy/README.md`
-- Main UI stack: Vue 3.5 + Vuetify 4 + Pinia 3 + Vue Router 4
+- Vue 3 app: repository root (`./`)
+- Main stack: Vue 3 + Vuetify 4 + Pinia + Vue Router 4 + Vue I18n
 
 ## Prerequisites
 
 - Node.js 20.x LTS
 - npm 10.x
 
-## Vue 3 (main) - local development
+## Local development
 
 ```shell
 npm ci
@@ -35,12 +33,9 @@ E2E docs:
 
 - [`e2e/README.md`](./e2e/README.md)
 
-## Docker build (both frontends)
+## Docker build
 
-Container serves:
-
-- Vue 2 at `/`
-- Vue 3 at `/new/`
+Container serves Vue 3 at `/`.
 
 ```shell
 cd devops

@@ -116,7 +116,7 @@
         <v-row>
           <v-col cols="12" class="text-end text-body-2">
             {{ currentYear }} - <strong>Alexander Bondin</strong>
-            <a href="/" class="footer-link ml-4">
+            <a :href="legacyUiHref" class="footer-link ml-4">
               {{ t("Перейти_в_старую_версию_интерфейса") }}
             </a>
           </v-col>
@@ -142,6 +142,7 @@ const displayName = computed(() => authStore.displayName);
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const drawer = ref(false);
 const currentYear = new Date().getFullYear();
+const legacyUiHref = import.meta.env.VITE_LEGACY_UI_URL ?? "/vue2/";
 
 const profileNavigationItems = computed(() => {
   if (isAuthenticated.value) {
