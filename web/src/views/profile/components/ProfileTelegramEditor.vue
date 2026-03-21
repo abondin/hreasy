@@ -1,11 +1,12 @@
 <!--
   Telegram account display with edit trigger.
   Shows current account as link, confirmation chip, and edit button when editing is allowed.
-  -->
+-->
 <template>
   <!--<editor-fold desc="Telegram display with edit button">-->
-  <div class="telegram-editor">
+  <div class="d-inline-flex align-center ga-1">
     <template v-if="account">
+      <v-icon size="small" color="info" icon="fa:fab fa-telegram" />
       <a
         :href="accountUrl"
         class="telegram-editor__link text-info d-inline-flex align-center"
@@ -13,40 +14,31 @@
         target="_blank"
         data-testid="telegram-link"
       >
-        <v-icon size="small" class="mr-1" color="info" icon="fa:fab fa-telegram" />
         {{ account }}
       </a>
-      <button
-        v-if="canEdit"
-        type="button"
-        class="telegram-editor__icon-button"
-        data-testid="open-telegram-dialog"
-        @click="emitEdit"
-      >
-        <v-icon icon="mdi-pencil" size="14" />
-      </button>
     </template>
     <template v-else>
       <span class="text-medium-emphasis">
         {{ t("Не задан") }}
       </span>
-      <button
-        v-if="canEdit"
-        type="button"
-        class="telegram-editor__icon-button"
-        data-testid="open-telegram-dialog"
-        @click="emitEdit"
-      >
-        <v-icon icon="mdi-pencil" size="14" />
-      </button>
     </template>
+
+    <v-btn
+      v-if="canEdit"
+      v-bind="actionIconButtonProps"
+      icon="mdi-pencil"
+      class="ml-1"
+      color="medium-emphasis"
+      data-testid="open-telegram-dialog"
+      @click="emitEdit"
+    />
 
     <v-chip
       v-if="isConfirmed"
       color="success"
       size="x-small"
       variant="tonal"
-      class="telegram-editor__chip"
+      class="ms-1"
       data-testid="telegram-confirmed-chip"
     >
       {{ t("Подтвержден") }}
@@ -82,6 +74,12 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const authStore = useAuthStore();
 
+const actionIconButtonProps = {
+  variant: "text",
+  density: "compact",
+  size: "x-small",
+} as const;
+
 const account = computed(() => props.account?.trim() ?? "");
 const isConfirmed = computed(() => Boolean(props.confirmedAt));
 const canEdit = computed(
@@ -101,38 +99,11 @@ function emitEdit() {
 </script>
 
 <style scoped>
-.telegram-editor {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  line-height: 1;
-}
-
 .telegram-editor__link {
   text-decoration: none;
 }
 
 .telegram-editor__link:hover {
   text-decoration: underline;
-}
-
-.telegram-editor__icon-button {
-  border: none;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(0, 0, 0, 0.56);
-}
-
-.telegram-editor__chip {
-  margin-left: 4px;
-  height: 20px;
-  font-size: 11px;
-  padding: 0 4px;
 }
 </style>

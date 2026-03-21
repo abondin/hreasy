@@ -26,27 +26,25 @@
       </profile-summary-item>
 
       <profile-summary-item :label="t('Текущий проект')">
+        <span class="d-inline-flex align-center ga-2 pl-1">
           <v-btn
             v-if="canShowProjectInfo"
-            icon="mdi-information"
+            v-bind="actionIconButtonProps"
+            icon="mdi-information-outline"
             color="info"
-            variant="text"
-            density="compact"
-            size="small"
             :title="t('Подробная информация по проекту ')"
             @click.stop="openProjectInfo"
           />
-          {{ employee.currentProject?.name ?? t("Не задан") }}
+          <span>{{ employee.currentProject?.name ?? t("Не задан") }}</span>
           <v-btn
             v-if="canEditProject"
+            v-bind="actionIconButtonProps"
             icon="mdi-pencil"
-            variant="text"
-            density="compact"
-            size="small"
-            class="profile-summary__inline-icon"
+            color="medium-emphasis"
             :title="t('Обновление текущего проекта')"
             @click.stop="openProjectUpdate"
           />
+        </span>
       </profile-summary-item>
 
       <profile-summary-item :label="t('Роль на текущем проекте')">
@@ -72,12 +70,17 @@
       </profile-summary-item>
 
       <profile-summary-item :label="t('Кабинет')">
-          {{ employee.officeLocation?.name ?? t("Не задан") }}
-          <v-btn v-if="canShowMap" variant="plain" density="compact" size="small"
-              :title="t('Посмотреть карту')"
-              icon="mdi-map"
-              @click.stop="openMap"
+        <span class="d-inline-flex align-center ga-2">
+          <span>{{ employee.officeLocation?.name ?? t("Не задан") }}</span>
+          <v-btn
+            v-if="canShowMap"
+            v-bind="actionIconButtonProps"
+            icon="mdi-map"
+            color="medium-emphasis"
+            :title="t('Посмотреть карту')"
+            @click.stop="openMap"
           />
+        </span>
       </profile-summary-item>
 
       <profile-summary-item :label="t('Телеграм')">
@@ -169,6 +172,11 @@ const avatarReadOnly = computed(() => props.avatarReadOnly ?? props.readOnly);
 const projectReadOnly = computed(() => props.projectReadOnly ?? props.readOnly);
 const isMobile = computed(() => display.smAndDown.value);
 const showAvatar = computed(() => props.showAvatar);
+const actionIconButtonProps = {
+  variant: "text",
+  density: "compact",
+  size: "x-small",
+} as const;
 
 const {
   mapDialogOpen,

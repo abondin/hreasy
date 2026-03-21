@@ -235,6 +235,11 @@ function handleSkillDeleted() {}
   color: rgba(0, 0, 0, 0.72);
 }
 
+.profile-summary__label {
+  font-weight: 600;
+  line-height: 1.35;
+}
+
 @media (min-width: 1280px) {
   .profile-tech-profiles-block {
     padding-top: 34px;

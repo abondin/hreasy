@@ -11,7 +11,7 @@
           :size="size"
           :variant="variant"
           :density="density"
-          class="hover-action-wrapper__action"
+          class="hover-action-wrapper__action ml-1"
           @click.stop="emit('action')"
         />
       </template>
