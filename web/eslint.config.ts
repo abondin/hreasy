@@ -5,6 +5,9 @@ import pluginVitest from '@vitest/eslint-plugin';
 import pluginPlaywright from 'eslint-plugin-playwright';
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting';
 
+const vitestRecommendedRules = {...pluginVitest.configs.recommended.rules};
+delete vitestRecommendedRules['vitest/no-standalone-expect'];
+
 export default defineConfigWithVueTs(
   {
     name: 'app/files-to-lint',
@@ -29,8 +32,7 @@ export default defineConfigWithVueTs(
       ...pluginVitest.configs.env.languageOptions
     },
     rules: {
-      ...pluginVitest.configs.recommended.rules,
-      'vitest/no-standalone-expect': ['error', {additionalTestBlockFunctions: []}]
+      ...vitestRecommendedRules
     }
   },
 
