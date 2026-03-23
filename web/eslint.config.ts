@@ -5,8 +5,11 @@ import pluginVitest from '@vitest/eslint-plugin';
 import pluginPlaywright from 'eslint-plugin-playwright';
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting';
 
-const vitestRecommendedRules = {...pluginVitest.configs.recommended.rules};
-delete vitestRecommendedRules['vitest/no-standalone-expect'];
+const vitestRecommendedRules = Object.fromEntries(
+  Object.entries(pluginVitest.configs.recommended.rules).filter(
+    ([ruleName]) => ruleName !== 'vitest/no-standalone-expect'
+  )
+);
 
 export default defineConfigWithVueTs(
   {
