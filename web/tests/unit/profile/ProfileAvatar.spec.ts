@@ -5,7 +5,7 @@ import ProfileAvatar from '@/views/profile/components/ProfileAvatar.vue';
 import type {WithAvatar} from '@/services/employee.service';
 const mockGetEmployeeAvatarUrl = vi.hoisted(() => vi.fn<(id: number) => string>());
 const mockUploadEmployeeAvatar = vi.hoisted(() => vi.fn());
-const mockHasPermission = vi.hoisted(() => vi.fn<(permission: string) => boolean>());
+const mockCanUpdateAvatar = vi.hoisted(() => vi.fn<(employeeId: number) => boolean>());
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({
@@ -20,11 +20,8 @@ vi.mock('@/services/employee.service', () => ({
 }));
 
 vi.mock('@/lib/permissions', () => ({
-  Permissions: {
-    UpdateAvatar: 'update_avatar'
-  },
   usePermissions: () => ({
-    hasPermission: mockHasPermission
+    canUpdateAvatar: mockCanUpdateAvatar
   })
 }));
 
@@ -187,7 +184,7 @@ describe('ProfileAvatar', () => {
     mockGetEmployeeAvatarUrl.mockReset();
     mockGetEmployeeAvatarUrl.mockImplementation(id => `https://cdn.test/avatar/${id}`);
     mockUploadEmployeeAvatar.mockReset();
-    mockHasPermission.mockReset();
+    mockCanUpdateAvatar.mockReset();
   });
 
   afterEach(() => {
@@ -195,7 +192,7 @@ describe('ProfileAvatar', () => {
   });
 
   it('renders avatar image when owner has avatar', () => {
-    mockHasPermission.mockReturnValue(false);
+    mockCanUpdateAvatar.mockReturnValue(false);
     const wrapper = mountProfileAvatar();
 
     const avatarImg = wrapper.find('img');
@@ -204,7 +201,7 @@ describe('ProfileAvatar', () => {
   });
 
   it('opens preview overlay when avatar is clicked', async () => {
-    mockHasPermission.mockReturnValue(false);
+    mockCanUpdateAvatar.mockReturnValue(false);
     const wrapper = mountProfileAvatar();
 
     expect(wrapper.find('[data-test="avatar-overlay"]').exists()).toBe(false);
@@ -215,7 +212,7 @@ describe('ProfileAvatar', () => {
   });
 
   it('disables avatar change in read-only mode even with permission', () => {
-    mockHasPermission.mockReturnValue(true);
+    mockCanUpdateAvatar.mockReturnValue(true);
     const wrapper = mountProfileAvatar({}, true);
 
     expect(wrapper.find('[data-test="upload-btn"]').exists()).toBe(false);
@@ -223,7 +220,7 @@ describe('ProfileAvatar', () => {
   });
 
   it('hides upload controls without permission', () => {
-    mockHasPermission.mockReturnValue(false);
+    mockCanUpdateAvatar.mockReturnValue(false);
     const wrapper = mountProfileAvatar({}, false);
 
     expect(wrapper.find('[data-test="upload-btn"]').exists()).toBe(false);
@@ -231,7 +228,7 @@ describe('ProfileAvatar', () => {
   });
 
   it('allows avatar upload when readOnly is false and permission granted', async () => {
-    mockHasPermission.mockReturnValue(true);
+    mockCanUpdateAvatar.mockReturnValue(true);
     const wrapper = mountProfileAvatar({hasAvatar: false}, false);
 
     const uploadBtn = wrapper.find('[data-test="upload-btn"]');
@@ -245,7 +242,7 @@ describe('ProfileAvatar', () => {
   });
 
   it('displays error message for unsupported files', async () => {
-    mockHasPermission.mockReturnValue(true);
+    mockCanUpdateAvatar.mockReturnValue(true);
     const wrapper = mountProfileAvatar({hasAvatar: false}, false);
 
     const input = wrapper.find('input[type="file"]');
