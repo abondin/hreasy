@@ -1,15 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { credentialsOrSkip, loginViaUi } from "../fixtures/auth";
+import { loginViaUi, requireCredentials } from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { routes } from "../support/test-data";
 import { selectors } from "../support/selectors";
 
 test.describe("Overtimes Summary", () => {
   test("navigates periods and updates summary", async ({ page }) => {
-    const credentials = credentialsOrSkip("overtime_admin") ?? credentialsOrSkip("employee");
-    test.skip(!credentials, "Set E2E_OVERTIME_ADMIN_* or E2E_EMPLOYEE_* credentials");
-
-    await loginViaUi(page, credentials!);
+    const credentials = requireCredentials("overtime_admin", "employee");
+    await loginViaUi(page, credentials);
     await page.goto(appPath(routes.overtimes), { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId(selectors.overtimesView)).toBeVisible();
@@ -20,10 +18,8 @@ test.describe("Overtimes Summary", () => {
   });
 
   test("filters by employee name", async ({ page }) => {
-    const credentials = credentialsOrSkip("overtime_admin") ?? credentialsOrSkip("employee");
-    test.skip(!credentials, "Set E2E_OVERTIME_ADMIN_* or E2E_EMPLOYEE_* credentials");
-
-    await loginViaUi(page, credentials!);
+    const credentials = requireCredentials("overtime_admin", "employee");
+    await loginViaUi(page, credentials);
     await page.goto(appPath(routes.overtimes), { waitUntil: "domcontentloaded" });
 
     await page.getByTestId(selectors.overtimesFilterSearch).locator("input").fill("a");

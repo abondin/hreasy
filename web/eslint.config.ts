@@ -5,12 +5,6 @@ import pluginVitest from '@vitest/eslint-plugin';
 import pluginPlaywright from 'eslint-plugin-playwright';
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting';
 
-const vitestRecommendedRules = Object.fromEntries(
-  Object.entries(pluginVitest.configs.recommended.rules).filter(
-    ([ruleName]) => ruleName !== 'vitest/no-standalone-expect'
-  )
-);
-
 export default defineConfigWithVueTs(
   {
     name: 'app/files-to-lint',
@@ -23,25 +17,28 @@ export default defineConfigWithVueTs(
   vueTsConfigs.recommended,
 
   {
-    name: 'app/vitest',
+    ...pluginVitest.configs.recommended,
     files: [
       'src/**/__tests__/**/*.{test,spec}.{ts,tsx,js,jsx}',
       'tests/**/*.{test,spec}.{ts,tsx,js,jsx}'
-    ],
-    plugins: {
-      vitest: pluginVitest
-    },
-    languageOptions: {
-      ...pluginVitest.configs.env.languageOptions
-    },
-    rules: {
-      ...vitestRecommendedRules
-    }
+    ]
   },
 
   {
     ...pluginPlaywright.configs['flat/recommended'],
-    files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}']
+    files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    rules: {
+      ...pluginPlaywright.configs['flat/recommended'].rules,
+      'playwright/expect-expect': ['warn', {
+        assertFunctionNames: [
+          'expectLoginPageOrAuthenticatedHome',
+          'expectProtectedRouteRedirectOrAccess',
+          'expectVisibleRows',
+          'clickFirstRow',
+          'openDialogFromRowsOrAddButton'
+        ]
+      }]
+    }
   },
   skipFormatting
 );

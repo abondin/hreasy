@@ -27,6 +27,19 @@ export function credentialsOrSkip(role: TestRole): TestCredentials | null {
   return envCredentials(role);
 }
 
+export function requireCredentials(...roles: TestRole[]): TestCredentials {
+  for (const role of roles) {
+    const credentials = envCredentials(role);
+    if (credentials) {
+      return credentials;
+    }
+  }
+
+  throw new Error(
+    `Missing E2E credentials for roles: ${roles.join(", ")}. Set matching E2E_*_USERNAME and E2E_*_PASSWORD variables.`,
+  );
+}
+
 export async function loginViaUi(
   page: Page,
   credentials: TestCredentials,
@@ -85,4 +98,24 @@ export async function logoutViaUi(page: Page): Promise<void> {
     await logoutButton.click();
   }
   await expect(page).toHaveURL(/\/login/);
+}
+
+export async function expectLoginPageOrAuthenticatedHome(page: Page): Promise<void> {
+  if (page.url().includes("/login")) {
+    await expect(page).toHaveURL(/\/login(?:\?returnPath=\/profile)?$/);
+    await expect(page.getByTestId(selectors.loginInput)).toBeVisible();
+    await expect(page.getByTestId(selectors.passwordInput)).toBeVisible();
+    await expect(page.getByTestId(selectors.loginSubmit)).toBeVisible();
+    return;
+  }
+
+  await expect(page).toHaveURL(/\/(?:$|profile)/);
+}
+
+export async function expectProtectedRouteRedirectOrAccess(
+  page: Page,
+  path: string,
+): Promise<void> {
+  const url = page.url();
+  expect(url.includes("/login") || url.includes(path)).toBeTruthy();
 }

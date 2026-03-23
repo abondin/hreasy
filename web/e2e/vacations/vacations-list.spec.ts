@@ -1,15 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { credentialsOrSkip, loginViaUi } from "../fixtures/auth";
+import { loginViaUi, requireCredentials } from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { routes } from "../support/test-data";
 import { selectors } from "../support/selectors";
 
 test.describe("Vacations List", () => {
   test("filters vacations by year and search", async ({ page }) => {
-    const credentials = credentialsOrSkip("employee");
-    test.skip(!credentials, "Set E2E_EMPLOYEE_USERNAME and E2E_EMPLOYEE_PASSWORD");
-
-    await loginViaUi(page, credentials!);
+    const credentials = requireCredentials("employee");
+    await loginViaUi(page, credentials);
     await page.goto(appPath(routes.vacations), { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId(selectors.vacationsView)).toBeVisible();
@@ -19,10 +17,8 @@ test.describe("Vacations List", () => {
   });
 
   test("switches between list, summary and timeline tabs", async ({ page }) => {
-    const credentials = credentialsOrSkip("employee");
-    test.skip(!credentials, "Set E2E_EMPLOYEE_USERNAME and E2E_EMPLOYEE_PASSWORD");
-
-    await loginViaUi(page, credentials!);
+    const credentials = requireCredentials("employee");
+    await loginViaUi(page, credentials);
     await page.goto(appPath(routes.vacations), { waitUntil: "domcontentloaded" });
 
     await page.getByTestId(selectors.vacationsTabSummary).click();

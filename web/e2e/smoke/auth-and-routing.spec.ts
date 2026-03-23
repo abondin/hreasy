@@ -1,21 +1,17 @@
 import { expect, test } from "@playwright/test";
-import { credentialsOrSkip, loginViaUi } from "../fixtures/auth";
+import {
+  expectLoginPageOrAuthenticatedHome,
+  expectProtectedRouteRedirectOrAccess,
+  loginViaUi,
+  requireCredentials,
+} from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { routes } from "../support/test-data";
 
 test.describe("Auth and Routing", () => {
   test("redirects unauthenticated user to login from root", async ({ page }) => {
     await page.goto(appPath("/"), { waitUntil: "domcontentloaded" });
-
-    if (page.url().includes("/login")) {
-      await expect(page).toHaveURL(/\/login(?:\?returnPath=\/profile)?$/);
-      await expect(page.getByTestId("login-input")).toBeVisible();
-      await expect(page.getByTestId("password-input")).toBeVisible();
-      await expect(page.getByTestId("login-submit")).toBeVisible();
-      return;
-    }
-
-    await expect(page).toHaveURL(/\/(?:$|profile)/);
+    await expectLoginPageOrAuthenticatedHome(page);
   });
 
   test("redirects unauthenticated user to login from protected routes", async ({ page }) => {
@@ -28,18 +24,13 @@ test.describe("Auth and Routing", () => {
       routes.adminEmployees,
     ]) {
       await page.goto(appPath(path), { waitUntil: "domcontentloaded" });
-      const url = page.url();
-      const redirectedToLogin = url.includes("/login");
-      const autoAuthenticated = url.includes(path);
-      expect(redirectedToLogin || autoAuthenticated).toBeTruthy();
+      await expectProtectedRouteRedirectOrAccess(page, path);
     }
   });
 
   test("logs in and opens profile (env credentials)", async ({ page }) => {
-    const credentials = credentialsOrSkip("employee");
-    test.skip(!credentials, "Set E2E_EMPLOYEE_USERNAME and E2E_EMPLOYEE_PASSWORD");
-
-    await loginViaUi(page, credentials!);
+    const credentials = requireCredentials("employee");
+    await loginViaUi(page, credentials);
     await expect(page).toHaveURL(/\/profile/);
   });
 });

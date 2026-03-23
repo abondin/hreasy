@@ -31,5 +31,6 @@ src/**/*.d.ts
 
 # Tooling caches and reports
 .eslintcache
+.npm-cache/
 test-results/
 playwright-report/

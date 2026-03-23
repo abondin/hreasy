@@ -1,15 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { credentialsOrSkip, loginViaUi } from "../fixtures/auth";
+import { loginViaUi, requireCredentials } from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { routes } from "../support/test-data";
 import { selectors } from "../support/selectors";
 
 test.describe("Navigation Smoke", () => {
   test("opens profile, employees, vacations, overtimes, mentorship for authenticated user", async ({ page }) => {
-    const credentials = credentialsOrSkip("employee");
-    test.skip(!credentials, "Set E2E_EMPLOYEE_USERNAME and E2E_EMPLOYEE_PASSWORD");
-
-    await loginViaUi(page, credentials!);
+    const credentials = requireCredentials("employee");
+    await loginViaUi(page, credentials);
 
     await page.goto(appPath(routes.profile), { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId(selectors.profileView)).toBeVisible();
@@ -28,10 +26,8 @@ test.describe("Navigation Smoke", () => {
   });
 
   test("opens admin employees tabs for admin user", async ({ page }) => {
-    const credentials = credentialsOrSkip("admin_employees");
-    test.skip(!credentials, "Set E2E_ADMIN_EMPLOYEES_USERNAME and E2E_ADMIN_EMPLOYEES_PASSWORD");
-
-    await loginViaUi(page, credentials!);
+    const credentials = requireCredentials("admin_employees");
+    await loginViaUi(page, credentials);
     await page.goto(appPath(routes.adminEmployees), { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId(selectors.adminTabsView)).toBeVisible();
