@@ -98,7 +98,25 @@
         </v-btn>
       </template>
       <template v-else>
-        <v-chip class="mr-2" color="primary" variant="outlined">
+        <template v-if="isMobile">
+          <v-menu location="bottom end">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon="mdi-account-circle-outline"
+                variant="text"
+                color="primary"
+                :aria-label="t('Профиль')"
+              />
+            </template>
+            <v-list density="comfortable">
+              <v-list-item>
+                <v-list-item-title>{{ displayName }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </template>
+        <v-chip v-else class="mr-2" color="primary" variant="outlined">
           {{ displayName }}
         </v-chip>
         <v-btn variant="text" color="primary" data-testid="logout-button" @click="logout">
@@ -130,6 +148,7 @@
 import { RouterView, useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { useDisplay } from "vuetify";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/lib/permissions";
 
@@ -137,9 +156,11 @@ const authStore = useAuthStore();
 const permissions = usePermissions();
 const router = useRouter();
 const { t } = useI18n();
+const display = useDisplay();
 
 const displayName = computed(() => authStore.displayName);
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isMobile = computed(() => display.smAndDown.value);
 const drawer = ref(false);
 const currentYear = new Date().getFullYear();
 const vue2Url = import.meta.env.VITE_VUE2_UI_URL ?? "/old/";

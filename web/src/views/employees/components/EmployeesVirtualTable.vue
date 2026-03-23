@@ -18,45 +18,52 @@
       @click:row="openEmployeeDetails"
     >
       <template #filters>
-        <v-card-title class="d-flex flex-wrap ga-3 align-center employees-filters">
-          <v-text-field
-            v-model="localSearch"
-            data-testid="employees-filter-search"
-            :label="t('Поиск')"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            density="compact"
-            class="employees-filters__item"
-            clearable
-          />
-          <v-autocomplete
-            v-model="selectedProject"
-            data-testid="employees-filter-project"
-            :items="projectOptions"
-            :label="t('Текущий проект')"
-            variant="outlined"
-            density="compact"
-            clearable
-            multiple
-            chips
-            item-title="title"
-            item-value="value"
-            class="employees-filters__item"
-          />
-          <v-autocomplete
-            v-model="selectedBa"
-            data-testid="employees-filter-ba"
-            :items="baOptions"
-            :label="t('Бизнес Аккаунт')"
-            variant="outlined"
-            density="compact"
-            clearable
-            multiple
-            chips
-            item-title="title"
-            item-value="value"
-            class="employees-filters__item"
-          />
+        <v-card-title class="pb-0">
+          <v-row>
+            <v-col cols="12" :md="showExtendedFilters ? 4 : 12">
+              <v-text-field
+                v-model="localSearch"
+                data-testid="employees-filter-search"
+                :label="t('Поиск')"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                density="compact"
+                clearable
+              />
+            </v-col>
+            <template v-if="showExtendedFilters">
+              <v-col cols="12" md="4">
+                <v-autocomplete
+                  v-model="selectedProject"
+                  data-testid="employees-filter-project"
+                  :items="projectOptions"
+                  :label="t('Текущий проект')"
+                  variant="outlined"
+                  density="compact"
+                  clearable
+                  multiple
+                  chips
+                  item-title="title"
+                  item-value="value"
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-autocomplete
+                  v-model="selectedBa"
+                  data-testid="employees-filter-ba"
+                  :items="baOptions"
+                  :label="t('Бизнес Аккаунт')"
+                  variant="outlined"
+                  density="compact"
+                  clearable
+                  multiple
+                  chips
+                  item-title="title"
+                  item-value="value"
+                />
+              </v-col>
+            </template>
+          </v-row>
         </v-card-title>
       </template>
 
@@ -75,15 +82,40 @@
     </HREasyTableBase>
   </v-card>
 
-  <v-navigation-drawer data-testid="employees-details-drawer"
+  <v-dialog
+    v-if="useFullscreenDetailsPanel"
     v-model="detailsOpen"
+    fullscreen
+    scrollable
+  >
+    <v-card>
+      <v-toolbar density="comfortable" border="b">
+        <v-spacer />
+        <v-btn icon="mdi-close" variant="text" @click="detailsOpen = false" />
+      </v-toolbar>
+
+      <v-card-text class="pa-2">
+        <employee-details-panel
+          v-if="selectedEmployee"
+          :employee="selectedEmployee"
+          @employee-updated="emitEmployeeUpdated"
+        />
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
+  <v-navigation-drawer
+    v-else
+    v-model="detailsOpen"
+    data-testid="employees-details-drawer"
     location="right"
     temporary
     :width="drawerWidth"
   >
-    <div class="d-flex align-center justify-end px-4 py-3 border-b">
+    <v-toolbar density="comfortable" border="b">
+      <v-spacer />
       <v-btn icon="mdi-close" variant="text" @click="detailsOpen = false" />
-    </div>
+    </v-toolbar>
 
     <div class="pa-2">
       <employee-details-panel
@@ -126,11 +158,12 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const permissions = usePermissions();
 const display = useDisplay();
+const showExtendedFilters = computed(() => !display.smAndDown.value);
+const useFullscreenDetailsPanel = computed(() => display.mdAndDown.value);
 
 const localSearch = ref(props.search ?? "");
 const selectedProject = ref<Array<number | null>>(props.project ?? []);
 const selectedBa = ref<number[]>(props.businessAccount ?? []);
-
 const detailsOpen = ref(false);
 const selectedEmployee = ref<Employee | null>(null);
 
@@ -195,10 +228,9 @@ const headers = computed(() => {
 });
 
 const tableHeight = computed(() => props.tableHeight ?? "70vh");
+const projectOptions = computed(() => props.projectOptions);
+const baOptions = computed(() => props.businessAccountOptions);
 const drawerWidth = computed(() => {
-  if (display.smAndDown.value) {
-    return "100%";
-  }
   if (display.lg.value) {
     return 960;
   }
@@ -207,9 +239,6 @@ const drawerWidth = computed(() => {
   }
   return 1040;
 });
-
-const projectOptions = computed(() => props.projectOptions);
-const baOptions = computed(() => props.businessAccountOptions);
 
 function rowProps() {
   return {
@@ -237,10 +266,3 @@ function emitEmployeeUpdated() {
   emit("employee-updated");
 }
 </script>
-
-<style scoped>
-.employees-filters__item {
-  flex: 1 1 0;
-  min-width: 0;
-}
-</style>
