@@ -71,7 +71,17 @@
                   data-testid="password-input"
                 />
 
-                  <v-alert
+                <v-alert
+                  v-if="sessionExpiredNotice"
+                  type="warning"
+                  variant="tonal"
+                  border="start"
+                  class="mb-4"
+                >
+                  {{ t("Сессия завершилась. Войдите снова.") }}
+                </v-alert>
+
+                <v-alert
                     v-if="responseError"
                     type="error"
                     variant="tonal"
@@ -121,6 +131,7 @@ const responseError = ref("");
 const showPassword = ref(false);
 
 const loading = computed(() => authStore.loading);
+const sessionExpiredNotice = computed(() => authStore.sessionExpiredNotice);
 const isSubmitDisabled = computed(() => {
   return (
     loading.value || !loginField.value.trim() || !passwordField.value.trim()

@@ -9,6 +9,10 @@ import {
 
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? "/api/";
 
+type AuthenticationErrorHandler = (error: AuthenticationError) => void;
+
+let authenticationErrorHandler: AuthenticationErrorHandler | null = null;
+
 const httpService: AxiosInstance = axios.create({
   baseURL,
   withCredentials: true,
@@ -36,6 +40,7 @@ httpService.interceptors.response.use(
     switch (status) {
       case 401:
         wrappedError = new AuthenticationError(message, code);
+        authenticationErrorHandler?.(wrappedError as AuthenticationError);
         break;
       case 403:
         wrappedError = new AccessDeniedError(message, code);
@@ -53,5 +58,9 @@ httpService.interceptors.response.use(
     return Promise.reject(wrappedError);
   },
 );
+
+export function setAuthenticationErrorHandler(handler: AuthenticationErrorHandler | null) {
+  authenticationErrorHandler = handler;
+}
 
 export default httpService;

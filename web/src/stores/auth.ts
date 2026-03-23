@@ -22,6 +22,7 @@ interface AuthState {
   currentUser: CurrentUser | null;
   userLoaded: boolean;
   loading: boolean;
+  sessionExpiredNotice: boolean;
 }
 
 function mapEmployee(info: EmployeeShortInfo) {
@@ -36,6 +37,7 @@ export const useAuthStore = defineStore("auth", {
     currentUser: null,
     userLoaded: false,
     loading: false,
+    sessionExpiredNotice: false,
   }),
   getters: {
     username(state): string | undefined {
@@ -68,17 +70,26 @@ export const useAuthStore = defineStore("auth", {
       this.currentUser = null;
       this.userLoaded = false;
     },
+    markSessionExpired() {
+      this.clearAuth();
+      this.sessionExpiredNotice = true;
+    },
+    clearSessionExpiredNotice() {
+      this.sessionExpiredNotice = false;
+    },
     setCurrentUser(user: CurrentUser) {
       this.currentUser = {
         ...user,
         employee: mapEmployee(user.employee),
       };
       this.userLoaded = true;
+      this.sessionExpiredNotice = false;
     },
     async login(request: LoginRequest) {
       this.loading = true;
       try {
         this.clearAuth();
+        this.clearSessionExpiredNotice();
         const response = await loginApi(request);
         this.setCurrentUser(response.currentUser);
         return response.currentUser;
@@ -90,6 +101,7 @@ export const useAuthStore = defineStore("auth", {
       try {
         await logoutApi();
       } finally {
+        this.clearSessionExpiredNotice();
         this.clearAuth();
       }
     },
