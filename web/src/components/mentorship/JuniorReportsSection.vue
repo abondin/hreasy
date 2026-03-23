@@ -64,35 +64,39 @@
           </div>
 
           <v-row class="mt-2" no-gutters>
-            <v-col cols="auto" class="d-flex justify-center align-start pt-1 pr-2 pb-3 pb-lg-0">
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <v-icon
-                    v-bind="props"
-                    :icon="getProgressIcon(report.progress).icon"
-                    :color="getProgressIcon(report.progress).color"
-                    size="large"
-                  />
-                </template>
-                <span>{{ t(`JUNIOR_PROGRESS_TYPE.${report.progress}`) }}</span>
-              </v-tooltip>
+            <v-col cols="12" xl="auto" class="pb-3 pb-xl-0 pr-0 pr-xl-6">
+              <v-row no-gutters class="flex-nowrap">
+                <v-col cols="auto" class="d-flex justify-center align-start pt-1 pr-2">
+                  <v-tooltip location="bottom">
+                    <template #activator="{ props }">
+                      <v-icon
+                        v-bind="props"
+                        :icon="getProgressIcon(report.progress).icon"
+                        :color="getProgressIcon(report.progress).color"
+                        size="large"
+                      />
+                    </template>
+                    <span>{{ t(`JUNIOR_PROGRESS_TYPE.${report.progress}`) }}</span>
+                  </v-tooltip>
+                </v-col>
+
+                <v-col cols="auto" class="min-width-0">
+                  <div class="d-flex flex-column ga-0">
+                    <junior-report-rating-field
+                      v-for="field in ratingFields"
+                      :key="field"
+                      :field="field"
+                      :model-value="report.ratings[field]"
+                      :prev="previousReport(report)?.ratings[field] ?? null"
+                      compact
+                      readonly
+                    />
+                  </div>
+                </v-col>
+              </v-row>
             </v-col>
 
-            <v-col cols="12" xl="4" class="pl-0 pr-xl-6 pb-3 pb-xl-0">
-              <div class="d-flex flex-column ga-0">
-                <junior-report-rating-field
-                  v-for="field in ratingFields"
-                  :key="field"
-                  :field="field"
-                  :model-value="report.ratings[field]"
-                  :prev="previousReport(report)?.ratings[field] ?? null"
-                  compact
-                  readonly
-                />
-              </div>
-            </v-col>
-
-            <v-col cols="12" xl="7">
+            <v-col cols="12" xl class="pl-0 pl-xl-2">
               <markdown-text-renderer :content="report.comment" />
             </v-col>
           </v-row>
