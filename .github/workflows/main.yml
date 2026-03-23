@@ -153,7 +153,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Set up JDK 25
-        if: matrix.language == 'java-kotlin'
+        if: matrix.language == 'java'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -161,7 +161,7 @@ jobs:
           cache: maven
 
       - name: Build Java sources for CodeQL
-        if: matrix.language == 'java-kotlin'
+        if: matrix.language == 'java'
         run: |
           mvn -B -DskipTests package --file platform/pom.xml
           mvn -B -DskipTests package --file telegram/pom.xml
