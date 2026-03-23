@@ -111,28 +111,31 @@
       <v-card-text>
         <v-form ref="reportFormRef">
         <v-select
-          v-model="reportForm.progress"
+          :model-value="reportForm.progress"
           :items="progressOptions"
           item-title="title"
           item-value="value"
           :label="t('Динамика роста')"
           :rules="progressRules"
+          @update:model-value="updateReportFormField('progress', $event)"
         />
         <div class="mt-4 d-flex flex-column ga-1">
           <junior-report-rating-field
             v-for="field in ratingFields"
             :key="field"
             :field="field"
-            v-model="reportForm.ratings[field]"
+            :model-value="reportForm.ratings[field]"
             :prev="junior.latestReport?.ratings[field] ?? null"
             compact
+            @update:model-value="updateRatingField(field, $event)"
           />
         </div>
         <markdown-text-editor
-          v-model="reportForm.comment"
+          :model-value="reportForm.comment"
           :label="t('Комментарий')"
           :counter="4096"
           :rules="commentRules"
+          @update:model-value="updateReportFormField('comment', $event)"
         />
         </v-form>
         <v-alert v-if="reportFormError" type="error" class="mt-4" variant="tonal" border="start">
@@ -202,6 +205,7 @@ const emit = defineEmits<{
   "submit-report": [];
   "close-delete-report": [];
   "confirm-delete-report": [];
+  "update:report-form": [value: AddOrUpdateJuniorReportBody];
 }>();
 
 const { t } = useI18n();
@@ -245,5 +249,28 @@ function previousReport(report: JuniorReport): JuniorReport | null {
     return null;
   }
   return props.sortedReports[index + 1] ?? null;
+}
+
+function updateReportFormField<K extends keyof AddOrUpdateJuniorReportBody>(
+  key: K,
+  value: AddOrUpdateJuniorReportBody[K],
+) {
+  emit("update:report-form", {
+    ...props.reportForm,
+    [key]: value,
+  });
+}
+
+function updateRatingField(
+  field: keyof AddOrUpdateJuniorReportBody["ratings"],
+  value: number,
+) {
+  emit("update:report-form", {
+    ...props.reportForm,
+    ratings: {
+      ...props.reportForm.ratings,
+      [field]: value,
+    },
+  });
 }
 </script>

@@ -25,13 +25,6 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Cache Maven packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-
       - name: Build Platform
         run: mvn -B package --file platform/pom.xml
 
@@ -128,7 +121,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: web
-          push: true
+          push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 

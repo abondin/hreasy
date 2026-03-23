@@ -17,11 +17,21 @@ export default defineConfigWithVueTs(
   vueTsConfigs.recommended,
 
   {
-    ...pluginVitest.configs.recommended,
+    name: 'app/vitest',
     files: [
       'src/**/__tests__/**/*.{test,spec}.{ts,tsx,js,jsx}',
       'tests/**/*.{test,spec}.{ts,tsx,js,jsx}'
-    ]
+    ],
+    plugins: {
+      vitest: pluginVitest
+    },
+    languageOptions: {
+      ...pluginVitest.configs.env.languageOptions
+    },
+    rules: {
+      ...pluginVitest.configs.recommended.rules,
+      'vitest/no-standalone-expect': ['error', {additionalTestBlockFunctions: []}]
+    }
   },
 
   {

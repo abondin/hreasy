@@ -1,35 +1,39 @@
 <template>
   <v-autocomplete
     v-if="mode === 'add'"
-    v-model="addForm.juniorEmplId"
+    :model-value="addForm.juniorEmplId"
     :items="employees"
     item-title="displayName"
     item-value="id"
     :label="t('Молодой специалист')"
+    @update:model-value="updateAddFormField('juniorEmplId', $event)"
   />
   <v-autocomplete
-    v-model="form.mentorId"
+    :model-value="form.mentorId"
     clearable
     :items="mentorOptions"
     :item-title="mentorTitle"
     item-value="id"
     :label="t('Ментор')"
+    @update:model-value="updateFormField('mentorId', $event)"
   />
   <v-autocomplete
-    v-model="form.budgetingAccount"
+    :model-value="form.budgetingAccount"
     clearable
     :items="businessAccountOptions"
     :item-title="businessAccountTitle"
     item-value="id"
     :label="t('Бюджет из бизнес аккаунта')"
+    @update:model-value="updateFormField('budgetingAccount', $event)"
   />
   <v-combobox
-    v-model="form.role"
+    :model-value="form.role"
     :items="roleOptions"
     item-title="value"
     item-value="value"
     clearable
     :label="t('Роль')"
+    @update:model-value="updateFormField('role', $event)"
   />
 </template>
 
@@ -59,6 +63,9 @@ const props = defineProps<{
   currentMentor?: SimpleDict | null;
   currentBudgetingAccount?: SimpleDict | null;
   currentRole?: string | null;
+}>();
+const emit = defineEmits<{
+  (event: "update:form", value: AddJuniorRegistryBody | UpdateJuniorRegistryBody): void;
 }>();
 
 const addForm = computed(() => props.form as AddJuniorRegistryBody);
@@ -103,5 +110,25 @@ function mentorTitle(item: unknown): string {
 
 function businessAccountTitle(item: unknown): string {
   return dictOptionTitle(item);
+}
+
+function updateFormField<K extends keyof UpdateJuniorRegistryBody>(
+  key: K,
+  value: UpdateJuniorRegistryBody[K],
+) {
+  emit("update:form", {
+    ...props.form,
+    [key]: value,
+  });
+}
+
+function updateAddFormField<K extends keyof AddJuniorRegistryBody>(
+  key: K,
+  value: AddJuniorRegistryBody[K],
+) {
+  emit("update:form", {
+    ...props.form,
+    [key]: value,
+  });
 }
 </script>

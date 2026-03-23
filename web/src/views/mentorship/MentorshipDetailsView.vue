@@ -37,6 +37,7 @@
             :report-form-error="reportFormError"
             :progress-options="progressOptions"
             :rating-fields="ratingFields"
+            @update:report-form="applyReportForm"
             @open-create-report="openCreateReport"
             @open-edit-report="openEditReport"
             @open-delete-report="openDeleteReport"
@@ -61,6 +62,7 @@
             :current-mentor="junior?.mentor ?? null"
             :current-budgeting-account="junior?.budgetingAccount ?? null"
             :current-role="junior?.role ?? null"
+            @update:form="applyUpdateForm"
           />
         </v-card-text>
         <v-card-actions>
@@ -152,4 +154,12 @@ const {
   confirmDeleteReport,
   submitGraduation,
 } = useJuniorDetails(t);
+
+function applyUpdateForm(value: typeof updateForm) {
+  Object.assign(updateForm, value);
+}
+
+function applyReportForm(value: typeof reportForm) {
+  Object.assign(reportForm, value);
+}
 </script>
