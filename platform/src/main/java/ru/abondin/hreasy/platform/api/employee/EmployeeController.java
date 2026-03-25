@@ -67,7 +67,7 @@ public class EmployeeController {
         return AuthHandler.currentAuth().flatMapMany(emplService::currentUserRoles);
     }
 
-    @Operation(summary = "Update current project for employee")
+    @Operation(summary = "Update current project for employee with sufficient permissions")
     @PutMapping("/{employeeId}/currentProject")
     public Mono<Integer> updateCurrentProject(@PathVariable int employeeId,
                                               @RequestBody(required = false) UpdateCurrentProjectBody newCurrentProject) {

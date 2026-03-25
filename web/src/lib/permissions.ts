@@ -111,20 +111,6 @@ export function usePermissions() {
     return hasAuthority(info.authorities, permission);
   }
 
-  function simplePermissionsCheckOrCurrentEmployee(
-    permissions: Permissions[],
-    employeeId: number,
-  ): boolean {
-    const info = getSecurityInfo();
-    if (!info) {
-      return false;
-    }
-    if (info.employeeId === employeeId) {
-      return true;
-    }
-    return hasAnyAuthority(info.authorities, permissions);
-  }
-
   function permissionCheckWithAccessToBa(
     permission: Permissions,
     ba: number,
@@ -141,10 +127,11 @@ export function usePermissions() {
   }
 
   function canUpdateCurrentProject(employeeId: number): boolean {
-    return simplePermissionsCheckOrCurrentEmployee(
-      [Permissions.UpdateCurrentProjectGlobal, Permissions.UpdateCurrentProject],
-      employeeId,
-    );
+    void employeeId;
+    return hasAnyAuthority(getSecurityInfo()?.authorities, [
+      Permissions.UpdateCurrentProjectGlobal,
+      Permissions.UpdateCurrentProject,
+    ]);
   }
 
   function canUpdateAvatar(employeeId: number): boolean {

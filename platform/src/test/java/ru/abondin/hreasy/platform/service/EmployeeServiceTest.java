@@ -52,7 +52,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
     }
 
     @Test
-    @DisplayName("Update my current project")
+    @DisplayName("Employee can't update own current project")
     public void testUpdateMyProject() {
         StepVerifier
                 .create(auth(FMS_Empl_Ammara_Knott)
@@ -64,8 +64,8 @@ public class EmployeeServiceTest extends BaseServiceTest {
                             log.error("-------- Unexpected error", error);
                         })
                 )
-                .expectNextCount(1)
-                .verifyComplete();
+                .expectError(AccessDeniedException.class)
+                .verify(MONO_DEFAULT_TIMEOUT);
     }
 
     @Test

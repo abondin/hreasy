@@ -162,10 +162,6 @@ public class AdminSecurityValidator {
 
     public Mono<Boolean> validateUpdateCurrentProject(AuthContext auth, int employeeId, Integer newProject) {
         return Mono.defer(() -> {
-            // Allow to update my own project
-            if (employeeId == auth.getEmployeeInfo().getEmployeeId()) {
-                return Mono.just(true);
-            }
             // Allow to update project with update_current_project_global permission
             if (auth.getAuthorities().contains("update_current_project_global")) {
                 return Mono.just(true);
@@ -189,7 +185,7 @@ public class AdminSecurityValidator {
                                 ? Mono.just(true) :
                                 Mono.error(new AccessDeniedException("You must be manager of current employee project and new employee project")));
             }
-            return Mono.error(new AccessDeniedException("Only logged in user or user with permission update_current_project or" +
+            return Mono.error(new AccessDeniedException("Only user with permission update_current_project or" +
                     " update_current_project_global can update the current project"));
         });
     }

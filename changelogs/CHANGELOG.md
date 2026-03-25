@@ -2,6 +2,7 @@
 
 ## 1.4.0 (Work in progress)
 
+- Disabled self-service current project updates for regular employees
 - Full migration from vue2 to vue3 
 
 ## 1.3.1 (2026-03-21)
