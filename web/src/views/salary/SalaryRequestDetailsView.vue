@@ -1,13 +1,23 @@
 <template>
   <v-container class="py-6" data-testid="salary-request-details-view">
-      <v-btn variant="text" prepend-icon="mdi-arrow-left" :to="backToListRoute">
-        {{ t("Повышения и бонусы") }}
-      </v-btn>
-
       <v-skeleton-loader v-if="loading" type="heading, paragraph, paragraph" class="mt-4" />
       <v-alert v-else-if="error" type="error" variant="tonal" class="mt-4">{{ error }}</v-alert>
 
       <template v-else-if="request">
+        <v-breadcrumbs
+          class="mt-4 mb-4 px-0"
+          density="compact"
+          divider="/"
+          :items="breadcrumbs"
+        >
+          <template #item="{ item }">
+            <router-link v-if="item.to" :to="item.to" class="text-decoration-none">
+              {{ item.title }}
+            </router-link>
+            <span v-else>{{ item.title }}</span>
+          </template>
+        </v-breadcrumbs>
+
         <v-card class="mt-4">
           <v-card-title class="d-flex flex-wrap align-center ga-2">
             <span>{{ request.type === 1 ? t("Запрос на повышение") : t("Запрос на бонус") }}</span>
@@ -196,7 +206,7 @@
               data-testid="salary-request-history-table"
             >
               <template #[`item.req.increaseStartPeriod`]="{ item }">
-                <router-link v-if="item.id !== request.id" :to="{ name: 'salary-request-details', params: { period: String(item.req.increaseStartPeriod), requestId: String(item.id) }, query: { tab: currentListTab } }">
+                <router-link v-if="item.id !== request.id" :to="{ name: 'salary-request-details', params: { period: String(item.req.increaseStartPeriod), requestId: String(item.id) }, query: historyDetailQuery }">
                   {{ formatPeriod(item.req.increaseStartPeriod) }}
                 </router-link>
                 <span v-else>{{ formatPeriod(item.req.increaseStartPeriod) }}</span>
@@ -405,7 +415,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter, type RouteLocationRaw } from "vue-router";
 import type { VForm } from "vuetify/components";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
@@ -533,13 +543,50 @@ const canApproveRequest = computed(() => {
     ? permissions.canApproveSalaryRequest(Number(businessAccountId))
     : false;
 });
+const currentSource = computed(() => (route.query.source === "salary-latest" ? "salary-latest" : "salary-requests"));
 const currentListTab = computed(() => (route.query.tab === "bonuses" ? "bonuses" : "requests"));
-const backToListRoute = computed(() => ({
-  name: "salary-requests",
-  query: {
-    tab: currentListTab.value,
-  },
-}));
+const backToListRoute = computed(() => {
+  if (currentSource.value === "salary-latest") {
+    return { name: "salary-latest" };
+  }
+  return {
+    name: "salary-requests",
+    query: {
+      tab: currentListTab.value,
+    },
+  };
+});
+const breadcrumbs = computed<Array<{ title: string; to?: RouteLocationRaw }>>(() => {
+  if (currentSource.value === "salary-latest") {
+    return [
+      {
+        title: t("Последние повышения"),
+        to: { name: "salary-latest" },
+      },
+      {
+        title: request.value?.employee?.name ?? "-",
+      },
+    ];
+  }
+
+  return [
+    {
+      title: t("Повышения и бонусы"),
+      to: { name: "salary-requests", query: { tab: currentListTab.value } },
+    },
+    {
+      title: currentListTab.value === "bonuses" ? t("Бонусы") : t("Повышения"),
+    },
+    {
+      title: request.value?.employee?.name ?? "-",
+    },
+  ];
+});
+const historyDetailQuery = computed(() => (
+  currentSource.value === "salary-latest"
+    ? { source: "salary-latest" }
+    : { source: "salary-requests", tab: currentListTab.value }
+));
 const requestActionDisabled = computed(() => periodClosed.value || Boolean(request.value?.impl));
 const approvalsOrderedAsc = computed(() =>
   [...(request.value?.approvals ?? [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),

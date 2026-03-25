@@ -176,6 +176,7 @@
                   requestId: String(item.id),
                 },
                 query: {
+                  source: 'salary-requests',
                   tab: activeTabQuery,
                 },
               }"
@@ -579,6 +580,7 @@ function onRowClick(_event: Event, payload: unknown): void {
       requestId: String(row.id),
     },
     query: {
+      source: "salary-requests",
       tab: activeTabQuery.value,
     },
   }).catch(() => undefined);

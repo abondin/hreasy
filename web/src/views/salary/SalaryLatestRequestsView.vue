@@ -95,6 +95,7 @@
               :to="{
                 name: 'salary-request-details',
                 params: { period: String(item.requestStartPeriod), requestId: String(item.requestId) },
+                query: { source: 'salary-latest' },
               }"
             >
               {{ item.employeeDisplayName }}
