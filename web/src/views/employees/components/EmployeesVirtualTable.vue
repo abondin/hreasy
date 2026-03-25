@@ -110,6 +110,7 @@
     data-testid="employees-details-drawer"
     location="right"
     temporary
+    disable-route-watcher
     :width="drawerWidth"
   >
     <v-toolbar density="comfortable" border="b">
@@ -129,6 +130,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useDisplay } from "vuetify";
 import type { Employee } from "@/services/employee.service";
@@ -139,6 +141,7 @@ import { extractDataTableRow } from "@/lib/data-table";
 
 const props = defineProps<{
   items: Employee[];
+  allItems: Employee[];
   loading: boolean;
   projectOptions: Array<{ title: string; value: number | null }>;
   businessAccountOptions: Array<{ title: string; value: number }>;
@@ -156,6 +159,8 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 const permissions = usePermissions();
 const display = useDisplay();
 const showExtendedFilters = computed(() => !display.smAndDown.value);
@@ -230,6 +235,14 @@ const headers = computed(() => {
 const tableHeight = computed(() => props.tableHeight ?? "70vh");
 const projectOptions = computed(() => props.projectOptions);
 const baOptions = computed(() => props.businessAccountOptions);
+const selectedEmployeeIdFromRoute = computed(() => {
+  const value = route.query.employeeId;
+  if (typeof value !== "string") {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isInteger(parsed) ? parsed : null;
+});
 const drawerWidth = computed(() => {
   if (display.lg.value) {
     return 960;
@@ -239,6 +252,22 @@ const drawerWidth = computed(() => {
   }
   return 1040;
 });
+
+watch(
+  [selectedEmployeeIdFromRoute, () => props.allItems],
+  ([employeeId, allItems]) => {
+    if (employeeId == null) {
+      selectedEmployee.value = null;
+      detailsOpen.value = false;
+      return;
+    }
+
+    const employee = allItems.find((item) => item.id === employeeId) ?? null;
+    selectedEmployee.value = employee;
+    detailsOpen.value = Boolean(employee);
+  },
+  { immediate: true },
+);
 
 function rowProps() {
   return {
@@ -256,6 +285,12 @@ function openEmployeeDetails(
   }
   selectedEmployee.value = row;
   detailsOpen.value = true;
+  router.replace({
+    query: {
+      ...route.query,
+      employeeId: String(row.id),
+    },
+  }).catch(() => undefined);
 }
 
 function extractRow(payload: unknown): Employee | null {
@@ -265,4 +300,14 @@ function extractRow(payload: unknown): Employee | null {
 function emitEmployeeUpdated() {
   emit("employee-updated");
 }
+
+watch(detailsOpen, (open) => {
+  if (open) {
+    return;
+  }
+
+  const nextQuery = { ...route.query };
+  delete nextQuery.employeeId;
+  router.replace({ query: nextQuery }).catch(() => undefined);
+});
 </script>

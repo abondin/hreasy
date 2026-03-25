@@ -5,6 +5,7 @@
   <v-container class="py-6" data-testid="employees-view">
     <employees-virtual-table
       :items="filteredEmployees"
+      :all-items="employees"
       :loading="loading"
       :project-options="projectOptions"
       :business-account-options="baOptions"
