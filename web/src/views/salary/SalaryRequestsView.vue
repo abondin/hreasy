@@ -175,6 +175,9 @@
                   period: String(item.req?.increaseStartPeriod ?? selectedPeriodId),
                   requestId: String(item.id),
                 },
+                query: {
+                  tab: activeTabQuery,
+                },
               }"
               @click.stop
             >
@@ -352,7 +355,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { VForm } from "vuetify/components";
 import { formatDateTime } from "@/lib/datetime";
@@ -391,6 +394,7 @@ interface SalaryCreateForm {
 }
 
 const { t } = useI18n();
+const route = useRoute();
 const router = useRouter();
 const {
   loading,
@@ -449,6 +453,7 @@ const createNewTitle = computed(() =>
   filter.type === 1 ? t("Создание запроса на индексацию ЗП") : t("Создание запроса на бонус"),
 );
 const isCurrentPeriod = computed(() => selectedPeriodId.value === ReportPeriod.currentPeriod().periodId());
+const activeTabQuery = computed(() => (filter.type === 2 ? "bonuses" : "requests"));
 
 const requiredRule = (value: unknown) => Boolean(value) || t("Обязательное поле");
 const requiredNumberRule = (value: unknown) =>
@@ -505,6 +510,36 @@ watch(
   },
 );
 
+watch(
+  () => route.query.tab,
+  (tab) => {
+    if (tab === "bonuses" && filter.type !== 2) {
+      filter.type = 2;
+      return;
+    }
+    if (tab === "requests" && filter.type !== 1) {
+      filter.type = 1;
+    }
+  },
+  { immediate: true },
+);
+
+watch(
+  () => filter.type,
+  (type) => {
+    const nextTab = type === 2 ? "bonuses" : "requests";
+    if (route.query.tab === nextTab) {
+      return;
+    }
+    router.replace({
+      query: {
+        ...route.query,
+        tab: nextTab,
+      },
+    }).catch(() => undefined);
+  },
+);
+
 function formatMoney(value: number | null | undefined): string {
   if (value == null) {
     return "";
@@ -542,6 +577,9 @@ function onRowClick(_event: Event, payload: unknown): void {
     params: {
       period: String(row.req.increaseStartPeriod),
       requestId: String(row.id),
+    },
+    query: {
+      tab: activeTabQuery.value,
     },
   }).catch(() => undefined);
 }

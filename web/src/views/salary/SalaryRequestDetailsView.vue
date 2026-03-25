@@ -1,6 +1,6 @@
 <template>
   <v-container class="py-6" data-testid="salary-request-details-view">
-      <v-btn variant="text" prepend-icon="mdi-arrow-left" :to="{ name: 'salary-requests' }">
+      <v-btn variant="text" prepend-icon="mdi-arrow-left" :to="backToListRoute">
         {{ t("Повышения и бонусы") }}
       </v-btn>
 
@@ -196,7 +196,7 @@
               data-testid="salary-request-history-table"
             >
               <template #[`item.req.increaseStartPeriod`]="{ item }">
-                <router-link v-if="item.id !== request.id" :to="{ name: 'salary-request-details', params: { period: String(item.req.increaseStartPeriod), requestId: String(item.id) } }">
+                <router-link v-if="item.id !== request.id" :to="{ name: 'salary-request-details', params: { period: String(item.req.increaseStartPeriod), requestId: String(item.id) }, query: { tab: currentListTab } }">
                   {{ formatPeriod(item.req.increaseStartPeriod) }}
                 </router-link>
                 <span v-else>{{ formatPeriod(item.req.increaseStartPeriod) }}</span>
@@ -533,6 +533,13 @@ const canApproveRequest = computed(() => {
     ? permissions.canApproveSalaryRequest(Number(businessAccountId))
     : false;
 });
+const currentListTab = computed(() => (route.query.tab === "bonuses" ? "bonuses" : "requests"));
+const backToListRoute = computed(() => ({
+  name: "salary-requests",
+  query: {
+    tab: currentListTab.value,
+  },
+}));
 const requestActionDisabled = computed(() => periodClosed.value || Boolean(request.value?.impl));
 const approvalsOrderedAsc = computed(() =>
   [...(request.value?.approvals ?? [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
@@ -712,7 +719,7 @@ async function submitDelete(): Promise<void> {
   actionError.value = "";
   try {
     await deleteSalaryRequest(request.value.id);
-    await router.push({ name: "salary-requests" });
+    await router.push(backToListRoute.value);
   } catch (err: unknown) {
     actionError.value = errorUtils.shortMessage(err);
   } finally {
