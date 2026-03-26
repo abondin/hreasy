@@ -29,6 +29,7 @@
                 variant="outlined"
                 density="compact"
                 clearable
+                @click:clear="clearSearch"
               />
             </v-col>
             <template v-if="showExtendedFilters">
@@ -268,6 +269,11 @@ watch(
   },
   { immediate: true },
 );
+
+function clearSearch() {
+  localSearch.value = "";
+  emit("update:search", "");
+}
 
 function rowProps() {
   return {

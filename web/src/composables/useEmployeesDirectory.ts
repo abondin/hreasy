@@ -61,6 +61,7 @@ export function useEmployeesDirectory(initialFilter?: Partial<EmployeesFilter>) 
         employee.email,
         employee.currentProject?.name,
         employee.currentProject?.role,
+        employee.ba?.name,
         employee.position?.name,
         employee.telegram,
       ]
