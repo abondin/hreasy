@@ -53,3 +53,8 @@
 
 ## Product Constraints
 - Timesheet module is currently inactive for end users and should be treated as internal/inactive unless explicitly requested.
+
+## Dual-Version Production Note
+- Vue 3 is the main active UI, but the legacy Vue 2 UI is also deployed on a separate production URL.
+- Do not propose removing the footer link to the old UI by default.
+- Transitioning from the new UI to the old UI remains a supported production fallback scenario.

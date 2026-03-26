@@ -15,6 +15,22 @@
     @dragover.prevent
     @drop.prevent="handleDrop"
   >
+    <v-alert
+      type="info"
+      variant="tonal"
+      border="start"
+      class="mb-5 text-start"
+    >
+      <div class="text-subtitle-2 mb-2">
+        {{ t("Ограничения для файла") }}
+      </div>
+      <div v-if="acceptedFormatsText">
+        {{ t("Поддерживаемые форматы") }}: {{ acceptedFormatsText }}
+      </div>
+      <div>
+        {{ t("Максимальный размер файла") }}: {{ maximumSizeMb }} {{ t("МБ") }}
+      </div>
+    </v-alert>
     <p
       v-if="currentFile"
       class="text-center text-medium-emphasis mb-5"
@@ -149,6 +165,8 @@ const lastUploadedFileName = ref("");
 const uploadResponseData = ref<unknown>(null);
 
 const dropActive = computed(() => dropCounter.value > 0);
+const maximumSizeMb = computed(() => formatMaximumSizeMb(props.maximumSize));
+const acceptedFormatsText = computed(() => formatAcceptedFormats(props.accept));
 
 const uploadErrorMessage = computed(() => {
   if (!uploadErrorCode.value) {
@@ -156,7 +174,7 @@ const uploadErrorMessage = computed(() => {
   }
   return t(`UPLOAD_ERROR_${uploadErrorCode.value}`, {
     timeout: props.timeout,
-    maximumSize: props.maximumSize,
+    maximumSizeMb: maximumSizeMb.value,
   });
 });
 
@@ -339,6 +357,35 @@ function resetState() {
   abortController.value = null;
   lastUploadedFileName.value = "";
   uploadResponseData.value = null;
+}
+
+function formatMaximumSizeMb(maximumSize: number): string {
+  const megabytes = maximumSize / (1024 * 1024);
+  const rounded = Number.isInteger(megabytes) ? megabytes.toFixed(0) : megabytes.toFixed(1);
+  return rounded.replace(/\.0$/, "").replace(".", ",");
+}
+
+function formatAcceptedFormats(accept: string): string {
+  if (!accept) {
+    return "";
+  }
+
+  const formats = Array.from(
+    new Set(
+      accept
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .map((item) => {
+          if (item.startsWith(".")) {
+            return item.slice(1).toUpperCase();
+          }
+          return item.toUpperCase();
+        }),
+    ),
+  );
+
+  return formats.join(", ");
 }
 
 function isDirectUploadUrl(url: string): boolean {
