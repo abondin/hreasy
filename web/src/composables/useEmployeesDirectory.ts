@@ -38,7 +38,7 @@ export function useEmployeesDirectory(initialFilter?: Partial<EmployeesFilter>) 
   }
 
   const filteredEmployees = computed(() => {
-    const search = filter.value.search.trim().toLowerCase();
+    const search = (filter.value.search ?? "").trim().toLowerCase();
     return employees.value.filter((employee) => {
       if (
         filter.value.projects.length > 0 &&
