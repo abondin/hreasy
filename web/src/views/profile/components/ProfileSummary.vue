@@ -2,60 +2,56 @@
   Employee base information block without card wrapper.
 -->
 <template>
-  <v-row
-    align="center"
-    no-gutters
-    :class="['profile-summary__layout', { 'profile-summary__layout--stacked': isMobile }]"
-  >
+  <v-row align="center" no-gutters :class="isMobile ? 'flex-column align-start' : ''">
     <v-col v-if="showAvatar" cols="auto" :class="isMobile ? 'mb-4' : 'mr-6'">
       <profile-avatar
-          :owner="employee"
-          :read-only="avatarReadOnly"
-          @updated="onAvatarUpdated"
+        :owner="employee"
+        :read-only="avatarReadOnly"
+        @updated="onAvatarUpdated"
       />
     </v-col>
 
     <v-col>
-      <div v-if="showName" class="profile-summary__name">
+      <div v-if="showName" class="text-h6 font-weight-medium mb-2">
         {{ employee.displayName }}
       </div>
 
       <property-list>
-      <profile-summary-item :label="t('Отдел')">
+        <profile-summary-item :label="t('Отдел')">
           {{ employee.department?.name ?? t("Не задан") }}
-      </profile-summary-item>
+        </profile-summary-item>
 
-      <profile-summary-item :label="t('Текущий проект')">
-        <span class="d-inline-flex align-center ga-2 pl-1">
-          <v-btn
-            v-if="canShowProjectInfo"
-            v-bind="actionIconButtonProps"
-            icon="mdi-information-outline"
-            color="info"
-            :title="t('Подробная информация по проекту ')"
-            @click.stop="openProjectInfo"
-          />
-          <span>{{ employee.currentProject?.name ?? t("Не задан") }}</span>
-          <v-btn
-            v-if="canEditProject"
-            v-bind="actionIconButtonProps"
-            icon="mdi-pencil"
-            color="medium-emphasis"
-            :title="t('Обновление текущего проекта')"
-            @click.stop="openProjectUpdate"
-          />
-        </span>
-      </profile-summary-item>
+        <profile-summary-item :label="t('Текущий проект')">
+          <span class="d-inline-flex align-center ga-2 pl-1">
+            <v-btn
+              v-if="canShowProjectInfo"
+              v-bind="actionIconButtonProps"
+              icon="mdi-information-outline"
+              color="info"
+              :title="t('Подробная информация по проекту ')"
+              @click.stop="openProjectInfo"
+            />
+            <span>{{ employee.currentProject?.name ?? t("Не задан") }}</span>
+            <v-btn
+              v-if="canEditProject"
+              v-bind="actionIconButtonProps"
+              icon="mdi-pencil"
+              color="medium-emphasis"
+              :title="t('Обновление текущего проекта')"
+              @click.stop="openProjectUpdate"
+            />
+          </span>
+        </profile-summary-item>
 
-      <profile-summary-item :label="t('Роль на текущем проекте')">
+        <profile-summary-item :label="t('Роль на текущем проекте')">
           {{ employee.currentProject?.role ?? t("Не задана") }}
-      </profile-summary-item>
+        </profile-summary-item>
 
-      <profile-summary-item :label="t('Бизнес Аккаунт')">
+        <profile-summary-item :label="t('Бизнес Аккаунт')">
           {{ employee.ba?.name ?? t("Не задан") }}
-      </profile-summary-item>
+        </profile-summary-item>
 
-      <profile-summary-item :label="t('Почтовый адрес')">
+        <profile-summary-item :label="t('Почтовый адрес')">
           <hover-action-wrapper
             :show-action="Boolean(emailToCopy)"
             :tooltip="copyTooltip('email')"
@@ -63,74 +59,71 @@
           >
             <span>{{ employee.email ?? t("Не задан") }}</span>
           </hover-action-wrapper>
-      </profile-summary-item>
+        </profile-summary-item>
 
-      <profile-summary-item :label="t('Позиция')">
+        <profile-summary-item :label="t('Позиция')">
           {{ employee.position?.name ?? t("Не задана") }}
-      </profile-summary-item>
+        </profile-summary-item>
 
-      <profile-summary-item :label="t('Кабинет')">
-        <span class="d-inline-flex align-center ga-2">
-          <span>{{ employee.officeLocation?.name ?? t("Не задан") }}</span>
-          <v-btn
-            v-if="canShowMap"
-            v-bind="actionIconButtonProps"
-            icon="mdi-map"
-            color="medium-emphasis"
-            :title="t('Посмотреть карту')"
-            @click.stop="openMap"
-          />
-        </span>
-      </profile-summary-item>
+        <profile-summary-item :label="t('Кабинет')">
+          <span class="d-inline-flex align-center ga-2">
+            <span>{{ employee.officeLocation?.name ?? t("Не задан") }}</span>
+            <v-btn
+              v-if="canShowMap"
+              v-bind="actionIconButtonProps"
+              icon="mdi-map"
+              color="medium-emphasis"
+              :title="t('Посмотреть карту')"
+              @click.stop="openMap"
+            />
+          </span>
+        </profile-summary-item>
 
-      <profile-summary-item :label="t('Телеграм')">
-        <span class="d-inline-flex align-center">
-          <hover-action-wrapper
-            :show-action="Boolean(telegramToCopy)"
-            :tooltip="copyTooltip('telegram')"
-            @action="copyToClipboard(telegramToCopy, 'telegram')"
-          >
-            <profile-telegram-editor
+        <profile-summary-item :label="t('Телеграм')">
+          <span class="d-inline-flex align-center">
+            <hover-action-wrapper
+              :show-action="Boolean(telegramToCopy)"
+              :tooltip="copyTooltip('telegram')"
+              @action="copyToClipboard(telegramToCopy, 'telegram')"
+            >
+              <profile-telegram-editor
                 :employee-id="employee.id"
                 :account="employee.telegram"
                 :confirmed-at="employee.telegramConfirmedAt"
                 :read-only="readOnly"
                 @edit="emitEditTelegram"
-            />
-          </hover-action-wrapper>
-        </span>
-      </profile-summary-item>
+              />
+            </hover-action-wrapper>
+          </span>
+        </profile-summary-item>
       </property-list>
     </v-col>
   </v-row>
   <office-map-preview-dialog
-      v-model="mapDialogOpen"
-      :map-name="mapName"
-      :map-title="mapTitle"
-      :workplace="highlightedWorkplace"
+    v-model="mapDialogOpen"
+    :map-name="mapName"
+    :map-title="mapTitle"
+    :workplace="highlightedWorkplace"
   />
   <project-info-dialog
-      v-model="projectInfoDialogOpen"
-      :project-id="employee.currentProject?.id ?? null"
-      :employee-id="employee.id ?? null"
+    v-model="projectInfoDialogOpen"
+    :project-id="employee.currentProject?.id ?? null"
+    :employee-id="employee.id ?? null"
   />
   <project-assignment-dialog
-      v-model="projectUpdateDialogOpen"
-      :employee-id="employee.id ?? null"
-      :employee-name="employee.displayName"
-      :current-project="employee.currentProject ?? null"
-      @updated="emitProjectUpdated"
+    v-model="projectUpdateDialogOpen"
+    :employee-id="employee.id ?? null"
+    :employee-name="employee.displayName"
+    :current-project="employee.currentProject ?? null"
+    @updated="emitProjectUpdated"
   />
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, toRef } from "vue";
-import {useI18n} from "vue-i18n";
+import { useI18n } from "vue-i18n";
+import { useDisplay } from "vuetify";
 import PropertyList from "@/components/shared/PropertyList.vue";
-import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
-import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
-import ProfileTelegramEditor from "@/views/profile/components/ProfileTelegramEditor.vue";
-import type {Employee} from "@/services/employee.service";
 import HoverActionWrapper from "@/components/shared/HoverActionWrapper.vue";
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
 import ProjectInfoDialog from "@/components/project/ProjectInfoDialog.vue";
@@ -138,7 +131,10 @@ import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialo
 import { useOfficeMapPreview } from "@/composables/useOfficeMapPreview";
 import { useEmployeeProjectActions } from "@/composables/useEmployeeProjectActions";
 import { extractTelegramAccount } from "@/lib/telegram";
-import { useDisplay } from "vuetify";
+import type { Employee } from "@/services/employee.service";
+import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
+import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
+import ProfileTelegramEditor from "@/views/profile/components/ProfileTelegramEditor.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -247,12 +243,3 @@ onBeforeUnmount(() => {
   }
 });
 </script>
-
-<style>
-.profile-summary__name {
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-</style>

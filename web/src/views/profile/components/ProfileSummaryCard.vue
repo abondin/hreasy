@@ -16,7 +16,7 @@
           @update-project="$emit('update-project')"
         />
       </v-col>
-      <v-col v-if="$slots.default" cols="12" lg>
+      <v-col v-if="$slots.default" cols="12" lg class="min-w-0">
         <slot />
       </v-col>
     </v-row>

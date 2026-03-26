@@ -3,8 +3,8 @@
 -->
 <template>
   <!--<editor-fold desc="File attachments inline">-->
-  <div class="d-flex flex-column ga-4">
-    <div class="d-flex flex-wrap align-center ga-3">
+  <div :class="rootContainerClass">
+    <div :class="headerContainerClass">
       <div class="min-w-0">
         <template v-if="!loading && !permissionDenied && !loadError">
           <div
@@ -13,24 +13,25 @@
             :class="filesContainerClass"
           >
             <v-tooltip
-                v-for="file in displayFiles"
-                :key="file.key"
-                :text="file.tooltip"
-                location="bottom"
+              v-for="file in displayFiles"
+              :key="file.key"
+              :text="file.tooltip"
+              location="bottom"
             >
               <template #activator="{ props: tooltipProps }">
-                    <v-chip
-                        v-bind="tooltipProps"
-                        variant="outlined"
-                        class="px-3"
-                        :size="chipSize"
-                    >
+                <v-chip
+                  v-bind="tooltipProps"
+                  variant="outlined"
+                  class="px-3"
+                  :size="chipSize"
+                >
                   <span class="text-truncate" style="max-width: 200px">
                     <template v-if="isDownloadAllowed(file.source)">
                       <a
-                          :href="file.downloadUrl"
-                          class="text-truncate text-decoration-none"
-                          download>
+                        :href="file.downloadUrl"
+                        class="text-truncate text-decoration-none"
+                        download
+                      >
                         {{ file.filename }}
                       </a>
                     </template>
@@ -40,30 +41,18 @@
                   </span>
                   <template v-if="canDelete" #append>
                     <v-btn
-                        icon="mdi-close"
-                        :size="chipActionSize"
-                        variant="text"
-                        density="compact"
-                        @click.stop.prevent="requestDelete(file.source)"
+                      icon="mdi-close"
+                      :size="chipActionSize"
+                      variant="text"
+                      density="compact"
+                      @click.stop.prevent="requestDelete(file.source)"
                     />
                   </template>
                 </v-chip>
               </template>
             </v-tooltip>
             <v-btn
-                v-if="canUpload"
-                color="primary"
-                variant="tonal"
-                icon="mdi-plus"
-                :size="uploadButtonSize"
-                :aria-label="uploadButtonLabel"
-                :title="uploadButtonLabel"
-                :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
-                @click="openUploadDialog"
-            />
-          </div>
-          <v-btn
-              v-else-if="canUpload"
+              v-if="canUpload"
               color="primary"
               variant="tonal"
               icon="mdi-plus"
@@ -72,44 +61,55 @@
               :title="uploadButtonLabel"
               :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
               @click="openUploadDialog"
+            />
+          </div>
+          <v-btn
+            v-else-if="canUpload"
+            color="primary"
+            variant="tonal"
+            icon="mdi-plus"
+            :size="uploadButtonSize"
+            :aria-label="uploadButtonLabel"
+            :title="uploadButtonLabel"
+            :disabled="deleteLoading || loading || permissionDenied || Boolean(loadError)"
+            @click="openUploadDialog"
           />
           <div v-else-if="emptyMessageComputed" class="text-body-2 text-medium-emphasis">
             {{ emptyMessageComputed }}
           </div>
         </template>
         <v-progress-circular
-            v-else-if="loading"
-            size="20"
-            width="2"
-            color="primary"
+          v-else-if="loading"
+          size="20"
+          width="2"
+          color="primary"
         />
       </div>
-
     </div>
 
     <v-alert
-        v-if="permissionDenied && !loading"
-        type="warning"
-        variant="tonal"
-        border="start"
+      v-if="permissionDenied && !loading"
+      type="warning"
+      variant="tonal"
+      border="start"
     >
-      <v-icon icon="mdi-lock-alert" class="mr-2"/>
+      <v-icon icon="mdi-lock-alert" class="mr-2" />
       {{ permissionMessageComputed }}
     </v-alert>
 
     <v-alert
-        v-else-if="loadError && !loading"
-        type="error"
-        variant="tonal"
-        border="start"
+      v-else-if="loadError && !loading"
+      type="error"
+      variant="tonal"
+      border="start"
     >
       {{ loadError }}
     </v-alert>
 
     <v-progress-linear
-        v-if="loading"
-        color="primary"
-        indeterminate
+      v-if="loading"
+      color="primary"
+      indeterminate
     />
   </div>
   <!-- </editor-fold> -->
@@ -118,15 +118,15 @@
     <v-card>
       <v-card-title>{{ uploadTitleComputed }}</v-card-title>
       <v-card-text>
-	        <file-upload-zone
-	            v-if="uploadDialog && uploadUrl"
-	            :post-action="uploadUrl"
-	            :file-id="`attachments-${dialogUid}`"
-	            :accept="accept"
-	            :timeout="uploadTimeout"
-	            :maximum-size="maximumSize"
-	            @close="handleUploadClose"
-	        />
+        <file-upload-zone
+          v-if="uploadDialog && uploadUrl"
+          :post-action="uploadUrl"
+          :file-id="`attachments-${dialogUid}`"
+          :accept="accept"
+          :timeout="uploadTimeout"
+          :maximum-size="maximumSize"
+          @close="handleUploadClose"
+        />
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -137,10 +137,10 @@
       <v-card-text>
         {{ t("Вы уверены, что хотите удалить запись?") }}
         <v-alert
-            v-if="deleteError"
-            type="error"
-            variant="tonal"
-            class="mt-4"
+          v-if="deleteError"
+          type="error"
+          variant="tonal"
+          class="mt-4"
         >
           {{ deleteError }}
         </v-alert>
@@ -149,12 +149,12 @@
         <v-btn variant="text" :disabled="deleteLoading" @click="closeDeleteDialog">
           {{ t("Нет") }}
         </v-btn>
-        <v-spacer/>
+        <v-spacer />
         <v-btn
-            color="primary"
-            :loading="deleteLoading"
-            :disabled="deleteLoading"
-            @click="confirmDelete"
+          color="primary"
+          :loading="deleteLoading"
+          :disabled="deleteLoading"
+          @click="confirmDelete"
         >
           {{ t("Да") }}
         </v-btn>
@@ -164,11 +164,11 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from "vue";
-import {useI18n} from "vue-i18n";
+import { computed, onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import FileUploadZone, { type UploadCompleteEvent } from "@/components/FileUploadZone.vue";
+import { errorUtils } from "@/lib/errors";
 import http from "@/lib/http";
-import {errorUtils} from "@/lib/errors";
-import FileUploadZone, {type UploadCompleteEvent,} from "@/components/FileUploadZone.vue";
 
 export type AttachmentItem = {
   filename: string;
@@ -176,45 +176,45 @@ export type AttachmentItem = {
 };
 
 const props = withDefaults(
-    defineProps<{
-      listUrl?: string | null;
-      uploadUrl?: string | null;
-      buildDownloadUrl: (item: AttachmentItem) => string;
-      buildDeleteUrl?: (item: AttachmentItem) => string | null;
-      canView?: () => boolean;
-      canDownload?: (item: AttachmentItem) => boolean;
-      canUpload?: () => boolean;
-      readOnly?: boolean;
-      emptyMessage?: string;
-      permissionMessage?: string;
-      uploadTitle?: string;
-      accept?: string;
-      uploadTimeout?: number;
-      maximumSize?: number;
-      dense?: boolean;
-    }>(),
-    {
-      listUrl: null,
-      uploadUrl: null,
-      buildDeleteUrl: undefined,
-      canView: () => true,
-      canDownload: () => true,
-      readOnly: false,
-      emptyMessage: "",
-      permissionMessage: "",
-      uploadTitle: "",
-      accept: "",
-      uploadTimeout: 30_000,
-      maximumSize: 10 * 1024 * 1024,
-      dense: false,
-    },
+  defineProps<{
+    listUrl?: string | null;
+    uploadUrl?: string | null;
+    buildDownloadUrl: (item: AttachmentItem) => string;
+    buildDeleteUrl?: (item: AttachmentItem) => string | null;
+    canView?: () => boolean;
+    canDownload?: (item: AttachmentItem) => boolean;
+    canUpload?: () => boolean;
+    readOnly?: boolean;
+    emptyMessage?: string;
+    permissionMessage?: string;
+    uploadTitle?: string;
+    accept?: string;
+    uploadTimeout?: number;
+    maximumSize?: number;
+    dense?: boolean;
+  }>(),
+  {
+    listUrl: null,
+    uploadUrl: null,
+    buildDeleteUrl: undefined,
+    canView: () => true,
+    canDownload: () => true,
+    readOnly: false,
+    emptyMessage: "",
+    permissionMessage: "",
+    uploadTitle: "",
+    accept: "",
+    uploadTimeout: 30_000,
+    maximumSize: 10 * 1024 * 1024,
+    dense: false,
+  },
 );
 
 const emit = defineEmits<{
   (event: "updated"): void;
 }>();
 
-const {t} = useI18n();
+const { t } = useI18n();
 
 const attachments = ref<AttachmentItem[]>([]);
 const loading = ref(false);
@@ -247,32 +247,40 @@ const canDelete = computed(() => {
   return props.canView?.() ?? true;
 });
 
-const uploadTitleComputed = computed(
-    () => props.uploadTitle || t("Загрузить файл"),
-);
-
+const uploadTitleComputed = computed(() => props.uploadTitle || t("Загрузить файл"));
 const uploadButtonLabel = computed(() => uploadTitleComputed.value);
 const emptyMessageComputed = computed(() => props.emptyMessage || "");
 const chipSize = computed(() => (props.dense ? "small" : "default"));
 const chipActionSize = computed(() => (props.dense ? "x-small" : "small"));
 const uploadButtonSize = computed(() => (props.dense ? "small" : "default"));
+const rootContainerClass = computed(() => [
+  "d-flex",
+  "flex-column",
+  props.dense ? "ga-2" : "ga-4",
+]);
+const headerContainerClass = computed(() => [
+  "d-flex",
+  "flex-wrap",
+  "align-center",
+  props.dense ? "ga-2" : "ga-3",
+]);
 const filesContainerClass = computed(() => ({
   "ga-1": props.dense,
   "ga-2": !props.dense,
 }));
 
 const permissionMessageComputed = computed(
-    () => props.permissionMessage || t("Не достаточно прав"),
+  () => props.permissionMessage || t("Не достаточно прав"),
 );
 
 const displayFiles = computed(() =>
-    attachments.value.map((item: AttachmentItem) => ({
-      key: `${item.filename}-${(item as { id?: string | number }).id ?? ""}`,
-      filename: item.filename,
-      downloadUrl: props.buildDownloadUrl(item),
-      tooltip: `${t("Скачать документ")} '${item.filename}'`,
-      source: item,
-    })),
+  attachments.value.map((item: AttachmentItem) => ({
+    key: `${item.filename}-${(item as { id?: string | number }).id ?? ""}`,
+    filename: item.filename,
+    downloadUrl: props.buildDownloadUrl(item),
+    tooltip: `${t("Скачать документ")} '${item.filename}'`,
+    source: item,
+  })),
 );
 
 const deletingFilename = computed(() => attachmentToDelete.value?.filename ?? "");
@@ -365,10 +373,10 @@ async function reloadAttachments() {
 }
 
 watch(
-    () => props.listUrl,
-    () => {
-      reloadAttachments().catch(() => undefined);
-    },
+  () => props.listUrl,
+  () => {
+    reloadAttachments().catch(() => undefined);
+  },
 );
 
 onMounted(() => {

@@ -11,13 +11,12 @@
         <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
       </v-card-title>
 
-      <v-card-text class="pa-6">
+      <v-card-text class="pa-6 d-flex flex-column ga-6">
         <v-alert
           v-if="errorMessage"
           type="error"
           variant="tonal"
           border="start"
-          class="mb-4"
         >
           {{ errorMessage }}
         </v-alert>
@@ -26,111 +25,112 @@
           v-else-if="loading"
           color="primary"
           indeterminate
-          class="mb-4"
         />
 
-        <div v-else-if="project">
-          <v-row class="mb-6" align="start">
+        <template v-else-if="project">
+          <v-row align="start">
             <v-col cols="12" md="5">
-              <property-list variant="aligned" density="compact">
-                <profile-summary-item :label="t('Наименование')">
-                  {{ project.name }}
-                </profile-summary-item>
-                <profile-summary-item :label="t('Отдел')">
-                  {{ project.department?.name ?? t("Не задан") }}
-                </profile-summary-item>
-                <profile-summary-item :label="t('Бизнес аккаунт')">
-                  {{ project.businessAccount?.name ?? t("Не задан") }}
-                </profile-summary-item>
-                <profile-summary-item :label="t('Заказчик')">
-                  {{ project.customer ?? t("Не задан") }}
-                </profile-summary-item>
-                <profile-summary-item :label="t('Начало')">
-                  {{ formatPlanActual(project.planStartDate, project.startDate) }}
-                </profile-summary-item>
-                <profile-summary-item :label="t('Окончание')">
-                  {{ formatPlanActual(project.planEndDate, project.endDate) }}
-                </profile-summary-item>
-                <profile-summary-item
-                  v-for="group in managerGroups"
-                  :key="group.type"
-                  :label="group.type === 'project' ? t('Менеджеры проекта') : t('Менеджеры бизнес аккаунта')"
-                >
-                  <div class="d-flex flex-wrap ga-1">
-                    <v-chip
-                      v-for="manager in group.managers"
-                      :key="manager.id"
-                      size="small"
-                      variant="outlined"
-                    >
-                      {{ manager.employeeName }}
-                      <v-tooltip location="bottom">
-                        <template #activator="{ props: tooltipProps }">
-                          <v-icon
-                            v-bind="tooltipProps"
-                            icon="mdi-help-circle"
-                            size="x-small"
-                            class="ml-1"
-                          />
-                        </template>
-                        <span>
-                          {{
-                            `${t("Основное направление")}: ${t(
-                              `MANAGER_RESPONSIBILITY_TYPE.${manager.responsibilityType}`,
-                            )}`
-                          }}
-                        </span>
-                      </v-tooltip>
-                    </v-chip>
-                  </div>
-                </profile-summary-item>
-              </property-list>
+              <detail-section-block :title="t('Основная информация')">
+                <property-list variant="aligned" density="compact">
+                  <profile-summary-item :label="t('Наименование')">
+                    {{ project.name }}
+                  </profile-summary-item>
+                  <profile-summary-item :label="t('Отдел')">
+                    {{ project.department?.name ?? t("Не задан") }}
+                  </profile-summary-item>
+                  <profile-summary-item :label="t('Бизнес аккаунт')">
+                    {{ project.businessAccount?.name ?? t("Не задан") }}
+                  </profile-summary-item>
+                  <profile-summary-item :label="t('Заказчик')">
+                    {{ project.customer ?? t("Не задан") }}
+                  </profile-summary-item>
+                  <profile-summary-item :label="t('Начало')">
+                    {{ formatPlanActual(project.planStartDate, project.startDate) }}
+                  </profile-summary-item>
+                  <profile-summary-item :label="t('Окончание')">
+                    {{ formatPlanActual(project.planEndDate, project.endDate) }}
+                  </profile-summary-item>
+                  <profile-summary-item
+                    v-for="group in managerGroups"
+                    :key="group.type"
+                    :label="group.type === 'project' ? t('Менеджеры проекта') : t('Менеджеры бизнес аккаунта')"
+                  >
+                    <div class="d-flex flex-wrap ga-1">
+                      <v-chip
+                        v-for="manager in group.managers"
+                        :key="manager.id"
+                        size="small"
+                        variant="outlined"
+                      >
+                        {{ manager.employeeName }}
+                        <v-tooltip location="bottom">
+                          <template #activator="{ props: tooltipProps }">
+                            <v-icon
+                              v-bind="tooltipProps"
+                              icon="mdi-help-circle"
+                              size="x-small"
+                              class="ml-1"
+                            />
+                          </template>
+                          <span>
+                            {{ `${t("Основное направление")}: ${t(`MANAGER_RESPONSIBILITY_TYPE.${manager.responsibilityType}`)}` }}
+                          </span>
+                        </v-tooltip>
+                      </v-chip>
+                    </div>
+                  </profile-summary-item>
+                </property-list>
+              </detail-section-block>
             </v-col>
 
             <v-col cols="12" md="7">
-              <markdown-text-renderer
-                v-if="project.info"
-                :content="project.info"
-              />
-              <div v-else class="text-body-2 text-medium-emphasis">
-                {{ t("Не задан") }}
-              </div>
+              <detail-section-block :title="t('Описание')">
+                <markdown-text-renderer
+                  v-if="project.info"
+                  :content="project.info"
+                />
+                <div v-else class="text-body-2 text-medium-emphasis">
+                  {{ t("Не задан") }}
+                </div>
+              </detail-section-block>
             </v-col>
           </v-row>
 
-          <v-timeline align="start">
-            <v-timeline-item
-              v-for="change in projectChanges"
-              :key="change.id"
-              dot-color="primary"
-              size="small"
-            >
-              <template #opposite>
-                <div class="text-caption font-weight-medium">
-                  {{ formatDateLocalized(change.changedAt) }}
-                </div>
-                <div
-                  v-if="change.changedBy"
-                  class="text-caption text-medium-emphasis"
-                >
-                  {{ change.changedBy.name }}
-                </div>
-              </template>
+          <detail-section-block :title="t('История изменений')">
+            <v-timeline align="start">
+              <v-timeline-item
+                v-for="change in projectChanges"
+                :key="change.id"
+                dot-color="primary"
+                size="small"
+              >
+                <template #opposite>
+                  <div class="text-caption font-weight-medium">
+                    {{ formatDateLocalized(change.changedAt) }}
+                  </div>
+                  <div
+                    v-if="change.changedBy"
+                    class="text-caption text-medium-emphasis"
+                  >
+                    {{ change.changedBy.name }}
+                  </div>
+                </template>
 
-              <div class="py-2 d-flex flex-column ga-1">
-                <div class="text-subtitle-2 font-weight-medium">
-                  {{ change.project?.name ?? "-" }}
+                <div class="py-2 d-flex flex-column ga-1">
+                  <div class="text-subtitle-2 font-weight-medium">
+                    {{ change.project?.name ?? "-" }}
+                  </div>
+                  <div v-if="change.project?.role" class="text-body-2">
+                    {{ change.project.role }}
+                  </div>
+                  <div v-if="change.ba" class="text-caption text-medium-emphasis">
+                    {{ change.ba.name }}
+                  </div>
                 </div>
-                <div v-if="change.project?.role" class="text-body-2">
-                  {{ change.project.role }}
-                </div>
-                <div v-if="change.ba" class="text-caption text-medium-emphasis">
-                  {{ change.ba.name }}
-                </div>
-              </div>
-            </v-timeline-item>
-          </v-timeline>
-        </div>
+              </v-timeline-item>
+            </v-timeline>
+          </detail-section-block>
+        </template>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -139,13 +139,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import type { ManagerOfObject, ProjectInfo } from "@/services/projects.service";
-import { fetchProjectInfo } from "@/services/projects.service";
+import DetailSectionBlock from "@/components/shared/DetailSectionBlock.vue";
 import MarkdownTextRenderer from "@/components/shared/MarkdownTextRenderer.vue";
-import PropertyList from "@/components/shared/PropertyList.vue";
-import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
-import { type EmployeeProjectChange, fetchEmployeeProjectChanges } from "@/services/employee.service";
+import { errorUtils } from "@/lib/errors";
 import { formatDate } from "@/lib/datetime";
+import PropertyList from "@/components/shared/PropertyList.vue";
+import { type EmployeeProjectChange, fetchEmployeeProjectChanges } from "@/services/employee.service";
+import { fetchProjectInfo, type ManagerOfObject, type ProjectInfo } from "@/services/projects.service";
+import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -234,7 +235,7 @@ async function loadData() {
     project.value = projectInfo;
     projectChanges.value = changes;
   } catch (error) {
-    errorMessage.value = String(error);
+    errorMessage.value = errorUtils.shortMessage(error);
   } finally {
     loading.value = false;
   }

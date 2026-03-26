@@ -12,7 +12,7 @@
       @update-project="emit('employee-updated')"
     />
 
-    <employee-details-section-card :title="t('Текущие и планируемые отпуска')">
+    <detail-section-card :title="t('Текущие и планируемые отпуска')">
       <v-progress-circular
         v-if="vacationsLoading"
         indeterminate
@@ -34,9 +34,9 @@
       <div v-else class="text-body-2 text-medium-emphasis">
         {{ t('Отсутствуют данные') }}
       </div>
-    </employee-details-section-card>
+    </detail-section-card>
 
-    <employee-details-section-card
+    <detail-section-card
       v-if="canViewTechProfiles"
       :title="t('Квалификационные карточки')"
     >
@@ -46,9 +46,9 @@
         :show-title="false"
         :dense="true"
       />
-    </employee-details-section-card>
+    </detail-section-card>
 
-    <employee-details-section-card v-if="canViewSkills" :title="t('Навыки')">
+    <detail-section-card v-if="canViewSkills" :title="t('Навыки')">
       <employee-skills-section
         :grouped-skills="groupedSkills"
         :loading="skillsSectionLoading"
@@ -63,25 +63,20 @@
         :delete-skill="confirmDeleteSkill"
         @deleted="handleSkillDeleted"
       />
-    </employee-details-section-card>
+    </detail-section-card>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import type { Employee } from "@/services/employee.service";
-import ProfileSummaryCard from "@/views/profile/components/ProfileSummaryCard.vue";
-import ProfileTechProfilesCard from "@/views/profile/components/ProfileTechProfilesCard.vue";
+import DetailSectionCard from "@/components/shared/DetailSectionCard.vue";
 import EmployeeSkillsSection from "@/components/skills/EmployeeSkillsSection.vue";
-import EmployeeDetailsSectionCard from "@/views/employees/components/EmployeeDetailsSectionCard.vue";
-import { usePermissions } from "@/lib/permissions";
 import { useEmployeeSkillPermissions } from "@/composables/useEmployeeSkillPermissions";
 import { formatDate } from "@/lib/datetime";
-import {
-  fetchCurrentOrFutureVacations,
-  type EmployeeVacationShort,
-} from "@/services/vacation.service";
+import { usePermissions } from "@/lib/permissions";
+import { groupSkillsByGroup, type GroupedSkillsItem } from "@/lib/skills";
+import type { Employee } from "@/services/employee.service";
 import {
   addSkill,
   deleteSkill,
@@ -89,7 +84,12 @@ import {
   type AddSkillBody,
   type Skill,
 } from "@/services/skills.service";
-import { groupSkillsByGroup, type GroupedSkillsItem } from "@/lib/skills";
+import {
+  fetchCurrentOrFutureVacations,
+  type EmployeeVacationShort,
+} from "@/services/vacation.service";
+import ProfileSummaryCard from "@/views/profile/components/ProfileSummaryCard.vue";
+import ProfileTechProfilesCard from "@/views/profile/components/ProfileTechProfilesCard.vue";
 
 const props = defineProps<{
   employee: Employee;

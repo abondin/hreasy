@@ -1,19 +1,15 @@
 <!--
-  Secondary section card inside employee details panel.
-  Standardizes spacing and section title rendering.
+  Compatibility wrapper around the shared detail section card.
 -->
 <template>
-  <v-card>
-    <v-card-text class="pa-6">
-      <div class="text-body-2 font-weight-medium mb-2">
-        {{ title }}
-      </div>
-      <slot />
-    </v-card-text>
-  </v-card>
+  <detail-section-card :title="title">
+    <slot />
+  </detail-section-card>
 </template>
 
 <script setup lang="ts">
+import DetailSectionCard from "@/components/shared/DetailSectionCard.vue";
+
 defineProps<{
   title: string;
 }>();
