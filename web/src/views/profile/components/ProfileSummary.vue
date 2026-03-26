@@ -18,25 +18,27 @@
 
       <property-list>
         <profile-summary-item :label="t('Отдел')">
-          {{ employee.department?.name ?? t("Не задан") }}
+          {{ employee.department?.name ?? t('Не задан') }}
         </profile-summary-item>
 
         <profile-summary-item :label="t('Текущий проект')">
-          <span class="d-inline-flex align-center ga-2 pl-1">
+          <span class="d-inline-flex align-center flex-wrap ga-1 min-w-0">
+            <span>{{ employee.currentProject?.name ?? t('Не задан') }}</span>
             <v-btn
               v-if="canShowProjectInfo"
               v-bind="actionIconButtonProps"
               icon="mdi-information-outline"
               color="info"
+              class="ms-1"
               :title="t('Подробная информация по проекту ')"
               @click.stop="openProjectInfo"
             />
-            <span>{{ employee.currentProject?.name ?? t("Не задан") }}</span>
             <v-btn
               v-if="canEditProject"
               v-bind="actionIconButtonProps"
               icon="mdi-pencil"
               color="medium-emphasis"
+              class="ms-1"
               :title="t('Обновление текущего проекта')"
               @click.stop="openProjectUpdate"
             />
@@ -44,11 +46,11 @@
         </profile-summary-item>
 
         <profile-summary-item :label="t('Роль на текущем проекте')">
-          {{ employee.currentProject?.role ?? t("Не задана") }}
+          {{ employee.currentProject?.role ?? t('Не задана') }}
         </profile-summary-item>
 
         <profile-summary-item :label="t('Бизнес Аккаунт')">
-          {{ employee.ba?.name ?? t("Не задан") }}
+          {{ employee.ba?.name ?? t('Не задан') }}
         </profile-summary-item>
 
         <profile-summary-item :label="t('Почтовый адрес')">
@@ -57,22 +59,25 @@
             :tooltip="copyTooltip('email')"
             @action="copyToClipboard(emailToCopy, 'email')"
           >
-            <span>{{ employee.email ?? t("Не задан") }}</span>
+            <span class="d-inline-flex align-center flex-wrap ga-1 min-w-0">
+              <span>{{ employee.email ?? t('Не задан') }}</span>
+            </span>
           </hover-action-wrapper>
         </profile-summary-item>
 
         <profile-summary-item :label="t('Позиция')">
-          {{ employee.position?.name ?? t("Не задана") }}
+          {{ employee.position?.name ?? t('Не задана') }}
         </profile-summary-item>
 
         <profile-summary-item :label="t('Кабинет')">
-          <span class="d-inline-flex align-center ga-2">
-            <span>{{ employee.officeLocation?.name ?? t("Не задан") }}</span>
+          <span class="d-inline-flex align-center flex-wrap ga-1 min-w-0">
+            <span>{{ employee.officeLocation?.name ?? t('Не задан') }}</span>
             <v-btn
               v-if="canShowMap"
               v-bind="actionIconButtonProps"
               icon="mdi-map"
               color="medium-emphasis"
+              class="ms-1"
               :title="t('Посмотреть карту')"
               @click.stop="openMap"
             />
@@ -80,12 +85,12 @@
         </profile-summary-item>
 
         <profile-summary-item :label="t('Телеграм')">
-          <span class="d-inline-flex align-center">
-            <hover-action-wrapper
-              :show-action="Boolean(telegramToCopy)"
-              :tooltip="copyTooltip('telegram')"
-              @action="copyToClipboard(telegramToCopy, 'telegram')"
-            >
+          <hover-action-wrapper
+            :show-action="Boolean(telegramToCopy)"
+            :tooltip="copyTooltip('telegram')"
+            @action="copyToClipboard(telegramToCopy, 'telegram')"
+          >
+            <span class="d-inline-flex align-center flex-wrap ga-1 min-w-0">
               <profile-telegram-editor
                 :employee-id="employee.id"
                 :account="employee.telegram"
@@ -93,8 +98,8 @@
                 :read-only="readOnly"
                 @edit="emitEditTelegram"
               />
-            </hover-action-wrapper>
-          </span>
+            </span>
+          </hover-action-wrapper>
         </profile-summary-item>
       </property-list>
     </v-col>
@@ -123,13 +128,13 @@
 import { computed, onBeforeUnmount, ref, toRef } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDisplay } from "vuetify";
-import PropertyList from "@/components/shared/PropertyList.vue";
 import HoverActionWrapper from "@/components/shared/HoverActionWrapper.vue";
+import PropertyList from "@/components/shared/PropertyList.vue";
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
-import ProjectInfoDialog from "@/components/project/ProjectInfoDialog.vue";
 import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialog.vue";
-import { useOfficeMapPreview } from "@/composables/useOfficeMapPreview";
+import ProjectInfoDialog from "@/components/project/ProjectInfoDialog.vue";
 import { useEmployeeProjectActions } from "@/composables/useEmployeeProjectActions";
+import { useOfficeMapPreview } from "@/composables/useOfficeMapPreview";
 import { extractTelegramAccount } from "@/lib/telegram";
 import type { Employee } from "@/services/employee.service";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
@@ -162,16 +167,16 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const display = useDisplay();
-const employee = toRef(props, "employee");
+const employee = toRef(props, 'employee');
 const readOnly = computed(() => props.readOnly);
 const avatarReadOnly = computed(() => props.avatarReadOnly ?? props.readOnly);
 const projectReadOnly = computed(() => props.projectReadOnly ?? props.readOnly);
 const isMobile = computed(() => display.smAndDown.value);
 const showAvatar = computed(() => props.showAvatar);
 const actionIconButtonProps = {
-  variant: "text",
-  density: "compact",
-  size: "x-small",
+  variant: 'text',
+  density: 'compact',
+  size: 'x-small',
 } as const;
 
 const {
@@ -192,7 +197,7 @@ const {
 } = useEmployeeProjectActions(employee, projectReadOnly);
 
 const canShowMap = computed(() => Boolean(mapName.value));
-const copiedField = ref<"email" | "telegram" | null>(null);
+const copiedField = ref<'email' | 'telegram' | null>(null);
 const emailToCopy = computed(() => employee.value.email?.trim() || null);
 const telegramToCopy = computed(
   () => extractTelegramAccount(employee.value.telegram) ?? employee.value.telegram?.trim() ?? null,
@@ -200,24 +205,24 @@ const telegramToCopy = computed(
 let copiedResetTimer: ReturnType<typeof setTimeout> | null = null;
 
 function onAvatarUpdated() {
-  emit("avatar-updated");
+  emit('avatar-updated');
 }
 
 function emitEditTelegram() {
-  emit("edit-telegram");
+  emit('edit-telegram');
 }
 
 function emitProjectUpdated() {
-  emit("update-project");
+  emit('update-project');
 }
 
-function copyTooltip(field: "email" | "telegram") {
+function copyTooltip(field: 'email' | 'telegram') {
   return copiedField.value === field
-    ? t("Скопировано в буфер обмена")
-    : t("Скопировать в буфер обмена");
+    ? t('Скопировано в буфер обмена')
+    : t('Скопировать в буфер обмена');
 }
 
-async function copyToClipboard(value: string | null, field: "email" | "telegram") {
+async function copyToClipboard(value: string | null, field: 'email' | 'telegram') {
   if (!value || !navigator.clipboard?.writeText) {
     return;
   }

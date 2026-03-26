@@ -3,13 +3,12 @@
   Shows current account as link, confirmation chip, and edit button when editing is allowed.
 -->
 <template>
-  <!--<editor-fold desc="Telegram display with edit button">-->
-  <div class="d-inline-flex align-center ga-1">
+  <span class="d-inline-flex align-center flex-wrap ga-1">
     <template v-if="account">
-      <v-icon size="small" color="info" icon="fa:fab fa-telegram" />
+      <v-icon size="x-small" color="info" icon="fa:fab fa-telegram" />
       <a
         :href="accountUrl"
-        class="telegram-editor__link text-info d-inline-flex align-center"
+        class="d-inline-flex align-center text-info text-decoration-none"
         rel="noopener noreferrer"
         target="_blank"
         data-testid="telegram-link"
@@ -27,8 +26,8 @@
       v-if="canEdit"
       v-bind="actionIconButtonProps"
       icon="mdi-pencil"
-      class="ml-1"
       color="medium-emphasis"
+      class="ms-1"
       data-testid="open-telegram-dialog"
       @click="emitEdit"
     />
@@ -38,20 +37,20 @@
       color="success"
       size="x-small"
       variant="tonal"
+      density="comfortable"
       class="ms-1"
       data-testid="telegram-confirmed-chip"
     >
       {{ t("Подтвержден") }}
     </v-chip>
-  </div>
-  <!-- </editor-fold> -->
+  </span>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { useAuthStore } from "@/stores/auth";
 import { extractTelegramAccount } from "@/lib/telegram";
+import { useAuthStore } from "@/stores/auth";
 
 const props = withDefaults(
   defineProps<{
@@ -97,13 +96,3 @@ function emitEdit() {
   emit("edit");
 }
 </script>
-
-<style scoped>
-.telegram-editor__link {
-  text-decoration: none;
-}
-
-.telegram-editor__link:hover {
-  text-decoration: underline;
-}
-</style>
