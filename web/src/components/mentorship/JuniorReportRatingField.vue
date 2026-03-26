@@ -1,6 +1,10 @@
 <template>
-  <div class="junior-report-rating-field">
-    <div class="junior-report-rating-field__label">
+  <property-list-item
+    label=""
+    :truncate-label="false"
+    :truncate-value="false"
+  >
+    <template #label>
       <div class="d-flex align-center ga-1 min-width-0">
         <span class="text-body-1">{{ t(`JUNIOR_REPORT_RATING.${field}.title`) }}</span>
         <v-tooltip location="bottom" max-width="500">
@@ -27,9 +31,9 @@
           <span>{{ t("По сравнению с последним результатом") }}</span>
         </v-tooltip>
       </div>
-    </div>
+    </template>
 
-    <div class="junior-report-rating-field__value">
+    <div class="d-inline-flex align-center">
       <v-rating
         :model-value="modelValue"
         :readonly="readonly"
@@ -41,12 +45,13 @@
         @update:model-value="onUpdate"
       />
     </div>
-  </div>
+  </property-list-item>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import PropertyListItem from "@/components/shared/PropertyListItem.vue";
 import type { AddOrUpdateJuniorReportBody } from "@/services/junior-registry.service";
 
 const props = withDefaults(
@@ -90,27 +95,3 @@ function onUpdate(value: string | number) {
   emit("update:modelValue", Number(value));
 }
 </script>
-
-<style scoped>
-.junior-report-rating-field {
-  display: grid;
-  grid-template-columns: 380px auto;
-  column-gap: 12px;
-  align-items: center;
-}
-
-.junior-report-rating-field__label {
-  min-width: 0;
-}
-
-.junior-report-rating-field__value {
-  justify-self: start;
-}
-
-@media (max-width: 599px) {
-  .junior-report-rating-field {
-    grid-template-columns: 1fr;
-    row-gap: 4px;
-  }
-}
-</style>

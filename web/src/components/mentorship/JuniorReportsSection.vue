@@ -81,7 +81,12 @@
                 </v-col>
 
                 <v-col cols="auto" class="min-width-0">
-                  <div class="d-flex flex-column ga-0">
+                  <property-list
+                    variant="aligned"
+                    label-width="380px"
+                    :label-lines="3"
+                    :value-lines="1"
+                  >
                     <junior-report-rating-field
                       v-for="field in ratingFields"
                       :key="field"
@@ -91,7 +96,7 @@
                       compact
                       readonly
                     />
-                  </div>
+                  </property-list>
                 </v-col>
               </v-row>
             </v-col>
@@ -119,7 +124,13 @@
           :rules="progressRules"
           @update:model-value="updateReportFormField('progress', $event)"
         />
-        <div class="mt-4 d-flex flex-column ga-1">
+        <property-list
+          class="mt-4"
+          variant="aligned"
+          label-width="380px"
+          :label-lines="3"
+          :value-lines="1"
+        >
           <junior-report-rating-field
             v-for="field in ratingFields"
             :key="field"
@@ -129,7 +140,7 @@
             compact
             @update:model-value="updateRatingField(field, $event)"
           />
-        </div>
+        </property-list>
         <markdown-text-editor
           :model-value="reportForm.comment"
           :label="t('Комментарий')"
@@ -168,6 +179,7 @@ import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { formatDateTime } from "@/lib/datetime";
 import JuniorReportRatingField from "@/components/mentorship/JuniorReportRatingField.vue";
+import PropertyList from "@/components/shared/PropertyList.vue";
 import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 import MarkdownTextRenderer from "@/components/shared/MarkdownTextRenderer.vue";
 import MarkdownTextEditor from "@/components/shared/MarkdownTextEditor.vue";

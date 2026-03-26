@@ -16,6 +16,7 @@
         clearable
         :label="label"
         :rules="fieldRules"
+        :density="density"
         @update:model-value="handleTextUpdated"
         @click:clear="clearValue"
       >
@@ -51,10 +52,12 @@ const props = withDefaults(
     modelValue: string;
     label: string;
     rules?: Rule[];
+    density?: "default" | "comfortable" | "compact";
   }>(),
   {
     modelValue: "",
     rules: () => [],
+    density: "comfortable",
   },
 );
 

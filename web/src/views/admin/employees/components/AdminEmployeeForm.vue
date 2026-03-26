@@ -17,7 +17,7 @@
         <v-row class="align-start">
           <v-col cols="12">
             <v-card class="pa-4 elevation-0 bg-transparent">
-              <v-row class="admin-employee-form__grid align-start">
+              <v-row class="ga-2 align-start">
                 <v-col
                   v-if="avatarOwner"
                   cols="12"
@@ -27,9 +27,10 @@
                   <profile-avatar :owner="avatarOwner" :read-only="true" />
                 </v-col>
                 <v-col cols="12" :md="avatarOwner ? true : 12">
-                  <v-row class="admin-employee-form__grid">
+                  <v-row class="ga-2">
                     <v-col cols="12">
                       <v-text-field
+                        density="comfortable"
                         v-model="employeeForm.displayName"
                         :counter="255"
                         :rules="displayNameRules"
@@ -38,6 +39,7 @@
                     </v-col>
                     <v-col cols="12" md="6" lg="4">
                       <v-text-field
+                        density="comfortable"
                         v-model="employeeForm.email"
                         :counter="255"
                         :rules="emailRules"
@@ -47,6 +49,7 @@
                     </v-col>
                     <v-col cols="12" md="6" lg="4">
                       <v-text-field
+                        density="comfortable"
                         v-model="employeeForm.phone"
                         :counter="12"
                         :rules="phoneRules"
@@ -56,6 +59,7 @@
                     </v-col>
                     <v-col cols="12" md="6" lg="4">
                       <v-text-field
+                        density="comfortable"
                         v-model="employeeForm.telegram"
                         :counter="255"
                         :rules="string255Rules"
@@ -69,11 +73,12 @@
           </v-col>
 
           <v-col cols="12" class="col-lg">
-            <v-row class="admin-employee-form__grid">
+            <v-row class="ga-2">
               <v-col cols="12"><v-divider /></v-col>
 
               <v-col cols="12" md="6" lg="3">
                 <v-autocomplete
+                  density="comfortable"
                   v-model="employeeForm.organizationId"
                   :items="organizationsWithCurrent"
                   item-title="name"
@@ -84,6 +89,7 @@
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <v-autocomplete
+                  density="comfortable"
                   v-model="employeeForm.departmentId"
                   :items="departmentsWithCurrent"
                   item-title="name"
@@ -94,6 +100,7 @@
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <v-autocomplete
+                  density="comfortable"
                   v-model="employeeForm.currentProjectId"
                   :items="projectsWithCurrent"
                   item-title="name"
@@ -104,7 +111,8 @@
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <v-text-field
-                  v-model="employeeForm.currentProjectRole"
+                        density="comfortable"
+                        v-model="employeeForm.currentProjectRole"
                   :counter="64"
                   :rules="string64Rules"
                   :label="t('Роль на проекте')"
@@ -115,6 +123,7 @@
 
               <v-col cols="12" md="6" lg="3">
                 <v-autocomplete
+                  density="comfortable"
                   v-model="employeeForm.levelId"
                   :items="levelsWithCurrent"
                   item-title="name"
@@ -125,6 +134,7 @@
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <v-autocomplete
+                  density="comfortable"
                   v-model="employeeForm.positionId"
                   :items="positionsWithCurrent"
                   item-title="name"
@@ -135,6 +145,7 @@
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <v-autocomplete
+                  density="comfortable"
                   v-model="employeeForm.officeLocationId"
                   :items="officeLocationsWithCurrent"
                   item-title="name"
@@ -145,7 +156,8 @@
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <v-text-field
-                  v-model="employeeForm.officeWorkplace"
+                        density="comfortable"
+                        v-model="employeeForm.officeWorkplace"
                   :counter="64"
                   :rules="string64Rules"
                   :label="t('Рабочее место')"
@@ -156,25 +168,29 @@
 
               <v-col cols="12" md="6" lg="3">
                 <MyDateFormComponent
+                  density="comfortable"
                   v-model="employeeForm.dateOfEmployment"
                   :label="t('Дата трудоустройства')"
                 />
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <MyDateFormComponent
+                  density="comfortable"
                   v-model="employeeForm.dateOfDismissal"
                   :label="t('Дата увольнения')"
                 />
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <MyDateFormComponent
+                  density="comfortable"
                   v-model="employeeForm.birthday"
                   :label="t('День рождения')"
                 />
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <v-text-field
-                  v-model="employeeForm.sex"
+                        density="comfortable"
+                        v-model="employeeForm.sex"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Пол')"
@@ -182,7 +198,8 @@
               </v-col>
               <v-col cols="12" md="6" lg="6">
                 <v-text-field
-                  v-model="employeeForm.workType"
+                        density="comfortable"
+                        v-model="employeeForm.workType"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Место работы')"
@@ -190,7 +207,8 @@
               </v-col>
               <v-col cols="12" md="6" lg="6">
                 <v-text-field
-                  v-model="employeeForm.workDay"
+                        density="comfortable"
+                        v-model="employeeForm.workDay"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Рабочий день (Полный/Неполный)')"
@@ -201,7 +219,8 @@
 
               <v-col cols="12" md="6" lg="3">
                 <v-text-field
-                  v-model="employeeForm.documentSeries"
+                        density="comfortable"
+                        v-model="employeeForm.documentSeries"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Серия документа')"
@@ -209,7 +228,8 @@
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <v-text-field
-                  v-model="employeeForm.documentNumber"
+                        density="comfortable"
+                        v-model="employeeForm.documentNumber"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Номер документа')"
@@ -217,13 +237,15 @@
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <MyDateFormComponent
+                  density="comfortable"
                   v-model="employeeForm.documentIssuedDate"
                   :label="t('Документ выдан (когда)')"
                 />
               </v-col>
               <v-col cols="12" md="6" lg="3">
                 <v-text-field
-                  v-model="employeeForm.documentIssuedBy"
+                        density="comfortable"
+                        v-model="employeeForm.documentIssuedBy"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Документ выдан (кем)')"
@@ -234,7 +256,8 @@
 
               <v-col cols="12" lg="6">
                 <v-text-field
-                  v-model="employeeForm.registrationAddress"
+                        density="comfortable"
+                        v-model="employeeForm.registrationAddress"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Адрес по регистрации')"
@@ -242,7 +265,8 @@
               </v-col>
               <v-col cols="12" md="6" lg="2">
                 <v-text-field
-                  v-model="employeeForm.cityOfResidence"
+                        density="comfortable"
+                        v-model="employeeForm.cityOfResidence"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Город проживания')"
@@ -250,7 +274,8 @@
               </v-col>
               <v-col cols="12" md="6" lg="2">
                 <v-text-field
-                  v-model="employeeForm.foreignPassport"
+                        density="comfortable"
+                        v-model="employeeForm.foreignPassport"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Загранпаспорт')"
@@ -258,7 +283,8 @@
               </v-col>
               <v-col cols="12" md="6" lg="2">
                 <v-text-field
-                  v-model="employeeForm.englishLevel"
+                        density="comfortable"
+                        v-model="employeeForm.englishLevel"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Уровень английского')"
@@ -269,7 +295,8 @@
 
               <v-col cols="12" md="6" lg="2">
                 <v-text-field
-                  v-model="employeeForm.familyStatus"
+                        density="comfortable"
+                        v-model="employeeForm.familyStatus"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('Семейный статус')"
@@ -277,7 +304,8 @@
               </v-col>
               <v-col cols="12" md="6" lg="4">
                 <v-text-field
-                  v-model="employeeForm.spouseName"
+                        density="comfortable"
+                        v-model="employeeForm.spouseName"
                   :counter="255"
                   :rules="string255Rules"
                   :label="t('ФИО супруга/супруги')"
@@ -285,7 +313,8 @@
               </v-col>
               <v-col cols="12" lg="6">
                 <v-text-field
-                  v-model="employeeForm.children"
+                        density="comfortable"
+                        v-model="employeeForm.children"
                   disabled
                   :counter="1024"
                   :rules="string1024Rules"
@@ -307,7 +336,7 @@
         </v-alert>
       </v-card-text>
 
-      <v-card-actions>
+      <v-card-actions class="border-t">
         <v-spacer />
         <v-btn variant="text" @click="closeDialog">{{ t("Закрыть") }}</v-btn>
         <v-btn color="primary" :loading="saving" @click="submit">
@@ -617,11 +646,4 @@ function closeDialog() {
   row-gap: 6px;
 }
 
-.admin-employee-form :deep(.v-field) {
-  --v-input-control-height: 42px;
-}
-
-.admin-employee-form :deep(.v-card-actions) {
-  border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-}
 </style>

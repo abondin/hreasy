@@ -1,10 +1,13 @@
 <template>
   <v-card :loading="loading">
-    <v-card-title class="d-flex align-start justify-space-between ga-4">
-      <div>
+    <v-card-title class="d-flex align-start justify-space-between flex-wrap ga-3">
+      <div class="min-w-0 flex-grow-1">
         <div class="text-h6">{{ junior.juniorEmpl.name }}</div>
       </div>
-      <div v-if="canEditRegistry" class="d-flex align-center ga-1">
+      <div
+        v-if="canEditRegistry"
+        class="d-flex align-center ga-1 ms-auto"
+      >
         <v-btn
           icon="mdi-pencil"
           variant="text"
@@ -27,7 +30,7 @@
     </v-card-title>
 
     <v-card-text class="pt-0">
-      <v-row>
+      <v-row class="ga-2">
         <v-col cols="12" lg="8">
           <profile-summary
             v-if="employee"
@@ -43,7 +46,7 @@
           </div>
         </v-col>
 
-        <v-col cols="12" lg="4" class="pt-0 pt-lg-3">
+        <v-col cols="12" lg="4" class="pt-4 pt-lg-3">
           <property-list variant="aligned" density="compact">
             <profile-summary-item
               v-for="item in detailItems"

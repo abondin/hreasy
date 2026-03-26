@@ -6,10 +6,15 @@
   <div :class="['property-list-item', `property-list-item--${variant}`]">
     <div
       ref="labelRef"
-      class="property-list-item__label"
-      :style="{ '-webkit-line-clamp': String(resolvedLabelLines) }"
+      :class="[
+        'property-list-item__label',
+        { 'property-list-item__label--truncate': props.truncateLabel && !hasCustomLabelSlot },
+      ]"
+      :style="props.truncateLabel && !hasCustomLabelSlot ? { '-webkit-line-clamp': String(resolvedLabelLines) } : undefined"
     >
-      {{ label }}:
+      <slot name="label">
+        {{ label }}:
+      </slot>
       <v-tooltip
         v-if="showLabelTooltip"
         activator="parent"
@@ -21,8 +26,11 @@
     </div>
     <div
       ref="valueRef"
-      class="property-list-item__value"
-      :style="{ '-webkit-line-clamp': String(resolvedValueLines) }"
+      :class="[
+        'property-list-item__value',
+        { 'property-list-item__value--truncate': props.truncateValue },
+      ]"
+      :style="props.truncateValue ? { '-webkit-line-clamp': String(resolvedValueLines) } : undefined"
     >
       <slot />
       <v-tooltip
@@ -38,11 +46,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, type ComputedRef } from "vue";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useSlots, type ComputedRef } from "vue";
 
-defineProps<{
+const props = withDefaults(defineProps<{
   label: string;
-}>();
+  truncateLabel?: boolean;
+  truncateValue?: boolean;
+}>(), {
+  truncateLabel: true,
+  truncateValue: true,
+});
 
 const variant = inject<"inline" | "aligned">("property-list-variant", "inline");
 const labelLines = inject<ComputedRef<number>>("property-list-label-lines", computed(() => 2));
@@ -56,6 +69,7 @@ const valueTooltipText = ref("");
 
 const resolvedLabelLines = computed(() => labelLines.value);
 const resolvedValueLines = computed(() => valueLines.value);
+const hasCustomLabelSlot = computed(() => Boolean(useSlots().label));
 
 function hasOverflow(element: HTMLElement | null): boolean {
   if (!element) {
@@ -66,9 +80,9 @@ function hasOverflow(element: HTMLElement | null): boolean {
 }
 
 function updateOverflowState(): void {
-  showLabelTooltip.value = hasOverflow(labelRef.value);
+  showLabelTooltip.value = props.truncateLabel && !hasCustomLabelSlot.value && hasOverflow(labelRef.value);
   valueTooltipText.value = valueRef.value?.textContent?.trim() ?? "";
-  showValueTooltip.value = Boolean(valueTooltipText.value) && hasOverflow(valueRef.value);
+  showValueTooltip.value = props.truncateValue && Boolean(valueTooltipText.value) && hasOverflow(valueRef.value);
 }
 
 function scheduleOverflowStateUpdate(): void {
@@ -114,6 +128,9 @@ onBeforeUnmount(() => {
   font-weight: 600;
   line-height: 1.35;
   min-width: 0;
+}
+
+.property-list-item__label--truncate {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -124,6 +141,9 @@ onBeforeUnmount(() => {
   color: rgba(0, 0, 0, 0.86);
   line-height: 1.35;
   min-width: 0;
+}
+
+.property-list-item__value--truncate {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;

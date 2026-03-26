@@ -128,24 +128,31 @@
             @click:row="onVacationRowClick"
           >
             <template v-slot:[`item.employeeDisplayName`]="{ item }">
-              <div class="vacation-employee-cell">
-                <span class="vacation-employee-cell__copy-slot">
-                  <v-tooltip location="bottom">
-                    <template #activator="{ props }">
-                      <v-btn
-                        v-bind="props"
-                        icon="mdi-content-copy"
-                        size="x-small"
-                        variant="text"
-                        class="vacation-employee-cell__copy"
-                        @click.stop="copyToClipboard(item)"
-                      />
-                    </template>
-                    <span>{{ t("Скопировать в буфер обмена") }}</span>
-                  </v-tooltip>
-                </span>
-                <span>{{ item.employeeDisplayName }}</span>
-              </div>
+              <v-hover v-slot="{ isHovering, props: hoverProps }">
+                <div
+                  v-bind="hoverProps"
+                  class="d-inline-flex align-center ga-1"
+                >
+                  <span>{{ item.employeeDisplayName }}</span>
+                  <v-fade-transition>
+                    <v-tooltip
+                      v-if="isHovering || smAndDown"
+                      location="bottom"
+                    >
+                      <template #activator="{ props }">
+                        <v-btn
+                          v-bind="props"
+                          icon="mdi-content-copy"
+                          size="x-small"
+                          variant="text"
+                          @click.stop="copyToClipboard(item)"
+                        />
+                      </template>
+                      <span>{{ t("Скопировать в буфер обмена") }}</span>
+                    </v-tooltip>
+                  </v-fade-transition>
+                </div>
+              </v-hover>
             </template>
             <template v-slot:[`item.startDate`]="{ item }">
               {{ formatDate(item.startDate) }}
@@ -231,6 +238,7 @@
 
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
+import { useDisplay } from "vuetify";
 import { useI18n } from "vue-i18n";
 import MyDateRangeComponent from "@/components/shared/MyDateRangeComponent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
@@ -244,6 +252,7 @@ import { type Vacation } from "@/services/vacation.service";
 import { useVacationsManagement } from "@/composables/useVacationsManagement";
 
 const { t } = useI18n();
+const { smAndDown } = useDisplay();
 const {
   canViewVacations,
   canEditVacations,
@@ -319,30 +328,3 @@ function extractRow<T>(payload: unknown): T | null {
 }
 </script>
 
-<style scoped>
-.vacation-employee-cell {
-  display: inline-flex;
-  align-items: center;
-}
-
-.vacation-employee-cell__copy-slot {
-  display: inline-flex;
-  width: 20px;
-  margin-right: 4px;
-}
-
-.vacation-employee-cell__copy {
-  visibility: hidden;
-}
-
-.vacations-list-table :deep(tbody tr:hover) .vacation-employee-cell__copy,
-.vacations-list-table :deep(tbody tr:focus-within) .vacation-employee-cell__copy {
-  visibility: visible;
-}
-
-@media (hover: none) {
-  .vacation-employee-cell__copy {
-    visibility: visible;
-  }
-}
-</style>

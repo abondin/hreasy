@@ -68,22 +68,31 @@
           {{ t(`VACATION_STATUS_ENUM.${item.status}`) }}
         </template>
         <template v-slot:[`item.notes`]="{ item }">
-          <div class="d-flex justify-space-between align-center">
-            <span>{{ item.notes || "" }}</span>
-            <v-tooltip location="bottom">
-              <template #activator="{ props }">
-                <v-btn
-                  v-if="vacationCanBeRejected(item)"
-                  v-bind="props"
-                  icon="mdi-delete"
-                  variant="text"
-                  class="vacations-table__delete"
-                  @click="openRejectDialog(item.id)"
-                />
-              </template>
-              <span>{{ t("Отозвать") }}</span>
-            </v-tooltip>
-          </div>
+          <v-hover v-slot="{ isHovering, props: hoverProps }">
+            <div
+              v-bind="hoverProps"
+              class="d-flex justify-space-between align-center ga-2"
+            >
+              <span>{{ item.notes || "" }}</span>
+              <v-fade-transition>
+                <v-tooltip
+                  v-if="vacationCanBeRejected(item) && (isHovering || smAndDown)"
+                  location="bottom"
+                >
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      icon="mdi-delete"
+                      variant="text"
+                      size="x-small"
+                      @click.stop="openRejectDialog(item.id)"
+                    />
+                  </template>
+                  <span>{{ t("Отозвать") }}</span>
+                </v-tooltip>
+              </v-fade-transition>
+            </div>
+          </v-hover>
         </template>
       </HREasyTableBase>
     </v-card-text>
@@ -138,6 +147,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { useDisplay } from "vuetify";
 import { useI18n } from "vue-i18n";
 import RequestVacationsFormFields from "@/components/vacations/RequestVacationsFormFields.vue";
 import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
@@ -156,6 +166,7 @@ import { errorUtils } from "@/lib/errors";
 import { useVacationsDictionaries } from "@/components/vacations/useVacationsDictionaries";
 
 const { t } = useI18n();
+const { smAndDown } = useDisplay();
 
 const headers = computed(() => [
   { title: t("Год"), key: "year" },
@@ -255,13 +266,3 @@ async function submitRequest() {
   }
 }
 </script>
-
-<style scoped>
-.vacations-table .vacations-table__delete {
-  visibility: hidden;
-}
-
-.vacations-table :deep(tbody tr:hover) .vacations-table__delete {
-  visibility: visible;
-}
-</style>

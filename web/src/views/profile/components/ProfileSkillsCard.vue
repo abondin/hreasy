@@ -25,6 +25,7 @@
               icon="mdi-plus"
               color="primary"
               variant="tonal"
+              :size="isDense ? 'small' : 'default'"
               @click="emitAdd"
             />
           </template>
@@ -136,6 +137,7 @@
                 icon="mdi-plus"
                 color="primary"
                 variant="tonal"
+                :size="isDense ? 'small' : 'default'"
                 @click="emitAdd"
               />
             </template>
