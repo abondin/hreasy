@@ -17,6 +17,7 @@
         prepend-inner-icon="mdi-calendar"
         readonly
         clearable
+        :variant="props.variant"
         density="compact"
         :disabled="props.disabled"
         v-bind="activatorProps"
@@ -103,11 +104,13 @@ const props = withDefaults(
     label: string;
     allowedShortCut?: AllowedShortCut[];
     disabled?: boolean;
+    variant?: "outlined" | "filled" | "underlined" | "plain" | "solo" | "solo-inverted" | "solo-filled";
   }>(),
   {
     modelValue: () => [],
     allowedShortCut: () => ["year", "month", "todayPlus5Days"],
     disabled: false,
+    variant: "filled",
   },
 );
 

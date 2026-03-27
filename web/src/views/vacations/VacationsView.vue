@@ -19,96 +19,110 @@
         <v-tab data-testid="vacations-tab-timeline">{{ t("График отпусков") }}</v-tab>
       </v-tabs>
 
-      <v-container class="pt-4">
-        <v-row align="center">
-          <v-col cols="auto" class="pb-0">
+      <v-card-title class="pb-0 vacations-filters">
+        <v-row class="vacations-filters__row align-center">
+          <v-col cols="12" md="auto" class="vacations-filters__actions vacations-filters__actions--leading">
             <table-toolbar-actions
               :disabled="loading"
               show-refresh
-              :show-add="canEditVacations"
               :show-export="canExportVacations"
               :refresh-label="t('Обновить данные')"
-              :add-label="t('Добавить отпуск')"
               :export-label="t('Экспорт в Excel')"
               @refresh="fetchData(false)"
-              @add="openVacationDialog(null)"
               @export="exportToExcel"
             />
           </v-col>
 
-          <v-col cols="12" sm="2" class="pb-0">
+          <v-col cols="12" md="2">
             <v-select
               v-model="selectedYear"
               data-testid="vacations-filter-year"
-              density="compact"
               :items="allYears"
               :disabled="loading"
               :label="t('Год')"
+              variant="outlined"
+              density="compact"
             />
           </v-col>
 
-          <v-col cols="12" sm="4" class="pb-0">
+          <v-col cols="12" md="3">
             <my-date-range-component
               v-model="filter.selectedDates"
               :disabled="loading"
               :label="t('Дата начала отпуска')"
+              variant="outlined"
             />
           </v-col>
 
-          <v-col cols="12" sm="3" class="pb-0">
+          <v-col cols="12" md="3">
             <v-select
               v-model="filter.selectedStatuses"
-              density="compact"
-              clearable
-              multiple
-              :disabled="loading"
               :items="allStatuses"
               item-title="title"
               item-value="value"
               :label="t('Статус')"
-            />
-          </v-col>
-
-          <v-responsive width="100%" />
-
-          <v-col cols="12" sm="4" class="pb-0 pt-0">
-            <v-text-field
-              v-model="filter.search"
-              data-testid="vacations-filter-search"
-              density="compact"
-              clearable
-              :disabled="loading"
-              :label="t('Поиск')"
-            />
-          </v-col>
-
-          <v-col cols="12" sm="4" class="pb-0 pt-0">
-            <v-autocomplete
-              v-model="filter.selectedProjects"
+              variant="outlined"
               density="compact"
               clearable
               multiple
+              chips
               :disabled="loading"
+            />
+          </v-col>
+
+          <v-col cols="12" md="auto" class="vacations-filters__actions vacations-filters__actions--trailing">
+            <table-toolbar-actions
+              :disabled="loading"
+              :show-add="canEditVacations"
+              :add-label="t('Добавить отпуск')"
+              @add="openVacationDialog(null)"
+            />
+          </v-col>
+
+          <v-col cols="12" md="4">
+            <v-text-field
+              v-model="filter.search"
+              data-testid="vacations-filter-search"
+              :label="t('Поиск')"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="compact"
+              clearable
+              :disabled="loading"
+            />
+          </v-col>
+
+          <v-col cols="12" md="4">
+            <v-autocomplete
+              v-model="filter.selectedProjects"
               :items="projectOptions"
               item-title="name"
               item-value="id"
               :label="t('Текущий проект')"
-            />
-          </v-col>
-
-          <v-col cols="12" sm="4" class="pb-0 pt-0">
-            <v-autocomplete
-              v-model="filter.selectedProjectRoles"
+              variant="outlined"
               density="compact"
               clearable
               multiple
+              chips
               :disabled="loading"
+            />
+          </v-col>
+
+          <v-col cols="12" md="4">
+            <v-autocomplete
+              v-model="filter.selectedProjectRoles"
               :items="projectRoles"
               :label="t('Роль на проекте')"
+              variant="outlined"
+              density="compact"
+              clearable
+              multiple
+              chips
+              :disabled="loading"
             />
           </v-col>
         </v-row>
-      </v-container>
+      </v-card-title>
 
       <v-window v-model="selectedTab">
         <v-window-item>
@@ -327,4 +341,24 @@ function extractRow<T>(payload: unknown): T | null {
   return extractDataTableRow<T>(payload);
 }
 </script>
+
+<style scoped>
+.vacations-filters__row {
+  row-gap: 0;
+}
+
+.vacations-filters :deep(.v-col) {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.vacations-filters__actions {
+  display: flex;
+  align-items: flex-start;
+}
+
+.vacations-filters__actions--trailing {
+  justify-content: flex-end;
+}
+</style>
 

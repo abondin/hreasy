@@ -7,6 +7,8 @@
           data-testid="toolbar-refresh"
           icon="mdi-refresh"
           variant="text"
+          size="small"
+          density="comfortable"
           :disabled="disabled"
           @click="$emit('refresh')"
         />
@@ -22,6 +24,8 @@
           icon="mdi-plus"
           color="primary"
           variant="text"
+          size="small"
+          density="comfortable"
           :disabled="disabled"
           @click="$emit('add')"
         />
@@ -36,6 +40,8 @@
           data-testid="toolbar-export"
           icon="mdi-file-excel"
           variant="text"
+          size="small"
+          density="comfortable"
           :disabled="disabled"
           @click="$emit('export')"
         />
