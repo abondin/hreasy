@@ -10,35 +10,25 @@
       {{ t("Недостаточно прав") }}
     </v-alert>
 
-    <v-card v-else data-testid="assessments-card">
+        <v-card v-else data-testid="assessments-card">
       <v-snackbar v-model="exportCompleted" timeout="5000">
         {{ t("Экспорт успешно завершён. Файл скачен.") }}
       </v-snackbar>
-      <v-card-title>
-        <v-row align="center" class="w-100">
-          <v-col cols="12" md="8" class="d-flex align-center ga-2">
+      <v-card-text class="pt-4 pb-2">
+        <AdaptiveFilterBar
+          :items="filterBarItems"
+          :has-right-actions="canExport"
+        >
+          <template #left-actions>
             <table-toolbar-actions
               :disabled="loading"
               show-refresh
               :refresh-label="t('Обновить данные')"
               @refresh="load"
             />
-          </v-col>
-          <v-col cols="12" md="4" class="d-flex justify-end ga-2">
-            <table-toolbar-actions
-              v-if="canExport"
-              :disabled="loading"
-              show-export
-              :export-label="t('Экспорт в Excel')"
-              @export="runExport"
-            />
-          </v-col>
-        </v-row>
-      </v-card-title>
+          </template>
 
-      <v-card-text class="pt-0">
-        <v-row class="mb-2" align="center">
-          <v-col cols="12" md="4" class="pb-0">
+          <template #filter-search>
             <v-text-field
               v-model="filter.search"
               :label="t('Поиск')"
@@ -49,8 +39,9 @@
               hide-details
               data-testid="assessments-filter-search"
             />
-          </v-col>
-          <v-col cols="12" md="4" class="pb-0">
+          </template>
+
+          <template #filter-ba>
             <v-autocomplete
               v-model="filter.selectedBas"
               :items="businessAccounts.filter((item) => item.active !== false)"
@@ -58,15 +49,23 @@
               item-value="id"
               :label="t('Бизнес аккаунт')"
               multiple
-              chips
               clearable
               variant="outlined"
               density="compact"
               hide-details
               data-testid="assessments-filter-ba"
-            />
-          </v-col>
-          <v-col cols="12" md="4" class="pb-0">
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedBas.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
+          <template #filter-project>
             <v-autocomplete
               v-model="filter.selectedProjects"
               :items="projects.filter((item) => item.active !== false)"
@@ -74,15 +73,33 @@
               item-value="id"
               :label="t('Текущий проект')"
               multiple
-              chips
               clearable
               variant="outlined"
               density="compact"
               hide-details
               data-testid="assessments-filter-project"
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedProjects.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
+          <template #right-actions>
+            <table-toolbar-actions
+              v-if="canExport"
+              :disabled="loading"
+              show-export
+              :export-label="t('Экспорт в Excel')"
+              @export="runExport"
             />
-          </v-col>
-        </v-row>
+          </template>
+        </AdaptiveFilterBar>
+
 
         <v-alert
           v-if="error"
@@ -145,6 +162,8 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { formatDate } from "@/lib/datetime";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
@@ -187,6 +206,22 @@ const headers = computed(() => [
   { title: t("Последний ассессмент завершен"), key: "lastAssessmentCompletedDate", width: "180px" },
   { title: t("Дней без ассессмента"), key: "daysWithoutAssessment", width: "140px" },
 ]);
+
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
+  { id: "ba", minWidth: 320, active: filter.selectedBas.length > 0 },
+  { id: "project", minWidth: 320, active: filter.selectedProjects.length > 0 },
+]);
+
+function getFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && "name" in item && typeof item.name === "string") {
+    return item.name;
+  }
+  return "";
+}
 
 const filteredItems = computed(() => {
   const search = filter.search.toLowerCase().trim();

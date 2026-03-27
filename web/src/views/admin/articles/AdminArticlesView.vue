@@ -16,38 +16,30 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-title class="d-flex ga-2 align-center flex-wrap">
-            <v-btn
-              icon="mdi-refresh"
-              variant="text"
-              :loading="loading"
-              data-testid="admin-articles-refresh"
-              @click="load"
-            />
-            <v-btn
-              icon="mdi-plus"
-              color="primary"
-              variant="text"
-              :disabled="loading"
-              data-testid="admin-articles-add"
-              @click="openCreate"
-            />
-          </v-card-title>
+          <v-card-text class="pt-4 pb-2">
+            <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="true">
+              <template #left-actions>
+                <table-toolbar-actions
+                  :disabled="loading"
+                  show-refresh
+                  :refresh-label="t('Обновить данные')"
+                  @refresh="load"
+                />
+              </template>
 
-          <v-card-text class="pb-0">
-            <v-row density="comfortable">
-              <v-col cols="12" lg="4">
+              <template #filter-search>
                 <v-text-field
                   v-model="filter.search"
                   :label="t('Поиск')"
-                  append-inner-icon="mdi-magnify"
+                  prepend-inner-icon="mdi-magnify"
                   variant="outlined"
                   density="compact"
                   hide-details
                   clearable
                 />
-              </v-col>
-              <v-col cols="12" lg="3">
+              </template>
+
+              <template #filter-group>
                 <v-select
                   v-model="filter.articleGroup"
                   :items="groupOptions"
@@ -57,12 +49,20 @@
                   variant="outlined"
                   density="compact"
                   multiple
-                  chips
                   clearable
                   hide-details
-                />
-              </v-col>
-              <v-col cols="12" lg="2">
+                >
+                  <template #selection="{ item, index }">
+                    <CollapsedSelectionContent
+                      :index="index"
+                      :total="filter.articleGroup.length"
+                      :label="getFilterSelectionLabel(item)"
+                    />
+                  </template>
+                </v-select>
+              </template>
+
+              <template #filter-moderated>
                 <v-select
                   v-model="filter.onlyModerated"
                   :items="booleanOptions"
@@ -74,8 +74,9 @@
                   clearable
                   hide-details
                 />
-              </v-col>
-              <v-col cols="12" lg="3">
+              </template>
+
+              <template #filter-archived>
                 <v-select
                   v-model="filter.showArchived"
                   :items="booleanOptions"
@@ -87,8 +88,17 @@
                   clearable
                   hide-details
                 />
-              </v-col>
-            </v-row>
+              </template>
+
+              <template #right-actions>
+                <table-toolbar-actions
+                  :disabled="loading"
+                  show-add
+                  :add-label="t('Добавить')"
+                  @add="openCreate"
+                />
+              </template>
+            </AdaptiveFilterBar>
           </v-card-text>
         </template>
 
@@ -126,7 +136,10 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { formatDateTime } from "@/lib/datetime";
 import { errorUtils } from "@/lib/errors";
@@ -151,6 +164,23 @@ const filter = reactive({
   onlyModerated: null as boolean | null,
   showArchived: null as boolean | null,
 });
+
+function getFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && "title" in item && typeof item.title === "string") {
+    return item.title;
+  }
+  return "";
+}
+
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
+  { id: "group", minWidth: 280, active: filter.articleGroup.length > 0 },
+  { id: "moderated", minWidth: 220, active: filter.onlyModerated !== null },
+  { id: "archived", minWidth: 220, active: filter.showArchived !== null },
+]);
 
 const booleanOptions = computed(() => [
   { title: t("Нет"), value: false },

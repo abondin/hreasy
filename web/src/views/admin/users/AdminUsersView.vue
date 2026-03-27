@@ -16,30 +16,29 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-title class="d-flex ga-2 align-center flex-wrap">
-            <v-btn
-              icon="mdi-refresh"
-              variant="text"
-              :loading="loading"
-              data-testid="admin-users-refresh"
-              @click="load"
-            />
-          </v-card-title>
+          <v-card-text class="pt-4 pb-2">
+            <AdaptiveFilterBar :items="filterBarItems" :has-left-actions="true" :has-right-actions="false">
+              <template #left-actions>
+                <table-toolbar-actions
+                  :disabled="loading"
+                  show-refresh
+                  :refresh-label="t('Обновить данные')"
+                  @refresh="load"
+                />
+              </template>
 
-          <v-card-text class="pb-0">
-            <v-row density="comfortable">
-              <v-col cols="12" lg="4">
+              <template #filter-search>
                 <v-text-field
                   v-model="search"
                   :label="t('Поиск')"
-                  append-inner-icon="mdi-magnify"
+                  prepend-inner-icon="mdi-magnify"
                   variant="outlined"
                   density="compact"
                   hide-details
                   clearable
                 />
-              </v-col>
-            </v-row>
+              </template>
+            </AdaptiveFilterBar>
           </v-card-text>
         </template>
 
@@ -124,7 +123,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
 import type { DictItem } from "@/services/dict.service";
@@ -162,6 +163,10 @@ const headers = computed(() => [
   { title: t("Доступные отделы"), key: "accessibleDepartments", width: "320px" },
   { title: t("Доступные бизнес аккаунты"), key: "accessibleBas", width: "320px" },
   { title: t("Доступные проекты"), key: "accessibleProjects", width: "320px" },
+]);
+
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: search.value.trim().length > 0, grow: true },
 ]);
 
 const filteredItems = computed(() => {

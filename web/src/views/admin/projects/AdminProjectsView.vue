@@ -17,37 +17,21 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-title class="d-flex ga-2 align-center flex-wrap">
-            <v-btn
-              icon="mdi-refresh"
-              variant="text"
-              :loading="loading"
-              data-testid="admin-projects-refresh"
-              @click="load"
-            />
-
-            <v-tooltip location="bottom">
-              <template #activator="{ props: tooltipProps }">
-                <v-btn
-                  v-bind="tooltipProps"
-                  icon="mdi-plus"
-                  color="primary"
-                  variant="text"
+          <v-card-text class="pt-4 pb-2">
+            <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="true">
+              <template #left-actions>
+                <table-toolbar-actions
                   :disabled="loading"
-                  data-testid="admin-projects-add"
-                  @click="openCreate"
+                  show-refresh
+                  :refresh-label="t('Обновить данные')"
+                  @refresh="load"
                 />
               </template>
-              <span>{{ t("Создать новый проект") }}</span>
-            </v-tooltip>
-          </v-card-title>
 
-          <v-card-text class="pb-0">
-            <v-row density="comfortable">
-              <v-col cols="12" lg="3">
+              <template #filter-search>
                 <v-text-field
                   v-model="search"
-                  append-inner-icon="mdi-magnify"
+                  prepend-inner-icon="mdi-magnify"
                   :label="t('Поиск')"
                   variant="outlined"
                   density="compact"
@@ -55,8 +39,8 @@
                   clearable
                   data-testid="admin-projects-search"
                 />
-              </v-col>
-              <v-col cols="12" lg="3">
+              </template>
+              <template #filter-ba>
                 <v-autocomplete
                   v-model="selectedBas"
                   :items="businessAccounts"
@@ -66,13 +50,20 @@
                   variant="outlined"
                   density="compact"
                   multiple
-                  chips
                   clearable
                   hide-details
                   data-testid="admin-projects-filter-ba"
-                />
-              </v-col>
-              <v-col cols="12" lg="3">
+                >
+                  <template #selection="{ item, index }">
+                    <CollapsedSelectionContent
+                      :index="index"
+                      :total="selectedBas.length"
+                      :label="getFilterSelectionLabel(item)"
+                    />
+                  </template>
+                </v-autocomplete>
+              </template>
+              <template #filter-departments>
                 <v-autocomplete
                   v-model="selectedDepartments"
                   :items="departments"
@@ -82,22 +73,37 @@
                   variant="outlined"
                   density="compact"
                   multiple
-                  chips
                   clearable
                   hide-details
                   data-testid="admin-projects-filter-departments"
-                />
-              </v-col>
-              <v-col cols="12" lg="3" class="d-flex align-center">
+                >
+                  <template #selection="{ item, index }">
+                    <CollapsedSelectionContent
+                      :index="index"
+                      :total="selectedDepartments.length"
+                      :label="getFilterSelectionLabel(item)"
+                    />
+                  </template>
+                </v-autocomplete>
+              </template>
+              <template #filter-show-closed>
                 <v-checkbox
                   v-model="showClosed"
-                  :label="t('Показать закрытые проекты')"
+                  :label="t('Закрытые')"
                   density="compact"
                   hide-details
                   data-testid="admin-projects-show-closed"
                 />
-              </v-col>
-            </v-row>
+              </template>
+              <template #right-actions>
+                <table-toolbar-actions
+                  :disabled="loading"
+                  show-add
+                  :add-label="t('Добавить')"
+                  @add="openCreate"
+                />
+              </template>
+            </AdaptiveFilterBar>
           </v-card-text>
         </template>
 
@@ -152,7 +158,10 @@
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
 import { errorUtils } from "@/lib/errors";
@@ -187,6 +196,23 @@ const headers = computed(() => [
   { title: t("Окончание (факт)"), key: "endDate", width: "170px" },
   { title: t("Отдел"), key: "department.name", width: "220px" },
 ]);
+
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: search.value.trim().length > 0, grow: true },
+  { id: "ba", minWidth: 320, active: selectedBas.value.length > 0 },
+  { id: "departments", minWidth: 320, active: selectedDepartments.value.length > 0 },
+  { id: "show-closed", minWidth: 240, active: showClosed.value },
+]);
+
+function getFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && "name" in item && typeof item.name === "string") {
+    return item.name;
+  }
+  return "";
+}
 
 const filteredItems = computed(() => {
   const query = search.value.trim().toLowerCase();

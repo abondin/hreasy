@@ -7,15 +7,13 @@
           :label="selectedPeriodLabel"
           :is-current="isCurrentPeriod"
           :disabled="loading"
+          variant="solo"
+          :status-icon="isPeriodClosed ? 'mdi-lock' : undefined"
+          status-icon-color="primary"
+          :status-icon-title="isPeriodClosed ? t('Период закрыт для внесения изменений') : undefined"
           @prev="decrementPeriod"
           @next="incrementPeriod"
           @go-current="goToCurrentPeriod"
-        />
-        <v-icon
-          v-if="isPeriodClosed"
-          color="primary"
-          icon="mdi-lock"
-          :title="t('Период закрыт для внесения изменений')"
         />
       </template>
       <v-spacer />

@@ -17,46 +17,46 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-title class="d-flex align-center ga-2 flex-wrap">
-            <span>{{ t("Карты офисов и кабинетов") }}</span>
-            <v-spacer />
-            <v-btn
-              data-testid="toolbar-refresh"
-              icon="mdi-refresh"
-              variant="text"
-              :disabled="loading"
-              @click="load"
-            />
-            <v-tooltip location="bottom">
-              <template #activator="{ props: tooltipProps }">
-                <v-btn
-                  v-bind="tooltipProps"
-                  icon="mdi-upload"
-                  data-testid="toolbar-add"
-                  color="primary"
-                  variant="text"
+          <v-card-text class="pt-4 pb-2">
+            <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="true">
+              <template #left-actions>
+                <table-toolbar-actions
                   :disabled="loading"
-                  @click="uploadDialog = true"
+                  show-refresh
+                  :refresh-label="t('Обновить данные')"
+                  @refresh="load"
                 />
               </template>
-              <span>{{ t("Загрузить карту") }}</span>
-            </v-tooltip>
-          </v-card-title>
 
-          <v-card-text class="pb-0">
-            <v-row density="comfortable">
-              <v-col cols="12" md="6" lg="4">
+              <template #filter-search>
                 <v-text-field
                   v-model="search"
                   :label="t('Поиск')"
-                  append-inner-icon="mdi-magnify"
+                  prepend-inner-icon="mdi-magnify"
                   variant="outlined"
                   density="compact"
                   hide-details
                   clearable
                 />
-              </v-col>
-            </v-row>
+              </template>
+
+              <template #right-actions>
+                <v-tooltip location="bottom">
+                  <template #activator="{ props: tooltipProps }">
+                    <v-btn
+                      v-bind="tooltipProps"
+                      icon="mdi-upload"
+                      data-testid="toolbar-add"
+                      color="primary"
+                      variant="text"
+                      :disabled="loading"
+                      @click="uploadDialog = true"
+                    />
+                  </template>
+                  <span>{{ t('Загрузить карту') }}</span>
+                </v-tooltip>
+              </template>
+            </AdaptiveFilterBar>
           </v-card-text>
         </template>
 
@@ -126,7 +126,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
 import FileUploadZone, { type UploadCompleteEvent } from "@/components/FileUploadZone.vue";
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
@@ -154,6 +156,9 @@ const previewOpen = ref(false);
 const previewMapName = ref<string | null>(null);
 
 const uploadPath = getAdminOfficeMapUploadPath();
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: search.value.trim().length > 0, grow: true },
+]);
 const headers = computed(() => [
   { title: t("Файл"), key: "mapName", width: "420px" },
 ]);

@@ -20,92 +20,44 @@
       {{ error }}
     </v-alert>
 
-    <v-card v-else data-testid="salary-requests-card">
-      <v-card-title>
-        <v-row align="center" class="w-100">
-          <v-col cols="12" md="8" class="d-flex align-center ga-2">
-            <table-toolbar-actions
-              :disabled="loading"
-              show-refresh
-              :refresh-label="t('Обновить данные')"
-              @refresh="fetchData"
-            />
-            <table-toolbar-actions
-              :disabled="loading || !canCreateSalaryRequest"
-              :show-add="canReportSalaryRequest"
-              :add-label="createNewTitle"
-              @add="openCreateDialog"
-            />
-            <period-switcher-control
-              :label="selectedPeriod.toString()"
-              :is-current="isCurrentPeriod"
-              :go-current-label="t('Перейти к текущему')"
-              :disabled="loading"
-              prev-test-id="salary-requests-period-prev"
-              next-test-id="salary-requests-period-next"
-              label-test-id="salary-requests-period-label"
-              @prev="decrementPeriod"
-              @next="incrementPeriod"
-              @go-current="goToCurrentPeriod"
-            />
-            <v-icon
-              v-if="periodClosed"
-              color="primary"
-              icon="mdi-lock"
-              :title="t('Период закрыт для внесения изменений')"
-            />
-          </v-col>
-          <v-col cols="12" md="4" class="d-flex justify-end ga-2">
-            <table-toolbar-actions
-              v-if="canAdminSalaryRequests"
-              :disabled="loading"
-              show-export
-              :export-label="t('Экспорт в Excel')"
-              @export="exportToExcel"
-            />
-            <v-tooltip location="bottom" v-if="canAdminSalaryRequests">
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  :icon="periodClosed ? 'mdi-lock-open' : 'mdi-lock'"
-                  variant="text"
-                  :disabled="loading"
-                  data-testid="salary-requests-period-toggle"
-                  @click="openPeriodToggleDialog"
-                />
-              </template>
-              <span>
-                {{
-                  t(
-                    periodClosed
-                      ? "Переоткрыть период. Вернуть возможность вносить изменения"
-                      : "Закрыть период. Запретить внесение изменений.",
-                  )
-                }}
-              </span>
-            </v-tooltip>
-          </v-col>
-        </v-row>
-      </v-card-title>
+        <v-card v-else data-testid="salary-requests-card">
+      <v-card-text class="pt-4 pb-2">
+        <AdaptiveFilterBar
+          :items="filterBarItems"
+          :has-right-actions="canCreateSalaryRequest || canAdminSalaryRequests"
+        >
+          <template #left-actions>
+            <div class="d-flex align-center ga-2 flex-wrap">
+              <table-toolbar-actions
+                :disabled="loading"
+                show-refresh
+                :refresh-label="t('Обновить данные')"
+                @refresh="fetchData"
+              />
+              <v-btn-toggle
+                v-model="filter.type"
+                mandatory
+                color="primary"
+                data-testid="salary-requests-type-toggle"
+              >
+                <v-btn :value="1">
+                  {{ t("Повышения") }} ({{ increaseImplementedCount }}/{{ increaseTotalCount }})
+                </v-btn>
+                <v-btn :value="2">
+                  {{ t("Бонусы") }} ({{ bonusImplementedCount }}/{{ bonusTotalCount }})
+                </v-btn>
+              </v-btn-toggle>
+              <table-toolbar-actions
+                v-if="canAdminSalaryRequests"
+                :disabled="loading"
+                show-export
+                :export-label="t('Экспорт в Excel')"
+                @export="exportToExcel"
+              />
+            </div>
+          </template>
 
-      <v-card-text class="pt-0">
-        <v-row class="mb-2" align="center">
-          <v-col cols="12" md="4" class="pb-0">
-            <v-btn-toggle
-              v-model="filter.type"
-              mandatory
-              color="primary"
-              data-testid="salary-requests-type-toggle"
-            >
-              <v-btn :value="1">
-                {{ t("Повышения") }} ({{ increaseImplementedCount }}/{{ increaseTotalCount }})
-              </v-btn>
-              <v-btn :value="2">
-                {{ t("Бонусы") }} ({{ bonusImplementedCount }}/{{ bonusTotalCount }})
-              </v-btn>
-            </v-btn-toggle>
-          </v-col>
-          <v-col cols="12" md="3" class="pb-0">
+          <template #filter-search>
             <v-text-field
               v-model="filter.search"
               :label="t('Поиск')"
@@ -116,8 +68,28 @@
               hide-details
               data-testid="salary-requests-filter-search"
             />
-          </v-col>
-          <v-col cols="12" md="3" class="pb-0">
+          </template>
+
+          <template #filter-period>
+            <period-switcher-control
+              :label="selectedPeriod.toString()"
+              :is-current="isCurrentPeriod"
+              :go-current-label="t('Перейти к текущему')"
+              :disabled="loading"
+              :status-icon="periodClosed ? 'mdi-lock' : undefined"
+              status-icon-color="primary"
+              :status-icon-title="periodClosed ? t('Период закрыт для внесения изменений') : undefined"
+              prev-test-id="salary-requests-period-prev"
+              next-test-id="salary-requests-period-next"
+              label-test-id="salary-requests-period-label"
+              @prev="decrementPeriod"
+              @next="incrementPeriod"
+              @go-current="goToCurrentPeriod"
+            />
+          </template>
+
+
+          <template #filter-ba>
             <v-autocomplete
               v-model="filter.budgetBusinessAccounts"
               :items="bas"
@@ -125,15 +97,23 @@
               item-value="id"
               :label="t('Бюджет из бизнес аккаунта')"
               multiple
-              chips
               clearable
               variant="outlined"
               density="compact"
               hide-details
               data-testid="salary-requests-filter-ba"
-            />
-          </v-col>
-          <v-col cols="12" md="2" class="pb-0">
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.budgetBusinessAccounts.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
+          <template #filter-implemented>
             <v-select
               v-model="filter.implemented"
               :items="implementedOptions"
@@ -141,15 +121,54 @@
               item-value="value"
               :label="t('Завершён')"
               multiple
-              chips
               clearable
               variant="outlined"
               density="compact"
               hide-details
               data-testid="salary-requests-filter-implemented"
-            />
-          </v-col>
-        </v-row>
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.implemented.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-select>
+          </template>
+
+          <template #right-actions>
+            <div class="d-flex align-center ga-2">
+              <table-toolbar-actions
+                :disabled="loading || !canCreateSalaryRequest"
+                :show-add="canReportSalaryRequest"
+                :add-label="createNewTitle"
+                @add="openCreateDialog"
+              />
+              <v-tooltip location="bottom" v-if="canAdminSalaryRequests">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    :icon="periodClosed ? 'mdi-lock-open' : 'mdi-lock'"
+                    variant="text"
+                    :disabled="loading"
+                    data-testid="salary-requests-period-toggle"
+                    @click="openPeriodToggleDialog"
+                  />
+                </template>
+                <span>
+                  {{
+                    t(
+                      periodClosed
+                        ? 'Переоткрыть период. Вернуть возможность вносить изменения'
+                        : 'Закрыть период. Запретить внесение изменений.',
+                    )
+                  }}
+                </span>
+              </v-tooltip>
+            </div>
+          </template>
+        </AdaptiveFilterBar>
 
         <HREasyTableBase
           table-class="salary-requests-table text-truncate"
@@ -363,6 +382,8 @@ import { formatDateTime } from "@/lib/datetime";
 import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
@@ -422,6 +443,28 @@ const {
   reopenPeriod,
   exportToExcel,
 } = useSalaryRequests(t);
+
+const filterBarItems = computed(() => [
+  { id: "period", minWidth: 304, active: false },
+  { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
+  { id: "ba", minWidth: 340, active: filter.budgetBusinessAccounts.length > 0 },
+  { id: "implemented", minWidth: 240, active: filter.implemented.length > 0 },
+]);
+
+function getFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object") {
+    if ("name" in item && typeof item.name === "string") {
+      return item.name;
+    }
+    if ("title" in item && typeof item.title === "string") {
+      return item.title;
+    }
+  }
+  return "";
+}
 
 const implementedOptions = computed(() => [
   { title: t("Нет"), value: false },

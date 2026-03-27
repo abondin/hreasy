@@ -16,39 +16,30 @@
       @click:row="onClickRow"
     >
       <template #filters>
-        <v-card-title class="d-flex ga-3 align-center flex-wrap">
-          <v-btn icon="mdi-refresh" variant="text" :loading="loading" @click="load" data-testid="admin-kids-refresh" />
-          <v-tooltip v-if="permissions.canEditEmployees()" location="bottom">
-            <template #activator="{ props: tooltipProps }">
-              <v-btn
-                v-bind="tooltipProps"
-                icon="mdi-plus"
-                data-testid="admin-kids-add"
-                color="primary"
-                variant="text"
+        <v-card-text class="pt-4 pb-2">
+          <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="permissions.canEditEmployees()">
+            <template #left-actions>
+              <table-toolbar-actions
                 :disabled="loading"
-                @click="openCreate"
+                show-refresh
+                :refresh-label="t('Обновить данные')"
+                @refresh="load"
               />
             </template>
-            <span>{{ t("Добавить информацию о ребёнке") }}</span>
-          </v-tooltip>
-        </v-card-title>
 
-        <v-card-text class="pb-0">
-          <v-row density="comfortable">
-            <v-col cols="12" md="6" lg="4">
+            <template #filter-search>
               <v-text-field
                 v-model="search"
                 data-testid="admin-kids-search"
-                append-inner-icon="mdi-magnify"
+                prepend-inner-icon="mdi-magnify"
                 density="compact"
                 :label="t('Поиск')"
                 variant="outlined"
                 hide-details
                 clearable
               />
-            </v-col>
-            <v-col cols="12" md="6" lg="4" class="d-flex align-center">
+            </template>
+            <template #filter-hide-dismissed>
               <v-checkbox
                 v-model="hideDismissed"
                 data-testid="admin-kids-hide-dismissed"
@@ -56,8 +47,17 @@
                 hide-details
                 :label="t('Скрыть детей уволенных сотрудников')"
               />
-            </v-col>
-          </v-row>
+            </template>
+            <template #right-actions>
+              <table-toolbar-actions
+                v-if="permissions.canEditEmployees()"
+                :disabled="loading"
+                show-add
+                :add-label="t('Добавить')"
+                @add="openCreate"
+              />
+            </template>
+          </AdaptiveFilterBar>
         </v-card-text>
       </template>
 
@@ -89,7 +89,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import AdminEmployeeKidForm from "@/views/admin/employees/components/AdminEmployeeKidForm.vue";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
@@ -111,6 +113,11 @@ const hideDismissed = ref(true);
 const kids = ref<EmployeeKid[]>([]);
 const employees = ref<Employee[]>([]);
 const current = ref<EmployeeKid | null>(null);
+
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: search.value.trim().length > 0, grow: true },
+  { id: "hide-dismissed", minWidth: 280, active: hideDismissed.value !== true },
+]);
 
 const headers = computed(() => [
   { title: t("ФИО"), key: "displayName", width: 280 },

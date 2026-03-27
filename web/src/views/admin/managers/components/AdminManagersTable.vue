@@ -1,41 +1,34 @@
 <template>
   <v-card :data-testid="testId">
-    <v-card-title class="d-flex align-center ga-2 flex-wrap px-6 pt-5 pb-2">
-      <span>{{ resolvedTitle }}</span>
-      <v-spacer />
-      <v-btn
-        icon="mdi-refresh"
-        variant="text"
-        :disabled="loading"
-        :data-testid="`${testId}-refresh`"
-        @click="load"
-      />
-      <v-btn
-        v-if="editable"
-        icon="mdi-plus"
-        color="primary"
-        variant="text"
-        :disabled="loading"
-        :data-testid="`${testId}-add`"
-        @click="openCreate"
-      />
-    </v-card-title>
+    <v-card-text :class="mode === 'full' ? 'px-6 pt-4 pb-2' : 'px-6 pb-5 pt-4'">
+      <AdaptiveFilterBar
+        :items="filterBarItems"
+        :has-right-actions="editable"
+        v-if="mode === 'full'"
+      >
+        <template #left-actions>
+          <table-toolbar-actions
+            :disabled="loading"
+            show-refresh
+            :refresh-label="t('Обновить данные')"
+            @refresh="load"
+          />
+        </template>
 
-    <v-card-text :class="mode === 'full' ? 'px-6 pb-0 pt-0' : 'px-6 pb-5 pt-0'">
-      <v-row v-if="mode === 'full'" density="comfortable" class="mb-2">
-        <v-col cols="12" md="6" lg="4">
+        <template #filter-search>
           <v-text-field
             v-model="filter.search"
             :label="t('Поиск')"
-            append-inner-icon="mdi-magnify"
+            prepend-inner-icon="mdi-magnify"
             variant="outlined"
             density="compact"
             hide-details
             clearable
             :data-testid="`${testId}-search`"
           />
-        </v-col>
-        <v-col cols="12" md="6" lg="4">
+        </template>
+
+        <template #filter-object-types>
           <v-autocomplete
             v-model="filter.responsibilityObjectTypes"
             :items="responsibilityObjectTypeOptions"
@@ -45,13 +38,32 @@
             variant="outlined"
             density="compact"
             multiple
-            chips
             clearable
             hide-details
             :data-testid="`${testId}-object-types`"
+          >
+            <template #selection="{ item, index }">
+              <CollapsedSelectionContent
+                :index="index"
+                :total="filter.responsibilityObjectTypes.length"
+                :label="getFilterSelectionLabel(item)"
+                :visible-count="3"
+              />
+            </template>
+          </v-autocomplete>
+        </template>
+
+        <template #right-actions>
+          <table-toolbar-actions
+            v-if="editable"
+            :disabled="loading"
+            show-add
+            :add-label="t('Добавить')"
+            @add="openCreate"
           />
-        </v-col>
-      </v-row>
+        </template>
+      </AdaptiveFilterBar>
+
 
       <v-alert
         v-if="error"
@@ -206,7 +218,10 @@
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { VForm } from "vuetify/components";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
 import type { DictItem } from "@/services/dict.service";
@@ -286,8 +301,22 @@ const form = reactive<ManagerFormState>({
   comment: "",
 });
 
-const resolvedTitle = computed(() => props.title ?? t("Менеджеры"));
 const editable = computed(() => props.editable !== false);
+function getFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && "title" in item && typeof item.title === "string") {
+    return item.title;
+  }
+  return "";
+}
+
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
+  { id: "object-types", minWidth: 420, active: filter.responsibilityObjectTypes.length > 0 },
+]);
+
 const responsibilityTypeOptions = computed(() =>
   managerResponsibilityTypes.map((value) => ({
     value,

@@ -13,6 +13,8 @@
             <template #activator="{ props: tooltipProps }">
               <v-btn
                 color="primary"
+                variant="outlined"
+                size="small"
                 v-bind="{ ...menuProps, ...tooltipProps }"
               >
                 {{ t("Запланировать") }}

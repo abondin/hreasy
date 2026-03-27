@@ -9,7 +9,7 @@
       {{ t("Не достаточно прав") }}
     </v-alert>
 
-    <v-card v-else data-testid="mentorship-card">
+        <v-card v-else data-testid="mentorship-card">
       <v-alert
         v-if="error"
         type="error"
@@ -20,9 +20,24 @@
         {{ error }}
       </v-alert>
 
-      <v-container class="pt-4">
-        <v-row align="center">
-          <v-col cols="12" sm="4" class="pb-0">
+      <v-card-text class="pt-4 pb-2">
+        <AdaptiveFilterBar
+          :items="filterBarItems"
+          :has-right-actions="canManageRegistry"
+        >
+          <template #left-actions>
+            <table-toolbar-actions
+              :disabled="loading || actionLoading || exportLoading"
+              show-refresh
+              :show-export="canManageRegistry"
+              :refresh-label="t('Обновить данные')"
+              :export-label="t('Экспорт в Excel')"
+              @refresh="loadJuniors"
+              @export="downloadExport"
+            />
+          </template>
+
+          <template #filter-search>
             <v-text-field
               v-model="filter.search"
               data-testid="mentorship-filter-search"
@@ -30,10 +45,13 @@
               clearable
               :disabled="loading"
               :label="t('Поиск')"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              hide-details
             />
-          </v-col>
+          </template>
 
-          <v-col cols="12" sm="3" class="pb-0">
+          <template #filter-ba>
             <v-autocomplete
               v-model="filter.selectedBas"
               density="compact"
@@ -44,10 +62,20 @@
               item-title="name"
               item-value="id"
               :label="t('Бюджет')"
-            />
-          </v-col>
+              variant="outlined"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedBas.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
 
-          <v-col cols="12" sm="3" class="pb-0">
+          <template #filter-role>
             <v-autocomplete
               v-model="filter.selectedRoles"
               density="compact"
@@ -56,10 +84,20 @@
               :disabled="loading"
               :items="roles"
               :label="t('Роль')"
-            />
-          </v-col>
+              variant="outlined"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedRoles.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
 
-          <v-col cols="12" sm="2" class="pb-0">
+          <template #filter-not-graduated>
             <v-checkbox
               v-model="filter.onlyNotGraduated"
               density="compact"
@@ -69,26 +107,20 @@
               :false-value="true"
               :true-value="false"
             />
-          </v-col>
-        </v-row>
+          </template>
 
-        <v-row>
-          <v-col cols="auto" data-testid="mentorship-toolbar">
+          <template #right-actions>
             <table-toolbar-actions
+              v-if="canManageRegistry"
               :disabled="loading || actionLoading || exportLoading"
-              show-refresh
               :show-add="canManageRegistry"
-              :show-export="canManageRegistry"
-              :refresh-label="t('Обновить данные')"
               :add-label="t('Добавление в реестр')"
-              :export-label="t('Экспорт в Excel')"
-              @refresh="loadJuniors"
               @add="openAddDialog"
-              @export="downloadExport"
             />
-          </v-col>
-        </v-row>
-      </v-container>
+          </template>
+        </AdaptiveFilterBar>
+      </v-card-text>
+
 
       <HREasyTableBase
         table-class="mentorship-table"
@@ -192,8 +224,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import JuniorRegistryFormFields from "@/components/mentorship/JuniorRegistryFormFields.vue";
 import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
@@ -201,6 +236,22 @@ import { formatDateTime } from "@/lib/datetime";
 import { useJuniorRegistry } from "@/composables/useJuniorRegistry";
 
 const { t } = useI18n();
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
+  { id: "ba", minWidth: 320, active: filter.selectedBas.length > 0 },
+  { id: "role", minWidth: 320, active: filter.selectedRoles.length > 0 },
+  { id: "not-graduated", minWidth: 220, active: filter.onlyNotGraduated },
+]);
+
+function getFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && "name" in item && typeof item.name === "string") {
+    return item.name;
+  }
+  return "";
+}
 const {
   loading,
   actionLoading,

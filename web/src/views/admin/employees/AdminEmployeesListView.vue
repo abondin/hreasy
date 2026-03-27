@@ -17,59 +17,37 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-title class="d-flex ga-2 align-center flex-wrap">
-            <v-btn icon="mdi-refresh" variant="text" :loading="loading" @click="load" data-testid="admin-employees-refresh" />
-
-            <v-tooltip v-if="permissions.canEditEmployees()" location="bottom">
-              <template #activator="{ props: tooltipProps }">
-                <v-btn
-                  v-bind="tooltipProps"
-                  icon="mdi-plus"
-                  data-testid="admin-employees-add"
-                  color="primary"
-                  variant="text"
+          <v-card-text class="pt-4 pb-2">
+            <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="permissions.canEditEmployees() || permissions.canExportEmployees()">
+              <template #left-actions>
+                <table-toolbar-actions
                   :disabled="loading"
-                  @click="openCreate"
+                  show-refresh
+                  :refresh-label="t('Обновить данные')"
+                  @refresh="load"
+                />
+                <table-toolbar-actions
+                  v-if="permissions.canExportEmployees()"
+                  :disabled="loading"
+                  show-export
+                  :export-label="t('Экспорт в Excel')"
+                  @export="downloadExport"
                 />
               </template>
-              <span>{{ t("Добавить информацию о сотруднике") }}</span>
-            </v-tooltip>
 
-            <v-tooltip v-if="permissions.canExportEmployees()" location="bottom">
-              <template #activator="{ props: tooltipProps }">
-                <v-btn
-                  v-bind="tooltipProps"
-                  icon="mdi-file-excel"
-                  data-testid="admin-employees-export"
-                  color="success"
-                  variant="text"
-                  :loading="exportLoading"
-                  :disabled="loading"
-                  @click="downloadExport"
-                />
-              </template>
-              <span>
-                {{ t("Экспорт в Excel") }}.
-                {{ t("Результат выгрузки зависит только от фильтра ") }}{{ t("Скрыть уволенных") }}
-              </span>
-            </v-tooltip>
-          </v-card-title>
-
-          <v-card-text class="pb-0">
-            <v-row density="comfortable">
-              <v-col cols="12" lg="3">
+              <template #filter-search>
                 <v-text-field
                   v-model="search"
                   data-testid="admin-employees-search"
-                  append-inner-icon="mdi-magnify"
+                  prepend-inner-icon="mdi-magnify"
                   :label="t('Поиск')"
                   variant="outlined"
                   density="compact"
                   hide-details
                   clearable
                 />
-              </v-col>
-              <v-col cols="12" lg="3">
+              </template>
+              <template #filter-departments>
                 <v-autocomplete
                   v-model="selectedDepartments"
                   data-testid="admin-employees-filter-departments"
@@ -80,12 +58,19 @@
                   variant="outlined"
                   density="compact"
                   multiple
-                  chips
                   clearable
                   hide-details
-                />
-              </v-col>
-              <v-col cols="12" lg="3">
+                >
+                  <template #selection="{ item, index }">
+                    <CollapsedSelectionContent
+                      :index="index"
+                      :total="selectedDepartments.length"
+                      :label="getFilterSelectionLabel(item)"
+                    />
+                  </template>
+                </v-autocomplete>
+              </template>
+              <template #filter-projects>
                 <v-autocomplete
                   v-model="selectedProjects"
                   data-testid="admin-employees-filter-projects"
@@ -96,12 +81,19 @@
                   variant="outlined"
                   density="compact"
                   multiple
-                  chips
                   clearable
                   hide-details
-                />
-              </v-col>
-              <v-col cols="12" lg="2">
+                >
+                  <template #selection="{ item, index }">
+                    <CollapsedSelectionContent
+                      :index="index"
+                      :total="selectedProjects.length"
+                      :label="getFilterSelectionLabel(item)"
+                    />
+                  </template>
+                </v-autocomplete>
+              </template>
+              <template #filter-positions>
                 <v-autocomplete
                   v-model="selectedPositions"
                   data-testid="admin-employees-filter-positions"
@@ -112,12 +104,19 @@
                   variant="outlined"
                   density="compact"
                   multiple
-                  chips
                   clearable
                   hide-details
-                />
-              </v-col>
-              <v-col cols="12" lg="1" class="d-flex align-center">
+                >
+                  <template #selection="{ item, index }">
+                    <CollapsedSelectionContent
+                      :index="index"
+                      :total="selectedPositions.length"
+                      :label="getFilterSelectionLabel(item)"
+                    />
+                  </template>
+                </v-autocomplete>
+              </template>
+              <template #filter-hide-dismissed>
                 <v-checkbox
                   v-model="hideDismissed"
                   data-testid="admin-employees-hide-dismissed"
@@ -125,8 +124,17 @@
                   hide-details
                   :label="t('Скрыть уволенных')"
                 />
-              </v-col>
-            </v-row>
+              </template>
+              <template #right-actions>
+                <table-toolbar-actions
+                  v-if="permissions.canEditEmployees()"
+                  :disabled="loading"
+                  show-add
+                  :add-label="t('Добавить')"
+                  @add="openCreate"
+                />
+              </template>
+            </AdaptiveFilterBar>
           </v-card-text>
         </template>
 
@@ -201,7 +209,10 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import AdminEmployeeForm from "@/views/admin/employees/components/AdminEmployeeForm.vue";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
@@ -248,6 +259,24 @@ const levels = ref<DictItem[]>([]);
 const officeLocations = ref<DictItem[]>([]);
 const projects = ref<ProjectDictDto[]>([]);
 const businessAccounts = ref<DictItem[]>([]);
+
+function getFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && "name" in item && typeof item.name === "string") {
+    return item.name;
+  }
+  return "";
+}
+
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: search.value.trim().length > 0, grow: true },
+  { id: "departments", minWidth: 320, active: selectedDepartments.value.length > 0 },
+  { id: "projects", minWidth: 320, active: selectedProjects.value.length > 0 },
+  { id: "positions", minWidth: 280, active: selectedPositions.value.length > 0 },
+  { id: "hide-dismissed", minWidth: 220, active: hideDismissed.value !== true },
+]);
 
 const headers = computed(() => [
   { title: t("ФИО"), key: "displayName", width: "240px" },

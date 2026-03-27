@@ -21,49 +21,51 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-title class="d-flex align-center ga-2 flex-wrap">
-            <span>{{ title }}</span>
-            <v-spacer />
-            <v-btn
-              data-testid="toolbar-refresh"
-              icon="mdi-refresh"
-              variant="text"
-              :disabled="loading"
-              @click="load"
-            />
-            <v-btn
-              v-if="editable"
-              data-testid="toolbar-add"
-              icon="mdi-plus"
-              color="primary"
-              variant="text"
-              :disabled="loading"
-              @click="openCreate"
-            />
-          </v-card-title>
+          <v-card-text class="pt-4 pb-2">
+            <AdaptiveFilterBar
+              :items="filterBarItems"
+              :has-right-actions="editable"
+            >
+              <template #left-actions>
+                <table-toolbar-actions
+                  :disabled="loading"
+                  show-refresh
+                  :refresh-label="t('Обновить данные')"
+                  @refresh="load"
+                />
+              </template>
 
-          <v-card-text class="pb-0">
-            <v-row density="comfortable">
-              <v-col cols="12" md="6" lg="4">
+              <template #filter-search>
                 <v-text-field
                   v-model="search"
                   :label="t('Поиск')"
-                  append-inner-icon="mdi-magnify"
+                  prepend-inner-icon="mdi-magnify"
                   variant="outlined"
                   density="compact"
                   hide-details
                   clearable
                 />
-              </v-col>
-              <v-col cols="12" md="6" lg="3" class="d-flex align-center">
+              </template>
+
+              <template #filter-hide-archived>
                 <v-checkbox
                   v-model="hideArchived"
                   :label="t('Скрыть архивные')"
                   density="compact"
                   hide-details
                 />
-              </v-col>
-            </v-row>
+              </template>
+
+              <template #right-actions>
+                <table-toolbar-actions
+                  v-if="editable"
+                  :disabled="loading"
+                  show-add
+                  :add-label="t('Добавить')"
+                  @add="openCreate"
+                />
+              </template>
+            </AdaptiveFilterBar>
           </v-card-text>
         </template>
 
@@ -149,7 +151,9 @@
 import { computed, ref, useSlots } from "vue";
 import { useI18n } from "vue-i18n";
 import type { VDataTable, VForm } from "vuetify/components";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";
 
@@ -186,6 +190,10 @@ const form = ref<TForm>(props.createForm());
 const formRef = ref<VForm | null>(null);
 
 const editable = computed(() => props.editable !== false);
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: search.value.trim().length > 0, grow: true },
+  { id: "hide-archived", minWidth: 220, active: hideArchived.value !== true },
+]);
 const archivedOptions = computed(() => [
   { title: t("Нет"), value: false },
   { title: t("Да"), value: true },

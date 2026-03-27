@@ -10,19 +10,23 @@
       {{ t("Недостаточно прав") }}
     </v-alert>
 
-    <v-card v-else data-testid="salary-latest-card">
-      <v-card-title class="d-flex align-center ga-2 flex-wrap">
-        <table-toolbar-actions
-          :disabled="loading"
-          show-refresh
-          :refresh-label="t('Обновить данные')"
-          @refresh="load"
-        />
-      </v-card-title>
+        <v-card v-else data-testid="salary-latest-card">
+      <v-card-text class="pt-4 pb-2">
+        <AdaptiveFilterBar
+          :items="filterBarItems"
+          :has-left-actions="true"
+          :has-right-actions="false"
+        >
+          <template #left-actions>
+            <table-toolbar-actions
+              :disabled="loading"
+              show-refresh
+              :refresh-label="t('Обновить данные')"
+              @refresh="load"
+            />
+          </template>
 
-      <v-card-text class="pt-0">
-        <v-row class="mb-2" density="comfortable">
-          <v-col cols="12" md="5">
+          <template #filter-search>
             <v-text-field
               v-model="search"
               :label="t('Поиск')"
@@ -33,8 +37,9 @@
               hide-details
               data-testid="salary-latest-filter-search"
             />
-          </v-col>
-          <v-col cols="12" md="4">
+          </template>
+
+          <template #filter-ba>
             <v-autocomplete
               v-model="selectedBas"
               :items="bas"
@@ -42,15 +47,23 @@
               item-value="id"
               :label="t('Бизнес аккаунт')"
               multiple
-              chips
               clearable
               density="compact"
               variant="outlined"
               hide-details
               data-testid="salary-latest-filter-ba"
-            />
-          </v-col>
-          <v-col cols="12" md="3" class="d-flex align-center">
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="selectedBas.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
+          <template #filter-only-with-requests>
             <v-select
               v-model="onlyWithRequests"
               :items="yesNoOptions"
@@ -62,8 +75,9 @@
               hide-details
               data-testid="salary-latest-filter-only-with-requests"
             />
-          </v-col>
-        </v-row>
+          </template>
+        </AdaptiveFilterBar>
+
 
         <v-alert
           v-if="error"
@@ -133,6 +147,8 @@
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
@@ -166,6 +182,22 @@ const headers = computed(() => [
   { title: t("Зарплата после повышения"), key: "requestImplSalaryAmount", width: "190px" },
   { title: t("Статус"), key: "requestImplState", width: "140px" },
 ]);
+
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: search.value.trim().length > 0, grow: true },
+  { id: "ba", minWidth: 320, active: selectedBas.value.length > 0 },
+  { id: "only-with-requests", minWidth: 240, active: onlyWithRequests.value !== true },
+]);
+
+function getFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && "name" in item && typeof item.name === "string") {
+    return item.name;
+  }
+  return "";
+}
 
 const yesNoOptions = computed(() => [
   { title: t("Да"), value: true },

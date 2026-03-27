@@ -9,43 +9,117 @@
       {{ t("Не достаточно прав") }}
     </v-alert>
 
-    <v-card v-else data-testid="overtimes-card">
-      <v-card-title>
-        <v-row align="center" class="w-100">
-          <v-col cols="12" md="8" class="d-flex align-center ga-2">
-            <table-toolbar-actions
-              :disabled="loading"
-              show-refresh
-              :refresh-label="t('Обновить данные')"
-              @refresh="fetchData"
-            />
-            <period-switcher-control
-              :label="selectedPeriod.toString()"
-              :is-current="isCurrentPeriod"
-              :go-current-label="t('Перейти к текущему')"
-              :disabled="loading"
-              label-test-id="overtimes-period-label"
-              next-test-id="overtimes-next-period"
-              @prev="decrementPeriod"
-              @next="incrementPeriod"
-              @go-current="goToCurrentPeriod"
-            />
-            <v-icon
-              v-if="periodClosed"
-              color="primary"
-              icon="mdi-lock"
-              :title="t('Период закрыт для внесения изменений')"
-            />
-          </v-col>
-          <v-col cols="12" md="4" class="d-flex justify-end ga-2">
-            <table-toolbar-actions
-              v-if="canExportOvertimes"
-              :disabled="loading"
-              show-export
-              :export-label="t('Экспорт в Excel')"
-              @export="exportToExcel"
-            />
+        <v-card v-else data-testid="overtimes-card">
+      <v-card-text class="pt-4 pb-2">
+        <AdaptiveFilterBar
+          :items="filterBarItems"
+          :has-right-actions="canAdminOvertimes"
+        >
+          <template #left-actions>
+            <div class="d-flex align-center ga-2">
+              <table-toolbar-actions
+                :disabled="loading"
+                show-refresh
+                :refresh-label="t('Обновить данные')"
+                @refresh="fetchData"
+              />
+              <period-switcher-control
+                :label="selectedPeriod.toString()"
+                :is-current="isCurrentPeriod"
+                :go-current-label="t('Перейти к текущему')"
+                :disabled="loading"
+                :status-icon="periodClosed ? 'mdi-lock' : undefined"
+                status-icon-color="primary"
+                :status-icon-title="periodClosed ? t('Период закрыт для внесения изменений') : undefined"
+                label-test-id="overtimes-period-label"
+                next-test-id="overtimes-next-period"
+                @prev="decrementPeriod"
+                @next="incrementPeriod"
+                @go-current="goToCurrentPeriod"
+              />
+              <table-toolbar-actions
+                v-if="canExportOvertimes"
+                :disabled="loading"
+                show-export
+                :export-label="t('Экспорт в Excel')"
+                @export="exportToExcel"
+              />
+            </div>
+          </template>
 
+          <template #filter-search>
+            <v-text-field
+              v-model="filter.search"
+              data-testid="overtimes-filter-search"
+              density="compact"
+              clearable
+              :disabled="loading"
+              :label="t('ФИО Сотрудника')"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              hide-details
+            />
+          </template>
+
+          <template #filter-current-project>
+            <v-autocomplete
+              v-model="filter.selectedEmployeeCurrentProjects"
+              density="compact"
+              clearable
+              multiple
+              :disabled="loading"
+              :items="activeProjects"
+              item-title="name"
+              item-value="id"
+              :label="t('Текущий проект')"
+              variant="outlined"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedEmployeeCurrentProjects.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
+          <template #filter-overtime-project>
+            <v-autocomplete
+              v-model="filter.selectedProjectsWithOvertimes"
+              density="compact"
+              clearable
+              multiple
+              :disabled="loading"
+              :items="projectsWithOvertimes"
+              item-title="name"
+              item-value="id"
+              :label="t('Проект овертайма')"
+              variant="outlined"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedProjectsWithOvertimes.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
+          <template #filter-show-empty>
+            <v-checkbox
+              v-model="filter.showEmpty"
+              :disabled="loading"
+              density="compact"
+              :label="t('Сотрудники без овертаймов')"
+              hide-details
+            />
+          </template>
+
+          <template #right-actions>
             <v-tooltip location="bottom" v-if="canAdminOvertimes">
               <template #activator="{ props }">
                 <v-btn
@@ -61,67 +135,16 @@
                 {{
                   t(
                     periodClosed
-                      ? "Переоткрыть период. Вернуть возможность вносить изменения"
-                      : "Закрыть период. Запретить внесение изменений.",
+                      ? 'Переоткрыть период. Вернуть возможность вносить изменения'
+                      : 'Закрыть период. Запретить внесение изменений.',
                   )
                 }}
               </span>
             </v-tooltip>
-          </v-col>
-        </v-row>
-      </v-card-title>
+          </template>
+        </AdaptiveFilterBar>
 
-      <v-card-text>
-        <v-row align="center">
-          <v-col cols="12" md="3" class="pb-0">
-            <v-text-field
-              v-model="filter.search"
-              data-testid="overtimes-filter-search"
-              density="compact"
-              clearable
-              :disabled="loading"
-              :label="t('ФИО Сотрудника')"
-            />
-          </v-col>
-          <v-col cols="12" md="3" class="pb-0">
-            <v-autocomplete
-              v-model="filter.selectedEmployeeCurrentProjects"
-              density="compact"
-              clearable
-              multiple
-              :disabled="loading"
-              :items="activeProjects"
-              item-title="name"
-              item-value="id"
-              :label="t('Текущий проект')"
-            />
-          </v-col>
-          <v-col cols="12" md="3" class="pb-0">
-            <v-autocomplete
-              v-model="filter.selectedProjectsWithOvertimes"
-              density="compact"
-              clearable
-              multiple
-              :disabled="loading"
-              :items="projectsWithOvertimes"
-              item-title="name"
-              item-value="id"
-              :label="t('Проект овертайма')"
-            />
-          </v-col>
-          <v-col cols="12" md="3" class="d-flex align-center pb-0">
-            <div class="d-flex align-center ga-2">
-              <v-checkbox-btn
-                v-model="filter.showEmpty"
-                :disabled="loading"
-                density="compact"
-              />
-              <span class="text-body-2">{{ t("Сотрудники без овертаймов") }}</span>
-            </div>
-          </v-col>
-        </v-row>
-
-        <div class="mb-3">
+        <div class="mb-3 mt-3">
           {{ t("Итого (с учётом фильтров)") }}: {{ t("hours", totalHours) }}
         </div>
 
@@ -200,6 +223,8 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import EmployeeOvertimeCard from "@/components/overtimes/EmployeeOvertimeCard.vue";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
@@ -236,6 +261,22 @@ const {
 } = useOvertimesSummary(t);
 
 const isCurrentPeriod = computed(() => selectedPeriodId.value === ReportPeriod.currentPeriod().periodId());
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
+  { id: "current-project", minWidth: 320, active: filter.selectedEmployeeCurrentProjects.length > 0 },
+  { id: "overtime-project", minWidth: 320, active: filter.selectedProjectsWithOvertimes.length > 0 },
+  { id: "show-empty", minWidth: 260, active: filter.showEmpty },
+]);
+
+function getFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && "name" in item && typeof item.name === "string") {
+    return item.name;
+  }
+  return "";
+}
 
 async function goToCurrentPeriod(): Promise<void> {
   const currentPeriodId = ReportPeriod.currentPeriod().periodId();

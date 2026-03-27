@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" max-width="760">
     <template #activator="{ props }">
-      <v-btn v-bind="props" color="primary" :disabled="periodClosed">
+      <v-btn v-bind="props" color="primary" variant="outlined" size="small" :disabled="periodClosed">
         {{ t("Добавить") }}
       </v-btn>
     </template>

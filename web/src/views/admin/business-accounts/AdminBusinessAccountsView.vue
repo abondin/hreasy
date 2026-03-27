@@ -16,46 +16,47 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-title class="d-flex ga-2 align-center flex-wrap">
-            <v-btn
-              icon="mdi-refresh"
-              variant="text"
-              :loading="loading"
-              data-testid="admin-business-accounts-refresh"
-              @click="load"
-            />
-            <v-btn
-              icon="mdi-plus"
-              color="primary"
-              variant="text"
-              :disabled="loading"
-              data-testid="admin-business-accounts-add"
-              @click="openCreate"
-            />
-          </v-card-title>
+          <v-card-text class="pt-4 pb-2">
+            <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="true">
+              <template #left-actions>
+                <table-toolbar-actions
+                  :disabled="loading"
+                  show-refresh
+                  :refresh-label="t('Обновить данные')"
+                  @refresh="load"
+                />
+              </template>
 
-          <v-card-text class="pb-0">
-            <v-row density="comfortable">
-              <v-col cols="12" lg="4">
+              <template #filter-search>
                 <v-text-field
                   v-model="search"
                   :label="t('Поиск')"
-                  append-inner-icon="mdi-magnify"
+                  prepend-inner-icon="mdi-magnify"
                   variant="outlined"
                   density="compact"
                   hide-details
                   clearable
                 />
-              </v-col>
-              <v-col cols="12" lg="4" class="d-flex align-center">
+              </template>
+
+              <template #filter-show-archived>
                 <v-checkbox
                   v-model="showArchived"
-                  :label="t('Показать архивные бизнес аккаунты')"
+                  :label="t('Архивные')"
                   density="compact"
                   hide-details
                 />
-              </v-col>
-            </v-row>
+              </template>
+
+              <template #right-actions>
+                <table-toolbar-actions
+                  :disabled="loading"
+                  show-add
+                  :add-label="t('Добавить')"
+                  @add="openCreate"
+                />
+              </template>
+            </AdaptiveFilterBar>
           </v-card-text>
         </template>
 
@@ -102,7 +103,9 @@
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
 import {
@@ -126,6 +129,11 @@ const headers = computed(() => [
   { title: t("Описание"), key: "description" },
   { title: t("Менеджеры"), key: "managers", width: "360px" },
 ]);
+const filterBarItems = computed(() => [
+  { id: "search", minWidth: 380, active: search.value.trim().length > 0, grow: true },
+  { id: "show-archived", minWidth: 280, active: showArchived.value },
+]);
+
 const filteredItems = computed(() => {
   const query = search.value.trim().toLowerCase();
   return items.value.filter((item) => {
