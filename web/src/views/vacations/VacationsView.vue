@@ -20,8 +20,11 @@
       </v-tabs>
 
       <v-card-text class="pt-4 pb-2">
-        <div class="vacations-filter-bar d-flex flex-wrap flex-lg-nowrap ga-4">
-          <div class="vacations-filter-bar__actions vacations-filter-bar__actions--left d-flex align-center">
+        <AdaptiveFilterBar
+          :items="filterBarItems"
+          :has-right-actions="canEditVacations"
+        >
+          <template #left-actions>
             <v-btn-group divided variant="text">
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
@@ -53,164 +56,125 @@
                 <span>{{ t("Экспорт в Excel") }}</span>
               </v-tooltip>
             </v-btn-group>
-          </div>
+          </template>
 
-          <v-divider
-            vertical
-            class="vacations-filter-bar__divider d-none d-lg-flex"
-          />
+          <template #filter-year>
+            <v-select
+              v-model="selectedYear"
+              data-testid="vacations-filter-year"
+              :items="allYears"
+              :disabled="loading"
+              :label="t('Год')"
+              variant="outlined"
+              density="compact"
+              hide-details
+            />
+          </template>
 
-          <div class="vacations-filter-bar__filters flex-grow-1">
-            <div class="vacations-filter-bar__filters-grid d-flex flex-wrap ga-4">
-              <div class="vacations-filter-bar__field vacations-filter-bar__field--year">
-                <v-select
-                  v-model="selectedYear"
-                  data-testid="vacations-filter-year"
-                  :items="allYears"
-                  :disabled="loading"
-                  :label="t('Год')"
-                  variant="outlined"
-                  density="compact"
-                  hide-details
-                />
-              </div>
+          <template #filter-date>
+            <my-date-range-component
+              v-model="filter.selectedDates"
+              :disabled="loading"
+              :label="t('Дата начала отпуска')"
+              variant="outlined"
+              hide-details
+            />
+          </template>
 
-              <div class="vacations-filter-bar__field vacations-filter-bar__field--date">
-                <my-date-range-component
-                  v-model="filter.selectedDates"
-                  :disabled="loading"
-                  :label="t('Дата начала отпуска')"
-                  variant="outlined"
-                  hide-details
-                />
-              </div>
+          <template #filter-search>
+            <v-text-field
+              v-model="filter.search"
+              data-testid="vacations-filter-search"
+              :label="t('Поиск')"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="compact"
+              clearable
+              :disabled="loading"
+              hide-details
+            />
+          </template>
 
-              <div class="vacations-filter-bar__field vacations-filter-bar__field--status">
-                <v-select
-                  v-model="filter.selectedStatuses"
-                  :items="allStatuses"
-                  item-title="title"
-                  item-value="value"
-                  :label="t('Статус')"
-                  variant="outlined"
-                  density="compact"
-                  clearable
-                  multiple
-                  :disabled="loading"
-                  hide-details
-                >
-                  <template #selection="{ item, index }">
-                    <template v-if="index === 0">
-                      <v-chip size="small" label>
-                        {{ getFilterSelectionLabel(item) }}
-                      </v-chip>
-                    </template>
-                    <span v-else-if="index === 1" class="text-caption text-medium-emphasis ml-2">
-                      (+{{ filter.selectedStatuses.length - 1 }})
-                    </span>
-                  </template>
-                </v-select>
-              </div>
-
-              <div class="vacations-filter-bar__field vacations-filter-bar__field--search">
-                <v-text-field
-                  v-model="filter.search"
-                  data-testid="vacations-filter-search"
-                  :label="t('Поиск')"
-                  prepend-inner-icon="mdi-magnify"
-                  variant="outlined"
-                  density="compact"
-                  clearable
-                  :disabled="loading"
-                  hide-details
-                />
-              </div>
-
-            </div>
-          </div>
-
-          <v-divider
-            vertical
-            class="vacations-filter-bar__divider d-none d-lg-flex"
-          />
-
-          <div class="vacations-filter-bar__actions vacations-filter-bar__actions--right d-flex align-center justify-end ga-2">
-            <v-menu
-              v-model="advancedFiltersMenu"
-              location="bottom end"
-              :close-on-content-click="false"
+          <template #filter-status>
+            <v-select
+              v-model="filter.selectedStatuses"
+              :items="allStatuses"
+              item-title="title"
+              item-value="value"
+              :label="t('Статус')"
+              variant="outlined"
+              density="compact"
+              clearable
+              multiple
+              :disabled="loading"
+              hide-details
             >
-              <template #activator="{ props }">
-                <v-badge
-                  :model-value="advancedFiltersCount > 0"
-                  :content="advancedFiltersCount"
-                  color="info"
-                  floating
-                >
-                  <v-btn
-                    v-bind="props"
-                    :color="hasAdvancedFilters ? 'info' : undefined"
-                    :variant="hasAdvancedFilters ? 'tonal' : 'text'"
-                    icon="mdi-filter-variant"
-                    size="small"
-                    density="comfortable"
-                  />
-                </v-badge>
+              <template #selection="{ item, index }">
+                <template v-if="index === 0">
+                  <v-chip size="small" label>
+                    {{ getFilterSelectionLabel(item) }}
+                  </v-chip>
+                </template>
+                <span v-else-if="index === 1" class="text-caption text-medium-emphasis ml-2">
+                  (+{{ filter.selectedStatuses.length - 1 }})
+                </span>
               </template>
+            </v-select>
+          </template>
 
-              <v-card min-width="360" class="pa-4">
-                <div class="d-flex flex-column ga-4">
-                  <v-autocomplete
-                    v-model="filter.selectedProjects"
-                    :items="projectOptions"
-                    item-title="name"
-                    item-value="id"
-                    :label="t('Текущий проект')"
-                    variant="outlined"
-                    density="compact"
-                    clearable
-                    multiple
-                    :disabled="loading"
-                    hide-details
-                  >
-                    <template #selection="{ item, index }">
-                      <template v-if="index === 0">
-                        <v-chip size="small" label>
-                          {{ getFilterSelectionLabel(item) }}
-                        </v-chip>
-                      </template>
-                      <span v-else-if="index === 1" class="text-caption text-medium-emphasis ml-2">
-                        (+{{ filter.selectedProjects.length - 1 }})
-                      </span>
-                    </template>
-                  </v-autocomplete>
+          <template #filter-project>
+            <v-autocomplete
+              v-model="filter.selectedProjects"
+              :items="projectOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('Текущий проект')"
+              variant="outlined"
+              density="compact"
+              clearable
+              multiple
+              :disabled="loading"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <template v-if="index === 0">
+                  <v-chip size="small" label>
+                    {{ getFilterSelectionLabel(item) }}
+                  </v-chip>
+                </template>
+                <span v-else-if="index === 1" class="text-caption text-medium-emphasis ml-2">
+                  (+{{ filter.selectedProjects.length - 1 }})
+                </span>
+              </template>
+            </v-autocomplete>
+          </template>
 
-                  <v-autocomplete
-                    v-model="filter.selectedProjectRoles"
-                    :items="projectRoles"
-                    :label="t('Роль на проекте')"
-                    variant="outlined"
-                    density="compact"
-                    clearable
-                    multiple
-                    :disabled="loading"
-                    hide-details
-                  >
-                    <template #selection="{ item, index }">
-                      <template v-if="index === 0">
-                        <v-chip size="small" label>
-                          {{ getFilterSelectionLabel(item) }}
-                        </v-chip>
-                      </template>
-                      <span v-else-if="index === 1" class="text-caption text-medium-emphasis ml-2">
-                        (+{{ filter.selectedProjectRoles.length - 1 }})
-                      </span>
-                    </template>
-                  </v-autocomplete>
-                </div>
-              </v-card>
-            </v-menu>
+          <template #filter-role>
+            <v-autocomplete
+              v-model="filter.selectedProjectRoles"
+              :items="projectRoles"
+              :label="t('Роль на проекте')"
+              variant="outlined"
+              density="compact"
+              clearable
+              multiple
+              :disabled="loading"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <template v-if="index === 0">
+                  <v-chip size="small" label>
+                    {{ getFilterSelectionLabel(item) }}
+                  </v-chip>
+                </template>
+                <span v-else-if="index === 1" class="text-caption text-medium-emphasis ml-2">
+                  (+{{ filter.selectedProjectRoles.length - 1 }})
+                </span>
+              </template>
+            </v-autocomplete>
+          </template>
 
+          <template #right-actions>
             <v-btn
               v-if="canEditVacations"
               color="primary"
@@ -222,8 +186,8 @@
             >
               {{ t("Добавить отпуск") }}
             </v-btn>
-          </div>
-        </div>
+          </template>
+        </AdaptiveFilterBar>
       </v-card-text>
 
       <v-window v-model="selectedTab">
@@ -356,6 +320,7 @@
 import { computed, nextTick, ref } from "vue";
 import { useDisplay } from "vuetify";
 import { useI18n } from "vue-i18n";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import MyDateRangeComponent from "@/components/shared/MyDateRangeComponent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
@@ -398,22 +363,17 @@ const {
 } = useVacationsManagement(t);
 
 const vacationDialog = ref(false);
-const advancedFiltersMenu = ref(false);
 const selectedVacation = ref<Vacation | null>(null);
 const vacationEditForm = ref<InstanceType<typeof VacationEditForm> | null>(null);
 
-const advancedFiltersCount = computed(() => {
-  let count = 0;
-  if (filter.selectedProjects.length > 0) {
-    count += 1;
-  }
-  if (filter.selectedProjectRoles.length > 0) {
-    count += 1;
-  }
-  return count;
-});
-
-const hasAdvancedFilters = computed(() => advancedFiltersCount.value > 0);
+const filterBarItems = computed(() => [
+  { id: "year", minWidth: 140, active: Boolean(selectedYear.value) },
+  { id: "date", minWidth: 320, active: filter.selectedDates.length > 0 },
+  { id: "search", minWidth: 380, active: filter.search.trim().length > 0 },
+  { id: "status", minWidth: 260, active: filter.selectedStatuses.length > 0 },
+  { id: "project", minWidth: 240, active: filter.selectedProjects.length > 0 },
+  { id: "role", minWidth: 240, active: filter.selectedProjectRoles.length > 0 },
+]);
 
 init();
 
@@ -474,72 +434,3 @@ function extractRow<T>(payload: unknown): T | null {
 
 
 
-<style scoped>
-.vacations-filter-bar {
-  align-items: flex-start;
-}
-
-.vacations-filter-bar__actions {
-  flex: 0 0 auto;
-}
-
-.vacations-filter-bar__actions--left,
-.vacations-filter-bar__actions--right {
-  align-self: center;
-}
-
-.vacations-filter-bar__divider {
-  align-self: stretch;
-}
-
-.vacations-filter-bar__filters {
-  min-width: 0;
-}
-
-.vacations-filter-bar__filters-grid {
-  width: 100%;
-}
-
-.vacations-filter-bar__field {
-  flex: 1 1 220px;
-  min-width: 220px;
-  max-width: 100%;
-}
-
-.vacations-filter-bar__field--year {
-  flex-basis: 140px;
-  min-width: 140px;
-}
-
-.vacations-filter-bar__field--date {
-  flex-basis: 320px;
-  min-width: 320px;
-}
-
-.vacations-filter-bar__field--status {
-  flex-basis: 260px;
-  min-width: 260px;
-}
-
-.vacations-filter-bar__field--search {
-  flex-basis: 240px;
-  min-width: 240px;
-}
-
-@media (min-width: 1280px) {
-  .vacations-filter-bar {
-    align-items: center;
-  }
-}
-
-@media (max-width: 1279px) {
-  .vacations-filter-bar__filters {
-    flex-basis: 100%;
-    order: 3;
-  }
-
-  .vacations-filter-bar__actions--right {
-    margin-left: auto;
-  }
-}
-</style>
