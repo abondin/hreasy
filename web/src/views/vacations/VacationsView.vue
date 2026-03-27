@@ -2,7 +2,7 @@
   Vacations management view with list, summary, and timeline tabs.
 -->
 <template>
-  <v-container class="py-6" data-testid="vacations-view">
+  <v-container class="py-6" fluid data-testid="vacations-view">
     <v-alert
       v-if="!canViewVacations"
       type="warning"

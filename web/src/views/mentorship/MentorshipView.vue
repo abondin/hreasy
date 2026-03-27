@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" data-testid="mentorship-view">
+  <v-container class="py-6" fluid data-testid="mentorship-view">
     <v-alert
       v-if="!canViewMentorship"
       type="warning"

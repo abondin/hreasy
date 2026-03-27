@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" data-testid="salary-requests-view">
+  <v-container class="py-6" fluid data-testid="salary-requests-view">
     <v-alert
       v-if="!canViewSalaryRequests"
       type="warning"

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" data-testid="assessments-view">
+  <v-container class="py-6" fluid data-testid="assessments-view">
     <v-alert
       v-if="!canAccess"
       type="warning"

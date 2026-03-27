@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" data-testid="admin-users-view">
+  <v-container class="py-6" fluid data-testid="admin-users-view">
     <v-card data-testid="admin-users-card">
       <HREasyTableBase
         table-class="admin-users-table text-truncate"

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" data-testid="admin-managers-view">
+  <v-container class="py-6" fluid data-testid="admin-managers-view">
     <admin-managers-table
       :title="t('Менеджеры')"
       :editable="permissions.canAdminManagers()"

@@ -2,7 +2,7 @@
   Employees directory using virtualized data table.
 -->
 <template>
-  <v-container class="py-6" data-testid="employees-view">
+  <v-container class="py-6" fluid data-testid="employees-view">
     <employees-virtual-table
       :items="filteredEmployees"
       :all-items="employees"

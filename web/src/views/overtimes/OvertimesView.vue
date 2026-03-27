@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" data-testid="overtimes-view">
+  <v-container class="py-6" fluid data-testid="overtimes-view">
     <v-alert
       v-if="!canViewAllOvertimes"
       type="warning"
