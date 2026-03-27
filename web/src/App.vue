@@ -126,7 +126,11 @@
     </v-app-bar>
 
     <v-main>
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <KeepAlive :include="keepAliveComponentNames">
+          <component :is="Component" />
+        </KeepAlive>
+      </RouterView>
     </v-main>
 
     <v-footer app color="grey-lighten-4" border="top" height="60">
@@ -145,8 +149,8 @@
 </template>
 
 <script setup lang="ts">
-import { RouterView, useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
+import { RouterView, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useDisplay } from "vuetify";
 import { useAuthStore } from "@/stores/auth";
@@ -161,6 +165,22 @@ const display = useDisplay();
 const displayName = computed(() => authStore.displayName);
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const isMobile = computed(() => display.smAndDown.value);
+const keepAliveComponentNames = [
+  "EmployeesView",
+  "VacationsView",
+  "OvertimesView",
+  "AssessmentsView",
+  "SalaryRequestsView",
+  "SalaryLatestRequestsView",
+  "MentorshipView",
+  "AdminProjectsView",
+  "AdminBusinessAccountsView",
+  "AdminManagersView",
+  "AdminArticlesView",
+  "AdminUsersView",
+  "AdminEmployeesTabsView",
+  "AdminDictsTabsView",
+];
 const drawer = ref(false);
 const currentYear = new Date().getFullYear();
 const vue2Url = import.meta.env.VITE_VUE2_UI_URL ?? "/old/";

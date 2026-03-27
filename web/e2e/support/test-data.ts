@@ -7,6 +7,8 @@ export const routes = {
   employees: "/employees",
   vacations: "/vacations",
   overtimes: "/overtimes",
+  assessments: "/assessments",
+  employeeAssessmentsPrefix: "/assessments/",
   mentorship: "/juniors",
   mentorshipDetailsPrefix: "/juniors/",
   adminEmployees: "/admin/employees/list",
