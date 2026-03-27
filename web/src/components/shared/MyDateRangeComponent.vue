@@ -19,6 +19,7 @@
         clearable
         :variant="props.variant"
         density="compact"
+        :hide-details="props.hideDetails"
         :disabled="props.disabled"
         v-bind="activatorProps"
         @click:clear.stop="clearRange"
@@ -104,12 +105,14 @@ const props = withDefaults(
     label: string;
     allowedShortCut?: AllowedShortCut[];
     disabled?: boolean;
+    hideDetails?: boolean | "auto";
     variant?: "outlined" | "filled" | "underlined" | "plain" | "solo" | "solo-inverted" | "solo-filled";
   }>(),
   {
     modelValue: () => [],
     allowedShortCut: () => ["year", "month", "todayPlus5Days"],
     disabled: false,
+    hideDetails: false,
     variant: "filled",
   },
 );
