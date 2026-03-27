@@ -110,14 +110,11 @@
               hide-details
             >
               <template #selection="{ item, index }">
-                <template v-if="index === 0">
-                  <v-chip size="small" label>
-                    {{ getFilterSelectionLabel(item) }}
-                  </v-chip>
-                </template>
-                <span v-else-if="index === 1" class="text-caption text-medium-emphasis ml-2">
-                  (+{{ filter.selectedStatuses.length - 1 }})
-                </span>
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedStatuses.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
               </template>
             </v-select>
           </template>
@@ -137,14 +134,11 @@
               hide-details
             >
               <template #selection="{ item, index }">
-                <template v-if="index === 0">
-                  <v-chip size="small" label>
-                    {{ getFilterSelectionLabel(item) }}
-                  </v-chip>
-                </template>
-                <span v-else-if="index === 1" class="text-caption text-medium-emphasis ml-2">
-                  (+{{ filter.selectedProjects.length - 1 }})
-                </span>
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedProjects.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
               </template>
             </v-autocomplete>
           </template>
@@ -162,14 +156,11 @@
               hide-details
             >
               <template #selection="{ item, index }">
-                <template v-if="index === 0">
-                  <v-chip size="small" label>
-                    {{ getFilterSelectionLabel(item) }}
-                  </v-chip>
-                </template>
-                <span v-else-if="index === 1" class="text-caption text-medium-emphasis ml-2">
-                  (+{{ filter.selectedProjectRoles.length - 1 }})
-                </span>
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedProjectRoles.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
               </template>
             </v-autocomplete>
           </template>
@@ -321,6 +312,7 @@ import { computed, nextTick, ref } from "vue";
 import { useDisplay } from "vuetify";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import MyDateRangeComponent from "@/components/shared/MyDateRangeComponent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
@@ -369,7 +361,7 @@ const vacationEditForm = ref<InstanceType<typeof VacationEditForm> | null>(null)
 const filterBarItems = computed(() => [
   { id: "year", minWidth: 140, active: Boolean(selectedYear.value) },
   { id: "date", minWidth: 320, active: filter.selectedDates.length > 0 },
-  { id: "search", minWidth: 380, active: filter.search.trim().length > 0 },
+  { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
   { id: "status", minWidth: 260, active: filter.selectedStatuses.length > 0 },
   { id: "project", minWidth: 240, active: filter.selectedProjects.length > 0 },
   { id: "role", minWidth: 240, active: filter.selectedProjectRoles.length > 0 },

@@ -3,9 +3,13 @@
   Keeps table filters isolated from list/details orchestration.
 -->
 <template>
-  <v-card-title class="pb-0">
-    <v-row>
-      <v-col cols="12" :md="showExtendedFilters ? 4 : 12">
+  <v-card-text class="pt-4 pb-2">
+    <AdaptiveFilterBar
+      :items="filterBarItems"
+      :has-left-actions="false"
+      :overflow-menu-min-width="320"
+    >
+      <template #filter-search>
         <v-text-field
           v-model="searchModel"
           data-testid="employees-filter-search"
@@ -14,50 +18,70 @@
           variant="outlined"
           density="compact"
           clearable
+          hide-details
         />
-      </v-col>
-      <template v-if="showExtendedFilters">
-        <v-col cols="12" md="4">
-          <v-autocomplete
-            v-model="projectModel"
-            data-testid="employees-filter-project"
-            :items="projectOptions"
-            :label="t('Текущий проект')"
-            variant="outlined"
-            density="compact"
-            clearable
-            multiple
-            chips
-            item-title="title"
-            item-value="value"
-          />
-        </v-col>
-        <v-col cols="12" md="4">
-          <v-autocomplete
-            v-model="businessAccountModel"
-            data-testid="employees-filter-ba"
-            :items="businessAccountOptions"
-            :label="t('Бизнес Аккаунт')"
-            variant="outlined"
-            density="compact"
-            clearable
-            multiple
-            chips
-            item-title="title"
-            item-value="value"
-          />
-        </v-col>
       </template>
-    </v-row>
-  </v-card-title>
+
+      <template #filter-project>
+        <v-autocomplete
+          v-model="projectModel"
+          data-testid="employees-filter-project"
+          :items="projectOptions"
+          :label="t('Текущий проект')"
+          variant="outlined"
+          density="compact"
+          clearable
+          multiple
+          item-title="title"
+          item-value="value"
+          hide-details
+        >
+          <template #selection="{ item, index }">
+            <CollapsedSelectionContent
+              :index="index"
+              :total="projectModel.length"
+              :label="getSelectionLabel(item)"
+              :visible-count="2"
+            />
+          </template>
+        </v-autocomplete>
+      </template>
+
+      <template #filter-business-account>
+        <v-autocomplete
+          v-model="businessAccountModel"
+          data-testid="employees-filter-ba"
+          :items="businessAccountOptions"
+          :label="t('Бизнес Аккаунт')"
+          variant="outlined"
+          density="compact"
+          clearable
+          multiple
+          item-title="title"
+          item-value="value"
+          hide-details
+        >
+          <template #selection="{ item, index }">
+            <CollapsedSelectionContent
+              :index="index"
+              :total="businessAccountModel.length"
+              :label="getSelectionLabel(item)"
+              :visible-count="2"
+            />
+          </template>
+        </v-autocomplete>
+      </template>
+    </AdaptiveFilterBar>
+  </v-card-text>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 
 const props = defineProps<{
-  showExtendedFilters: boolean;
   projectOptions: Array<{ title: string; value: number | null }>;
   businessAccountOptions: Array<{ title: string; value: number }>;
   search?: string;
@@ -87,4 +111,20 @@ const businessAccountModel = computed<number[]>({
   get: () => props.businessAccount ?? [],
   set: (value) => emit('update:businessAccount', value),
 });
+
+const filterBarItems = computed(() => [
+  { id: 'search', minWidth: 380, active: searchModel.value.trim().length > 0, grow: true },
+  { id: 'project', minWidth: 380, active: projectModel.value.length > 0 },
+  { id: 'business-account', minWidth: 380, active: businessAccountModel.value.length > 0 },
+]);
+
+function getSelectionLabel(item: unknown): string {
+  if (typeof item === 'string') {
+    return item;
+  }
+  if (item && typeof item === 'object' && 'title' in item && typeof item.title === 'string') {
+    return item.title;
+  }
+  return '';
+}
 </script>

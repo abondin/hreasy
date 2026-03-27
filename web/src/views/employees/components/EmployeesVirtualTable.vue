@@ -5,7 +5,6 @@
 <template>
   <v-card data-testid="employees-table-card">
     <employees-filters
-      :show-extended-filters="showExtendedFilters"
       :project-options="projectOptions"
       :business-account-options="baOptions"
       :search="search"
@@ -81,7 +80,6 @@ const display = useDisplay();
 const detailsOpen = ref(false);
 const selectedEmployee = ref<Employee | null>(null);
 
-const showExtendedFilters = computed(() => !display.smAndDown.value);
 const useFullscreenDetailsPanel = computed(() => display.mdAndDown.value);
 const headers = computed<DataTableHeader>(() => {
   const items: MutableHeader[] = [

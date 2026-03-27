@@ -19,7 +19,7 @@
           v-for="item in visibleItems"
           :key="item.id"
           class="adaptive-filter-bar__field"
-          :style="getFieldStyle(item.minWidth)"
+          :style="getFieldStyle(item)"
         >
           <slot :name="`filter-${item.id}`" :item="item" :hidden="false" />
         </div>
@@ -87,6 +87,7 @@ export type AdaptiveFilterBarItem = {
   id: string;
   minWidth: number;
   active?: boolean;
+  grow?: boolean;
 };
 
 const props = withDefaults(defineProps<{
@@ -167,10 +168,10 @@ function recalculateVisibleFilters(): void {
   }
 }
 
-function getFieldStyle(minWidth: number): { flexBasis: string; minWidth: string } {
-  const width = `${minWidth}px`;
+function getFieldStyle(item: AdaptiveFilterBarItem): { flex: string; minWidth: string } {
+  const width = `${item.minWidth}px`;
   return {
-    flexBasis: width,
+    flex: item.grow ? `1 1 ${width}` : `0 0 ${width}`,
     minWidth: width,
   };
 }
