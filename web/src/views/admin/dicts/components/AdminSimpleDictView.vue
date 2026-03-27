@@ -3,13 +3,13 @@
   archive filter, and create/update dialog behavior.
 -->
 <template>
-  <div class="mt-4" :data-testid="testId">
-    <v-card>
+  <div class="mt-4 d-flex flex-column flex-grow-1 min-h-0" :data-testid="testId">
+    <v-card class="d-flex flex-column h-100">
       <HREasyTableBase
         table-class="admin-simple-dict-table text-truncate"
         :headers="headers"
         :items="filteredItems"
-        height="70vh"
+        height="fill"
         :fixed-header="true"
         density="compact"
         :loading="loading"

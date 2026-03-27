@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" fluid data-testid="overtimes-view">
+  <TableFirstPageLayout test-id="overtimes-view">
     <v-alert
       v-if="!canViewAllOvertimes"
       type="warning"
@@ -9,8 +9,8 @@
       {{ t("Не достаточно прав") }}
     </v-alert>
 
-        <v-card v-else data-testid="overtimes-card">
-      <v-card-text class="pt-4 pb-2">
+        <v-card v-else class="d-flex flex-column h-100" data-testid="overtimes-card">
+      <v-card-text class="pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0">
         <AdaptiveFilterBar
           :items="filterBarItems"
           :has-right-actions="canAdminOvertimes"
@@ -148,10 +148,10 @@
           {{ t("Итого (с учётом фильтров)") }}: {{ t("hours", totalHours) }}
         </div>
 
+        <div class="flex-grow-1 min-h-0">
         <HREasyTableBase
           :headers="headers"
           :items="filteredOvertimes"
-          height="60vh"
           fixed-header
           :loading="loading"
           :loading-text="t('Загрузка_данных')"
@@ -160,6 +160,7 @@
           density="compact"
           hover
           @click:row="onRowClick"
+          height="fill"
         >
           <template #[`item.commonApprovalStatus`]="{ item }">
             <v-chip v-if="item.commonApprovalStatus === 'DECLINED'" variant="outlined">
@@ -183,6 +184,7 @@
             <span v-else>{{ t("Отсутствуют") }}</span>
           </template>
         </HREasyTableBase>
+        </div>
       </v-card-text>
     </v-card>
 
@@ -216,11 +218,12 @@
         <v-btn icon="mdi-close-circle-outline" @click="exportCompleted = false" />
       </template>
     </v-snackbar>
-  </v-container>
+  </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useI18n } from "vue-i18n";
 import EmployeeOvertimeCard from "@/components/overtimes/EmployeeOvertimeCard.vue";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

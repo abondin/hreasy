@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" fluid data-testid="assessments-view">
+  <TableFirstPageLayout test-id="assessments-view">
     <v-alert
       v-if="!canAccess"
       type="warning"
@@ -10,11 +10,11 @@
       {{ t("Недостаточно прав") }}
     </v-alert>
 
-        <v-card v-else data-testid="assessments-card">
+        <v-card v-else class="d-flex flex-column h-100" data-testid="assessments-card">
       <v-snackbar v-model="exportCompleted" timeout="5000">
         {{ t("Экспорт успешно завершён. Файл скачен.") }}
       </v-snackbar>
-      <v-card-text class="pt-4 pb-2">
+      <v-card-text class="pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0">
         <AdaptiveFilterBar
           :items="filterBarItems"
           :has-right-actions="canExport"
@@ -111,6 +111,7 @@
           {{ error }}
         </v-alert>
 
+        <div class="flex-grow-1 min-h-0">
         <HREasyTableBase
           table-class="assessments-table text-truncate"
           :headers="headers"
@@ -123,10 +124,10 @@
           density="compact"
           :sort-by="[{ key: 'lastAssessmentDate', order: 'desc' }]"
           item-key="employeeId"
-          height="calc(100vh - 280px)"
           :row-props="rowProps"
           data-testid="assessments-table"
           @click:row="onRowClick"
+          height="fill"
         >
           <template #[`item.displayName`]="{ item }">
             <router-link
@@ -152,13 +153,15 @@
             {{ formatDate(item.lastAssessmentDate) }}
           </template>
         </HREasyTableBase>
+        </div>
       </v-card-text>
     </v-card>
-  </v-container>
+  </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
+import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { formatDate } from "@/lib/datetime";

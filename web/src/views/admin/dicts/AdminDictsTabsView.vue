@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" fluid data-testid="admin-dicts-tabs-view">
+  <TableFirstPageLayout test-id="admin-dicts-tabs-view">
     <v-tabs color="primary" data-testid="admin-dicts-tabs">
       <v-tab
         v-for="tab in tabs"
@@ -9,12 +9,13 @@
         {{ tab.label }}
       </v-tab>
     </v-tabs>
-    <router-view />
-  </v-container>
+    <router-view class="flex-grow-1 min-h-0" />
+  </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useI18n } from "vue-i18n";
 import { usePermissions } from "@/lib/permissions";
 

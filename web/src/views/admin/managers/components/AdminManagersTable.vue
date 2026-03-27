@@ -1,6 +1,6 @@
 <template>
-  <v-card :data-testid="testId">
-    <v-card-text :class="mode === 'full' ? 'px-6 pt-4 pb-2' : 'px-6 pb-5 pt-4'">
+  <v-card class="d-flex flex-column h-100" :data-testid="testId">
+    <v-card-text :class="mode === 'full' ? 'px-6 pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0' : 'px-6 pb-5 pt-4'">
       <AdaptiveFilterBar
         :items="filterBarItems"
         :has-right-actions="editable"
@@ -79,7 +79,7 @@
         :table-class="mode === 'full' ? 'admin-managers-table text-truncate' : ''"
         :headers="headers"
         :items="filteredItems"
-        :height="mode === 'full' ? '70vh' : undefined"
+        :height="mode === 'full' ? 'fill' : undefined"
         :fixed-header="mode === 'full'"
         density="compact"
         :loading="loading"

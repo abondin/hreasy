@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" fluid data-testid="mentorship-view">
+  <TableFirstPageLayout test-id="mentorship-view">
     <v-alert
       v-if="!canViewMentorship"
       type="warning"
@@ -9,7 +9,7 @@
       {{ t("Не достаточно прав") }}
     </v-alert>
 
-        <v-card v-else data-testid="mentorship-card">
+        <v-card v-else class="d-flex flex-column h-100" data-testid="mentorship-card">
       <v-alert
         v-if="error"
         type="error"
@@ -20,7 +20,7 @@
         {{ error }}
       </v-alert>
 
-      <v-card-text class="pt-4 pb-2">
+      <v-card-text class="pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0">
         <AdaptiveFilterBar
           :items="filterBarItems"
           :has-right-actions="canManageRegistry"
@@ -122,9 +122,9 @@
       </v-card-text>
 
 
+      <div class="flex-grow-1 min-h-0">
       <HREasyTableBase
         table-class="mentorship-table"
-        height="62vh"
         fixed-header
         :loading="loading"
         :loading-text="t('Загрузка_данных')"
@@ -135,6 +135,7 @@
         multi-sort
         :sort-by="[{ key: 'juniorEmpl.name', order: 'asc' }]"
         :row-props="buildRowProps"
+        height="fill"
       >
         <template #[`item.progress`]="{ item }">
           <div class="d-flex ga-1 flex-wrap">
@@ -199,6 +200,7 @@
           {{ formatDateTime(item.graduation?.graduatedAt) }}
         </template>
       </HREasyTableBase>
+      </div>
     </v-card>
 
     <v-dialog v-model="addDialog" max-width="760">
@@ -220,11 +222,12 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-container>
+  </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useI18n } from "vue-i18n";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

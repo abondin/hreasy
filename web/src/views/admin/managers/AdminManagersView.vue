@@ -1,15 +1,16 @@
 <template>
-  <v-container class="py-6" fluid data-testid="admin-managers-view">
-    <admin-managers-table
+  <TableFirstPageLayout test-id="admin-managers-view">
+    <admin-managers-table class="h-100"
       :title="t('Менеджеры')"
       :editable="permissions.canAdminManagers()"
       test-id="admin-managers"
     />
-  </v-container>
+  </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { usePermissions } from "@/lib/permissions";
 import AdminManagersTable from "@/views/admin/managers/components/AdminManagersTable.vue";
 

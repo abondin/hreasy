@@ -2,8 +2,8 @@
   Employees directory using virtualized data table.
 -->
 <template>
-  <v-container class="py-6" fluid data-testid="employees-view">
-    <employees-virtual-table
+  <TableFirstPageLayout test-id="employees-view">
+    <employees-virtual-table class="h-100" table-height="fill"
       :items="filteredEmployees"
       :all-items="employees"
       :loading="loading"
@@ -17,11 +17,12 @@
       @update:ba="updateBa"
       @employee-updated="handleEmployeeUpdated"
     />
-  </v-container>
+  </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
+import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useI18n } from "vue-i18n";
 import { useEmployeesDirectory } from "@/composables/useEmployeesDirectory";
 import EmployeesVirtualTable from "@/views/employees/components/EmployeesVirtualTable.vue";

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" fluid data-testid="salary-latest-view">
+  <TableFirstPageLayout test-id="salary-latest-view">
     <v-alert
       v-if="!canAccess"
       type="warning"
@@ -10,8 +10,8 @@
       {{ t("Недостаточно прав") }}
     </v-alert>
 
-        <v-card v-else data-testid="salary-latest-card">
-      <v-card-text class="pt-4 pb-2">
+        <v-card v-else class="d-flex flex-column h-100" data-testid="salary-latest-card">
+      <v-card-text class="pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0">
         <AdaptiveFilterBar
           :items="filterBarItems"
           :has-left-actions="true"
@@ -89,6 +89,7 @@
           {{ error }}
         </v-alert>
 
+        <div class="flex-grow-1 min-h-0">
         <HREasyTableBase
           table-class="salary-latest-table text-truncate"
           :headers="headers"
@@ -99,9 +100,9 @@
           fixed-header
           hover
           density="compact"
-          height="calc(100vh - 320px)"
           :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
           data-testid="salary-latest-table"
+          height="fill"
         >
           <template #[`item.employeeDisplayName`]="{ item }">
             <router-link
@@ -138,13 +139,15 @@
             </span>
           </template>
         </HREasyTableBase>
+        </div>
       </v-card-text>
     </v-card>
-  </v-container>
+  </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useI18n } from "vue-i18n";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

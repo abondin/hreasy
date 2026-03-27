@@ -2,7 +2,7 @@
   Vacations management view with list, summary, and timeline tabs.
 -->
 <template>
-  <v-container class="py-6" fluid data-testid="vacations-view">
+  <TableFirstPageLayout test-id="vacations-view">
     <v-alert
       v-if="!canViewVacations"
       type="warning"
@@ -12,7 +12,7 @@
       {{ t("Не достаточно прав") }}
     </v-alert>
 
-    <v-card v-else data-testid="vacations-card">
+    <v-card v-else class="d-flex flex-column h-100" data-testid="vacations-card">
       <v-tabs v-model="selectedTab" data-testid="vacations-tabs">
         <v-tab data-testid="vacations-tab-list">{{ t("Все отпуска") }}</v-tab>
         <v-tab data-testid="vacations-tab-summary">{{ t("Сводная по сотрудникам") }}</v-tab>
@@ -181,11 +181,11 @@
         </AdaptiveFilterBar>
       </v-card-text>
 
-      <v-window v-model="selectedTab">
-        <v-window-item>
+      <v-window v-model="selectedTab" class="flex-grow-1 min-h-0">
+        <v-window-item class="h-100">
           <HREasyTableBase
             class="vacations-list-table text-truncate"
-            height="60vh"
+            height="fill"
             fixed-header
             :loading="loading"
             :loading-text="t('Загрузка_данных')"
@@ -243,9 +243,9 @@
           </HREasyTableBase>
         </v-window-item>
 
-        <v-window-item>
+        <v-window-item class="h-100">
           <HREasyTableBase
-            height="60vh"
+            height="fill"
             fixed-header
             :loading="loading"
             :loading-text="t('Загрузка_данных')"
@@ -272,7 +272,7 @@
           </HREasyTableBase>
         </v-window-item>
 
-        <v-window-item>
+        <v-window-item class="h-100">
           <vacations-timeline
             :vacations="filteredItems"
             :year="selectedYear"
@@ -304,11 +304,12 @@
         </template>
       </v-snackbar>
     </v-card>
-  </v-container>
+  </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
+import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useDisplay } from "vuetify";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

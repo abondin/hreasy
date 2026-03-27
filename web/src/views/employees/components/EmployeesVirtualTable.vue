@@ -3,7 +3,7 @@
   Keeps page state wiring, URL sync, and responsive details behavior.
 -->
 <template>
-  <v-card data-testid="employees-table-card">
+  <v-card class="d-flex flex-column h-100" data-testid="employees-table-card">
     <employees-filters
       :project-options="projectOptions"
       :business-account-options="baOptions"
@@ -15,13 +15,15 @@
       @update:business-account="emit('update:ba', $event)"
     />
 
-    <employees-table
+    <div class="flex-grow-1 min-h-0">
+      <employees-table
       :items="items"
       :loading="loading"
       :headers="headers"
       :table-height="tableHeight"
       @select-employee="openEmployeeDetails"
     />
+    </div>
   </v-card>
 
   <employees-details-panel-host
@@ -94,7 +96,7 @@ const headers = computed<DataTableHeader>(() => {
   items.push({ title: t('Бизнес Аккаунт'), key: 'ba.name', width: '152px' });
   return items;
 });
-const tableHeight = computed(() => props.tableHeight ?? '70vh');
+const tableHeight = computed(() => props.tableHeight ?? 'fill');
 const projectOptions = computed(() => props.projectOptions);
 const baOptions = computed(() => props.businessAccountOptions);
 const selectedEmployeeIdFromRoute = computed(() => {

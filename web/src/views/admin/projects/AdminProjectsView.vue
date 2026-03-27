@@ -1,11 +1,11 @@
 <template>
-  <v-container class="py-6" fluid data-testid="admin-projects-view">
-    <v-card data-testid="admin-projects-card">
+  <TableFirstPageLayout test-id="admin-projects-view">
+    <v-card class="d-flex flex-column h-100" data-testid="admin-projects-card">
       <HREasyTableBase
         table-class="admin-projects-table text-truncate"
         :headers="headers"
         :items="filteredItems"
-        height="70vh"
+        height="fill"
         :fixed-header="true"
         density="compact"
         :loading="loading"
@@ -151,11 +151,12 @@
         @saved="onCreated"
       />
     </v-dialog>
-  </v-container>
+  </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6" fluid data-testid="salary-requests-view">
+  <TableFirstPageLayout test-id="salary-requests-view">
     <v-alert
       v-if="!canViewSalaryRequests"
       type="warning"
@@ -20,8 +20,8 @@
       {{ error }}
     </v-alert>
 
-        <v-card v-else data-testid="salary-requests-card">
-      <v-card-text class="pt-4 pb-2">
+        <v-card v-else class="d-flex flex-column h-100" data-testid="salary-requests-card">
+      <v-card-text class="pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0">
         <AdaptiveFilterBar
           :items="filterBarItems"
           :has-right-actions="canCreateSalaryRequest || canAdminSalaryRequests"
@@ -170,6 +170,7 @@
           </template>
         </AdaptiveFilterBar>
 
+        <div class="flex-grow-1 min-h-0">
         <HREasyTableBase
           table-class="salary-requests-table text-truncate"
           :headers="headers"
@@ -181,10 +182,10 @@
           hover
           density="compact"
           :sort-by="[{ key: 'createdAt', order: 'desc' }]"
-          height="calc(100vh - 340px)"
           :row-props="rowProps"
           data-testid="salary-requests-table"
           @click:row="onRowClick"
+          height="fill"
         >
           <template #[`item.employee.name`]="{ item }">
             <router-link
@@ -249,6 +250,7 @@
             {{ formatDateTime(item.createdAt) }}
           </template>
         </HREasyTableBase>
+        </div>
       </v-card-text>
     </v-card>
 
@@ -370,11 +372,12 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-container>
+  </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from "vue";
+import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import type { VForm } from "vuetify/components";

@@ -1,10 +1,10 @@
 <template>
-  <v-card class="mt-4" data-testid="admin-kids-view">
+  <v-card class="mt-4 d-flex flex-column flex-grow-1 min-h-0" data-testid="admin-kids-view">
     <HREasyTableBase
       table-class="admin-kids-table text-truncate"
       :headers="headers"
       :items="filteredItems"
-      height="70vh"
+      height="fill"
       fixed-header
       :loading="loading"
       :loading-text="t('Загрузка_данных')"
