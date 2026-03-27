@@ -1,13 +1,14 @@
 <template>
   <TableFirstPageLayout test-id="overtimes-view">
-    <v-alert
+    <TableFirstPageState
       v-if="!canViewAllOvertimes"
-      type="warning"
-      variant="tonal"
-      border="start"
-    >
-      {{ t("Не достаточно прав") }}
-    </v-alert>
+      test-id="overtimes-no-access"
+      :title="t('Недостаточно прав')"
+      :action-text="t('На главную')"
+      :to="{ name: 'profile-main' }"
+      icon="mdi-alert-outline"
+      color="warning"
+    />
 
         <v-card v-else class="d-flex flex-column h-100" data-testid="overtimes-card">
       <v-card-text class="pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0">
@@ -224,6 +225,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
+import TableFirstPageState from "@/components/shared/TableFirstPageState.vue";
 import { useI18n } from "vue-i18n";
 import EmployeeOvertimeCard from "@/components/overtimes/EmployeeOvertimeCard.vue";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

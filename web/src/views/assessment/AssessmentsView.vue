@@ -1,14 +1,14 @@
 <template>
   <TableFirstPageLayout test-id="assessments-view">
-    <v-alert
+    <TableFirstPageState
       v-if="!canAccess"
-      type="warning"
-      variant="tonal"
-      class="mb-4"
-      data-testid="assessments-no-access"
-    >
-      {{ t("Недостаточно прав") }}
-    </v-alert>
+      test-id="assessments-no-access"
+      :title="t('Недостаточно прав')"
+      :action-text="t('На главную')"
+      :to="{ name: 'profile-main' }"
+      icon="mdi-alert-outline"
+      color="warning"
+    />
 
         <v-card v-else class="d-flex flex-column h-100" data-testid="assessments-card">
       <v-snackbar v-model="exportCompleted" timeout="5000">
@@ -162,6 +162,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
+import TableFirstPageState from "@/components/shared/TableFirstPageState.vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { formatDate } from "@/lib/datetime";

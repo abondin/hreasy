@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="vacations-timeline">
     <div ref="timelineRef" class="timeline"></div>
   </div>
 </template>
@@ -162,6 +162,10 @@ watch(
 </style>
 
 <style scoped>
+.vacations-timeline {
+  width: 100%;
+}
+
 .timeline {
   width: 100%;
 }

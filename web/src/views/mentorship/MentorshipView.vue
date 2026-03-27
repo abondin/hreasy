@@ -1,13 +1,14 @@
 <template>
   <TableFirstPageLayout test-id="mentorship-view">
-    <v-alert
+    <TableFirstPageState
       v-if="!canViewMentorship"
-      type="warning"
-      variant="tonal"
-      border="start"
-    >
-      {{ t("Не достаточно прав") }}
-    </v-alert>
+      test-id="mentorship-no-access"
+      :title="t('Недостаточно прав')"
+      :action-text="t('На главную')"
+      :to="{ name: 'profile-main' }"
+      icon="mdi-alert-outline"
+      color="warning"
+    />
 
         <v-card v-else class="d-flex flex-column h-100" data-testid="mentorship-card">
       <v-alert
@@ -228,6 +229,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
+import TableFirstPageState from "@/components/shared/TableFirstPageState.vue";
 import { useI18n } from "vue-i18n";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
