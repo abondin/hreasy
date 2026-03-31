@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <v-card>
     <v-card-title class="d-flex align-center flex-wrap ga-2">
       <div>{{ t("Овертаймы") }}</div>
@@ -7,10 +7,9 @@
           :label="selectedPeriodLabel"
           :is-current="isCurrentPeriod"
           :disabled="loading"
+          :period-closed="isPeriodClosed"
+
           variant="plain"
-          :status-icon="isPeriodClosed ? 'mdi-lock' : undefined"
-          status-icon-color="primary"
-          :status-icon-title="isPeriodClosed ? t('Период закрыт для внесения изменений') : undefined"
           @prev="decrementPeriod"
           @next="incrementPeriod"
           @go-current="goToCurrentPeriod"
@@ -67,7 +66,7 @@
           icon="mdi-delete"
           variant="text"
           color="secondary"
-          :disabled="isPeriodClosed"
+
           @click="openDeleteDialog(item)"
         />
         <span>{{ formatDate(item.date) }}</span>
@@ -339,3 +338,4 @@ async function deleteItem(): Promise<void> {
   }
 }
 </script>
+

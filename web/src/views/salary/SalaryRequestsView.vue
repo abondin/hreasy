@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <TableFirstPageLayout test-id="salary-requests-view">
     <TableFirstPageState
       v-if="!canViewSalaryRequests"
@@ -28,7 +28,7 @@
           <template #left-actions>
             <div class="d-flex align-center ga-2 flex-wrap">
               <table-toolbar-actions
-                :disabled="loading"
+
                 show-refresh
                 :refresh-label="t('Обновить данные')"
                 @refresh="fetchData"
@@ -48,7 +48,7 @@
               </v-btn-toggle>
               <table-toolbar-actions
                 v-if="canAdminSalaryRequests"
-                :disabled="loading"
+
                 show-export
                 :export-label="t('Экспорт в Excel')"
                 @export="exportToExcel"
@@ -73,11 +73,10 @@
             <period-switcher-control
               :label="selectedPeriod.toString()"
               :is-current="isCurrentPeriod"
-              :go-current-label="t('Перейти к текущему')"
+              :width="280"
               :disabled="loading"
-              :status-icon="periodClosed ? 'mdi-lock' : undefined"
-              status-icon-color="primary"
-              :status-icon-title="periodClosed ? t('Период закрыт для внесения изменений') : undefined"
+              :period-closed="periodClosed"
+
               prev-test-id="salary-requests-period-prev"
               next-test-id="salary-requests-period-next"
               label-test-id="salary-requests-period-label"
@@ -139,7 +138,7 @@
           <template #right-actions>
             <div class="d-flex align-center ga-2">
               <table-toolbar-actions
-                :disabled="loading || !canCreateSalaryRequest"
+
                 :show-add="canReportSalaryRequest"
                 :add-label="createNewTitle"
                 @add="openCreateDialog"
@@ -150,7 +149,7 @@
                     v-bind="props"
                     :icon="periodClosed ? 'mdi-lock-open' : 'mdi-lock'"
                     variant="text"
-                    :disabled="loading"
+
                     data-testid="salary-requests-period-toggle"
                     @click="openPeriodToggleDialog"
                   />
@@ -448,7 +447,7 @@ const {
 } = useSalaryRequests(t);
 
 const filterBarItems = computed(() => [
-  { id: "period", minWidth: 248, active: false },
+  { id: "period", minWidth: 280, active: false },
   { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
   { id: "ba", minWidth: 340, active: filter.budgetBusinessAccounts.length > 0 },
   { id: "implemented", minWidth: 240, active: filter.implemented.length > 0 },
@@ -755,3 +754,4 @@ function toNullableDate(value: string): string | null {
   return value ? value : null;
 }
 </script>
+

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <v-text-field
     :model-value="props.label"
     :data-testid="props.labelTestId"
@@ -22,44 +22,40 @@
         @click="$emit('prev')"
       />
 
-      <v-tooltip v-if="props.statusIcon && props.statusIconTitle" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            :icon="props.statusIcon"
-            :color="props.statusIconColor"
-            disabled
-            variant="text"
-            size="small"
-            density="comfortable"
-          />
-        </template>
-        <span>{{ props.statusIconTitle }}</span>
-      </v-tooltip>
-      <v-icon
-        v-else-if="props.statusIcon"
-        :icon="props.statusIcon"
-        :color="props.statusIconColor"
-        size="small"
-      />
+      <v-sheet width="28" color="transparent" class="d-inline-flex align-center justify-center">
+        <v-tooltip v-if="props.periodClosed" location="bottom">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              icon="mdi-lock"
+              disabled
+              variant="plain"
+              size="x-small"
+              density="comfortable"
+            />
+          </template>
+          <span>{{ t("Период закрыт для внесения изменений") }}</span>
+        </v-tooltip>
+      </v-sheet>
     </template>
 
     <template #append-inner>
-      <v-tooltip v-if="!props.isCurrent" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            icon="mdi-calendar-refresh"
-            color="primary"
-            variant="text"
-            size="small"
-            density="comfortable"
-            :disabled="props.disabled"
-            @click="$emit('go-current')"
-          />
-        </template>
-        <span>{{ props.goCurrentLabel }}</span>
-      </v-tooltip>
+      <v-sheet width="28" color="transparent" class="d-inline-flex align-center justify-center">
+        <v-tooltip v-if="!props.isCurrent" location="bottom">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              icon="mdi-calendar-cursor-outline"
+              variant="plain"
+              size="x-small"
+              density="comfortable"
+              :disabled="props.disabled"
+              @click="$emit('go-current')"
+            />
+          </template>
+          <span>{{ t("Перейти к текущему") }}</span>
+        </v-tooltip>
+      </v-sheet>
 
       <v-btn
         icon="mdi-chevron-right"
@@ -75,31 +71,26 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 interface Props {
   label: string;
   isCurrent?: boolean;
-  goCurrentLabel?: string;
   disabled?: boolean;
-  prevTestId?: string;
   nextTestId?: string;
   labelTestId?: string;
-  statusIcon?: string;
-  statusIconColor?: string;
-  statusIconTitle?: string;
+  periodClosed?: boolean;
+  prevTestId?: string;
   variant?: "underlined" | "outlined" | "filled" | "solo" | "solo-inverted" | "solo-filled" | "plain";
   width?: string | number;
 }
 
+const { t } = useI18n();
+
 const props = withDefaults(defineProps<Props>(), {
   isCurrent: true,
-  goCurrentLabel: "Перейти к текущему",
   disabled: false,
-  prevTestId: undefined,
-  nextTestId: undefined,
-  labelTestId: undefined,
-  statusIcon: undefined,
-  statusIconColor: undefined,
-  statusIconTitle: undefined,
+  periodClosed: false,
   variant: "outlined",
   width: 248,
 });
@@ -110,3 +101,4 @@ defineEmits<{
   "go-current": [];
 }>();
 </script>
+

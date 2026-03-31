@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <TableFirstPageLayout test-id="overtimes-view">
     <TableFirstPageState
       v-if="!canViewAllOvertimes"
@@ -19,7 +19,7 @@
           <template #left-actions>
             <div class="d-flex align-center ga-2">
               <table-toolbar-actions
-                :disabled="loading"
+
                 show-refresh
                 :refresh-label="t('Обновить данные')"
                 @refresh="fetchData"
@@ -27,11 +27,10 @@
               <period-switcher-control
                 :label="selectedPeriod.toString()"
                 :is-current="isCurrentPeriod"
-                :go-current-label="t('Перейти к текущему')"
+                :width="280"
                 :disabled="loading"
-                :status-icon="periodClosed ? 'mdi-lock' : undefined"
-                status-icon-color="primary"
-                :status-icon-title="periodClosed ? t('Период закрыт для внесения изменений') : undefined"
+                :period-closed="periodClosed"
+
                 label-test-id="overtimes-period-label"
                 next-test-id="overtimes-next-period"
                 @prev="decrementPeriod"
@@ -40,7 +39,7 @@
               />
               <table-toolbar-actions
                 v-if="canExportOvertimes"
-                :disabled="loading"
+
                 show-export
                 :export-label="t('Экспорт в Excel')"
                 @export="exportToExcel"
@@ -54,7 +53,7 @@
               data-testid="overtimes-filter-search"
               density="compact"
               clearable
-              :disabled="loading"
+
               :label="t('ФИО Сотрудника')"
               prepend-inner-icon="mdi-magnify"
               variant="outlined"
@@ -68,7 +67,7 @@
               density="compact"
               clearable
               multiple
-              :disabled="loading"
+
               :items="activeProjects"
               item-title="name"
               item-value="id"
@@ -92,7 +91,7 @@
               density="compact"
               clearable
               multiple
-              :disabled="loading"
+
               :items="projectsWithOvertimes"
               item-title="name"
               item-value="id"
@@ -113,7 +112,7 @@
           <template #filter-show-empty>
             <v-checkbox
               v-model="filter.showEmpty"
-              :disabled="loading"
+
               density="compact"
               :label="t('Сотрудники без овертаймов')"
               hide-details
@@ -127,7 +126,7 @@
                   v-bind="props"
                   :icon="periodClosed ? 'mdi-lock-open' : 'mdi-lock'"
                   variant="text"
-                  :disabled="loading"
+
                   data-testid="overtimes-period-toggle"
                   @click="periodClosed ? reopenPeriod() : closePeriod()"
                 />
@@ -306,3 +305,4 @@ async function goToCurrentPeriod(): Promise<void> {
   color: orange;
 }
 </style>
+
