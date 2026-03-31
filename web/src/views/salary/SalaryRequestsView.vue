@@ -39,10 +39,10 @@
                 color="primary"
                 data-testid="salary-requests-type-toggle"
               >
-                <v-btn :value="1">
+                <v-btn :value="1" min-width="180">
                   {{ t("Повышения") }} ({{ increaseImplementedCount }}/{{ increaseTotalCount }})
                 </v-btn>
-                <v-btn :value="2">
+                <v-btn :value="2" min-width="180">
                   {{ t("Бонусы") }} ({{ bonusImplementedCount }}/{{ bonusTotalCount }})
                 </v-btn>
               </v-btn-toggle>
@@ -73,7 +73,7 @@
             <period-switcher-control
               :label="selectedPeriod.toString()"
               :is-current="isCurrentPeriod"
-              :width="280"
+              :width="272"
               :disabled="loading"
               :period-closed="periodClosed"
 
@@ -447,7 +447,7 @@ const {
 } = useSalaryRequests(t);
 
 const filterBarItems = computed(() => [
-  { id: "period", minWidth: 280, active: false },
+  { id: "period", minWidth: 272, active: false },
   { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
   { id: "ba", minWidth: 340, active: filter.budgetBusinessAccounts.length > 0 },
   { id: "implemented", minWidth: 240, active: filter.implemented.length > 0 },

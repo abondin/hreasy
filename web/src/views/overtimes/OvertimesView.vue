@@ -27,7 +27,8 @@
               <period-switcher-control
                 :label="selectedPeriod.toString()"
                 :is-current="isCurrentPeriod"
-                :width="280"
+                variant="outlined"
+                :width="272"
                 :disabled="loading"
                 :period-closed="periodClosed"
 
@@ -305,4 +306,3 @@ async function goToCurrentPeriod(): Promise<void> {
   color: orange;
 }
 </style>
-
