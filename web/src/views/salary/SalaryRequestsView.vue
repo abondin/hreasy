@@ -448,7 +448,7 @@ const {
 } = useSalaryRequests(t);
 
 const filterBarItems = computed(() => [
-  { id: "period", minWidth: 304, active: false },
+  { id: "period", minWidth: 248, active: false },
   { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
   { id: "ba", minWidth: 340, active: filter.budgetBusinessAccounts.length > 0 },
   { id: "implemented", minWidth: 240, active: filter.implemented.length > 0 },

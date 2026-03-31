@@ -32,9 +32,9 @@
         <v-slider
           v-model="item.hours"
           :label="t('Часы')"
-          :min="0.5"
+          :min="1"
           :max="24"
-          :step="0.5"
+          :step="1"
           thumb-label="always"
           class="px-3"
         />
@@ -93,6 +93,8 @@ const dialog = ref(false);
 const submitting = ref(false);
 const addMore = ref(true);
 const errorMessage = ref<string | null>(null);
+const OVERTIME_HOURS_MIN = 1;
+const OVERTIME_HOURS_MAX = 24;
 
 const item = reactive<OvertimeItem>(createDefaultItem());
 
@@ -165,7 +167,7 @@ function validate(): string | null {
   if (Number.isNaN(new Date(item.date).getTime())) {
     return t("Дата в формате ГГГГ.ММ.ДД");
   }
-  if (!item.hours || item.hours <= 0) {
+  if (!Number.isInteger(item.hours) || item.hours < OVERTIME_HOURS_MIN || item.hours > OVERTIME_HOURS_MAX) {
     return t("Часы обязательны");
   }
   return null;

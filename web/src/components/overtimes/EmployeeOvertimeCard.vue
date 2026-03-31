@@ -7,7 +7,7 @@
           :label="selectedPeriodLabel"
           :is-current="isCurrentPeriod"
           :disabled="loading"
-          variant="solo"
+          variant="plain"
           :status-icon="isPeriodClosed ? 'mdi-lock' : undefined"
           status-icon-color="primary"
           :status-icon-title="isPeriodClosed ? t('Период закрыт для внесения изменений') : undefined"

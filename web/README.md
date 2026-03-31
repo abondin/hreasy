@@ -43,3 +43,15 @@ export CI_DEPLOY_TAG=test
 ./build.sh
 docker run -e HREASY_API_HOST=$BACKEND_HOST -p8080:80 --name hreasyweb hreasyweb:test
 ```
+
+
+## Legacy vue2 version
+
+If for some reason you need to use legacy vue2 version, you can run it locally:
+```bash
+docker run --rm -it --name hreasyweb-old -e HREASY_API_HOST=host.docker.internal:8081  -p 8080:80 docker.io/abondin/hreasyweb:1.3.1
+```
+
+Where `host.docker.internal` is the address of the host machine.
+
+After that you can access it at `http://localhost:8080/old`. (important: to add /old in URL)
