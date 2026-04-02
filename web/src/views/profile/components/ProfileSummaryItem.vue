@@ -1,5 +1,5 @@
 <template>
-  <property-list-item :label="label">
+  <property-list-item :label="label" :truncate-label="truncateLabel" :truncate-value="truncateValue">
     <slot />
   </property-list-item>
 </template>
@@ -9,5 +9,7 @@ import PropertyListItem from "@/components/shared/PropertyListItem.vue";
 
 defineProps<{
   label: string;
+  truncateLabel?: boolean;
+  truncateValue?: boolean;
 }>();
 </script>

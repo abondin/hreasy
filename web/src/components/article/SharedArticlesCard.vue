@@ -13,7 +13,7 @@
         </v-btn>
       </template>
       <template #title>
-        <span class="font-weight-bold">{{ currentArticle?.name }}</span>
+        <span>{{ currentArticle?.name }}</span>
       </template>
       <template #append>
         <v-btn

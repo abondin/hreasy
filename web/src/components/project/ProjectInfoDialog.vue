@@ -3,7 +3,7 @@
   assignment history for the selected employee.
 -->
 <template>
-  <v-dialog v-model="dialogOpen" max-width="960" scrollable>
+  <v-dialog v-model="dialogOpen" max-width="1280" scrollable>
     <v-card>
       <v-card-item>
         <template #title>
@@ -32,7 +32,7 @@
 
         <template v-else>
           <v-row align="start">
-            <v-col v-if="project" cols="12" md="5">
+            <v-col v-if="project" cols="12" lg="6">
               <detail-section-block :title="t('Основная информация')">
                 <property-list variant="aligned" density="compact">
                   <profile-summary-item :label="t('Наименование')">
@@ -86,7 +86,7 @@
               </detail-section-block>
             </v-col>
 
-            <v-col v-if="project" cols="12" md="7">
+            <v-col v-if="project" cols="12" lg="6">
               <detail-section-block :title="t('Описание')">
                 <markdown-text-renderer
                   v-if="project.info"

@@ -2,42 +2,46 @@
   Markdown editor with preview toggle.
   -->
 <template>
-  <div class="markdown-editor">
-    <v-card outlined>
-      <v-card-item class="markdown-editor__title">
-        <template #title>{{ label }}</template>
+  <div>
+    <v-card density="compact">
+      <v-card-item>
+        <template #title>
+          <span class="text-body-large">{{ label }}</span>
+        </template>
         <template #append>
-          <div class="preview-toggle" @click.stop>
-          <v-switch
-            v-model="preview"
-            :label="t('Предпросмотр')"
-            inset
-            density="compact"
-            hide-details
-          />
+          <div class="d-flex align-center" @click.stop>
+            <v-switch
+              v-model="preview"
+              :label="t('Предпросмотр')"
+              class="my-0"
+              inset
+              density="compact"
+              hide-details
+            />
           </div>
         </template>
       </v-card-item>
       <v-divider />
-      <v-card-text :style="contentStyle">
-        <template v-if="!preview">
-          <v-textarea
-            :model-value="localValue"
-            rows="6"
-            :aria-label="label"
-            :placeholder="placeholder"
-            :hint="hint"
-            :rules="rules"
-            :counter="textareaCounter"
-            persistent-hint
-            @update:model-value="onInput"
-          />
-        </template>
-        <template v-else>
-          <markdown-text-renderer :content="localValue" />
-        </template>
+      <v-card-text class="pa-0">
+        <v-sheet color="transparent" :min-height="minHeight">
+          <template v-if="!preview">
+            <v-textarea
+              :model-value="localValue"
+              rows="6"
+              :aria-label="label"
+              :placeholder="placeholder"
+              :hint="hint"
+              :rules="rules"
+              :counter="textareaCounter"
+              persistent-hint
+              @update:model-value="onInput"
+            />
+          </template>
+          <template v-else>
+            <markdown-text-renderer :content="localValue" />
+          </template>
+        </v-sheet>
       </v-card-text>
-      <div v-if="reservePreviewDetails" class="details-reserve"></div>
     </v-card>
   </div>
 </template>
@@ -56,7 +60,6 @@ const props = withDefaults(
     rules?: Array<(value: unknown) => boolean | string>;
     counter?: number | boolean;
     minHeight?: number;
-    reserveDetailsSpace?: boolean;
   }>(),
   {
     modelValue: "",
@@ -66,7 +69,6 @@ const props = withDefaults(
     rules: () => [],
     counter: undefined,
     minHeight: 240,
-    reserveDetailsSpace: false,
   },
 );
 
@@ -79,24 +81,11 @@ const { t } = useI18n();
 
 const preview = ref(false);
 const localValue = ref(props.modelValue ?? "");
-
-const contentStyle = computed(() => ({
-  minHeight: `${props.minHeight}px`,
-}));
+const minHeight = computed(() => props.minHeight);
 
 const textareaCounter = computed(() =>
   props.counter === false ? undefined : props.counter,
 );
-
-const reservePreviewDetails = computed(() => {
-  if (!props.reserveDetailsSpace) {
-    return false;
-  }
-  const hasRules = Array.isArray(props.rules) && props.rules.length > 0;
-  const hasHint = Boolean(props.hint);
-  const hasCounter = props.counter !== undefined && props.counter !== false;
-  return hasRules || hasHint || hasCounter;
-});
 
 watch(
   () => props.modelValue,
@@ -113,25 +102,3 @@ function onInput(value: string) {
   emit("change", value);
 }
 </script>
-
-<style scoped>
-.markdown-editor__title {
-  font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.72);
-  display: flex;
-  align-items: center;
-}
-
-.preview-toggle {
-  display: flex;
-  align-items: center;
-}
-
-.preview-toggle .v-input--switch {
-  margin-top: 0;
-}
-
-.details-reserve {
-  min-height: 22px;
-}
-</style>

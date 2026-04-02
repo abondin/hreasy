@@ -122,8 +122,14 @@
                       <profile-summary-item v-if="request.type === 1" :label="t('Запрошенная позиция')">
                         {{ request.req.newPosition?.name || "-" }}
                       </profile-summary-item>
-                      <profile-summary-item :label="t('Обоснование')">{{ request.req.reason || "-" }}</profile-summary-item>
-                      <profile-summary-item :label="t('Примечание')">{{ request.req.comment || "-" }}</profile-summary-item>
+                      <profile-summary-item :label="t('Обоснование')" :truncate-value="false">
+                        <markdown-text-renderer v-if="request.req.reason" :content="request.req.reason" />
+                        <span v-else>-</span>
+                      </profile-summary-item>
+                      <profile-summary-item :label="t('Примечание')" :truncate-value="false">
+                        <markdown-text-renderer v-if="request.req.comment" :content="request.req.comment" />
+                        <span v-else>-</span>
+                      </profile-summary-item>
                     </property-list>
                   </v-col>
                 </v-row>
@@ -155,7 +161,9 @@
               <profile-summary-item v-if="request.impl.newPosition" :label="t('Новая позиция')">{{ request.impl.newPosition.name }}</profile-summary-item>
               <profile-summary-item v-if="request.impl.rejectReason" :label="t('Обоснование отказа')">{{ request.impl.rejectReason }}</profile-summary-item>
               <profile-summary-item v-if="request.impl.increaseStartPeriod" :label="t('Месяц старта изменений')">{{ formatPeriod(request.impl.increaseStartPeriod) }}</profile-summary-item>
-              <profile-summary-item v-if="request.impl.comment" :label="t('Примечание')">{{ request.impl.comment }}</profile-summary-item>
+              <profile-summary-item v-if="request.impl.comment" :label="t('Примечание')" :truncate-value="false">
+                <markdown-text-renderer :content="request.impl.comment" />
+              </profile-summary-item>
               <profile-summary-item v-if="request.impl.increaseText" :label="t('Сообщение об изменениях')">{{ request.impl.increaseText }}</profile-summary-item>
             </property-list>
           </v-card-text>
@@ -182,7 +190,10 @@
                   </v-icon>
                 </template>
                 <v-list-item-title>{{ approval.createdBy.name }} - {{ formatDateTime(approval.createdAt) }}</v-list-item-title>
-                <v-list-item-subtitle>{{ approval.comment || "-" }}</v-list-item-subtitle>
+                <div class="text-body-2 mt-1">
+                  <markdown-text-renderer v-if="approval.comment" :content="approval.comment" />
+                  <span v-else>-</span>
+                </div>
                 <template #append>
                   <v-btn v-if="canDeleteApproval(approval)" icon="mdi-close" size="small" variant="text" @click="openDeleteApprovalDialog(approval)" />
                 </template>
@@ -301,7 +312,13 @@
             <my-date-form-component v-if="request?.type === 1" v-model="updateForm.budgetExpectedFundingUntil" :label="t('Планируемая дата окончания финансирования')" />
             <my-date-form-component v-if="request?.type === 1" v-model="updateForm.previousSalaryIncreaseDate" :label="t('Предыдущий реализованный пересмотр (дата)')" />
             <v-text-field v-if="request?.type === 1" v-model="updateForm.previousSalaryIncreaseText" :label="t('Предыдущий реализованный пересмотр (примечание)')" :rules="[previousTextRule]" counter="1024" />
-            <v-textarea v-model="updateForm.comment" :label="t('Примечание')" :rules="[commentRule]" />
+            <markdown-text-editor
+              v-model="updateCommentModel"
+              :label="t('Примечание')"
+              :rules="[commentRule]"
+              :counter="4096"
+              :min-height="220"
+            />
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -331,7 +348,13 @@
               <v-select v-model.number="implementationForm.rescheduleToNewPeriod" :items="reschedulePeriodOptions" item-title="label" item-value="id" clearable :label="t('Перенести запрос в другой период')" />
               <v-text-field v-model="implementationForm.rejectReason" :label="t('Обоснование отказа')" :rules="[requiredRejectReasonRule]" counter="128" />
             </template>
-            <v-textarea v-model="implementationForm.comment" :label="t('Примечание')" :rules="[maxCommentRule]" />
+            <markdown-text-editor
+              v-model="implementationCommentModel"
+              :label="t('Примечание')"
+              :rules="[maxCommentRule]"
+              :counter="256"
+              :min-height="220"
+            />
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -366,7 +389,13 @@
           <v-alert v-if="actionError" type="error" variant="tonal" class="mb-3">{{ actionError }}</v-alert>
           <v-form ref="approvalFormRef">
             <v-select v-model="approvalForm.action" :items="approvalActionOptions" item-title="title" item-value="value" :label="t('Действие')" :disabled="periodClosed" />
-            <v-textarea v-model="approvalForm.comment" :label="t('Комментарий')" :rules="[approvalCommentRule]" />
+            <markdown-text-editor
+              v-model="approvalCommentModel"
+              :label="t('Комментарий')"
+              :rules="[approvalCommentRule]"
+              :counter="4096"
+              :min-height="220"
+            />
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -434,6 +463,8 @@ import { findEmployee, type Employee } from "@/services/employee.service";
 import { fetchPositions, type DictItem } from "@/services/dict.service";
 import { fetchEmployeeAssessments, type AssessmentBase } from "@/services/assessment.service";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
+import MarkdownTextEditor from "@/components/shared/MarkdownTextEditor.vue";
+import MarkdownTextRenderer from "@/components/shared/MarkdownTextRenderer.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import PropertyList from "@/components/shared/PropertyList.vue";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
@@ -600,6 +631,24 @@ const requestActionDisabled = computed(() => periodClosed.value || Boolean(reque
 const approvalsOrderedAsc = computed(() =>
   [...(request.value?.approvals ?? [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
 );
+const updateCommentModel = computed({
+  get: () => updateForm.comment ?? "",
+  set: (value: string) => {
+    updateForm.comment = value;
+  },
+});
+const implementationCommentModel = computed({
+  get: () => implementationForm.comment ?? "",
+  set: (value: string) => {
+    implementationForm.comment = value;
+  },
+});
+const approvalCommentModel = computed({
+  get: () => approvalForm.comment ?? "",
+  set: (value: string) => {
+    approvalForm.comment = value;
+  },
+});
 
 const periodOptions = computed(() =>
   ReportPeriod.currentAndNextPeriods().map((period) => ({ id: period.id, label: period.toString() })),
@@ -659,13 +708,13 @@ onMounted(() => {
   load().catch(() => undefined);
 });
 
-const commentRule = (value: string | null) => (!value || value.length <= 4096) || t("Не более N символов", { n: 4096 });
-const maxCommentRule = (value: string | null) => (!value || value.length <= 256) || t("Не более N символов", { n: 256 });
+const commentRule = (value: unknown) => (typeof value !== "string" || value.length <= 4096) || t("Не более N символов", { n: 4096 });
+const maxCommentRule = (value: unknown) => (typeof value !== "string" || value.length <= 256) || t("Не более N символов", { n: 256 });
 const previousTextRule = (value: string | null) => (!value || value.length <= 1024) || t("Не более N символов", { n: 1024 });
 const requiredNumberRule = (value: unknown) => (value != null && value !== "" && !Number.isNaN(Number(value))) || t("Обязательное числовое поле");
 const requiredRejectReasonRule = (value: string) => (Boolean(value?.trim()) && value.length <= 128) || t("Обязательное поле. Не более N символов", { n: 128 });
 const requiredImplementationTextRule = (value: string) => (Boolean(value?.trim()) && value.length <= 128) || t("Обязательное поле. Не более N символов", { n: 128 });
-const approvalCommentRule = (value: string | null) => (!value || value.length <= 4096) || t("Не более N символов", { n: 4096 });
+const approvalCommentRule = (value: unknown) => (typeof value !== "string" || value.length <= 4096) || t("Не более N символов", { n: 4096 });
 
 async function ensurePositions(): Promise<void> {
   if (positions.value.length > 0) {
