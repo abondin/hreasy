@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <v-container class="py-6" data-testid="profile-view">
     <v-skeleton-loader
       v-if="isLoading"
@@ -11,6 +11,7 @@
         <profile-summary-card
           :employee="employee"
           :read-only="false"
+          :show-name="false"
           @avatar-updated="handleEmployeeUpdated"
           @edit-telegram="openTelegramDialog"
           @update-project="handleEmployeeUpdated"
@@ -41,11 +42,12 @@
           <v-col cols="12">
             <my-vacations />
           </v-col>
-          <v-col cols="12">
-            <shared-articles-card />
-          </v-col>
           <v-col cols="12" v-if="canViewSkills">
-            <detail-section-card class="h-100" :title="t('Навыки')">
+            <detail-section-card
+              class="h-100"
+              :title="t('Навыки')"
+              title-class="text-h6"
+            >
               <employee-skills-section
                 :grouped-skills="groupedSkills"
                 :loading="skillsSectionLoading"
@@ -61,6 +63,9 @@
                 @deleted="handleSkillDeleted"
               />
             </detail-section-card>
+          </v-col>
+          <v-col cols="12">
+            <shared-articles-card />
           </v-col>
         </v-row>
       </section>

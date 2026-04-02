@@ -3,17 +3,18 @@
 -->
 <template>
   <v-card>
-    <v-card-text class="pa-6">
-      <detail-section-block :title="title" :title-class="titleClass">
-        <slot />
-      </detail-section-block>
+    <v-card-item>
+      <template #title>
+        <span :class="titleClass">{{ title }}</span>
+      </template>
+    </v-card-item>
+    <v-card-text class="pt-0 px-6 pb-6">
+      <slot />
     </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import DetailSectionBlock from "@/components/shared/DetailSectionBlock.vue";
-
 withDefaults(
   defineProps<{
     title: string;

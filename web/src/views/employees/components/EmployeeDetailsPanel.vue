@@ -8,6 +8,7 @@
       :read-only="true"
       :avatar-read-only="false"
       :project-read-only="false"
+      :show-name="false"
       @avatar-updated="emit('employee-updated')"
       @update-project="emit('employee-updated')"
     />
