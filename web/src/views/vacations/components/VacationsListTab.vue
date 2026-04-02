@@ -19,10 +19,10 @@
         <v-hover v-slot="{ isHovering, props: hoverProps }">
           <div
             v-bind="hoverProps"
-            class="d-inline-flex align-center ga-1"
+            class="d-inline-flex align-center ga-1 min-width-0"
           >
-            <span>{{ item.employeeDisplayName }}</span>
-            <v-fade-transition>
+            <span class="text-truncate">{{ item.employeeDisplayName }}</span>
+            <div class="vacations-copy-slot d-inline-flex align-center justify-center flex-shrink-0">
               <v-tooltip
                 v-if="isHovering || smAndDown"
                 location="bottom"
@@ -38,7 +38,7 @@
                 </template>
                 <span>{{ t("Скопировать в буфер обмена") }}</span>
               </v-tooltip>
-            </v-fade-transition>
+            </div>
           </div>
         </v-hover>
       </template>
@@ -80,3 +80,9 @@ defineProps<{
 const { t } = useI18n();
 const { smAndDown } = useDisplay();
 </script>
+
+<style scoped>
+.vacations-copy-slot {
+  width: 24px;
+}
+</style>

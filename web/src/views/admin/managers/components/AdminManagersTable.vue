@@ -1,5 +1,19 @@
 <template>
   <v-card class="d-flex flex-column h-100" :data-testid="testId">
+    <v-card-item v-if="mode === 'compact' && (title || editable)">
+      <template #title>
+        <span v-if="title">{{ title }}</span>
+      </template>
+      <template #append>
+        <table-toolbar-actions
+          v-if="editable"
+          :disabled="loading"
+          show-add
+          :add-label="t('Добавить')"
+          @add="openCreate"
+        />
+      </template>
+    </v-card-item>
     <v-card-text :class="mode === 'full' ? 'px-6 pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0' : 'px-6 pb-5 pt-4'">
       <AdaptiveFilterBar
         :items="filterBarItems"
@@ -161,6 +175,25 @@
         hover
         @click:row="onClickRow"
       >
+        <template #[`item.employee.name`]="{ item }">
+          <div class="d-flex align-center ga-2 min-width-0">
+            <span class="text-truncate">{{ item.employee?.name }}</span>
+            <div
+              v-if="editable && mode === 'compact'"
+              class="manager-row-delete-slot d-inline-flex align-center justify-center flex-shrink-0"
+            >
+              <v-btn
+                icon="mdi-delete"
+                size="x-small"
+                variant="text"
+                color="error"
+                class="manager-row-delete"
+                :aria-label="t('Удалить')"
+                @click.stop="openDeleteDialog(item)"
+              />
+            </div>
+          </div>
+        </template>
         <template #[`item.responsibilityType`]="{ item }">
           {{ t(`MANAGER_RESPONSIBILITY_TYPE.${item.responsibilityType}`) }}
         </template>
@@ -283,6 +316,24 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="deleteDialog" max-width="480">
+      <v-card>
+        <v-card-title>{{ t("Удалить") }}</v-card-title>
+        <v-card-text>
+          {{ t("Вы уверены, что хотите удалить менеджера?") }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" :disabled="saving" @click="deleteDialog = false">
+            {{ t("Отменить") }}
+          </v-btn>
+          <v-btn color="error" :loading="saving" @click="confirmDelete">
+            {{ t("Удалить") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -354,6 +405,7 @@ const saving = ref(false);
 const error = ref("");
 const saveError = ref("");
 const dialog = ref(false);
+const deleteDialog = ref(false);
 const dialogMode = ref<"create" | "edit">("create");
 const items = ref<Manager[]>([]);
 const employees = ref<Employee[]>([]);
@@ -361,6 +413,7 @@ const projects = ref<ProjectDictDto[]>([]);
 const businessAccounts = ref<DictItem[]>([]);
 const departments = ref<DictItem[]>([]);
 const current = ref<Manager | null>(null);
+const pendingDelete = ref<Manager | null>(null);
 const formRef = ref<VFormInstance | null>(null);
 
 const filter = reactive<ManagerFilterState>({
@@ -552,6 +605,12 @@ function openEdit(item: Manager): void {
   dialog.value = true;
 }
 
+function openDeleteDialog(item: Manager): void {
+  pendingDelete.value = item;
+  saveError.value = "";
+  deleteDialog.value = true;
+}
+
 function onClickRow(_event: Event, row: unknown): void {
   if (!editable.value) {
     return;
@@ -613,10 +672,44 @@ async function remove(): Promise<void> {
     saving.value = false;
   }
 }
+
+async function confirmDelete(): Promise<void> {
+  if (!pendingDelete.value) {
+    return;
+  }
+  saving.value = true;
+  saveError.value = "";
+  try {
+    await deleteManager(pendingDelete.value.id);
+    deleteDialog.value = false;
+    pendingDelete.value = null;
+    await load();
+  } catch (removeError) {
+    saveError.value = errorUtils.shortMessage(removeError);
+  } finally {
+    saving.value = false;
+  }
+}
 </script>
 
 <style scoped>
 .admin-managers-table :deep(tbody tr:hover) {
   cursor: pointer;
+}
+
+.manager-row-delete-slot {
+  width: 24px;
+}
+
+:deep(tbody tr .manager-row-delete) {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-in-out;
+}
+
+:deep(tbody tr:hover .manager-row-delete),
+:deep(tbody tr:focus-within .manager-row-delete) {
+  opacity: 1;
+  pointer-events: auto;
 }
 </style>
