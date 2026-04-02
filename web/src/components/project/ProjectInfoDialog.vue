@@ -30,9 +30,9 @@
           indeterminate
         />
 
-        <template v-else-if="project">
+        <template v-else>
           <v-row align="start">
-            <v-col cols="12" md="5">
+            <v-col v-if="project" cols="12" md="5">
               <detail-section-block :title="t('Основная информация')">
                 <property-list variant="aligned" density="compact">
                   <profile-summary-item :label="t('Наименование')">
@@ -86,7 +86,7 @@
               </detail-section-block>
             </v-col>
 
-            <v-col cols="12" md="7">
+            <v-col v-if="project" cols="12" md="7">
               <detail-section-block :title="t('Описание')">
                 <markdown-text-renderer
                   v-if="project.info"
@@ -100,7 +100,7 @@
           </v-row>
 
           <detail-section-block :title="t('История изменений')">
-            <v-timeline align="start">
+            <v-timeline v-if="projectChanges.length" align="start">
               <v-timeline-item
                 v-for="change in projectChanges"
                 :key="change.id"
@@ -121,7 +121,7 @@
 
                 <div class="py-2 d-flex flex-column ga-1">
                   <div class="text-subtitle-2 font-weight-medium">
-                    {{ change.project?.name ?? "-" }}
+                    {{ change.project?.name ?? t("Без проекта") }}
                   </div>
                   <div v-if="change.project?.role" class="text-body-2">
                     {{ change.project.role }}
@@ -132,6 +132,9 @@
                 </div>
               </v-timeline-item>
             </v-timeline>
+            <div v-else class="text-body-2 text-medium-emphasis">
+              {{ t("РќРµС‚ РґР°РЅРЅС‹С…") }}
+            </div>
           </detail-section-block>
         </template>
       </v-card-text>
@@ -215,14 +218,23 @@ watch(
 watch(
   () => props.projectId,
   (newId, oldId) => {
-    if (dialogOpen.value && newId && newId !== oldId) {
+    if (dialogOpen.value && newId !== oldId) {
+      void loadData();
+    }
+  },
+);
+
+watch(
+  () => props.employeeId,
+  (newId, oldId) => {
+    if (dialogOpen.value && newId !== oldId) {
       void loadData();
     }
   },
 );
 
 async function loadData() {
-  if (!props.projectId || !props.employeeId) {
+  if (!props.employeeId) {
     errorMessage.value = t("Профиль_недоступен");
     return;
   }
@@ -232,7 +244,7 @@ async function loadData() {
 
   try {
     const [projectInfo, changes] = await Promise.all([
-      fetchProjectInfo(props.projectId),
+      props.projectId ? fetchProjectInfo(props.projectId) : Promise.resolve(null),
       fetchEmployeeProjectChanges(props.employeeId),
     ]);
     project.value = projectInfo;

@@ -11,7 +11,7 @@ export function useEmployeeProjectActions(
   const permissions = usePermissions();
 
   const canShowProjectInfo = computed(
-    () => Boolean(employee.value.currentProject?.id),
+    () => Boolean(employee.value.id),
   );
 
   const canEditProject = computed(
