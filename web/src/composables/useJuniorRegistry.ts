@@ -24,6 +24,7 @@ interface JuniorFilter {
   onlyNotGraduated: boolean;
   selectedBas: number[];
   selectedRoles: string[];
+  selectedCurrentProjects: number[];
 }
 
 export function useJuniorRegistry(t: ComposerTranslation) {
@@ -52,6 +53,7 @@ export function useJuniorRegistry(t: ComposerTranslation) {
     onlyNotGraduated: true,
     selectedBas: [],
     selectedRoles: [],
+    selectedCurrentProjects: [],
   });
 
   const canViewMentorship = computed(
@@ -87,6 +89,15 @@ export function useJuniorRegistry(t: ComposerTranslation) {
   const roles = computed<string[]>(() =>
     [...new Set(juniors.value.map((item) => item.role).filter(Boolean))].sort(),
   );
+  const currentProjectOptions = computed<SimpleDict[]>(() => {
+    const map = new Map<number, SimpleDict>();
+    juniors.value.forEach((item) => {
+      if (item.currentProject?.id && item.currentProject?.name) {
+        map.set(item.currentProject.id, item.currentProject);
+      }
+    });
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  });
 
   const filteredItems = computed(() => {
     const search = filter.search.trim().toLowerCase();
@@ -101,6 +112,12 @@ export function useJuniorRegistry(t: ComposerTranslation) {
         return false;
       }
       if (filter.selectedRoles.length > 0 && !filter.selectedRoles.includes(item.role)) {
+        return false;
+      }
+      if (
+        filter.selectedCurrentProjects.length > 0
+        && (!item.currentProject || !filter.selectedCurrentProjects.includes(item.currentProject.id))
+      ) {
         return false;
       }
       if (!search) {
@@ -243,6 +260,7 @@ export function useJuniorRegistry(t: ComposerTranslation) {
     headers,
     baOptions,
     roles,
+    currentProjectOptions,
     filteredItems,
     buildRowProps,
     getProgressIcon: getJuniorProgressIcon,

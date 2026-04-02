@@ -3,16 +3,19 @@
 -->
 <template>
   <TableFirstPageLayout test-id="employees-view">
-    <employees-virtual-table class="h-100" table-height="fill"
+    <employees-virtual-table table-height="fill"
       :items="filteredEmployees"
       :all-items="employees"
       :loading="loading"
+      :department-options="departmentOptions"
       :project-options="projectOptions"
       :business-account-options="baOptions"
       :search="filter.search"
+      :department="filter.departments"
       :project="filter.projects"
       :business-account="filter.businessAccounts"
       @update:search="updateSearch"
+      @update:department="updateDepartment"
       @update:project="updateProject"
       @update:ba="updateBa"
       @employee-updated="handleEmployeeUpdated"
@@ -58,12 +61,29 @@ const baOptions = computed(() => {
   return Array.from(map.entries()).map(([value, title]) => ({ title, value }));
 });
 
+const departmentOptions = computed(() => {
+  const map = new Map<number, string>();
+  employees.value.forEach((employee) => {
+    if (!employee.department) {
+      return;
+    }
+    if (!map.has(employee.department.id)) {
+      map.set(employee.department.id, employee.department.name);
+    }
+  });
+  return Array.from(map.entries()).map(([value, title]) => ({ title, value }));
+});
+
 onMounted(() => {
   reload().catch(() => undefined);
 });
 
 function updateSearch(value: string) {
   filter.value.search = value;
+}
+
+function updateDepartment(value: number[]) {
+  filter.value.departments = value;
 }
 
 function updateProject(value: Array<number | null>) {

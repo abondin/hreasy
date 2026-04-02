@@ -53,6 +53,78 @@
           </v-autocomplete>
         </template>
 
+        <template #filter-department>
+          <v-autocomplete
+            v-model="filter.departments"
+            :items="departments"
+            item-title="name"
+            item-value="id"
+            :label="t('Отдел')"
+            variant="outlined"
+            density="compact"
+            multiple
+            clearable
+            hide-details
+          >
+            <template #selection="{ item, index }">
+              <CollapsedSelectionContent
+                :index="index"
+                :total="filter.departments.length"
+                :label="getEntityFilterSelectionLabel(item)"
+                :visible-count="2"
+              />
+            </template>
+          </v-autocomplete>
+        </template>
+
+        <template #filter-ba>
+          <v-autocomplete
+            v-model="filter.businessAccounts"
+            :items="businessAccounts"
+            item-title="name"
+            item-value="id"
+            :label="t('Бизнес аккаунт')"
+            variant="outlined"
+            density="compact"
+            multiple
+            clearable
+            hide-details
+          >
+            <template #selection="{ item, index }">
+              <CollapsedSelectionContent
+                :index="index"
+                :total="filter.businessAccounts.length"
+                :label="getEntityFilterSelectionLabel(item)"
+                :visible-count="2"
+              />
+            </template>
+          </v-autocomplete>
+        </template>
+
+        <template #filter-current-project>
+          <v-autocomplete
+            v-model="filter.currentProjects"
+            :items="activeProjects"
+            item-title="name"
+            item-value="id"
+            :label="t('Текущий проект')"
+            variant="outlined"
+            density="compact"
+            multiple
+            clearable
+            hide-details
+          >
+            <template #selection="{ item, index }">
+              <CollapsedSelectionContent
+                :index="index"
+                :total="filter.currentProjects.length"
+                :label="getEntityFilterSelectionLabel(item)"
+                :visible-count="2"
+              />
+            </template>
+          </v-autocomplete>
+        </template>
+
         <template #right-actions>
           <table-toolbar-actions
             v-if="editable"
@@ -248,6 +320,9 @@ type VFormInstance = InstanceType<typeof VForm>;
 interface ManagerFilterState {
   search: string;
   responsibilityObjectTypes: ManagerResponsibilityObjectType[];
+  departments: number[];
+  businessAccounts: number[];
+  currentProjects: number[];
 }
 
 interface ManagerFormState {
@@ -291,6 +366,9 @@ const formRef = ref<VFormInstance | null>(null);
 const filter = reactive<ManagerFilterState>({
   search: "",
   responsibilityObjectTypes: [...managerResponsibilityObjectTypes],
+  departments: [],
+  businessAccounts: [],
+  currentProjects: [],
 });
 
 const form = reactive<ManagerFormState>({
@@ -312,9 +390,22 @@ function getFilterSelectionLabel(item: unknown): string {
   return "";
 }
 
+function getEntityFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && "name" in item && typeof item.name === "string") {
+    return item.name;
+  }
+  return "";
+}
+
 const filterBarItems = computed(() => [
   { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
   { id: "object-types", minWidth: 420, active: filter.responsibilityObjectTypes.length > 0 },
+  { id: "department", minWidth: 320, active: filter.departments.length > 0 },
+  { id: "ba", minWidth: 320, active: filter.businessAccounts.length > 0 },
+  { id: "current-project", minWidth: 320, active: filter.currentProjects.length > 0 },
 ]);
 
 const responsibilityTypeOptions = computed(() =>
@@ -345,10 +436,23 @@ const headers = computed<Array<{ title: string; key: string; width?: string }>>(
 const filteredItems = computed(() => {
   const query = filter.search.trim().toLowerCase();
   return items.value.filter((item) => {
+    const employee = employees.value.find((employeeItem) => employeeItem.id === item.employee?.id);
     if (props.mode === "full" && filter.responsibilityObjectTypes.length > 0) {
       if (!filter.responsibilityObjectTypes.includes(item.responsibilityObject.type)) {
         return false;
       }
+    }
+
+    if (filter.departments.length > 0 && !filter.departments.includes(employee?.department?.id ?? -1)) {
+      return false;
+    }
+
+    if (filter.businessAccounts.length > 0 && !filter.businessAccounts.includes(employee?.ba?.id ?? -1)) {
+      return false;
+    }
+
+    if (filter.currentProjects.length > 0 && !filter.currentProjects.includes(employee?.currentProject?.id ?? -1)) {
+      return false;
     }
 
     if (!query) {
@@ -413,9 +517,13 @@ async function load(): Promise<void> {
   loading.value = true;
   error.value = "";
   try {
-    items.value = props.selectedObject
-      ? await listManagersByObject(props.selectedObject)
-      : await listManagers();
+    const [loadedItems] = await Promise.all([
+      props.selectedObject
+        ? listManagersByObject(props.selectedObject)
+        : listManagers(),
+      ensureDictionariesLoaded(),
+    ]);
+    items.value = loadedItems;
   } catch (loadError) {
     error.value = errorUtils.shortMessage(loadError);
   } finally {

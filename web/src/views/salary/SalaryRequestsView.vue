@@ -111,6 +111,29 @@
             </v-autocomplete>
           </template>
 
+          <template #filter-current-project>
+            <v-autocomplete
+              v-model="filter.currentProjects"
+              :items="currentProjectOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('Текущий проект')"
+              multiple
+              clearable
+              variant="outlined"
+              density="compact"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.currentProjects.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
           <template #filter-implemented>
             <v-select
               v-model="filter.implemented"
@@ -423,6 +446,7 @@ const router = useRouter();
 const {
   loading,
   error,
+  items,
   bas,
   filter,
   selectedPeriod,
@@ -450,8 +474,22 @@ const filterBarItems = computed(() => [
   { id: "period", minWidth: 272, active: false },
   { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
   { id: "ba", minWidth: 340, active: filter.budgetBusinessAccounts.length > 0 },
+  { id: "current-project", minWidth: 320, active: filter.currentProjects.length > 0 },
   { id: "implemented", minWidth: 240, active: filter.implemented.length > 0 },
 ]);
+
+const currentProjectOptions = computed(() => {
+  const map = new Map<number, string>();
+  items.value
+    .filter((item) => item.type === filter.type)
+    .forEach((item) => {
+    const project = item.employeeInfo.currentProject;
+    if (project?.id && project.name) {
+      map.set(project.id, project.name);
+    }
+    });
+  return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+});
 
 function getFilterSelectionLabel(item: unknown): string {
   if (typeof item === "string") {

@@ -48,6 +48,8 @@ export function useOvertimesSummary(t: ComposerTranslation) {
   const filter = reactive({
     search: "",
     showEmpty: true,
+    selectedDepartments: [] as number[],
+    selectedBusinessAccounts: [] as number[],
     selectedProjectsWithOvertimes: [] as number[],
     selectedEmployeeCurrentProjects: [] as number[],
   });
@@ -117,6 +119,20 @@ export function useOvertimesSummary(t: ComposerTranslation) {
       }
 
       const employee = employees.value.find((item) => item.id === row.employee.id);
+      if (
+        filter.selectedDepartments.length > 0 &&
+        !filter.selectedDepartments.includes(employee?.department?.id ?? -1)
+      ) {
+        return false;
+      }
+
+      if (
+        filter.selectedBusinessAccounts.length > 0 &&
+        !filter.selectedBusinessAccounts.includes(employee?.ba?.id ?? -1)
+      ) {
+        return false;
+      }
+
       if (
         filter.selectedEmployeeCurrentProjects.length > 0 &&
         !filter.selectedEmployeeCurrentProjects.includes(employee?.currentProject?.id ?? -1)
@@ -259,6 +275,7 @@ export function useOvertimesSummary(t: ComposerTranslation) {
     selectedPeriodId,
     selectedPeriod,
     closedPeriods,
+    employees,
     filter,
     selectedEmployee,
     employeeDialog,

@@ -41,6 +41,29 @@
             />
           </template>
 
+          <template #filter-department>
+            <v-autocomplete
+              v-model="filter.selectedDepartments"
+              :items="departmentOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('Отдел')"
+              multiple
+              clearable
+              variant="outlined"
+              density="compact"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedDepartments.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
           <template #filter-ba>
             <v-autocomplete
               v-model="filter.selectedBas"
@@ -175,6 +198,7 @@ import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { fetchBusinessAccounts, type DictItem } from "@/services/dict.service";
 import { fetchProjects, type ProjectDictDto } from "@/services/projects.service";
+import { listEmployees, type Employee } from "@/services/employee.service";
 import {
   exportAssessments,
   fetchAssessmentsSummary,
@@ -191,9 +215,11 @@ const exportCompleted = ref(false);
 const items = ref<AssessmentEmployeeSummary[]>([]);
 const businessAccounts = ref<DictItem[]>([]);
 const projects = ref<ProjectDictDto[]>([]);
+const employees = ref<Employee[]>([]);
 
 const filter = reactive({
   search: "",
+  selectedDepartments: [] as number[],
   selectedBas: [] as number[],
   selectedProjects: [] as number[],
 });
@@ -211,8 +237,19 @@ const headers = computed(() => [
   { title: t("Дней без ассессмента"), key: "daysWithoutAssessment", width: "140px" },
 ]);
 
+const departmentOptions = computed(() => {
+  const map = new Map<number, string>();
+  employees.value.forEach((employee) => {
+    if (employee.department?.id && employee.department?.name) {
+      map.set(employee.department.id, employee.department.name);
+    }
+  });
+  return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+});
+
 const filterBarItems = computed(() => [
   { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
+  { id: "department", minWidth: 320, active: filter.selectedDepartments.length > 0 },
   { id: "ba", minWidth: 320, active: filter.selectedBas.length > 0 },
   { id: "project", minWidth: 320, active: filter.selectedProjects.length > 0 },
 ]);
@@ -233,6 +270,13 @@ const filteredItems = computed(() => {
   return items.value.filter((item) => {
     if (search && !item.displayName.toLowerCase().includes(search)) {
       return false;
+    }
+
+    if (filter.selectedDepartments.length > 0) {
+      const employeeDepartmentId = employees.value.find((employee) => employee.id === item.employeeId)?.department?.id;
+      if (!employeeDepartmentId || !filter.selectedDepartments.includes(employeeDepartmentId)) {
+        return false;
+      }
     }
 
     if (filter.selectedBas.length > 0) {
@@ -278,14 +322,16 @@ async function load(): Promise<void> {
   loading.value = true;
   error.value = "";
   try {
-    const [summary, bas, projectItems] = await Promise.all([
+    const [summary, bas, projectItems, employeeItems] = await Promise.all([
       fetchAssessmentsSummary(),
       fetchBusinessAccounts(),
       fetchProjects(),
+      listEmployees(),
     ]);
     items.value = summary;
     businessAccounts.value = bas;
     projects.value = projectItems;
+    employees.value = employeeItems;
   } catch (err: unknown) {
     error.value = errorUtils.shortMessage(err);
   } finally {

@@ -98,6 +98,30 @@
             </v-autocomplete>
           </template>
 
+          <template #filter-current-project>
+            <v-autocomplete
+              v-model="filter.selectedCurrentProjects"
+              density="compact"
+              clearable
+              multiple
+              :disabled="loading"
+              :items="currentProjectOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('Текущий проект')"
+              variant="outlined"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedCurrentProjects.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
           <template #filter-not-graduated>
             <v-checkbox
               v-model="filter.onlyNotGraduated"
@@ -245,6 +269,7 @@ const filterBarItems = computed(() => [
   { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
   { id: "ba", minWidth: 320, active: filter.selectedBas.length > 0 },
   { id: "role", minWidth: 320, active: filter.selectedRoles.length > 0 },
+  { id: "current-project", minWidth: 320, active: filter.selectedCurrentProjects.length > 0 },
   { id: "not-graduated", minWidth: 220, active: filter.onlyNotGraduated },
 ]);
 
@@ -273,6 +298,7 @@ const {
   headers,
   baOptions,
   roles,
+  currentProjectOptions,
   filteredItems,
   buildRowProps,
   getProgressIcon,

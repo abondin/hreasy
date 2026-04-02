@@ -62,6 +62,52 @@
             />
           </template>
 
+          <template #filter-department>
+            <v-autocomplete
+              v-model="filter.selectedDepartments"
+              density="compact"
+              clearable
+              multiple
+              :items="departmentOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('Отдел')"
+              variant="outlined"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedDepartments.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
+          <template #filter-business-account>
+            <v-autocomplete
+              v-model="filter.selectedBusinessAccounts"
+              density="compact"
+              clearable
+              multiple
+              :items="businessAccountOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('Бизнес аккаунт')"
+              variant="outlined"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="filter.selectedBusinessAccounts.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
           <template #filter-current-project>
             <v-autocomplete
               v-model="filter.selectedEmployeeCurrentProjects"
@@ -165,7 +211,7 @@
         >
           <template #[`item.commonApprovalStatus`]="{ item }">
             <v-chip v-if="item.commonApprovalStatus === 'DECLINED'" variant="outlined">
-              <v-icon class="status-icon declined" icon="mdi-do-not-disturb" />
+              <v-icon class="status-icon declined" icon="mdi-close-circle" />
               {{ t("APPROVAL_DECISION_ENUM.DECLINED") }}
             </v-chip>
             <v-chip
@@ -182,7 +228,7 @@
               <v-icon class="status-icon outdated" icon="mdi-clock-alert" />
               {{ t("Изменения после согласования") }}
             </v-chip>
-            <span v-else>{{ t("Отсутствуют") }}</span>
+            <span v-else />
           </template>
         </HREasyTableBase>
         </div>
@@ -253,6 +299,7 @@ const {
   canExportOvertimes,
   canAdminOvertimes,
   headers,
+  employees,
   activeProjects,
   periodClosed,
   projectsWithOvertimes,
@@ -269,8 +316,28 @@ const {
 } = useOvertimesSummary(t);
 
 const isCurrentPeriod = computed(() => selectedPeriodId.value === ReportPeriod.currentPeriod().periodId());
+const departmentOptions = computed(() => {
+  const map = new Map<number, string>();
+  employees.value.forEach((employee) => {
+    if (employee.department?.id && employee.department?.name) {
+      map.set(employee.department.id, employee.department.name);
+    }
+  });
+  return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+});
+const businessAccountOptions = computed(() => {
+  const map = new Map<number, string>();
+  employees.value.forEach((employee) => {
+    if (employee.ba?.id && employee.ba?.name) {
+      map.set(employee.ba.id, employee.ba.name);
+    }
+  });
+  return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+});
 const filterBarItems = computed(() => [
   { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
+  { id: "department", minWidth: 320, active: filter.selectedDepartments.length > 0 },
+  { id: "business-account", minWidth: 320, active: filter.selectedBusinessAccounts.length > 0 },
   { id: "current-project", minWidth: 320, active: filter.selectedEmployeeCurrentProjects.length > 0 },
   { id: "overtime-project", minWidth: 320, active: filter.selectedProjectsWithOvertimes.length > 0 },
   { id: "show-empty", minWidth: 260, active: filter.showEmpty },

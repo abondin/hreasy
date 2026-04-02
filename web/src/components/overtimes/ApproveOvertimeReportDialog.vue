@@ -7,6 +7,7 @@
             <v-btn-toggle>
               <v-btn
                 icon="mdi-checkbox-marked-circle-outline"
+                color="success"
                 :disabled="approveDisabled"
                 @click="approveNoDialog"
               />

@@ -146,6 +146,54 @@
                 </v-autocomplete>
               </template>
 
+              <template #filter-department>
+                <v-autocomplete
+                  v-model="filter.selectedDepartments"
+                  :items="departmentOptions"
+                  item-title="name"
+                  item-value="id"
+                  :label="t('Отдел')"
+                  variant="outlined"
+                  density="compact"
+                  clearable
+                  multiple
+                  :disabled="loading"
+                  hide-details
+                >
+                  <template #selection="{ item, index }">
+                    <CollapsedSelectionContent
+                      :index="index"
+                      :total="filter.selectedDepartments.length"
+                      :label="getFilterSelectionLabel(item)"
+                    />
+                  </template>
+                </v-autocomplete>
+              </template>
+
+              <template #filter-business-account>
+                <v-autocomplete
+                  v-model="filter.selectedBusinessAccounts"
+                  :items="businessAccountOptions"
+                  item-title="name"
+                  item-value="id"
+                  :label="t('Бизнес аккаунт')"
+                  variant="outlined"
+                  density="compact"
+                  clearable
+                  multiple
+                  :disabled="loading"
+                  hide-details
+                >
+                  <template #selection="{ item, index }">
+                    <CollapsedSelectionContent
+                      :index="index"
+                      :total="filter.selectedBusinessAccounts.length"
+                      :label="getFilterSelectionLabel(item)"
+                    />
+                  </template>
+                </v-autocomplete>
+              </template>
+
               <template #filter-role>
                 <v-autocomplete
                   v-model="filter.selectedProjectRoles"
@@ -270,8 +318,9 @@ const {
   filter,
   loading,
   projectOptions,
-  projectRoles,
   allEmployees,
+  projectRoles,
+  employeeDirectory,
   daysNotIncludedInVacations,
   snackbarNotification,
   snackbarMessage,
@@ -289,6 +338,24 @@ const {
 const vacationDialog = ref(false);
 const selectedVacation = ref<Vacation | null>(null);
 const vacationEditForm = ref<InstanceType<typeof VacationEditForm> | null>(null);
+const departmentOptions = computed(() => {
+  const map = new Map<number, string>();
+  employeeDirectory.value.forEach((employee) => {
+    if (employee.department?.id && employee.department?.name) {
+      map.set(employee.department.id, employee.department.name);
+    }
+  });
+  return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+});
+const businessAccountOptions = computed(() => {
+  const map = new Map<number, string>();
+  employeeDirectory.value.forEach((employee) => {
+    if (employee.ba?.id && employee.ba?.name) {
+      map.set(employee.ba.id, employee.ba.name);
+    }
+  });
+  return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+});
 
 const filterBarItems = computed(() => [
   { id: "year", minWidth: 140, active: Boolean(selectedYear.value) },
@@ -296,6 +363,8 @@ const filterBarItems = computed(() => [
   { id: "search", minWidth: 380, active: filter.search.trim().length > 0, grow: true },
   { id: "status", minWidth: 260, active: filter.selectedStatuses.length > 0 },
   { id: "project", minWidth: 240, active: filter.selectedProjects.length > 0 },
+  { id: "department", minWidth: 240, active: filter.selectedDepartments.length > 0 },
+  { id: "business-account", minWidth: 240, active: filter.selectedBusinessAccounts.length > 0 },
   { id: "role", minWidth: 240, active: filter.selectedProjectRoles.length > 0 },
 ]);
 

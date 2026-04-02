@@ -4,12 +4,14 @@ import { listEmployees } from "@/services/employee.service";
 
 export interface EmployeesFilter {
   search: string;
+  departments: number[];
   projects: Array<number | null>;
   businessAccounts: number[];
 }
 
 const defaultFilter: EmployeesFilter = {
   search: "",
+  departments: [],
   projects: [],
   businessAccounts: [],
 };
@@ -40,6 +42,12 @@ export function useEmployeesDirectory(initialFilter?: Partial<EmployeesFilter>) 
   const filteredEmployees = computed(() => {
     const search = (filter.value.search ?? "").trim().toLowerCase();
     return employees.value.filter((employee) => {
+      if (
+        filter.value.departments.length > 0 &&
+        !filter.value.departments.includes(employee.department?.id ?? -1)
+      ) {
+        return false;
+      }
       if (
         filter.value.projects.length > 0 &&
         !filter.value.projects.includes(employee.currentProject?.id ?? null)

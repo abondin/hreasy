@@ -22,6 +22,31 @@
         />
       </template>
 
+      <template #filter-department>
+        <v-autocomplete
+          v-model="departmentModel"
+          data-testid="employees-filter-department"
+          :items="departmentOptions"
+          :label="t('Отдел')"
+          variant="outlined"
+          density="compact"
+          clearable
+          multiple
+          item-title="title"
+          item-value="value"
+          hide-details
+        >
+          <template #selection="{ item, index }">
+            <CollapsedSelectionContent
+              :index="index"
+              :total="departmentModel.length"
+              :label="getSelectionLabel(item)"
+              :visible-count="2"
+            />
+          </template>
+        </v-autocomplete>
+      </template>
+
       <template #filter-project>
         <v-autocomplete
           v-model="projectModel"
@@ -82,15 +107,18 @@ import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 
 const props = defineProps<{
+  departmentOptions: Array<{ title: string; value: number }>;
   projectOptions: Array<{ title: string; value: number | null }>;
   businessAccountOptions: Array<{ title: string; value: number }>;
   search?: string;
+  department?: number[];
   project?: Array<number | null>;
   businessAccount?: number[];
 }>();
 
 const emit = defineEmits<{
   (event: 'update:search', value: string): void;
+  (event: 'update:department', value: number[]): void;
   (event: 'update:project', value: Array<number | null>): void;
   (event: 'update:businessAccount', value: number[]): void;
 }>();
@@ -100,6 +128,11 @@ const { t } = useI18n();
 const searchModel = computed({
   get: () => props.search ?? '',
   set: (value: string) => emit('update:search', value),
+});
+
+const departmentModel = computed<number[]>({
+  get: () => props.department ?? [],
+  set: (value) => emit('update:department', value),
 });
 
 const projectModel = computed<Array<number | null>>({
@@ -114,8 +147,9 @@ const businessAccountModel = computed<number[]>({
 
 const filterBarItems = computed(() => [
   { id: 'search', minWidth: 380, active: searchModel.value.trim().length > 0, grow: true },
-  { id: 'project', minWidth: 380, active: projectModel.value.length > 0 },
+  { id: 'department', minWidth: 320, active: departmentModel.value.length > 0 },
   { id: 'business-account', minWidth: 380, active: businessAccountModel.value.length > 0 },
+  { id: 'project', minWidth: 380, active: projectModel.value.length > 0 },
 ]);
 
 function getSelectionLabel(item: unknown): string {

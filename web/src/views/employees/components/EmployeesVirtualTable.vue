@@ -5,12 +5,15 @@
 <template>
   <v-card class="d-flex flex-column h-100" data-testid="employees-table-card">
     <employees-filters
+      :department-options="departmentOptions"
       :project-options="projectOptions"
       :business-account-options="baOptions"
       :search="search"
+      :department="department"
       :project="project"
       :business-account="businessAccount"
       @update:search="emit('update:search', $event)"
+      @update:department="emit('update:department', $event)"
       @update:project="emit('update:project', $event)"
       @update:business-account="emit('update:ba', $event)"
     />
@@ -58,9 +61,11 @@ const props = defineProps<{
   items: Employee[];
   allItems: Employee[];
   loading: boolean;
+  departmentOptions: Array<{ title: string; value: number }>;
   projectOptions: Array<{ title: string; value: number | null }>;
   businessAccountOptions: Array<{ title: string; value: number }>;
   search?: string;
+  department?: number[];
   project?: Array<number | null>;
   businessAccount?: number[];
   tableHeight?: number | string;
@@ -68,6 +73,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (event: 'update:search', value: string): void;
+  (event: 'update:department', value: number[]): void;
   (event: 'update:project', value: Array<number | null>): void;
   (event: 'update:ba', value: number[]): void;
   (event: 'employee-updated'): void;
@@ -97,6 +103,7 @@ const headers = computed<DataTableHeader>(() => {
   return items;
 });
 const tableHeight = computed(() => props.tableHeight ?? 'fill');
+const departmentOptions = computed(() => props.departmentOptions);
 const projectOptions = computed(() => props.projectOptions);
 const baOptions = computed(() => props.businessAccountOptions);
 const selectedEmployeeIdFromRoute = computed(() => {

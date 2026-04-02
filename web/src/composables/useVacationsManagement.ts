@@ -21,6 +21,7 @@ import {
   type VacationStatus,
   vacationStatuses,
 } from "@/services/vacation.service";
+import { listEmployees, type Employee } from "@/services/employee.service";
 import { useVacationsDictionaries } from "@/components/vacations/useVacationsDictionaries";
 
 export function useVacationsManagement(t: ComposerTranslation) {
@@ -38,12 +39,15 @@ export function useVacationsManagement(t: ComposerTranslation) {
     selectedStatuses: ["PLANNED", "TAKEN", "REQUESTED"] as VacationStatus[],
     search: "",
     selectedProjects: [] as number[],
+    selectedDepartments: [] as number[],
+    selectedBusinessAccounts: [] as number[],
     selectedProjectRoles: [] as string[],
     selectedDates: [] as string[],
   });
 
   const loading = ref(false);
   const vacations = ref<Vacation[]>([]);
+  const employeeDirectory = ref<Employee[]>([]);
   const snackbarNotification = ref(false);
   const snackbarMessage = ref("");
 
@@ -109,6 +113,9 @@ export function useVacationsManagement(t: ComposerTranslation) {
       await Promise.all([
         loadProjectsAndRoles(),
         loadEmployees(),
+        listEmployees().then((items) => {
+          employeeDirectory.value = items;
+        }),
         loadDaysNotIncluded(allYears),
       ]);
       await fetchData(true);
@@ -142,6 +149,7 @@ export function useVacationsManagement(t: ComposerTranslation) {
   }
 
   function filterItem(item: Vacation | EmployeeVacationSummary) {
+    const employee = employeeDirectory.value.find((employeeItem) => employeeItem.id === item.employee);
     let filtered = true;
     filtered =
       filtered &&
@@ -149,6 +157,20 @@ export function useVacationsManagement(t: ComposerTranslation) {
         Boolean(
           item.employeeCurrentProject &&
             filter.selectedProjects.includes(item.employeeCurrentProject.id),
+        ));
+    filtered =
+      filtered &&
+      (filter.selectedDepartments.length === 0 ||
+        Boolean(
+          employee?.department?.id &&
+            filter.selectedDepartments.includes(employee.department.id),
+        ));
+    filtered =
+      filtered &&
+      (filter.selectedBusinessAccounts.length === 0 ||
+        Boolean(
+          employee?.ba?.id &&
+            filter.selectedBusinessAccounts.includes(employee.ba.id),
         ));
     filtered =
       filtered &&
@@ -247,6 +269,7 @@ export function useVacationsManagement(t: ComposerTranslation) {
     projectOptions,
     projectRoles,
     allEmployees,
+    employeeDirectory,
     daysNotIncludedInVacations,
     snackbarNotification,
     snackbarMessage,

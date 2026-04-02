@@ -22,6 +22,7 @@ interface SalaryFilter {
   search: string;
   type: SalaryRequestType;
   budgetBusinessAccounts: number[];
+  currentProjects: number[];
   implemented: boolean[];
   implementationStates: SalaryRequestImplementationState[];
 }
@@ -44,6 +45,7 @@ export function useSalaryRequests(t: ComposerTranslation) {
     search: "",
     type: 1,
     budgetBusinessAccounts: [],
+    currentProjects: [],
     implemented: [],
     implementationStates: [],
   });
@@ -108,6 +110,13 @@ export function useSalaryRequests(t: ComposerTranslation) {
       if (filter.budgetBusinessAccounts.length > 0) {
         const baId = item.budgetBusinessAccount?.id;
         if (!baId || !filter.budgetBusinessAccounts.includes(baId)) {
+          return false;
+        }
+      }
+
+      if (filter.currentProjects.length > 0) {
+        const projectId = item.employeeInfo.currentProject?.id;
+        if (!projectId || !filter.currentProjects.includes(projectId)) {
           return false;
         }
       }

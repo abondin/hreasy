@@ -63,6 +63,29 @@
             </v-autocomplete>
           </template>
 
+          <template #filter-current-project>
+            <v-autocomplete
+              v-model="selectedCurrentProjects"
+              :items="currentProjectOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('Текущий проект')"
+              multiple
+              clearable
+              density="compact"
+              variant="outlined"
+              hide-details
+            >
+              <template #selection="{ item, index }">
+                <CollapsedSelectionContent
+                  :index="index"
+                  :total="selectedCurrentProjects.length"
+                  :label="getFilterSelectionLabel(item)"
+                />
+              </template>
+            </v-autocomplete>
+          </template>
+
           <template #filter-only-with-requests>
             <v-select
               v-model="onlyWithRequests"
@@ -172,6 +195,7 @@ const items = ref<EmployeeWithLatestSalaryRequest[]>([]);
 const bas = ref<DictItem[]>([]);
 const search = ref("");
 const selectedBas = ref<number[]>([]);
+const selectedCurrentProjects = ref<number[]>([]);
 const onlyWithRequests = ref(true);
 
 const canAccess = computed(() => permissions.canAdminSalaryRequests());
@@ -190,8 +214,19 @@ const headers = computed(() => [
 const filterBarItems = computed(() => [
   { id: "search", minWidth: 380, active: search.value.trim().length > 0, grow: true },
   { id: "ba", minWidth: 320, active: selectedBas.value.length > 0 },
+  { id: "current-project", minWidth: 320, active: selectedCurrentProjects.value.length > 0 },
   { id: "only-with-requests", minWidth: 240, active: onlyWithRequests.value !== true },
 ]);
+
+const currentProjectOptions = computed(() => {
+  const map = new Map<number, string>();
+  items.value.forEach((item) => {
+    if (item.employeeCurrentProject?.id && item.employeeCurrentProject.name) {
+      map.set(item.employeeCurrentProject.id, item.employeeCurrentProject.name);
+    }
+  });
+  return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+});
 
 function getFilterSelectionLabel(item: unknown): string {
   if (typeof item === "string") {
@@ -219,6 +254,13 @@ const filteredItems = computed(() => {
     if (selectedBas.value.length > 0) {
       const baId = item.employeeBusinessAccount?.id;
       if (!baId || !selectedBas.value.includes(baId)) {
+        return false;
+      }
+    }
+
+    if (selectedCurrentProjects.value.length > 0) {
+      const projectId = item.employeeCurrentProject?.id;
+      if (!projectId || !selectedCurrentProjects.value.includes(projectId)) {
         return false;
       }
     }

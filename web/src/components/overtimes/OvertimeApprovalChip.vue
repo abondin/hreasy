@@ -10,7 +10,7 @@
         <v-icon
           v-else
           class="approval-chip-icon declined"
-          icon="mdi-do-not-disturb"
+          icon="mdi-close-circle"
         />
         {{ approval.approverDisplayName }}
         <v-icon
