@@ -2,7 +2,7 @@
   Dialog that allows updating the employee's current project and role.
 -->
 <template>
-  <v-dialog v-model="dialogOpen" max-width="560" scrollable>
+  <v-dialog v-model="dialogOpen" max-width="560" scrollable data-testid="project-assignment-dialog">
     <v-card>
       <v-card-item>
         <template #title>{{ t("Обновление текущего проекта") }}</template>
@@ -22,6 +22,7 @@
 
         <v-autocomplete
           v-model="selectedProjectId"
+          data-testid="project-assignment-project"
           :items="projectItems"
           :label="t('Проекты')"
           :loading="dictionaryLoading"
@@ -35,6 +36,7 @@
 
         <v-combobox
           v-model="roleOnProject"
+          data-testid="project-assignment-role"
           :items="roleItems"
           :label="t('Роль')"
           :loading="dictionaryLoading"
@@ -57,10 +59,10 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" :disabled="saving" @click="cancel">
+        <v-btn variant="text" :disabled="saving" data-testid="project-assignment-cancel" @click="cancel">
           {{ t("Отменить") }}
         </v-btn>
-        <v-btn color="primary" :loading="saving" @click="submit">
+        <v-btn color="primary" :loading="saving" data-testid="project-assignment-submit" @click="submit">
           {{ t("Применить") }}
         </v-btn>
       </v-card-actions>

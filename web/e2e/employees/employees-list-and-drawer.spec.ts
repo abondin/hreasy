@@ -29,4 +29,43 @@ test.describe("Employees List and Drawer", () => {
     await clickFirstRow(rows, "Employees table is empty in current environment");
     await expect(page.getByTestId(selectors.employeesDetailsDrawer)).toBeVisible();
   });
+
+  test("clearing current project keeps drawer open and allows saving", async ({ page }) => {
+    const credentials = requireCredentials("employee");
+    await loginViaUi(page, credentials);
+    await page.goto(appPath(routes.employees), { waitUntil: "domcontentloaded" });
+
+    const search = page.getByTestId(selectors.employeesFilterSearch).locator("input");
+    await expect(search).toBeVisible();
+    await search.fill(credentials.username);
+
+    const targetRow = page
+      .locator("tbody tr:visible")
+      .filter({ hasText: credentials.username })
+      .first();
+
+    await expect(targetRow).toBeVisible();
+    await targetRow.locator("td").first().click();
+
+    const drawer = page.getByTestId(selectors.employeesDetailsDrawer);
+    await expect(drawer).toBeVisible();
+
+    await drawer.getByTestId(selectors.profileSummaryEditProject).click();
+
+    const dialog = page.getByTestId(selectors.projectAssignmentDialog);
+    const projectField = dialog.getByTestId(selectors.projectAssignmentProject);
+
+    await expect(dialog).toBeVisible();
+    await expect(projectField).toBeVisible();
+
+    await projectField.locator(".v-field__clearable").click();
+
+    await expect(dialog).toBeVisible();
+    await expect(drawer).toBeVisible();
+
+    await dialog.getByTestId(selectors.projectAssignmentSubmit).click();
+
+    await expect(dialog).toBeHidden();
+    await expect(drawer).toBeVisible();
+  });
 });

@@ -85,6 +85,10 @@ function onDesktopOutsideClick(event: MouseEvent) {
     return;
   }
 
+  if (target.closest(".v-overlay")) {
+    return;
+  }
+
   if (target.closest('[data-testid="employees-table"] tbody tr')) {
     return;
   }

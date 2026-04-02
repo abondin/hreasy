@@ -36,6 +36,7 @@
             <v-btn
               v-if="canEditProject"
               v-bind="actionIconButtonProps"
+              data-testid="profile-summary-edit-project"
               icon="mdi-pencil"
               color="medium-emphasis"
               class="ms-1"
