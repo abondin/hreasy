@@ -25,31 +25,29 @@
       </v-card>
 
       <v-card class="mt-5">
-        <v-card-title class="pb-2">
-          <v-row align="center" class="w-100">
-            <v-col cols="12" sm="5" md="4">
-              <v-select
-                v-model="includeCanceled"
-                :items="includeCanceledOptions"
-                item-title="title"
-                item-value="value"
-                :label="t('Учитывать отмененные')"
-                density="compact"
-                hide-details
-              />
-            </v-col>
-            <v-col cols="12" sm="7" md="8" class="d-flex justify-end">
-              <v-btn
-                color="primary"
-                icon="mdi-plus"
-                variant="text"
-                :disabled="loading"
-                data-testid="employee-assessments-add"
-                @click="openCreateDialog"
-              />
-            </v-col>
-          </v-row>
-        </v-card-title>
+        <v-card-item>
+          <template #title>
+            <v-select
+              v-model="includeCanceled"
+              :items="includeCanceledOptions"
+              item-title="title"
+              item-value="value"
+              :label="t('Учитывать отмененные')"
+              density="compact"
+              hide-details
+            />
+          </template>
+          <template #append>
+            <v-btn
+              color="primary"
+              icon="mdi-plus"
+              variant="text"
+              :disabled="loading"
+              data-testid="employee-assessments-add"
+              @click="openCreateDialog"
+            />
+          </template>
+        </v-card-item>
 
         <v-card-text>
           <HREasyTableBase

@@ -1,26 +1,32 @@
 <template>
   <v-card data-testid="shared-articles-card">
-    <v-card-title class="d-flex align-center justify-space-between">
-      <v-btn
-        variant="text"
-        size="small"
-        :disabled="loading || articles.length <= 1"
-        @click="prev"
-      >
-        <v-icon icon="mdi-chevron-left" />
-        {{ prevArticleName }}
-      </v-btn>
-      <span class="font-weight-bold">{{ currentArticle?.name }}</span>
-      <v-btn
-        variant="text"
-        size="small"
-        :disabled="loading || articles.length <= 1"
-        @click="next"
-      >
-        {{ nextArticleName }}
-        <v-icon icon="mdi-chevron-right" />
-      </v-btn>
-    </v-card-title>
+    <v-card-item>
+      <template #prepend>
+        <v-btn
+          variant="text"
+          size="small"
+          :disabled="loading || articles.length <= 1"
+          @click="prev"
+        >
+          <v-icon icon="mdi-chevron-left" />
+          {{ prevArticleName }}
+        </v-btn>
+      </template>
+      <template #title>
+        <span class="font-weight-bold">{{ currentArticle?.name }}</span>
+      </template>
+      <template #append>
+        <v-btn
+          variant="text"
+          size="small"
+          :disabled="loading || articles.length <= 1"
+          @click="next"
+        >
+          {{ nextArticleName }}
+          <v-icon icon="mdi-chevron-right" />
+        </v-btn>
+      </template>
+    </v-card-item>
 
     <v-card-text>
       <v-alert

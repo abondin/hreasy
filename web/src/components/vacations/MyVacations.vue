@@ -3,37 +3,39 @@
 -->
 <template>
   <v-card>
-    <v-card-title class="d-flex align-center">
-      <span>{{ t("Планируемые отпуска") }}</span>
-      <v-spacer />
-
-      <v-menu v-if="openedPeriods.length" location="bottom">
-        <template #activator="{ props: menuProps }">
-          <v-tooltip location="top">
-            <template #activator="{ props: tooltipProps }">
-              <v-btn
-                color="primary"
-                variant="outlined"
-                size="small"
-                v-bind="{ ...menuProps, ...tooltipProps }"
-              >
-                {{ t("Запланировать") }}
-              </v-btn>
-            </template>
-            <span>{{ t("Запланировать отпуск на будущий год") }}</span>
-          </v-tooltip>
-        </template>
-        <v-list density="compact">
-          <v-list-item
-            v-for="period in openedPeriods"
-            :key="period.year"
-            @click="requestAction.openRequestVacationDialog(period.year)"
-          >
-            <v-list-item-title>{{ period.year }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </v-card-title>
+    <v-card-item>
+      <template #title>
+        <span>{{ t("Планируемые отпуска") }}</span>
+      </template>
+      <template #append>
+        <v-menu v-if="openedPeriods.length" location="bottom">
+          <template #activator="{ props: menuProps }">
+            <v-tooltip location="top">
+              <template #activator="{ props: tooltipProps }">
+                <v-btn
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                  v-bind="{ ...menuProps, ...tooltipProps }"
+                >
+                  {{ t("Запланировать") }}
+                </v-btn>
+              </template>
+              <span>{{ t("Запланировать отпуск на будущий год") }}</span>
+            </v-tooltip>
+          </template>
+          <v-list density="compact">
+            <v-list-item
+              v-for="period in openedPeriods"
+              :key="period.year"
+              @click="requestAction.openRequestVacationDialog(period.year)"
+            >
+              <v-list-item-title>{{ period.year }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </template>
+    </v-card-item>
 
     <v-card-text>
       <v-alert

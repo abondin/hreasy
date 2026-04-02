@@ -5,11 +5,14 @@
 <template>
   <v-dialog v-model="dialogOpen" max-width="960" scrollable>
     <v-card>
-      <v-card-title class="d-flex align-center ga-2">
-        <span>{{ t("Подробная информация по проекту") }}</span>
-        <v-spacer />
-        <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
-      </v-card-title>
+      <v-card-item>
+        <template #title>
+          <span>{{ t("Подробная информация по проекту") }}</span>
+        </template>
+        <template #append>
+          <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
+        </template>
+      </v-card-item>
 
       <v-card-text class="pa-6 d-flex flex-column ga-6">
         <v-alert

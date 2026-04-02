@@ -4,12 +4,15 @@
 <template>
   <v-form ref="formRef">
     <v-card>
-      <v-card-title class="d-flex align-center">
-        <span v-if="form.isNew">{{ t("Добавление отпуска") }}</span>
-        <span v-else>{{ t("Изменение отпуска") }}</span>
-        <v-spacer />
-        <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
-      </v-card-title>
+      <v-card-item>
+        <template #title>
+          <span v-if="form.isNew">{{ t("Добавление отпуска") }}</span>
+          <span v-else>{{ t("Изменение отпуска") }}</span>
+        </template>
+        <template #append>
+          <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
+        </template>
+      </v-card-item>
       <v-card-text>
         <v-autocomplete
           v-model="form.employeeId"

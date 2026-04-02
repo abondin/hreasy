@@ -53,11 +53,12 @@
           transition="dialog-bottom-transition"
       >
         <v-card v-if="mapData.selectedEmployee">
-          <v-card-title class="d-flex align-center">
-            <span>{{ mapData.selectedEmployee.displayName }}</span>
-            <v-spacer/>
-            <v-btn icon="mdi-close" variant="text" @click="mapData.employeeDetailedOpened = false"/>
-          </v-card-title>
+          <v-card-item>
+            <template #title>{{ mapData.selectedEmployee.displayName }}</template>
+            <template #append>
+              <v-btn icon="mdi-close" variant="text" @click="mapData.employeeDetailedOpened = false"/>
+            </template>
+          </v-card-item>
           <v-card-text>
             <office-map-employee-card
                 :employee-id="mapData.selectedEmployee.id"

@@ -32,28 +32,31 @@
         </v-breadcrumbs>
 
         <v-card class="mt-4">
-          <v-card-title class="d-flex align-center ga-4 flex-wrap px-6 pt-6 pb-2">
-            <div class="text-h6 font-weight-semibold">
-              {{ assessment.employee?.name ?? "-" }}
-            </div>
-            <v-spacer />
-            <div class="d-flex align-center ga-2">
-              <v-btn
-                icon="mdi-checkbox-marked-circle"
-                color="success"
-                variant="text"
-                :disabled="actionLoading || Boolean(assessment.completedBy)"
-                @click="completeDialog = true"
-              />
-              <v-btn
-                icon="mdi-delete"
-                color="error"
-                variant="text"
-                :disabled="actionLoading || Boolean(assessment.canceledBy)"
-                @click="cancelDialog = true"
-              />
-            </div>
-          </v-card-title>
+          <v-card-item>
+            <template #title>
+              <div class="text-h6 font-weight-semibold">
+                {{ assessment.employee?.name ?? "-" }}
+              </div>
+            </template>
+            <template #append>
+              <div class="d-flex align-center ga-2">
+                <v-btn
+                  icon="mdi-checkbox-marked-circle"
+                  color="success"
+                  variant="text"
+                  :disabled="actionLoading || Boolean(assessment.completedBy)"
+                  @click="completeDialog = true"
+                />
+                <v-btn
+                  icon="mdi-delete"
+                  color="error"
+                  variant="text"
+                  :disabled="actionLoading || Boolean(assessment.canceledBy)"
+                  @click="cancelDialog = true"
+                />
+              </div>
+            </template>
+          </v-card-item>
           <v-card-text class="px-6 pb-6 pt-0">
             <v-row align="start" class="mt-1 ga-4">
               <v-col cols="12" lg="auto">
@@ -87,17 +90,18 @@
         </v-card>
 
         <v-card class="mt-5">
-          <v-card-title class="d-flex align-center">
-            {{ t("Вложения") }}
-            <v-spacer />
-            <v-btn
-              icon="mdi-plus"
-              color="primary"
-              variant="text"
-              :disabled="actionLoading"
-              @click="uploadDialog = true"
-            />
-          </v-card-title>
+          <v-card-item>
+            <template #title>{{ t("Вложения") }}</template>
+            <template #append>
+              <v-btn
+                icon="mdi-plus"
+                color="primary"
+                variant="text"
+                :disabled="actionLoading"
+                @click="uploadDialog = true"
+              />
+            </template>
+          </v-card-item>
           <v-card-text>
             <div v-if="assessment.attachmentsFilenames.length" class="d-flex flex-wrap ga-2">
               <v-chip

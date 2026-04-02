@@ -1,24 +1,27 @@
 <template>
   <v-card data-testid="admin-business-account-positions-card">
-    <v-card-title class="d-flex align-center ga-2 flex-wrap px-6 pt-5 pb-2">
-      <span>{{ t("Позиции бизнес аккаунта") }}</span>
-      <v-spacer />
-      <v-btn
-        icon="mdi-refresh"
-        variant="text"
-        :disabled="loading"
-        data-testid="admin-business-account-positions-refresh"
-        @click="load"
-      />
-      <v-btn
-        icon="mdi-plus"
-        color="primary"
-        variant="text"
-        :disabled="loading"
-        data-testid="admin-business-account-positions-add"
-        @click="openCreate"
-      />
-    </v-card-title>
+    <v-card-item>
+      <template #title>
+        <span>{{ t("Позиции бизнес аккаунта") }}</span>
+      </template>
+      <template #append>
+        <v-btn
+          icon="mdi-refresh"
+          variant="text"
+          :disabled="loading"
+          data-testid="admin-business-account-positions-refresh"
+          @click="load"
+        />
+        <v-btn
+          icon="mdi-plus"
+          color="primary"
+          variant="text"
+          :disabled="loading"
+          data-testid="admin-business-account-positions-add"
+          @click="openCreate"
+        />
+      </template>
+    </v-card-item>
 
     <v-card-text class="px-6 pb-5 pt-0">
       <v-row density="comfortable" class="mb-2">

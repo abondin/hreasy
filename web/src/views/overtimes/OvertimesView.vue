@@ -191,16 +191,19 @@
 
     <v-dialog v-model="employeeDialog" max-width="1280" data-testid="overtimes-employee-dialog">
       <v-card v-if="selectedEmployee">
-        <v-card-title class="d-flex align-center">
-          {{
-            t("overtimes_for_employee_for_period", {
-              employee: selectedEmployee.name,
-              period: selectedPeriod.toString(),
-            })
-          }}
-          <v-spacer />
-          <v-btn icon="mdi-close" variant="text" @click="closeEmployeeDialog" />
-        </v-card-title>
+        <v-card-item>
+          <template #title>
+            {{
+              t("overtimes_for_employee_for_period", {
+                employee: selectedEmployee.name,
+                period: selectedPeriod.toString(),
+              })
+            }}
+          </template>
+          <template #append>
+            <v-btn icon="mdi-close" variant="text" @click="closeEmployeeDialog" />
+          </template>
+        </v-card-item>
         <v-card-text>
           <employee-overtime-card
             :employee-id="selectedEmployee.id"

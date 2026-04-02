@@ -4,12 +4,10 @@
 <template>
   <v-dialog v-model="dialogOpen" max-width="560" scrollable>
     <v-card>
-      <v-card-title class="d-flex flex-column align-start">
-        <span>{{ t("Обновление текущего проекта") }}</span>
-        <span class="text-body-2 text-medium-emphasis">
-          {{ employeeName }}
-        </span>
-      </v-card-title>
+      <v-card-item>
+        <template #title>{{ t("Обновление текущего проекта") }}</template>
+        <template #subtitle>{{ employeeName }}</template>
+      </v-card-item>
 
       <v-card-text>
         <v-alert

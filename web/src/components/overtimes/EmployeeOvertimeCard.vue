@@ -1,43 +1,47 @@
 ﻿<template>
   <v-card>
-    <v-card-title class="d-flex align-center flex-wrap ga-2">
-      <div>{{ t("Овертаймы") }}</div>
-      <template v-if="props.changePeriodAllowed">
-        <period-switcher-control
-          :label="selectedPeriodLabel"
-          :is-current="isCurrentPeriod"
-          :disabled="loading"
-          :period-closed="isPeriodClosed"
-
-          variant="plain"
-          @prev="decrementPeriod"
-          @next="incrementPeriod"
-          @go-current="goToCurrentPeriod"
-        />
+    <v-card-item>
+      <template #title>
+        <div class="d-flex align-center flex-wrap ga-2">
+          <span>{{ t("Овертаймы") }}</span>
+          <period-switcher-control
+            v-if="props.changePeriodAllowed"
+            :label="selectedPeriodLabel"
+            :is-current="isCurrentPeriod"
+            :disabled="loading"
+            :period-closed="isPeriodClosed"
+            variant="plain"
+            @prev="decrementPeriod"
+            @next="incrementPeriod"
+            @go-current="goToCurrentPeriod"
+          />
+        </div>
       </template>
-      <v-spacer />
-      <span>
-        {{ t("Всего") }}: {{ t("hours", totalHours) }}
-      </span>
-      <div class="d-flex ga-2 ml-2">
-        <add-overtime-item-dialog
-          :employee-id="props.employeeId"
-          :period-id="selectedPeriodId"
-          :default-project="defaultProjectId"
-          :all-projects="allProjects"
-          :period-closed="isPeriodClosed"
-          @submitted="onReportSubmitted"
-        />
-        <approve-overtime-report-dialog
-          v-if="canApproveOvertime"
-          :employee-id="props.employeeId"
-          :period-id="selectedPeriodId"
-          :period-closed="isPeriodClosed"
-          :previous-decision="myApproval"
-          @submitted="onReportSubmitted"
-        />
-      </div>
-    </v-card-title>
+
+      <template #append>
+        <div class="d-flex align-center flex-wrap ga-2 justify-end">
+          <span>
+            {{ t("Всего") }}: {{ t("hours", totalHours) }}
+          </span>
+          <add-overtime-item-dialog
+            :employee-id="props.employeeId"
+            :period-id="selectedPeriodId"
+            :default-project="defaultProjectId"
+            :all-projects="allProjects"
+            :period-closed="isPeriodClosed"
+            @submitted="onReportSubmitted"
+          />
+          <approve-overtime-report-dialog
+            v-if="canApproveOvertime"
+            :employee-id="props.employeeId"
+            :period-id="selectedPeriodId"
+            :period-closed="isPeriodClosed"
+            :previous-decision="myApproval"
+            @submitted="onReportSubmitted"
+          />
+        </div>
+      </template>
+    </v-card-item>
 
     <v-card-subtitle v-if="approvals.length > 0">
       <div class="d-flex flex-wrap ga-2">

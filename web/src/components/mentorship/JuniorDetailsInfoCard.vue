@@ -1,33 +1,35 @@
 <template>
   <v-card :loading="loading">
-    <v-card-title class="d-flex align-start justify-space-between flex-wrap ga-3">
-      <div class="min-w-0 flex-grow-1">
+    <v-card-item>
+      <template #title>
         <div class="text-h6">{{ junior.juniorEmpl.name }}</div>
-      </div>
-      <div
-        v-if="canEditRegistry"
-        class="d-flex align-center ga-1 ms-auto"
-      >
-        <v-btn
-          icon="mdi-pencil"
-          variant="text"
-          @click="$emit('edit')"
-        />
-        <v-btn
-          icon="mdi-school"
-          variant="text"
-          :color="junior.graduation ? '' : 'success'"
-          @click="$emit('graduate')"
-        />
-        <v-btn
-          icon="mdi-delete"
-          variant="text"
-          color="error"
-          :disabled="Boolean(junior.graduation)"
-          @click="$emit('delete')"
-        />
-      </div>
-    </v-card-title>
+      </template>
+      <template #append>
+        <div
+          v-if="canEditRegistry"
+          class="d-flex align-center ga-1"
+        >
+          <v-btn
+            icon="mdi-pencil"
+            variant="text"
+            @click="$emit('edit')"
+          />
+          <v-btn
+            icon="mdi-school"
+            variant="text"
+            :color="junior.graduation ? '' : 'success'"
+            @click="$emit('graduate')"
+          />
+          <v-btn
+            icon="mdi-delete"
+            variant="text"
+            color="error"
+            :disabled="Boolean(junior.graduation)"
+            @click="$emit('delete')"
+          />
+        </div>
+      </template>
+    </v-card-item>
 
     <v-card-text class="pt-0">
       <v-row class="ga-2">

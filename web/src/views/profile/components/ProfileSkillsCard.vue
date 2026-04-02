@@ -67,15 +67,19 @@
               </template>
 
               <v-card width="320" elevation="4">
-                <v-card-title class="d-flex align-center justify-space-between ga-2 text-body-1 font-weight-medium">
-                  <span class="text-break">{{ skill.name }}</span>
-                  <v-btn
-                    icon="mdi-close"
-                    size="small"
-                    variant="text"
-                    @click.stop.prevent="() => onMenuToggle(skill.id, false)"
-                  />
-                </v-card-title>
+                <v-card-item>
+                  <template #title>
+                    <span class="text-break text-body-1 font-weight-medium">{{ skill.name }}</span>
+                  </template>
+                  <template #append>
+                    <v-btn
+                      icon="mdi-close"
+                      size="small"
+                      variant="text"
+                      @click.stop.prevent="() => onMenuToggle(skill.id, false)"
+                    />
+                  </template>
+                </v-card-item>
 
                 <v-card-text>
                   <v-rating

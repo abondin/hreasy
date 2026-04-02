@@ -4,10 +4,10 @@
 <template>
   <div class="markdown-editor">
     <v-card outlined>
-      <v-card-title class="markdown-editor__title">
-        <span>{{ label }}</span>
-        <v-spacer />
-        <div class="preview-toggle" @click.stop>
+      <v-card-item class="markdown-editor__title">
+        <template #title>{{ label }}</template>
+        <template #append>
+          <div class="preview-toggle" @click.stop>
           <v-switch
             v-model="preview"
             :label="t('Предпросмотр')"
@@ -15,8 +15,9 @@
             density="compact"
             hide-details
           />
-        </div>
-      </v-card-title>
+          </div>
+        </template>
+      </v-card-item>
       <v-divider />
       <v-card-text :style="contentStyle">
         <template v-if="!preview">

@@ -1,10 +1,13 @@
 <template>
   <v-card data-testid="admin-article-form">
-    <v-card-title class="d-flex align-center">
-      {{ input?.id ? t("Редактирование статьи") : t("Создание статьи") }}
-      <v-spacer />
-      <v-btn icon="mdi-close" variant="text" @click="$emit('close')" />
-    </v-card-title>
+    <v-card-item>
+      <template #title>
+        {{ input?.id ? t("Редактирование статьи") : t("Создание статьи") }}
+      </template>
+      <template #append>
+        <v-btn icon="mdi-close" variant="text" @click="$emit('close')" />
+      </template>
+    </v-card-item>
 
     <v-card-text>
       <v-form ref="formRef" @submit.prevent="submit">

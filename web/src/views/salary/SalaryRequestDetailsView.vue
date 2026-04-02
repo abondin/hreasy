@@ -19,34 +19,39 @@
         </v-breadcrumbs>
 
         <v-card class="mt-4">
-          <v-card-title class="d-flex flex-wrap align-center ga-2">
-            <span>{{ request.type === 1 ? t("Запрос на повышение") : t("Запрос на бонус") }}</span>
-            <span class="text-subtitle-1">(+{{ formatMoneyCompact(request.req.increaseAmount) }})</span>
-            <v-chip size="small" :color="request.impl?.state === 2 ? 'error' : request.impl ? 'success' : 'default'" variant="tonal">
-              {{ request.impl?.state ? t(`SALARY_REQUEST_STAT.${request.impl.state}`) : t("На рассмотрении") }}
-            </v-chip>
-            <v-chip v-if="periodClosed" color="warning" variant="tonal" size="small">
-              {{ t("Период закрыт для внесения изменений") }}
-            </v-chip>
-            <v-spacer />
-            <v-btn
-              v-if="canUpdateRequest"
-              icon="mdi-pencil"
-              variant="text"
-              :disabled="requestActionDisabled"
-              data-testid="salary-request-edit"
-              @click="openUpdateDialog"
-            />
-            <v-btn
-              v-if="canDeleteRequest"
-              icon="mdi-delete"
-              color="error"
-              variant="text"
-              :disabled="requestActionDisabled"
-              data-testid="salary-request-delete"
-              @click="deleteDialog = true"
-            />
-          </v-card-title>
+          <v-card-item>
+            <template #title>
+              <div class="d-flex align-center ga-2 flex-wrap">
+                <span>{{ request.type === 1 ? t("Запрос на повышение") : t("Запрос на бонус") }}</span>
+                <span class="text-subtitle-1">(+{{ formatMoneyCompact(request.req.increaseAmount) }})</span>
+                <v-chip size="small" :color="request.impl?.state === 2 ? 'error' : request.impl ? 'success' : 'default'" variant="tonal">
+                  {{ request.impl?.state ? t(`SALARY_REQUEST_STAT.${request.impl.state}`) : t("На рассмотрении") }}
+                </v-chip>
+                <v-chip v-if="periodClosed" color="warning" variant="tonal" size="small">
+                  {{ t("Период закрыт для внесения изменений") }}
+                </v-chip>
+              </div>
+            </template>
+            <template #append>
+              <v-btn
+                v-if="canUpdateRequest"
+                icon="mdi-pencil"
+                variant="text"
+                :disabled="requestActionDisabled"
+                data-testid="salary-request-edit"
+                @click="openUpdateDialog"
+              />
+              <v-btn
+                v-if="canDeleteRequest"
+                icon="mdi-delete"
+                color="error"
+                variant="text"
+                :disabled="requestActionDisabled"
+                data-testid="salary-request-delete"
+                @click="deleteDialog = true"
+              />
+            </template>
+          </v-card-item>
           <v-card-subtitle>{{ formatPeriod(request.req.increaseStartPeriod) }}</v-card-subtitle>
           <v-card-text class="pa-6">
             <v-row class="salary-request-details__summary" align="start">
@@ -128,16 +133,17 @@
         </v-card>
 
         <v-card class="mt-5">
-          <v-card-title class="d-flex align-center">
-            {{ t("Реализация") }}
-            <v-spacer />
-            <template v-if="canAdminSalaryRequests">
-              <v-btn v-if="!request.impl" icon="mdi-pen-plus" color="success" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationDialog('implement')" />
-              <v-btn v-if="!request.impl" icon="mdi-pen-minus" color="error" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationDialog('reject')" />
-              <v-btn v-if="request.impl" icon="mdi-pencil-off" color="error" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationDialog('reset')" />
-              <v-btn v-if="request.impl && request.type === 1" icon="mdi-email-edit" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationTextDialog" />
+          <v-card-item>
+            <template #title>{{ t("Реализация") }}</template>
+            <template #append>
+              <template v-if="canAdminSalaryRequests">
+                <v-btn v-if="!request.impl" icon="mdi-pen-plus" color="success" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationDialog('implement')" />
+                <v-btn v-if="!request.impl" icon="mdi-pen-minus" color="error" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationDialog('reject')" />
+                <v-btn v-if="request.impl" icon="mdi-pencil-off" color="error" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationDialog('reset')" />
+                <v-btn v-if="request.impl && request.type === 1" icon="mdi-email-edit" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationTextDialog" />
+              </template>
             </template>
-          </v-card-title>
+          </v-card-item>
           <v-card-text v-if="request.impl">
             <property-list variant="aligned" density="wide">
               <profile-summary-item :label="t('Результат')">{{ t(`SALARY_REQUEST_STAT.${request.impl.state}`) }}</profile-summary-item>
@@ -157,15 +163,16 @@
         </v-card>
 
         <v-card class="mt-5">
-          <v-card-title class="d-flex align-center">
-            {{ t("Согласования и комментарии") }}
-            <v-spacer />
-            <template v-if="canApproveRequest">
-              <v-btn icon="mdi-checkbox-marked-circle" color="success" variant="text" :disabled="periodClosed || actionLoading" @click="openApprovalDialog('approve')" />
-              <v-btn icon="mdi-alert-circle" color="error" variant="text" :disabled="periodClosed || actionLoading" @click="openApprovalDialog('decline')" />
-              <v-btn icon="mdi-comment" variant="text" :disabled="actionLoading" @click="openApprovalDialog('comment')" />
+          <v-card-item>
+            <template #title>{{ t("Согласования и комментарии") }}</template>
+            <template #append>
+              <template v-if="canApproveRequest">
+                <v-btn icon="mdi-checkbox-marked-circle" color="success" variant="text" :disabled="periodClosed || actionLoading" @click="openApprovalDialog('approve')" />
+                <v-btn icon="mdi-alert-circle" color="error" variant="text" :disabled="periodClosed || actionLoading" @click="openApprovalDialog('decline')" />
+                <v-btn icon="mdi-comment" variant="text" :disabled="actionLoading" @click="openApprovalDialog('comment')" />
+              </template>
             </template>
-          </v-card-title>
+          </v-card-item>
           <v-card-text>
             <v-list v-if="request.approvals.length">
               <v-list-item v-for="approval in approvalsOrderedAsc" :key="approval.id">
@@ -186,13 +193,15 @@
         </v-card>
 
         <v-card v-if="canAdminSalaryRequests" class="mt-5">
-          <v-card-title class="d-flex align-center ga-3 flex-wrap">
-            <span>{{ t("История всех запросов") }}</span>
-            <v-btn-toggle v-model="historyModes" density="comfortable" multiple>
-              <v-btn :value="0">{{ t("Повышения") }}</v-btn>
-              <v-btn :value="1">{{ t("Бонусы") }}</v-btn>
-            </v-btn-toggle>
-          </v-card-title>
+          <v-card-item>
+            <template #title>{{ t("История всех запросов") }}</template>
+            <template #append>
+              <v-btn-toggle v-model="historyModes" density="comfortable" multiple>
+                <v-btn :value="0">{{ t("Повышения") }}</v-btn>
+                <v-btn :value="1">{{ t("Бонусы") }}</v-btn>
+              </v-btn-toggle>
+            </template>
+          </v-card-item>
           <v-card-text>
             <v-alert v-if="historyError" type="error" variant="tonal" class="mb-3">{{ historyError }}</v-alert>
             <HREasyTableBase

@@ -1,17 +1,20 @@
 <template>
   <v-form ref="employeeEditForm">
     <v-card class="admin-employee-form">
-      <v-card-title class="d-flex align-center">
-        <span>
-          {{
-            isNew
-              ? t("Создание карточки сотрудника")
-              : t("Изменение карточки сотрудника")
-          }}
-        </span>
-        <v-spacer />
-        <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
-      </v-card-title>
+      <v-card-item>
+        <template #title>
+          <span>
+            {{
+              isNew
+                ? t("Создание карточки сотрудника")
+                : t("Изменение карточки сотрудника")
+            }}
+          </span>
+        </template>
+        <template #append>
+          <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
+        </template>
+      </v-card-item>
 
       <v-card-text class="admin-employee-form__content">
         <v-row class="align-start">

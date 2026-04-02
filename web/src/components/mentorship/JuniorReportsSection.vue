@@ -1,32 +1,35 @@
 <template>
   <v-card :loading="loading">
-    <v-card-title class="d-flex align-center ga-3">
-      <span class="d-flex align-center ga-2">
-        <span>{{ t("Отчёты") }}</span>
-        <value-with-status-chip
-          v-if="Number(junior.monthsWithoutReport.status ?? 0) !== 1"
-          :value="junior.monthsWithoutReport"
-          dense
-        >
-          {{ t("months", junior.monthsWithoutReport.value) }} {{ t("без отчёта") }}
-        </value-with-status-chip>
-      </span>
-      <v-spacer />
-      <v-tooltip v-if="canViewMentorship" location="bottom">
-        <template #activator="{ props }">
-          <v-btn
-            v-bind="props"
-            icon="mdi-plus"
-            color="primary"
-            variant="text"
-            size="default"
-            :disabled="isGraduated"
-            @click="$emit('open-create-report')"
-          />
-        </template>
-        <span>{{ t("Добавить отчёт") }}</span>
-      </v-tooltip>
-    </v-card-title>
+    <v-card-item>
+      <template #title>
+        <span class="d-flex align-center ga-2">
+          <span>{{ t("Отчёты") }}</span>
+          <value-with-status-chip
+            v-if="Number(junior.monthsWithoutReport.status ?? 0) !== 1"
+            :value="junior.monthsWithoutReport"
+            dense
+          >
+            {{ t("months", junior.monthsWithoutReport.value) }} {{ t("без отчёта") }}
+          </value-with-status-chip>
+        </span>
+      </template>
+      <template #append>
+        <v-tooltip v-if="canViewMentorship" location="bottom">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon="mdi-plus"
+              color="primary"
+              variant="text"
+              size="default"
+              :disabled="isGraduated"
+              @click="$emit('open-create-report')"
+            />
+          </template>
+          <span>{{ t("Добавить отчёт") }}</span>
+        </v-tooltip>
+      </template>
+    </v-card-item>
 
     <v-card-text v-if="sortedReports.length === 0" class="text-medium-emphasis">
       {{ t("Оставьте ваш первый отчёт о работе сотрудника!") }}
