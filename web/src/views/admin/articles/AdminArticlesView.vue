@@ -1,6 +1,6 @@
 <template>
   <TableFirstPageLayout test-id="admin-articles-view">
-    <v-card class="d-flex flex-column h-100" data-testid="admin-articles-card">
+    <TablePageCard test-id="admin-articles-card" content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
       <HREasyTableBase
         table-class="admin-articles-table text-truncate"
         :headers="headers"
@@ -121,7 +121,7 @@
           {{ formatDateTime(item.updatedAt) }}
         </template>
       </HREasyTableBase>
-    </v-card>
+    </TablePageCard>
 
     <v-dialog v-model="dialog" persistent max-width="1080">
       <admin-article-form
@@ -135,6 +135,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
+import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

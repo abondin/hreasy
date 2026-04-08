@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mt-4 d-flex flex-column flex-grow-1 min-h-0" data-testid="admin-kids-view">
+  <TablePageCard test-id="admin-kids-view" content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
     <HREasyTableBase
       table-class="admin-kids-table text-truncate"
       :headers="headers"
@@ -83,7 +83,7 @@
         @saved="onSaved"
       />
     </v-dialog>
-  </v-card>
+  </TablePageCard>
 </template>
 
 <script setup lang="ts">
@@ -91,6 +91,7 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import AdminEmployeeKidForm from "@/views/admin/employees/components/AdminEmployeeKidForm.vue";
 import { usePermissions } from "@/lib/permissions";

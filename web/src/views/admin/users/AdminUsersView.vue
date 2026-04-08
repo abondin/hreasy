@@ -1,6 +1,6 @@
 <template>
   <TableFirstPageLayout test-id="admin-users-view">
-    <v-card class="d-flex flex-column h-100" data-testid="admin-users-card">
+    <TablePageCard test-id="admin-users-card" content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
       <HREasyTableBase
         table-class="admin-users-table text-truncate"
         :headers="headers"
@@ -104,7 +104,7 @@
           </div>
         </template>
       </HREasyTableBase>
-    </v-card>
+    </TablePageCard>
 
     <v-dialog v-model="dialog" persistent max-width="860">
       <admin-user-roles-form
@@ -122,6 +122,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

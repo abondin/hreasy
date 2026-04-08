@@ -1,6 +1,6 @@
 /**
  * Builds app-relative paths for environments where the app is served under a base path
- * (for example `/app-v3` in local/stage) and for plain root deployments (`/`).
+ * and for plain root deployments (`/`).
  */
 export function appPath(path: string): string {
   const configuredBasePath = process.env.PLAYWRIGHT_BASE_PATH ?? process.env.VITE_APP_BASE_PATH ?? "";
@@ -15,4 +15,3 @@ export function appPath(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   return normalizedPath === "/" ? `${normalizedBasePath}/` : `${normalizedBasePath}${normalizedPath}`;
 }
-

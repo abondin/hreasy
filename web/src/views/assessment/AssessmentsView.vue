@@ -10,11 +10,10 @@
       color="warning"
     />
 
-        <v-card v-else class="d-flex flex-column h-100" data-testid="assessments-card">
+    <TablePageCard v-else test-id="assessments-card">
       <v-snackbar v-model="exportCompleted" timeout="5000">
         {{ t("Экспорт успешно завершён. Файл скачен.") }}
       </v-snackbar>
-      <v-card-text class="pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0">
         <AdaptiveFilterBar
           :items="filterBarItems"
           :has-right-actions="canExport"
@@ -134,7 +133,7 @@
           {{ error }}
         </v-alert>
 
-        <div class="flex-grow-1 min-h-0">
+        <template #table>
         <HREasyTableBase
           table-class="assessments-table text-truncate"
           :headers="headers"
@@ -176,14 +175,14 @@
             {{ formatDate(item.lastAssessmentDate) }}
           </template>
         </HREasyTableBase>
-        </div>
-      </v-card-text>
-    </v-card>
+        </template>
+    </TablePageCard>
   </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
+import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import TableFirstPageState from "@/components/shared/TableFirstPageState.vue";
 import { useI18n } from "vue-i18n";

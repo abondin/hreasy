@@ -8,9 +8,9 @@
       <slot name="before-table" />
     </div>
 
-    <div ref="tableAreaRef" class="flex-grow-1 min-h-0">
+    <div ref="tableAreaRef" class="h-reasy-table-base__table-area flex-grow-1 min-h-0 overflow-hidden">
       <v-data-table-virtual
-        :class="tableClass"
+        :class="['h-reasy-table-base__table', tableClass]"
         :headers="headers"
         :items="items"
         :item-key="itemKey"
@@ -107,6 +107,7 @@ const resolvedHeight = computed(() => {
 onMounted(async () => {
   await nextTick();
   recalculateFillHeight();
+  window.addEventListener("resize", recalculateFillHeight);
 
   if (typeof ResizeObserver !== "undefined" && tableAreaRef.value) {
     tableAreaResizeObserver = new ResizeObserver(() => {
@@ -125,6 +126,7 @@ watch(
 );
 
 onBeforeUnmount(() => {
+  window.removeEventListener("resize", recalculateFillHeight);
   tableAreaResizeObserver?.disconnect();
 });
 
@@ -142,3 +144,14 @@ function onClickRow(eventPayload: Event, rowPayload: unknown) {
   emit("click:row", eventPayload, rowPayload);
 }
 </script>
+
+<style scoped>
+.h-reasy-table-base__table {
+  min-height: 0;
+}
+
+.h-reasy-table-base__table-area :deep(.v-table__wrapper) {
+  min-height: 0;
+  overflow: auto;
+}
+</style>

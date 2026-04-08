@@ -1,6 +1,6 @@
 <template>
   <TableFirstPageLayout test-id="admin-projects-view">
-    <v-card class="d-flex flex-column h-100" data-testid="admin-projects-card">
+    <TablePageCard test-id="admin-projects-card" content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
       <HREasyTableBase
         table-class="admin-projects-table text-truncate"
         :headers="headers"
@@ -140,7 +140,7 @@
           {{ formatDate(item.endDate) }}
         </template>
       </HREasyTableBase>
-    </v-card>
+    </TablePageCard>
 
     <v-dialog v-model="dialog" persistent width="96vw" max-width="960">
       <admin-project-form
@@ -156,6 +156,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";

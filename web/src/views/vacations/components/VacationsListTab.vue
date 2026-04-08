@@ -1,6 +1,7 @@
 <template>
   <div class="d-flex flex-column h-100 min-h-0">
     <HREasyTableBase
+      data-testid="vacations-list-table"
       class="flex-grow-1 min-h-0 vacations-list-table text-truncate"
       height="fill"
       fixed-header

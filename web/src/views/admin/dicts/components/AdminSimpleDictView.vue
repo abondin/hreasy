@@ -4,7 +4,7 @@
 -->
 <template>
   <div class="mt-4 d-flex flex-column flex-grow-1 min-h-0" :data-testid="testId">
-    <v-card class="d-flex flex-column h-100">
+    <TablePageCard content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
       <HREasyTableBase
         table-class="admin-simple-dict-table text-truncate"
         :headers="headers"
@@ -93,7 +93,7 @@
           <slot :name="slotName" v-bind="slotProps" />
         </template>
       </HREasyTableBase>
-    </v-card>
+    </TablePageCard>
 
     <v-dialog v-model="dialog" persistent max-width="640">
       <v-card>
@@ -153,6 +153,7 @@ import { useI18n } from "vue-i18n";
 import type { VDataTable, VForm } from "vuetify/components";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";

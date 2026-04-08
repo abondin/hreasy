@@ -11,10 +11,13 @@ test.describe("Overtimes Summary", () => {
     await page.goto(appPath(routes.overtimes), { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId(selectors.overtimesView)).toBeVisible();
-    const before = (await page.getByTestId(selectors.overtimesPeriodLabel).textContent()) ?? "";
+    const periodLabel = page.getByTestId(selectors.overtimesPeriodLabel).locator("input").first();
+    await expect(periodLabel).toBeVisible();
+    const before = await periodLabel.inputValue();
     await page.getByTestId(selectors.overtimesNextPeriod).click();
-    const after = (await page.getByTestId(selectors.overtimesPeriodLabel).textContent()) ?? "";
-    expect(after).not.toBe(before);
+    await expect(periodLabel).not.toHaveValue(before);
+    const after = periodLabel;
+    await expect(after).not.toHaveValue(before);
   });
 
   test("filters by employee name", async ({ page }) => {

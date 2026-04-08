@@ -1,6 +1,6 @@
 <template>
   <div class="mt-4 d-flex flex-column flex-grow-1 min-h-0" data-testid="admin-dict-office-maps-view">
-    <v-card class="d-flex flex-column h-100">
+    <TablePageCard content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
       <HREasyTableBase
         table-class="admin-office-maps-table text-truncate"
         :headers="headers"
@@ -86,7 +86,7 @@
           </div>
         </template>
       </HREasyTableBase>
-    </v-card>
+    </TablePageCard>
 
     <v-dialog v-model="uploadDialog" max-width="720" persistent>
       <v-card>
@@ -128,6 +128,7 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
 import FileUploadZone, { type UploadCompleteEvent } from "@/components/FileUploadZone.vue";

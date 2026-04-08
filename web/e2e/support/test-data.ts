@@ -8,6 +8,7 @@ export const routes = {
   vacations: "/vacations",
   overtimes: "/overtimes",
   assessments: "/assessments",
+  salaryRequests: "/salaries/requests",
   employeeAssessmentsPrefix: "/assessments/",
   mentorship: "/juniors",
   mentorshipDetailsPrefix: "/juniors/",

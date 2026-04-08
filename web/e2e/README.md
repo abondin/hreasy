@@ -35,8 +35,8 @@ Some scenarios require test credentials from environment variables:
 
 - `E2E_EMPLOYEE_USERNAME`
 - `E2E_EMPLOYEE_PASSWORD`
-- `PLAYWRIGHT_PORT` (optional, default: `5173` in local runs)
-- `PLAYWRIGHT_BASE_PATH` (optional, for apps served from subpath, for example `/app-v3`)
+- `PLAYWRIGHT_PORT` (optional, default: `5174` in local runs)
+- `PLAYWRIGHT_BASE_PATH` (optional, for apps served from a subpath)
 - `PLAYWRIGHT_BASE_URL` (optional override for full URL, has priority over port/base path)
 
 If required credentials are missing, such tests are skipped.
@@ -46,16 +46,16 @@ If required credentials are missing, such tests are skipped.
 Use these variables when you run tests locally:
 
 - Always set `E2E_EMPLOYEE_USERNAME` and `E2E_EMPLOYEE_PASSWORD` for authenticated flows.
-- Set `PLAYWRIGHT_PORT` when local app runs on non-default port.
-- Set `PLAYWRIGHT_BASE_PATH` when app is served under non-root base path.
+- Local default for Playwright is `5174`.
+- Keep `5173` free if you use it for manual inspection in a separate dev server.
+- Set `PLAYWRIGHT_PORT` when Playwright should run against a different port.
 
-Example for app on `http://localhost:5174/app-v3`:
+Example for app on `http://localhost:5174`:
 
 ### Bash
 
 ```bash
 PLAYWRIGHT_PORT=5174 \
-PLAYWRIGHT_BASE_PATH=/app-v3 \
 E2E_EMPLOYEE_USERNAME=alexander.bondin \
 E2E_EMPLOYEE_PASSWORD=qwe123 \
 npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
@@ -65,7 +65,6 @@ npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
 
 ```powershell
 $env:PLAYWRIGHT_PORT='5174'; `
-$env:PLAYWRIGHT_BASE_PATH='/app-v3'; `
 $env:E2E_EMPLOYEE_USERNAME='alexander.bondin'; `
 $env:E2E_EMPLOYEE_PASSWORD='qwe123'; `
 npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium

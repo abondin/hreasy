@@ -1,6 +1,6 @@
 <template>
   <div class="mt-4 d-flex flex-column flex-grow-1 min-h-0" data-testid="admin-employees-list-view">
-    <v-card class="d-flex flex-column h-100" data-testid="admin-employees-list-card">
+    <TablePageCard test-id="admin-employees-list-card" content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
       <HREasyTableBase
         table-class="admin-employees-table text-truncate"
         :headers="headers"
@@ -176,7 +176,7 @@
         {{ formatDate(item.dateOfDismissal) }}
         </template>
       </HREasyTableBase>
-    </v-card>
+    </TablePageCard>
 
     <v-dialog data-testid="admin-employees-edit-dialog"
       v-model="dialog"
@@ -212,6 +212,7 @@ import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import AdminEmployeeForm from "@/views/admin/employees/components/AdminEmployeeForm.vue";
 import { usePermissions } from "@/lib/permissions";

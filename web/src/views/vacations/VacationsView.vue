@@ -219,6 +219,7 @@
               <template #right-actions>
                 <v-btn
                   v-if="canEditVacations"
+                  data-testid="toolbar-add"
                   color="primary"
                   variant="outlined"
                   prepend-icon="mdi-plus"

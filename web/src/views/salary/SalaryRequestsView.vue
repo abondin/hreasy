@@ -19,8 +19,7 @@
       color="error"
     />
 
-        <v-card v-else class="d-flex flex-column h-100" data-testid="salary-requests-card">
-      <v-card-text class="pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0">
+    <TablePageCard v-else test-id="salary-requests-card">
         <AdaptiveFilterBar
           :items="filterBarItems"
           :has-right-actions="canCreateSalaryRequest || canAdminSalaryRequests"
@@ -191,7 +190,7 @@
           </template>
         </AdaptiveFilterBar>
 
-        <div class="flex-grow-1 min-h-0">
+        <template #table>
         <HREasyTableBase
           table-class="salary-requests-table text-truncate"
           :headers="headers"
@@ -271,9 +270,8 @@
             {{ formatDateTime(item.createdAt) }}
           </template>
         </HREasyTableBase>
-        </div>
-      </v-card-text>
-    </v-card>
+        </template>
+    </TablePageCard>
 
     <v-dialog v-model="createDialog" max-width="920" data-testid="salary-requests-create-dialog">
       <v-card>
@@ -398,6 +396,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from "vue";
+import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import TableFirstPageState from "@/components/shared/TableFirstPageState.vue";
 import { useRoute, useRouter } from "vue-router";

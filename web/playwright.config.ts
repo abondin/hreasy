@@ -3,7 +3,7 @@ import {defineConfig, devices} from '@playwright/test';
 
 const isCi = !!process.env.CI;
 const runAllBrowsers = process.env.PLAYWRIGHT_ALL_BROWSERS === "1";
-const defaultPort = isCi ? 4173 : 5173;
+const defaultPort = isCi ? 4173 : 5174;
 const port = Number(process.env.PLAYWRIGHT_PORT ?? defaultPort);
 const configuredBasePath = process.env.PLAYWRIGHT_BASE_PATH ?? process.env.VITE_APP_BASE_PATH ?? '';
 const normalizedBasePath = configuredBasePath
