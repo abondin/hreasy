@@ -12,17 +12,28 @@ import java.time.OffsetDateTime;
 @Repository
 public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, Integer> {
 
-    @Query("select e.id employee_id," +
-            " e.display_name employee_display_name " +
-            ", e.date_of_employment employee_date_of_employment,  a.*" +
-            ", p.id employee_current_project_id, p.name employee_current_project_name, e.current_project_role employee_current_project_role" +
-            ", ba.id ba_id, ba.name ba_name" +
-            " from empl.employee e left join assmnt.assessment a on e.id=a.employee" +
-            " left join proj.project p on e.current_project=p.id " +
-            " left join ba.business_account ba on p.ba_id=ba.id " +
-            " where (e.date_of_dismissal is null or e.date_of_dismissal > :now)" +
-            " and (a.canceled_at is null or a.canceled_at > :now)" +
-            " order by a.created_at desc, e.date_of_employment desc")
+     @Query("""
+            select
+                e.id employee_id,
+                e.display_name employee_display_name,
+                e.date_of_employment employee_date_of_employment,
+                a.*,
+                p.id employee_current_project_id,
+                p.name employee_current_project_name,
+                e.current_project_role employee_current_project_role,
+                ba.id ba_id,
+                ba.name ba_name
+            from empl.employee e
+            left join assmnt.assessment a
+                on e.id = a.employee
+                and (a.canceled_at is null or a.canceled_at > :now)
+            left join proj.project p
+                on e.current_project = p.id
+            left join ba.business_account ba
+                on p.ba_id = ba.id
+            where (e.date_of_dismissal is null or e.date_of_dismissal > :now)
+            order by a.created_at desc, e.date_of_employment desc
+            """)
     Flux<EmployeeAssessmentEntry> findNotCanceledAssessmentForNotFired(@Param("now") OffsetDateTime now);
 
     @Query("select a.*, " +
