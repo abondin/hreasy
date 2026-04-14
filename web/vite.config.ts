@@ -1,5 +1,6 @@
 import {createRequire} from 'node:module';
 import {fileURLToPath, URL} from 'node:url';
+import {resolve} from 'node:path';
 
 import type {PluginOption} from 'vite';
 import {defineConfig, loadEnv} from 'vite';
@@ -52,6 +53,14 @@ export default defineConfig(({mode}) => {
         : undefined,
       fs: {
         allow: [projectRoot]
+      }
+    },
+    build: {
+      rollupOptions: {
+        input: {
+          main: resolve(projectRoot, 'index.html'),
+          'e2e-harness': resolve(projectRoot, 'e2e-harness.html')
+        }
       }
     }
   };

@@ -34,3 +34,4 @@ src/**/*.d.ts
 .npm-cache/
 test-results/
 playwright-report/
+.tmp-preview-*.log
