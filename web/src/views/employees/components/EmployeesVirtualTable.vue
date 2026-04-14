@@ -3,31 +3,31 @@
   Keeps page state wiring, URL sync, and responsive details behavior.
 -->
 <template>
-  <v-card class="d-flex flex-column h-100" data-testid="employees-table-card">
-    <employees-filters
-      :department-options="departmentOptions"
-      :project-options="projectOptions"
-      :business-account-options="baOptions"
-      :search="search"
-      :department="department"
-      :project="project"
-      :business-account="businessAccount"
-      @update:search="emit('update:search', $event)"
-      @update:department="emit('update:department', $event)"
-      @update:project="emit('update:project', $event)"
-      @update:business-account="emit('update:ba', $event)"
-    />
-
-    <div class="flex-grow-1 min-h-0">
-      <employees-table
+  <TablePageCard test-id="employees-table-card">
+    <employees-table
       :items="items"
       :loading="loading"
       :headers="headers"
       :table-height="tableHeight"
       @select-employee="openEmployeeDetails"
-    />
-    </div>
-  </v-card>
+    >
+      <template #filters>
+        <employees-filters
+          :department-options="departmentOptions"
+          :project-options="projectOptions"
+          :business-account-options="baOptions"
+          :search="search"
+          :department="department"
+          :project="project"
+          :business-account="businessAccount"
+          @update:search="emit('update:search', $event)"
+          @update:department="emit('update:department', $event)"
+          @update:project="emit('update:project', $event)"
+          @update:business-account="emit('update:ba', $event)"
+        />
+      </template>
+    </employees-table>
+  </TablePageCard>
 
   <employees-details-panel-host
     v-model="detailsOpen"
@@ -44,6 +44,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
 import type { VDataTable } from 'vuetify/components';
+import TablePageCard from '@/components/shared/TablePageCard.vue';
 import type { Employee } from '@/services/employee.service';
 import { usePermissions } from '@/lib/permissions';
 import EmployeesFilters from '@/views/employees/components/EmployeesFilters.vue';

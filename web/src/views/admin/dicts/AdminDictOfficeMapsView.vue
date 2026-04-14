@@ -1,6 +1,6 @@
 <template>
   <div class="mt-4 d-flex flex-column flex-grow-1 min-h-0" data-testid="admin-dict-office-maps-view">
-    <TablePageCard content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
+    <TablePageCard>
       <HREasyTableBase
         table-class="admin-office-maps-table text-truncate"
         :headers="headers"
@@ -17,7 +17,6 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-text class="pt-4 pb-2">
             <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="true">
               <template #left-actions>
                 <table-toolbar-actions
@@ -57,11 +56,10 @@
                 </v-tooltip>
               </template>
             </AdaptiveFilterBar>
-          </v-card-text>
         </template>
 
         <template #before-table>
-          <v-alert v-if="error" type="error" variant="tonal" border="start" class="ma-4 mb-0">
+          <v-alert v-if="error" type="error" variant="tonal" border="start" class="mb-3">
             {{ error }}
           </v-alert>
         </template>

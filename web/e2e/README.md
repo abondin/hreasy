@@ -5,6 +5,7 @@ This folder contains end-to-end tests for the Vue 3 application.
 ## Structure
 
 - `smoke/` - fast route/auth/navigation checks.
+- `harness/` - autonomous E2E regressions for the standalone `e2e-harness` app. No login or backend required.
 - `profile/`, `employees/`, `mentorship/`, `vacations/`, `overtimes/`, `admin-employees/` - domain specs.
 - `fixtures/` - auth and role helpers.
 - `support/` - shared selectors, test data constants.
@@ -27,6 +28,12 @@ Run a specific file:
 
 ```sh
 npm run test:e2e -- e2e/smoke/auth-and-routing.spec.ts
+```
+
+Run only autonomous harness regressions:
+
+```sh
+npx playwright test e2e/harness --project=chromium
 ```
 
 ## Authenticated scenarios

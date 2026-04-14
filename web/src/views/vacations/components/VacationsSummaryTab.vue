@@ -1,34 +1,32 @@
 <template>
-  <div class="d-flex flex-column h-100 min-h-0">
-    <HREasyTableBase
-      data-testid="vacations-summary-table"
-      class="flex-grow-1 min-h-0 text-truncate"
-      height="fill"
-      item-key="employee"
-      fixed-header
-      :loading="loading"
-      :loading-text="t('Загрузка_данных')"
-      :no-data-text="t('Отсутствуют данные')"
-      :headers="headers"
-      :items="items"
-      :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
-      density="compact"
-      multi-sort
-      hover
-      @click:row="onRowClick"
-    >
-      <template #[`item.employeeDisplayName`]="{ item }">
-        <span>{{ item.employeeDisplayName }}</span>
-      </template>
-      <template #[`item.upcomingVacation`]="{ item }">
-        <span v-if="item.upcomingVacation">
-          {{ formatDate(item.upcomingVacation.startDate) }} -
-          {{ formatDate(item.upcomingVacation.endDate) }}
-          ({{ t(`VACATION_STATUS_ENUM.${item.upcomingVacation.status}`) }})
-        </span>
-      </template>
-    </HREasyTableBase>
-  </div>
+  <HREasyTableBase
+    data-testid="vacations-summary-table"
+    class="flex-grow-1 min-h-0 text-truncate"
+    height="fill"
+    item-key="employee"
+    fixed-header
+    :loading="loading"
+    :loading-text="t('Р—Р°РіСЂСѓР·РєР°_РґР°РЅРЅС‹С…')"
+    :no-data-text="t('РћС‚СЃСѓС‚СЃС‚РІСѓСЋС‚ РґР°РЅРЅС‹Рµ')"
+    :headers="headers"
+    :items="items"
+    :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
+    density="compact"
+    multi-sort
+    hover
+    @click:row="onRowClick"
+  >
+    <template #[`item.employeeDisplayName`]="{ item }">
+      <span>{{ item.employeeDisplayName }}</span>
+    </template>
+    <template #[`item.upcomingVacation`]="{ item }">
+      <span v-if="item.upcomingVacation">
+        {{ formatDate(item.upcomingVacation.startDate) }} -
+        {{ formatDate(item.upcomingVacation.endDate) }}
+        ({{ t(`VACATION_STATUS_ENUM.${item.upcomingVacation.status}`) }})
+      </span>
+    </template>
+  </HREasyTableBase>
 </template>
 
 <script setup lang="ts">

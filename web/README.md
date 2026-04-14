@@ -32,6 +32,13 @@ npm run build
 E2E docs:
 
 - [`e2e/README.md`](./e2e/README.md)
+- [`src/e2e-harness/README.md`](./src/e2e-harness/README.md)
+
+Autonomous harness suite:
+
+```shell
+npx playwright test e2e/harness --project=chromium
+```
 
 ## Docker build
 

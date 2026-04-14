@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column flex-grow-1 h-100 min-h-0 overflow-auto">
+  <div class="d-flex flex-column flex-grow-1 min-h-0 overflow-auto">
     <VacationsTimeline
       :vacations="items"
       :year="year"

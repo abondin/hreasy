@@ -3,6 +3,11 @@
  */
 export const routes = {
   login: "/login",
+  tableSandbox: "/e2e-harness.html#/tables",
+  tableSandboxPlain: "/e2e-harness.html#/tables/plain",
+  tableSandboxVacationsLike: "/e2e-harness.html#/tables/vacations-like",
+  tableSandboxOvertimesLike: "/e2e-harness.html#/tables/overtimes-like",
+  tableSandboxEcho: "/e2e-harness.html#/tables/echo",
   profile: "/profile",
   employees: "/employees",
   vacations: "/vacations",

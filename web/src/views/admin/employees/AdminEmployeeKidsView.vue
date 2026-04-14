@@ -1,5 +1,5 @@
 <template>
-  <TablePageCard test-id="admin-kids-view" content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
+  <TablePageCard test-id="admin-kids-view">
     <HREasyTableBase
       table-class="admin-kids-table text-truncate"
       :headers="headers"
@@ -16,7 +16,6 @@
       @click:row="onClickRow"
     >
       <template #filters>
-        <v-card-text class="pt-4 pb-2">
           <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="permissions.canEditEmployees()">
             <template #left-actions>
               <table-toolbar-actions
@@ -58,7 +57,6 @@
               />
             </template>
           </AdaptiveFilterBar>
-        </v-card-text>
       </template>
 
       <template #before-table>

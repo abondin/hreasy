@@ -4,7 +4,7 @@
 -->
 <template>
   <div class="mt-4 d-flex flex-column flex-grow-1 min-h-0" :data-testid="testId">
-    <TablePageCard content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
+    <TablePageCard>
       <HREasyTableBase
         table-class="admin-simple-dict-table text-truncate"
         :headers="headers"
@@ -21,7 +21,6 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-text class="pt-4 pb-2">
             <AdaptiveFilterBar
               :items="filterBarItems"
               :has-right-actions="editable"
@@ -66,7 +65,6 @@
                 />
               </template>
             </AdaptiveFilterBar>
-          </v-card-text>
         </template>
 
         <template #before-table>
@@ -75,7 +73,7 @@
             type="error"
             variant="tonal"
             border="start"
-            class="ma-4 mb-0"
+            class="mb-3"
           >
             {{ error }}
           </v-alert>

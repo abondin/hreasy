@@ -1,6 +1,6 @@
 <template>
   <TableFirstPageLayout test-id="admin-users-view">
-    <TablePageCard test-id="admin-users-card" content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
+    <TablePageCard test-id="admin-users-card">
       <HREasyTableBase
         table-class="admin-users-table text-truncate"
         :headers="headers"
@@ -16,7 +16,6 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-text class="pt-4 pb-2">
             <AdaptiveFilterBar :items="filterBarItems" :has-left-actions="true" :has-right-actions="false">
               <template #left-actions>
                 <table-toolbar-actions
@@ -39,7 +38,6 @@
                 />
               </template>
             </AdaptiveFilterBar>
-          </v-card-text>
         </template>
 
         <template #before-table>

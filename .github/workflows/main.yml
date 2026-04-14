@@ -90,9 +90,64 @@ jobs:
       - name: Unit tests
         run: npm run test:unit
 
-  build-web:
+  check-web-e2e-harness:
     runs-on: ubuntu-latest
     needs: check-web
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '25'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Run harness E2E
+        env:
+          PLAYWRIGHT_JUNIT_OUTPUT_NAME: playwright-harness-junit.xml
+        run: npx playwright test e2e/harness --project=chromium --reporter=line,junit,html
+
+      - name: Publish harness JUnit report
+        if: ${{ always() }}
+        uses: mikepenz/action-junit-report@v6
+        with:
+          report_paths: web/playwright-harness-junit.xml
+
+      - name: Upload harness Playwright HTML report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-harness-report
+          path: web/playwright-report
+          if-no-files-found: ignore
+
+      - name: Upload harness Playwright test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-harness-test-results
+          path: web/test-results
+          if-no-files-found: ignore
+
+  build-web:
+    runs-on: ubuntu-latest
+    needs:
+      - check-web
+      - check-web-e2e-harness
 
     steps:
       - name: Checkout

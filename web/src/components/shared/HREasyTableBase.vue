@@ -10,6 +10,7 @@
 
     <div ref="tableAreaRef" class="h-reasy-table-base__table-area flex-grow-1 min-h-0 overflow-hidden">
       <v-data-table-virtual
+        :key="virtualTableKey"
         :class="['h-reasy-table-base__table', tableClass]"
         :headers="headers"
         :items="items"
@@ -39,7 +40,7 @@
 </template>
 
 <script setup lang="ts" generic="TItem = unknown">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } from "vue";
+import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref, useSlots, watch } from "vue";
 import type { VDataTable } from "vuetify/components";
 
 type DataTableHeader = VDataTable["$props"]["headers"];
@@ -87,8 +88,11 @@ const emit = defineEmits<{
 const slots = useSlots();
 const tableAreaRef = ref<HTMLElement | null>(null);
 const fillHeight = ref<number | undefined>(undefined);
+const virtualTableKey = ref(0);
 
 let tableAreaResizeObserver: ResizeObserver | null = null;
+let pendingRafId: number | null = null;
+let hasPendingRecalculation = false;
 
 const hasFiltersSlot = computed(() => Boolean(slots.filters));
 const hasBeforeTableSlot = computed(() => Boolean(slots["before-table"]));
@@ -107,37 +111,76 @@ const resolvedHeight = computed(() => {
 onMounted(async () => {
   await nextTick();
   recalculateFillHeight();
-  window.addEventListener("resize", recalculateFillHeight);
 
   if (typeof ResizeObserver !== "undefined" && tableAreaRef.value) {
     tableAreaResizeObserver = new ResizeObserver(() => {
-      recalculateFillHeight();
+      scheduleRecalculateFillHeight();
     });
     tableAreaResizeObserver.observe(tableAreaRef.value);
   }
+});
+
+onActivated(async () => {
+  await nextTick();
+  refreshVirtualTable();
+  await nextTick();
+  recalculateFillHeight();
 });
 
 watch(
   () => [hasFiltersSlot.value, hasBeforeTableSlot.value, props.height],
   async () => {
     await nextTick();
-    recalculateFillHeight();
+    scheduleRecalculateFillHeight();
   },
 );
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", recalculateFillHeight);
   tableAreaResizeObserver?.disconnect();
+  if (pendingRafId != null) {
+    window.cancelAnimationFrame(pendingRafId);
+    pendingRafId = null;
+  }
+  hasPendingRecalculation = false;
 });
+
+function scheduleRecalculateFillHeight(): void {
+  hasPendingRecalculation = true;
+
+  if (pendingRafId !== null) {
+    return;
+  }
+
+  pendingRafId = window.requestAnimationFrame(() => {
+    pendingRafId = null;
+    if (!hasPendingRecalculation) {
+      return;
+    }
+    hasPendingRecalculation = false;
+    recalculateFillHeight();
+  });
+}
 
 function recalculateFillHeight(): void {
   if (props.height !== "fill") {
-    fillHeight.value = undefined;
+    if (fillHeight.value !== undefined) {
+      fillHeight.value = undefined;
+    }
     return;
   }
 
   const tableAreaHeight = tableAreaRef.value?.clientHeight ?? 0;
-  fillHeight.value = tableAreaHeight > 0 ? tableAreaHeight : undefined;
+  const nextFillHeight = tableAreaHeight > 0 ? tableAreaHeight : undefined;
+
+  if (fillHeight.value === nextFillHeight) {
+    return;
+  }
+
+  fillHeight.value = nextFillHeight;
+}
+
+function refreshVirtualTable(): void {
+  virtualTableKey.value += 1;
 }
 
 function onClickRow(eventPayload: Event, rowPayload: unknown) {

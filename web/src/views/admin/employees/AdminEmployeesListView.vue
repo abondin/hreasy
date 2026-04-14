@@ -1,6 +1,6 @@
 <template>
   <div class="mt-4 d-flex flex-column flex-grow-1 min-h-0" data-testid="admin-employees-list-view">
-    <TablePageCard test-id="admin-employees-list-card" content-class="pa-0 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
+    <TablePageCard test-id="admin-employees-list-card">
       <HREasyTableBase
         table-class="admin-employees-table text-truncate"
         :headers="headers"
@@ -17,7 +17,6 @@
         @click:row="onClickRow"
       >
         <template #filters>
-          <v-card-text class="pt-4 pb-2">
             <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="permissions.canEditEmployees() || permissions.canExportEmployees()">
               <template #left-actions>
                 <table-toolbar-actions
@@ -135,7 +134,6 @@
                 />
               </template>
             </AdaptiveFilterBar>
-          </v-card-text>
         </template>
 
       <template #before-table>

@@ -1,65 +1,63 @@
 <template>
-  <div class="d-flex flex-column h-100 min-h-0">
-    <HREasyTableBase
-      data-testid="vacations-list-table"
-      class="flex-grow-1 min-h-0 vacations-list-table text-truncate"
-      height="fill"
-      fixed-header
-      :loading="loading"
-      :loading-text="t('Загрузка_данных')"
-      :no-data-text="t('Отсутствуют данные')"
-      :headers="headers"
-      :items="items"
-      :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
-      density="compact"
-      multi-sort
-      hover
-      @click:row="onRowClick"
-    >
-      <template #[`item.employeeDisplayName`]="{ item }">
-        <v-hover v-slot="{ isHovering, props: hoverProps }">
-          <div
-            v-bind="hoverProps"
-            class="d-inline-flex align-center ga-1 min-width-0"
-          >
-            <span class="text-truncate">{{ item.employeeDisplayName }}</span>
-            <div class="vacations-copy-slot d-inline-flex align-center justify-center flex-shrink-0">
-              <v-tooltip
-                v-if="isHovering || smAndDown"
-                location="bottom"
-              >
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon="mdi-content-copy"
-                    size="x-small"
-                    variant="text"
-                    @click.stop="copyToClipboard(item)"
-                  />
-                </template>
-                <span>{{ t("Скопировать в буфер обмена") }}</span>
-              </v-tooltip>
-            </div>
+  <HREasyTableBase
+    data-testid="vacations-list-table"
+    class="flex-grow-1 min-h-0 vacations-list-table text-truncate"
+    height="fill"
+    fixed-header
+    :loading="loading"
+    :loading-text="t('Р—Р°РіСЂСѓР·РєР°_РґР°РЅРЅС‹С…')"
+    :no-data-text="t('РћС‚СЃСѓС‚СЃС‚РІСѓСЋС‚ РґР°РЅРЅС‹Рµ')"
+    :headers="headers"
+    :items="items"
+    :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
+    density="compact"
+    multi-sort
+    hover
+    @click:row="onRowClick"
+  >
+    <template #[`item.employeeDisplayName`]="{ item }">
+      <v-hover v-slot="{ isHovering, props: hoverProps }">
+        <div
+          v-bind="hoverProps"
+          class="d-inline-flex align-center ga-1 min-width-0"
+        >
+          <span class="text-truncate">{{ item.employeeDisplayName }}</span>
+          <div class="vacations-copy-slot d-inline-flex align-center justify-center flex-shrink-0">
+            <v-tooltip
+              v-if="isHovering || smAndDown"
+              location="bottom"
+            >
+              <template #activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-content-copy"
+                  size="x-small"
+                  variant="text"
+                  @click.stop="copyToClipboard(item)"
+                />
+              </template>
+              <span>{{ t("РЎРєРѕРїРёСЂРѕРІР°С‚СЊ РІ Р±СѓС„РµСЂ РѕР±РјРµРЅР°") }}</span>
+            </v-tooltip>
           </div>
-        </v-hover>
-      </template>
-      <template #[`item.startDate`]="{ item }">
-        {{ formatDate(item.startDate) }}
-      </template>
-      <template #[`item.endDate`]="{ item }">
-        {{ formatDate(item.endDate) }}
-      </template>
-      <template #[`item.plannedStartDate`]="{ item }">
-        {{ formatDate(item.plannedStartDate) }}
-      </template>
-      <template #[`item.plannedEndDate`]="{ item }">
-        {{ formatDate(item.plannedEndDate) }}
-      </template>
-      <template #[`item.status`]="{ item }">
-        {{ t(`VACATION_STATUS_ENUM.${item.status}`) }}
-      </template>
-    </HREasyTableBase>
-  </div>
+        </div>
+      </v-hover>
+    </template>
+    <template #[`item.startDate`]="{ item }">
+      {{ formatDate(item.startDate) }}
+    </template>
+    <template #[`item.endDate`]="{ item }">
+      {{ formatDate(item.endDate) }}
+    </template>
+    <template #[`item.plannedStartDate`]="{ item }">
+      {{ formatDate(item.plannedStartDate) }}
+    </template>
+    <template #[`item.plannedEndDate`]="{ item }">
+      {{ formatDate(item.plannedEndDate) }}
+    </template>
+    <template #[`item.status`]="{ item }">
+      {{ t(`VACATION_STATUS_ENUM.${item.status}`) }}
+    </template>
+  </HREasyTableBase>
 </template>
 
 <script setup lang="ts">

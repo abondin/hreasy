@@ -1,86 +1,100 @@
 <template>
   <v-app>
     <v-navigation-drawer v-model="drawer" temporary class="app-navigation">
-      <v-list density="comfortable" nav>
-        <v-list-item
-          v-for="item in profileNavigationItems"
-          :key="item.key"
-          :prepend-icon="item.icon"
-          :to="item.to"
-          link
-          @click="drawer = false"
-        >
-          <v-list-item-title>{{ item.label }}</v-list-item-title>
-        </v-list-item>
-
-        <v-divider v-if="isAuthenticated" class="my-2" />
-
-        <v-list-item
-          v-for="item in primaryNavigationItems"
-          :key="item.key"
-          :prepend-icon="item.icon"
-          :to="item.to"
-          link
-          @click="drawer = false"
-        >
-          <v-list-item-title>{{ item.label }}</v-list-item-title>
-        </v-list-item>
-
-        <v-list-group v-if="salaryNavigationItems.length" value="salary-navigation-group">
-          <template #activator="{ props }">
-            <v-list-item v-bind="props" prepend-icon="mdi-currency-rub">
-              <v-list-item-title>{{ t("Повышения") }}</v-list-item-title>
-            </v-list-item>
-          </template>
+      <div class="d-flex flex-column h-100">
+        <v-list density="comfortable" nav>
           <v-list-item
-            v-for="item in salaryNavigationItems"
+            v-for="item in profileNavigationItems"
             :key="item.key"
+            :prepend-icon="item.icon"
             :to="item.to"
             link
             @click="drawer = false"
           >
             <v-list-item-title>{{ item.label }}</v-list-item-title>
           </v-list-item>
-        </v-list-group>
 
-        <v-list-item
-          v-for="item in postSalaryNavigationItems"
-          :key="item.key"
-          :prepend-icon="item.icon"
-          :to="item.to"
-          link
-          @click="drawer = false"
-        >
-          <v-list-item-title>{{ item.label }}</v-list-item-title>
-        </v-list-item>
+          <v-divider v-if="isAuthenticated" class="my-2" />
 
-        <v-list-group v-if="adminNavigationItems.length" value="admin-navigation-group">
-          <template #activator="{ props }">
-            <v-list-item v-bind="props" prepend-icon="mdi-cogs">
-              <v-list-item-title>{{ t("Админка") }}</v-list-item-title>
-            </v-list-item>
-          </template>
           <v-list-item
-            v-for="item in adminNavigationItems"
+            v-for="item in primaryNavigationItems"
             :key="item.key"
+            :prepend-icon="item.icon"
             :to="item.to"
             link
             @click="drawer = false"
           >
             <v-list-item-title>{{ item.label }}</v-list-item-title>
           </v-list-item>
-        </v-list-group>
 
-        <v-divider v-if="isAuthenticated" class="my-2" />
-        <v-list-item
-          v-if="isAuthenticated"
-          prepend-icon="mdi-logout"
-          data-testid="logout-button"
-          @click="logout"
-        >
-          <v-list-item-title>{{ t("Выход") }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
+          <v-list-group v-if="salaryNavigationItems.length" value="salary-navigation-group">
+            <template #activator="{ props }">
+              <v-list-item v-bind="props" prepend-icon="mdi-currency-rub">
+                <v-list-item-title>{{ t("Повышения") }}</v-list-item-title>
+              </v-list-item>
+            </template>
+            <v-list-item
+              v-for="item in salaryNavigationItems"
+              :key="item.key"
+              :to="item.to"
+              link
+              @click="drawer = false"
+            >
+              <v-list-item-title>{{ item.label }}</v-list-item-title>
+            </v-list-item>
+          </v-list-group>
+
+          <v-list-item
+            v-for="item in postSalaryNavigationItems"
+            :key="item.key"
+            :prepend-icon="item.icon"
+            :to="item.to"
+            link
+            @click="drawer = false"
+          >
+            <v-list-item-title>{{ item.label }}</v-list-item-title>
+          </v-list-item>
+
+          <v-list-group v-if="adminNavigationItems.length" value="admin-navigation-group">
+            <template #activator="{ props }">
+              <v-list-item v-bind="props" prepend-icon="mdi-cogs">
+                <v-list-item-title>{{ t("Админка") }}</v-list-item-title>
+              </v-list-item>
+            </template>
+            <v-list-item
+              v-for="item in adminNavigationItems"
+              :key="item.key"
+              :to="item.to"
+              link
+              @click="drawer = false"
+            >
+              <v-list-item-title>{{ item.label }}</v-list-item-title>
+            </v-list-item>
+          </v-list-group>
+
+          <v-divider v-if="isAuthenticated" class="my-2" />
+          <v-list-item
+            v-if="isAuthenticated"
+            prepend-icon="mdi-logout"
+            data-testid="logout-button"
+            @click="logout"
+          >
+            <v-list-item-title>{{ t("Выход") }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+
+        <v-spacer />
+
+        <div class="border-t px-4 py-3 text-body-2">
+          <div>{{ currentYear }} - <strong>Alexander Bondin</strong></div>
+          <a
+            :href="vue2Url"
+            class="d-inline-block mt-2 text-body-small text-primary"
+          >
+            {{ t("Перейти_в_старую_версию_интерфейса") }}
+          </a>
+        </div>
+      </div>
     </v-navigation-drawer>
 
     <v-app-bar app elevation="1" density="comfortable">
@@ -132,19 +146,6 @@
         </KeepAlive>
       </RouterView>
     </v-main>
-
-    <v-footer app color="grey-lighten-4" border="top" height="60">
-      <v-container>
-        <v-row>
-          <v-col cols="12" class="text-end text-body-2">
-            {{ currentYear }} - <strong>Alexander Bondin</strong>
-            <a :href="vue2Url" class="footer-link ml-4">
-              {{ t("Перейти_в_старую_версию_интерфейса") }}
-            </a>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-footer>
   </v-app>
 </template>
 
@@ -386,9 +387,3 @@ async function logout() {
   await router.push({ name: "login" });
 }
 </script>
-
-<style scoped>
-.footer-link {
-  color: inherit;
-}
-</style>

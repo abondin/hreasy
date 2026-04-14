@@ -21,8 +21,7 @@
       </v-tabs>
 
       <div class="vacations-page-content mt-4 d-flex flex-column flex-grow-1 min-h-0">
-        <v-card class="d-flex flex-column h-100" data-testid="vacations-card">
-          <v-card-text class="vacations-card-content pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden">
+        <TablePageCard test-id="vacations-card">
             <AdaptiveFilterBar
               :items="filterBarItems"
               :has-right-actions="canEditVacations"
@@ -258,7 +257,6 @@
               :year="selectedYear"
               @year-navigation="timeLineYearChanged"
             />
-          </v-card-text>
 
           <v-dialog v-model="vacationDialog" max-width="720">
             <vacation-edit-form
@@ -282,7 +280,7 @@
               />
             </template>
           </v-snackbar>
-        </v-card>
+        </TablePageCard>
       </div>
     </template>
   </TableFirstPageLayout>
@@ -290,6 +288,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from "vue";
+import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import TableFirstPageState from "@/components/shared/TableFirstPageState.vue";
 import { useI18n } from "vue-i18n";
@@ -428,10 +427,6 @@ function extractRow<T>(payload: unknown): T | null {
 
 <style scoped>
 .vacations-page-content {
-  min-height: 0;
-}
-
-.vacations-card-content {
   min-height: 0;
 }
 </style>

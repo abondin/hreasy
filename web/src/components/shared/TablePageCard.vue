@@ -13,14 +13,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   testId?: string;
-  contentClass?: string;
-}>(), {
-  contentClass: "pt-4 pb-2 d-flex flex-column flex-grow-1 min-h-0 overflow-hidden",
-});
+}>();
 
-const contentClassComputed = computed(() => props.contentClass);
+const contentClassComputed = "d-flex flex-column flex-grow-1 min-h-0 overflow-hidden pt-4 pb-2";
 </script>

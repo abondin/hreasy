@@ -11,22 +11,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref } from "vue";
 
 const props = withDefaults(defineProps<{
   testId?: string;
   minContentHeight?: number;
-  footerSelector?: string;
 }>(), {
   testId: undefined,
   minContentHeight: 320,
-  footerSelector: ".v-footer",
 });
 
 const contentRef = ref<HTMLElement | null>(null);
 const contentHeight = ref<number | null>(null);
-
-let footerResizeObserver: ResizeObserver | null = null;
+let pendingRafId: number | null = null;
+let hasPendingRecalculation = false;
 
 const contentStyle = computed(() => {
   if (contentHeight.value == null) {
@@ -38,25 +36,42 @@ const contentStyle = computed(() => {
 onMounted(async () => {
   await nextTick();
   recalculateContentHeight();
-  window.addEventListener("resize", recalculateContentHeight);
+  window.addEventListener("resize", handleWindowResize);
+});
 
-  const footer = getFooterElement();
-  if (typeof ResizeObserver !== "undefined" && footer) {
-    footerResizeObserver = new ResizeObserver(() => {
-      recalculateContentHeight();
-    });
-    footerResizeObserver.observe(footer);
-  }
+onActivated(async () => {
+  await nextTick();
+  recalculateContentHeight();
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", recalculateContentHeight);
-  footerResizeObserver?.disconnect();
+  window.removeEventListener("resize", handleWindowResize);
+  if (pendingRafId != null) {
+    window.cancelAnimationFrame(pendingRafId);
+    pendingRafId = null;
+  }
+  hasPendingRecalculation = false;
 });
 
-function getFooterElement(): HTMLElement | null {
-  const footer = document.querySelector(props.footerSelector);
-  return footer instanceof HTMLElement ? footer : null;
+function handleWindowResize(): void {
+  scheduleRecalculateContentHeight();
+}
+
+function scheduleRecalculateContentHeight(): void {
+  hasPendingRecalculation = true;
+
+  if (pendingRafId !== null) {
+    return;
+  }
+
+  pendingRafId = window.requestAnimationFrame(() => {
+    pendingRafId = null;
+    if (!hasPendingRecalculation) {
+      return;
+    }
+    hasPendingRecalculation = false;
+    recalculateContentHeight();
+  });
 }
 
 function recalculateContentHeight(): void {
@@ -68,12 +83,15 @@ function recalculateContentHeight(): void {
   const containerElement = contentElement.parentElement;
   const containerStyles = containerElement ? window.getComputedStyle(containerElement) : null;
   const containerPaddingBottom = containerStyles ? Number.parseFloat(containerStyles.paddingBottom) || 0 : 0;
-  const footerHeight = getFooterElement()?.getBoundingClientRect().height ?? 0;
   const contentTop = contentElement.getBoundingClientRect().top;
   const nextHeight = Math.max(
     props.minContentHeight,
-    Math.floor(window.innerHeight - contentTop - footerHeight - containerPaddingBottom),
+    Math.floor(window.innerHeight - contentTop - containerPaddingBottom),
   );
+
+  if (contentHeight.value === nextHeight) {
+    return;
+  }
 
   contentHeight.value = nextHeight;
 }

@@ -52,6 +52,13 @@ export interface TableScrollMetrics {
   overflowY: string;
 }
 
+export interface DocumentScrollMetrics {
+  clientHeight: number;
+  scrollHeight: number;
+  scrollTop: number;
+  overflowY: string;
+}
+
 export async function getTableScrollContainer(table: Locator): Promise<Locator> {
   const wrapper = table.locator(".v-table__wrapper").first();
   await expect(wrapper).toBeVisible();
@@ -106,6 +113,40 @@ export async function expectTableToScroll(table: Locator): Promise<TableScrollMe
   );
 
   return readTableScrollMetrics(table);
+}
+
+export async function readDocumentScrollMetrics(page: Page): Promise<DocumentScrollMetrics> {
+  return page.evaluate(() => {
+    const element = document.scrollingElement;
+    if (!(element instanceof HTMLElement)) {
+      throw new Error("Document scrolling element is not an HTMLElement");
+    }
+
+    return {
+      clientHeight: element.clientHeight,
+      scrollHeight: element.scrollHeight,
+      scrollTop: element.scrollTop,
+      overflowY: window.getComputedStyle(element).overflowY,
+    };
+  });
+}
+
+export async function expectDocumentNotToScroll(page: Page): Promise<DocumentScrollMetrics> {
+  const metrics = await readDocumentScrollMetrics(page);
+  expect(
+    metrics.scrollHeight,
+    `Expected page to fit viewport without browser scroll, but got clientHeight=${metrics.clientHeight}, scrollHeight=${metrics.scrollHeight}, overflowY=${metrics.overflowY}`,
+  ).toBeLessThanOrEqual(metrics.clientHeight + 4);
+  return metrics;
+}
+
+export async function expectDocumentToScroll(page: Page): Promise<DocumentScrollMetrics> {
+  const metrics = await readDocumentScrollMetrics(page);
+  expect(
+    metrics.scrollHeight,
+    `Expected browser page scroll, but got clientHeight=${metrics.clientHeight}, scrollHeight=${metrics.scrollHeight}, overflowY=${metrics.overflowY}`,
+  ).toBeGreaterThan(metrics.clientHeight + 4);
+  return metrics;
 }
 
 export async function readHeaderCellWidths(table: Locator, count = 4): Promise<number[]> {

@@ -18,6 +18,9 @@
     :row-props="rowProps"
     @click:row="onClickRow"
   >
+    <template v-if="$slots.filters" #filters>
+      <slot name="filters" />
+    </template>
     <template #[`item.department.name`]="{ item }">
       {{ item.department?.name ?? t('Не задан') }}
     </template>

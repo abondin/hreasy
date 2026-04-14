@@ -3,12 +3,11 @@
   Keeps table filters isolated from list/details orchestration.
 -->
 <template>
-  <v-card-text class="pt-4 pb-2">
-    <AdaptiveFilterBar
-      :items="filterBarItems"
-      :has-left-actions="false"
-      :overflow-menu-min-width="320"
-    >
+  <AdaptiveFilterBar
+    :items="filterBarItems"
+    :has-left-actions="false"
+    :overflow-menu-min-width="320"
+  >
       <template #filter-search>
         <v-text-field
           v-model="searchModel"
@@ -96,8 +95,7 @@
           </template>
         </v-autocomplete>
       </template>
-    </AdaptiveFilterBar>
-  </v-card-text>
+  </AdaptiveFilterBar>
 </template>
 
 <script setup lang="ts">
