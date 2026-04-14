@@ -12,7 +12,7 @@ import java.time.OffsetDateTime;
 @Repository
 public interface AssessmentRepo extends ReactiveCrudRepository<AssessmentEntry, Integer> {
 
-    @Query("""
+     @Query("""
             select
                 e.id employee_id,
                 e.display_name employee_display_name,
