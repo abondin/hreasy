@@ -23,7 +23,7 @@
     "@fortawesome/fontawesome-free": "7.1.0",
     "@mdi/font": "^7.4.47",
     "axios": "^1.13.6",
-    "dompurify": "^3.3.2",
+    "dompurify": "^3.4.0",
     "markdown-it": "^14.1.0",
     "markdown-it-emoji": "^3.0.0",
     "pinia": "3.0.4",
