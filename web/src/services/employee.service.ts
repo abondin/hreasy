@@ -21,6 +21,7 @@ export interface WithAvatar {
 }
 
 export interface Employee extends WithAvatar {
+  birthday?: string | null;
   currentProject?: CurrentProjectDict | null;
   ba?: Dict | null;
   department?: Dict | null;

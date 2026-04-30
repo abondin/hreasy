@@ -2,7 +2,7 @@
   Employees directory using virtualized data table.
 -->
 <template>
-  <TableFirstPageLayout test-id="employees-view">
+  <TableFirstPageLayout test-id="employees-view" @activated="reload">
     <employees-virtual-table table-height="fill"
       :items="filteredEmployees"
       :all-items="employees"

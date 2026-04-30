@@ -1,5 +1,5 @@
 <template>
-  <TableFirstPageLayout test-id="salary-latest-view">
+  <TableFirstPageLayout test-id="salary-latest-view" @activated="load">
     <TableFirstPageState
       v-if="!canAccess"
       test-id="salary-latest-no-access"

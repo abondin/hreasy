@@ -1,5 +1,5 @@
 <template>
-  <TableFirstPageLayout test-id="mentorship-view">
+  <TableFirstPageLayout test-id="mentorship-view" @activated="loadData">
     <TableFirstPageState
       v-if="!canViewMentorship"
       test-id="mentorship-no-access"
@@ -302,6 +302,7 @@ const {
   reportsOrderedAsc,
   openAddDialog,
   loadJuniors,
+  loadData,
   submitAddJunior,
   downloadExport,
 } = useJuniorRegistry(t);

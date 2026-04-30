@@ -1,5 +1,5 @@
 <template>
-  <TableFirstPageLayout test-id="admin-articles-view">
+  <TableFirstPageLayout test-id="admin-articles-view" @activated="load">
     <TablePageCard test-id="admin-articles-card">
       <HREasyTableBase
         table-class="admin-articles-table text-truncate"

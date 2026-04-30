@@ -1,5 +1,5 @@
 ﻿<template>
-  <TableFirstPageLayout test-id="salary-requests-view">
+  <TableFirstPageLayout test-id="salary-requests-view" @activated="fetchData">
     <TableFirstPageState
       v-if="!canViewSalaryRequests"
       test-id="salary-requests-no-access"
@@ -205,7 +205,6 @@
           :row-props="rowProps"
           data-testid="salary-requests-table"
           @click:row="onRowClick"
-          @activated="fetchData"
           height="fill"
         >
           <template #[`item.employee.name`]="{ item }">

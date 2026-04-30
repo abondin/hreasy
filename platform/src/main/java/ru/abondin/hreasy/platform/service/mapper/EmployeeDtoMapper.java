@@ -8,17 +8,23 @@ import ru.abondin.hreasy.platform.repo.employee.EmployeeProjectChangesEntry;
 import ru.abondin.hreasy.platform.service.dto.*;
 import ru.abondin.hreasy.platform.service.skills.dto.RatingsMapper;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 /**
  * Map all dictionaries database entries to API DTO
  */
 @Mapper(componentModel = "spring")
 public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
 
+    DateTimeFormatter BIRTHDAY_FORMATTER = DateTimeFormatter.ofPattern("dd.MM");
+
     @Mapping(target = "department", source = ".", qualifiedByName = "department")
     @Mapping(target = "currentProject", source = ".", qualifiedByName = "currentProject")
     @Mapping(target = "position", source = ".", qualifiedByName = "position")
     @Mapping(target = "officeLocation", source = ".", qualifiedByName = "officeLocation")
     @Mapping(target = "ba", source = ".", qualifiedByName = "ba")
+    @Mapping(target = "birthday", source = "birthday", qualifiedByName = "birthday")
     @Mapping(target = "skills", ignore = true)
     @Mapping(target = "hasAvatar", ignore = true)
     EmployeeDto employeeNoSkills(EmployeeDetailedEntry entry);
@@ -36,6 +42,11 @@ public interface EmployeeDtoMapper extends MapperBase, RatingsMapper {
             result.setSkills(parseAssembledSkills(entry.getAggregatedSkills(), loggedInEmployee));
         }
         return result;
+    }
+
+    @Named("birthday")
+    default String birthday(LocalDate birthday) {
+        return birthday == null ? null : birthday.format(BIRTHDAY_FORMATTER);
     }
 
     @Named("department")

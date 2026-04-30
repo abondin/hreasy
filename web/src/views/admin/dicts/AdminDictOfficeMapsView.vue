@@ -15,6 +15,7 @@
         :sort-by="[{ key: 'mapName', order: 'asc' }]"
         :row-props="rowProps"
         @click:row="onClickRow"
+        @activated="load"
       >
         <template #filters>
             <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="true">

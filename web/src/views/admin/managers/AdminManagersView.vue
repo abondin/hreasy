@@ -1,6 +1,8 @@
 <template>
-  <TableFirstPageLayout test-id="admin-managers-view">
-    <admin-managers-table class="h-100"
+  <TableFirstPageLayout test-id="admin-managers-view" @activated="managersTable?.load()">
+    <admin-managers-table
+      ref="managersTable"
+      class="h-100"
       :title="t('Менеджеры')"
       :editable="permissions.canAdminManagers()"
       test-id="admin-managers"
@@ -9,6 +11,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import { usePermissions } from "@/lib/permissions";
@@ -16,4 +19,5 @@ import AdminManagersTable from "@/views/admin/managers/components/AdminManagersT
 
 const { t } = useI18n();
 const permissions = usePermissions();
+const managersTable = ref<InstanceType<typeof AdminManagersTable> | null>(null);
 </script>

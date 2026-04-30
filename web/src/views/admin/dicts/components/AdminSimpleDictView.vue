@@ -19,6 +19,7 @@
         :sort-by="[{ key: 'name', order: 'asc' }]"
         :row-props="rowProps"
         @click:row="onClickRow"
+        @activated="load"
       >
         <template #filters>
             <AdaptiveFilterBar

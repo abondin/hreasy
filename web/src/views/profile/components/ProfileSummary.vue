@@ -102,6 +102,15 @@
             </span>
           </hover-action-wrapper>
         </profile-summary-item>
+
+        <profile-summary-item
+          v-if="canViewBirthday"
+          :label="t('День рождения')"
+        >
+          <span data-testid="employee-details-birthday">
+            {{ employee.birthday ?? t('Не задан') }}
+          </span>
+        </profile-summary-item>
       </property-list>
     </v-col>
   </v-row>
@@ -136,6 +145,7 @@ import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialo
 import ProjectInfoDialog from "@/components/project/ProjectInfoDialog.vue";
 import { useEmployeeProjectActions } from "@/composables/useEmployeeProjectActions";
 import { useOfficeMapPreview } from "@/composables/useOfficeMapPreview";
+import { usePermissions } from "@/lib/permissions";
 import { extractTelegramAccount } from "@/lib/telegram";
 import type { Employee } from "@/services/employee.service";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
@@ -168,6 +178,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const display = useDisplay();
+const permissions = usePermissions();
 const employee = toRef(props, 'employee');
 const readOnly = computed(() => props.readOnly);
 const avatarReadOnly = computed(() => props.avatarReadOnly ?? props.readOnly);
@@ -198,6 +209,7 @@ const {
 } = useEmployeeProjectActions(employee, projectReadOnly);
 
 const canShowMap = computed(() => Boolean(mapName.value));
+const canViewBirthday = computed(() => permissions.canAdminEmployees());
 const copiedField = ref<'email' | 'telegram' | null>(null);
 const emailToCopy = computed(() => employee.value.email?.trim() || null);
 const telegramToCopy = computed(

@@ -5,6 +5,7 @@ type EmployeeRecord = {
   id: number;
   displayName: string;
   email: string;
+  birthday?: string | null;
   currentProject?: {
     id: number;
     name: string;
@@ -69,6 +70,7 @@ const baseEmployees: EmployeeRecord[] = [
     id: 101,
     displayName: "Alex Morgan",
     email: "alex.morgan@example.test",
+    birthday: "14.09",
     currentProject: { id: 301, name: "Retail Terminal Platform", role: "Backend C#" },
     ba: { id: 401, name: "Northwind Delivery" },
     department: { id: 501, name: "Software Development" },

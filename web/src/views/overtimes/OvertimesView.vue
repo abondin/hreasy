@@ -1,5 +1,5 @@
 ﻿<template>
-  <TableFirstPageLayout test-id="overtimes-view">
+  <TableFirstPageLayout test-id="overtimes-view" @activated="fetchData">
     <TableFirstPageState
       v-if="!canViewAllOvertimes"
       test-id="overtimes-no-access"

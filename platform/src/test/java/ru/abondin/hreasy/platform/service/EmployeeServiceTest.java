@@ -52,6 +52,14 @@ public class EmployeeServiceTest extends BaseServiceTest {
     }
 
     @Test
+    public void testFindEmployeeReturnsBirthdayWithoutYear() {
+        StepVerifier
+                .create(employeeService.find(testData.employees.get(TestEmployees.Admin_Shaan_Pitts), auth))
+                .expectNextMatches(employee -> "12.06".equals(employee.getBirthday()))
+                .verifyComplete();
+    }
+
+    @Test
     @DisplayName("Employee can't update own current project")
     public void testUpdateMyProject() {
         StepVerifier

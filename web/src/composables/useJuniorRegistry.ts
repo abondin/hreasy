@@ -238,8 +238,12 @@ export function useJuniorRegistry(t: ComposerTranslation) {
     }
   }
 
+  async function loadData(): Promise<void> {
+    await Promise.all([loadJuniors(), loadDictionaries()]);
+  }
+
   onMounted(() => {
-    Promise.all([loadJuniors(), loadDictionaries()]).catch((err: unknown) => {
+    loadData().catch((err: unknown) => {
       error.value = errorUtils.shortMessage(err);
     });
   });
@@ -267,6 +271,7 @@ export function useJuniorRegistry(t: ComposerTranslation) {
     reportsOrderedAsc,
     openAddDialog,
     loadJuniors,
+    loadData,
     submitAddJunior,
     downloadExport,
   };

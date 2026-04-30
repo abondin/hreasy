@@ -2,7 +2,7 @@
   Vacations management view with list, summary, and timeline tabs.
 -->
 <template>
-  <TableFirstPageLayout test-id="vacations-view">
+  <TableFirstPageLayout test-id="vacations-view" @activated="fetchData(false)">
     <TableFirstPageState
       v-if="!canViewVacations"
       test-id="vacations-no-access"

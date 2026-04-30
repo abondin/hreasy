@@ -14,6 +14,7 @@
       :sort-by="[{ key: 'displayName', order: 'asc' }]"
       :row-props="rowProps"
       @click:row="onClickRow"
+      @activated="load"
     >
       <template #filters>
           <AdaptiveFilterBar :items="filterBarItems" :has-right-actions="permissions.canEditEmployees()">

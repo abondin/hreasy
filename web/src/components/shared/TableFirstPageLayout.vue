@@ -23,8 +23,12 @@ const props = withDefaults(defineProps<{
 
 const contentRef = ref<HTMLElement | null>(null);
 const contentHeight = ref<number | null>(null);
+const emit = defineEmits<{
+  (event: "activated"): void;
+}>();
 let pendingRafId: number | null = null;
 let hasPendingRecalculation = false;
+let hasActivatedOnce = false;
 
 const contentStyle = computed(() => {
   if (contentHeight.value == null) {
@@ -41,6 +45,11 @@ onMounted(async () => {
 
 onActivated(async () => {
   await nextTick();
+  if (hasActivatedOnce) {
+    emit("activated");
+  } else {
+    hasActivatedOnce = true;
+  }
   recalculateContentHeight();
 });
 

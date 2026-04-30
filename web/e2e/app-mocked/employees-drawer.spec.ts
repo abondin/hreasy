@@ -14,7 +14,10 @@ import { routes } from "../support/test-data";
 test.describe("App Mocked Employees Drawer", () => {
   test("opens employee drawer from real employees page without backend", async ({ page }) => {
     await installUnhandledApiGuard(page);
-    await mockAppRouteAuth(page, appMockedAuthorities.employees);
+    await mockAppRouteAuth(page, [
+      ...appMockedAuthorities.employees,
+      "view_employee_full",
+    ]);
     await mockEmployeesDirectoryApi(page);
     await mockEmployeeDetailsApi(page);
     await mockCurrentOrFutureVacationsApi(page);
@@ -30,6 +33,28 @@ test.describe("App Mocked Employees Drawer", () => {
     const drawer = page.getByTestId(selectors.employeesDetailsDrawer);
     await expect(drawer).toBeVisible();
     await expect(drawer).toContainText("Alex Morgan");
+    await expect(drawer.getByTestId("employee-details-birthday")).toContainText("14.09");
     await expect(drawer).toContainText("02.03.2026");
+  });
+
+  test("hides birthday without full employee data permission", async ({ page }) => {
+    await installUnhandledApiGuard(page);
+    await mockAppRouteAuth(page, appMockedAuthorities.employees);
+    await mockEmployeesDirectoryApi(page);
+    await mockEmployeeDetailsApi(page);
+    await mockCurrentOrFutureVacationsApi(page);
+
+    await page.goto(appPath(routes.employees), { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId(selectors.employeesView)).toBeVisible();
+
+    const targetRow = page.locator("tbody tr:visible").filter({ hasText: "Alex Morgan" }).first();
+    await expect(targetRow).toBeVisible();
+    await targetRow.locator("td").first().click();
+
+    const drawer = page.getByTestId(selectors.employeesDetailsDrawer);
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toContainText("Alex Morgan");
+    await expect(drawer.getByTestId("employee-details-birthday")).toHaveCount(0);
+    await expect(drawer).not.toContainText("14.09");
   });
 });

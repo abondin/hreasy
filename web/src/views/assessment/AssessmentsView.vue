@@ -1,5 +1,5 @@
 <template>
-  <TableFirstPageLayout test-id="assessments-view">
+  <TableFirstPageLayout test-id="assessments-view" @activated="load">
     <TableFirstPageState
       v-if="!canAccess"
       test-id="assessments-no-access"
@@ -149,7 +149,6 @@
           :row-props="rowProps"
           data-testid="assessments-table"
           @click:row="onRowClick"
-          @activated="load"
           height="fill"
         >
           <template #[`item.displayName`]="{ item }">

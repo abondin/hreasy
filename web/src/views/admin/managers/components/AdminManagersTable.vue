@@ -690,6 +690,10 @@ async function confirmDelete(): Promise<void> {
     saving.value = false;
   }
 }
+
+defineExpose({
+  load,
+});
 </script>
 
 <style scoped>

@@ -18,6 +18,7 @@ import java.util.List;
 public class EmployeeDto {
     private Integer id;
     private String displayName;
+    private String birthday;
     private String sex;
     private SimpleDictDto department;
     private CurrentProjectDictDto currentProject;
