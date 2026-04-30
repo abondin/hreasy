@@ -40,7 +40,7 @@ public class AdminEmployeeExcelImporter extends ExcelImporter<EmployeeImportConf
 
     @Override
     protected void applyRowConfigMappings(EmployeeImportConfig config, SimpleBlockReaderImpl reader) {
-        // 15 fields handled
+        // 16 fields handled
         addSimpleMapping(reader, config, "email", config.getColumns().getEmail(), true);
         addSimpleMapping(reader, config, "externalErpId", config.getColumns().getExternalErpId(), false);
         addSimpleMapping(reader, config, "displayName", config.getColumns().getDisplayName(), false);

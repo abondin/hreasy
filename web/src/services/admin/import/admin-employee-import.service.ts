@@ -27,6 +27,7 @@ export interface EmployeeImportConfigColumns {
   documentIssuedDate: string | null;
   documentIssuedBy: string | null;
   registrationAddress: string | null;
+  organization: string | null;
 }
 
 export interface ImportEmployeeExcelRow extends ImportExcelRow {

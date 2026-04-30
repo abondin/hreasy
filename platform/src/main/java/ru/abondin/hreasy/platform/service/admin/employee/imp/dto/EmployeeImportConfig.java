@@ -21,12 +21,12 @@ public class EmployeeImportConfig implements ExcelImportConfig {
     public static class EmployeeImportConfigColumns {
 
         /**
-         * 15 fields supported at the moment
+         * 16 fields supported at the moment
          */
         private String displayName = "B";
         private String externalErpId = "H";
-        private String email = "R";
-        private String phone = "AJ";
+        private String email = "P";
+        private String phone = "AC";
         private String department = "AK";
         private String position = "AL";
         private String dateOfEmployment = "AM";

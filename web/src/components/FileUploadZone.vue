@@ -48,6 +48,7 @@
       ref="fileInput"
       type="file"
       :id="`file-${fileId}`"
+      :data-testid="`${fileId}-input`"
       :accept="accept"
       class="file-upload-zone__input"
       @change="handleFileInput"
@@ -58,6 +59,7 @@
       color="primary"
       variant="outlined"
       :disabled="uploading"
+      :data-testid="`${fileId}-choose`"
       @click="triggerFileDialog"
     >
       {{ t("Выбрать") }}
@@ -94,6 +96,7 @@
       <v-btn
         variant="text"
         :disabled="uploading"
+        :data-testid="`${fileId}-close`"
         @click="closeUploader"
       >
         {{ uploadSuccess ? t("ОK") : t("Отмена") }}

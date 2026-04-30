@@ -59,6 +59,7 @@
                   type="number"
                   min="1"
                   variant="outlined"
+                  data-testid="import-config-sheet-number"
                 >
                   <template #append-inner>
                     <v-tooltip location="top">
@@ -78,6 +79,7 @@
                   type="number"
                   min="1"
                   variant="outlined"
+                  data-testid="import-config-table-start-row"
                 >
                   <template #append-inner>
                     <v-tooltip location="top" max-width="650">
@@ -122,6 +124,7 @@
                   variant="outlined"
                   clearable
                   maxlength="3"
+                  :data-testid="`import-config-column-${column}`"
                   @blur="normalizeColumn(column)"
                 />
               </v-col>
@@ -172,6 +175,7 @@
                 :label="t('Скрыть строки без изменений и без ошибок')"
                 density="compact"
                 hide-details
+                data-testid="import-preview-hide-unchanged"
               />
             </v-col>
           </v-row>
@@ -185,6 +189,7 @@
             density="compact"
             :no-data-text="t('Отсутствуют данные')"
             table-class="text-truncate"
+            data-testid="import-preview-table"
           >
             <template #[`item.rowNumber`]="{ item }">
               <div class="d-flex align-center ga-2">
@@ -257,6 +262,7 @@
             color="primary"
             :loading="loading"
             :disabled="actionButtonDisabled"
+            data-testid="import-workflow-action"
             @click="applyStep"
           >
             {{ actionButtonText }}
@@ -275,7 +281,14 @@
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="applyDialog = false">{{ t("Нет") }}</v-btn>
-        <v-btn color="primary" :loading="loading" @click="commit">{{ t("Да") }}</v-btn>
+        <v-btn
+          color="primary"
+          :loading="loading"
+          data-testid="import-workflow-confirm-commit"
+          @click="commit"
+        >
+          {{ t("Да") }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

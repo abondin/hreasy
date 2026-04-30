@@ -51,12 +51,12 @@ export async function loginViaUi(
     return;
   }
 
-  const loginInput = page.locator('input[name="login"]').first();
-  const passwordInput = page.locator('input[name="password"]').first();
+  const loginInput = page.getByTestId(selectors.loginInput).locator("input");
+  const passwordInput = page.getByTestId(selectors.passwordInput).locator("input");
 
   const loginInputVisible = await loginInput.isVisible().catch(() => false);
   const passwordInputVisible = await passwordInput.isVisible().catch(() => false);
-  if (!loginInputVisible || !passwordInputVisible) {
+  if ((!loginInputVisible || !passwordInputVisible) && !page.url().includes("/login")) {
     const loginLink = page.getByRole("link", { name: /Вход/i }).first();
     if (await loginLink.isVisible().catch(() => false)) {
       await loginLink.click();

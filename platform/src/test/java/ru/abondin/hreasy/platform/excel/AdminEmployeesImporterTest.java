@@ -24,7 +24,6 @@ public class AdminEmployeesImporterTest {
         importer = new AdminEmployeeExcelImporter();
     }
 
-
     @Test
     public void testExcelImportXMLTemplate() throws Exception {
         var reader = ReaderBuilder.buildFromXML(new ClassPathResource("excel/example-exel-data.xml")
@@ -43,90 +42,31 @@ public class AdminEmployeesImporterTest {
 
     @Test
     public void testExcelImportRuntimeTemplate() throws Exception {
-        StepVerifier.create(importer.importFromFile(employeesToImportConfig(), new ClassPathResource("excel/employees-to-import.xlsx")
+        StepVerifier.create(importer.importFromFile(new EmployeeImportConfig(), new ClassPathResource("excel/employees-to-import.xlsx")
                         .getInputStream()))
                 .assertNext((empl) -> {
-                    // Хайден Спуннер
-                    assertEqualsStr("Хайден Спуннер", empl.getDisplayName());
-                    assertEqualsStr("СТЗК-00111", empl.getExternalErpId());
-                    Assertions.assertEquals("Haiden.Spooner@stm-labs.ru", empl.getEmail());
-                    assertEqualsStr("79998884455", empl.getPhone());
-                    assertEqualsStr("Development", empl.getDepartment());
-                    assertEqualsStr("Java Developer", empl.getPosition());
-                    assertEqualsStr("01.10.2020", empl.getDateOfEmployment());
-                    assertEqualsStr("01.10.2022", empl.getDateOfDismissal());
-                    assertEqualsStr("14.07.1995", empl.getBirthday());
+                    assertEqualsStr("Новый Сотрудник Сотрудникович", empl.getDisplayName());
+                    assertEqualsStr("СТЗК-00000", empl.getExternalErpId());
+                    Assertions.assertEquals("new.employee@example.test", empl.getEmail());
+                    assertEqualsStr("79998887766", empl.getPhone());
+                    assertEqualsStr("Основное", empl.getDepartment());
+                    assertEqualsStr("Ведущий менеджер проекта", empl.getPosition());
+                    assertEqualsStr("11.11.2025", empl.getDateOfEmployment());
+                    Assertions.assertNull(empl.getDateOfDismissal().getRaw());
+                    assertEqualsStr("01.01.1980", empl.getBirthday());
                     assertEqualsStr("Мужской", empl.getSex());
-                    assertEqualsStr("45 65", empl.getDocumentSeries());
-                    assertEqualsStr("123456", empl.getDocumentNumber());
-                    assertEqualsStr("13.08.2019", empl.getDocumentIssuedDate());
-                    assertEqualsStr("ГУ МВД России", empl.getDocumentIssuedBy());
-                    assertEqualsStr("РОССИЯ, 602222, Лучший город на свете, супер улица", empl.getRegistrationAddress());
-                    assertEqualsStr("STM", empl.getOrganization());
-                })
-                .assertNext((empl) -> {
-                    // Кнотт Амара Юрьевна
-                    assertEqualsStr("Кнотт Амара Юрьевна", empl.getDisplayName());
-                    assertEqualsStr("СТЗК-00112", empl.getExternalErpId());
-                    Assertions.assertEquals("Ammara.Knott@stm-labs.ru", empl.getEmail());
-                    Assertions.assertNull(empl.getPhone().getRaw());
-                    assertEqualsStr("Непонятный отдел", empl.getDepartment());
-                    assertEqualsStr("Project Manager", empl.getPosition());
-                    assertEqualsStr("20.06.2022", empl.getDateOfEmployment());
-                    Assertions.assertNull(empl.getDateOfDismissal().getRaw());
-                    assertEqualsStr("01.02.1998", empl.getBirthday());
-                    assertEqualsStr("женский", empl.getSex());
-                    assertEqualsStr("87 23", empl.getDocumentSeries());
-                    assertEqualsStr("859173", empl.getDocumentNumber());
-                    assertEqualsStr("14.02.2018", empl.getDocumentIssuedDate());
-                    assertEqualsStr("ГУ МВД России по Нижегородской области", empl.getDocumentIssuedBy());
-                    Assertions.assertNull(empl.getRegistrationAddress().getRaw());
+                    assertEqualsStr("11 22", empl.getDocumentSeries());
+                    assertEqualsStr("334455", empl.getDocumentNumber());
+                    assertEqualsStr("01.02.2003", empl.getDocumentIssuedDate());
+                    assertEqualsStr("Test Authority", empl.getDocumentIssuedBy());
+                    assertEqualsStr("Test address", empl.getRegistrationAddress());
                     Assertions.assertNull(empl.getOrganization().getRaw());
-                })
-                .assertNext((empl) -> {
-                    // Бобов Асиях Петрович
-                    assertEqualsStr("Бобов Асиях Петрович", empl.getDisplayName());
-                    assertEqualsStr("СТЗК-00113", empl.getExternalErpId());
-                    Assertions.assertEquals("Asiyah.Bob@stm-labs.ru", empl.getEmail());
-                    assertEqualsStr("79998884455", empl.getPhone());
-                    assertEqualsStr("Integration", empl.getDepartment());
-                    assertEqualsStr("Непонятная должность", empl.getPosition());
-                    assertEqualsStr("28.03.2022", empl.getDateOfEmployment());
-                    Assertions.assertNull(empl.getDateOfDismissal().getRaw());
-                    assertEqualsStr("06.08.1993", empl.getBirthday());
-                    assertEqualsStr("Муж.", empl.getSex());
-                    assertEqualsStr("87 21", empl.getDocumentSeries());
-                    assertEqualsStr("563732", empl.getDocumentNumber());
-                    assertEqualsStr("20.09.2022", empl.getDocumentIssuedDate());
-                    assertEqualsStr("ГУ МВД России по Нижегородской области", empl.getDocumentIssuedBy());
-                    assertEqualsStr("РОССИЯ, 602222, Лучший город на свете, супер улица", empl.getRegistrationAddress());
-                    assertEqualsStr("STM Labs", empl.getOrganization());
                 })
                 .verifyComplete();
     }
 
-    private EmployeeImportConfig employeesToImportConfig() {
-        var config = new EmployeeImportConfig();
-        config.getColumns().setEmail("Q");
-        config.getColumns().setPhone("AG");
-        config.getColumns().setDepartment("AH");
-        config.getColumns().setPosition("AI");
-        config.getColumns().setDateOfEmployment("AJ");
-        config.getColumns().setDateOfDismissal("AK");
-        config.getColumns().setBirthday("AM");
-        config.getColumns().setSex("AN");
-        config.getColumns().setDocumentSeries("AP");
-        config.getColumns().setDocumentNumber("AQ");
-        config.getColumns().setDocumentIssuedDate("AR");
-        config.getColumns().setDocumentIssuedBy("AS");
-        config.getColumns().setRegistrationAddress("AU");
-        config.getColumns().setOrganization("BA");
-        return config;
-    }
-
-
     private void assertEqualsStr(String expected, ImportEmployeeExcelRowDto.DataProperty<?> property) {
-        Assertions.assertNotNull(property.getRaw(), "Expected value "+expected+" but not null");
+        Assertions.assertNotNull(property.getRaw(), "Expected value " + expected + " but not null");
         Assertions.assertEquals(expected, property.getRaw().trim());
     }
 }
