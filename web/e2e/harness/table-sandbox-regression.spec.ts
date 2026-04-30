@@ -13,6 +13,11 @@ import {
   expectWidthsToStayStable,
 } from "../support/test-helpers";
 
+async function firstVisibleDataRowText(table: import("@playwright/test").Locator): Promise<string> {
+  const rows = await table.locator("tbody tr td:first-child").allTextContents();
+  return rows.map((row) => row.trim()).find((row) => row.length > 0) ?? "";
+}
+
 test.describe("Table Sandbox Regression", () => {
   test("renders async rows without resize and keeps scroll inside table", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
@@ -153,5 +158,28 @@ test.describe("Table Sandbox Regression", () => {
 
     await page.getByTestId(selectors.tableSandboxTabDirectory).click();
     await expect(table.locator("tbody tr").filter({ hasText: /Directory Row 18/i }).first()).toBeVisible();
+  });
+
+  test("preserves manual table sorting across route leave and return", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto(appPath(routes.tableSandbox), { waitUntil: "domcontentloaded" });
+
+    await expect(page.getByTestId(selectors.tableSandboxView)).toBeVisible();
+    const table = page.getByTestId(selectors.tableSandboxDirectoryTable);
+    await expect(
+      table.locator("tbody tr").filter({ hasText: /Directory Row 1/i }).first(),
+    ).toBeVisible({ timeout: 10000 });
+
+    await table.locator("thead th").nth(3).click();
+    const sortedFirstRow = await firstVisibleDataRowText(table);
+    expect(sortedFirstRow).not.toBe("");
+    expect(sortedFirstRow).not.toBe("Directory Row 1");
+
+    await page.getByTestId(selectors.tableSandboxGoEcho).click();
+    await expect(page.getByTestId(selectors.tableSandboxEchoView)).toBeVisible();
+
+    await page.getByTestId(selectors.tableSandboxEchoBack).click();
+    await expect(page.getByTestId(selectors.tableSandboxView)).toBeVisible();
+    await expect.poll(() => firstVisibleDataRowText(table)).toBe(sortedFirstRow);
   });
 });

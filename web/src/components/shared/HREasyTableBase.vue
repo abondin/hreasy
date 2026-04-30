@@ -22,7 +22,7 @@
         :loading-text="loadingText"
         :no-data-text="noDataText"
         :hover="hover"
-        :sort-by="sortBy"
+        :sort-by="resolvedSortBy"
         :multi-sort="multiSort"
         :row-props="rowProps"
         @click:row="onClickRow"
@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts" generic="TItem = unknown">
-import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref, useSlots, watch } from "vue";
+import { computed, nextTick, onActivated, onBeforeUnmount, onMounted, ref, useAttrs, useSlots, watch } from "vue";
 import type { VDataTable } from "vuetify/components";
 
 type DataTableHeader = VDataTable["$props"]["headers"];
@@ -85,16 +85,20 @@ const props = withDefaults(
 const emit = defineEmits<{
   (event: "click:row", eventPayload: Event, rowPayload: unknown): void;
   (event: "update:sortBy", value: DataTableSortBy): void;
+  (event: "activated"): void;
 }>();
 
+const attrs = useAttrs();
 const slots = useSlots();
 const tableAreaRef = ref<HTMLElement | null>(null);
 const fillHeight = ref<number | undefined>(undefined);
 const virtualTableKey = ref(0);
+const internalSortBy = ref<DataTableSortBy>(props.sortBy);
 
 let tableAreaResizeObserver: ResizeObserver | null = null;
 let pendingRafId: number | null = null;
 let hasPendingRecalculation = false;
+let hasActivatedOnce = false;
 
 const hasFiltersSlot = computed(() => Boolean(slots.filters));
 const hasBeforeTableSlot = computed(() => Boolean(slots["before-table"]));
@@ -102,6 +106,10 @@ const forwardedSlots = computed(() =>
   Object.keys(slots).filter(
     (name) => name.startsWith("item.") || name.startsWith("header."),
   ),
+);
+const isSortByControlled = computed(() => Boolean(attrs["onUpdate:sortBy"]));
+const resolvedSortBy = computed(() =>
+  isSortByControlled.value ? props.sortBy : internalSortBy.value,
 );
 const resolvedHeight = computed(() => {
   if (props.height !== "fill") {
@@ -125,6 +133,11 @@ onMounted(async () => {
 onActivated(async () => {
   await nextTick();
   refreshVirtualTable();
+  if (hasActivatedOnce) {
+    emit("activated");
+  } else {
+    hasActivatedOnce = true;
+  }
   await nextTick();
   recalculateFillHeight();
 });
@@ -134,6 +147,15 @@ watch(
   async () => {
     await nextTick();
     scheduleRecalculateFillHeight();
+  },
+);
+
+watch(
+  () => props.sortBy,
+  (value) => {
+    if (isSortByControlled.value) {
+      internalSortBy.value = value;
+    }
   },
 );
 
@@ -190,6 +212,7 @@ function onClickRow(eventPayload: Event, rowPayload: unknown) {
 }
 
 function onUpdateSortBy(value: DataTableSortBy) {
+  internalSortBy.value = value;
   emit("update:sortBy", value);
 }
 </script>

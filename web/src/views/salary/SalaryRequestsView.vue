@@ -201,10 +201,11 @@
           fixed-header
           hover
           density="compact"
-          v-model:sort-by="tableSortBy"
+          :sort-by="[{ key: 'createdAt', order: 'desc' }]"
           :row-props="rowProps"
           data-testid="salary-requests-table"
           @click:row="onRowClick"
+          @activated="fetchData"
           height="fill"
         >
           <template #[`item.employee.name`]="{ item }">
@@ -395,7 +396,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onActivated, reactive, ref, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import TableFirstPageState from "@/components/shared/TableFirstPageState.vue";
@@ -537,17 +538,6 @@ const createNewTitle = computed(() =>
 );
 const isCurrentPeriod = computed(() => selectedPeriodId.value === ReportPeriod.currentPeriod().periodId());
 const activeTabQuery = computed(() => (filter.type === 2 ? "bonuses" : "requests"));
-const tableSortBy = ref([{ key: "createdAt", order: "desc" as const }]);
-
-let activatedOnce = false;
-
-onActivated(() => {
-  if (!activatedOnce) {
-    activatedOnce = true;
-    return;
-  }
-  fetchData().catch(() => undefined);
-});
 
 const requiredRule = (value: unknown) => Boolean(value) || t("Обязательное поле");
 const requiredNumberRule = (value: unknown) =>
