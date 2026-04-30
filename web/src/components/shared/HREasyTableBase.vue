@@ -26,6 +26,7 @@
         :multi-sort="multiSort"
         :row-props="rowProps"
         @click:row="onClickRow"
+        @update:sort-by="onUpdateSortBy"
       >
         <template
           v-for="slotName in forwardedSlots"
@@ -83,6 +84,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (event: "click:row", eventPayload: Event, rowPayload: unknown): void;
+  (event: "update:sortBy", value: DataTableSortBy): void;
 }>();
 
 const slots = useSlots();
@@ -185,6 +187,10 @@ function refreshVirtualTable(): void {
 
 function onClickRow(eventPayload: Event, rowPayload: unknown) {
   emit("click:row", eventPayload, rowPayload);
+}
+
+function onUpdateSortBy(value: DataTableSortBy) {
+  emit("update:sortBy", value);
 }
 </script>
 

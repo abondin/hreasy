@@ -143,7 +143,7 @@
             <template #title>{{ t("Реализация") }}</template>
             <template #append>
               <template v-if="canAdminSalaryRequests">
-                <v-btn v-if="!request.impl" icon="mdi-pen-plus" color="success" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationDialog('implement')" />
+                <v-btn v-if="!request.impl" icon="mdi-pen-plus" color="success" variant="text" :disabled="periodClosed || actionLoading" data-testid="salary-request-implement-open" @click="openImplementationDialog('implement')" />
                 <v-btn v-if="!request.impl" icon="mdi-pen-minus" color="error" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationDialog('reject')" />
                 <v-btn v-if="request.impl" icon="mdi-pencil-off" color="error" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationDialog('reset')" />
                 <v-btn v-if="request.impl && request.type === 1" icon="mdi-email-edit" variant="text" :disabled="periodClosed || actionLoading" @click="openImplementationTextDialog" />
@@ -329,7 +329,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="implementationDialog" max-width="820">
+    <v-dialog v-model="implementationDialog" max-width="820" data-testid="salary-request-implementation-dialog">
       <v-card>
         <v-card-title>{{ implementationDialogTitle }}</v-card-title>
         <v-card-text>
@@ -360,7 +360,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" :disabled="actionLoading" @click="implementationDialog = false">{{ t("Отмена") }}</v-btn>
-          <v-btn color="primary" :loading="actionLoading" @click="submitImplementationDialog">{{ t("Применить") }}</v-btn>
+          <v-btn color="primary" :loading="actionLoading" data-testid="salary-request-implementation-submit" @click="submitImplementationDialog">{{ t("Применить") }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
