@@ -45,6 +45,7 @@
                   color="success"
                   variant="text"
                   :disabled="actionLoading || Boolean(assessment.completedBy)"
+                  data-testid="assessment-details-complete-open"
                   @click="completeDialog = true"
                 />
                 <v-btn
@@ -189,7 +190,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" :disabled="actionLoading" @click="completeDialog = false">{{ t("Нет") }}</v-btn>
-          <v-btn color="primary" :loading="actionLoading" @click="submitComplete">{{ t("Да") }}</v-btn>
+          <v-btn color="primary" :loading="actionLoading" data-testid="assessment-details-complete-submit" @click="submitComplete">{{ t("Да") }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -149,6 +149,7 @@
           :row-props="rowProps"
           data-testid="assessments-table"
           @click:row="onRowClick"
+          @activated="load"
           height="fill"
         >
           <template #[`item.displayName`]="{ item }">
