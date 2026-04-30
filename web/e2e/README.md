@@ -6,6 +6,7 @@ This folder contains end-to-end tests for the Vue 3 application.
 
 - `smoke/` - fast route/auth/navigation checks.
 - `harness/` - autonomous E2E regressions for the standalone `e2e-harness` app. No login or backend required.
+- `app-mocked/` - tests for the real main app shell with mocked `/api` responses. No backend or credentials required.
 - `profile/`, `employees/`, `mentorship/`, `vacations/`, `overtimes/`, `admin-employees/` - domain specs.
 - `fixtures/` - auth and role helpers.
 - `support/` - shared selectors, test data constants.
@@ -35,6 +36,17 @@ Run only autonomous harness regressions:
 ```sh
 npx playwright test e2e/harness --project=chromium
 ```
+
+Run real-app UI regressions with mocked API:
+
+```sh
+npx playwright test e2e/app-mocked --project=chromium
+```
+
+CI runs both autonomous suites separately:
+
+- `e2e/harness` for shared UI infrastructure.
+- `e2e/app-mocked` for the real application shell with mocked backend responses.
 
 ## Authenticated scenarios
 

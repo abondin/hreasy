@@ -40,6 +40,17 @@ Autonomous harness suite:
 npx playwright test e2e/harness --project=chromium
 ```
 
+Main app without backend, using mocked API responses:
+
+```shell
+npx playwright test e2e/app-mocked --project=chromium
+```
+
+GitHub Actions runs both autonomous E2E layers:
+
+- `e2e/harness` for shared table/layout mechanics
+- `e2e/app-mocked` for the real application UI with mocked `/api`
+
 ## Docker build
 
 Container serves Vue 3 at `/`.
