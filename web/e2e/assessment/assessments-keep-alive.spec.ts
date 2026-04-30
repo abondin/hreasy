@@ -13,12 +13,16 @@ test.describe("Assessments keep-alive", () => {
 
     const assessmentsView = page.getByTestId(selectors.assessmentsView);
     const searchField = page.getByTestId(selectors.assessmentsFilterSearch);
-    const employeeLink = page.getByRole("link", { name: "Бондин Александр Валерьевич" }).first();
 
     await expect(assessmentsView).toBeVisible();
     await expect(searchField).toBeVisible();
 
-    await searchField.locator("input").fill("Бондин Александр");
+    const employeeLink = page.locator("tbody a[href^='/assessments/']").first();
+    await expect(employeeLink).toBeVisible();
+    const employeeName = (await employeeLink.textContent())?.trim() ?? "";
+    const searchToken = employeeName.split(/\s+/).slice(0, 2).join(" ");
+
+    await searchField.locator("input").fill(searchToken);
     await expect(employeeLink).toBeVisible();
 
     await employeeLink.click();
@@ -30,7 +34,7 @@ test.describe("Assessments keep-alive", () => {
 
     await expect(page).toHaveURL(new RegExp(`${routes.assessments}$`));
     await expect(assessmentsView).toBeVisible();
-    await expect(searchField.locator("input")).toHaveValue("Бондин Александр");
+    await expect(searchField.locator("input")).toHaveValue(searchToken);
     await expect(employeeLink).toBeVisible();
   });
 });

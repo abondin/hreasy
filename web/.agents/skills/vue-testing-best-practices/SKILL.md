@@ -10,6 +10,11 @@ Vue.js testing best practices, patterns, and common gotchas.
 - Add markers in Vue components as part of feature work when a flow lacks stable hooks for Playwright.
 - Keep selector ids semantic and consistent across specs; centralize reused ids in a shared selector map (for this repo: `e2e/support/selectors.ts`).
 
+### Mock Data Privacy
+- Do not use real employee, customer, or user names, surnames, emails, phone numbers, Telegram accounts, or other personal data in mocked API responses, fixtures, test harness datasets, or snapshots.
+- Use neutral English test identities and reserved domains, for example `Alex Morgan`, `Jordan Lee`, and `alex.morgan@example.test`.
+- When touching an existing mocked dataset, replace realistic personal data with synthetic values before adding new assertions around it.
+
 ### Testing
 - Setting up test infrastructure for Vue 3 projects -> See [testing-vitest-recommended-for-vue](reference/testing-vitest-recommended-for-vue.md)
 - Tests keep breaking when refactoring component internals -> See [testing-component-blackbox-approach](reference/testing-component-blackbox-approach.md)

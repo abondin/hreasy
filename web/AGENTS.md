@@ -39,6 +39,7 @@
 - Unit tests: Vitest + Vue Test Utils.
 - E2E tests: Playwright.
 - Place tests under `tests/` and `e2e/`.
+- Mocked API data, fixtures, screenshots, and test harness datasets must not contain real employee/customer names, surnames, emails, phone numbers, Telegram accounts, or other personal data. Use neutral English test identities such as `Alex Morgan` and `alex.morgan@example.test`.
 - Run `npm run type-check`, `npm run lint`, `npm run test:unit` before pushing.
 
 ## Commit & Pull Request Guidelines
