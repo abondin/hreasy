@@ -32,7 +32,8 @@
               <AdaptiveFilterBar :items="filterBarItems">
                 <template #filter-search>
                   <v-text-field
-                    v-model="search"
+                    :model-value="search"
+                    @update:model-value="search = normalizeSearchInput($event)"
                     data-testid="table-sandbox-plain-filter-search"
                     label="Search"
                     prepend-inner-icon="mdi-magnify"
@@ -58,6 +59,7 @@ import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
+import { normalizeSearchInput } from "@/lib/search";
 
 defineOptions({
   name: "TableSandboxPlainView",

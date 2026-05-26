@@ -21,7 +21,8 @@
 
         <template #filter-search>
           <v-text-field
-            v-model="search"
+            :model-value="search"
+            @update:model-value="search = normalizeSearchInput($event)"
             data-testid="table-sandbox-overtimes-filter-search"
             density="compact"
             clearable
@@ -202,6 +203,7 @@ import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import { normalizeSearchInput } from "@/lib/search";
 
 defineOptions({
   name: "TableSandboxOvertimesLikeView",

@@ -37,7 +37,8 @@
 
               <template #filter-search>
                 <v-text-field
-                  v-model="search"
+                  :model-value="search"
+                  @update:model-value="search = normalizeSearchInput($event)"
                   data-testid="admin-employees-search"
                   prepend-inner-icon="mdi-magnify"
                   :label="t('Поиск')"
@@ -218,6 +219,7 @@ import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
+import { normalizeSearchInput } from "@/lib/search";
 import {
   fetchBusinessAccounts,
   fetchDepartments,

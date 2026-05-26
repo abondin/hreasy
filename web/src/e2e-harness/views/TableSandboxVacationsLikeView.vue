@@ -58,7 +58,8 @@
 
           <template #filter-search>
             <v-text-field
-              v-model="search"
+              :model-value="search"
+              @update:model-value="search = normalizeSearchInput($event)"
               data-testid="table-sandbox-vacations-filter-search"
               label="Search"
               prepend-inner-icon="mdi-magnify"
@@ -254,6 +255,7 @@ import { employeeVacationSummaryMapper } from "@/components/vacations/employeeVa
 import VacationsListTab from "@/views/vacations/components/VacationsListTab.vue";
 import VacationsSummaryTab from "@/views/vacations/components/VacationsSummaryTab.vue";
 import VacationsTimelineTab from "@/views/vacations/components/VacationsTimelineTab.vue";
+import { normalizeSearchInput } from "@/lib/search";
 import type { Vacation, VacationStatus } from "@/services/vacation.service";
 
 defineOptions({

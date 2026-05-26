@@ -57,7 +57,8 @@
 
           <template #filter-search>
             <v-text-field
-              v-model="filter.search"
+              :model-value="filter.search"
+              @update:model-value="filter.search = normalizeSearchInput($event)"
               :label="t('Поиск')"
               prepend-inner-icon="mdi-magnify"
               clearable
@@ -412,6 +413,7 @@ import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
 import { useSalaryRequests } from "@/composables/useSalaryRequests";
+import { normalizeSearchInput } from "@/lib/search";
 import { ReportPeriod } from "@/services/overtime.service";
 import { listEmployees, type Employee } from "@/services/employee.service";
 import { fetchProjectInfo } from "@/services/projects.service";

@@ -49,7 +49,8 @@
 
           <template #filter-search>
             <v-text-field
-              v-model="filter.search"
+              :model-value="filter.search"
+              @update:model-value="filter.search = normalizeSearchInput($event)"
               data-testid="overtimes-filter-search"
               density="compact"
               clearable
@@ -284,6 +285,7 @@ import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { useOvertimesSummary } from "@/composables/useOvertimesSummary";
 import { ReportPeriod } from "@/services/overtime.service";
+import { normalizeSearchInput } from "@/lib/search";
 
 const { t } = useI18n();
 const {

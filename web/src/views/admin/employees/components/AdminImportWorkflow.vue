@@ -160,7 +160,8 @@
           <v-row density="comfortable" class="mb-3">
             <v-col cols="12" md="8">
               <v-text-field
-                v-model="previewFilter.search"
+                :model-value="previewFilter.search"
+                @update:model-value="previewFilter.search = normalizeSearchInput($event)"
                 append-inner-icon="mdi-magnify"
                 :label="t('Поиск')"
                 variant="outlined"
@@ -315,6 +316,7 @@ import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import FileUploadZone, { type UploadCompleteEvent } from "@/components/FileUploadZone.vue";
 import { errorUtils } from "@/lib/errors";
 import { formatDate } from "@/lib/datetime";
+import { normalizeSearchInput } from "@/lib/search";
 import tableStartRowImage from "@/assets/employee-import/tableStartRow.jpg";
 import emailColumnImage from "@/assets/employee-import/email_column.jpg";
 import emailColumnAltImage from "@/assets/employee-import/email_column_alt.jpg";

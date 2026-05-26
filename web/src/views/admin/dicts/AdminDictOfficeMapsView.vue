@@ -30,7 +30,8 @@
 
               <template #filter-search>
                 <v-text-field
-                  v-model="search"
+                  :model-value="search"
+                  @update:model-value="search = normalizeSearchInput($event)"
                   :label="t('Поиск')"
                   prepend-inner-icon="mdi-magnify"
                   variant="outlined"
@@ -134,6 +135,7 @@ import FileUploadZone, { type UploadCompleteEvent } from "@/components/FileUploa
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
 import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";
+import { normalizeSearchInput } from "@/lib/search";
 import {
   deleteAdminOfficeMap,
   fetchAdminOfficeMaps,

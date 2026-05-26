@@ -27,7 +27,8 @@
       <v-row density="comfortable" class="mb-2">
         <v-col cols="12" md="6">
           <v-text-field
-            v-model="search"
+            :model-value="search"
+            @update:model-value="search = normalizeSearchInput($event)"
             :label="t('Поиск')"
             append-inner-icon="mdi-magnify"
             variant="outlined"
@@ -90,6 +91,7 @@ import { useI18n } from "vue-i18n";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
+import { normalizeSearchInput } from "@/lib/search";
 import {
   listBusinessAccountPositions,
   type BusinessAccountPosition,

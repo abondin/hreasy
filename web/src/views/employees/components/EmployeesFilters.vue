@@ -10,7 +10,8 @@
   >
       <template #filter-search>
         <v-text-field
-          v-model="searchModel"
+          :model-value="searchModel"
+          @update:model-value="searchModel = normalizeSearchInput($event)"
           data-testid="employees-filter-search"
           :label="t('Поиск')"
           prepend-inner-icon="mdi-magnify"
@@ -103,6 +104,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
+import { normalizeSearchInput } from "@/lib/search";
 
 const props = defineProps<{
   departmentOptions: Array<{ title: string; value: number }>;

@@ -29,7 +29,8 @@
 
               <template #filter-search>
                 <v-text-field
-                  v-model="search"
+                  :model-value="search"
+                  @update:model-value="search = normalizeSearchInput($event)"
                   prepend-inner-icon="mdi-magnify"
                   :label="t('Поиск')"
                   variant="outlined"
@@ -165,6 +166,7 @@ import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
 import { errorUtils } from "@/lib/errors";
+import { normalizeSearchInput } from "@/lib/search";
 import type { DictItem } from "@/services/dict.service";
 import { fetchBusinessAccounts, fetchDepartments } from "@/services/dict.service";
 import { listAdminProjects, type AdminProjectInfo } from "@/services/admin/admin-project.service";

@@ -37,7 +37,8 @@
 
               <template #filter-search>
                 <v-text-field
-                  v-model="search"
+                  :model-value="search"
+                  @update:model-value="search = normalizeSearchInput($event)"
                   :label="t('Поиск')"
                   prepend-inner-icon="mdi-magnify"
                   variant="outlined"
@@ -156,6 +157,7 @@ import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";
+import { normalizeSearchInput } from "@/lib/search";
 
 type DataTableHeader = VDataTable["$props"]["headers"];
 

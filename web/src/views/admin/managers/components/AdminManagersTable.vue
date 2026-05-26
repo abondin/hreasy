@@ -31,7 +31,8 @@
 
         <template #filter-search>
           <v-text-field
-            v-model="filter.search"
+            :model-value="filter.search"
+            @update:model-value="filter.search = normalizeSearchInput($event)"
             :label="t('Поиск')"
             prepend-inner-icon="mdi-magnify"
             variant="outlined"
@@ -347,6 +348,7 @@ import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
+import { normalizeSearchInput } from "@/lib/search";
 import type { DictItem } from "@/services/dict.service";
 import { fetchBusinessAccounts, fetchDepartments } from "@/services/dict.service";
 import type { Employee } from "@/services/employee.service";

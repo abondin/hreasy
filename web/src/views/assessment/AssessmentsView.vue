@@ -29,7 +29,8 @@
 
           <template #filter-search>
             <v-text-field
-              v-model="filter.search"
+              :model-value="filter.search"
+              @update:model-value="filter.search = normalizeSearchInput($event)"
               :label="t('Поиск')"
               prepend-inner-icon="mdi-magnify"
               clearable
@@ -193,6 +194,7 @@ import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionCon
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
+import { normalizeSearchInput } from "@/lib/search";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { fetchBusinessAccounts, type DictItem } from "@/services/dict.service";
