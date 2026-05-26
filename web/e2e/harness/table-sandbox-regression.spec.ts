@@ -37,7 +37,7 @@ test.describe("Table Sandbox Regression", () => {
       .poll(async () => {
         const loadingRows = await table
           .locator("tbody tr")
-          .filter({ hasText: /Р вЂ”Р В°Р С–РЎР‚РЎС“Р В·Р С”Р В° Р Т‘Р В°Р Р…Р Р…РЎвЂ№РЎвЂ¦/i })
+          .filter({ hasText: /Загрузка данных/i })
           .count();
         const dataRows = await table.locator("tbody tr").filter({ hasText: /Directory Row 1/i }).count();
         return loadingRows > 0 || dataRows > 0;
@@ -52,7 +52,7 @@ test.describe("Table Sandbox Regression", () => {
     ).toBeVisible({ timeout: 10000 });
 
     await expect(
-      table.locator("tbody tr").filter({ hasText: /Р вЂ”Р В°Р С–РЎР‚РЎС“Р В·Р С”Р В° Р Т‘Р В°Р Р…Р Р…РЎвЂ№РЎвЂ¦/i }),
+      table.locator("tbody tr").filter({ hasText: /Загрузка данных/i }),
     ).toHaveCount(0);
     await expectDocumentNotToScroll(page);
     await expectTableToScroll(table);
@@ -60,7 +60,7 @@ test.describe("Table Sandbox Regression", () => {
     await page.getByTestId(selectors.tableSandboxReload).click();
     await expect(firstDataRow).toBeVisible({ timeout: 10000 });
     await expect(
-      table.locator("tbody tr").filter({ hasText: /Р вЂ”Р В°Р С–РЎР‚РЎС“Р В·Р С”Р В° Р Т‘Р В°Р Р…Р Р…РЎвЂ№РЎвЂ¦/i }),
+      table.locator("tbody tr").filter({ hasText: /Загрузка данных/i }),
     ).toHaveCount(0);
     await expectDocumentNotToScroll(page);
     await expectTableToScroll(table);

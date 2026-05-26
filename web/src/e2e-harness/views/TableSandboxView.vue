@@ -38,8 +38,8 @@
                 :fixed-header="true"
                 density="compact"
                 :loading="loading"
-                :loading-text="'Р—Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С…'"
-                :no-data-text="'РќРµС‚ РґР°РЅРЅС‹С…'"
+                :loading-text="'Загрузка данных'"
+                :no-data-text="'Нет данных'"
                 :hover="true"
               >
                 <template #filters>
@@ -167,8 +167,8 @@
                 :fixed-header="true"
                 density="compact"
                 :loading="loading"
-                :loading-text="'Р—Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С…'"
-                :no-data-text="'РќРµС‚ РґР°РЅРЅС‹С…'"
+                :loading-text="'Загрузка данных'"
+                :no-data-text="'Нет данных'"
                 :hover="true"
               />
             </TablePageCard>

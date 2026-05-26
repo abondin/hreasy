@@ -133,7 +133,7 @@
               </v-timeline-item>
             </v-timeline>
             <div v-else class="text-body-2 text-medium-emphasis">
-              {{ t("РќРµС‚ РґР°РЅРЅС‹С…") }}
+              {{ t("Отсутствуют данные") }}
             </div>
           </detail-section-block>
         </template>

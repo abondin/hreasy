@@ -5,8 +5,8 @@
     height="fill"
     fixed-header
     :loading="loading"
-    :loading-text="t('Р—Р°РіСЂСѓР·РєР°_РґР°РЅРЅС‹С…')"
-    :no-data-text="t('РћС‚СЃСѓС‚СЃС‚РІСѓСЋС‚ РґР°РЅРЅС‹Рµ')"
+    :loading-text="t('Загрузка_данных')"
+    :no-data-text="t('Отсутствуют данные')"
     :headers="headers"
     :items="items"
     :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
@@ -36,7 +36,7 @@
                   @click.stop="copyToClipboard(item)"
                 />
               </template>
-              <span>{{ t("РЎРєРѕРїРёСЂРѕРІР°С‚СЊ РІ Р±СѓС„РµСЂ РѕР±РјРµРЅР°") }}</span>
+              <span>{{ t("Скопировать в буфер обмена") }}</span>
             </v-tooltip>
           </div>
         </div>

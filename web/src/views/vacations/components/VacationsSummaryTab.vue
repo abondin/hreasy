@@ -6,8 +6,8 @@
     item-key="employee"
     fixed-header
     :loading="loading"
-    :loading-text="t('Р—Р°РіСЂСѓР·РєР°_РґР°РЅРЅС‹С…')"
-    :no-data-text="t('РћС‚СЃСѓС‚СЃС‚РІСѓСЋС‚ РґР°РЅРЅС‹Рµ')"
+    :loading-text="t('Загрузка_данных')"
+    :no-data-text="t('Отсутствуют данные')"
     :headers="headers"
     :items="items"
     :sort-by="[{ key: 'employeeDisplayName', order: 'asc' }]"
