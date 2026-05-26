@@ -26,7 +26,7 @@
         <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
         <jxls.version>2.14.0</jxls.version>
         <jxls-reader.version>2.1.0</jxls-reader.version>
-        <pg-classicjdbc.version>42.7.8</pg-classicjdbc.version>
+        <pg-classicjdbc.version>42.7.11</pg-classicjdbc.version>
         <r2dbc-postgresql.version>1.1.1.RELEASE</r2dbc-postgresql.version>
         <jjwt.version>0.12.6</jjwt.version>
         <springdoc-openapi>2.8.13</springdoc-openapi>
