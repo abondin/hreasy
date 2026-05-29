@@ -1,5 +1,10 @@
 # Telegram Bot for HR Easy
 
+> Deprecated / outdated.
+>
+> This service is a legacy Telegram Bot implementation. It should not be used as the target architecture for new
+> notification delivery features. The bot is expected to be redesigned separately.
+
 ## Telegram Account Setup Procedure
 
 1. **Profile Configuration:**

@@ -31,8 +31,14 @@
 
 ## Telegram Bot
 
-[Telegram Boot](./telegram/Readme.md) can be also configured as additional user interaction interface with HR Easy
-Platfrom
+**Deprecated / outdated.** [Telegram Bot](./telegram/Readme.md) is a legacy additional user interaction interface with
+HR Easy Platform. It is not the target architecture for new notification delivery features and is expected to be
+redesigned separately.
+
+## Notification Delivery Service
+
+[Notify MS](./notify-ms/README.md) is a separate notification delivery service. It accepts normalized notification
+requests from HR Easy Platform and delivers them through external channels such as Yandex Messenger.
 
 ## Permissions and roles
 
