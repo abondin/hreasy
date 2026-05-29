@@ -35,6 +35,10 @@ public class NotificationService {
         return repo.findByEmployee(auth.getEmployeeInfo().getEmployeeId()).map(mapper::reportToDto);
     }
 
+    public Mono<Integer> myUnreadCount(AuthContext auth) {
+        return repo.countUnreadByEmployee(auth.getEmployeeInfo().getEmployeeId());
+    }
+
     public Mono<Integer> acknowledge(AuthContext auth, int notificationId) {
         log.info("Acknowledge notification {} by {}", notificationId, auth.getUsername());
         var now = dateTimeService.now();
