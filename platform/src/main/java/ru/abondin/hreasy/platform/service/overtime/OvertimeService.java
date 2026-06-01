@@ -11,6 +11,8 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.overtime.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.notification.BusinessNotificationEvent;
+import ru.abondin.hreasy.platform.service.notification.NotificationOrchestrator;
 import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ public class OvertimeService {
     private final OvertimeClosedPeriodRepo closedPeriodRepo;
 
     private final OvertimeSecurityValidator securityValidator;
+    private final NotificationOrchestrator notificationOrchestrator;
 
     /**
      * Get report or empty stub to create new one
@@ -69,6 +72,9 @@ public class OvertimeService {
                             itemEntry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
                             itemEntry.setReportId(report.getId());
                             return itemRepo.save(itemEntry)
+                                    .flatMap(persistedItem -> publishNotification(
+                                            overtimeItemCreatedEvent(auth, report, persistedItem))
+                                            .thenReturn(persistedItem))
                                     .map(persistedItem -> mapper.itemToDto(persistedItem))
                                     .map(item -> {
                                         report.getItems().add(item);
@@ -159,7 +165,10 @@ public class OvertimeService {
                                     approvalEntry.setDecisionTime(dateTimeService.now());
                                     approvalEntry.setDecision(decision);
                                     approvalEntry.setComment(comment);
-                                    return approvalRepo.save(approvalEntry);
+                                    return approvalRepo.save(approvalEntry)
+                                            .flatMap(savedDecision -> publishNotification(
+                                                    overtimeDecisionEvent(auth, employeeId, report, savedDecision))
+                                                    .thenReturn(savedDecision));
                                     // 6. Just reload whole report to populate all required fields for approval entry
                                 }).flatMap(approvalEntry -> get(employeeId, periodId)))));
     }
@@ -234,6 +243,42 @@ public class OvertimeService {
                 .flatMap(p -> Mono.error(new BusinessError("errors.overtime.period.closed", Integer.toString(p.getPeriod()))))
                 .map(p -> false)
                 .defaultIfEmpty(true);
+    }
+
+    private Mono<Void> publishNotification(BusinessNotificationEvent event) {
+        return notificationOrchestrator.publish(event)
+                .onErrorResume(ex -> {
+                    log.warn("Unable to publish overtime notification {}", event.getClass().getSimpleName(), ex);
+                    return Mono.empty();
+                });
+    }
+
+    private OvertimeItemCreatedNotificationEvent overtimeItemCreatedEvent(AuthContext auth,
+                                                                          OvertimeReportDto report,
+                                                                          OvertimeItemEntry item) {
+        return new OvertimeItemCreatedNotificationEvent(
+                auth,
+                report.getEmployeeId(),
+                report.getId(),
+                report.getPeriod(),
+                item.getId(),
+                item.getDate(),
+                item.getHours());
+    }
+
+    private OvertimeDecisionNotificationEvent overtimeDecisionEvent(AuthContext auth,
+                                                                    int employeeId,
+                                                                    OvertimeReportDto report,
+                                                                    OvertimeApprovalDecisionEntry decision) {
+        return new OvertimeDecisionNotificationEvent(
+                auth,
+                employeeId,
+                report.getId(),
+                report.getPeriod(),
+                decision.getId(),
+                decision.getDecision(),
+                decision.getApprover(),
+                decision.getComment());
     }
 
 }

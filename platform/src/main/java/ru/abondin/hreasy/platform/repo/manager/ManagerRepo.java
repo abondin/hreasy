@@ -65,5 +65,36 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
 
     @Query(defaultSelectQuery + " where object_type=:objectType and object_id=:objectId order by employee_display_name asc")
     Flux<ManagerView> findByObjectDetailed(OffsetDateTime now, String objectType, int objectId);
-}
 
+    /**
+     * Finds active managers of the employee current project, project business account, and project department
+     * who have the requested permission.
+     *
+     * @param employeeId employee whose project hierarchy is used to resolve managers
+     * @param permission required permission
+     * @param now current time used to exclude dismissed managers
+     * @return matching manager recipients
+     */
+    @Query("""
+            select distinct manager_employee.id as employee_id,
+                   manager_employee.email,
+                   manager_employee.display_name
+            from empl.employee employee
+                join proj.project project on employee.current_project = project.id
+                join empl.manager manager
+                    on (manager.object_type = 'project' and manager.object_id = project.id)
+                    or (manager.object_type = 'business_account' and manager.object_id = project.ba_id)
+                    or (manager.object_type = 'department' and manager.object_id = project.department_id)
+                join empl.employee manager_employee on manager.employee = manager_employee.id
+                join sec.user_role user_role on user_role.employee_id = manager_employee.id
+                join sec.role_perm role_perm on role_perm.role = user_role.role
+            where employee.id = :employeeId
+              and manager_employee.id <> employee.id
+              and role_perm.permission = :permission
+              and (manager_employee.date_of_dismissal is null or manager_employee.date_of_dismissal > :now)
+            order by manager_employee.display_name
+            """)
+    Flux<ManagerRecipient> findActiveEmployeeManagersWithPermission(@Param("employeeId") int employeeId,
+                                                                    @Param("permission") String permission,
+                                                                    @Param("now") OffsetDateTime now);
+}

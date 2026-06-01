@@ -156,5 +156,3 @@ public class AssessmentService {
                 .flatMap(assessmentOwners -> securityValidator.validateOwnerOrCanViewAssessmentFull(auth, employeeId, assessmentOwners));
     }
 }
-
-

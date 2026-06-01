@@ -36,6 +36,12 @@ hreasy:
     default-email-from: "hreasy@stm-labs.ru"
     default-calendar-type: "default"
     default-calendar-region: "RU"
+  notifications:
+    delivery-service:
+      enabled: false
+      base-url: http://127.0.0.1:8083
+      token:
+      timeout: 3s
 #  background:
 #    upcoming-vacation:
 #      job-enabled: false

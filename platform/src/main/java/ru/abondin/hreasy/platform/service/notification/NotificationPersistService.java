@@ -27,8 +27,10 @@ public class NotificationPersistService {
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @Getter
     public enum NotificationCategory {
+        OVERTIME("overtime"),
         SALARY_REQUEST("salary_request"),
         UPCOMING_VACATION("upcoming_vacation");
+
         private final String category;
     }
 

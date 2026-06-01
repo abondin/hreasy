@@ -82,6 +82,29 @@ hreasy:
 
 Email digest configuration is reserved for future work and must stay disabled until the digest worker is implemented.
 
+### Channel Configuration
+
+Delivery channel settings are global for the initial implementation. Employee-level notification preferences are deferred and must not be modeled in `empl.employee` until global channel behavior is validated.
+
+Current channel semantics:
+
+| Channel | Meaning | Current status | Owner |
+|---------|---------|----------------|-------|
+| `yandex_messenger` | Private or chat message through Yandex Messenger Bot API | Implemented | notify-ms |
+| `email` | Email delivery or digest | Reserved, not implemented | notify-ms |
+
+Global channel rules:
+
+| Rule | Decision |
+|------|----------|
+| Yandex Messenger disabled | Do not create Yandex Messenger delivery work items |
+| Email disabled | Do not create email delivery work items |
+| Email enabled | Startup must fail until digest delivery is implemented |
+| Per-employee channel preferences | Deferred |
+| Per-event channel override | Deferred until there is more than one implemented external channel |
+
+Platform UI inbox notifications are not controlled by notify-ms channel settings. The Platform inbox remains the user-visible source of truth; notify-ms owns only external delivery attempts.
+
 Flyway is disabled by default, matching platform style. Enable it with:
 
 ```yaml

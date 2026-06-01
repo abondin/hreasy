@@ -95,6 +95,7 @@ Responsibilities:
 
 - Detect notification-worthy business events.
 - Resolve recipients from platform domain data.
+- Align recipient selection and linked actions with the backend role and permission model.
 - Send normalized notification requests to the notification service.
 - Provide stable recipient identifiers, preferably corporate email/login.
 - Optionally expose employee/profile data needed by the notification service, if not included in the request.
@@ -147,13 +148,15 @@ Private user messages are the primary scenario. Chat/channel messages can be add
 
 The notification service should support multiple delivery channels, but keep the model simple.
 
+The business notification catalog is maintained separately in [notification_catalog.md](notification_catalog.md). It lists each business notification, trigger moment, recipient rules, business purpose, and current implementation status. Technical delivery settings belong to the owning modules, primarily `platform` and `notify-ms`.
+
 The platform sends one normalized notification event. The notification service stores it and creates delivery work items according to channel policies.
 
 Example target behavior:
 
 | Channel | Policy | Example |
 |---------|--------|---------|
-| Yandex Messenger | Send every event separately during working hours | Assessment assigned at 14:00 is sent immediately |
+| Yandex Messenger | Send every event separately during working hours | Overtime approval at 14:00 is sent immediately |
 | Yandex Messenger | Defer night events until next working morning | Salary approval event at 23:30 is sent at 09:00 |
 | Email | Send digest | All daily events are grouped into one email at the end of the working day |
 
@@ -186,6 +189,16 @@ hreasy:
 | `daily-digest` | Store event and aggregate it into one recipient/channel digest at configured digest time |
 
 For MVP, Yandex Messenger can use `business-hours-immediate`. Email digest can be designed in schema and interfaces but implemented later.
+
+### Preference Scope For MVP
+
+The first implementation uses global delivery settings only. Employee-level notification preferences are deferred.
+
+Platform configuration controls whether Platform calls the notification delivery service. Notification Service configuration controls which external channels are enabled and how each channel schedules delivery.
+
+The Platform UI inbox remains the source of truth for user-visible notifications and is not controlled by external channel settings in the MVP.
+
+Per-employee profile settings can be introduced later after the global channel behavior is validated.
 
 ## Simplified Platform Reliability Model
 
@@ -254,8 +267,8 @@ If implemented in platform, the outbox table can be generic and not Yandex-speci
 | Column | Description |
 |--------|-------------|
 | `id` | Outbox event id |
-| `event_type` | Stable event code, for example `assessment.assigned` |
-| `aggregate_type` | Business aggregate type, for example `assessment` |
+| `event_type` | Stable event code, for example `overtime.item_created` |
+| `aggregate_type` | Business aggregate type, for example `overtime` |
 | `aggregate_id` | Business aggregate id |
 | `recipient_employee_id` | Optional employee recipient |
 | `dedupe_key` | Business idempotency key |
@@ -283,20 +296,21 @@ Idempotency-Key: <optional-request-id>
 
 ```json
 {
-  "eventType": "assessment.assigned",
+  "eventType": "overtime.item_created",
   "recipient": {
     "type": "user",
     "login": "ivan.petrov@example.com",
     "employeeId": 123
   },
   "priority": "normal",
-  "dedupeKey": "assessment.assigned:456:123",
+  "dedupeKey": "overtime.item_created:456:789:123",
   "locale": "ru",
-  "title": "Назначена оценка",
-  "body": "Вам назначена форма самооценки. Срок заполнения: 2026-06-05.",
+  "title": "Overtime reported",
+  "body": "An employee reported overtime for period 202605.",
   "data": {
-    "assessmentId": 456,
-    "dueDate": "2026-06-05",
+    "overtimeReportId": 456,
+    "overtimeItemId": 789,
+    "period": 202605,
     "actorEmployeeId": 42
   }
 }
@@ -480,7 +494,9 @@ Two idempotency levels are needed:
 
 `dedupeKey` should be based on business identity, not on transport retries. Examples:
 
-- `assessment.assigned:<assessmentId>:<employeeId>`
+- `overtime.item_created:<reportId>:<itemId>:<managerEmployeeId>`
+- `overtime.approved:<reportId>:<employeeId>:<decisionId>`
+- `overtime.declined:<reportId>:<employeeId>:<decisionId>`
 - `vacation.upcoming:<vacationId>:<employeeId>`
 - `salary_request.approval_required:<requestId>:<approverEmployeeId>`
 
@@ -570,9 +586,9 @@ These events should be confirmed before implementation:
 
 | Event | Recipient | Notes |
 |-------|-----------|-------|
-| `assessment.assigned` | Employee | Self-assessment or feedback form assigned |
-| `assessment.due_soon` | Employee | Reminder before assessment deadline |
-| `assessment.manager_feedback_required` | Manager | Manager needs to fill feedback |
+| `overtime.item_created` | Project, BA, and department managers with `overtime_view` | Employee added an overtime item |
+| `overtime.approved` | Employee | Manager approved overtime report |
+| `overtime.declined` | Employee | Manager declined overtime report |
 | `vacation.upcoming` | Employee, managers | Existing email job can later reuse notification service |
 | `salary_request.approval_required` | Approver | High-value workflow notification |
 | `support.request.created` | Support group/chat | Could be sent to chat instead of private user |

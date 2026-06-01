@@ -193,6 +193,12 @@ Follow these rules when creating or modifying `.java` files.
 - Avoid `@Autowired` annotation unless there is no other way
 - Prefer `@ConfigurationProperties` annotation to `@Value` annotation
 
+## Security and Role Model
+- Before implementing backend behavior, study the existing backend role and permission model for the affected domain.
+- Before implementing frontend-facing backend APIs, make sure every protected action and data shape is backed by backend permission checks.
+- For notification-related code, derive recipient rules from the same role and permission model that controls visibility of the linked business object.
+- Do not rely on frontend checks as the source of truth for permissions.
+
 ## Lombok rules
 - Avoid usage of `@Data` annotation; use specific annotations that apply in the context
 - Avoid excessive Lombok that hides important behavior

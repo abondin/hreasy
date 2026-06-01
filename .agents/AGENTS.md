@@ -25,12 +25,14 @@ There is no root Maven aggregator. Run Maven commands from the service directory
 - Use Flyway migrations under `src/main/resources/db/migration`.
 - Do not add cross-service foreign keys.
 - Keep service-owned schemas unique. Platform owns `notify`; notification microservice owns `notify_ms`.
+- Treat the backend role and permission model as the source of truth for protected data, actions, and notification recipients.
 
 ## Frontend Conventions
 
 - Frontend lives in `web/`.
 - Vue + TypeScript + Vuetify.
 - Prefer existing composables/components/API client patterns before adding new ones.
+- Study the backend role and permission model before adding frontend access checks, hidden actions, badges, routes, or notification UI.
 
 ## Build And Test
 
