@@ -46,6 +46,18 @@ type OvertimeSummaryRecord = {
   commonApprovalStatus: "NO_DECISIONS" | "DECLINED" | "APPROVED_NO_DECLINED" | "APPROVED_OUTDATED";
 };
 
+type NotificationRecord = {
+  id: number;
+  clientUuid: string;
+  title: string;
+  category: string;
+  markdownText: string;
+  context: string | null;
+  createdAt: string;
+  acknowledgedAt: string | null;
+  archivedAt: string | null;
+};
+
 function jsonResponse(route: Route, body: unknown, status = 200): Promise<void> {
   return route.fulfill({
     status,
@@ -296,6 +308,33 @@ export async function mockAppRouteAuth(
     employeeId: 101,
     accessibleBas: [401, 402, 403, 404],
     authorities,
+  });
+  await mockNotificationsApi(page, []);
+}
+
+export async function mockNotificationsApi(
+  page: Page,
+  initialNotifications: NotificationRecord[] = [],
+): Promise<void> {
+  let notifications = [...initialNotifications];
+
+  await page.route("**/api/v1/notifications/my/unread-count", async (route) => {
+    await jsonResponse(route, notifications.filter((notification) => !notification.acknowledgedAt).length);
+  });
+
+  await page.route("**/api/v1/notifications/my", async (route) => {
+    await jsonResponse(route, notifications);
+  });
+
+  await page.route(/\/api\/v1\/notifications\/\d+\/acknowledge$/, async (route) => {
+    const notificationId = Number(new URL(route.request().url()).pathname.split("/").slice(-2)[0]);
+    const acknowledgedAt = "2026-06-02T09:30:00Z";
+    notifications = notifications.map((notification) =>
+      notification.id === notificationId
+        ? { ...notification, acknowledgedAt }
+        : notification,
+    );
+    await jsonResponse(route, notificationId);
   });
 }
 

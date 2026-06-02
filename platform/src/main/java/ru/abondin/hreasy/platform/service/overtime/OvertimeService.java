@@ -91,7 +91,8 @@ public class OvertimeService {
      */
     @Transactional
     public Mono<OvertimeReportDto> deleteItem(int employeeId, int periodId, int itemId, AuthContext auth) {
-        log.info("Delete item {}:{} from overtime report in period {} by {}",  employeeId, periodId, auth.getUsername());
+        log.info("Delete item {} from employee {} overtime report in period {} by {}",
+                itemId, employeeId, periodId, auth.getUsername());
         // 0. Validate auth
         return securityValidator.validateEditOvertimeItem(auth, employeeId)
                 .then(validatePeriodNotClosed(periodId)).then(
@@ -101,7 +102,10 @@ public class OvertimeService {
                             var now = dateTimeService.now();
                             item.setDeletedAt(now);
                             item.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
-                            return itemRepo.save(item);
+                            return itemRepo.save(item)
+                                    .flatMap(deletedItem -> publishNotification(
+                                            overtimeItemDeletedEvent(auth, employeeId, periodId, deletedItem))
+                                            .thenReturn(deletedItem));
                         })
                         .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(itemId))))
                         .then(get(employeeId, periodId)));
@@ -261,6 +265,20 @@ public class OvertimeService {
                 report.getEmployeeId(),
                 report.getId(),
                 report.getPeriod(),
+                item.getId(),
+                item.getDate(),
+                item.getHours());
+    }
+
+    private OvertimeItemDeletedNotificationEvent overtimeItemDeletedEvent(AuthContext auth,
+                                                                          int employeeId,
+                                                                          int periodId,
+                                                                          OvertimeItemEntry item) {
+        return new OvertimeItemDeletedNotificationEvent(
+                auth,
+                employeeId,
+                item.getReportId(),
+                periodId,
                 item.getId(),
                 item.getDate(),
                 item.getHours());

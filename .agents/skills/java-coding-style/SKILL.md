@@ -26,6 +26,8 @@ Follow these rules when creating or modifying `.java` files.
 ## Project Consistency
 - Follow the surrounding code style in the touched module
 - Reuse existing utilities, patterns, and conventions before introducing new ones
+- Do not introduce new classes, abstractions, services, or cross-cutting mechanisms for a narrow task when an existing
+  helper or a small local change is enough. Ask the user before adding broader structure.
 - Do not reformat unrelated code
 - Do not rename symbols unless needed for the task
 

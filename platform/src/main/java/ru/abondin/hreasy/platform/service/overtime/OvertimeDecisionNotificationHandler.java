@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
+import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 import ru.abondin.hreasy.platform.service.notification.BusinessNotificationHandler;
 import ru.abondin.hreasy.platform.service.notification.NotificationPersistService;
 import ru.abondin.hreasy.platform.service.notification.NotificationPlan;
@@ -60,7 +61,7 @@ public class OvertimeDecisionNotificationHandler
                 .priority(PRIORITY)
                 .titleKey(titleKey(event))
                 .bodyKey(bodyKey(event))
-                .bodyArg(event.period())
+                .bodyArg(MapperBase.formatPeriod(event.period()))
                 .bodyArg(event.comment() == null ? "" : event.comment())
                 .context("eventType", eventType)
                 .context("employeeId", event.employeeId())

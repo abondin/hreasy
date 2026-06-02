@@ -12,7 +12,7 @@ import java.time.Duration;
 @Data
 public class HrEasyNotificationDeliveryProps {
     private boolean enabled = false;
-    private URI baseUrl = URI.create("http://127.0.0.1:8082");
+    private URI baseUrl = URI.create("http://127.0.0.1:8083");
     private String token;
     private Duration timeout = Duration.ofSeconds(3);
 }

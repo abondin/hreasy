@@ -8,9 +8,10 @@ Technical delivery settings, channel configuration, API payloads, and provider b
 
 | Event type | Business trigger | Business recipients | User-visible inbox | Business purpose | Status |
 |------------|------------------|---------------------|--------------------|------------------|--------|
-| `overtime.item_created` | An employee adds an overtime item to a report | Active managers of the employee's current project, project business account, and project department who have `overtime_view` | Planned | Tell responsible managers that an employee has reported overtime requiring attention | Candidate |
-| `overtime.approved` | A manager approves an employee overtime report | Report employee | Planned | Tell the employee that the overtime report was approved | Candidate |
-| `overtime.declined` | A manager declines an employee overtime report | Report employee | Planned | Tell the employee that the overtime report was declined and show the manager comment when present | Candidate |
+| `overtime.item_created` | An employee adds an overtime item to a report | Active managers of the employee's current project, project business account, and project department who have `overtime_view` | Yes | Tell responsible managers that an employee has reported overtime requiring attention | Implemented |
+| `overtime.item_deleted` | An employee deletes an overtime item from a report | Active managers of the employee's current project, project business account, and project department who have `overtime_view` | Yes | Tell responsible managers that previously reported overtime was removed | Implemented |
+| `overtime.approved` | A manager approves an employee overtime report | Report employee | Yes | Tell the employee that the overtime report was approved | Implemented |
+| `overtime.declined` | A manager declines an employee overtime report | Report employee | Yes | Tell the employee that the overtime report was declined and show the manager comment when present | Implemented |
 | `vacation.upcoming` | A planned vacation is approaching | Employee; managers if required by HR policy | Planned reuse | Remind relevant people about the upcoming vacation | Candidate |
 | `salary_request.approval_required` | A salary request is waiting for approval | Approver employee | Planned | Tell the approver that a salary request needs a decision | Candidate |
 | `support.request.created` | A support request is created | Support group or responsible support target | Optional | Notify the support side about a new employee request | Candidate |

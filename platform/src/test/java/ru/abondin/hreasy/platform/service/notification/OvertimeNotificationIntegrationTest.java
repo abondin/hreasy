@@ -21,6 +21,7 @@ import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeApprovalDecisionD
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static ru.abondin.hreasy.platform.TestEmployees.FMS_Empl_Jenson_Curtis;
@@ -32,6 +33,7 @@ import static ru.abondin.hreasy.platform.TestEmployees.FMS_Manager_Jawad_Mcghee;
 public class OvertimeNotificationIntegrationTest extends BaseServiceTest {
     private static final String CATEGORY = "overtime";
     private static final String ITEM_CREATED_EVENT = "overtime.item_created";
+    private static final String ITEM_DELETED_EVENT = "overtime.item_deleted";
     private static final String APPROVED_EVENT = "overtime.approved";
     private static final String DECLINED_EVENT = "overtime.declined";
 
@@ -83,6 +85,51 @@ public class OvertimeNotificationIntegrationTest extends BaseServiceTest {
                     assertEquals(period, context.optInt("period"));
                     assertEquals(itemDate.toString(), context.optString("itemDate"));
                     assertEquals(2, context.optDouble("hours"));
+                    assertFalse(n.getMarkdownText().contains(Integer.toString(period)));
+                    assertFalse(n.getMarkdownText().contains("202 601"));
+                })
+                .verifyComplete();
+    }
+
+    /**
+     * Test goal: verifies that deleting an overtime item creates a manager inbox notification.
+     * <p>Precondition: an active FMS employee has an overtime item visible to an FMS manager.
+     * <p>Action: the employee deletes the overtime item.
+     * <p>Verification: the FMS manager inbox contains an overtime item-deleted notification with the deleted item context.
+     */
+    @Test
+    @DisplayName("Overtime item deletion notifies project manager")
+    public void overtimeItemDeletionNotifiesProjectManager() {
+        var employeeId = testData.employees.get(FMS_Empl_Jenson_Curtis);
+        var employeeAuth = auth(FMS_Empl_Jenson_Curtis).block(MONO_DEFAULT_TIMEOUT);
+        var managerAuth = auth(FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var period = 202604;
+        var itemDate = LocalDate.of(2026, 4, 10);
+
+        var report = overtimeService.addItem(employeeId, period,
+                        new NewOvertimeItemDto(itemDate, testData.project_M1_FMS(), 5, "delete notify"),
+                        employeeAuth)
+                .block(MONO_DEFAULT_TIMEOUT);
+        assertNotNull(report);
+        var itemId = report.getItems().getFirst().getId();
+
+        overtimeService.deleteItem(employeeId, period, itemId, employeeAuth)
+                .block(MONO_DEFAULT_TIMEOUT);
+
+        StepVerifier.create(notificationService.myNotifications(managerAuth)
+                        .filter(n -> CATEGORY.equals(n.getCategory()))
+                        .filter(n -> ITEM_DELETED_EVENT.equals(context(n).optString("eventType")))
+                        .filter(n -> itemId == context(n).optInt("overtimeItemId")))
+                .assertNext(n -> {
+                    var context = context(n);
+                    assertTrue(n.getId() > 0);
+                    assertEquals(employeeId, context.optInt("employeeId"));
+                    assertEquals(report.getId(), context.optInt("overtimeReportId"));
+                    assertEquals(period, context.optInt("period"));
+                    assertEquals(itemDate.toString(), context.optString("itemDate"));
+                    assertEquals(5, context.optDouble("hours"));
+                    assertFalse(n.getMarkdownText().contains(Integer.toString(period)));
+                    assertFalse(n.getMarkdownText().contains("202 604"));
                 })
                 .verifyComplete();
     }
@@ -123,6 +170,8 @@ public class OvertimeNotificationIntegrationTest extends BaseServiceTest {
                     assertEquals(OvertimeApprovalDecisionDto.ApprovalDecision.APPROVED.name(), context.optString("decision"));
                     assertEquals(managerAuth.getEmployeeInfo().getEmployeeId(), context.optInt("approverEmployeeId"));
                     assertTrue(context.optInt("decisionId") > 0);
+                    assertFalse(n.getMarkdownText().contains(Integer.toString(period)));
+                    assertFalse(n.getMarkdownText().contains("202 602"));
                 })
                 .verifyComplete();
     }

@@ -25,6 +25,13 @@ public class NotificationController {
         return AuthHandler.currentAuth().flatMapMany(service::myNotifications);
     }
 
+    /**
+     * Returns only the unread notification count for lightweight UI badge polling.
+     * <p>
+     * Use this endpoint when the client needs to refresh the badge without loading full notification payloads.
+     *
+     * @return current employee unread notification count
+     */
     @Operation(summary = "Get current employee unread notification count")
     @GetMapping("/my/unread-count")
     public Mono<Integer> myUnreadCount() {

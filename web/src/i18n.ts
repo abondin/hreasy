@@ -1,6 +1,8 @@
 import { createI18n } from "vue-i18n";
 
-type MessageSchema = Record<string, string>;
+type MessageSchema = {
+  [key: string]: string | MessageSchema;
+};
 
 type LocaleModule = {
   default: MessageSchema;
@@ -12,12 +14,27 @@ const localeModules = import.meta.glob<LocaleModule>("./locales/*.json", {
 
 const messages: Record<string, MessageSchema> = {};
 
+const ruBuiltInMessages: MessageSchema = {
+  notifications: {
+    title: "\u0423\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f",
+    refresh: "\u041e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f",
+    empty: "\u041d\u0435\u0442 \u043d\u043e\u0432\u044b\u0445 \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u0439",
+    markAsRead: "\u041e\u0442\u043c\u0435\u0442\u0438\u0442\u044c \u043a\u0430\u043a \u043f\u0440\u043e\u0447\u0438\u0442\u0430\u043d\u043d\u043e\u0435",
+    loadError: "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f",
+  },
+};
+
 Object.entries(localeModules).forEach(([path, module]) => {
   const matched = path.match(/([\w-]+)\.json$/i);
   if (matched && matched[1]) {
     messages[matched[1]] = module.default;
   }
 });
+
+messages.ru = {
+  ...(messages.ru ?? {}),
+  ...ruBuiltInMessages,
+};
 
 const i18n = createI18n({
   legacy: false,

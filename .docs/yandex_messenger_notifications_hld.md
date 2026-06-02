@@ -495,6 +495,7 @@ Two idempotency levels are needed:
 `dedupeKey` should be based on business identity, not on transport retries. Examples:
 
 - `overtime.item_created:<reportId>:<itemId>:<managerEmployeeId>`
+- `overtime.item_deleted:<reportId>:<itemId>:<managerEmployeeId>`
 - `overtime.approved:<reportId>:<employeeId>:<decisionId>`
 - `overtime.declined:<reportId>:<employeeId>:<decisionId>`
 - `vacation.upcoming:<vacationId>:<employeeId>`
@@ -587,6 +588,7 @@ These events should be confirmed before implementation:
 | Event | Recipient | Notes |
 |-------|-----------|-------|
 | `overtime.item_created` | Project, BA, and department managers with `overtime_view` | Employee added an overtime item |
+| `overtime.item_deleted` | Project, BA, and department managers with `overtime_view` | Employee deleted an overtime item |
 | `overtime.approved` | Employee | Manager approved overtime report |
 | `overtime.declined` | Employee | Manager declined overtime report |
 | `vacation.upcoming` | Employee, managers | Existing email job can later reuse notification service |

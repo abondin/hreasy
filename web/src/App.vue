@@ -112,6 +112,7 @@
         </v-btn>
       </template>
       <template v-else>
+        <notifications-menu />
         <template v-if="isMobile">
           <v-menu location="bottom end">
             <template #activator="{ props }">
@@ -154,6 +155,7 @@ import { computed, onMounted, ref } from "vue";
 import { RouterView, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useDisplay } from "vuetify";
+import NotificationsMenu from "@/components/notifications/NotificationsMenu.vue";
 import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/lib/permissions";
 

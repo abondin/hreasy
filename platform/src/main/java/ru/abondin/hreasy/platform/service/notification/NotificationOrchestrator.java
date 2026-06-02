@@ -52,10 +52,12 @@ public class NotificationOrchestrator {
      * @return completion signal after UI persistence and best-effort external publication
      */
     public Mono<Void> publish(BusinessNotificationEvent event) {
-        var handler = handler(event);
-        return handler.build(event)
-                .flatMap(this::publish)
-                .then();
+        return Mono.defer(() -> {
+            var handler = handler(event);
+            return handler.build(event)
+                    .flatMap(this::publish)
+                    .then();
+        });
     }
 
     @SuppressWarnings("unchecked")

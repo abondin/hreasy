@@ -61,6 +61,8 @@ If dependency resolution fails, check whether the configured Nexus is reachable 
 
 - Read nearby code before editing.
 - Keep changes scoped to the requested task.
+- Do not introduce new classes, abstractions, services, or cross-cutting mechanisms when a small local change or an
+  existing project helper solves the task. Ask for confirmation before adding broader structure.
 - Do not revert unrelated local changes.
 - Use `rg` for search.
 - Use `apply_patch` for manual file edits.

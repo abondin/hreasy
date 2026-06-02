@@ -22,6 +22,16 @@ public interface MapperBase {
         return YearMonth.of(periodId / 100, periodId % 100 + 1);
     }
 
+    /**
+     * Formats legacy HR Easy period id using the same rule as {@link #fromPeriodId(Integer)}.
+     *
+     * @param periodId legacy HR Easy period id with zero-based month
+     * @return formatted period label
+     */
+    static String formatPeriod(int periodId) {
+        return fromPeriodId(periodId).format(DateTimeFormatter.ofPattern("MM/yyyy"));
+    }
+
     DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
 
     default SimpleDictDto simpleDto(Integer id, String name) {
