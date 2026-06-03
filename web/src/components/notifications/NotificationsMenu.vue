@@ -3,7 +3,7 @@
     v-model="menuOpen"
     location="bottom end"
     :close-on-content-click="false"
-    width="360"
+    width="440"
     max-width="calc(100vw - 24px)"
   >
     <template #activator="{ props }">

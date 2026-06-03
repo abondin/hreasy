@@ -11,7 +11,6 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.overtime.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
-import ru.abondin.hreasy.platform.service.notification.BusinessNotificationEvent;
 import ru.abondin.hreasy.platform.service.notification.NotificationOrchestrator;
 import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
@@ -72,7 +71,7 @@ public class OvertimeService {
                             itemEntry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
                             itemEntry.setReportId(report.getId());
                             return itemRepo.save(itemEntry)
-                                    .flatMap(persistedItem -> publishNotification(
+                                    .flatMap(persistedItem -> notificationOrchestrator.publishBestEffort(
                                             overtimeItemCreatedEvent(auth, report, persistedItem))
                                             .thenReturn(persistedItem))
                                     .map(persistedItem -> mapper.itemToDto(persistedItem))
@@ -103,7 +102,7 @@ public class OvertimeService {
                             item.setDeletedAt(now);
                             item.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
                             return itemRepo.save(item)
-                                    .flatMap(deletedItem -> publishNotification(
+                                    .flatMap(deletedItem -> notificationOrchestrator.publishBestEffort(
                                             overtimeItemDeletedEvent(auth, employeeId, periodId, deletedItem))
                                             .thenReturn(deletedItem));
                         })
@@ -170,7 +169,7 @@ public class OvertimeService {
                                     approvalEntry.setDecision(decision);
                                     approvalEntry.setComment(comment);
                                     return approvalRepo.save(approvalEntry)
-                                            .flatMap(savedDecision -> publishNotification(
+                                            .flatMap(savedDecision -> notificationOrchestrator.publishBestEffort(
                                                     overtimeDecisionEvent(auth, employeeId, report, savedDecision))
                                                     .thenReturn(savedDecision));
                                     // 6. Just reload whole report to populate all required fields for approval entry
@@ -247,14 +246,6 @@ public class OvertimeService {
                 .flatMap(p -> Mono.error(new BusinessError("errors.overtime.period.closed", Integer.toString(p.getPeriod()))))
                 .map(p -> false)
                 .defaultIfEmpty(true);
-    }
-
-    private Mono<Void> publishNotification(BusinessNotificationEvent event) {
-        return notificationOrchestrator.publish(event)
-                .onErrorResume(ex -> {
-                    log.warn("Unable to publish overtime notification {}", event.getClass().getSimpleName(), ex);
-                    return Mono.empty();
-                });
     }
 
     private OvertimeItemCreatedNotificationEvent overtimeItemCreatedEvent(AuthContext auth,

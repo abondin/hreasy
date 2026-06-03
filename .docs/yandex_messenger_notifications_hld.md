@@ -499,6 +499,8 @@ Two idempotency levels are needed:
 - `overtime.approved:<reportId>:<employeeId>:<decisionId>`
 - `overtime.declined:<reportId>:<employeeId>:<decisionId>`
 - `vacation.upcoming:<vacationId>:<employeeId>`
+- `salary_request.implemented:<salaryRequestId>:<creatorEmployeeId>`
+- `salary_request.rejected:<salaryRequestId>:<creatorEmployeeId>`
 - `salary_request.approval_required:<requestId>:<approverEmployeeId>`
 
 If the platform resends the same notification, the notification service returns the existing `notificationId` instead of creating a duplicate delivery.
@@ -592,6 +594,8 @@ These events should be confirmed before implementation:
 | `overtime.approved` | Employee | Manager approved overtime report |
 | `overtime.declined` | Employee | Manager declined overtime report |
 | `vacation.upcoming` | Employee, managers | Existing email job can later reuse notification service |
+| `salary_request.implemented` | Request creator | Salary manager implemented a salary increase or bonus request |
+| `salary_request.rejected` | Request creator | Salary manager rejected a salary increase or bonus request |
 | `salary_request.approval_required` | Approver | High-value workflow notification |
 | `support.request.created` | Support group/chat | Could be sent to chat instead of private user |
 

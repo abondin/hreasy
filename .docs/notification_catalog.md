@@ -14,6 +14,8 @@ Technical delivery settings, channel configuration, API payloads, and provider b
 | `overtime.declined` | A manager declines an employee overtime report | Report employee | Yes | Tell the employee that the overtime report was declined and show the manager comment when present | Implemented |
 | `vacation.upcoming` | A planned vacation is approaching | Employee; managers if required by HR policy | Planned reuse | Remind relevant people about the upcoming vacation | Candidate |
 | `salary_request.approval_required` | A salary request is waiting for approval | Approver employee | Planned | Tell the approver that a salary request needs a decision | Candidate |
+| `salary_request.implemented` | An admin marks a salary increase or bonus request as implemented | Employee who created the salary request | Yes | Tell the request creator that the request has been implemented | Implemented |
+| `salary_request.rejected` | An admin rejects a salary increase or bonus request | Employee who created the salary request | Yes | Tell the request creator that the request has been rejected | Implemented |
 | `support.request.created` | A support request is created | Support group or responsible support target | Optional | Notify the support side about a new employee request | Candidate |
 
 ## Business Rules

@@ -18,6 +18,7 @@ import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.HistoryDomainService;
+import ru.abondin.hreasy.platform.service.notification.NotificationOrchestrator;
 import ru.abondin.hreasy.platform.service.salary.dto.*;
 import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkCreateBody;
 import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkType;
@@ -36,6 +37,7 @@ public class AdminSalaryRequestService {
     private final HistoryDomainService historyDomainService;
 
     private final DateTimeService dateTimeService;
+    private final NotificationOrchestrator notificationOrchestrator;
 
 
     public Flux<SalaryRequestDto> findAll(AuthContext auth, int periodId) {
@@ -75,7 +77,10 @@ public class AdminSalaryRequestService {
                             .flatMap(rejectedEntry -> rescheduleIfRequired(auth, rejectedEntry, body.getRescheduleToNewPeriod()))
                             .flatMap(p -> historyDomainService.persistHistory(salaryRequestId,
                                     HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
-                                    p, now, auth.getEmployeeInfo().getEmployeeId()))
+                                    p, now, auth.getEmployeeInfo().getEmployeeId())
+                                    .flatMap(history -> notificationOrchestrator.publishBestEffort(
+                                                    salaryRequestRejectedEvent(auth, p, body.getRescheduleToNewPeriod()))
+                                            .thenReturn(history)))
                             .map(HistoryEntry::getEntityId);
                 });
     }
@@ -136,7 +141,10 @@ public class AdminSalaryRequestService {
                             return requestRepo.save(entry)
                                     .flatMap(p -> historyDomainService.persistHistory(salaryRequestId,
                                             HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
-                                            p, now, auth.getEmployeeInfo().getEmployeeId()))
+                                            p, now, auth.getEmployeeInfo().getEmployeeId())
+                                            .flatMap(history -> notificationOrchestrator.publishBestEffort(
+                                                            salaryRequestImplementedEvent(auth, p))
+                                                    .thenReturn(history)))
                                     .map(HistoryEntry::getEntityId);
                         }));
     }
@@ -188,7 +196,7 @@ public class AdminSalaryRequestService {
         return secValidator.validateAdminSalaryRequest(auth)
                 .flatMap(v -> requestRepo.findById(salaryRequestId))
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound(salaryRequestId))
-                .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod()).thenReturn(entry)); // Проверка закрытого периода
+                .flatMap(entry -> closedPeriodCheck(entry.getReqIncreaseStartPeriod()).thenReturn(entry));
     }
 
     //</editor-fold>
@@ -231,6 +239,37 @@ public class AdminSalaryRequestService {
                 .flatMap(p -> Mono.error(new BusinessError("errors.salary_request.period_closed", Integer.toString(p.getPeriod()))))
                 .map(e -> true)
                 .defaultIfEmpty(true);
+    }
+
+    private SalaryRequestImplementationNotificationEvent salaryRequestImplementedEvent(AuthContext auth,
+                                                                                       SalaryRequestEntry entry) {
+        return new SalaryRequestImplementationNotificationEvent(
+                auth,
+                entry.getId(),
+                entry.getEmployeeId(),
+                entry.getCreatedBy(),
+                entry.getType(),
+                entry.getReqIncreaseStartPeriod(),
+                entry.getImplIncreaseStartPeriod(),
+                SalaryRequestImplementationState.IMPLEMENTED,
+                null,
+                null);
+    }
+
+    private SalaryRequestImplementationNotificationEvent salaryRequestRejectedEvent(AuthContext auth,
+                                                                                    SalaryRequestEntry entry,
+                                                                                    Integer rescheduledToNewPeriod) {
+        return new SalaryRequestImplementationNotificationEvent(
+                auth,
+                entry.getId(),
+                entry.getEmployeeId(),
+                entry.getCreatedBy(),
+                entry.getType(),
+                entry.getReqIncreaseStartPeriod(),
+                null,
+                SalaryRequestImplementationState.REJECTED,
+                entry.getImplRejectReason(),
+                rescheduledToNewPeriod);
     }
     //</editor-fold>
 

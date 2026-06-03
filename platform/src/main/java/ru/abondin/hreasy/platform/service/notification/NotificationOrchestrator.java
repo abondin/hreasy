@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.notification;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.I18Helper;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  * template rendering, UI inbox persistence, and best-effort delivery publication.
  */
 @Service
+@Slf4j
 public class NotificationOrchestrator {
     private final Map<Class<?>, BusinessNotificationHandler<?>> handlers;
     private final NotificationPersistService notificationPersistService;
@@ -58,6 +60,20 @@ public class NotificationOrchestrator {
                     .flatMap(this::publish)
                     .then();
         });
+    }
+
+    /**
+     * Publishes notifications without letting notification failures break the caller business flow.
+     *
+     * @param event business event that should produce one or more notifications
+     * @return completion signal that is always empty when publishing fails
+     */
+    public Mono<Void> publishBestEffort(BusinessNotificationEvent event) {
+        return publish(event)
+                .onErrorResume(ex -> {
+                    log.warn("Unable to publish notification {}", event.getClass().getSimpleName(), ex);
+                    return Mono.empty();
+                });
     }
 
     @SuppressWarnings("unchecked")

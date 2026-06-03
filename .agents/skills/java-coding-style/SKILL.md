@@ -37,6 +37,8 @@ Follow these rules when creating or modifying `.java` files.
 - Do not use Java 25+ preview features
 - If unsure, prefer conservative syntax compatible with Java 25
 - Remember that default charset is always UTF-8 in Java 25
+- Text resource files must stay readable UTF-8 without BOM. Do not replace non-ASCII text with escaped sequences
+  such as `\uXXXX` unless the target format explicitly requires escaping.
 
 ## Imports
 - Use and group imports according to standard IntelliJ IDEA settings

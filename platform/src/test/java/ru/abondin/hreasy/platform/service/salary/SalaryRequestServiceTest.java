@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.salary;
 
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,10 @@ import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer
 import ru.abondin.hreasy.platform.repo.salary.SalaryRequestRepo;
 import ru.abondin.hreasy.platform.service.BaseServiceTest;
 import ru.abondin.hreasy.platform.service.notification.NotificationPersistService;
+import ru.abondin.hreasy.platform.service.notification.NotificationService;
+import ru.abondin.hreasy.platform.service.notification.dto.NotificationDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementBody;
+import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementationState;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestRejectBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestType;
@@ -40,7 +44,10 @@ import static ru.abondin.hreasy.platform.service.HistoryDomainService.HistoryEnt
 @Slf4j
 class SalaryRequestServiceTest extends BaseServiceTest {
 
-    private final static Duration MONO_DEFAULT_TIMEOUT = Duration.ofSeconds(3);
+    private static final Duration MONO_DEFAULT_TIMEOUT = Duration.ofSeconds(3);
+    private static final String SALARY_REQUEST_CATEGORY = NotificationPersistService.NotificationCategory.SALARY_REQUEST.getCategory();
+    private static final String IMPLEMENTED_EVENT = "salary_request.implemented";
+    private static final String REJECTED_EVENT = "salary_request.rejected";
 
     @Autowired
     private SalaryRequestService salaryRequestService;
@@ -48,6 +55,9 @@ class SalaryRequestServiceTest extends BaseServiceTest {
 
     @Autowired
     private AdminSalaryRequestService salaryAdminRequestService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private SalaryRequestRepo repo;
@@ -144,6 +154,48 @@ class SalaryRequestServiceTest extends BaseServiceTest {
                 ).verifyComplete();
     }
 
+    /**
+     * Test goal: verifies that rejecting a salary request notifies the request creator.
+     * <p>Precondition: an FMS manager created a salary request, and salary manager can reject it.
+     * <p>Action: salary manager rejects the request.
+     * <p>Verification: the request creator inbox contains a salary request rejected notification with context and without salary amounts.
+     */
+    @Test
+    void salaryRequestRejectNotifiesRequestCreator() {
+        var creatorAuth = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var adminAuth = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
+        var requestId = reportDefaultRequest();
+        var rejectBody = SalaryRequestRejectBody.builder()
+                .reason("Not planned increase")
+                .comment("Private implementation comment")
+                .build();
+
+        salaryAdminRequestService.reject(adminAuth, requestId, rejectBody).block(MONO_DEFAULT_TIMEOUT);
+
+        StepVerifier.create(notificationService.myNotifications(creatorAuth)
+                        .filter(n -> SALARY_REQUEST_CATEGORY.equals(n.getCategory()))
+                        .filter(n -> REJECTED_EVENT.equals(context(n).optString("eventType")))
+                        .filter(n -> requestId == context(n).optInt("salaryRequestId")))
+                .assertNext(notification -> {
+                    var context = context(notification);
+                    Assertions.assertEquals(testData.employees.get(FMS_Empl_Jenson_Curtis), context.optInt("employeeId"));
+                    Assertions.assertEquals(SalaryRequestImplementationState.REJECTED.name(),
+                            context.optString("implementationState"));
+                    Assertions.assertEquals(adminAuth.getEmployeeInfo().getEmployeeId(),
+                            context.optInt("implementedByEmployeeId"));
+                    Assertions.assertEquals(202308, context.optInt("requestPeriod"));
+                    Assertions.assertTrue(context.isNull("implementationPeriod"));
+                    Assertions.assertTrue(notification.getMarkdownText().contains("Not planned increase"));
+                    Assertions.assertFalse(notification.getMarkdownText().contains("1000"));
+                })
+                .verifyComplete();
+
+        StepVerifier.create(notificationService.myNotifications(auth(TestEmployees.FMS_Empl_Jenson_Curtis)
+                                .block(MONO_DEFAULT_TIMEOUT))
+                        .filter(n -> SALARY_REQUEST_CATEGORY.equals(n.getCategory()))
+                        .filter(n -> requestId == context(n).optInt("salaryRequestId")))
+                .verifyComplete();
+    }
 
     @Test
     void testMarkAsImplemented() {
@@ -173,6 +225,45 @@ class SalaryRequestServiceTest extends BaseServiceTest {
 
                 ).verifyComplete();
 
+    }
+
+    /**
+     * Test goal: verifies that implementing a salary request notifies the request creator.
+     * <p>Precondition: an FMS manager created a salary request, and salary manager can implement it.
+     * <p>Action: salary manager marks the request as implemented.
+     * <p>Verification: the request creator inbox contains a salary request implemented notification with context and without salary amounts.
+     */
+    @Test
+    void salaryRequestImplementationNotifiesRequestCreator() {
+        var creatorAuth = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var adminAuth = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
+        var requestId = reportDefaultRequest();
+        var implBody = SalaryRequestImplementBody.builder()
+                .increaseAmount(BigDecimal.valueOf(1100))
+                .increaseStartPeriod(202309)
+                .newPosition(testData.position_JavaDeveloper())
+                .comment("Private implementation comment")
+                .build();
+
+        salaryAdminRequestService.markAsImplemented(adminAuth, requestId, implBody).block(MONO_DEFAULT_TIMEOUT);
+
+        StepVerifier.create(notificationService.myNotifications(creatorAuth)
+                        .filter(n -> SALARY_REQUEST_CATEGORY.equals(n.getCategory()))
+                        .filter(n -> IMPLEMENTED_EVENT.equals(context(n).optString("eventType")))
+                        .filter(n -> requestId == context(n).optInt("salaryRequestId")))
+                .assertNext(notification -> {
+                    var context = context(notification);
+                    Assertions.assertEquals(testData.employees.get(FMS_Empl_Jenson_Curtis), context.optInt("employeeId"));
+                    Assertions.assertEquals(SalaryRequestImplementationState.IMPLEMENTED.name(),
+                            context.optString("implementationState"));
+                    Assertions.assertEquals(adminAuth.getEmployeeInfo().getEmployeeId(),
+                            context.optInt("implementedByEmployeeId"));
+                    Assertions.assertEquals(202308, context.optInt("requestPeriod"));
+                    Assertions.assertEquals(202309, context.optInt("implementationPeriod"));
+                    Assertions.assertFalse(notification.getMarkdownText().contains("1100"));
+                    Assertions.assertFalse(notification.getMarkdownText().contains("1000"));
+                })
+                .verifyComplete();
     }
 
 
@@ -315,5 +406,12 @@ class SalaryRequestServiceTest extends BaseServiceTest {
         return salaryRequestService.report(ctx, report).block(MONO_DEFAULT_TIMEOUT);
     }
 
+    private JSONObject context(NotificationDto notification) {
+        try {
+            return new JSONObject(notification.getContext());
+        } catch (Exception ex) {
+            throw new AssertionError("Notification context must be a valid JSON object", ex);
+        }
+    }
 
 }
