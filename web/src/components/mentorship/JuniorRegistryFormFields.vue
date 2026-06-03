@@ -5,6 +5,7 @@
     :items="employees"
     item-title="displayName"
     item-value="id"
+    data-testid="junior-registry-junior"
     :label="t('Молодой специалист')"
     @update:model-value="updateAddFormField('juniorEmplId', $event)"
   />
@@ -14,6 +15,7 @@
     :items="mentorOptions"
     :item-title="mentorTitle"
     item-value="id"
+    data-testid="junior-registry-mentor"
     :label="t('Ментор')"
     @update:model-value="updateFormField('mentorId', $event)"
   />
@@ -23,6 +25,7 @@
     :items="businessAccountOptions"
     :item-title="businessAccountTitle"
     item-value="id"
+    data-testid="junior-registry-budgeting-account"
     :label="t('Бюджет из бизнес аккаунта')"
     @update:model-value="updateFormField('budgetingAccount', $event)"
   />
@@ -32,6 +35,7 @@
     item-title="value"
     item-value="value"
     clearable
+    data-testid="junior-registry-role"
     :label="t('Роль')"
     @update:model-value="updateFormField('role', $event)"
   />

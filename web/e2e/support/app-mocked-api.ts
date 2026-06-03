@@ -447,8 +447,38 @@ export async function mockOvertimesSummaryApi(page: Page): Promise<void> {
   });
 }
 
+export async function mockMentorshipRegistryApi(page: Page): Promise<void> {
+  await mockEmployeesDirectoryApi(page);
+
+  await page.route("**/api/v1/business_account", async (route) => {
+    await jsonResponse(route, [
+      { id: 401, name: "Northwind Delivery" },
+      { id: 402, name: "STM RND" },
+      { id: 403, name: "Acme Telecom" },
+      { id: 404, name: "Administrative Services" },
+    ]);
+  });
+
+  await page.route("**/api/v1/employee/current_project_roles", async (route) => {
+    await jsonResponse(route, appMockedProjectRoles);
+  });
+
+  await page.route("**/api/v1/udr/juniors/export**", async (route) => {
+    await downloadResponse(route);
+  });
+
+  await page.route("**/api/v1/udr/juniors", async (route) => {
+    if (route.request().method() === "POST") {
+      await jsonResponse(route, 9101);
+      return;
+    }
+    await jsonResponse(route, []);
+  });
+}
+
 export const appMockedAuthorities = {
   employees: ["view_empl_current_project_role"],
   vacations: ["vacation_view", "vacation_edit"],
   overtimes: ["overtime_view", "overtime_admin"],
+  mentorshipAdmin: ["admin_junior_reg", "access_junior_reg", "view_empl_current_project_role"],
 };
