@@ -35,6 +35,19 @@ public class NotificationService {
         return repo.findByEmployee(auth.getEmployeeInfo().getEmployeeId()).map(mapper::reportToDto);
     }
 
+    /**
+     * Counts unread notifications for lightweight UI badge polling.
+     * <p>
+     * This method intentionally returns only a number so clients can refresh notification badges without loading
+     * full notification payloads.
+     *
+     * @param auth current authenticated user
+     * @return current employee unread notification count
+     */
+    public Mono<Integer> myUnreadCount(AuthContext auth) {
+        return repo.countUnreadByEmployee(auth.getEmployeeInfo().getEmployeeId());
+    }
+
     public Mono<Integer> acknowledge(AuthContext auth, int notificationId) {
         log.info("Acknowledge notification {} by {}", notificationId, auth.getUsername());
         var now = dateTimeService.now();

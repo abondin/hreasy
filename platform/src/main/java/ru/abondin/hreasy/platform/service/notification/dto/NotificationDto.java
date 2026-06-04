@@ -11,6 +11,7 @@ import java.time.OffsetDateTime;
  */
 @Data
 public class NotificationDto {
+    private int id;
     private String clientUuid;
     /**
      * Show text to show notification title

@@ -13,13 +13,12 @@ import org.springframework.stereotype.Component;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.mapper.MapperBase;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.OffsetDateTime;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -65,7 +64,7 @@ public class OvertimeReportExcelExporter {
         try (var is = template.getInputStream()) {
             var context = new Context();
             context.putVar("overtimes", overtimeSummaryExports);
-            context.putVar("period", YearMonth.of(bundle.getPeriod() / 100, bundle.getPeriod() % 100 + 1));
+            context.putVar("period", MapperBase.fromPeriodId(bundle.getPeriod()));
             context.putVar("exportedAt", bundle.getExportTime().toLocalDateTime());
             JxlsHelper.getInstance().processTemplate(is, out, context);
         }
@@ -95,9 +94,4 @@ public class OvertimeReportExcelExporter {
         return result;
     }
 
-
-    public static String formatPeriod(int periodId) {
-        var ym = YearMonth.of(periodId / 100, periodId % 100 + 1);
-        return ym.format(DateTimeFormatter.ofPattern("MM/yyyy", new Locale("ru")));
-    }
 }

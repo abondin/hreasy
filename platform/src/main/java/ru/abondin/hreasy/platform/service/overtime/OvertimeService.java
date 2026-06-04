@@ -11,6 +11,7 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.overtime.*;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.notification.NotificationOrchestrator;
 import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class OvertimeService {
     private final OvertimeClosedPeriodRepo closedPeriodRepo;
 
     private final OvertimeSecurityValidator securityValidator;
+    private final NotificationOrchestrator notificationOrchestrator;
 
     /**
      * Get report or empty stub to create new one
@@ -69,6 +71,9 @@ public class OvertimeService {
                             itemEntry.setCreatedBy(auth.getEmployeeInfo().getEmployeeId());
                             itemEntry.setReportId(report.getId());
                             return itemRepo.save(itemEntry)
+                                    .flatMap(persistedItem -> notificationOrchestrator.publishBestEffort(
+                                            overtimeItemCreatedEvent(auth, report, persistedItem))
+                                            .thenReturn(persistedItem))
                                     .map(persistedItem -> mapper.itemToDto(persistedItem))
                                     .map(item -> {
                                         report.getItems().add(item);
@@ -85,7 +90,8 @@ public class OvertimeService {
      */
     @Transactional
     public Mono<OvertimeReportDto> deleteItem(int employeeId, int periodId, int itemId, AuthContext auth) {
-        log.info("Delete item {}:{} from overtime report in period {} by {}",  employeeId, periodId, auth.getUsername());
+        log.info("Delete item {} from employee {} overtime report in period {} by {}",
+                itemId, employeeId, periodId, auth.getUsername());
         // 0. Validate auth
         return securityValidator.validateEditOvertimeItem(auth, employeeId)
                 .then(validatePeriodNotClosed(periodId)).then(
@@ -95,7 +101,10 @@ public class OvertimeService {
                             var now = dateTimeService.now();
                             item.setDeletedAt(now);
                             item.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
-                            return itemRepo.save(item);
+                            return itemRepo.save(item)
+                                    .flatMap(deletedItem -> notificationOrchestrator.publishBestEffort(
+                                            overtimeItemDeletedEvent(auth, employeeId, periodId, deletedItem))
+                                            .thenReturn(deletedItem));
                         })
                         .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(itemId))))
                         .then(get(employeeId, periodId)));
@@ -159,7 +168,10 @@ public class OvertimeService {
                                     approvalEntry.setDecisionTime(dateTimeService.now());
                                     approvalEntry.setDecision(decision);
                                     approvalEntry.setComment(comment);
-                                    return approvalRepo.save(approvalEntry);
+                                    return approvalRepo.save(approvalEntry)
+                                            .flatMap(savedDecision -> notificationOrchestrator.publishBestEffort(
+                                                    overtimeDecisionEvent(auth, employeeId, report, savedDecision))
+                                                    .thenReturn(savedDecision));
                                     // 6. Just reload whole report to populate all required fields for approval entry
                                 }).flatMap(approvalEntry -> get(employeeId, periodId)))));
     }
@@ -234,6 +246,48 @@ public class OvertimeService {
                 .flatMap(p -> Mono.error(new BusinessError("errors.overtime.period.closed", Integer.toString(p.getPeriod()))))
                 .map(p -> false)
                 .defaultIfEmpty(true);
+    }
+
+    private OvertimeItemCreatedNotificationEvent overtimeItemCreatedEvent(AuthContext auth,
+                                                                          OvertimeReportDto report,
+                                                                          OvertimeItemEntry item) {
+        return new OvertimeItemCreatedNotificationEvent(
+                auth,
+                report.getEmployeeId(),
+                report.getId(),
+                report.getPeriod(),
+                item.getId(),
+                item.getDate(),
+                item.getHours());
+    }
+
+    private OvertimeItemDeletedNotificationEvent overtimeItemDeletedEvent(AuthContext auth,
+                                                                          int employeeId,
+                                                                          int periodId,
+                                                                          OvertimeItemEntry item) {
+        return new OvertimeItemDeletedNotificationEvent(
+                auth,
+                employeeId,
+                item.getReportId(),
+                periodId,
+                item.getId(),
+                item.getDate(),
+                item.getHours());
+    }
+
+    private OvertimeDecisionNotificationEvent overtimeDecisionEvent(AuthContext auth,
+                                                                    int employeeId,
+                                                                    OvertimeReportDto report,
+                                                                    OvertimeApprovalDecisionEntry decision) {
+        return new OvertimeDecisionNotificationEvent(
+                auth,
+                employeeId,
+                report.getId(),
+                report.getPeriod(),
+                decision.getId(),
+                decision.getDecision(),
+                decision.getApprover(),
+                decision.getComment());
     }
 
 }
