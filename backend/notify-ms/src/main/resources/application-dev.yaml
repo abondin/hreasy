@@ -1,0 +1,35 @@
+hreasy:
+  db:
+    host: localhost
+    port: 5432
+    database: hr
+    username: hr
+    password: HREasyPassword2019!
+  notifications:
+    http-token: localtest
+    worker:
+      enabled: true
+      fixed-delay: 10s
+      batch-size: 20
+    working-hours:
+      timezone: Europe/Moscow
+      start: "09:00"
+      end: "18:00"
+      workdays: MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY
+    channels:
+      yandex-messenger:
+        enabled: false
+        mode: business-hours-immediate
+        max-attempts: 5
+        base-url: https://botapi.messenger.yandex.net/bot/v1
+        oauth-token:
+      email:
+        enabled: false
+        mode: daily-digest
+        max-attempts: 3
+        digest-time: "18:30"
+
+logging:
+  level:
+    ru:
+      abondin: DEBUG

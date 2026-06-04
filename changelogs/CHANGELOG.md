@@ -2,6 +2,8 @@
 
 ## 1.4.0 (Work in progress)
 
+- Moved Java backend services under `backend/`, added backend Maven reactor/parent/common modules, upgraded services to Spring Boot 4.0.5, and updated GitHub Actions/devops scripts.
+- Implemented notification inbox UI and Yandex Messenger notification delivery.
 - Disabled self-service current project updates for regular employees
 - Full migration from vue2 to vue3 
 

@@ -22,7 +22,7 @@ if  [ -z "$DOCKER_REPOSITORY" ]
 fi
 
 DEVOPS_ROOT_FOLDER=$(cd `dirname $0` && pwd)
-PLATFORM_HOME=${DEVOPS_ROOT_FOLDER}/../platform
+PLATFORM_HOME=${DEVOPS_ROOT_FOLDER}/../backend/platform
 WEB_HOME=${DEVOPS_ROOT_FOLDER}/../web
 
 out "HR Easy full build"

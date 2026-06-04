@@ -6,20 +6,21 @@ All code comments, docs and tests only in English
 
 ## Repository Layout
 
-- `platform/` - main HR Easy backend, Java/Spring, Maven project.
+- `backend/` - Maven reactor for backend services and shared backend libraries.
+- `backend/platform/` - main HR Easy backend, Java/Spring, Maven project.
 - `web/` - Vue/Vuetify frontend.
-- `telegram/` - legacy Telegram bot service. Deprecated/outdated; do not use it as a baseline for new notification work.
-- `notify-ms/` - notification delivery microservice.
+- `backend/telegram/` - legacy Telegram bot service. Deprecated/outdated; do not use it as a baseline for new notification work.
+- `backend/notify-ms/` - notification delivery microservice.
 - `.docs/` - architecture notes and diagrams.
 - `.hreasy-localdev/` - local docker-compose and local environment helpers.
 - `devops/` - build/deploy helper scripts.
 
-There is no root Maven aggregator. Run Maven commands from the service directory.
+Use `backend/pom.xml` for backend-wide builds. Run Maven commands from a service directory only for targeted
+troubleshooting.
 
 ## Backend Conventions
 
-- Platform stack is Java 25, Spring Boot 3.5.x, WebFlux/R2DBC/PostgreSQL/Flyway.
-- New services may use Java 25 and Spring Boot 4.x when explicitly chosen.
+- Backend stack is Java 25, Spring Boot 4.x, WebFlux/R2DBC/PostgreSQL/Flyway.
 - Prefer existing package style under `ru.abondin.hreasy`.
 - Use R2DBC repositories for runtime DB access.
 - Use Flyway migrations under `src/main/resources/db/migration`.
@@ -37,13 +38,15 @@ There is no root Maven aggregator. Run Maven commands from the service directory
 ## Build And Test
 
 - Platform:
-  - `cd platform`
+  - `cd backend/platform`
   - `mvn -q -DskipTests package`
   - targeted tests: `mvn -q -Dtest=SomeTest test`
 - Notification service:
-  - `cd notify-ms`
+  - `cd backend/notify-ms`
   - `mvn -q test`
   - `mvn -q -DskipTests package`
+- Backend reactor:
+  - `mvn -q -f backend/pom.xml test`
 - Web:
   - `cd web`
   - use existing `package.json` scripts.

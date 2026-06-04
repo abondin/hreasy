@@ -26,11 +26,8 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Build Platform
-        run: mvn -B package --file platform/pom.xml
-
-      - name: Build Telegram Bot
-        run: mvn -B package --file telegram/pom.xml
+      - name: Build Backend
+        run: mvn -B package --file backend/pom.xml
 
       - name: Publish Test Report
         if: ${{ always() }}
@@ -48,7 +45,19 @@ jobs:
           -Dimage='docker.io/abondin/hreasyplatform'
           -Djib.to.auth.username=${GITHUB_NAME}
           -Djib.to.auth.password=${GITHUB_TOKEN}
-          --file platform/pom.xml
+          --file backend/platform/pom.xml
+
+      - name: Build and push docker notify-ms
+        if: ${{ github.event_name == 'push' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+          GITHUB_NAME: ${{ secrets.GITHUBNAME }}
+        run: >
+          mvn -B jib:build
+          -Dimage='docker.io/abondin/hreasynotifyms'
+          -Djib.to.auth.username=${GITHUB_NAME}
+          -Djib.to.auth.password=${GITHUB_TOKEN}
+          --file backend/notify-ms/pom.xml
 
       - name: Build and push docker telegram bot
         if: ${{ github.event_name == 'push' }}
@@ -60,7 +69,7 @@ jobs:
           -Dimage='docker.io/abondin/hreasytelegram'
           -Djib.to.auth.username=${GITHUB_NAME}
           -Djib.to.auth.password=${GITHUB_TOKEN}
-          --file telegram/pom.xml
+          --file backend/telegram/pom.xml
 
   check-web:
     runs-on: ubuntu-latest
@@ -218,9 +227,7 @@ jobs:
 
       - name: Build Java sources for CodeQL
         if: matrix.language == 'java'
-        run: |
-          mvn -B -DskipTests package --file platform/pom.xml
-          mvn -B -DskipTests package --file telegram/pom.xml
+        run: mvn -B -DskipTests package --file backend/pom.xml
 
       - name: Set up Node.js
         if: matrix.language == 'javascript-typescript'
