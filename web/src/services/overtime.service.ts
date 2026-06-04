@@ -154,9 +154,11 @@ export async function addOvertimeItem(
   reportPeriod: number,
   item: OvertimeItem,
 ): Promise<OvertimeReport> {
-  const payload: OvertimeItem = {
-    ...item,
-    createdAt: item.createdAt ?? new Date().toISOString(),
+  const payload = {
+    date: item.date,
+    projectId: item.projectId,
+    hours: item.hours,
+    notes: item.notes,
   };
   const response = await http.post<OvertimeReport>(
     `v1/overtimes/${employeeId}/report/${reportPeriod}/item`,

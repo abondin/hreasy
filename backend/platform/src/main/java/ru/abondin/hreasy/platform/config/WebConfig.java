@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.config;
 
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -39,6 +40,7 @@ public class WebConfig {
     ObjectMapper objectMapper(JavaTimeModule javaTimeModule) {
         return new ObjectMapper()
                 .registerModule(javaTimeModule)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
