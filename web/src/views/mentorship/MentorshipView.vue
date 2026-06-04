@@ -235,6 +235,7 @@
             :employees="employees"
             :business-accounts="allBusinessAccounts"
             :project-roles="projectRoles"
+            @update:form="applyAddForm"
           />
         </v-card-text>
         <v-card-actions>
@@ -262,6 +263,7 @@ import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 import { formatDateTime } from "@/lib/datetime";
 import { useJuniorRegistry } from "@/composables/useJuniorRegistry";
 import { normalizeSearchInput } from "@/lib/search";
+import type { AddJuniorRegistryBody, UpdateJuniorRegistryBody } from "@/services/junior-registry.service";
 
 const { t } = useI18n();
 const filterBarItems = computed(() => [
@@ -308,6 +310,10 @@ const {
   submitAddJunior,
   downloadExport,
 } = useJuniorRegistry(t);
+
+function applyAddForm(value: AddJuniorRegistryBody | UpdateJuniorRegistryBody) {
+  Object.assign(addForm, value);
+}
 </script>
 
 <style scoped>
