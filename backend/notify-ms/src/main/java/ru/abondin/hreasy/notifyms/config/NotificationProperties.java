@@ -20,6 +20,7 @@ import java.util.Set;
 public class NotificationProperties {
     private String httpToken;
     private Worker worker = new Worker();
+    private Retention retention = new Retention();
     private WorkingHours workingHours = new WorkingHours();
     private Channels channels = new Channels();
 
@@ -30,6 +31,14 @@ public class NotificationProperties {
         private Duration fixedDelay = Duration.ofSeconds(10);
         @Min(1)
         private int batchSize = 20;
+    }
+
+    @Data
+    public static class Retention {
+        private boolean enabled = true;
+        @DurationUnit(ChronoUnit.DAYS)
+        private Duration maxAge = Duration.ofDays(365);
+        private String cron = "0 45 3 * * *";
     }
 
     @Data

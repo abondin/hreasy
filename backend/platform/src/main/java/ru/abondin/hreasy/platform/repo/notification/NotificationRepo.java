@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.OffsetDateTime;
+
 @Repository
 public interface NotificationRepo extends ReactiveCrudRepository<NotificationEntry, Integer> {
 
@@ -26,4 +28,12 @@ public interface NotificationRepo extends ReactiveCrudRepository<NotificationEnt
                and archived_at is null
             """)
     Mono<Integer> countUnreadByEmployee(int employeeId);
+
+    @Query("""
+            delete
+              from notify.notification
+             where created_at < :cutoff
+         returning id
+            """)
+    Flux<Integer> deleteCreatedBefore(OffsetDateTime cutoff);
 }

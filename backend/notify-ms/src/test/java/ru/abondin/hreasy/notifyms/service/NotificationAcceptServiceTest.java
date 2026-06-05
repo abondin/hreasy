@@ -2,6 +2,7 @@ package ru.abondin.hreasy.notifyms.service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.test.StepVerifier;
 import ru.abondin.hreasy.notifyms.BasePostgresTest;
 import ru.abondin.hreasy.notifyms.api.CreateNotificationRequest;
@@ -14,12 +15,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NotificationAcceptServiceTest extends BasePostgresTest {
 
+    private static final java.time.Duration DEFAULT_TIMEOUT = java.time.Duration.ofSeconds(15);
+
     @Autowired
     private NotificationAcceptService service;
     @Autowired
     private NotificationRepo notificationRepo;
     @Autowired
     private NotificationDeliveryRepo deliveryRepo;
+    @Autowired
+    private NotificationRetentionJob notificationRetentionJob;
+    @Autowired
+    private DatabaseClient db;
 
     /**
      * Test goal: verifies that accepting a notification persists event data and creates a Yandex delivery.
@@ -103,6 +110,36 @@ class NotificationAcceptServiceTest extends BasePostgresTest {
                 .verifyComplete();
     }
 
+    /**
+     * Test goal: verifies notify-ms retention removes expired events and their delivery rows.
+     * <p>Precondition: one old and one fresh accepted notification exist with Yandex deliveries.
+     * <p>Action: run the retention job directly.
+     * <p>Verification: only the old notification and its delivery are deleted.
+     */
+    @Test
+    void retentionJobDeletesOldNotificationsAndDeliveries() {
+        var oldRequest = request("assessment.assigned:456:old");
+        var freshRequest = request("assessment.assigned:456:fresh");
+        service.accept(oldRequest).block(DEFAULT_TIMEOUT);
+        service.accept(freshRequest).block(DEFAULT_TIMEOUT);
+        makeNotificationOld(oldRequest.getDedupeKey());
+
+        notificationRetentionJob.deleteOldNotifications();
+
+        StepVerifier.create(notificationRepo.findByDedupeKey(oldRequest.getDedupeKey()))
+                .verifyComplete();
+        StepVerifier.create(notificationRepo.findByDedupeKey(freshRequest.getDedupeKey()))
+                .assertNext(saved -> assertEquals(freshRequest.getDedupeKey(), saved.getDedupeKey()))
+                .verifyComplete();
+        StepVerifier.create(deliveryRepo.findAll().collectList())
+                .assertNext(deliveries -> {
+                    assertEquals(1, deliveries.size());
+                    assertEquals(freshRequest.getDedupeKey() + ":yandex_messenger",
+                            deliveries.getFirst().getProviderPayloadId());
+                })
+                .verifyComplete();
+    }
+
     private CreateNotificationRequest request(String dedupeKey) {
         var recipient = new CreateNotificationRequest.Recipient();
         recipient.setType(RecipientType.user.name());
@@ -119,5 +156,16 @@ class NotificationAcceptServiceTest extends BasePostgresTest {
         request.setBody("A self assessment form was assigned.");
         request.setData("{\"assessmentId\":456}");
         return request;
+    }
+
+    private void makeNotificationOld(String dedupeKey) {
+        db.sql("""
+                        update notify_ms.notification
+                           set created_at = now() - interval '370 days'
+                         where dedupe_key = :dedupeKey
+                        """)
+                .bind("dedupeKey", dedupeKey)
+                .then()
+                .block(DEFAULT_TIMEOUT);
     }
 }

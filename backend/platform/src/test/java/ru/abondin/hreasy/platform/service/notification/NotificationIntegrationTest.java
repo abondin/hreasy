@@ -7,13 +7,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import reactor.test.StepVerifier;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 import ru.abondin.hreasy.platform.service.BaseServiceTest;
+import ru.abondin.hreasy.platform.service.notification.job.NotificationRetentionJob;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
@@ -34,6 +37,12 @@ public class NotificationIntegrationTest extends BaseServiceTest {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private NotificationRetentionJob notificationRetentionJob;
+
+    @Autowired
+    private DatabaseClient db;
 
     @BeforeEach
     protected void validateTestConfiguration() {
@@ -120,6 +129,33 @@ public class NotificationIntegrationTest extends BaseServiceTest {
                 .verifyComplete();
     }
 
+    /**
+     * Test goal: verifies notification retention removes only expired platform inbox rows.
+     * <p>Precondition: one old and one fresh notification exist for the current employee.
+     * <p>Action: run the notification retention job directly.
+     * <p>Verification: the old notification is deleted and the fresh notification remains visible in the inbox.
+     */
+    @Test
+    @DisplayName("Retention job deletes old inbox notifications")
+    public void retentionJobDeletesOnlyOldNotifications() {
+        var employee = testData.employees.get(Admin_Shaan_Pitts);
+        var oldUuid = UUID.randomUUID().toString();
+        var freshUuid = UUID.randomUUID().toString();
+        insertNotification(employee, oldUuid, OffsetDateTime.now().minusDays(370));
+        insertNotification(employee, freshUuid, OffsetDateTime.now());
+
+        notificationRetentionJob.deleteOldNotifications();
+
+        StepVerifier.create(notificationService.myNotifications(this.auth)
+                        .filter(n -> oldUuid.equals(n.getClientUuid()) || freshUuid.equals(n.getClientUuid()))
+                        .collectList())
+                .assertNext(notifications -> {
+                    assertEquals(1, notifications.size());
+                    assertEquals(freshUuid, notifications.getFirst().getClientUuid());
+                })
+                .verifyComplete();
+    }
+
     private NewNotificationDto newNotification(String uuid) {
         var notification = new NewNotificationDto();
         notification.setCategory("test");
@@ -128,6 +164,19 @@ public class NotificationIntegrationTest extends BaseServiceTest {
         notification.setTitle("Test message");
         notification.setContext(new JSONObject(Map.of("testKey", "testValue")).toString());
         return notification;
+    }
+
+    private void insertNotification(int employeeId, String uuid, OffsetDateTime createdAt) {
+        db.sql("""
+                        insert into notify.notification
+                            (employee, client_uuid, category, title, markdown_text, context, created_at, created_by)
+                        values (:employee, :clientUuid, 'test', 'Test message', '**Test**', '{}'::jsonb, :createdAt, null)
+                        """)
+                .bind("employee", employeeId)
+                .bind("clientUuid", uuid)
+                .bind("createdAt", createdAt)
+                .then()
+                .block(MONO_DEFAULT_TIMEOUT);
     }
 
 }

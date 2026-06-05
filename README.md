@@ -19,6 +19,8 @@
 - Articles (news and shared information).
 - Assessments
 - Notifications
+    - UI inbox notifications
+    - Yandex Messenger delivery through Notify MS
     - Upcoming vacations email
 - Download and upload Technical Profiles
 - Report, Implement and export salaries requests and bonuses
@@ -236,13 +238,23 @@ Employee (or HR/PM/Admin) can upload a technical profile documents.
 
 ## Notifications
 
-Notifications can be sent from admin web UI (not implemented)
+HR Easy Platform is the source of business notification rules. It creates one UI inbox row per recipient in
+`notify.notification` and exposes the current employee inbox through `/api/v1/notifications/my`,
+`/api/v1/notifications/my/unread-count`, `/api/v1/notifications/{id}/acknowledge`, and
+`/api/v1/notifications/{id}/archive`.
 
-or by system event (not implemented).
-HR Easy supports several notification delivery channels:
+After saving the UI inbox row, Platform publishes the same notification to Notify MS on a best-effort basis. Notify MS
+stores accepted events in `notify_ms.notification`, creates one delivery row per enabled external channel, and delivers
+Yandex Messenger messages with business-hours scheduling and retry counters.
 
-- 0 - Web UI - show notification in UI (with ack and archive functionality)
-- 1 - Email - send notification to mail
+Supported notification channels:
+
+- Web UI inbox in Platform.
+- Yandex Messenger through Notify MS.
+- Email for legacy upcoming vacation messages.
+
+Both Platform and Notify MS run a daily retention job for stored notifications. The default retention period is one year
+and can be changed with service configuration.
 
 ### Email messages background jobs:
 

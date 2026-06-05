@@ -27,4 +27,17 @@ public interface NotificationDeliveryRepo extends ReactiveCrudRepository<Notific
              returning *
             """)
     Flux<NotificationDeliveryEntry> claimDue(OffsetDateTime now, int limit);
+
+    @Query("""
+            delete
+              from notify_ms.notification_delivery d
+            where exists (
+                   select 1
+                     from notify_ms.notification n
+                    where n.id = d.notification_id
+                      and n.created_at < :cutoff
+             )
+         returning id
+            """)
+    Flux<Long> deleteForNotificationsCreatedBefore(OffsetDateTime cutoff);
 }

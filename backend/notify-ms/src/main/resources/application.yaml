@@ -22,6 +22,10 @@ hreasy:
       enabled: true
       fixed-delay: 10s
       batch-size: 20
+    retention:
+      enabled: true
+      max-age: 365d
+      cron: "0 45 3 * * *"
     working-hours:
       timezone: Europe/Moscow
       start: "08:00"

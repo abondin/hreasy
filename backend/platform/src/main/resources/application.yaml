@@ -42,6 +42,11 @@ hreasy:
       base-url:
       token:
       timeout: 3s
+  background:
+    notification-retention:
+      enabled: true
+      max-age: 365d
+      cron: "0 30 3 * * *"
 #  background:
 #    upcoming-vacation:
 #      job-enabled: false
