@@ -22,15 +22,30 @@ if  [ -z "$DOCKER_REPOSITORY" ]
 fi
 
 DEVOPS_ROOT_FOLDER=$(cd `dirname $0` && pwd)
-PLATFORM_HOME=${DEVOPS_ROOT_FOLDER}/../backend/platform
+BACKEND_HOME=${DEVOPS_ROOT_FOLDER}/../backend
 WEB_HOME=${DEVOPS_ROOT_FOLDER}/../web
 
 out "HR Easy full build"
 out ">> DOCKER_REPOSITORY= ${DOCKER_REPOSITORY}"
 out ">> CI_DEPLOY_TAG= ${CI_DEPLOY_TAG}"
-out ">> PLATFORM_HOME=  ${PLATFORM_HOME}"
+out ">> BACKEND_HOME=  ${BACKEND_HOME}"
 out ">> WEB_HOME= ${WEB_HOME}"
 
-${PLATFORM_HOME}/devops/build.sh
+function docker_image {
+  echo "${DOCKER_REPOSITORY}/$1:${CI_DEPLOY_TAG}"
+}
 
-${WEB_HOME}/devops/build.sh
+out "Maven backend build"
+mvn -f "${BACKEND_HOME}/pom.xml" install -U
+
+out "Build Docker Image $(docker_image hreasyplatform)"
+mvn -f "${BACKEND_HOME}/platform/pom.xml" jib:dockerBuild -Dimage="$(docker_image hreasyplatform)"
+
+out "Build Docker Image $(docker_image hreasynotifyms)"
+mvn -f "${BACKEND_HOME}/notify-ms/pom.xml" jib:dockerBuild -Dimage="$(docker_image hreasynotifyms)"
+
+out "Build Docker Image $(docker_image hreasytelegram)"
+mvn -f "${BACKEND_HOME}/telegram/pom.xml" jib:dockerBuild -Dimage="$(docker_image hreasytelegram)"
+
+out "Build Docker Image $(docker_image hreasyweb)"
+docker build -t "$(docker_image hreasyweb)" "${WEB_HOME}"

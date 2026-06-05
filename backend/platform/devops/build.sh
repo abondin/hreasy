@@ -11,8 +11,9 @@ function out {
 set -e
 
 DEVOPS_FOLDER=$(cd `dirname $0` && pwd)
+BACKEND_HOME=${DEVOPS_FOLDER}/../..
 
-cd ${DEVOPS_FOLDER}/../
+cd ${BACKEND_HOME}
 
 # TODO Add docker registry parameters
 MVN_PARAMS=''
@@ -34,10 +35,11 @@ out "----------------------------------------------------"
 out "Platform build:"
 out ">> DOCKER_REPOSITORY= ${DOCKER_REPOSITORY}"
 out ">> CI_DEPLOY_TAG= ${CI_DEPLOY_TAG}"
+out ">> BACKEND_HOME= ${BACKEND_HOME}"
 
 out "Maven build"
 
-mvnp install -U
+mvnp -f "${BACKEND_HOME}/pom.xml" -pl platform -am install -U
 
 
 if  [ -z "$DOCKER_REPOSITORY" ]
@@ -50,5 +52,5 @@ DOCKER_JOB_IMAGE_TAG=$DOCKER_IMAGE':'$CI_DEPLOY_TAG
 
 out "Build Docker Image $DOCKER_JOB_IMAGE_TAG"
 
-mvnp jib:dockerBuild -Dimage=$DOCKER_JOB_IMAGE_TAG
+mvnp -f "${BACKEND_HOME}/platform/pom.xml" jib:dockerBuild -Dimage=$DOCKER_JOB_IMAGE_TAG
 echo "------------- ${DOCKER_JOB_IMAGE_TAG} has been created"

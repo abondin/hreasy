@@ -41,8 +41,8 @@ Content-Type: application/json
   "priority": "normal",
   "dedupeKey": "assessment.assigned:456:123",
   "locale": "ru",
-  "title": "Назначена оценка",
-  "body": "Вам назначена форма самооценки. Срок заполнения: 2026-06-05.",
+  "title": "Assessment assigned",
+  "body": "A self assessment form was assigned. Due date: 2026-06-05.",
   "data": "{\"assessmentId\":456,\"dueDate\":\"2026-06-05\"}"
 }
 ```
@@ -116,5 +116,5 @@ spring:
 ## Build
 
 ```shell
-mvn -q -DskipTests package
+mvn -q -f ../pom.xml -pl notify-ms -am -DskipTests package
 ```

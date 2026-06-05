@@ -324,5 +324,5 @@ docker-compose up -d
 sudo docker pull docker.io/abondin/hreasyplatform:latest
 sudo docker pull docker.io/abondin/hreasynotifyms:latest
 sudo docker pull docker.io/abondin/hreasyweb:latest
-sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hreasyplatform hreasyweb
+sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hreasyplatform hreasynotifyms hreasyweb
 ```
