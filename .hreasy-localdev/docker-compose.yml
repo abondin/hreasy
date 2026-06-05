@@ -26,6 +26,9 @@ services:
       HREASY_DB_PASSWORD: HREasyPassword2019!
       HREASY_DB_DATABASE: hr
       HREASY_WEB_SEC_MASTER-PASSWORD: qwe123
+      HREASY_NOTIFICATIONS_DELIVERY-SERVICE_ENABLED: 'true'
+      HREASY_NOTIFICATIONS_DELIVERY-SERVICE_BASE-URL: http://hreasynotifyms:8083
+      HREASY_NOTIFICATIONS_DELIVERY-SERVICE_TOKEN: local-dev-notify-token
       HREASY_BACKGROUND_UPCOMING-VACATION_JOB-ENABLED: 'false'
       HREASY_COMMON_DEFAULT-EMAIL-FROM: hreasy@company.org
       HREASY_COMMON_WEB-BASE-URL: http://localhost:8080
@@ -33,9 +36,31 @@ services:
       JAVA_TOOL_OPTIONS: -Duser.country=RU -Duser.language=ru -Duser.timezone=Europe/Moscow
     depends_on:
       - hreasypg
+      - hreasynotifyms
     ports:
       - 80
     container_name: hreasyplatform
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+  hreasynotifyms:
+    image: docker.io/abondin/hreasynotifyms:latest
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8083
+      HREASY_DB_HOST: hreasypg
+      HREASY_DB_PORT: 5432
+      HREASY_DB_USERNAME: hr
+      HREASY_DB_PASSWORD: HREasyPassword2019!
+      HREASY_DB_DATABASE: hr
+      HREASY_NOTIFICATIONS_HTTP-TOKEN: local-dev-notify-token
+      HREASY_NOTIFICATIONS_CHANNELS_YANDEX-MESSENGER_ENABLED: 'false'
+      JAVA_TOOL_OPTIONS: -Duser.country=RU -Duser.language=ru -Duser.timezone=Europe/Moscow
+    depends_on:
+      - hreasypg
+    container_name: hreasynotifyms
     logging:
       driver: "json-file"
       options:

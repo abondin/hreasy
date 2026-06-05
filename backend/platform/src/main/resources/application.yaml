@@ -1,0 +1,117 @@
+server:
+  port: 8081
+
+## Configuring info endpoint
+info:
+  app:
+    name: 'HR Easy'
+    description: 'HR platform for small IT companies'
+    version: '1.4.0-SNAPSHOT'
+    site: https://github.com/abondin/hreasy
+  author:
+    name: Alexander Bondin
+    email: abondin@gmail.com
+    site: https://github.com/abondin
+
+hreasy:
+  # Hack to support both Flyway JDBC and Spring R2DBC urls to the database
+  db:
+    host:
+    port: 1433
+    database: master
+    username:
+    password:
+    # migrate, clean, repair, undo
+    flyway-commands: migrate
+  ldap:
+    server-url:
+    user-dn:
+    user-password: "Specify Password"
+    search-base:
+  web:
+    sec:
+      internal-password-enabled: false
+  common:
+    default-email-suffix: "@stm-labs.ru"
+    default-email-from: "hreasy@stm-labs.ru"
+    default-calendar-type: "default"
+    default-calendar-region: "RU"
+  notifications:
+    delivery-service:
+      enabled: false
+      base-url:
+      token:
+      timeout: 3s
+  background:
+    notification-retention:
+      enabled: true
+      max-age: 365d
+      cron: "0 30 3 * * *"
+#  background:
+#    upcoming-vacation:
+#      job-enabled: false
+#      additional-email-addresses: abondin@gmail.com
+
+
+spring:
+  # Do not modify URL part. Override hreasy.db.* properties
+  r2dbc:
+    url: r2dbc:postgresql://${hreasy.db.host}:${hreasy.db.port}/${hreasy.db.database}
+    username: ${hreasy.db.username}
+    password: ${hreasy.db.password}
+  # Do not modify URL part. Override hreasy.db.* properties
+  flyway:
+    url: jdbc:postgresql://${hreasy.db.host}:${hreasy.db.port}/${hreasy.db.database}
+    user: ${hreasy.db.username}
+    password: ${hreasy.db.password}
+    enabled: false
+    baseline-version: 0
+    baseline-on-migrate: true
+    schemas: public,empl,dict,proj,ba,article
+  data:
+    ldap:
+      repositories:
+        enabled: false
+
+management:
+  security:
+    enabled: "false"
+  add-application-context-header: "false"
+  endpoint:
+    prometheus:
+      enabled: "true"
+    metrics:
+      enabled: "true"
+    loggers:
+      enabled: "true"
+  metrics:
+    export:
+      prometheus:
+        enabled: "true"
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info,prometheus,loggers
+    jmx:
+      enabled: "false"
+  health:
+    ldap:
+      enabled: "false"
+
+endpoints:
+  jmx:
+    enabled: "false"
+  trace:
+    enabled: "false"
+  metrics:
+    enabled: "true"
+  prometheus:
+    enabled: "true"
+
+logging:
+  level:
+    ru:
+      abondin: INFO
+
+user:
+  timezone: Europe/Moscow

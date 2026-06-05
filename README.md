@@ -19,6 +19,8 @@
 - Articles (news and shared information).
 - Assessments
 - Notifications
+    - UI inbox notifications
+    - Yandex Messenger delivery through Notify MS
     - Upcoming vacations email
 - Download and upload Technical Profiles
 - Report, Implement and export salaries requests and bonuses
@@ -31,18 +33,18 @@
 
 ## Telegram Bot
 
-**Deprecated / outdated.** [Telegram Bot](./telegram/Readme.md) is a legacy additional user interaction interface with
+**Deprecated / outdated.** [Telegram Bot](./backend/telegram/Readme.md) is a legacy additional user interaction interface with
 HR Easy Platform. It is not the target architecture for new notification delivery features and is expected to be
 redesigned separately.
 
 ## Notification Delivery Service
 
-[Notify MS](./notify-ms/README.md) is a separate notification delivery service. It accepts normalized notification
+[Notify MS](./backend/notify-ms/README.md) is a separate notification delivery service. It accepts normalized notification
 requests from HR Easy Platform and delivers them through external channels such as Yandex Messenger.
 
 ## Permissions and roles
 
-![Security Database](./platform/.architecture/hr_sec.png "Security Database Scheme")
+![Security Database](./backend/platform/.architecture/hr_sec.png "Security Database Scheme")
 
 Security model based on main entity - Employee:
 
@@ -188,7 +190,7 @@ The goal of this functionality
 
 - help PMs and HR to keep in sync employees attitude to work
 
-![Security Database](./platform/.architecture/assessment_use_cases.png "Assessment use case")
+![Security Database](./backend/platform/.architecture/assessment_use_cases.png "Assessment use case")
 
 **Assessments form template (WIP)**
 
@@ -236,13 +238,23 @@ Employee (or HR/PM/Admin) can upload a technical profile documents.
 
 ## Notifications
 
-Notifications can be sent from admin web UI (not implemented)
+HR Easy Platform is the source of business notification rules. It creates one UI inbox row per recipient in
+`notify.notification` and exposes the current employee inbox through `/api/v1/notifications/my`,
+`/api/v1/notifications/my/unread-count`, `/api/v1/notifications/{id}/acknowledge`, and
+`/api/v1/notifications/{id}/archive`.
 
-or by system event (not implemented).
-HR Easy supports several notification delivery channels:
+After saving the UI inbox row, Platform publishes the same notification to Notify MS on a best-effort basis. Notify MS
+stores accepted events in `notify_ms.notification`, creates one delivery row per enabled external channel, and delivers
+Yandex Messenger messages with business-hours scheduling and retry counters.
 
-- 0 - Web UI - show notification in UI (with ack and archive functionality)
-- 1 - Email - send notification to mail
+Supported notification channels:
+
+- Web UI inbox in Platform.
+- Yandex Messenger through Notify MS.
+- Email for legacy upcoming vacation messages.
+
+Both Platform and Notify MS run a daily retention job for stored notifications. The default retention period is one year
+and can be changed with service configuration.
 
 ### Email messages background jobs:
 
@@ -271,13 +283,15 @@ User can commit or abort import operation.
 Employees in the system and in the excel files match by email.
 
 **Implementation:**
-![Employees Import Process](./platform/src/main/java/ru/abondin/hreasy/platform/service/admin/employee/imp/import-employee-flow.png "Employees import process")
+![Employees Import Process](./backend/platform/src/main/java/ru/abondin/hreasy/platform/service/admin/employee/imp/import-employee-flow.png "Employees import process")
 
 # Development
 
 ## Projects
 
-- portal - monolite backend
+- backend/platform - main HR Easy backend
+- backend/notify-ms - notification delivery service
+- backend/telegram - deprecated legacy Telegram bot
 - web - Vue JS Single Page Application
 
 ## Technologies Stack
@@ -308,6 +322,7 @@ docker-compose up -d
 
 ```shell script
 sudo docker pull docker.io/abondin/hreasyplatform:latest
+sudo docker pull docker.io/abondin/hreasynotifyms:latest
 sudo docker pull docker.io/abondin/hreasyweb:latest
-sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hreasyplatform hreasyweb
+sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hreasyplatform hreasynotifyms hreasyweb
 ```

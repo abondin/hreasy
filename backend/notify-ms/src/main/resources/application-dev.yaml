@@ -1,0 +1,20 @@
+hreasy:
+  db:
+    host: localhost
+    port: 5432
+    database: hr
+    username: hr
+    password: HREasyPassword2019!
+  notifications:
+    http-token: localdev
+    channels:
+      yandex-messenger:
+        enabled: true
+        mode: business-hours-immediate
+        base-url: https://botapi.messenger.yandex.net/bot/v1
+        oauth-token:
+
+logging:
+  level:
+    ru:
+      abondin: DEBUG
