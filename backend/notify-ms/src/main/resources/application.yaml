@@ -24,8 +24,8 @@ hreasy:
       batch-size: 20
     working-hours:
       timezone: Europe/Moscow
-      start: "09:00"
-      end: "18:00"
+      start: "08:00"
+      end: "19:00"
       workdays: MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY
     channels:
       yandex-messenger:

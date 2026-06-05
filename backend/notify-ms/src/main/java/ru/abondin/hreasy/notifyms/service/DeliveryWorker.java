@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.notifyms.config.NotificationProperties;
 import ru.abondin.hreasy.notifyms.provider.ProviderSendResult;
@@ -30,6 +31,15 @@ public class DeliveryWorker {
         var now = OffsetDateTime.now();
         try {
             deliveryRepo.claimDue(now, props.getWorker().getBatchSize())
+                    .collectList()
+                    .flatMapMany(deliveries -> {
+                        if (!deliveries.isEmpty()) {
+                            log.info("Claimed notification deliveries count={}, batchSize={}",
+                                    deliveries.size(),
+                                    props.getWorker().getBatchSize());
+                        }
+                        return Flux.fromIterable(deliveries);
+                    })
                     .flatMap(this::processDelivery)
                     .then()
                     .block();
@@ -40,15 +50,36 @@ public class DeliveryWorker {
 
     private Mono<NotificationDeliveryEntry> processDelivery(NotificationDeliveryEntry delivery) {
         return notificationRepo.findById(delivery.getNotificationId())
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.warn("Notification not found for delivery id={}, notificationId={}",
+                            delivery.getId(),
+                            delivery.getNotificationId());
+                    delivery.setStatus(DeliveryStatus.failed_permanent.name());
+                    delivery.setLastErrorCode("notification_not_found");
+                    delivery.setLastErrorMessage("Notification row not found");
+                    delivery.setUpdatedAt(OffsetDateTime.now());
+                    return deliveryRepo.save(delivery).then(Mono.empty());
+                }))
                 .flatMap(notification -> send(delivery, notification));
     }
 
     private Mono<NotificationDeliveryEntry> send(NotificationDeliveryEntry delivery,
                                                  ru.abondin.hreasy.notifyms.repo.NotificationEntry notification) {
+        log.info("Send notification delivery id={}, notificationId={}, eventType={}, channel={}, attempt={}/{}",
+                delivery.getId(),
+                notification.getId(),
+                notification.getEventType(),
+                delivery.getChannel(),
+                delivery.getAttemptCount() + 1,
+                delivery.getMaxAttempts());
         if (NotificationChannel.yandex_messenger.name().equals(delivery.getChannel())) {
             return yandexProvider.send(notification, delivery)
                     .flatMap(result -> applyResult(delivery, result));
         }
+        log.warn("Unsupported notification delivery channel id={}, notificationId={}, channel={}",
+                delivery.getId(),
+                delivery.getNotificationId(),
+                delivery.getChannel());
         return applyResult(delivery, ProviderSendResult.permanent(null, "unsupported_channel", "Unsupported channel: " + delivery.getChannel()));
     }
 
@@ -66,7 +97,12 @@ public class DeliveryWorker {
             delivery.setLastErrorCode(null);
             delivery.setLastErrorMessage(null);
             delivery.setNextAttemptAt(null);
-            return deliveryRepo.save(delivery);
+            return deliveryRepo.save(delivery)
+                    .doOnNext(saved -> log.info("Notification delivery sent id={}, notificationId={}, channel={}, externalMessageId={}",
+                            saved.getId(),
+                            saved.getNotificationId(),
+                            saved.getChannel(),
+                            saved.getExternalMessageId()));
         }
 
         delivery.setErrorCount(delivery.getErrorCount() + 1);
@@ -76,20 +112,39 @@ public class DeliveryWorker {
         if (!result.retryable()) {
             delivery.setStatus(DeliveryStatus.failed_permanent.name());
             delivery.setNextAttemptAt(null);
-            return deliveryRepo.save(delivery);
+            return deliveryRepo.save(delivery)
+                    .doOnNext(saved -> log.warn("Notification delivery failed permanently id={}, notificationId={}, channel={}, statusCode={}, errorCode={}",
+                            saved.getId(),
+                            saved.getNotificationId(),
+                            saved.getChannel(),
+                            saved.getProviderStatusCode(),
+                            saved.getLastErrorCode()));
         }
 
         if (delivery.getErrorCount() >= delivery.getMaxAttempts()) {
             delivery.setStatus(DeliveryStatus.retry_exhausted.name());
             delivery.setNextAttemptAt(null);
-            return deliveryRepo.save(delivery);
+            return deliveryRepo.save(delivery)
+                    .doOnNext(saved -> log.warn("Notification delivery retry exhausted id={}, notificationId={}, channel={}, errorCount={}, errorCode={}",
+                            saved.getId(),
+                            saved.getNotificationId(),
+                            saved.getChannel(),
+                            saved.getErrorCount(),
+                            saved.getLastErrorCode()));
         }
 
         var nextAttempt = now.plus(retryDelay(delivery.getErrorCount()));
         delivery.setStatus(DeliveryStatus.retry_scheduled.name());
         delivery.setDueAt(nextAttempt);
         delivery.setNextAttemptAt(nextAttempt);
-        return deliveryRepo.save(delivery);
+        return deliveryRepo.save(delivery)
+                .doOnNext(saved -> log.warn("Notification delivery retry scheduled id={}, notificationId={}, channel={}, errorCount={}, nextAttemptAt={}, errorCode={}",
+                        saved.getId(),
+                        saved.getNotificationId(),
+                        saved.getChannel(),
+                        saved.getErrorCount(),
+                        saved.getNextAttemptAt(),
+                        saved.getLastErrorCode()));
     }
 
     private java.time.Duration retryDelay(int errorCount) {

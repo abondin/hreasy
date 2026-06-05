@@ -2,6 +2,7 @@ package ru.abondin.hreasy.notifyms.service;
 
 import io.r2dbc.postgresql.codec.Json;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -19,6 +20,7 @@ import java.time.OffsetDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationAcceptService {
     private final NotificationRepo notificationRepo;
     private final NotificationDeliveryRepo deliveryRepo;
@@ -28,10 +30,16 @@ public class NotificationAcceptService {
     @Transactional
     public Mono<Long> accept(CreateNotificationRequest request) {
         return notificationRepo.findByDedupeKey(request.getDedupeKey())
+                .doOnNext(existing -> log.info("Notification deduplicated id={}, dedupeKey={}",
+                        existing.getId(),
+                        request.getDedupeKey()))
                 .map(NotificationEntry::getId)
                 .switchIfEmpty(Mono.defer(() -> createNew(request)))
                 .onErrorResume(DuplicateKeyException.class,
-                        e -> notificationRepo.findByDedupeKey(request.getDedupeKey()).map(NotificationEntry::getId));
+                        e -> {
+                            log.info("Notification deduplicated after duplicate key dedupeKey={}", request.getDedupeKey());
+                            return notificationRepo.findByDedupeKey(request.getDedupeKey()).map(NotificationEntry::getId);
+                        });
     }
 
     private Mono<Long> createNew(CreateNotificationRequest request) {
@@ -52,6 +60,13 @@ public class NotificationAcceptService {
         entry.setUpdatedAt(now);
 
         return notificationRepo.save(entry)
+                .doOnNext(saved -> log.info("Notification saved id={}, eventType={}, dedupeKey={}, recipientType={}, recipientLogin={}, employeeId={}",
+                        saved.getId(),
+                        saved.getEventType(),
+                        saved.getDedupeKey(),
+                        saved.getRecipientType(),
+                        saved.getRecipientLogin(),
+                        saved.getEmployeeId()))
                 .flatMap(saved -> createDeliveries(saved, now)
                         .then(Mono.just(saved.getId())));
     }
@@ -66,6 +81,9 @@ public class NotificationAcceptService {
     private Mono<NotificationDeliveryEntry> createYandexDelivery(NotificationEntry notification, OffsetDateTime now) {
         var channel = props.getChannels().getYandexMessenger();
         if (!channel.isEnabled()) {
+            log.info("Skip disabled delivery channel notificationId={}, channel={}",
+                    notification.getId(),
+                    NotificationChannel.yandex_messenger.name());
             return Mono.empty();
         }
         var dueAt = businessHoursService.dueAt(channel.getMode(), now);
@@ -75,12 +93,20 @@ public class NotificationAcceptService {
         delivery.setDueAt(dueAt);
         delivery.setMaxAttempts(channel.getMaxAttempts());
         delivery.setProviderPayloadId(notification.getDedupeKey() + ":yandex_messenger");
-        return deliveryRepo.save(delivery);
+        return deliveryRepo.save(delivery)
+                .doOnNext(saved -> log.info("Notification delivery created id={}, notificationId={}, channel={}, status={}, dueAt={}, maxAttempts={}",
+                        saved.getId(),
+                        saved.getNotificationId(),
+                        saved.getChannel(),
+                        saved.getStatus(),
+                        saved.getDueAt(),
+                        saved.getMaxAttempts()));
     }
 
     private Mono<NotificationDeliveryEntry> createEmailDelivery(NotificationEntry notification, OffsetDateTime now) {
         var channel = props.getChannels().getEmail();
         if (!channel.isEnabled()) {
+            log.info("Skip disabled delivery channel notificationId={}, channel=email", notification.getId());
             return Mono.empty();
         }
         return Mono.error(new IllegalStateException("Email digest channel is not implemented yet"));
