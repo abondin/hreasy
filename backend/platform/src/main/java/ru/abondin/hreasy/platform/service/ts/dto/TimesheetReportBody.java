@@ -1,7 +1,9 @@
 package ru.abondin.hreasy.platform.service.ts.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import org.springframework.lang.NonNull;
@@ -15,6 +17,8 @@ import java.util.List;
 @Data
 @ToString
 @Builder()
+@NoArgsConstructor
+@AllArgsConstructor
 public class TimesheetReportBody {
     public record TimesheetReportOneDay(@NonNull
                                         LocalDate date, short hoursSpent) {

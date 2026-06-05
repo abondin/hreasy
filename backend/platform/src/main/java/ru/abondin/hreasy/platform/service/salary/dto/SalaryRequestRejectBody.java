@@ -1,7 +1,9 @@
 package ru.abondin.hreasy.platform.service.salary.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -10,6 +12,8 @@ import org.springframework.lang.Nullable;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SalaryRequestRejectBody {
     @NonNull
     private String reason;

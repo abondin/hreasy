@@ -2,6 +2,8 @@ package ru.abondin.hreasy.platform.service.salary.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,6 +13,8 @@ import java.time.LocalDate;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SalaryRequestUpdateBody {
 
     private LocalDate budgetExpectedFundingUntil;

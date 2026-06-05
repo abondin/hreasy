@@ -1,7 +1,9 @@
 package ru.abondin.hreasy.platform.service.salary.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.NonNull;
 
 import java.math.BigDecimal;
@@ -11,6 +13,8 @@ import java.math.BigDecimal;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SalaryRequestImplementBody {
     @NonNull
     private BigDecimal increaseAmount;
