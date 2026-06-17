@@ -32,7 +32,7 @@ async function exerciseTableLayout(
   await table.locator("thead th").first().click();
   const widthsAfterInteractions = await readHeaderCellWidths(table);
 
-  expect(widthsAfterInteractions.length).toBe(widthsBeforeInteractions.length);
+  expect(widthsAfterInteractions).toHaveLength(widthsBeforeInteractions.length);
   widthsAfterInteractions.forEach((width, index) => {
     expect(width, `Expected header width at index ${index} to remain positive`).toBeGreaterThan(32);
   });
