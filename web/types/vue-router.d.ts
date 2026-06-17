@@ -1,1 +1,1 @@
-export * from 'vue-router/dist/vue-router.d.mts';
+export * from 'vue-router/dist/vue-router.d.ts';
