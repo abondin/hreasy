@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.test.service.requestbody;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
@@ -7,6 +8,7 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestRejectBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestUpdateBody;
+import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkDto;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetReportBody;
 
 import java.math.BigDecimal;
@@ -90,5 +92,40 @@ class RequestBodyDeserializationTest {
         assertEquals(1, body.getHours().size());
         assertEquals(LocalDate.of(2026, 6, 4), body.getHours().getFirst().date());
         assertEquals(8, body.getHours().getFirst().hoursSpent());
+    }
+
+    /**
+     * Test goal: verifies that salary request links can be decoded from JSON stored in the database.
+     * <p>Precondition: JSON contains the link array returned by the salary request SQL query.
+     * <p>Action: deserialize JSON into {@link SalaryRequestLinkDto} list with the platform Java time module.
+     * <p>Verification: link metadata and nested linked request fields are populated from JSON.
+     */
+    @Test
+    void deserializesSalaryRequestLinksFromJson() throws Exception {
+        var links = mapper.readValue("""
+                [
+                  {
+                    "id": 10,
+                    "initiator": true,
+                    "linkedRequest": {
+                      "id": 11,
+                      "period": 202606,
+                      "implState": 1,
+                      "createdAt": "2026-06-17T09:30:00+03:00",
+                      "createdBy": {"id": 1190, "name": "Test Employee"}
+                    },
+                    "type": 1,
+                    "comment": "Related request",
+                    "createdAt": "2026-06-17T10:00:00+03:00",
+                    "createdBy": {"id": 1191, "name": "Test Manager"}
+                  }
+                ]
+                """, new TypeReference<java.util.List<SalaryRequestLinkDto>>() {
+        });
+
+        assertEquals(1, links.size());
+        assertEquals(10, links.getFirst().getId());
+        assertEquals(11, links.getFirst().getLinkedRequest().getId());
+        assertEquals(1191, links.getFirst().getCreatedBy().getId());
     }
 }
