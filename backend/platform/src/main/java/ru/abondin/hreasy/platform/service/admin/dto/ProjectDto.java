@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.admin.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.lang.Nullable;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
@@ -49,6 +50,7 @@ public class ProjectDto {
     private String info;
 
     @Data
+    @NoArgsConstructor
     @ToString
     public static class CreateOrUpdateProjectDto {
         @NonNull

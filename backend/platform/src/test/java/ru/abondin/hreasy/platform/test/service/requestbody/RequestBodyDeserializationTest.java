@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
+import ru.abondin.hreasy.platform.service.admin.ba.dto.CreateOrUpdateBAPositionBody;
+import ru.abondin.hreasy.platform.service.admin.dto.ProjectDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestRejectBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
@@ -127,5 +129,53 @@ class RequestBodyDeserializationTest {
         assertEquals(10, links.getFirst().getId());
         assertEquals(11, links.getFirst().getLinkedRequest().getId());
         assertEquals(1191, links.getFirst().getCreatedBy().getId());
+    }
+
+    /**
+     * Test goal: verifies that project create/update request bodies can be decoded from JSON.
+     * <p>Precondition: JSON contains the payload sent by the frontend for creating or updating a project.
+     * <p>Action: deserialize JSON into {@link ProjectDto.CreateOrUpdateProjectDto} with the platform Java time module.
+     * <p>Verification: required and optional project fields are populated from the request body.
+     */
+    @Test
+    void deserializesProjectCreateOrUpdateRequestBody() throws Exception {
+        var body = mapper.readValue("""
+                {
+                  "name": "Project Phoenix",
+                  "customer": "Internal",
+                  "startDate": "2026-06-17",
+                  "departmentId": 10,
+                  "baId": 604,
+                  "info": "Delivery project"
+                }
+                """, ProjectDto.CreateOrUpdateProjectDto.class);
+
+        assertEquals("Project Phoenix", body.getName());
+        assertEquals(LocalDate.of(2026, 6, 17), body.getStartDate());
+        assertEquals(10, body.getDepartmentId());
+        assertEquals(604, body.getBaId());
+    }
+
+    /**
+     * Test goal: verifies that BA position create/update request bodies can be decoded from JSON.
+     * <p>Precondition: JSON contains the payload sent by the frontend for creating or updating a BA position.
+     * <p>Action: deserialize JSON into {@link CreateOrUpdateBAPositionBody}.
+     * <p>Verification: required and optional BA position fields are populated from the request body.
+     */
+    @Test
+    void deserializesBusinessAccountPositionRequestBody() throws Exception {
+        var body = mapper.readValue("""
+                {
+                  "name": "Senior Developer",
+                  "description": "Project delivery",
+                  "rate": 1200.50,
+                  "archived": false
+                }
+                """, CreateOrUpdateBAPositionBody.class);
+
+        assertEquals("Senior Developer", body.getName());
+        assertEquals("Project delivery", body.getDescription());
+        assertEquals(new BigDecimal("1200.50"), body.getRate());
+        assertEquals(false, body.isArchived());
     }
 }
