@@ -11,6 +11,7 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.EmployeeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferApproverDto;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectRole;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.EmployeeProjectChangesDto;
@@ -72,6 +73,14 @@ public class EmployeeController {
     public Mono<Integer> updateCurrentProject(@PathVariable int employeeId,
                                               @RequestBody(required = false) UpdateCurrentProjectBody newCurrentProject) {
         return AuthHandler.currentAuth().flatMap(auth -> adminEmployeeService.updateCurrentProject(employeeId, newCurrentProject, auth));
+    }
+
+    @Operation(summary = "Find employees who can approve current project transfer")
+    @GetMapping("/{employeeId}/currentProject/transferApprovers")
+    public Flux<CurrentProjectTransferApproverDto> currentProjectTransferApprovers(@PathVariable int employeeId,
+                                                                                   @RequestParam int newProjectId) {
+        return AuthHandler.currentAuth().flatMapMany(
+                auth -> adminEmployeeService.findCurrentProjectTransferApprovers(auth, employeeId, newProjectId));
     }
 
     /**

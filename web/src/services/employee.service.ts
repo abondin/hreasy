@@ -47,6 +47,13 @@ export interface EmployeeProjectChange {
   changedAt: string;
 }
 
+export interface CurrentProjectTransferApprover {
+  employeeId: number;
+  displayName: string;
+  email: string;
+  managerType: "project" | "business_account" | "department";
+}
+
 export async function findEmployee(id: number): Promise<Employee> {
   const response = await http.get<Employee>(`v1/employee/${id}`);
   return response.data;
@@ -94,6 +101,17 @@ export async function updateEmployeeCurrentProject(
   const response = await http.put<number>(
     `v1/employee/${employeeId}/currentProject`,
     payload,
+  );
+  return response.data;
+}
+
+export async function fetchCurrentProjectTransferApprovers(
+  employeeId: number,
+  newProjectId: number,
+): Promise<CurrentProjectTransferApprover[]> {
+  const response = await http.get<CurrentProjectTransferApprover[]>(
+    `v1/employee/${employeeId}/currentProject/transferApprovers`,
+    { params: { newProjectId } },
   );
   return response.data;
 }

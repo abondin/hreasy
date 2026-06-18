@@ -31,6 +31,31 @@
           {{ t("Для перевода сотрудника на выбранный проект требуется согласование. Процесс согласования будет доступен позже.") }}
         </v-alert>
 
+        <v-list
+          v-if="transferApprovalRequired"
+          density="compact"
+          class="mb-4"
+          data-testid="project-assignment-transfer-approvers"
+        >
+          <v-list-subheader>
+            {{ t("Согласующие") }}
+          </v-list-subheader>
+          <v-list-item v-if="transferApproversLoading">
+            <v-list-item-title>{{ t("Загрузка...") }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item v-else-if="transferApprovers.length === 0">
+            <v-list-item-title>{{ t("Согласующие не найдены") }}</v-list-item-title>
+          </v-list-item>
+          <template v-else>
+            <v-list-item
+              v-for="approver in transferApprovers"
+              :key="approver.employeeId"
+              :title="approver.displayName"
+              :subtitle="approverSubtitle(approver)"
+            />
+          </template>
+        </v-list>
+
         <v-autocomplete
           v-model="selectedProjectId"
           data-testid="project-assignment-project"
@@ -86,7 +111,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";
 import { BusinessError } from "@/lib/errors";
-import type { CurrentProjectDict } from "@/services/employee.service";
+import type { CurrentProjectDict, CurrentProjectTransferApprover } from "@/services/employee.service";
 import {
   fetchCurrentProjectRoles,
   fetchProjects,
@@ -94,6 +119,7 @@ import {
   type ProjectDictDto,
 } from "@/services/projects.service";
 import {
+  fetchCurrentProjectTransferApprovers,
   updateEmployeeCurrentProject,
 } from "@/services/employee.service";
 
@@ -130,6 +156,8 @@ const dictionaryLoading = ref(false);
 const saving = ref(false);
 const errorMessage = ref("");
 const transferApprovalRequired = ref(false);
+const transferApproversLoading = ref(false);
+const transferApprovers = ref<CurrentProjectTransferApprover[]>([]);
 
 const projects = ref<ProjectDictDto[]>([]);
 const projectRoles = ref<CurrentProjectRole[]>([]);
@@ -192,11 +220,14 @@ function initialiseForm() {
   roleOnProject.value = props.currentProject?.role ?? null;
   errorMessage.value = "";
   transferApprovalRequired.value = false;
+  transferApprovers.value = [];
 }
 
 function resetState() {
   errorMessage.value = "";
   transferApprovalRequired.value = false;
+  transferApprovers.value = [];
+  transferApproversLoading.value = false;
   saving.value = false;
 }
 
@@ -233,6 +264,7 @@ async function submit() {
   saving.value = true;
   errorMessage.value = "";
   transferApprovalRequired.value = false;
+  transferApprovers.value = [];
 
   const payload =
     selectedProjectId.value !== null
@@ -255,6 +287,7 @@ async function submit() {
   } catch (error) {
     if (isTransferApprovalRequired(error)) {
       transferApprovalRequired.value = true;
+      await loadTransferApprovers(error);
     } else {
       errorMessage.value = String(error);
     }
@@ -279,6 +312,33 @@ function cancel() {
 function isTransferApprovalRequired(error: unknown): boolean {
   return error instanceof BusinessError
     && error.code === CURRENT_PROJECT_TRANSFER_APPROVAL_REQUIRED;
+}
+
+async function loadTransferApprovers(error: unknown) {
+  if (!(error instanceof BusinessError) || !props.employeeId) {
+    return;
+  }
+  const newProjectId = Number(error.attrs?.toProjectId);
+  if (!Number.isInteger(newProjectId)) {
+    return;
+  }
+  transferApproversLoading.value = true;
+  try {
+    transferApprovers.value = await fetchCurrentProjectTransferApprovers(props.employeeId, newProjectId);
+  } catch (loadError) {
+    errorMessage.value = String(loadError);
+  } finally {
+    transferApproversLoading.value = false;
+  }
+}
+
+function approverSubtitle(approver: CurrentProjectTransferApprover): string {
+  const type = approver.managerType === "project"
+    ? t("Менеджер проекта")
+    : approver.managerType === "business_account"
+      ? t("Менеджер BA")
+      : t("Руководитель отдела");
+  return approver.email ? `${type} · ${approver.email}` : String(type);
 }
 
 onMounted(() => {

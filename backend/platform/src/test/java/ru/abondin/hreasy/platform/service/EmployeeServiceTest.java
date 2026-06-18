@@ -17,6 +17,8 @@ import ru.abondin.hreasy.platform.api.employee.UpdateCurrentProjectBody;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 
+import java.util.List;
+
 import static ru.abondin.hreasy.platform.TestEmployees.FMS_Empl_Ammara_Knott;
 
 @ActiveProfiles({"test"})
@@ -142,6 +144,25 @@ public class EmployeeServiceTest extends BaseServiceTest {
                         ctx))
                 .expectError(AccessDeniedException.class)
                 .verify(MONO_DEFAULT_TIMEOUT);
+    }
+
+    /**
+     * Test goal: verifies transfer approver candidates for the employee current project.
+     * <p>Precondition: Jawad manages target FMS project and Asiyah is assigned to Billing.
+     * <p>Action: Jawad requests approvers for Asiyah transfer from Billing to FMS.
+     * <p>Verification: service returns active Billing project, BA and department managers in priority order.
+     */
+    @Test
+    @DisplayName("Target project manager sees current project transfer approvers")
+    public void findCurrentProjectTransferApproversReturnsCurrentProjectManagersInPriorityOrder() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+
+        StepVerifier
+                .create(adminEmployeeService.findCurrentProjectTransferApprovers(
+                        ctx, employeeId, testData.project_M1_FMS()).map(approver -> approver.getDisplayName()).collectList())
+                .expectNext(List.of("May Maxwell", "Neville Kyran", "Patterson Husnain", "Gough Percy"))
+                .verifyComplete();
     }
 
 }

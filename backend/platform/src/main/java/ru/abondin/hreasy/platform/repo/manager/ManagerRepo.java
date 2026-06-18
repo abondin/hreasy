@@ -60,6 +60,35 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
             	group by e.id
             """;
 
+    String EMPLOYEE_ACTIVE_MANAGER_RECIPIENTS_SELECT = """
+            select distinct manager_employee.id as employee_id,
+                   manager_employee.email,
+                   manager_employee.display_name
+            """;
+
+    String EMPLOYEE_ACTIVE_MANAGER_RECIPIENTS_WITH_TYPE_SELECT = """
+            select distinct manager_employee.id as employee_id,
+                   manager_employee.email,
+                   manager_employee.display_name,
+                   manager.object_type as manager_type
+            """;
+
+    String EMPLOYEE_ACTIVE_MANAGER_RECIPIENTS_FROM = """
+            from empl.employee employee
+                join proj.project project on employee.current_project = project.id
+                join empl.manager manager
+                    on (manager.object_type = 'project' and manager.object_id = project.id)
+                    or (manager.object_type = 'business_account' and manager.object_id = project.ba_id)
+                    or (manager.object_type = 'department' and manager.object_id = project.department_id)
+                join empl.employee manager_employee on manager.employee = manager_employee.id
+            """;
+
+    String EMPLOYEE_ACTIVE_MANAGER_RECIPIENTS_WHERE = """
+            where employee.id = :employeeId
+              and manager_employee.id <> employee.id
+              and (manager_employee.date_of_dismissal is null or manager_employee.date_of_dismissal > :now)
+            """;
+
     @Query(defaultSelectQuery + " order by employee_display_name asc")
     Flux<ManagerView> findDetailed(@Param("now") OffsetDateTime now);
 
@@ -75,26 +104,27 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
      * @param now current time used to exclude dismissed managers
      * @return matching manager recipients
      */
-    @Query("""
-            select distinct manager_employee.id as employee_id,
-                   manager_employee.email,
-                   manager_employee.display_name
-            from empl.employee employee
-                join proj.project project on employee.current_project = project.id
-                join empl.manager manager
-                    on (manager.object_type = 'project' and manager.object_id = project.id)
-                    or (manager.object_type = 'business_account' and manager.object_id = project.ba_id)
-                    or (manager.object_type = 'department' and manager.object_id = project.department_id)
-                join empl.employee manager_employee on manager.employee = manager_employee.id
+    @Query(EMPLOYEE_ACTIVE_MANAGER_RECIPIENTS_SELECT
+            + EMPLOYEE_ACTIVE_MANAGER_RECIPIENTS_FROM + """
                 join sec.user_role user_role on user_role.employee_id = manager_employee.id
                 join sec.role_perm role_perm on role_perm.role = user_role.role
-            where employee.id = :employeeId
-              and manager_employee.id <> employee.id
+            """ + EMPLOYEE_ACTIVE_MANAGER_RECIPIENTS_WHERE + """
               and role_perm.permission = :permission
-              and (manager_employee.date_of_dismissal is null or manager_employee.date_of_dismissal > :now)
             order by manager_employee.display_name
             """)
     Flux<ManagerRecipient> findActiveEmployeeManagersWithPermission(@Param("employeeId") int employeeId,
                                                                     @Param("permission") String permission,
                                                                     @Param("now") OffsetDateTime now);
+
+    /**
+     * Finds active employees who can approve detaching an employee from the current project.
+     * Ordering and deduplication are applied in the service.
+     */
+    @Query(EMPLOYEE_ACTIVE_MANAGER_RECIPIENTS_WITH_TYPE_SELECT
+            + EMPLOYEE_ACTIVE_MANAGER_RECIPIENTS_FROM
+            + EMPLOYEE_ACTIVE_MANAGER_RECIPIENTS_WHERE + """
+            order by manager_employee.display_name
+            """)
+    Flux<ManagerRecipient> findActiveEmployeeManagers(@Param("employeeId") int employeeId,
+                                                      @Param("now") OffsetDateTime now);
 }

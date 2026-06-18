@@ -17,6 +17,8 @@ import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntr
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidRepo;
+import ru.abondin.hreasy.platform.repo.manager.ManagerRecipient;
+import ru.abondin.hreasy.platform.repo.manager.ManagerRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
@@ -24,6 +26,10 @@ import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -36,6 +42,7 @@ public class AdminEmployeeService {
     public static final String CURRENT_PROJECT_TRANSFER_APPROVAL_REQUIRED = "errors.current_project.transfer_approval_required";
     public static final String EMPLOYEE_ENTITY_TYPE = "employee";
     public static final String KID_ENTITY_TYPE = "kid";
+    private static final List<String> CURRENT_PROJECT_TRANSFER_APPROVER_TYPES = List.of("project", "business_account", "department");
 
     private final DateTimeService dateTimeService;
     private final EmployeeWithAllDetailsRepo employeeRepo;
@@ -44,6 +51,7 @@ public class AdminEmployeeService {
     private final EmployeeAllFieldsMapper mapper;
     private final EmployeeKidRepo kidsRepo;
     private final FileStorage fileStorage;
+    private final ManagerRepo managerRepo;
 
 
     public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth, boolean includeFired) {
@@ -181,6 +189,17 @@ public class AdminEmployeeService {
                 });
     }
 
+    public Flux<CurrentProjectTransferApproverDto> findCurrentProjectTransferApprovers(AuthContext auth,
+                                                                                       int employeeId,
+                                                                                       int newProject) {
+        return securityValidator.findCurrentProjectTransferAccessGap(auth, employeeId, newProject)
+                .switchIfEmpty(Mono.error(new AccessDeniedException("Current project transfer approval is not required")))
+                .flatMapMany(_ -> managerRepo.findActiveEmployeeManagers(employeeId, dateTimeService.now())
+                        .collectList()
+                        .flatMapMany(approvers -> Flux.fromIterable(currentProjectTransferApprovers(approvers))))
+                .map(this::currentProjectTransferApprover);
+    }
+
     private Mono<Boolean> currentProjectTransferApprovalRequired(AuthContext auth,
                                                                  int employeeId,
                                                                  Integer newProject,
@@ -198,6 +217,30 @@ public class AdminEmployeeService {
                 "toProjectId", Integer.toString(approvalRequired.toProjectId())
         ));
         return error;
+    }
+
+    private List<ManagerRecipient> currentProjectTransferApprovers(List<ManagerRecipient> recipients) {
+        var result = new LinkedHashMap<Integer, ManagerRecipient>();
+        recipients.stream()
+                .sorted(Comparator
+                        .comparingInt(this::currentProjectTransferApproverTypeOrder)
+                        .thenComparing(ManagerRecipient::getDisplayName))
+                .forEach(recipient -> result.putIfAbsent(recipient.getEmployeeId(), recipient));
+        return new ArrayList<>(result.values());
+    }
+
+    private int currentProjectTransferApproverTypeOrder(ManagerRecipient recipient) {
+        var index = CURRENT_PROJECT_TRANSFER_APPROVER_TYPES.indexOf(recipient.getManagerType());
+        return index < 0 ? CURRENT_PROJECT_TRANSFER_APPROVER_TYPES.size() : index;
+    }
+
+    private CurrentProjectTransferApproverDto currentProjectTransferApprover(ManagerRecipient entry) {
+        var dto = new CurrentProjectTransferApproverDto();
+        dto.setEmployeeId(entry.getEmployeeId());
+        dto.setDisplayName(entry.getDisplayName());
+        dto.setEmail(entry.getEmail());
+        dto.setManagerType(entry.getManagerType());
+        return dto;
     }
 
 

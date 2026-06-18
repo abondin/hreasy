@@ -6,6 +6,7 @@
 - Implemented notification inbox UI and Yandex Messenger notification delivery.
 - Disabled self-service current project updates for regular employees
 - Added backend error contract for current project transfers that require approval.
+- Added current project transfer approver candidates for approval-required transfers.
 - Full migration from vue2 to vue3 
 
 ## 1.3.1 (2026-03-21)
