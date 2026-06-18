@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,7 +11,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import reactor.test.StepVerifier;
+import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.TestEmployees;
+import ru.abondin.hreasy.platform.api.employee.UpdateCurrentProjectBody;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 
@@ -87,6 +90,58 @@ public class EmployeeServiceTest extends BaseServiceTest {
                         , testData.updateCurrentProjectBody("M1 Policy Manager")
                         , ctx))
                 .expectError(AccessDeniedException.class).verify(MONO_DEFAULT_TIMEOUT);
+    }
+
+    /**
+     * Test goal: verifies the backend contract consumed by frontend when direct project transfer is denied.
+     * <p>Precondition: Jawad manages the target FMS project, but does not manage Asiyah's current Billing project.
+     * <p>Action: Jawad tries to move Asiyah from Billing to FMS through regular current project update.
+     * <p>Verification: service returns BusinessError with transfer approval code and source/target project attributes.
+     */
+    @Test
+    @DisplayName("Target project manager gets approval-required error instead of direct transfer")
+    public void updateCurrentProjectReturnsApprovalRequiredForTargetProjectManager() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+
+        StepVerifier
+                .create(adminEmployeeService.updateCurrentProject(
+                        employeeId,
+                        testData.updateCurrentProjectBody("M1 FMS"),
+                        ctx))
+                .expectErrorSatisfies(error -> {
+                    var businessError = Assertions.assertInstanceOf(BusinessError.class, error);
+                    Assertions.assertEquals(AdminEmployeeService.CURRENT_PROJECT_TRANSFER_APPROVAL_REQUIRED,
+                            businessError.getCode());
+                    Assertions.assertEquals(Integer.toString(employeeId),
+                            businessError.getAttrs().get("employeeId"));
+                    Assertions.assertEquals(Integer.toString(testData.project_M1_Billing()),
+                            businessError.getAttrs().get("fromProjectId"));
+                    Assertions.assertEquals(Integer.toString(testData.project_M1_FMS()),
+                            businessError.getAttrs().get("toProjectId"));
+                })
+                .verify(MONO_DEFAULT_TIMEOUT);
+    }
+
+    /**
+     * Test goal: verifies that approval-required error is not used for invalid target project ids.
+     * <p>Precondition: Jawad does not manage Asiyah's current Billing project and target project id does not exist.
+     * <p>Action: Jawad tries to move Asiyah to a missing project through regular current project update.
+     * <p>Verification: service keeps regular access denied error.
+     */
+    @Test
+    @DisplayName("Missing target project does not start transfer approval flow")
+    public void updateCurrentProjectKeepsAccessDeniedForMissingTargetProject() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+
+        StepVerifier
+                .create(adminEmployeeService.updateCurrentProject(
+                        employeeId,
+                        new UpdateCurrentProjectBody(-1, "Tester"),
+                        ctx))
+                .expectError(AccessDeniedException.class)
+                .verify(MONO_DEFAULT_TIMEOUT);
     }
 
 }

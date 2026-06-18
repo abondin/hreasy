@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.admin.employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -23,6 +24,7 @@ import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -31,6 +33,7 @@ import java.util.Objects;
 public class AdminEmployeeService {
 
     private static final EmployeeWithAllDetailsEntry EMPTY_INSTANCE = new EmployeeWithAllDetailsEntry();
+    public static final String CURRENT_PROJECT_TRANSFER_APPROVAL_REQUIRED = "errors.current_project.transfer_approval_required";
     public static final String EMPLOYEE_ENTITY_TYPE = "employee";
     public static final String KID_ENTITY_TYPE = "kid";
 
@@ -158,18 +161,17 @@ public class AdminEmployeeService {
                 });
     }
 
-    /**
-     * @param employeeId
-     * @param newCurrentProject - link to new project. null to unlnk current project
-     * @param auth
-     * @return
-     */
     @Transactional
     public Mono<Integer> updateCurrentProject(int employeeId, @Nullable UpdateCurrentProjectBody newCurrentProject, AuthContext auth) {
         var now = dateTimeService.now();
         log.info("Update current project {} for employee {} " +
                 "by {}", newCurrentProject == null ? "<RESET>" : newCurrentProject, employeeId, auth.getEmail());
+        // Process: first try direct project update with current security rules.
+        // If direct update is denied, check whether the user manages the target project but not the source project.
+        // In that case return a business error code for the transfer approval flow; otherwise keep access denied.
         return securityValidator.validateUpdateCurrentProject(auth, employeeId, newCurrentProject == null ? null : newCurrentProject.getId())
+                .onErrorResume(AccessDeniedException.class, error -> currentProjectTransferApprovalRequired(auth,
+                        employeeId, newCurrentProject == null ? null : newCurrentProject.getId(), error))
                 .flatMap(s -> employeeRepo.findById(employeeId))
                 .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(employeeId))))
                 .flatMap(entry -> {
@@ -177,6 +179,25 @@ public class AdminEmployeeService {
                     entry.setCurrentProjectRole(newCurrentProject == null ? null : newCurrentProject.getRole());
                     return doUpdate(auth.getEmployeeInfo().getEmployeeId(), now, entry, null);
                 });
+    }
+
+    private Mono<Boolean> currentProjectTransferApprovalRequired(AuthContext auth,
+                                                                 int employeeId,
+                                                                 Integer newProject,
+                                                                 AccessDeniedException originalError) {
+        return securityValidator.findCurrentProjectTransferAccessGap(auth, employeeId, newProject)
+                .flatMap(approvalRequired -> Mono.<Boolean>error(transferApprovalRequired(approvalRequired)))
+                .switchIfEmpty(Mono.error(originalError));
+    }
+
+    private BusinessError transferApprovalRequired(AdminSecurityValidator.CurrentProjectTransferAccessGap approvalRequired) {
+        var error = new BusinessError(CURRENT_PROJECT_TRANSFER_APPROVAL_REQUIRED);
+        error.setAttrs(Map.of(
+                "employeeId", Integer.toString(approvalRequired.employeeId()),
+                "fromProjectId", Integer.toString(approvalRequired.fromProjectId()),
+                "toProjectId", Integer.toString(approvalRequired.toProjectId())
+        ));
+        return error;
     }
 
 

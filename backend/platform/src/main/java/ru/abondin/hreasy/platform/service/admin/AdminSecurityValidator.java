@@ -12,6 +12,7 @@ import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Validate security rules to work in admin area
@@ -23,6 +24,9 @@ public class AdminSecurityValidator {
 
     private final ProjectHierarchyAccessor projectHierarchyService;
     private final DictProjectRepo projectRepo;
+
+    public record CurrentProjectTransferAccessGap(int employeeId, int fromProjectId, int toProjectId) {
+    }
 
     public Mono<Boolean> validateCreateProject(AuthContext auth) {
         return Mono.defer(() -> {
@@ -179,14 +183,48 @@ public class AdminSecurityValidator {
                             projectsToCheck.add(currentProject.getId());
                             return projectsToCheck;
                         })
-                        .flatMap(projects -> projectHierarchyService.isManagerOfAllProject(auth, projectsToCheck))
-                        .switchIfEmpty(projectHierarchyService.isManagerOfAllProject(auth, projectsToCheck))
-                        .flatMap(isManager -> isManager
-                                ? Mono.just(true) :
-                                Mono.error(new AccessDeniedException("You must be manager of current employee project and new employee project")));
+                        .flatMap(projects -> validateCurrentProjectManagerAccess(auth, projects))
+                        .switchIfEmpty(validateCurrentProjectManagerAccess(auth, projectsToCheck));
             }
             return Mono.error(new AccessDeniedException("Only user with permission update_current_project or" +
                     " update_current_project_global can update the current project"));
         });
+    }
+
+    public Mono<CurrentProjectTransferAccessGap> findCurrentProjectTransferAccessGap(AuthContext auth,
+                                                                                     int employeeId,
+                                                                                     Integer newProject) {
+        return Mono.defer(() -> {
+            if (!auth.getAuthorities().contains("update_current_project") || newProject == null) {
+                return Mono.empty();
+            }
+            return projectRepo.findById(newProject)
+                    .flatMap(_ -> projectRepo.getEmployeeCurrentProject(employeeId))
+                    .filter(currentProject -> !newProject.equals(currentProject.getId()))
+                    .flatMap(currentProject -> findCurrentProjectTransferAccessGap(auth,
+                            employeeId, currentProject.getId(), newProject));
+        });
+    }
+
+    private Mono<CurrentProjectTransferAccessGap> findCurrentProjectTransferAccessGap(AuthContext auth,
+                                                                                      int employeeId,
+                                                                                      Integer currentProject,
+                                                                                      Integer newProject) {
+        return projectHierarchyService.isManagerOfAllProject(auth, List.of(newProject))
+                .filter(Boolean::booleanValue)
+                .flatMap(_ -> projectHierarchyService.isManagerOfAllProject(auth, List.of(currentProject)))
+                .filter(isManagerOfCurrentProject -> !isManagerOfCurrentProject)
+                .map(_ -> new CurrentProjectTransferAccessGap(employeeId, currentProject, newProject));
+    }
+
+    private Mono<Boolean> validateCurrentProjectManagerAccess(AuthContext auth, List<Integer> projectsToCheck) {
+        return projectHierarchyService.isManagerOfAllProject(auth, projectsToCheck)
+                .flatMap(isManager -> isManager
+                        ? Mono.just(true)
+                        : currentProjectAccessDenied());
+    }
+
+    private Mono<Boolean> currentProjectAccessDenied() {
+        return Mono.error(new AccessDeniedException("You must be manager of current employee project and new employee project"));
     }
 }

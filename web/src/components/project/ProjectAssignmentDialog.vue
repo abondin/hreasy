@@ -20,6 +20,17 @@
           {{ errorMessage }}
         </v-alert>
 
+        <v-alert
+          v-if="transferApprovalRequired"
+          type="info"
+          variant="tonal"
+          border="start"
+          class="mb-4"
+          data-testid="project-assignment-transfer-approval-required"
+        >
+          {{ t("Для перевода сотрудника на выбранный проект требуется согласование. Процесс согласования будет доступен позже.") }}
+        </v-alert>
+
         <v-autocomplete
           v-model="selectedProjectId"
           data-testid="project-assignment-project"
@@ -74,6 +85,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";
+import { BusinessError } from "@/lib/errors";
 import type { CurrentProjectDict } from "@/services/employee.service";
 import {
   fetchCurrentProjectRoles,
@@ -106,6 +118,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
+const CURRENT_PROJECT_TRANSFER_APPROVAL_REQUIRED =
+  "errors.current_project.transfer_approval_required";
+
 const dialogOpen = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit("update:modelValue", value),
@@ -114,6 +129,7 @@ const dialogOpen = computed({
 const dictionaryLoading = ref(false);
 const saving = ref(false);
 const errorMessage = ref("");
+const transferApprovalRequired = ref(false);
 
 const projects = ref<ProjectDictDto[]>([]);
 const projectRoles = ref<CurrentProjectRole[]>([]);
@@ -167,14 +183,20 @@ watch(
   },
 );
 
+watch([selectedProjectId, roleOnProject], () => {
+  transferApprovalRequired.value = false;
+});
+
 function initialiseForm() {
   selectedProjectId.value = props.currentProject?.id ?? null;
   roleOnProject.value = props.currentProject?.role ?? null;
   errorMessage.value = "";
+  transferApprovalRequired.value = false;
 }
 
 function resetState() {
   errorMessage.value = "";
+  transferApprovalRequired.value = false;
   saving.value = false;
 }
 
@@ -210,6 +232,7 @@ async function submit() {
   }
   saving.value = true;
   errorMessage.value = "";
+  transferApprovalRequired.value = false;
 
   const payload =
     selectedProjectId.value !== null
@@ -230,7 +253,11 @@ async function submit() {
       await loadCurrentProjectRoles();
     }
   } catch (error) {
-    errorMessage.value = String(error);
+    if (isTransferApprovalRequired(error)) {
+      transferApprovalRequired.value = true;
+    } else {
+      errorMessage.value = String(error);
+    }
   } finally {
     saving.value = false;
   }
@@ -247,6 +274,11 @@ async function loadCurrentProjectRoles() {
 
 function cancel() {
   dialogOpen.value = false;
+}
+
+function isTransferApprovalRequired(error: unknown): boolean {
+  return error instanceof BusinessError
+    && error.code === CURRENT_PROJECT_TRANSFER_APPROVAL_REQUIRED;
 }
 
 onMounted(() => {
