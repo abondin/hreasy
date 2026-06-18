@@ -36,10 +36,7 @@
     :scrim="false"
     :width="drawerWidth"
   >
-    <div
-      v-click-outside="onDesktopOutsideClick"
-      class="h-100 d-flex flex-column"
-    >
+    <div class="h-100 d-flex flex-column">
       <v-toolbar density="comfortable" border="b">
         <v-spacer />
         <v-btn icon="mdi-close" variant="text" @click="openModel = false" />
@@ -77,24 +74,6 @@ const openModel = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit("update:modelValue", value),
 });
-
-function onDesktopOutsideClick(event: MouseEvent) {
-  const target = event.target;
-  if (!(target instanceof Element)) {
-    openModel.value = false;
-    return;
-  }
-
-  if (target.closest(".v-overlay")) {
-    return;
-  }
-
-  if (target.closest('[data-testid="employees-table"] tbody tr')) {
-    return;
-  }
-
-  openModel.value = false;
-}
 
 function onWindowKeydown(event: KeyboardEvent) {
   if (props.useFullscreen || !openModel.value) {

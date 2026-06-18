@@ -2,7 +2,7 @@
   Dialog that allows updating the employee's current project and role.
 -->
 <template>
-  <v-dialog v-model="dialogOpen" max-width="560" scrollable data-testid="project-assignment-dialog">
+  <v-dialog v-model="dialogOpen" max-width="560" scrollable persistent data-testid="project-assignment-dialog">
     <v-card>
       <v-card-item>
         <template #title>{{ t("Обновление текущего проекта") }}</template>
@@ -19,42 +19,6 @@
         >
           {{ errorMessage }}
         </v-alert>
-
-        <v-alert
-          v-if="transferApprovalRequired"
-          type="info"
-          variant="tonal"
-          border="start"
-          class="mb-4"
-          data-testid="project-assignment-transfer-approval-required"
-        >
-          {{ t("Для перевода сотрудника на выбранный проект требуется согласование. Процесс согласования будет доступен позже.") }}
-        </v-alert>
-
-        <v-list
-          v-if="transferApprovalRequired"
-          density="compact"
-          class="mb-4"
-          data-testid="project-assignment-transfer-approvers"
-        >
-          <v-list-subheader>
-            {{ t("Согласующие") }}
-          </v-list-subheader>
-          <v-list-item v-if="transferApproversLoading">
-            <v-list-item-title>{{ t("Загрузка...") }}</v-list-item-title>
-          </v-list-item>
-          <v-list-item v-else-if="transferApprovers.length === 0">
-            <v-list-item-title>{{ t("Согласующие не найдены") }}</v-list-item-title>
-          </v-list-item>
-          <template v-else>
-            <v-list-item
-              v-for="approver in transferApprovers"
-              :key="approver.employeeId"
-              :title="approver.displayName"
-              :subtitle="approverSubtitle(approver)"
-            />
-          </template>
-        </v-list>
 
         <v-autocomplete
           v-model="selectedProjectId"
@@ -91,14 +55,69 @@
             </v-list-item>
           </template>
         </v-combobox>
+
+        <v-autocomplete
+          v-if="transferApprovalRequired"
+          v-model="selectedApproverId"
+          data-testid="project-assignment-transfer-approver"
+          :items="transferApprovers"
+          :label="t('Согласующий')"
+          :loading="transferApproversLoading"
+          :disabled="transferApproversLoading || approvalRequestSending"
+          :error-messages="transferApproversLoadError"
+          clearable
+          item-title="displayName"
+          item-value="employeeId"
+          variant="underlined"
+        >
+          <template #item="{ props: itemProps, item }">
+            <v-list-item
+              v-bind="itemProps"
+              :subtitle="approverSubtitle(item)"
+            />
+          </template>
+          <template #no-data>
+            <v-list-item>
+              <v-list-item-title>{{ t("Согласующие не найдены") }}</v-list-item-title>
+            </v-list-item>
+          </template>
+        </v-autocomplete>
+
+        <v-alert
+          v-if="transferApprovalRequired"
+          type="info"
+          variant="tonal"
+          border="start"
+          class="mt-2"
+          data-testid="project-assignment-transfer-approval-required"
+        >
+          {{ t("Для перевода сотрудника на выбранный проект требуется согласование.") }}
+        </v-alert>
+
+        <v-alert
+          v-if="approvalRequestSent"
+          type="success"
+          variant="tonal"
+          border="start"
+          class="mt-4"
+          data-testid="project-assignment-transfer-approval-sent"
+        >
+          {{ t("Заявка на согласование отправлена.") }}
+        </v-alert>
       </v-card-text>
 
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" :disabled="saving" data-testid="project-assignment-cancel" @click="cancel">
+        <v-btn variant="text" :disabled="saving || approvalRequestSending" data-testid="project-assignment-cancel" @click="cancel">
           {{ t("Отменить") }}
         </v-btn>
-        <v-btn color="primary" :loading="saving" data-testid="project-assignment-submit" @click="submit">
+        <v-btn
+          color="primary"
+          :loading="saving || approvalRequestSending"
+          :disabled="submitDisabled"
+          data-testid="project-assignment-submit"
+          @click="submit"
+        >
           {{ t("Применить") }}
         </v-btn>
       </v-card-actions>
@@ -110,7 +129,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";
-import { BusinessError } from "@/lib/errors";
+import { BusinessError, errorUtils } from "@/lib/errors";
 import type { CurrentProjectDict, CurrentProjectTransferApprover } from "@/services/employee.service";
 import {
   fetchCurrentProjectRoles,
@@ -120,6 +139,7 @@ import {
 } from "@/services/projects.service";
 import {
   fetchCurrentProjectTransferApprovers,
+  requestCurrentProjectTransferApproval,
   updateEmployeeCurrentProject,
 } from "@/services/employee.service";
 
@@ -157,7 +177,13 @@ const saving = ref(false);
 const errorMessage = ref("");
 const transferApprovalRequired = ref(false);
 const transferApproversLoading = ref(false);
+const transferApproversLoadError = ref("");
 const transferApprovers = ref<CurrentProjectTransferApprover[]>([]);
+const selectedApproverId = ref<number | null>(null);
+const approvalRequestSending = ref(false);
+const approvalRequestSent = ref(false);
+const transferApprovalFromProjectId = ref<number | null>(null);
+const transferApprovalToProjectId = ref<number | null>(null);
 
 const projects = ref<ProjectDictDto[]>([]);
 const projectRoles = ref<CurrentProjectRole[]>([]);
@@ -188,6 +214,12 @@ const roleItems = computed(() =>
   projectRoles.value.map((role) => role.value),
 );
 
+const submitDisabled = computed(() =>
+  transferApprovalRequired.value
+    ? approvalRequestSent.value || approvalRequestSending.value || transferApproversLoading.value || selectedApproverId.value === null
+    : saving.value,
+);
+
 watch(
   () => dialogOpen.value,
   (open) => {
@@ -212,22 +244,19 @@ watch(
 );
 
 watch([selectedProjectId, roleOnProject], () => {
-  transferApprovalRequired.value = false;
+  resetTransferApprovalState();
 });
 
 function initialiseForm() {
   selectedProjectId.value = props.currentProject?.id ?? null;
   roleOnProject.value = props.currentProject?.role ?? null;
   errorMessage.value = "";
-  transferApprovalRequired.value = false;
-  transferApprovers.value = [];
+  resetTransferApprovalState();
 }
 
 function resetState() {
   errorMessage.value = "";
-  transferApprovalRequired.value = false;
-  transferApprovers.value = [];
-  transferApproversLoading.value = false;
+  resetTransferApprovalState();
   saving.value = false;
 }
 
@@ -261,10 +290,15 @@ async function submit() {
     errorMessage.value = t("Профиль_недоступен");
     return;
   }
+
+  if (transferApprovalRequired.value) {
+    await submitTransferApprovalRequest();
+    return;
+  }
+
   saving.value = true;
   errorMessage.value = "";
-  transferApprovalRequired.value = false;
-  transferApprovers.value = [];
+  resetTransferApprovalState();
 
   const payload =
     selectedProjectId.value !== null
@@ -318,18 +352,63 @@ async function loadTransferApprovers(error: unknown) {
   if (!(error instanceof BusinessError) || !props.employeeId) {
     return;
   }
+  const fromProjectId = Number(error.attrs?.fromProjectId);
   const newProjectId = Number(error.attrs?.toProjectId);
-  if (!Number.isInteger(newProjectId)) {
+  if (!Number.isInteger(fromProjectId) || !Number.isInteger(newProjectId)) {
+    transferApproversLoadError.value = t("Не удалось определить параметры перевода");
     return;
   }
+  transferApprovalFromProjectId.value = fromProjectId;
+  transferApprovalToProjectId.value = newProjectId;
   transferApproversLoading.value = true;
+  transferApproversLoadError.value = "";
   try {
     transferApprovers.value = await fetchCurrentProjectTransferApprovers(props.employeeId, newProjectId);
+    selectedApproverId.value = transferApprovers.value[0]?.employeeId ?? null;
   } catch (loadError) {
-    errorMessage.value = String(loadError);
+    transferApproversLoadError.value = errorUtils.shortMessage(loadError);
   } finally {
     transferApproversLoading.value = false;
   }
+}
+
+async function submitTransferApprovalRequest() {
+  if (
+    !props.employeeId
+    || transferApprovalFromProjectId.value === null
+    || transferApprovalToProjectId.value === null
+    || selectedApproverId.value === null
+  ) {
+    errorMessage.value = t("Выберите согласующего для перевода.");
+    return;
+  }
+  approvalRequestSending.value = true;
+  errorMessage.value = "";
+  try {
+    await requestCurrentProjectTransferApproval(props.employeeId, {
+      fromProjectId: transferApprovalFromProjectId.value,
+      toProjectId: transferApprovalToProjectId.value,
+      role: roleOnProject.value ?? null,
+      approverEmployeeId: selectedApproverId.value,
+    });
+    approvalRequestSent.value = true;
+  } catch (error) {
+    errorMessage.value = errorUtils.shortMessage(error);
+  } finally {
+    approvalRequestSending.value = false;
+  }
+}
+
+function resetTransferApprovalState() {
+  transferApprovalRequired.value = false;
+  transferApprovers.value = [];
+  transferApproversLoading.value = false;
+  transferApproversLoadError.value = "";
+  selectedApproverId.value = null;
+  approvalRequestSending.value = false;
+  approvalRequestSent.value = false;
+  transferApprovalFromProjectId.value = null;
+  transferApprovalToProjectId.value = null;
 }
 
 function approverSubtitle(approver: CurrentProjectTransferApprover): string {

@@ -29,7 +29,7 @@ httpService.interceptors.response.use(
     const data = error.response?.data as
       | {
           code?: string;
-          attrs?: Record<string, string>;
+          args?: Record<string, string>;
           message?: string;
         }
       | undefined;
@@ -46,7 +46,7 @@ httpService.interceptors.response.use(
         wrappedError = new AccessDeniedError(message, code);
         break;
       case 422:
-        wrappedError = new BusinessError(message, code, data?.attrs);
+        wrappedError = new BusinessError(message, code, data?.args);
         break;
       case 500:
         wrappedError = new UnknownBackendError(message);
