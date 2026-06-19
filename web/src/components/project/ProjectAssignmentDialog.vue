@@ -20,13 +20,29 @@
           {{ errorMessage }}
         </v-alert>
 
+        <v-alert
+          v-if="activeTransferRequest"
+          type="info"
+          variant="tonal"
+          border="start"
+          class="mb-4"
+          data-testid="project-assignment-active-transfer-request"
+        >
+          {{
+            t("Сотрудник уже планируется к переводу на проект {project}. Согласующий: {approver}.", {
+              project: activeTransferRequest.toProjectName,
+              approver: activeTransferRequest.approverDisplayName,
+            })
+          }}
+        </v-alert>
+
         <v-autocomplete
           v-model="selectedProjectId"
           data-testid="project-assignment-project"
           :items="projectItems"
           :label="t('Проекты')"
-          :loading="dictionaryLoading"
-          :disabled="dictionaryLoading"
+          :loading="dictionaryLoading || activeTransferRequestLoading"
+          :disabled="dictionaryLoading || activeTransferRequestLoading || activeTransferRequest !== null"
           clearable
           item-title="name"
           item-value="id"
@@ -40,7 +56,7 @@
           :items="roleItems"
           :label="t('Роль')"
           :loading="dictionaryLoading"
-          :disabled="dictionaryLoading"
+          :disabled="dictionaryLoading || activeTransferRequestLoading || activeTransferRequest !== null"
           clearable
           variant="underlined"
           :rules="[validateRoleLength]"
@@ -113,7 +129,7 @@
         </v-btn>
         <v-btn
           color="primary"
-          :loading="saving || approvalRequestSending"
+          :loading="saving || approvalRequestSending || activeTransferRequestLoading"
           :disabled="submitDisabled"
           data-testid="project-assignment-submit"
           @click="submit"
@@ -130,7 +146,11 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";
 import { BusinessError, errorUtils } from "@/lib/errors";
-import type { CurrentProjectDict, CurrentProjectTransferApprover } from "@/services/employee.service";
+import type {
+  CurrentProjectDict,
+  CurrentProjectTransferApprover,
+  CurrentProjectTransferRequest,
+} from "@/services/employee.service";
 import {
   fetchCurrentProjectRoles,
   fetchProjects,
@@ -138,6 +158,7 @@ import {
   type ProjectDictDto,
 } from "@/services/projects.service";
 import {
+  fetchActiveCurrentProjectTransferRequest,
   fetchCurrentProjectTransferApprovers,
   requestCurrentProjectTransferApproval,
   updateEmployeeCurrentProject,
@@ -166,6 +187,8 @@ const { t } = useI18n();
 
 const CURRENT_PROJECT_TRANSFER_APPROVAL_REQUIRED =
   "errors.current_project.transfer_approval_required";
+const CURRENT_PROJECT_TRANSFER_REQUEST_ALREADY_PENDING =
+  "errors.current_project.transfer_request.already_pending";
 
 const dialogOpen = computed({
   get: () => props.modelValue,
@@ -184,6 +207,8 @@ const approvalRequestSending = ref(false);
 const approvalRequestSent = ref(false);
 const transferApprovalFromProjectId = ref<number | null>(null);
 const transferApprovalToProjectId = ref<number | null>(null);
+const activeTransferRequest = ref<CurrentProjectTransferRequest | null>(null);
+const activeTransferRequestLoading = ref(false);
 
 const projects = ref<ProjectDictDto[]>([]);
 const projectRoles = ref<CurrentProjectRole[]>([]);
@@ -215,7 +240,9 @@ const roleItems = computed(() =>
 );
 
 const submitDisabled = computed(() =>
-  transferApprovalRequired.value
+  activeTransferRequest.value !== null || activeTransferRequestLoading.value
+    ? true
+    : transferApprovalRequired.value
     ? approvalRequestSent.value || approvalRequestSending.value || transferApproversLoading.value || selectedApproverId.value === null
     : saving.value,
 );
@@ -225,6 +252,7 @@ watch(
   (open) => {
     if (open) {
       initialiseForm();
+      void loadActiveTransferRequest();
       if (!projects.value.length || !projectRoles.value.length) {
         void loadDictionaries();
       }
@@ -239,6 +267,7 @@ watch(
   () => {
     if (dialogOpen.value) {
       initialiseForm();
+      void loadActiveTransferRequest();
     }
   },
 );
@@ -251,11 +280,14 @@ function initialiseForm() {
   selectedProjectId.value = props.currentProject?.id ?? null;
   roleOnProject.value = props.currentProject?.role ?? null;
   errorMessage.value = "";
+  activeTransferRequest.value = null;
   resetTransferApprovalState();
 }
 
 function resetState() {
   errorMessage.value = "";
+  activeTransferRequest.value = null;
+  activeTransferRequestLoading.value = false;
   resetTransferApprovalState();
   saving.value = false;
 }
@@ -276,6 +308,20 @@ async function loadDictionaries() {
   }
 }
 
+async function loadActiveTransferRequest() {
+  if (!props.employeeId) {
+    return;
+  }
+  activeTransferRequestLoading.value = true;
+  try {
+    activeTransferRequest.value = await fetchActiveCurrentProjectTransferRequest(props.employeeId);
+  } catch (error) {
+    errorMessage.value = errorUtils.shortMessage(error);
+  } finally {
+    activeTransferRequestLoading.value = false;
+  }
+}
+
 function validateRoleLength(value: string | null): true | string {
   if (!value) {
     return true;
@@ -288,6 +334,10 @@ function validateRoleLength(value: string | null): true | string {
 async function submit() {
   if (!props.employeeId) {
     errorMessage.value = t("Профиль_недоступен");
+    return;
+  }
+
+  if (activeTransferRequest.value !== null) {
     return;
   }
 
@@ -322,6 +372,8 @@ async function submit() {
     if (isTransferApprovalRequired(error)) {
       transferApprovalRequired.value = true;
       await loadTransferApprovers(error);
+    } else if (isTransferRequestAlreadyPending(error)) {
+      await loadActiveTransferRequest();
     } else {
       errorMessage.value = String(error);
     }
@@ -346,6 +398,11 @@ function cancel() {
 function isTransferApprovalRequired(error: unknown): boolean {
   return error instanceof BusinessError
     && error.code === CURRENT_PROJECT_TRANSFER_APPROVAL_REQUIRED;
+}
+
+function isTransferRequestAlreadyPending(error: unknown): boolean {
+  return error instanceof BusinessError
+    && error.code === CURRENT_PROJECT_TRANSFER_REQUEST_ALREADY_PENDING;
 }
 
 async function loadTransferApprovers(error: unknown) {

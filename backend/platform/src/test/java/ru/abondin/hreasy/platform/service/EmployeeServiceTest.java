@@ -7,15 +7,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.TestEmployees;
 import ru.abondin.hreasy.platform.api.employee.UpdateCurrentProjectBody;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
+import ru.abondin.hreasy.platform.repo.employee.projecttransfer.ProjectTransferRequestEntry;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferApprovalRequestBody;
 
 import java.util.List;
 
@@ -31,11 +35,14 @@ public class EmployeeServiceTest extends BaseServiceTest {
     private EmployeeService employeeService;
     @Autowired
     private AdminEmployeeService adminEmployeeService;
+    @Autowired
+    private DatabaseClient db;
 
 
     @BeforeEach
     protected void beforeEach() {
         initEmployeesDataAndLogin();
+        cleanupProjectTransferRequests().block(MONO_DEFAULT_TIMEOUT);
     }
 
     @Test
@@ -163,6 +170,174 @@ public class EmployeeServiceTest extends BaseServiceTest {
                         ctx, employeeId, testData.project_M1_FMS()).map(approver -> approver.getDisplayName()).collectList())
                 .expectNext(List.of("May Maxwell", "Neville Kyran", "Patterson Husnain", "Gough Percy"))
                 .verifyComplete();
+    }
+
+    /**
+     * Test goal: verifies that target project manager can create a pending transfer request instead of direct update.
+     * <p>Precondition: Jawad manages target FMS project, Asiyah is assigned to Billing, and Maxwell is Billing manager.
+     * <p>Action: Jawad creates a transfer request from Billing to FMS and then asks for the active request.
+     * <p>Verification: service returns created request id and active request details for the same employee/project pair.
+     */
+    @Test
+    @DisplayName("Target project manager creates pending current project transfer request")
+    public void requestCurrentProjectTransferApprovalCreatesPendingRequest() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var jawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var body = transferRequestBody(
+                testData.project_M1_Billing(),
+                testData.project_M1_FMS(),
+                testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May));
+
+        StepVerifier
+                .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
+                        .flatMap(_ -> adminEmployeeService.findActiveCurrentProjectTransferRequest(jawad, employeeId)))
+                .assertNext(request -> {
+                    Assertions.assertNotNull(request.getId());
+                    Assertions.assertEquals(employeeId, request.getEmployeeId());
+                    Assertions.assertEquals(testData.project_M1_Billing(), request.getFromProjectId());
+                    Assertions.assertEquals("M1 Billing", request.getFromProjectName());
+                    Assertions.assertEquals(testData.project_M1_FMS(), request.getToProjectId());
+                    Assertions.assertEquals("M1 FMS", request.getToProjectName());
+                    Assertions.assertEquals("Tester", request.getRequestedProjectRole());
+                    Assertions.assertEquals(testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee),
+                            request.getCreatedBy());
+                    Assertions.assertEquals("Mcghee Jawad", request.getCreatedByDisplayName());
+                    Assertions.assertEquals(testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May),
+                            request.getApproverEmployeeId());
+                    Assertions.assertEquals("May Maxwell", request.getApproverDisplayName());
+                    Assertions.assertNotNull(request.getCreatedAt());
+                })
+                .verifyComplete();
+    }
+
+    /**
+     * Test goal: verifies idempotent duplicate handling for pending transfer request creation.
+     * <p>Precondition: Jawad already created a pending transfer request for Asiyah.
+     * <p>Action: Jawad tries to create the same transfer request again.
+     * <p>Verification: service returns the stable already-pending business error code.
+     */
+    @Test
+    @DisplayName("Pending current project transfer request blocks duplicate request")
+    public void requestCurrentProjectTransferApprovalRejectsPendingDuplicate() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var jawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var body = transferRequestBody(
+                testData.project_M1_Billing(),
+                testData.project_M1_FMS(),
+                testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May));
+
+        StepVerifier
+                .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
+                        .then(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)))
+                .expectErrorSatisfies(this::assertAlreadyPendingTransferRequestError)
+                .verify(MONO_DEFAULT_TIMEOUT);
+    }
+
+    /**
+     * Test goal: verifies that active transfer request blocks direct administrative project update.
+     * <p>Precondition: Jawad created a pending transfer request for Asiyah and Shaan has global update permission.
+     * <p>Action: Shaan tries to update Asiyah current project directly.
+     * <p>Verification: service returns already-pending business error instead of applying a hidden override.
+     */
+    @Test
+    @DisplayName("Pending current project transfer request blocks global direct update")
+    public void updateCurrentProjectRejectsGlobalUpdateWhenTransferRequestIsPending() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var jawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var admin = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
+        var body = transferRequestBody(
+                testData.project_M1_Billing(),
+                testData.project_M1_FMS(),
+                testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May));
+
+        StepVerifier
+                .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
+                        .then(adminEmployeeService.updateCurrentProject(
+                                employeeId,
+                                testData.updateCurrentProjectBody("M1 FMS"),
+                                admin)))
+                .expectErrorSatisfies(this::assertAlreadyPendingTransferRequestError)
+                .verify(MONO_DEFAULT_TIMEOUT);
+    }
+
+    /**
+     * Test goal: verifies that inactive transfer requests do not block new approval flow.
+     * <p>Precondition: Asiyah has rejected and expired transfer request rows but no pending request.
+     * <p>Action: Jawad creates a new transfer request from Billing to FMS.
+     * <p>Verification: service creates a new pending request successfully.
+     */
+    @Test
+    @DisplayName("Rejected and expired transfer requests do not block new request")
+    public void requestCurrentProjectTransferApprovalIgnoresInactiveRequests() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var jawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var approverId = testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May);
+        var body = transferRequestBody(testData.project_M1_Billing(), testData.project_M1_FMS(), approverId);
+
+        StepVerifier
+                .create(insertTransferRequest(employeeId, ProjectTransferRequestEntry.STATE_REJECTED, approverId)
+                        .then(insertTransferRequest(employeeId, ProjectTransferRequestEntry.STATE_EXPIRED, approverId))
+                        .then(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body))
+                        .flatMap(_ -> adminEmployeeService.findActiveCurrentProjectTransferRequest(jawad, employeeId)))
+                .assertNext(request -> {
+                    Assertions.assertEquals(employeeId, request.getEmployeeId());
+                    Assertions.assertEquals(testData.project_M1_Billing(), request.getFromProjectId());
+                    Assertions.assertEquals(testData.project_M1_FMS(), request.getToProjectId());
+                })
+                .verifyComplete();
+    }
+
+    private CurrentProjectTransferApprovalRequestBody transferRequestBody(int fromProjectId,
+                                                                          int toProjectId,
+                                                                          int approverEmployeeId) {
+        var body = new CurrentProjectTransferApprovalRequestBody();
+        body.setFromProjectId(fromProjectId);
+        body.setToProjectId(toProjectId);
+        body.setRole("Tester");
+        body.setApproverEmployeeId(approverEmployeeId);
+        return body;
+    }
+
+    private void assertAlreadyPendingTransferRequestError(Throwable error) {
+        var businessError = Assertions.assertInstanceOf(BusinessError.class, error);
+        Assertions.assertEquals(AdminEmployeeService.CURRENT_PROJECT_TRANSFER_REQUEST_ALREADY_PENDING,
+                businessError.getCode());
+    }
+
+    private Mono<Void> insertTransferRequest(int employeeId, short state, int approverEmployeeId) {
+        return db.sql("""
+                        insert into empl.project_transfer_request (
+                            employee_id,
+                            from_project_id,
+                            to_project_id,
+                            requested_project_role,
+                            approver_employee_id,
+                            state,
+                            created_at,
+                            created_by
+                        ) values (
+                            :employeeId,
+                            :fromProjectId,
+                            :toProjectId,
+                            'Tester',
+                            :approverEmployeeId,
+                            :state,
+                            now(),
+                            :createdBy
+                        )
+                        """)
+                .bind("employeeId", employeeId)
+                .bind("fromProjectId", testData.project_M1_Billing())
+                .bind("toProjectId", testData.project_M1_FMS())
+                .bind("approverEmployeeId", approverEmployeeId)
+                .bind("state", state)
+                .bind("createdBy", testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee))
+                .then();
+    }
+
+    private Mono<Void> cleanupProjectTransferRequests() {
+        return db.sql("delete from empl.project_transfer_request").then()
+                .then(db.sql("delete from history.history where entity_type = 'project_transfer_request'").then());
     }
 
 }

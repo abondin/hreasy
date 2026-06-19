@@ -11,7 +11,9 @@ import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.EmployeeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferApprovalRequestBody;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferApproverDto;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferRequestDto;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectRole;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.EmployeeProjectChangesDto;
@@ -81,6 +83,21 @@ public class EmployeeController {
                                                                                    @RequestParam int newProjectId) {
         return AuthHandler.currentAuth().flatMapMany(
                 auth -> adminEmployeeService.findCurrentProjectTransferApprovers(auth, employeeId, newProjectId));
+    }
+
+    @Operation(summary = "Find active current project transfer request")
+    @GetMapping("/{employeeId}/currentProject/transferRequests/active")
+    public Mono<CurrentProjectTransferRequestDto> activeCurrentProjectTransferRequest(@PathVariable int employeeId) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> adminEmployeeService.findActiveCurrentProjectTransferRequest(auth, employeeId));
+    }
+
+    @Operation(summary = "Request approval for current project transfer")
+    @PostMapping("/{employeeId}/currentProject/transferApprovals")
+    public Mono<Integer> requestCurrentProjectTransferApproval(@PathVariable int employeeId,
+                                                              @RequestBody CurrentProjectTransferApprovalRequestBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> adminEmployeeService.requestCurrentProjectTransferApproval(auth, employeeId, body));
     }
 
     /**

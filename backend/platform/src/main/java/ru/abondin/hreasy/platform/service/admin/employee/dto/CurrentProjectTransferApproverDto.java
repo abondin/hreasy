@@ -1,8 +1,10 @@
 package ru.abondin.hreasy.platform.service.admin.employee.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class CurrentProjectTransferApproverDto {
     private Integer employeeId;
     private String displayName;

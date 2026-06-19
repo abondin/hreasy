@@ -61,6 +61,21 @@ export interface CurrentProjectTransferApprovalRequestBody {
   approverEmployeeId: number;
 }
 
+export interface CurrentProjectTransferRequest {
+  id: number;
+  employeeId: number;
+  fromProjectId: number;
+  fromProjectName: string;
+  toProjectId: number;
+  toProjectName: string;
+  requestedProjectRole: string | null;
+  createdBy: number;
+  createdByDisplayName: string;
+  approverEmployeeId: number;
+  approverDisplayName: string;
+  createdAt: string;
+}
+
 export async function findEmployee(id: number): Promise<Employee> {
   const response = await http.get<Employee>(`v1/employee/${id}`);
   return response.data;
@@ -121,6 +136,15 @@ export async function fetchCurrentProjectTransferApprovers(
     { params: { newProjectId } },
   );
   return response.data;
+}
+
+export async function fetchActiveCurrentProjectTransferRequest(
+  employeeId: number,
+): Promise<CurrentProjectTransferRequest | null> {
+  const response = await http.get<CurrentProjectTransferRequest | "">(
+    `v1/employee/${employeeId}/currentProject/transferRequests/active`,
+  );
+  return response.data || null;
 }
 
 export async function requestCurrentProjectTransferApproval(

@@ -33,7 +33,8 @@ public class HistoryDomainService {
         SALARY_REQUEST_CLOSED_REPORT_PERIOD("salary_request_closed_report_period"),
         SUPPORT_REQUEST("support_request"),
         JUNIOR_REGISTRY("junior_registry"),
-        JUNIOR_REGISTRY_REPORT("junior_registry_report");
+        JUNIOR_REGISTRY_REPORT("junior_registry_report"),
+        PROJECT_TRANSFER_REQUEST("project_transfer_request");
         private final String type;
     }
 
