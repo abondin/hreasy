@@ -20,29 +20,13 @@
           {{ errorMessage }}
         </v-alert>
 
-        <v-alert
-          v-if="activeTransferRequest"
-          type="info"
-          variant="tonal"
-          border="start"
-          class="mb-4"
-          data-testid="project-assignment-active-transfer-request"
-        >
-          {{
-            t("Сотрудник уже планируется к переводу на проект {project}. Согласующий: {approver}.", {
-              project: activeTransferRequest.toProjectName,
-              approver: activeTransferRequest.approverDisplayName,
-            })
-          }}
-        </v-alert>
-
         <v-autocomplete
           v-model="selectedProjectId"
           data-testid="project-assignment-project"
           :items="projectItems"
           :label="t('Проекты')"
-          :loading="dictionaryLoading || activeTransferRequestLoading"
-          :disabled="dictionaryLoading || activeTransferRequestLoading || activeTransferRequest !== null"
+          :loading="dictionaryLoading"
+          :disabled="dictionaryLoading"
           clearable
           item-title="name"
           item-value="id"
@@ -56,7 +40,7 @@
           :items="roleItems"
           :label="t('Роль')"
           :loading="dictionaryLoading"
-          :disabled="dictionaryLoading || activeTransferRequestLoading || activeTransferRequest !== null"
+          :disabled="dictionaryLoading"
           clearable
           variant="underlined"
           :rules="[validateRoleLength]"
@@ -110,16 +94,6 @@
           {{ t("Для перевода сотрудника на выбранный проект требуется согласование.") }}
         </v-alert>
 
-        <v-alert
-          v-if="approvalRequestSent"
-          type="success"
-          variant="tonal"
-          border="start"
-          class="mt-4"
-          data-testid="project-assignment-transfer-approval-sent"
-        >
-          {{ t("Заявка на согласование отправлена.") }}
-        </v-alert>
       </v-card-text>
 
       <v-card-actions>
@@ -129,7 +103,7 @@
         </v-btn>
         <v-btn
           color="primary"
-          :loading="saving || approvalRequestSending || activeTransferRequestLoading"
+          :loading="saving || approvalRequestSending"
           :disabled="submitDisabled"
           data-testid="project-assignment-submit"
           @click="submit"
@@ -149,7 +123,6 @@ import { BusinessError, errorUtils } from "@/lib/errors";
 import type {
   CurrentProjectDict,
   CurrentProjectTransferApprover,
-  CurrentProjectTransferRequest,
 } from "@/services/employee.service";
 import {
   fetchCurrentProjectRoles,
@@ -158,7 +131,6 @@ import {
   type ProjectDictDto,
 } from "@/services/projects.service";
 import {
-  fetchActiveCurrentProjectTransferRequest,
   fetchCurrentProjectTransferApprovers,
   requestCurrentProjectTransferApproval,
   updateEmployeeCurrentProject,
@@ -204,11 +176,8 @@ const transferApproversLoadError = ref("");
 const transferApprovers = ref<CurrentProjectTransferApprover[]>([]);
 const selectedApproverId = ref<number | null>(null);
 const approvalRequestSending = ref(false);
-const approvalRequestSent = ref(false);
 const transferApprovalFromProjectId = ref<number | null>(null);
 const transferApprovalToProjectId = ref<number | null>(null);
-const activeTransferRequest = ref<CurrentProjectTransferRequest | null>(null);
-const activeTransferRequestLoading = ref(false);
 
 const projects = ref<ProjectDictDto[]>([]);
 const projectRoles = ref<CurrentProjectRole[]>([]);
@@ -238,12 +207,9 @@ const projectItems = computed(() => {
 const roleItems = computed(() =>
   projectRoles.value.map((role) => role.value),
 );
-
 const submitDisabled = computed(() =>
-  activeTransferRequest.value !== null || activeTransferRequestLoading.value
-    ? true
-    : transferApprovalRequired.value
-    ? approvalRequestSent.value || approvalRequestSending.value || transferApproversLoading.value || selectedApproverId.value === null
+  transferApprovalRequired.value
+    ? approvalRequestSending.value || transferApproversLoading.value || selectedApproverId.value === null
     : saving.value,
 );
 
@@ -252,7 +218,6 @@ watch(
   (open) => {
     if (open) {
       initialiseForm();
-      void loadActiveTransferRequest();
       if (!projects.value.length || !projectRoles.value.length) {
         void loadDictionaries();
       }
@@ -267,7 +232,6 @@ watch(
   () => {
     if (dialogOpen.value) {
       initialiseForm();
-      void loadActiveTransferRequest();
     }
   },
 );
@@ -280,14 +244,11 @@ function initialiseForm() {
   selectedProjectId.value = props.currentProject?.id ?? null;
   roleOnProject.value = props.currentProject?.role ?? null;
   errorMessage.value = "";
-  activeTransferRequest.value = null;
   resetTransferApprovalState();
 }
 
 function resetState() {
   errorMessage.value = "";
-  activeTransferRequest.value = null;
-  activeTransferRequestLoading.value = false;
   resetTransferApprovalState();
   saving.value = false;
 }
@@ -308,20 +269,6 @@ async function loadDictionaries() {
   }
 }
 
-async function loadActiveTransferRequest() {
-  if (!props.employeeId) {
-    return;
-  }
-  activeTransferRequestLoading.value = true;
-  try {
-    activeTransferRequest.value = await fetchActiveCurrentProjectTransferRequest(props.employeeId);
-  } catch (error) {
-    errorMessage.value = errorUtils.shortMessage(error);
-  } finally {
-    activeTransferRequestLoading.value = false;
-  }
-}
-
 function validateRoleLength(value: string | null): true | string {
   if (!value) {
     return true;
@@ -334,10 +281,6 @@ function validateRoleLength(value: string | null): true | string {
 async function submit() {
   if (!props.employeeId) {
     errorMessage.value = t("Профиль_недоступен");
-    return;
-  }
-
-  if (activeTransferRequest.value !== null) {
     return;
   }
 
@@ -373,7 +316,8 @@ async function submit() {
       transferApprovalRequired.value = true;
       await loadTransferApprovers(error);
     } else if (isTransferRequestAlreadyPending(error)) {
-      await loadActiveTransferRequest();
+      dialogOpen.value = false;
+      emit("updated");
     } else {
       errorMessage.value = String(error);
     }
@@ -448,7 +392,8 @@ async function submitTransferApprovalRequest() {
       role: roleOnProject.value ?? null,
       approverEmployeeId: selectedApproverId.value,
     });
-    approvalRequestSent.value = true;
+    dialogOpen.value = false;
+    emit("updated");
   } catch (error) {
     errorMessage.value = errorUtils.shortMessage(error);
   } finally {
@@ -463,7 +408,6 @@ function resetTransferApprovalState() {
   transferApproversLoadError.value = "";
   selectedApproverId.value = null;
   approvalRequestSending.value = false;
-  approvalRequestSent.value = false;
   transferApprovalFromProjectId.value = null;
   transferApprovalToProjectId.value = null;
 }

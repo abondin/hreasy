@@ -1,6 +1,13 @@
 import { computed } from "vue";
 import { useAuthStore, type SecurityInfo } from "@/stores/auth";
 
+interface EmployeeAccessScope {
+  id: number;
+  currentProject?: { id: number } | null;
+  department?: { id: number } | null;
+  ba?: { id: number } | null;
+}
+
 export enum Permissions {
   /** Update avatar of any employees */
   UpdateAvatar = "update_avatar",
@@ -305,6 +312,24 @@ export function usePermissions() {
     );
   }
 
+  function canAccessManagedEmployee(employee: EmployeeAccessScope): boolean {
+    const info = getSecurityInfo();
+    if (!info) {
+      return false;
+    }
+    if (info.employeeId === employee.id || canAdminEmployees()) {
+      return true;
+    }
+    return (
+      (typeof employee.currentProject?.id === "number" &&
+        info.accessibleProjects.includes(employee.currentProject.id)) ||
+      (typeof employee.department?.id === "number" &&
+        info.accessibleDepartments.includes(employee.department.id)) ||
+      (typeof employee.ba?.id === "number" &&
+        info.accessibleBas.includes(employee.ba.id))
+    );
+  }
+
   function canAdminDictDepartments(): boolean {
     return simplePermissionCheck(Permissions.AdminDictDepartments);
   }
@@ -396,6 +421,7 @@ export function usePermissions() {
     canUpdateJuniorReport,
     canUploadTechProfiles,
     canDownloadTechProfiles,
+    canAccessManagedEmployee,
     canAdminDictDepartments,
     canAdminDictLevels,
     canAdminDictOrganizations,
