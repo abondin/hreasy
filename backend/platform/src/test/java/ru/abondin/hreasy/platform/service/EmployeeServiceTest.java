@@ -20,6 +20,7 @@ import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer
 import ru.abondin.hreasy.platform.repo.employee.projecttransfer.ProjectTransferRequestEntry;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferApprovalRequestBody;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferDecisionBody;
 
 import java.util.List;
 
@@ -287,6 +288,131 @@ public class EmployeeServiceTest extends BaseServiceTest {
                 .verifyComplete();
     }
 
+    /**
+     * Test goal: verifies that assigned approver applies pending current project transfer request.
+     * <p>Precondition: Jawad created a pending transfer request for Asiyah and Maxwell is assigned approver.
+     * <p>Action: Maxwell approves the request.
+     * <p>Verification: request becomes approved and employee current project/role are updated.
+     */
+    @Test
+    @DisplayName("Assigned approver approves current project transfer request")
+    public void approveCurrentProjectTransferRequestAppliesProjectChange() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var jawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var maxwell = auth(TestEmployees.Billing_Manager_Maxwell_May).block(MONO_DEFAULT_TIMEOUT);
+        var body = transferRequestBody(
+                testData.project_M1_Billing(),
+                testData.project_M1_FMS(),
+                testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May));
+
+        StepVerifier
+                .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
+                        .flatMap(requestId -> adminEmployeeService.approveCurrentProjectTransferRequest(maxwell, requestId, decisionBody("ok"))
+                                .then(projectTransferRequestState(requestId))
+                                .zipWith(employeeCurrentProject(employeeId))))
+                .assertNext(result -> {
+                    var requestState = result.getT1();
+                    var currentProject = result.getT2();
+                    Assertions.assertEquals(ProjectTransferRequestEntry.STATE_APPROVED, requestState.state());
+                    Assertions.assertEquals(testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May),
+                            requestState.updatedBy());
+                    Assertions.assertNotNull(requestState.appliedEmployeeHistoryId());
+                    Assertions.assertEquals("ok", requestState.decisionComment());
+                    Assertions.assertEquals(testData.project_M1_FMS(), currentProject.projectId());
+                    Assertions.assertEquals("Tester", currentProject.role());
+                })
+                .verifyComplete();
+    }
+
+    /**
+     * Test goal: verifies that assigned approver can reject pending current project transfer request.
+     * <p>Precondition: Jawad created a pending transfer request for Asiyah and Maxwell is assigned approver.
+     * <p>Action: Maxwell rejects the request.
+     * <p>Verification: request becomes rejected and employee remains on source project.
+     */
+    @Test
+    @DisplayName("Assigned approver rejects current project transfer request")
+    public void rejectCurrentProjectTransferRequestDoesNotApplyProjectChange() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var jawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var maxwell = auth(TestEmployees.Billing_Manager_Maxwell_May).block(MONO_DEFAULT_TIMEOUT);
+        var body = transferRequestBody(
+                testData.project_M1_Billing(),
+                testData.project_M1_FMS(),
+                testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May));
+
+        StepVerifier
+                .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
+                        .flatMap(requestId -> adminEmployeeService.rejectCurrentProjectTransferRequest(maxwell, requestId, decisionBody("no"))
+                                .then(projectTransferRequestState(requestId))
+                                .zipWith(employeeCurrentProject(employeeId))))
+                .assertNext(result -> {
+                    var requestState = result.getT1();
+                    var currentProject = result.getT2();
+                    Assertions.assertEquals(ProjectTransferRequestEntry.STATE_REJECTED, requestState.state());
+                    Assertions.assertEquals("no", requestState.decisionComment());
+                    Assertions.assertNull(requestState.appliedEmployeeHistoryId());
+                    Assertions.assertEquals(testData.project_M1_Billing(), currentProject.projectId());
+                })
+                .verifyComplete();
+    }
+
+    /**
+     * Test goal: verifies that request creator can cancel pending current project transfer request.
+     * <p>Precondition: Jawad created a pending transfer request for Asiyah.
+     * <p>Action: Jawad cancels the request.
+     * <p>Verification: request becomes canceled and employee remains on source project.
+     */
+    @Test
+    @DisplayName("Request creator cancels current project transfer request")
+    public void cancelCurrentProjectTransferRequestByCreatorClosesRequest() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var jawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var body = transferRequestBody(
+                testData.project_M1_Billing(),
+                testData.project_M1_FMS(),
+                testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May));
+
+        StepVerifier
+                .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
+                        .flatMap(requestId -> adminEmployeeService.cancelCurrentProjectTransferRequest(jawad, requestId, decisionBody("cancel"))
+                                .then(projectTransferRequestState(requestId))
+                                .zipWith(employeeCurrentProject(employeeId))))
+                .assertNext(result -> {
+                    var requestState = result.getT1();
+                    var currentProject = result.getT2();
+                    Assertions.assertEquals(ProjectTransferRequestEntry.STATE_CANCELED, requestState.state());
+                    Assertions.assertEquals("cancel", requestState.decisionComment());
+                    Assertions.assertNull(requestState.appliedEmployeeHistoryId());
+                    Assertions.assertEquals(testData.project_M1_Billing(), currentProject.projectId());
+                })
+                .verifyComplete();
+    }
+
+    /**
+     * Test goal: verifies that non-assigned employee cannot approve pending current project transfer request.
+     * <p>Precondition: Jawad created a pending transfer request assigned to Maxwell.
+     * <p>Action: Shaan tries to approve the request.
+     * <p>Verification: service rejects the action with access denied.
+     */
+    @Test
+    @DisplayName("Non-assigned employee cannot approve current project transfer request")
+    public void approveCurrentProjectTransferRequestRejectsNonApprover() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var jawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var admin = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
+        var body = transferRequestBody(
+                testData.project_M1_Billing(),
+                testData.project_M1_FMS(),
+                testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May));
+
+        StepVerifier
+                .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
+                        .flatMap(requestId -> adminEmployeeService.approveCurrentProjectTransferRequest(admin, requestId, null)))
+                .expectError(AccessDeniedException.class)
+                .verify(MONO_DEFAULT_TIMEOUT);
+    }
+
     private CurrentProjectTransferApprovalRequestBody transferRequestBody(int fromProjectId,
                                                                           int toProjectId,
                                                                           int approverEmployeeId) {
@@ -295,6 +421,12 @@ public class EmployeeServiceTest extends BaseServiceTest {
         body.setToProjectId(toProjectId);
         body.setRole("Tester");
         body.setApproverEmployeeId(approverEmployeeId);
+        return body;
+    }
+
+    private CurrentProjectTransferDecisionBody decisionBody(String comment) {
+        var body = new CurrentProjectTransferDecisionBody();
+        body.setComment(comment);
         return body;
     }
 
@@ -333,6 +465,43 @@ public class EmployeeServiceTest extends BaseServiceTest {
                 .bind("state", state)
                 .bind("createdBy", testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee))
                 .then();
+    }
+
+    private Mono<ProjectTransferRequestState> projectTransferRequestState(int requestId) {
+        return db.sql("""
+                        select state, updated_by, decision_comment, applied_employee_history_id
+                        from empl.project_transfer_request
+                        where id = :requestId
+                        """)
+                .bind("requestId", requestId)
+                .map(row -> new ProjectTransferRequestState(
+                        row.get("state", Number.class).shortValue(),
+                        row.get("updated_by", Integer.class),
+                        row.get("decision_comment", String.class),
+                        row.get("applied_employee_history_id", Integer.class)))
+                .one();
+    }
+
+    private Mono<EmployeeCurrentProject> employeeCurrentProject(int employeeId) {
+        return db.sql("""
+                        select current_project, current_project_role
+                        from empl.employee
+                        where id = :employeeId
+                        """)
+                .bind("employeeId", employeeId)
+                .map(row -> new EmployeeCurrentProject(
+                        row.get("current_project", Integer.class),
+                        row.get("current_project_role", String.class)))
+                .one();
+    }
+
+    private record ProjectTransferRequestState(Short state,
+                                               Integer updatedBy,
+                                               String decisionComment,
+                                               Integer appliedEmployeeHistoryId) {
+    }
+
+    private record EmployeeCurrentProject(Integer projectId, String role) {
     }
 
     private Mono<Void> cleanupProjectTransferRequests() {

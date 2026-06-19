@@ -31,7 +31,7 @@ function mapEmployee(info: EmployeeShortInfo) {
   return {
     employeeId: info.employeeId,
     accessibleDepartments: info.accessibleDepartments ?? [],
-    accessibleBas: info.accessibleBas,
+    accessibleBas: info.accessibleBas ?? [],
     accessibleProjects: info.accessibleProjects ?? [],
   };
 }

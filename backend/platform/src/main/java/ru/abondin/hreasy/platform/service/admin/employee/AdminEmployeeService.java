@@ -17,6 +17,7 @@ import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntr
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.kids.EmployeeKidRepo;
+import ru.abondin.hreasy.platform.repo.employee.projecttransfer.ProjectTransferRequestEntry;
 import ru.abondin.hreasy.platform.repo.employee.projecttransfer.ProjectTransferRequestRepo;
 import ru.abondin.hreasy.platform.repo.manager.ManagerRecipient;
 import ru.abondin.hreasy.platform.repo.manager.ManagerRepo;
@@ -210,6 +211,61 @@ public class AdminEmployeeService {
                 .map(projectTransferRequestMapper::fromView);
     }
 
+    @Transactional
+    public Mono<Integer> approveCurrentProjectTransferRequest(AuthContext auth,
+                                                              int requestId,
+                                                              @Nullable CurrentProjectTransferDecisionBody body) {
+        log.info("Approve current project transfer request {} by {}", requestId, auth.getEmail());
+        var now = dateTimeService.now();
+        return projectTransferRequestRepo.findPendingById(requestId)
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound("project_transfer_request", requestId))
+                .flatMap(request -> validateProjectTransferApprover(auth, request)
+                        .then(applyProjectTransferRequest(auth, request, now))
+                        .flatMap(historyId -> closeProjectTransferRequest(
+                                request,
+                                ProjectTransferRequestEntry.STATE_APPROVED,
+                                decisionComment(body),
+                                historyId,
+                                auth,
+                                now)));
+    }
+
+    @Transactional
+    public Mono<Integer> rejectCurrentProjectTransferRequest(AuthContext auth,
+                                                             int requestId,
+                                                             @Nullable CurrentProjectTransferDecisionBody body) {
+        log.info("Reject current project transfer request {} by {}", requestId, auth.getEmail());
+        var now = dateTimeService.now();
+        return projectTransferRequestRepo.findPendingById(requestId)
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound("project_transfer_request", requestId))
+                .flatMap(request -> validateProjectTransferApprover(auth, request)
+                        .then(closeProjectTransferRequest(
+                                request,
+                                ProjectTransferRequestEntry.STATE_REJECTED,
+                                decisionComment(body),
+                                null,
+                                auth,
+                                now)));
+    }
+
+    @Transactional
+    public Mono<Integer> cancelCurrentProjectTransferRequest(AuthContext auth,
+                                                             int requestId,
+                                                             @Nullable CurrentProjectTransferDecisionBody body) {
+        log.info("Cancel current project transfer request {} by {}", requestId, auth.getEmail());
+        var now = dateTimeService.now();
+        return projectTransferRequestRepo.findPendingById(requestId)
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound("project_transfer_request", requestId))
+                .flatMap(request -> validateProjectTransferCancel(auth, request)
+                        .then(closeProjectTransferRequest(
+                                request,
+                                ProjectTransferRequestEntry.STATE_CANCELED,
+                                decisionComment(body),
+                                null,
+                                auth,
+                                now)));
+    }
+
     public Flux<CurrentProjectTransferApproverDto> findCurrentProjectTransferApprovers(AuthContext auth,
                                                                                        int employeeId,
                                                                                        int newProject) {
@@ -291,6 +347,58 @@ public class AdminEmployeeService {
                 .map(history -> history.getEntityId());
     }
 
+    private Mono<Void> validateProjectTransferApprover(AuthContext auth, ProjectTransferRequestEntry request) {
+        if (Objects.equals(request.getApproverEmployeeId(), auth.getEmployeeInfo().getEmployeeId())) {
+            return Mono.empty();
+        }
+        return Mono.error(new AccessDeniedException("Only assigned approver can process project transfer request"));
+    }
+
+    private Mono<Void> validateProjectTransferCancel(AuthContext auth, ProjectTransferRequestEntry request) {
+        if (Objects.equals(request.getCreatedBy(), auth.getEmployeeInfo().getEmployeeId())
+                || auth.getAuthorities().contains("update_current_project_global")) {
+            return Mono.empty();
+        }
+        return Mono.error(new AccessDeniedException("Only request creator or global current-project manager can cancel project transfer request"));
+    }
+
+    private Mono<Integer> applyProjectTransferRequest(AuthContext auth,
+                                                      ProjectTransferRequestEntry request,
+                                                      OffsetDateTime now) {
+        return employeeRepo.findById(request.getEmployeeId())
+                .switchIfEmpty(BusinessErrorFactory.entityNotFound(EMPLOYEE_ENTITY_TYPE, request.getEmployeeId()))
+                .flatMap(employee -> {
+                    employee.setCurrentProjectId(request.getToProjectId());
+                    employee.setCurrentProjectRole(request.getRequestedProjectRole());
+                    return doUpdateAndReturnHistoryId(auth.getEmployeeInfo().getEmployeeId(), now, employee);
+                });
+    }
+
+    private Mono<Integer> closeProjectTransferRequest(ProjectTransferRequestEntry request,
+                                                      short state,
+                                                      @Nullable String comment,
+                                                      @Nullable Integer appliedEmployeeHistoryId,
+                                                      AuthContext auth,
+                                                      OffsetDateTime now) {
+        request.setState(state);
+        request.setDecisionComment(comment);
+        request.setAppliedEmployeeHistoryId(appliedEmployeeHistoryId);
+        request.setUpdatedAt(now);
+        request.setUpdatedBy(auth.getEmployeeInfo().getEmployeeId());
+        return projectTransferRequestRepo.save(request)
+                .flatMap(saved -> historyDomainService.persistHistory(
+                        saved.getId(),
+                        HistoryDomainService.HistoryEntityType.PROJECT_TRANSFER_REQUEST,
+                        saved,
+                        now,
+                        auth.getEmployeeInfo().getEmployeeId()))
+                .map(history -> history.getEntityId());
+    }
+
+    private String decisionComment(@Nullable CurrentProjectTransferDecisionBody body) {
+        return body == null ? null : body.getComment();
+    }
+
     private <T> Mono<T> failWithPendingTransferRequest() {
         // Process: this is a backend consistency guard for stale UI/race cases.
         // The UI should refresh active transfer request details after receiving this stable error code.
@@ -356,6 +464,13 @@ public class AdminEmployeeService {
             var history = mapper.history(persisted, currentEmployeeId, now);
             history.setImportProcess(importProcessId);
             return historyRepo.save(history).map(e -> persisted.getId());
+        });
+    }
+
+    private Mono<Integer> doUpdateAndReturnHistoryId(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry) {
+        return employeeRepo.save(entry).flatMap(persisted -> {
+            var history = mapper.history(persisted, currentEmployeeId, now);
+            return historyRepo.save(history).map(e -> e.getId());
         });
     }
 

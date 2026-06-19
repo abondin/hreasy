@@ -13,6 +13,7 @@ import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferApprovalRequestBody;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferApproverDto;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferDecisionBody;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.CurrentProjectTransferRequestDto;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectRole;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
@@ -98,6 +99,30 @@ public class EmployeeController {
                                                               @RequestBody CurrentProjectTransferApprovalRequestBody body) {
         return AuthHandler.currentAuth().flatMap(
                 auth -> adminEmployeeService.requestCurrentProjectTransferApproval(auth, employeeId, body));
+    }
+
+    @Operation(summary = "Approve current project transfer request")
+    @PostMapping("/currentProject/transferRequests/{requestId}/approve")
+    public Mono<Integer> approveCurrentProjectTransferRequest(@PathVariable int requestId,
+                                                              @RequestBody(required = false) CurrentProjectTransferDecisionBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> adminEmployeeService.approveCurrentProjectTransferRequest(auth, requestId, body));
+    }
+
+    @Operation(summary = "Reject current project transfer request")
+    @PostMapping("/currentProject/transferRequests/{requestId}/reject")
+    public Mono<Integer> rejectCurrentProjectTransferRequest(@PathVariable int requestId,
+                                                             @RequestBody(required = false) CurrentProjectTransferDecisionBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> adminEmployeeService.rejectCurrentProjectTransferRequest(auth, requestId, body));
+    }
+
+    @Operation(summary = "Cancel current project transfer request")
+    @PostMapping("/currentProject/transferRequests/{requestId}/cancel")
+    public Mono<Integer> cancelCurrentProjectTransferRequest(@PathVariable int requestId,
+                                                             @RequestBody(required = false) CurrentProjectTransferDecisionBody body) {
+        return AuthHandler.currentAuth().flatMap(
+                auth -> adminEmployeeService.cancelCurrentProjectTransferRequest(auth, requestId, body));
     }
 
     /**

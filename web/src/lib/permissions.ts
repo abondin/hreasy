@@ -141,6 +141,10 @@ export function usePermissions() {
     ]);
   }
 
+  function canUpdateCurrentProjectGlobally(): boolean {
+    return simplePermissionCheck(Permissions.UpdateCurrentProjectGlobal);
+  }
+
   function canUpdateAvatar(employeeId: number): boolean {
     void employeeId;
     return simplePermissionCheck(Permissions.UpdateAvatar);
@@ -387,6 +391,7 @@ export function usePermissions() {
 
   return {
     canUpdateCurrentProject,
+    canUpdateCurrentProjectGlobally,
     canUpdateAvatar,
     canViewOvertimes,
     canEditOvertimes,

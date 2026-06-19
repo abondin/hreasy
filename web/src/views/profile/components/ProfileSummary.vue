@@ -138,6 +138,7 @@
     v-model="projectTransferRequestDialogOpen"
     :employee-name="employee.displayName"
     :request="activeTransferRequest"
+    @updated="emitProjectUpdated"
   />
 </template>
 

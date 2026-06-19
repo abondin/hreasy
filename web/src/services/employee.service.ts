@@ -76,6 +76,10 @@ export interface CurrentProjectTransferRequest {
   createdAt: string;
 }
 
+export interface CurrentProjectTransferDecisionBody {
+  comment: string | null;
+}
+
 export async function findEmployee(id: number): Promise<Employee> {
   const response = await http.get<Employee>(`v1/employee/${id}`);
   return response.data;
@@ -155,6 +159,39 @@ export async function requestCurrentProjectTransferApproval(
     `v1/employee/${employeeId}/currentProject/transferApprovals`,
     payload,
   );
+}
+
+export async function approveCurrentProjectTransferRequest(
+  requestId: number,
+  payload: CurrentProjectTransferDecisionBody,
+): Promise<number> {
+  const response = await http.post<number>(
+    `v1/employee/currentProject/transferRequests/${requestId}/approve`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function rejectCurrentProjectTransferRequest(
+  requestId: number,
+  payload: CurrentProjectTransferDecisionBody,
+): Promise<number> {
+  const response = await http.post<number>(
+    `v1/employee/currentProject/transferRequests/${requestId}/reject`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function cancelCurrentProjectTransferRequest(
+  requestId: number,
+  payload: CurrentProjectTransferDecisionBody,
+): Promise<number> {
+  const response = await http.post<number>(
+    `v1/employee/currentProject/transferRequests/${requestId}/cancel`,
+    payload,
+  );
+  return response.data;
 }
 
 export async function fetchEmployeeProjectChanges(

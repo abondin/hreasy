@@ -11,6 +11,16 @@
 
       <v-card-text>
         <v-alert
+          v-if="errorMessage"
+          type="error"
+          variant="tonal"
+          border="start"
+          class="mb-4"
+        >
+          {{ errorMessage }}
+        </v-alert>
+
+        <v-alert
           type="info"
           variant="tonal"
           border="start"
@@ -27,11 +37,56 @@
           <v-list-item :title="t('Согласующий')" :subtitle="request.approverDisplayName" />
           <v-list-item :title="t('Создана')" :subtitle="formatDateTime(request.createdAt)" />
         </v-list>
+
+        <v-textarea
+          v-if="canProcessRequest"
+          v-model="comment"
+          :label="t('Комментарий')"
+          variant="underlined"
+          rows="2"
+          auto-grow
+          class="mt-2"
+          data-testid="project-transfer-request-comment"
+        />
       </v-card-text>
 
       <v-card-actions>
+        <v-btn
+          v-if="canCancelRequest"
+          color="warning"
+          variant="text"
+          :loading="actionLoading === 'cancel'"
+          :disabled="actionLoading !== null"
+          data-testid="project-transfer-request-cancel"
+          @click="processRequest('cancel')"
+        >
+          {{ t("Отменить заявку") }}
+        </v-btn>
         <v-spacer />
-        <v-btn variant="text" data-testid="project-transfer-request-close" @click="dialogOpen = false">
+        <v-btn
+          v-if="canApproveOrRejectRequest"
+          color="error"
+          variant="text"
+          :loading="actionLoading === 'reject'"
+          :disabled="actionLoading !== null"
+          data-testid="project-transfer-request-reject"
+          @click="processRequest('reject')"
+        >
+          {{ t("Отклонить") }}
+        </v-btn>
+        <v-btn
+          v-if="canApproveOrRejectRequest"
+          color="primary"
+          variant="flat"
+          :loading="actionLoading === 'approve'"
+          :disabled="actionLoading !== null"
+          data-testid="project-transfer-request-approve"
+          @click="processRequest('approve')"
+        >
+          {{ t("Согласовать") }}
+        </v-btn>
+        <v-spacer />
+        <v-btn variant="text" :disabled="actionLoading !== null" data-testid="project-transfer-request-close" @click="dialogOpen = false">
           {{ t("Закрыть") }}
         </v-btn>
       </v-card-actions>
@@ -40,10 +95,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { formatDateTime } from "@/lib/datetime";
-import type { CurrentProjectTransferRequest } from "@/services/employee.service";
+import { errorUtils } from "@/lib/errors";
+import { usePermissions } from "@/lib/permissions";
+import {
+  approveCurrentProjectTransferRequest,
+  cancelCurrentProjectTransferRequest,
+  rejectCurrentProjectTransferRequest,
+  type CurrentProjectTransferRequest,
+} from "@/services/employee.service";
+import { useAuthStore } from "@/stores/auth";
 
 const props = withDefaults(
   defineProps<{
@@ -59,12 +122,67 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (event: "update:modelValue", value: boolean): void;
+  (event: "updated"): void;
 }>();
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const permissions = usePermissions();
+
+const comment = ref("");
+const errorMessage = ref("");
+const actionLoading = ref<"approve" | "reject" | "cancel" | null>(null);
 
 const dialogOpen = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit("update:modelValue", value),
 });
+
+const canApproveOrRejectRequest = computed(() =>
+  props.request?.approverEmployeeId === authStore.employeeId,
+);
+
+const canCancelRequest = computed(() =>
+  Boolean(props.request) &&
+  (props.request?.createdBy === authStore.employeeId || permissions.canUpdateCurrentProjectGlobally()),
+);
+
+const canProcessRequest = computed(() =>
+  canApproveOrRejectRequest.value || canCancelRequest.value,
+);
+
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (open) {
+      comment.value = "";
+      errorMessage.value = "";
+      actionLoading.value = null;
+    }
+  },
+);
+
+async function processRequest(action: "approve" | "reject" | "cancel") {
+  if (!props.request || actionLoading.value !== null) {
+    return;
+  }
+  actionLoading.value = action;
+  errorMessage.value = "";
+  const payload = { comment: comment.value.trim() || null };
+  try {
+    if (action === "approve") {
+      await approveCurrentProjectTransferRequest(props.request.id, payload);
+    } else if (action === "reject") {
+      await rejectCurrentProjectTransferRequest(props.request.id, payload);
+    } else {
+      await cancelCurrentProjectTransferRequest(props.request.id, payload);
+    }
+    dialogOpen.value = false;
+    emit("updated");
+  } catch (error) {
+    errorMessage.value = errorUtils.shortMessage(error);
+  } finally {
+    actionLoading.value = null;
+  }
+}
 </script>
