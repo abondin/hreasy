@@ -59,7 +59,7 @@ public class GlobalWebErrorsHandler implements WebExceptionHandler, ServerAccess
         if (ex instanceof BusinessError be) {
             response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
             errorDto = new BusinessErrorDto(be.getCode(),
-                    i18Helper.localize(be.getCode(), be.getLocalizationArgs()), be.getAttrs());
+                    i18Helper.localize(be.getCode(), (Object[]) be.getLocalizationArgs()), be.getAttrs());
             log.debug("Business error: {}", errorDto);
         } else if (ex instanceof BadCredentialsException) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);

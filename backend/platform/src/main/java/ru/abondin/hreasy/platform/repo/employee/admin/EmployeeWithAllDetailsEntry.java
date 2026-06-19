@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.repo.employee.admin;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
  * All employee table for HR to add or update employee information
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Table("empl.employee")
 public class EmployeeWithAllDetailsEntry extends EmployeeEntry {
     @Column("organization")

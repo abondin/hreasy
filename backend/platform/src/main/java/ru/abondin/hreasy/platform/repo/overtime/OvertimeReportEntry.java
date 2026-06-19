@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.repo.overtime;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
@@ -35,6 +36,7 @@ public class OvertimeReportEntry {
      * @see OvertimeReportRepo#summary(int)
      */
     @Data
+    @EqualsAndHashCode(callSuper = false)
     public static class OvertimeReportSummaryEntry extends OvertimeReportEntry {
         @Nullable
         private float totalHours;

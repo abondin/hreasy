@@ -1,11 +1,13 @@
 package ru.abondin.hreasy.platform.repo.employee.admin;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
 
 import java.util.List;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class UserSecurityInfoEntry extends EmployeeEntry {
     /**
      * List of accessible projects

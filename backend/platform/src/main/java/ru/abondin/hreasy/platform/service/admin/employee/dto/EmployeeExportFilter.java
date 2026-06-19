@@ -9,5 +9,5 @@ import lombok.Data;
 @Data
 @Builder
 public class EmployeeExportFilter {
-    private boolean includeFired = false;
+    private boolean includeFired;
 }

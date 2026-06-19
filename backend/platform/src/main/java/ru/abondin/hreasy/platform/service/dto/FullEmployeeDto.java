@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 
@@ -8,6 +9,7 @@ import java.time.LocalDate;
  * Full representation of Employee DTO for admin APIs.
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class FullEmployeeDto extends EmployeeDto {
     private LocalDate dateOfEmployment;
     private SimpleDictDto position;

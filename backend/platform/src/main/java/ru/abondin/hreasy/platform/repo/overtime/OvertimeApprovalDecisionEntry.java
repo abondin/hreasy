@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.repo.overtime;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -53,6 +54,7 @@ public class OvertimeApprovalDecisionEntry {
     private String comment;
 
     @Data
+    @EqualsAndHashCode(callSuper = false)
     public static class OvertimeApprovalDecisionWithEmployeeEntry extends OvertimeApprovalDecisionEntry {
         @Column("approver_display_name")
         private String approverDisplayName;

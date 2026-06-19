@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform;
 
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import java.util.Map;
  * Give the client clear reason of error.
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class BusinessError extends RuntimeException {
 
 

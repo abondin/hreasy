@@ -1,8 +1,8 @@
 package ru.abondin.hreasy.platform.service.message.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.springframework.core.io.Resource;
 
 import org.springframework.lang.NonNull;
@@ -15,8 +15,8 @@ import java.util.Map;
  * Message to send via email
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
-@ToString(of = {"clientUuid", "to", "cc", "title"})
 public class HrEasyEmailMessage extends HrEasyMessage {
 
     private List<String> to = new ArrayList<>();
@@ -27,4 +27,11 @@ public class HrEasyEmailMessage extends HrEasyMessage {
 
     private Map<String, Resource> attachments = new HashMap<>();
 
+    @Override
+    public String toString() {
+        return "HrEasyEmailMessage(clientUuid=" + getClientUuid()
+                + ", to=" + to
+                + ", cc=" + cc
+                + ", title=" + getTitle() + ")";
+    }
 }

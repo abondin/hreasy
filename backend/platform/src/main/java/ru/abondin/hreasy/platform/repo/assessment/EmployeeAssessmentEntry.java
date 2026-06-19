@@ -1,10 +1,12 @@
 package ru.abondin.hreasy.platform.repo.assessment;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class EmployeeAssessmentEntry extends AssessmentEntry {
     private Integer employeeId;
     private String employeeDisplayName;

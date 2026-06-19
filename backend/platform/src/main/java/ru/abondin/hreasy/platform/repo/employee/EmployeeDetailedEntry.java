@@ -1,10 +1,12 @@
 package ru.abondin.hreasy.platform.repo.employee;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.relational.core.mapping.Table;
 import ru.abondin.hreasy.platform.service.skills.dto.RatingsMapper;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Table("empl.v_employee_detailed")
 public class EmployeeDetailedEntry extends EmployeeEntry {
     private String departmentName;

@@ -1,10 +1,12 @@
 package ru.abondin.hreasy.platform.service.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 public class CurrentProjectDictDto extends SimpleDictDto {
     /**

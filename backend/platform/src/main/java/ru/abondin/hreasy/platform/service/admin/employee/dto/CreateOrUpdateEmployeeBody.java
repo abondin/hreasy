@@ -1,13 +1,13 @@
 package ru.abondin.hreasy.platform.service.admin.employee.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.springframework.lang.Nullable;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
-@ToString(of = {"email"})
 public class CreateOrUpdateEmployeeBody extends EmployeeAllFields {
     private Integer departmentId;
     private Integer currentProjectId;
@@ -20,4 +20,9 @@ public class CreateOrUpdateEmployeeBody extends EmployeeAllFields {
 
     @Nullable
     private Integer importProcessId;
+
+    @Override
+    public String toString() {
+        return "CreateOrUpdateEmployeeBody(email=" + getEmail() + ")";
+    }
 }

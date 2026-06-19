@@ -48,6 +48,7 @@ public class AdminSalaryRequestExcelExporter {
         private String exportedBy;
         private Integer period;
         private OffsetDateTime exportTime;
+        @Builder.Default
         private List<SalaryRequestExportDto> requests = new ArrayList<>();
         private Locale locale;
     }

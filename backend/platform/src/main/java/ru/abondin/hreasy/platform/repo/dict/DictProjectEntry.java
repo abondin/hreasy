@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.repo.dict;
 
 import io.r2dbc.postgresql.codec.Json;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
@@ -56,6 +57,7 @@ public class DictProjectEntry {
 
 
     @Data
+    @EqualsAndHashCode(callSuper = false)
     @NoArgsConstructor
     public static class ProjectFullEntry extends DictProjectEntry {
         @NonNull
@@ -64,6 +66,7 @@ public class DictProjectEntry {
     }
 
     @Data
+    @EqualsAndHashCode(callSuper = false)
     @NoArgsConstructor
     public static class ProjectFullEntryWithManagers extends ProjectFullEntry {
         private Json managersJson;

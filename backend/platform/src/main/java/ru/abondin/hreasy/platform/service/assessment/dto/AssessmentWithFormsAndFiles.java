@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.assessment.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.lang.Nullable;
 
 import java.time.OffsetDateTime;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class AssessmentWithFormsAndFiles extends AssessmentDto {
     @Data
     public static class AssessmentFormDto {
