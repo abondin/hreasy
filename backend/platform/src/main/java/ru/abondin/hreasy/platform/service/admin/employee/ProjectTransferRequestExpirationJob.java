@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import ru.abondin.hreasy.platform.config.BackgroundTasksProps;
-import ru.abondin.hreasy.platform.repo.employee.projecttransfer.ProjectTransferRequestEntry;
 import ru.abondin.hreasy.platform.repo.employee.projecttransfer.ProjectTransferRequestRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.notification.NotificationOrchestrator;
@@ -38,7 +37,8 @@ public class ProjectTransferRequestExpirationJob {
             // Process: expiration is a background cleanup of pending requests by created_at + configured max age.
             // The job is not a strict consistency gate; transfer/update commands still rely on the current DB state.
             projectTransferRequestRepo.expirePendingCreatedBefore(createdBefore, now)
-                    .flatMap(request -> notificationOrchestrator.publishBestEffort(expiredEvent(request))
+                    .flatMap(request -> notificationOrchestrator.publishBestEffort(
+                                    ProjectTransferRequestNotificationEvent.expired(request))
                             .thenReturn(request))
                     .count()
                     .doOnNext(expired -> log.info("Expired project transfer requests count={}, createdBefore={}",
@@ -48,18 +48,5 @@ public class ProjectTransferRequestExpirationJob {
         } catch (Exception ex) {
             log.error("Project transfer request expiration job failed createdBefore={}", createdBefore, ex);
         }
-    }
-
-    private ProjectTransferRequestNotificationEvent expiredEvent(ProjectTransferRequestEntry request) {
-        return new ProjectTransferRequestNotificationEvent(
-                request.getId(),
-                ProjectTransferRequestNotificationEvent.Kind.EXPIRED,
-                request.getEmployeeId(),
-                request.getFromProjectId(),
-                request.getToProjectId(),
-                request.getCreatedBy(),
-                request.getApproverEmployeeId(),
-                null,
-                request.getDecisionComment());
     }
 }

@@ -352,9 +352,8 @@ public class AdminEmployeeService {
                         now,
                         auth.getEmployeeInfo().getEmployeeId())
                         .flatMap(history -> notificationOrchestrator.publishBestEffort(
-                                        projectTransferRequestEvent(
+                                        ProjectTransferRequestNotificationEvent.created(
                                                 saved,
-                                                ProjectTransferRequestNotificationEvent.Kind.CREATED,
                                                 auth.getEmployeeInfo().getEmployeeId()))
                                 .thenReturn(history)))
                 .map(history -> history.getEntityId());
@@ -417,9 +416,9 @@ public class AdminEmployeeService {
                         now,
                         auth.getEmployeeInfo().getEmployeeId())
                         .flatMap(history -> notificationOrchestrator.publishBestEffort(
-                                        projectTransferRequestEvent(
+                                        ProjectTransferRequestNotificationEvent.closed(
                                                 saved,
-                                                projectTransferRequestNotificationKind(state),
+                                                state,
                                                 auth.getEmployeeInfo().getEmployeeId()))
                                 .thenReturn(history)))
                 .map(history -> history.getEntityId());
@@ -427,34 +426,6 @@ public class AdminEmployeeService {
 
     private String decisionComment(@Nullable CurrentProjectTransferDecisionBody body) {
         return body == null ? null : body.getComment();
-    }
-
-    private ProjectTransferRequestNotificationEvent projectTransferRequestEvent(ProjectTransferRequestEntry request,
-                                                                                ProjectTransferRequestNotificationEvent.Kind kind,
-                                                                                @Nullable Integer actionEmployeeId) {
-        return new ProjectTransferRequestNotificationEvent(
-                request.getId(),
-                kind,
-                request.getEmployeeId(),
-                request.getFromProjectId(),
-                request.getToProjectId(),
-                request.getCreatedBy(),
-                request.getApproverEmployeeId(),
-                actionEmployeeId,
-                request.getDecisionComment());
-    }
-
-    private ProjectTransferRequestNotificationEvent.Kind projectTransferRequestNotificationKind(short state) {
-        if (state == ProjectTransferRequestEntry.STATE_APPROVED) {
-            return ProjectTransferRequestNotificationEvent.Kind.APPROVED;
-        }
-        if (state == ProjectTransferRequestEntry.STATE_REJECTED) {
-            return ProjectTransferRequestNotificationEvent.Kind.REJECTED;
-        }
-        if (state == ProjectTransferRequestEntry.STATE_CANCELED) {
-            return ProjectTransferRequestNotificationEvent.Kind.CANCELED;
-        }
-        throw new IllegalArgumentException("Unsupported project transfer request notification state: " + state);
     }
 
     private <T> Mono<T> failWithPendingTransferRequest() {

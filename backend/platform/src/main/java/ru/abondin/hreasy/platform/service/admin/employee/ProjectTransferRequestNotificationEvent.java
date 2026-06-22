@@ -1,5 +1,7 @@
 package ru.abondin.hreasy.platform.service.admin.employee;
 
+import org.springframework.lang.Nullable;
+import ru.abondin.hreasy.platform.repo.employee.projecttransfer.ProjectTransferRequestEntry;
 import ru.abondin.hreasy.platform.service.notification.BusinessNotificationEvent;
 
 /**
@@ -26,11 +28,54 @@ public record ProjectTransferRequestNotificationEvent(
         Integer actionEmployeeId,
         String comment
 ) implements BusinessNotificationEvent {
+    public static ProjectTransferRequestNotificationEvent created(ProjectTransferRequestEntry request,
+                                                                  Integer actionEmployeeId) {
+        return from(request, Kind.CREATED, actionEmployeeId);
+    }
+
+    public static ProjectTransferRequestNotificationEvent closed(ProjectTransferRequestEntry request,
+                                                                 short state,
+                                                                 Integer actionEmployeeId) {
+        return from(request, Kind.fromRequestState(state), actionEmployeeId);
+    }
+
+    public static ProjectTransferRequestNotificationEvent expired(ProjectTransferRequestEntry request) {
+        return from(request, Kind.EXPIRED, null);
+    }
+
+    public static ProjectTransferRequestNotificationEvent from(ProjectTransferRequestEntry request,
+                                                               Kind kind,
+                                                               @Nullable Integer actionEmployeeId) {
+        return new ProjectTransferRequestNotificationEvent(
+                request.getId(),
+                kind,
+                request.getEmployeeId(),
+                request.getFromProjectId(),
+                request.getToProjectId(),
+                request.getCreatedBy(),
+                request.getApproverEmployeeId(),
+                actionEmployeeId,
+                request.getDecisionComment());
+    }
+
     public enum Kind {
         CREATED,
         APPROVED,
         REJECTED,
         CANCELED,
-        EXPIRED
+        EXPIRED;
+
+        public static Kind fromRequestState(short state) {
+            if (state == ProjectTransferRequestEntry.STATE_APPROVED) {
+                return APPROVED;
+            }
+            if (state == ProjectTransferRequestEntry.STATE_REJECTED) {
+                return REJECTED;
+            }
+            if (state == ProjectTransferRequestEntry.STATE_CANCELED) {
+                return CANCELED;
+            }
+            throw new IllegalArgumentException("Unsupported project transfer request notification state: " + state);
+        }
     }
 }

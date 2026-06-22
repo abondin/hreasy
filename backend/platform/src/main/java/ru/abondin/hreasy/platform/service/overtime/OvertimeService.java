@@ -72,7 +72,7 @@ public class OvertimeService {
                             itemEntry.setReportId(report.getId());
                             return itemRepo.save(itemEntry)
                                     .flatMap(persistedItem -> notificationOrchestrator.publishBestEffort(
-                                            overtimeItemCreatedEvent(auth, report, persistedItem))
+                                                    OvertimeItemCreatedNotificationEvent.from(auth, report, persistedItem))
                                             .thenReturn(persistedItem))
                                     .map(persistedItem -> mapper.itemToDto(persistedItem))
                                     .map(item -> {
@@ -103,7 +103,7 @@ public class OvertimeService {
                             item.setDeletedBy(auth.getEmployeeInfo().getEmployeeId());
                             return itemRepo.save(item)
                                     .flatMap(deletedItem -> notificationOrchestrator.publishBestEffort(
-                                            overtimeItemDeletedEvent(auth, employeeId, periodId, deletedItem))
+                                            OvertimeItemDeletedNotificationEvent.from(auth, employeeId, periodId, deletedItem))
                                             .thenReturn(deletedItem));
                         })
                         .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(itemId))))
@@ -170,7 +170,7 @@ public class OvertimeService {
                                     approvalEntry.setComment(comment);
                                     return approvalRepo.save(approvalEntry)
                                             .flatMap(savedDecision -> notificationOrchestrator.publishBestEffort(
-                                                    overtimeDecisionEvent(auth, employeeId, report, savedDecision))
+                                                    OvertimeDecisionNotificationEvent.from(auth, employeeId, report, savedDecision))
                                                     .thenReturn(savedDecision));
                                     // 6. Just reload whole report to populate all required fields for approval entry
                                 }).flatMap(approvalEntry -> get(employeeId, periodId)))));
@@ -246,48 +246,6 @@ public class OvertimeService {
                 .flatMap(p -> Mono.error(new BusinessError("errors.overtime.period.closed", Integer.toString(p.getPeriod()))))
                 .map(p -> false)
                 .defaultIfEmpty(true);
-    }
-
-    private OvertimeItemCreatedNotificationEvent overtimeItemCreatedEvent(AuthContext auth,
-                                                                          OvertimeReportDto report,
-                                                                          OvertimeItemEntry item) {
-        return new OvertimeItemCreatedNotificationEvent(
-                auth,
-                report.getEmployeeId(),
-                report.getId(),
-                report.getPeriod(),
-                item.getId(),
-                item.getDate(),
-                item.getHours());
-    }
-
-    private OvertimeItemDeletedNotificationEvent overtimeItemDeletedEvent(AuthContext auth,
-                                                                          int employeeId,
-                                                                          int periodId,
-                                                                          OvertimeItemEntry item) {
-        return new OvertimeItemDeletedNotificationEvent(
-                auth,
-                employeeId,
-                item.getReportId(),
-                periodId,
-                item.getId(),
-                item.getDate(),
-                item.getHours());
-    }
-
-    private OvertimeDecisionNotificationEvent overtimeDecisionEvent(AuthContext auth,
-                                                                    int employeeId,
-                                                                    OvertimeReportDto report,
-                                                                    OvertimeApprovalDecisionEntry decision) {
-        return new OvertimeDecisionNotificationEvent(
-                auth,
-                employeeId,
-                report.getId(),
-                report.getPeriod(),
-                decision.getId(),
-                decision.getDecision(),
-                decision.getApprover(),
-                decision.getComment());
     }
 
 }

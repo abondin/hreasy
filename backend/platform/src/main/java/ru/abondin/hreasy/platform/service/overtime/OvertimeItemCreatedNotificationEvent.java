@@ -1,7 +1,9 @@
 package ru.abondin.hreasy.platform.service.overtime;
 
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.overtime.OvertimeItemEntry;
 import ru.abondin.hreasy.platform.service.notification.BusinessNotificationEvent;
+import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeReportDto;
 
 import java.time.LocalDate;
 
@@ -25,4 +27,16 @@ public record OvertimeItemCreatedNotificationEvent(
         LocalDate itemDate,
         float hours
 ) implements BusinessNotificationEvent {
+    public static OvertimeItemCreatedNotificationEvent from(AuthContext auth,
+                                                            OvertimeReportDto report,
+                                                            OvertimeItemEntry item) {
+        return new OvertimeItemCreatedNotificationEvent(
+                auth,
+                report.getEmployeeId(),
+                report.getId(),
+                report.getPeriod(),
+                item.getId(),
+                item.getDate(),
+                item.getHours());
+    }
 }
