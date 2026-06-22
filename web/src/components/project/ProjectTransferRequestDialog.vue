@@ -139,7 +139,7 @@ const dialogOpen = computed({
 });
 
 const canApproveOrRejectRequest = computed(() =>
-  props.request?.approverEmployeeId === authStore.employeeId,
+  props.request?.canMakeDecision === true,
 );
 
 const canCancelRequest = computed(() =>

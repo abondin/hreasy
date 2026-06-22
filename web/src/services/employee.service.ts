@@ -74,6 +74,7 @@ export interface CurrentProjectTransferRequest {
   approverEmployeeId: number;
   approverDisplayName: string;
   createdAt: string;
+  canMakeDecision: boolean;
 }
 
 export interface CurrentProjectTransferDecisionBody {

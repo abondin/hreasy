@@ -184,6 +184,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
     public void requestCurrentProjectTransferApprovalCreatesPendingRequest() {
         var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
         var jawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var maxwell = auth(TestEmployees.Billing_Manager_Maxwell_May).block(MONO_DEFAULT_TIMEOUT);
         var body = transferRequestBody(
                 testData.project_M1_Billing(),
                 testData.project_M1_FMS(),
@@ -191,7 +192,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
 
         StepVerifier
                 .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
-                        .flatMap(_ -> adminEmployeeService.findActiveCurrentProjectTransferRequest(jawad, employeeId)))
+                        .flatMap(_ -> adminEmployeeService.findActiveCurrentProjectTransferRequest(maxwell, employeeId)))
                 .assertNext(request -> {
                     Assertions.assertNotNull(request.getId());
                     Assertions.assertEquals(employeeId, request.getEmployeeId());
@@ -206,6 +207,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
                     Assertions.assertEquals(testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May),
                             request.getApproverEmployeeId());
                     Assertions.assertEquals("May Maxwell", request.getApproverDisplayName());
+                    Assertions.assertEquals(Boolean.TRUE, request.getCanMakeDecision());
                     Assertions.assertNotNull(request.getCreatedAt());
                 })
                 .verifyComplete();
@@ -317,6 +319,40 @@ public class EmployeeServiceTest extends BaseServiceTest {
                             requestState.updatedBy());
                     Assertions.assertNotNull(requestState.appliedEmployeeHistoryId());
                     Assertions.assertEquals("ok", requestState.decisionComment());
+                    Assertions.assertEquals(testData.project_M1_FMS(), currentProject.projectId());
+                    Assertions.assertEquals("Tester", currentProject.role());
+                })
+                .verifyComplete();
+    }
+
+    /**
+     * Test goal: verifies that another active source-side approver may approve a pending transfer request.
+     * <p>Precondition: Jawad created a pending transfer request for Asiyah and Maxwell is assigned approver.
+     * <p>Action: Kyran, another employee from the same allowed approver list, approves the request.
+     * <p>Verification: request becomes approved by Kyran and employee current project/role are updated.
+     */
+    @Test
+    @DisplayName("Another eligible approver approves current project transfer request")
+    public void approveCurrentProjectTransferRequestAllowsAnotherEligibleApprover() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var jawad = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var kyran = auth(TestEmployees.Multiprojet_Manager_Kyran_Neville).block(MONO_DEFAULT_TIMEOUT);
+        var body = transferRequestBody(
+                testData.project_M1_Billing(),
+                testData.project_M1_FMS(),
+                testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May));
+
+        StepVerifier
+                .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
+                        .flatMap(requestId -> adminEmployeeService.approveCurrentProjectTransferRequest(kyran, requestId, decisionBody("ok"))
+                                .then(Mono.zip(projectTransferRequestState(requestId), employeeCurrentProject(employeeId)))))
+                .assertNext(result -> {
+                    var requestState = result.getT1();
+                    var currentProject = result.getT2();
+                    Assertions.assertEquals(ProjectTransferRequestEntry.STATE_APPROVED, requestState.state());
+                    Assertions.assertEquals(testData.employees.get(TestEmployees.Multiprojet_Manager_Kyran_Neville),
+                            requestState.updatedBy());
+                    Assertions.assertNotNull(requestState.appliedEmployeeHistoryId());
                     Assertions.assertEquals(testData.project_M1_FMS(), currentProject.projectId());
                     Assertions.assertEquals("Tester", currentProject.role());
                 })

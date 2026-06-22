@@ -208,7 +208,12 @@ public class AdminEmployeeService {
         // Permission is intentionally the same coarse transfer access check as for starting the transfer flow.
         return validateCurrentProjectTransferAccess(auth)
                 .flatMap(_ -> projectTransferRequestRepo.findPendingViewByEmployeeId(employeeId))
-                .map(projectTransferRequestMapper::fromView);
+                .flatMap(request -> canMakeProjectTransferDecision(auth, request.getEmployeeId())
+                        .map(canMakeDecision -> {
+                            var dto = projectTransferRequestMapper.fromView(request);
+                            dto.setCanMakeDecision(canMakeDecision);
+                            return dto;
+                        }));
     }
 
     @Transactional
@@ -219,7 +224,7 @@ public class AdminEmployeeService {
         var now = dateTimeService.now();
         return projectTransferRequestRepo.findPendingById(requestId)
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound("project_transfer_request", requestId))
-                .flatMap(request -> validateProjectTransferApprover(auth, request)
+                .flatMap(request -> validateProjectTransferDecisionApprover(auth, request)
                         .then(applyProjectTransferRequest(auth, request, now))
                         .flatMap(historyId -> closeProjectTransferRequest(
                                 request,
@@ -238,7 +243,7 @@ public class AdminEmployeeService {
         var now = dateTimeService.now();
         return projectTransferRequestRepo.findPendingById(requestId)
                 .switchIfEmpty(BusinessErrorFactory.entityNotFound("project_transfer_request", requestId))
-                .flatMap(request -> validateProjectTransferApprover(auth, request)
+                .flatMap(request -> validateProjectTransferDecisionApprover(auth, request)
                         .then(closeProjectTransferRequest(
                                 request,
                                 ProjectTransferRequestEntry.STATE_REJECTED,
@@ -347,11 +352,22 @@ public class AdminEmployeeService {
                 .map(history -> history.getEntityId());
     }
 
-    private Mono<Void> validateProjectTransferApprover(AuthContext auth, ProjectTransferRequestEntry request) {
-        if (Objects.equals(request.getApproverEmployeeId(), auth.getEmployeeInfo().getEmployeeId())) {
-            return Mono.empty();
-        }
-        return Mono.error(new AccessDeniedException("Only assigned approver can process project transfer request"));
+    private Mono<Void> validateProjectTransferDecisionApprover(AuthContext auth, ProjectTransferRequestEntry request) {
+        return canMakeProjectTransferDecision(auth, request.getEmployeeId())
+                .filter(Boolean::booleanValue)
+                .switchIfEmpty(Mono.error(new AccessDeniedException("Only active project transfer approver can process project transfer request")))
+                .then();
+    }
+
+    private Mono<Boolean> canMakeProjectTransferDecision(AuthContext auth, int employeeId) {
+        // Process: approve/reject is available to the same active approver list used when the request is created.
+        // The assigned approver is the primary recipient, but another current source-side approver may make the decision.
+        var currentEmployeeId = auth.getEmployeeInfo().getEmployeeId();
+        return managerRepo.findActiveEmployeeManagers(employeeId, dateTimeService.now())
+                .collectList()
+                .map(this::currentProjectTransferApprovers)
+                .map(approvers -> approvers.stream()
+                        .anyMatch(approver -> Objects.equals(approver.getEmployeeId(), currentEmployeeId)));
     }
 
     private Mono<Void> validateProjectTransferCancel(AuthContext auth, ProjectTransferRequestEntry request) {

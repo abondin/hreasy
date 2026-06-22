@@ -4,7 +4,7 @@ This document lists HR Easy business notifications, their trigger moments, recip
 
 Technical delivery settings, channel configuration, API payloads, and provider behavior belong to the owning modules, primarily `platform` and `notify-ms`.
 
-## Notifications
+## Overtime Notifications
 
 | Event type | Business trigger | Business recipients | User-visible inbox | Business purpose | Status |
 |------------|------------------|---------------------|--------------------|------------------|--------|
@@ -12,11 +12,31 @@ Technical delivery settings, channel configuration, API payloads, and provider b
 | `overtime.item_deleted` | An employee deletes an overtime item from a report | Active managers of the employee's current project, project business account, and project department who have `overtime_view` | Yes | Tell responsible managers that previously reported overtime was removed | Implemented |
 | `overtime.approved` | A manager approves an employee overtime report | Report employee | Yes | Tell the employee that the overtime report was approved | Implemented |
 | `overtime.declined` | A manager declines an employee overtime report | Report employee | Yes | Tell the employee that the overtime report was declined and show the manager comment when present | Implemented |
-| `vacation.upcoming` | A planned vacation is approaching | Employee; managers if required by HR policy | Planned reuse | Remind relevant people about the upcoming vacation | Candidate |
-| `salary_request.approval_required` | A salary request is waiting for approval | Approver employee | Planned | Tell the approver that a salary request needs a decision | Candidate |
+
+## Vacation Notifications
+
+| Event type | Business trigger | Business recipients | User-visible inbox | Business purpose | Status |
+|------------|------------------|---------------------|--------------------|------------------|--------|
+| `vacation.upcoming` | A planned vacation starts within the configured upcoming-vacation threshold | Employee; active managers copied in email; configured additional email recipients copied in email | No | Remind relevant people about the upcoming vacation and attach the vacation application template | Legacy email implemented |
+
+## Salary Notifications
+
+| Event type | Business trigger | Business recipients | User-visible inbox | Business purpose | Status |
+|------------|------------------|---------------------|--------------------|------------------|--------|
 | `salary_request.implemented` | An admin marks a salary increase or bonus request as implemented | Employee who created the salary request | Yes | Tell the request creator that the request has been implemented | Implemented |
-| `salary_request.rejected` | An admin rejects a salary increase or bonus request | Employee who created the salary request | Yes | Tell the request creator that the request has been rejected | Implemented |
-| `support.request.created` | A support request is created | Support group or responsible support target | Optional | Notify the support side about a new employee request | Candidate |
+| `salary_request.rejected` | An admin rejects a salary increase or bonus request | Employee who created the salary request | Yes | Tell the request creator that the request has been rejected and show the reject reason when present | Implemented |
+
+## Project Transfer Notifications
+
+These notifications cover the employee current-project transfer request flow. None of them is implemented yet; the table is the product catalog for the next implementation step.
+
+| Event type | Business trigger | Business recipients | User-visible inbox | Business purpose | Status |
+|------------|------------------|---------------------|--------------------|------------------|--------|
+| `project_transfer.request_created` | A pending project transfer request is created | Assigned approver | Yes | Tell the approver that an employee transfer request needs a decision | Candidate |
+| `project_transfer.request_approved` | An eligible approver approves the transfer request and the employee project is updated | Request creator; assigned approver if another eligible approver made the decision | Yes | Tell the requester and originally assigned approver that the transfer was approved and applied | Candidate |
+| `project_transfer.request_rejected` | An eligible approver rejects the transfer request | Request creator; assigned approver if another eligible approver made the decision | Yes | Tell the requester and originally assigned approver that the transfer was rejected and show the decision comment when present | Candidate |
+| `project_transfer.request_canceled` | The request creator or a global current-project manager cancels a pending transfer request | Assigned approver; request creator if canceled by another employee | Yes | Tell affected participants that the pending transfer request is no longer active | Candidate |
+| `project_transfer.request_expired` | The expiration job marks an old pending transfer request as expired | Request creator; assigned approver | Yes | Tell participants that no decision was made before the configured expiration period | Candidate |
 
 ## Business Rules
 

@@ -13,6 +13,7 @@ public interface ProjectTransferRequestMapper {
 
     CurrentProjectTransferApproverDto fromApprover(ManagerRecipient entry);
 
+    @Mapping(target = "canMakeDecision", ignore = true)
     CurrentProjectTransferRequestDto fromView(ProjectTransferRequestView entry);
 
     @Mapping(target = "id", ignore = true)
