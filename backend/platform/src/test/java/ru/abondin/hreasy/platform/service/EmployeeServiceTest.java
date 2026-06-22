@@ -329,7 +329,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
      * Test goal: verifies that another active source-side approver may approve a pending transfer request.
      * <p>Precondition: Jawad created a pending transfer request for Asiyah and Maxwell is assigned approver.
      * <p>Action: Kyran, another employee from the same allowed approver list, approves the request.
-     * <p>Verification: request becomes approved by Kyran and employee current project/role are updated.
+     * <p>Verification: request becomes approved by Kyran, employee project/role are updated, and creator/assigned approver are notified.
      */
     @Test
     @DisplayName("Another eligible approver approves current project transfer request")
@@ -345,16 +345,30 @@ public class EmployeeServiceTest extends BaseServiceTest {
         StepVerifier
                 .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
                         .flatMap(requestId -> adminEmployeeService.approveCurrentProjectTransferRequest(kyran, requestId, decisionBody("ok"))
-                                .then(Mono.zip(projectTransferRequestState(requestId), employeeCurrentProject(employeeId)))))
+                                .then(Mono.zip(
+                                        projectTransferRequestState(requestId),
+                                        employeeCurrentProject(employeeId),
+                                        projectTransferNotifications()))))
                 .assertNext(result -> {
                     var requestState = result.getT1();
                     var currentProject = result.getT2();
+                    var notifications = result.getT3();
                     Assertions.assertEquals(ProjectTransferRequestEntry.STATE_APPROVED, requestState.state());
                     Assertions.assertEquals(testData.employees.get(TestEmployees.Multiprojet_Manager_Kyran_Neville),
                             requestState.updatedBy());
                     Assertions.assertNotNull(requestState.appliedEmployeeHistoryId());
                     Assertions.assertEquals(testData.project_M1_FMS(), currentProject.projectId());
                     Assertions.assertEquals("Tester", currentProject.role());
+                    Assertions.assertEquals(3, notifications.size());
+                    Assertions.assertTrue(notifications.contains(new ProjectTransferNotification(
+                            testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May),
+                            "project_transfer.request_created")));
+                    Assertions.assertTrue(notifications.contains(new ProjectTransferNotification(
+                            testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May),
+                            "project_transfer.request_approved")));
+                    Assertions.assertTrue(notifications.contains(new ProjectTransferNotification(
+                            testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee),
+                            "project_transfer.request_approved")));
                 })
                 .verifyComplete();
     }
@@ -528,6 +542,20 @@ public class EmployeeServiceTest extends BaseServiceTest {
                 .one();
     }
 
+    private Mono<List<ProjectTransferNotification>> projectTransferNotifications() {
+        return db.sql("""
+                        select employee, context ->> 'eventType' as event_type
+                        from notify.notification
+                        where category = 'project_transfer'
+                        order by event_type, employee
+                        """)
+                .map(row -> new ProjectTransferNotification(
+                        row.get("employee", Integer.class),
+                        row.get("event_type", String.class)))
+                .all()
+                .collectList();
+    }
+
     private record ProjectTransferRequestState(Short state,
                                                Integer updatedBy,
                                                String decisionComment,
@@ -537,8 +565,12 @@ public class EmployeeServiceTest extends BaseServiceTest {
     private record EmployeeCurrentProject(Integer projectId, String role) {
     }
 
+    private record ProjectTransferNotification(Integer employeeId, String eventType) {
+    }
+
     private Mono<Void> cleanupProjectTransferTestsData() {
-        return db.sql("delete from empl.project_transfer_request").then()
+        return db.sql("delete from notify.notification where category = 'project_transfer'").then()
+                .then(db.sql("delete from empl.project_transfer_request").then())
                 .then(db.sql("delete from history.history where entity_type = 'project_transfer_request'").then())
                 .then(db.sql("""
                                 update empl.employee

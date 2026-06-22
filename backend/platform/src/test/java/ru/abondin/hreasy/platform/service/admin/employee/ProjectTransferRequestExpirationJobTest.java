@@ -20,6 +20,7 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.TestFixedDataTimeConfig;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -41,8 +42,10 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
         ((TestFixedDataTimeConfig.TestFixedDataTimeService) dateTimeService)
                 .init(OffsetDateTime.parse("2026-06-22T12:00:00+03:00"));
         initEmployeesDataAndLogin();
-        db.sql("delete from empl.project_transfer_request")
+        db.sql("delete from notify.notification where category = 'project_transfer'")
                 .then()
+                .then(db.sql("delete from empl.project_transfer_request")
+                        .then())
                 .block(MONO_DEFAULT_TIMEOUT);
     }
 
@@ -50,7 +53,7 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
      * Test goal: verifies that the expiration job closes only old pending project transfer requests.
      * <p>Precondition: one old pending, one fresh pending, and one old approved transfer request exist.
      * <p>Action: run the project transfer request expiration job directly.
-     * <p>Verification: only the old pending request becomes expired and gets the fixed updated timestamp.
+     * <p>Verification: only the old pending request becomes expired, gets the fixed updated timestamp, and notifies creator/approver.
      */
     @Test
     @DisplayName("Expiration job expires only old pending project transfer requests")
@@ -74,7 +77,8 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
         StepVerifier.create(Mono.zip(
                         transferRequestState(oldPending),
                         transferRequestState(freshPending),
-                        transferRequestState(oldApproved)))
+                        transferRequestState(oldApproved),
+                        projectTransferNotifications(oldPending)))
                 .assertNext(states -> {
                     Assertions.assertEquals(ProjectTransferRequestEntry.STATE_EXPIRED, states.getT1().state());
                     Assertions.assertEquals(now, states.getT1().updatedAt());
@@ -85,6 +89,14 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
 
                     Assertions.assertEquals(ProjectTransferRequestEntry.STATE_APPROVED, states.getT3().state());
                     Assertions.assertNull(states.getT3().updatedAt());
+
+                    Assertions.assertEquals(2, states.getT4().size());
+                    Assertions.assertTrue(states.getT4().contains(new ProjectTransferNotification(
+                            testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee),
+                            "project_transfer.request_expired")));
+                    Assertions.assertTrue(states.getT4().contains(new ProjectTransferNotification(
+                            testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May),
+                            "project_transfer.request_expired")));
                 })
                 .verifyComplete();
     }
@@ -138,8 +150,26 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
                 .one();
     }
 
+    private Mono<List<ProjectTransferNotification>> projectTransferNotifications(int requestId) {
+        return db.sql("""
+                        select employee, context ->> 'eventType' as event_type
+                        from notify.notification
+                        where category = 'project_transfer'
+                          and context ->> 'projectTransferRequestId' = :requestId
+                        """)
+                .bind("requestId", Integer.toString(requestId))
+                .map(row -> new ProjectTransferNotification(
+                        row.get("employee", Integer.class),
+                        row.get("event_type", String.class)))
+                .all()
+                .collectList();
+    }
+
     private record ProjectTransferRequestState(Short state,
                                                OffsetDateTime updatedAt,
                                                Integer updatedBy) {
+    }
+
+    private record ProjectTransferNotification(Integer employeeId, String eventType) {
     }
 }

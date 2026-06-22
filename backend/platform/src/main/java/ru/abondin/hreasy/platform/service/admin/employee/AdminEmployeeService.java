@@ -27,6 +27,7 @@ import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.*;
 import ru.abondin.hreasy.platform.service.dto.EmployeeUpdateTelegramBody;
+import ru.abondin.hreasy.platform.service.notification.NotificationOrchestrator;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ public class AdminEmployeeService {
     private final ProjectTransferRequestRepo projectTransferRequestRepo;
     private final HistoryDomainService historyDomainService;
     private final ProjectTransferRequestMapper projectTransferRequestMapper;
+    private final NotificationOrchestrator notificationOrchestrator;
 
 
     public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth, boolean includeFired) {
@@ -348,7 +350,13 @@ public class AdminEmployeeService {
                         HistoryDomainService.HistoryEntityType.PROJECT_TRANSFER_REQUEST,
                         saved,
                         now,
-                        auth.getEmployeeInfo().getEmployeeId()))
+                        auth.getEmployeeInfo().getEmployeeId())
+                        .flatMap(history -> notificationOrchestrator.publishBestEffort(
+                                        projectTransferRequestEvent(
+                                                saved,
+                                                ProjectTransferRequestNotificationEvent.Kind.CREATED,
+                                                auth.getEmployeeInfo().getEmployeeId()))
+                                .thenReturn(history)))
                 .map(history -> history.getEntityId());
     }
 
@@ -407,12 +415,46 @@ public class AdminEmployeeService {
                         HistoryDomainService.HistoryEntityType.PROJECT_TRANSFER_REQUEST,
                         saved,
                         now,
-                        auth.getEmployeeInfo().getEmployeeId()))
+                        auth.getEmployeeInfo().getEmployeeId())
+                        .flatMap(history -> notificationOrchestrator.publishBestEffort(
+                                        projectTransferRequestEvent(
+                                                saved,
+                                                projectTransferRequestNotificationKind(state),
+                                                auth.getEmployeeInfo().getEmployeeId()))
+                                .thenReturn(history)))
                 .map(history -> history.getEntityId());
     }
 
     private String decisionComment(@Nullable CurrentProjectTransferDecisionBody body) {
         return body == null ? null : body.getComment();
+    }
+
+    private ProjectTransferRequestNotificationEvent projectTransferRequestEvent(ProjectTransferRequestEntry request,
+                                                                                ProjectTransferRequestNotificationEvent.Kind kind,
+                                                                                @Nullable Integer actionEmployeeId) {
+        return new ProjectTransferRequestNotificationEvent(
+                request.getId(),
+                kind,
+                request.getEmployeeId(),
+                request.getFromProjectId(),
+                request.getToProjectId(),
+                request.getCreatedBy(),
+                request.getApproverEmployeeId(),
+                actionEmployeeId,
+                request.getDecisionComment());
+    }
+
+    private ProjectTransferRequestNotificationEvent.Kind projectTransferRequestNotificationKind(short state) {
+        if (state == ProjectTransferRequestEntry.STATE_APPROVED) {
+            return ProjectTransferRequestNotificationEvent.Kind.APPROVED;
+        }
+        if (state == ProjectTransferRequestEntry.STATE_REJECTED) {
+            return ProjectTransferRequestNotificationEvent.Kind.REJECTED;
+        }
+        if (state == ProjectTransferRequestEntry.STATE_CANCELED) {
+            return ProjectTransferRequestNotificationEvent.Kind.CANCELED;
+        }
+        throw new IllegalArgumentException("Unsupported project transfer request notification state: " + state);
     }
 
     private <T> Mono<T> failWithPendingTransferRequest() {

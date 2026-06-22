@@ -28,6 +28,7 @@ public class NotificationPersistService {
     @Getter
     public enum NotificationCategory {
         OVERTIME("overtime"),
+        PROJECT_TRANSFER("project_transfer"),
         SALARY_REQUEST("salary_request"),
         UPCOMING_VACATION("upcoming_vacation");
 

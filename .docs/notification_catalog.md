@@ -28,15 +28,15 @@ Technical delivery settings, channel configuration, API payloads, and provider b
 
 ## Project Transfer Notifications
 
-These notifications cover the employee current-project transfer request flow. None of them is implemented yet; the table is the product catalog for the next implementation step.
+These notifications cover the employee current-project transfer request flow.
 
 | Event type | Business trigger | Business recipients | User-visible inbox | Business purpose | Status |
 |------------|------------------|---------------------|--------------------|------------------|--------|
-| `project_transfer.request_created` | A pending project transfer request is created | Assigned approver | Yes | Tell the approver that an employee transfer request needs a decision | Candidate |
-| `project_transfer.request_approved` | An eligible approver approves the transfer request and the employee project is updated | Request creator; assigned approver if another eligible approver made the decision | Yes | Tell the requester and originally assigned approver that the transfer was approved and applied | Candidate |
-| `project_transfer.request_rejected` | An eligible approver rejects the transfer request | Request creator; assigned approver if another eligible approver made the decision | Yes | Tell the requester and originally assigned approver that the transfer was rejected and show the decision comment when present | Candidate |
-| `project_transfer.request_canceled` | The request creator or a global current-project manager cancels a pending transfer request | Assigned approver; request creator if canceled by another employee | Yes | Tell affected participants that the pending transfer request is no longer active | Candidate |
-| `project_transfer.request_expired` | The expiration job marks an old pending transfer request as expired | Request creator; assigned approver | Yes | Tell participants that no decision was made before the configured expiration period | Candidate |
+| `project_transfer.request_created` | A pending project transfer request is created | Assigned approver | Yes | Tell the approver that an employee transfer request needs a decision | Implemented |
+| `project_transfer.request_approved` | An eligible approver approves the transfer request and the employee project is updated | Request creator; assigned approver if another eligible approver made the decision | Yes | Tell the requester and originally assigned approver that the transfer was approved and applied | Implemented |
+| `project_transfer.request_rejected` | An eligible approver rejects the transfer request | Request creator; assigned approver if another eligible approver made the decision | Yes | Tell the requester and originally assigned approver that the transfer was rejected and show the decision comment when present | Implemented |
+| `project_transfer.request_canceled` | The request creator or a global current-project manager cancels a pending transfer request | Assigned approver; request creator if canceled by another employee | Yes | Tell affected participants that the pending transfer request is no longer active | Implemented |
+| `project_transfer.request_expired` | The expiration job marks an old pending transfer request as expired | Request creator; assigned approver | Yes | Tell participants that no decision was made before the configured expiration period | Implemented |
 
 ## Business Rules
 
