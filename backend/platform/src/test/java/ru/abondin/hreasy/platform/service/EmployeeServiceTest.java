@@ -43,7 +43,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
     @BeforeEach
     protected void beforeEach() {
         initEmployeesDataAndLogin();
-        cleanupProjectTransferRequests().block(MONO_DEFAULT_TIMEOUT);
+        cleanupProjectTransferTestsData().block(MONO_DEFAULT_TIMEOUT);
     }
 
     @Test
@@ -308,8 +308,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
         StepVerifier
                 .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
                         .flatMap(requestId -> adminEmployeeService.approveCurrentProjectTransferRequest(maxwell, requestId, decisionBody("ok"))
-                                .then(projectTransferRequestState(requestId))
-                                .zipWith(employeeCurrentProject(employeeId))))
+                                .then(Mono.zip(projectTransferRequestState(requestId), employeeCurrentProject(employeeId)))))
                 .assertNext(result -> {
                     var requestState = result.getT1();
                     var currentProject = result.getT2();
@@ -344,8 +343,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
         StepVerifier
                 .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
                         .flatMap(requestId -> adminEmployeeService.rejectCurrentProjectTransferRequest(maxwell, requestId, decisionBody("no"))
-                                .then(projectTransferRequestState(requestId))
-                                .zipWith(employeeCurrentProject(employeeId))))
+                                .then(Mono.zip(projectTransferRequestState(requestId), employeeCurrentProject(employeeId)))))
                 .assertNext(result -> {
                     var requestState = result.getT1();
                     var currentProject = result.getT2();
@@ -376,8 +374,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
         StepVerifier
                 .create(adminEmployeeService.requestCurrentProjectTransferApproval(jawad, employeeId, body)
                         .flatMap(requestId -> adminEmployeeService.cancelCurrentProjectTransferRequest(jawad, requestId, decisionBody("cancel"))
-                                .then(projectTransferRequestState(requestId))
-                                .zipWith(employeeCurrentProject(employeeId))))
+                                .then(Mono.zip(projectTransferRequestState(requestId), employeeCurrentProject(employeeId)))))
                 .assertNext(result -> {
                     var requestState = result.getT1();
                     var currentProject = result.getT2();
@@ -504,9 +501,17 @@ public class EmployeeServiceTest extends BaseServiceTest {
     private record EmployeeCurrentProject(Integer projectId, String role) {
     }
 
-    private Mono<Void> cleanupProjectTransferRequests() {
+    private Mono<Void> cleanupProjectTransferTestsData() {
         return db.sql("delete from empl.project_transfer_request").then()
-                .then(db.sql("delete from history.history where entity_type = 'project_transfer_request'").then());
+                .then(db.sql("delete from history.history where entity_type = 'project_transfer_request'").then())
+                .then(db.sql("""
+                                update empl.employee
+                                set current_project = :projectId, current_project_role = null
+                                where id = :employeeId
+                                """)
+                        .bind("projectId", testData.project_M1_Billing())
+                        .bind("employeeId", testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob))
+                        .then());
     }
 
 }
