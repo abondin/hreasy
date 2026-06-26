@@ -19,7 +19,9 @@
         <employee-details-panel
           v-if="employee"
           :employee="employee"
+          :open-project-update-dialog="openProjectUpdateDialog"
           @employee-updated="emit('employee-updated')"
+          @project-update-dialog-closed="emit('project-update-dialog-closed')"
         />
       </v-card-text>
     </v-card>
@@ -46,7 +48,9 @@
         <employee-details-panel
           v-if="employee"
           :employee="employee"
+          :open-project-update-dialog="openProjectUpdateDialog"
           @employee-updated="emit('employee-updated')"
+          @project-update-dialog-closed="emit('project-update-dialog-closed')"
         />
       </div>
     </div>
@@ -61,6 +65,7 @@ import EmployeeDetailsPanel from "@/views/employees/components/EmployeeDetailsPa
 const props = defineProps<{
   modelValue: boolean;
   employee: Employee | null;
+  openProjectUpdateDialog?: boolean;
   useFullscreen: boolean;
   drawerWidth: number;
 }>();
@@ -68,6 +73,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: "update:modelValue", value: boolean): void;
   (event: "employee-updated"): void;
+  (event: "project-update-dialog-closed"): void;
 }>();
 
 const openModel = computed({

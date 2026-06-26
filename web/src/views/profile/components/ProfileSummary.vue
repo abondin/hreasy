@@ -143,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, toRef } from "vue";
+import { computed, onBeforeUnmount, ref, toRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDisplay } from "vuetify";
 import HoverActionWrapper from "@/components/shared/HoverActionWrapper.vue";
@@ -173,6 +173,7 @@ const props = withDefaults(
     projectReadOnly?: boolean;
     showName?: boolean;
     showAvatar?: boolean;
+    openProjectUpdateDialog?: boolean;
   }>(),
   {
     readOnly: true,
@@ -180,6 +181,7 @@ const props = withDefaults(
     projectReadOnly: undefined,
     showName: true,
     showAvatar: true,
+    openProjectUpdateDialog: false,
   },
 );
 
@@ -187,6 +189,7 @@ const emit = defineEmits<{
   (event: "avatar-updated"): void;
   (event: "edit-telegram"): void;
   (event: "update-project"): void;
+  (event: "project-update-dialog-closed"): void;
 }>();
 
 const { t } = useI18n();
@@ -233,6 +236,28 @@ const telegramToCopy = computed(
 );
 let copiedResetTimer: ReturnType<typeof setTimeout> | null = null;
 
+watch(
+  () => props.openProjectUpdateDialog,
+  (open) => {
+    if (open) {
+      void openProjectUpdateFromRoute();
+    }
+  },
+  { immediate: true },
+);
+
+watch(
+  [projectAssignmentDialogOpen, projectTransferRequestDialogOpen],
+  ([assignmentOpen, requestOpen], [previousAssignmentOpen, previousRequestOpen]) => {
+    if (!props.openProjectUpdateDialog) {
+      return;
+    }
+    if ((previousAssignmentOpen || previousRequestOpen) && !assignmentOpen && !requestOpen) {
+      emit("project-update-dialog-closed");
+    }
+  },
+);
+
 function onAvatarUpdated() {
   emit('avatar-updated');
 }
@@ -259,6 +284,13 @@ async function openProjectUpdate() {
     }
   } finally {
     projectTransferRequestLoading.value = false;
+  }
+}
+
+async function openProjectUpdateFromRoute() {
+  await openProjectUpdate();
+  if (!projectAssignmentDialogOpen.value && !projectTransferRequestDialogOpen.value) {
+    emit("project-update-dialog-closed");
   }
 }
 

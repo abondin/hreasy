@@ -32,9 +32,11 @@
   <employees-details-panel-host
     v-model="detailsOpen"
     :employee="selectedEmployee"
+    :open-project-update-dialog="openProjectUpdateDialogFromRoute"
     :use-fullscreen="useFullscreenDetailsPanel"
     :drawer-width="drawerWidth"
     @employee-updated="emit('employee-updated')"
+    @project-update-dialog-closed="clearProjectUpdateDialogRoute"
   />
 </template>
 
@@ -108,6 +110,12 @@ const departmentOptions = computed(() => props.departmentOptions);
 const projectOptions = computed(() => props.projectOptions);
 const baOptions = computed(() => props.businessAccountOptions);
 const selectedEmployeeIdFromRoute = computed(() => {
+  const paramValue = route.params.employeeId;
+  if (typeof paramValue === 'string') {
+    const parsed = Number(paramValue);
+    return Number.isInteger(parsed) ? parsed : null;
+  }
+
   const value = route.query.employeeId;
   if (typeof value !== 'string') {
     return null;
@@ -115,6 +123,9 @@ const selectedEmployeeIdFromRoute = computed(() => {
   const parsed = Number(value);
   return Number.isInteger(parsed) ? parsed : null;
 });
+const openProjectUpdateDialogFromRoute = computed(() =>
+  route.name === 'employee-change-current-project',
+);
 const drawerWidth = computed(() => {
   if (display.lg.value) {
     return 960;
@@ -161,16 +172,30 @@ watch(detailsOpen, (open) => {
 
   const nextQuery = { ...route.query };
   delete nextQuery.employeeId;
-  router.replace({ query: nextQuery }).catch(() => undefined);
+  router.replace({ name: 'employees', query: nextQuery }).catch(() => undefined);
 });
 
 function openEmployeeDetails(row: Employee) {
   selectedEmployee.value = row;
   detailsOpen.value = true;
   router.replace({
+    name: 'employees',
     query: {
       ...route.query,
       employeeId: String(row.id),
+    },
+  }).catch(() => undefined);
+}
+
+function clearProjectUpdateDialogRoute() {
+  if (!selectedEmployee.value || !openProjectUpdateDialogFromRoute.value) {
+    return;
+  }
+  router.replace({
+    name: 'employees',
+    query: {
+      ...route.query,
+      employeeId: String(selectedEmployee.value.id),
     },
   }).catch(() => undefined);
 }

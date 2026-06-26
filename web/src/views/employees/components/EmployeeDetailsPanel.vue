@@ -9,8 +9,10 @@
       :avatar-read-only="false"
       :project-read-only="false"
       :show-name="false"
+      :open-project-update-dialog="openProjectUpdateDialog"
       @avatar-updated="emit('employee-updated')"
       @update-project="emit('employee-updated')"
+      @project-update-dialog-closed="emit('project-update-dialog-closed')"
     />
 
     <detail-section-card :title="t('Текущие и планируемые отпуска')">
@@ -94,10 +96,12 @@ import ProfileTechProfilesCard from "@/views/profile/components/ProfileTechProfi
 
 const props = defineProps<{
   employee: Employee;
+  openProjectUpdateDialog?: boolean;
 }>();
 
 const emit = defineEmits<{
   (event: "employee-updated"): void;
+  (event: "project-update-dialog-closed"): void;
 }>();
 
 const { t } = useI18n();

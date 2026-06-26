@@ -79,6 +79,12 @@ const router = createRouter({
     },
     { path: "/profile", name: "profile-main", component: ProfileMainView, meta: { requiresAuth: true } },
     { path: "/employees", name: "employees", component: EmployeesView, meta: { requiresAuth: true, keepAlive: true } },
+    {
+      path: "/employees/:employeeId/changeCurrentProject",
+      name: "employee-change-current-project",
+      component: EmployeesView,
+      meta: { requiresAuth: true, keepAlive: true },
+    },
     { path: "/vacations", name: "vacations", component: VacationsView, meta: { requiresAuth: true, keepAlive: true } },
     { path: "/overtimes", name: "overtimes", component: OvertimesView, meta: { requiresAuth: true, keepAlive: true } },
     { path: "/assessments", name: "assessments", component: AssessmentsView, meta: { requiresAuth: true, keepAlive: true } },

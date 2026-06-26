@@ -61,41 +61,14 @@
         class="notifications-menu__list"
         data-testid="notifications-menu-list"
       >
-        <v-list-item
+        <notification-list-item
           v-for="notification in unreadNotifications"
           :key="notification.id"
-          class="notifications-menu__item"
-        >
-          <div class="notifications-menu__item-header">
-            <div class="notifications-menu__heading">
-              <div class="notifications-menu__title">
-                {{ notification.title }}
-              </div>
-              <div class="notifications-menu__meta">
-                {{ formatDateTime(notification.createdAt) }}
-              </div>
-            </div>
-            <v-tooltip :text="t('notifications.markAsRead')" location="start">
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  icon="mdi-check"
-                  size="small"
-                  variant="text"
-                  color="primary"
-                  :aria-label="t('notifications.markAsRead')"
-                  :loading="acknowledgingIds.has(notification.id)"
-                  data-testid="notification-acknowledge-button"
-                  @click="acknowledge(notification.id)"
-                />
-              </template>
-            </v-tooltip>
-          </div>
-
-          <div class="notifications-menu__body text-body-2">
-            <markdown-text-renderer :content="notification.markdownText" />
-          </div>
-        </v-list-item>
+          :notification="notification"
+          :acknowledging="acknowledgingIds.has(notification.id)"
+          @acknowledge="acknowledge(notification.id)"
+          @close-menu="menuOpen = false"
+        />
       </v-list>
     </v-card>
   </v-menu>
@@ -104,8 +77,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import MarkdownTextRenderer from "@/components/shared/MarkdownTextRenderer.vue";
-import { formatDateTime } from "@/lib/datetime";
+import NotificationListItem from "@/components/notifications/NotificationListItem.vue";
 import {
   acknowledgeNotification,
   fetchMyNotifications,
@@ -245,58 +217,5 @@ function countUnread(items: NotificationItem[]) {
   max-height: min(460px, calc(100vh - 148px));
   overflow-y: auto;
   padding: 0;
-}
-
-.notifications-menu__item {
-  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  padding: 9px 12px 10px;
-}
-
-.notifications-menu__item:last-child {
-  border-bottom: 0;
-}
-
-.notifications-menu__item-header {
-  align-items: flex-start;
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
-  min-width: 0;
-}
-
-.notifications-menu__heading {
-  min-width: 0;
-}
-
-.notifications-menu__title {
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: normal;
-}
-
-.notifications-menu__meta {
-  color: rgba(var(--v-theme-on-surface), 0.58);
-  font-size: 12px;
-  line-height: 1.2;
-  margin-top: 2px;
-}
-
-.notifications-menu__body {
-  color: rgba(var(--v-theme-on-surface), 0.82);
-  line-height: 1.35;
-  margin-top: 5px;
-  overflow: hidden;
-  white-space: normal;
-}
-
-.notifications-menu__body :deep(.markdown-body) {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
-}
-
-.notifications-menu__body :deep(.markdown-body p) {
-  margin: 0;
 }
 </style>
