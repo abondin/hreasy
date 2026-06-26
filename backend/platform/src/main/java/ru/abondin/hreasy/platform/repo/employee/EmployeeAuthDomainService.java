@@ -3,11 +3,14 @@ package ru.abondin.hreasy.platform.repo.employee;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.repo.manager.ManagerRepo;
 import ru.abondin.hreasy.platform.repo.sec.SecPasswdEntry;
 import ru.abondin.hreasy.platform.repo.sec.SecPasswdRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 
 import java.time.OffsetDateTime;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
  * Simple aggregation for basic {@link EmployeeRepo} methods to provide security information for given employee
@@ -26,6 +29,7 @@ public class EmployeeAuthDomainService {
     private final EmployeeRepo employeeRepo;
     private final SecPasswdRepo passwdRepo;
     private final DateTimeService dateTimeService;
+    private final ManagerRepo managerRepo;
 
     public Mono<TelegramToEmailBinding> findEmailByTelegramAccount(String telegramAccount, boolean onlyConfirmed) {
         return employeeRepo.findEmailByTelegramAccount(telegramAccount)
@@ -39,16 +43,30 @@ public class EmployeeAuthDomainService {
             entry.setId(empl.getId());
             entry.setDepartmentId(empl.getDepartmentId());
             entry.setCurrentProjectId(empl.getCurrentProjectId());
-            return employeeRepo.findAccessibleDepartments(empl.getId()).collectList()
-                    .flatMap(deps -> employeeRepo.findAccessibleProjects(empl.getId()).collectList()
-                            .flatMap(projects -> employeeRepo.findAccessibleBas(empl.getId()).collectList()
-                                    .map(bas -> {
-                                        entry.setAccessibleDepartments(deps);
-                                        entry.setAccessibleProjects(projects);
-                                        entry.setAccessibleBas(bas);
-                                        return entry;
-                                    })));
+            return Mono.zip(
+                            employeeRepo.findAccessibleDepartments(empl.getId()).collectList(),
+                            employeeRepo.findAccessibleProjects(empl.getId()).collectList(),
+                            employeeRepo.findAccessibleBas(empl.getId()).collectList(),
+                            managerRepo.findManagedDepartmentIds(empl.getId()).collectList(),
+                            managerRepo.findManagedProjectIds(empl.getId()).collectList(),
+                            managerRepo.findManagedBaIds(empl.getId()).collectList())
+                    .map(access -> {
+                        entry.setManagedDepartments(access.getT4());
+                        entry.setManagedProjects(access.getT5());
+                        entry.setManagedBas(access.getT6());
+                        entry.setAccessibleDepartments(mergeAccess(access.getT1(), access.getT4()));
+                        entry.setAccessibleProjects(mergeAccess(access.getT2(), access.getT5()));
+                        entry.setAccessibleBas(mergeAccess(access.getT3(), access.getT6()));
+                        return entry;
+                    });
         });
+    }
+
+    private List<Integer> mergeAccess(List<Integer> manualAccess, List<Integer> managerAccess) {
+        var result = new LinkedHashSet<Integer>();
+        result.addAll(manualAccess);
+        result.addAll(managerAccess);
+        return result.stream().toList();
     }
 
     public Mono<String> getInternalPassword(int employeeId) {

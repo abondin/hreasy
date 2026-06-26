@@ -26,7 +26,7 @@ public class OvertimeSecurityValidator {
             if (!auth.getAuthorities().contains("overtime_edit")) {
                 return Mono.just(false);
             }
-            return projectHierarchyService.isManager(auth, employeeId);
+            return projectHierarchyService.hasProjectAccess(auth, employeeId);
         }).flatMap(r -> {
             if (r) {
                 return Mono.just(true);
@@ -63,7 +63,7 @@ public class OvertimeSecurityValidator {
             if (!auth.getAuthorities().contains("overtime_edit") || employeeId == auth.getEmployeeInfo().getEmployeeId()) {
                 return Mono.just(false);
             }
-            return projectHierarchyService.isManager(auth, employeeId);
+            return projectHierarchyService.hasProjectAccess(auth, employeeId);
         }).flatMap(r -> {
             if (r) {
                 return Mono.just(true);

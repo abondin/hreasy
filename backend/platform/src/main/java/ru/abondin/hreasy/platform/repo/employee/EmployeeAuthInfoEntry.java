@@ -20,7 +20,8 @@ public class EmployeeAuthInfoEntry {
     private Integer currentProjectId;
 
     /**
-     * List of ids of departments accessible to the employee.
+     * List of ids of departments effectively accessible to the employee.
+     * Includes manual access from sec.employee_accessible_departments and manager-derived access from empl.manager.
      * Works for roles like overtime_view, overtime_edit, vacation_view, vacation_edit.
      * For example employee with role overtime_edit can edit overtimes only for employees with current project from department from given list
      */
@@ -28,19 +29,36 @@ public class EmployeeAuthInfoEntry {
 
 
     /**
-     * List of ids of business account accessible to the employee.
+     * List of ids of business account effectively accessible to the employee.
+     * Includes manual access from sec.employee_accessible_bas and manager-derived access from empl.manager.
      * Works for roles like overtime_view, overtime_edit, vacation_view, vacation_edit.
      * For example employee with role overtime_edit can edit overtimes only for employees with current project from department from given list
      */
     private List<Integer> accessibleBas = new ArrayList<>();
 
     /**
+     * List of ids of projects effectively accessible to the employee.
+     * Includes manual access from sec.employee_accessible_projects and manager-derived access from empl.manager.
      * Works for roles like overtime_view, overtime_edit, vacation_view, vacation_edit.
      * For example employee with role overtime_edit can edit overtimes only for employees with current project from given list
      * Means nothing if employee has access to the whole department
      */
     private List<Integer> accessibleProjects = new ArrayList<>();
 
+    /**
+     * Projects where employee is assigned as manager.
+     */
+    private List<Integer> managedProjects = new ArrayList<>();
+
+    /**
+     * Business accounts where employee is assigned as manager.
+     */
+    private List<Integer> managedBas = new ArrayList<>();
+
+    /**
+     * Departments where employee is assigned as manager.
+     */
+    private List<Integer> managedDepartments = new ArrayList<>();
 
 
 }

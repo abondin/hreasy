@@ -10,6 +10,9 @@ export interface UserSecurityInfo {
   accessibleDepartments: number[];
   accessibleProjects: number[];
   accessibleBas: number[];
+  managedDepartments: number[];
+  managedProjects: number[];
+  managedBas: number[];
   dateOfDismissal: string;
 }
 

@@ -56,6 +56,11 @@ Some permissions depend on
 `employee_accessible_departments`,
 `employee_accessible_bas`,
 and `employee_accessible_projects`; these permissions are described as manager-scoped below.
+Effective manager scope is calculated as the union of manual access from `sec.employee_accessible_*` and business
+responsibility links from `empl.manager`. A project manager link grants access to that project, a business account
+manager link grants access to that business account, and a department manager link grants access to that department.
+Manager links grant access scope only; required role permissions such as `overtime_view`, `update_current_project`,
+or `approve_salary_request` must still be assigned separately.
 
 Some operations are always allowed for the currently logged in employee even without a matching role permission.
 Those cases are enforced in backend validators and called out in the permission descriptions.
@@ -72,8 +77,9 @@ and Dave's overtimes. Dave can see only his own overtimes.
 **List of supported permissions**:
 
 The backend is the source of truth. This table is based on Flyway permissions under `sec.perm` and backend security
-validators. "Manager-scoped" means access is limited by `sec.employee_accessible_projects`,
-`sec.employee_accessible_bas`, and `sec.employee_accessible_departments`.
+validators. "Manager-scoped" means access is limited by the effective manager scope: manual access from
+`sec.employee_accessible_projects`, `sec.employee_accessible_bas`, and `sec.employee_accessible_departments` plus
+project, business account, and department manager links from `empl.manager`.
 
 | permission                     | backend rule / scope                                                                                  |
 |--------------------------------|--------------------------------------------------------------------------------------------------------|

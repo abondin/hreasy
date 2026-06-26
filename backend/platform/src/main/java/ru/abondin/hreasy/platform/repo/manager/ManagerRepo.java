@@ -95,6 +95,30 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
     @Query(defaultSelectQuery + " where object_type=:objectType and object_id=:objectId order by employee_display_name asc")
     Flux<ManagerView> findByObjectDetailed(OffsetDateTime now, String objectType, int objectId);
 
+    @Query("""
+            select distinct object_id
+            from empl.manager
+            where employee = :employeeId
+              and object_type = 'project'
+            """)
+    Flux<Integer> findManagedProjectIds(@Param("employeeId") int employeeId);
+
+    @Query("""
+            select distinct object_id
+            from empl.manager
+            where employee = :employeeId
+              and object_type = 'business_account'
+            """)
+    Flux<Integer> findManagedBaIds(@Param("employeeId") int employeeId);
+
+    @Query("""
+            select distinct object_id
+            from empl.manager
+            where employee = :employeeId
+              and object_type = 'department'
+            """)
+    Flux<Integer> findManagedDepartmentIds(@Param("employeeId") int employeeId);
+
     /**
      * Finds active managers of the employee current project, project business account, and project department
      * who have the requested permission.

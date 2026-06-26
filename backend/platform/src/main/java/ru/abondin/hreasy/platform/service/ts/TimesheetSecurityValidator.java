@@ -29,7 +29,7 @@ public class TimesheetSecurityValidator {
             if (!auth.getAuthorities().contains("view_timesheet")) {
                 return Mono.just(false);
             }
-            return projectHierarchyService.isManager(auth, employeeId);
+            return projectHierarchyService.hasProjectAccess(auth, employeeId);
         }).flatMap(r -> {
             if (r) {
                 return Mono.just(true);
@@ -56,7 +56,7 @@ public class TimesheetSecurityValidator {
             if (!auth.getAuthorities().contains("report_timesheet")) {
                 return Mono.just(false);
             }
-            return projectHierarchyService.isManager(auth, employeeId);
+            return projectHierarchyService.hasProjectAccess(auth, employeeId);
         }).flatMap(r -> {
             if (r) {
                 return Mono.just(true);

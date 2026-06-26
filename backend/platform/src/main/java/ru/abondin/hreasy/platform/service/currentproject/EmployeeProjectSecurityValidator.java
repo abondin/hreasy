@@ -30,7 +30,7 @@ public class EmployeeProjectSecurityValidator {
             if (!auth.getAuthorities().contains("edit_skills")) {
                 return Mono.just(false);
             }
-            return projectHierarchyService.isManager(auth, employeeId);
+            return projectHierarchyService.hasProjectAccess(auth, employeeId);
         }).flatMap(r -> {
             if (r) {
                 return Mono.just(true);
@@ -57,7 +57,7 @@ public class EmployeeProjectSecurityValidator {
 
         var hasViewCurrentProjectRolePerm = auth.getAuthorities().contains("view_empl_current_project_role");
         var hasViewSkillsPerm = auth.getAuthorities().contains("view_empl_skills");
-        boolean isManager = projectHierarchyService.isManager(auth, empl.getDepartment() == null ? null : empl.getDepartment().getId(),
+        boolean hasProjectAccess = projectHierarchyService.hasProjectAccess(auth, empl.getDepartment() == null ? null : empl.getDepartment().getId(),
                 empl.getCurrentProject() == null ? null
                         :
                         new ProjectHierarchyAccessor.ProjectInfo(empl.getCurrentProject().getId(),
@@ -65,12 +65,12 @@ public class EmployeeProjectSecurityValidator {
                                 empl.getBa() == null ? null : empl.getBa().getId()
                         ));
         // Remove current project role
-        if ((!hasViewCurrentProjectRolePerm || !isManager) && empl.getCurrentProject() != null) {
+        if ((!hasViewCurrentProjectRolePerm || !hasProjectAccess) && empl.getCurrentProject() != null) {
             empl.getCurrentProject().setRole(null);
         }
 
         // Remove skill
-        if ((!hasViewSkillsPerm || !isManager)) {
+        if ((!hasViewSkillsPerm || !hasProjectAccess)) {
             empl.setSkills(Arrays.asList());
         }
 

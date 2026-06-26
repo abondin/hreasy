@@ -36,6 +36,20 @@
           chips
           variant="outlined"
         />
+        <div
+          v-if="managedProjectsOnly.length > 0"
+          class="d-flex flex-wrap ga-1 mt-n3 mb-4"
+        >
+          <v-chip
+            v-for="projectId in managedProjectsOnly"
+            :key="`managed-project-${projectId}`"
+            size="small"
+            color="grey"
+            variant="tonal"
+          >
+            {{ getById(allProjects, projectId) }}
+          </v-chip>
+        </div>
 
         <v-select
           v-model="form.accessibleBas"
@@ -47,6 +61,20 @@
           chips
           variant="outlined"
         />
+        <div
+          v-if="managedBasOnly.length > 0"
+          class="d-flex flex-wrap ga-1 mt-n3"
+        >
+          <v-chip
+            v-for="baId in managedBasOnly"
+            :key="`managed-ba-${baId}`"
+            size="small"
+            color="grey"
+            variant="tonal"
+          >
+            {{ getById(allBas, baId) }}
+          </v-chip>
+        </div>
       </v-form>
 
       <v-alert
@@ -72,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { VForm } from "vuetify/components";
 import type { DictItem } from "@/services/dict.service";
@@ -118,6 +146,14 @@ const form = reactive<UserRolesFormState>({
   accessibleBas: [],
 });
 
+const managedProjectsOnly = computed(() =>
+  derivedOnly(props.input?.managedProjects ?? [], form.accessibleProjects),
+);
+
+const managedBasOnly = computed(() =>
+  derivedOnly(props.input?.managedBas ?? [], form.accessibleBas),
+);
+
 watch(
   () => props.input,
   () => {
@@ -135,6 +171,21 @@ function roleItemProps(role: RoleDict) {
   return {
     disabled: role.disabled,
   };
+}
+
+function getById(
+  source: Array<{ id: number; name: string }>,
+  id?: number,
+): string {
+  if (!id) {
+    return "-";
+  }
+  const found = source.find((item) => item.id === id);
+  return found ? found.name : `${t("Не найден: ")}${id}`;
+}
+
+function derivedOnly(derivedIds: number[] = [], manualIds: number[] = []): number[] {
+  return derivedIds.filter((id) => !manualIds.includes(id));
 }
 
 async function submit(): Promise<void> {
