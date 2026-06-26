@@ -53,7 +53,7 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
      * Test goal: verifies that the expiration job closes only old pending project transfer requests.
      * <p>Precondition: one old pending, one fresh pending, and one old approved transfer request exist.
      * <p>Action: run the project transfer request expiration job directly.
-     * <p>Verification: only the old pending request becomes expired, gets the fixed updated timestamp, and notifies creator/approver.
+     * <p>Verification: only the old pending request becomes expired, gets the fixed updated timestamp, and notifies creator/approver with expiration context.
      */
     @Test
     @DisplayName("Expiration job expires only old pending project transfer requests")
@@ -91,12 +91,13 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
                     Assertions.assertNull(states.getT3().updatedAt());
 
                     Assertions.assertEquals(2, states.getT4().size());
-                    Assertions.assertTrue(states.getT4().contains(new ProjectTransferNotification(
+                    Assertions.assertTrue(hasNotification(states.getT4(),
                             testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee),
-                            "project_transfer.request_expired")));
-                    Assertions.assertTrue(states.getT4().contains(new ProjectTransferNotification(
+                            "project_transfer.request_expired"));
+                    Assertions.assertTrue(hasNotification(states.getT4(),
                             testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May),
-                            "project_transfer.request_expired")));
+                            "project_transfer.request_expired"));
+                    Assertions.assertTrue(states.getT4().stream().allMatch(notification -> notification.expiresAt() != null));
                 })
                 .verifyComplete();
     }
@@ -152,7 +153,7 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
 
     private Mono<List<ProjectTransferNotification>> projectTransferNotifications(int requestId) {
         return db.sql("""
-                        select employee, context ->> 'eventType' as event_type
+                        select employee, context ->> 'eventType' as event_type, context ->> 'expiresAt' as expires_at
                         from notify.notification
                         where category = 'project_transfer'
                           and context ->> 'projectTransferRequestId' = :requestId
@@ -160,9 +161,18 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
                 .bind("requestId", Integer.toString(requestId))
                 .map(row -> new ProjectTransferNotification(
                         row.get("employee", Integer.class),
-                        row.get("event_type", String.class)))
+                        row.get("event_type", String.class),
+                        row.get("expires_at", String.class)))
                 .all()
                 .collectList();
+    }
+
+    private boolean hasNotification(List<ProjectTransferNotification> notifications,
+                                    int employeeId,
+                                    String eventType) {
+        return notifications.stream()
+                .anyMatch(notification -> notification.employeeId() == employeeId
+                        && eventType.equals(notification.eventType()));
     }
 
     private record ProjectTransferRequestState(Short state,
@@ -170,6 +180,6 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
                                                Integer updatedBy) {
     }
 
-    private record ProjectTransferNotification(Integer employeeId, String eventType) {
+    private record ProjectTransferNotification(Integer employeeId, String eventType, String expiresAt) {
     }
 }

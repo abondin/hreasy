@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.abondin.hreasy.platform.config.BackgroundTasksProps;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
@@ -13,6 +14,7 @@ import ru.abondin.hreasy.platform.service.notification.NotificationPersistServic
 import ru.abondin.hreasy.platform.service.notification.NotificationPlan;
 import ru.abondin.hreasy.platform.service.notification.NotificationRecipient;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,6 +36,7 @@ public class ProjectTransferRequestNotificationHandler
 
     private final EmployeeRepo employeeRepo;
     private final DictProjectRepo projectRepo;
+    private final BackgroundTasksProps backgroundTasksProps;
 
     @Override
     public Class<ProjectTransferRequestNotificationEvent> eventClass() {
@@ -101,6 +104,7 @@ public class ProjectTransferRequestNotificationHandler
                                   DictProjectEntry fromProject,
                                   DictProjectEntry toProject) {
         var eventType = eventType(event.kind());
+        var expiresAt = expiresAt(event);
         return NotificationPlan.builder()
                 .eventType(eventType)
                 .category(NotificationPersistService.NotificationCategory.PROJECT_TRANSFER.getCategory())
@@ -113,6 +117,7 @@ public class ProjectTransferRequestNotificationHandler
                 .bodyArg(fromProject.getName())
                 .bodyArg(toProject.getName())
                 .bodyArg(event.comment() == null ? "" : event.comment())
+                .bodyArg(expiresAt)
                 .context("eventType", eventType)
                 .context("projectTransferRequestId", event.requestId())
                 .context("employeeId", event.employeeId())
@@ -124,6 +129,8 @@ public class ProjectTransferRequestNotificationHandler
                 .context("state", event.kind().name())
                 .context("createdByEmployeeId", event.createdByEmployeeId())
                 .context("approverEmployeeId", event.approverEmployeeId())
+                .context("createdAt", event.createdAt())
+                .context("expiresAt", expiresAt)
                 .context("actionEmployeeId", event.actionEmployeeId())
                 .initiatorEmployeeId(event.actionEmployeeId())
                 .build();
@@ -161,5 +168,9 @@ public class ProjectTransferRequestNotificationHandler
 
     private String dedupeKey(String eventType, Integer requestId, Integer recipientEmployeeId) {
         return eventType + ":" + requestId + ":" + recipientEmployeeId;
+    }
+
+    private OffsetDateTime expiresAt(ProjectTransferRequestNotificationEvent event) {
+        return event.createdAt().plus(backgroundTasksProps.getProjectTransferRequestExpiration().getMaxAge());
     }
 }

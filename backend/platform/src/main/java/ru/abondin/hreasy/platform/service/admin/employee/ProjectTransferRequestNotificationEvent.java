@@ -4,6 +4,8 @@ import org.springframework.lang.Nullable;
 import ru.abondin.hreasy.platform.repo.employee.projecttransfer.ProjectTransferRequestEntry;
 import ru.abondin.hreasy.platform.service.notification.BusinessNotificationEvent;
 
+import java.time.OffsetDateTime;
+
 /**
  * Event emitted after a project transfer request state changes.
  *
@@ -14,6 +16,7 @@ import ru.abondin.hreasy.platform.service.notification.BusinessNotificationEvent
  * @param toProjectId target project
  * @param createdByEmployeeId employee who created the request
  * @param approverEmployeeId assigned approver
+ * @param createdAt request creation timestamp
  * @param actionEmployeeId employee who performed the action, or null for system actions
  * @param comment decision/cancel comment, if present
  */
@@ -25,6 +28,7 @@ public record ProjectTransferRequestNotificationEvent(
         Integer toProjectId,
         Integer createdByEmployeeId,
         Integer approverEmployeeId,
+        OffsetDateTime createdAt,
         Integer actionEmployeeId,
         String comment
 ) implements BusinessNotificationEvent {
@@ -54,6 +58,7 @@ public record ProjectTransferRequestNotificationEvent(
                 request.getToProjectId(),
                 request.getCreatedBy(),
                 request.getApproverEmployeeId(),
+                request.getCreatedAt(),
                 actionEmployeeId,
                 request.getDecisionComment());
     }

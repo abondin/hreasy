@@ -36,6 +36,7 @@
           <v-list-item :title="t('Автор заявки')" :subtitle="request.createdByDisplayName" />
           <v-list-item :title="t('Согласующий')" :subtitle="request.approverDisplayName" />
           <v-list-item :title="t('Создана')" :subtitle="formatDateTime(request.createdAt)" />
+          <v-list-item :title="t('Действует до')" :subtitle="formatDateTime(request.expiresAt)" />
         </v-list>
 
         <v-textarea

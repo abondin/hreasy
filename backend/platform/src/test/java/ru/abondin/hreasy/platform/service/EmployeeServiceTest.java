@@ -177,7 +177,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
      * Test goal: verifies that target project manager can create a pending transfer request instead of direct update.
      * <p>Precondition: Jawad manages target FMS project, Asiyah is assigned to Billing, and Maxwell is Billing manager.
      * <p>Action: Jawad creates a transfer request from Billing to FMS and then asks for the active request.
-     * <p>Verification: service returns created request id and active request details for the same employee/project pair.
+     * <p>Verification: service returns created request id, active request details, and calculated expiration timestamp.
      */
     @Test
     @DisplayName("Target project manager creates pending current project transfer request")
@@ -209,6 +209,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
                     Assertions.assertEquals("May Maxwell", request.getApproverDisplayName());
                     Assertions.assertEquals(Boolean.TRUE, request.getCanMakeDecision());
                     Assertions.assertNotNull(request.getCreatedAt());
+                    Assertions.assertEquals(request.getCreatedAt().plusDays(14), request.getExpiresAt());
                 })
                 .verifyComplete();
     }
@@ -329,7 +330,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
      * Test goal: verifies that another active source-side approver may approve a pending transfer request.
      * <p>Precondition: Jawad created a pending transfer request for Asiyah and Maxwell is assigned approver.
      * <p>Action: Kyran, another employee from the same allowed approver list, approves the request.
-     * <p>Verification: request becomes approved by Kyran, employee project/role are updated, and creator/assigned approver are notified.
+     * <p>Verification: request becomes approved by Kyran, employee project/role are updated, and creator/assigned approver are notified with expiration context.
      */
     @Test
     @DisplayName("Another eligible approver approves current project transfer request")
@@ -360,15 +361,16 @@ public class EmployeeServiceTest extends BaseServiceTest {
                     Assertions.assertEquals(testData.project_M1_FMS(), currentProject.projectId());
                     Assertions.assertEquals("Tester", currentProject.role());
                     Assertions.assertEquals(3, notifications.size());
-                    Assertions.assertTrue(notifications.contains(new ProjectTransferNotification(
+                    Assertions.assertTrue(hasNotification(notifications,
                             testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May),
-                            "project_transfer.request_created")));
-                    Assertions.assertTrue(notifications.contains(new ProjectTransferNotification(
+                            "project_transfer.request_created"));
+                    Assertions.assertTrue(hasNotification(notifications,
                             testData.employees.get(TestEmployees.Billing_Manager_Maxwell_May),
-                            "project_transfer.request_approved")));
-                    Assertions.assertTrue(notifications.contains(new ProjectTransferNotification(
+                            "project_transfer.request_approved"));
+                    Assertions.assertTrue(hasNotification(notifications,
                             testData.employees.get(TestEmployees.FMS_Manager_Jawad_Mcghee),
-                            "project_transfer.request_approved")));
+                            "project_transfer.request_approved"));
+                    Assertions.assertTrue(notifications.stream().allMatch(notification -> notification.expiresAt() != null));
                 })
                 .verifyComplete();
     }
@@ -544,16 +546,25 @@ public class EmployeeServiceTest extends BaseServiceTest {
 
     private Mono<List<ProjectTransferNotification>> projectTransferNotifications() {
         return db.sql("""
-                        select employee, context ->> 'eventType' as event_type
+                        select employee, context ->> 'eventType' as event_type, context ->> 'expiresAt' as expires_at
                         from notify.notification
                         where category = 'project_transfer'
                         order by event_type, employee
                         """)
                 .map(row -> new ProjectTransferNotification(
                         row.get("employee", Integer.class),
-                        row.get("event_type", String.class)))
+                        row.get("event_type", String.class),
+                        row.get("expires_at", String.class)))
                 .all()
                 .collectList();
+    }
+
+    private boolean hasNotification(List<ProjectTransferNotification> notifications,
+                                    int employeeId,
+                                    String eventType) {
+        return notifications.stream()
+                .anyMatch(notification -> notification.employeeId() == employeeId
+                        && eventType.equals(notification.eventType()));
     }
 
     private record ProjectTransferRequestState(Short state,
@@ -565,7 +576,7 @@ public class EmployeeServiceTest extends BaseServiceTest {
     private record EmployeeCurrentProject(Integer projectId, String role) {
     }
 
-    private record ProjectTransferNotification(Integer employeeId, String eventType) {
+    private record ProjectTransferNotification(Integer employeeId, String eventType, String expiresAt) {
     }
 
     private Mono<Void> cleanupProjectTransferTestsData() {

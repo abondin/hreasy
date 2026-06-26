@@ -20,5 +20,6 @@ public class CurrentProjectTransferRequestDto {
     private Integer approverEmployeeId;
     private String approverDisplayName;
     private OffsetDateTime createdAt;
+    private OffsetDateTime expiresAt;
     private Boolean canMakeDecision;
 }

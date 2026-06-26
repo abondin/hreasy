@@ -10,6 +10,7 @@ import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -139,6 +140,9 @@ public class NotificationOrchestrator {
     private Object renderArg(java.util.Locale locale, Object arg) {
         if (arg instanceof LocalDate date) {
             return i18n.formatDate(locale, date);
+        }
+        if (arg instanceof OffsetDateTime dateTime) {
+            return i18n.formatDateTime(locale, dateTime);
         }
         return arg;
     }

@@ -12,6 +12,7 @@ import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.BusinessErrorFactory;
 import ru.abondin.hreasy.platform.api.employee.UpdateCurrentProjectBody;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.config.BackgroundTasksProps;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeHistoryRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsEntry;
 import ru.abondin.hreasy.platform.repo.employee.admin.EmployeeWithAllDetailsRepo;
@@ -61,6 +62,7 @@ public class AdminEmployeeService {
     private final HistoryDomainService historyDomainService;
     private final ProjectTransferRequestMapper projectTransferRequestMapper;
     private final NotificationOrchestrator notificationOrchestrator;
+    private final BackgroundTasksProps backgroundTasksProps;
 
 
     public Flux<EmployeeWithAllDetailsDto> findAll(AuthContext auth, boolean includeFired) {
@@ -214,6 +216,7 @@ public class AdminEmployeeService {
                         .map(canMakeDecision -> {
                             var dto = projectTransferRequestMapper.fromView(request);
                             dto.setCanMakeDecision(canMakeDecision);
+                            dto.setExpiresAt(projectTransferRequestExpiresAt(request.getCreatedAt()));
                             return dto;
                         }));
     }
@@ -426,6 +429,10 @@ public class AdminEmployeeService {
 
     private String decisionComment(@Nullable CurrentProjectTransferDecisionBody body) {
         return body == null ? null : body.getComment();
+    }
+
+    private OffsetDateTime projectTransferRequestExpiresAt(OffsetDateTime createdAt) {
+        return createdAt.plus(backgroundTasksProps.getProjectTransferRequestExpiration().getMaxAge());
     }
 
     private <T> Mono<T> failWithPendingTransferRequest() {
