@@ -15,7 +15,9 @@ export interface SecurityInfo {
   username: string;
   authorities: string[];
   employeeId: number;
+  accessibleDepartments: number[];
   accessibleBas: number[];
+  accessibleProjects: number[];
 }
 
 interface AuthState {
@@ -28,7 +30,9 @@ interface AuthState {
 function mapEmployee(info: EmployeeShortInfo) {
   return {
     employeeId: info.employeeId,
-    accessibleBas: info.accessibleBas,
+    accessibleDepartments: info.accessibleDepartments ?? [],
+    accessibleBas: info.accessibleBas ?? [],
+    accessibleProjects: info.accessibleProjects ?? [],
   };
 }
 
@@ -58,7 +62,9 @@ export const useAuthStore = defineStore("auth", {
         username: user.username,
         authorities: user.authorities,
         employeeId: user.employee.employeeId,
+        accessibleDepartments: user.employee.accessibleDepartments,
         accessibleBas: user.employee.accessibleBas,
+        accessibleProjects: user.employee.accessibleProjects,
       };
     },
     isAuthenticated(state): boolean {

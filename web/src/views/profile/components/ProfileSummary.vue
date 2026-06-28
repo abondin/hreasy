@@ -40,6 +40,8 @@
               icon="mdi-pencil"
               color="medium-emphasis"
               class="ms-1"
+              :loading="projectTransferRequestLoading"
+              :disabled="projectTransferRequestLoading"
               :title="t('Обновление текущего проекта')"
               @click.stop="openProjectUpdate"
             />
@@ -126,16 +128,22 @@
     :employee-id="employee.id ?? null"
   />
   <project-assignment-dialog
-    v-model="projectUpdateDialogOpen"
+    v-model="projectAssignmentDialogOpen"
     :employee-id="employee.id ?? null"
     :employee-name="employee.displayName"
     :current-project="employee.currentProject ?? null"
     @updated="emitProjectUpdated"
   />
+  <project-transfer-request-dialog
+    v-model="projectTransferRequestDialogOpen"
+    :employee-name="employee.displayName"
+    :request="activeTransferRequest"
+    @updated="emitProjectUpdated"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, toRef } from "vue";
+import { computed, onBeforeUnmount, ref, toRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDisplay } from "vuetify";
 import HoverActionWrapper from "@/components/shared/HoverActionWrapper.vue";
@@ -143,11 +151,16 @@ import PropertyList from "@/components/shared/PropertyList.vue";
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
 import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialog.vue";
 import ProjectInfoDialog from "@/components/project/ProjectInfoDialog.vue";
+import ProjectTransferRequestDialog from "@/components/project/ProjectTransferRequestDialog.vue";
 import { useEmployeeProjectActions } from "@/composables/useEmployeeProjectActions";
 import { useOfficeMapPreview } from "@/composables/useOfficeMapPreview";
 import { usePermissions } from "@/lib/permissions";
 import { extractTelegramAccount } from "@/lib/telegram";
-import type { Employee } from "@/services/employee.service";
+import {
+  fetchActiveCurrentProjectTransferRequest,
+  type CurrentProjectTransferRequest,
+  type Employee,
+} from "@/services/employee.service";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import ProfileSummaryItem from "@/views/profile/components/ProfileSummaryItem.vue";
 import ProfileTelegramEditor from "@/views/profile/components/ProfileTelegramEditor.vue";
@@ -160,6 +173,7 @@ const props = withDefaults(
     projectReadOnly?: boolean;
     showName?: boolean;
     showAvatar?: boolean;
+    openProjectUpdateDialog?: boolean;
   }>(),
   {
     readOnly: true,
@@ -167,6 +181,7 @@ const props = withDefaults(
     projectReadOnly: undefined,
     showName: true,
     showAvatar: true,
+    openProjectUpdateDialog: false,
   },
 );
 
@@ -174,6 +189,7 @@ const emit = defineEmits<{
   (event: "avatar-updated"): void;
   (event: "edit-telegram"): void;
   (event: "update-project"): void;
+  (event: "project-update-dialog-closed"): void;
 }>();
 
 const { t } = useI18n();
@@ -203,10 +219,13 @@ const {
   canShowProjectInfo,
   canEditProject,
   projectInfoDialogOpen,
-  projectUpdateDialogOpen,
   openProjectInfo,
-  openProjectUpdate,
 } = useEmployeeProjectActions(employee, projectReadOnly);
+
+const projectAssignmentDialogOpen = ref(false);
+const projectTransferRequestDialogOpen = ref(false);
+const projectTransferRequestLoading = ref(false);
+const activeTransferRequest = ref<CurrentProjectTransferRequest | null>(null);
 
 const canShowMap = computed(() => Boolean(mapName.value));
 const canViewBirthday = computed(() => permissions.canAdminEmployees());
@@ -216,6 +235,28 @@ const telegramToCopy = computed(
   () => extractTelegramAccount(employee.value.telegram) ?? employee.value.telegram?.trim() ?? null,
 );
 let copiedResetTimer: ReturnType<typeof setTimeout> | null = null;
+
+watch(
+  () => props.openProjectUpdateDialog,
+  (open) => {
+    if (open) {
+      void openProjectUpdateFromRoute();
+    }
+  },
+  { immediate: true },
+);
+
+watch(
+  [projectAssignmentDialogOpen, projectTransferRequestDialogOpen],
+  ([assignmentOpen, requestOpen], [previousAssignmentOpen, previousRequestOpen]) => {
+    if (!props.openProjectUpdateDialog) {
+      return;
+    }
+    if ((previousAssignmentOpen || previousRequestOpen) && !assignmentOpen && !requestOpen) {
+      emit("project-update-dialog-closed");
+    }
+  },
+);
 
 function onAvatarUpdated() {
   emit('avatar-updated');
@@ -227,6 +268,30 @@ function emitEditTelegram() {
 
 function emitProjectUpdated() {
   emit('update-project');
+}
+
+async function openProjectUpdate() {
+  if (!canEditProject.value || projectTransferRequestLoading.value) {
+    return;
+  }
+  projectTransferRequestLoading.value = true;
+  try {
+    activeTransferRequest.value = await fetchActiveCurrentProjectTransferRequest(employee.value.id);
+    if (activeTransferRequest.value) {
+      projectTransferRequestDialogOpen.value = true;
+    } else {
+      projectAssignmentDialogOpen.value = true;
+    }
+  } finally {
+    projectTransferRequestLoading.value = false;
+  }
+}
+
+async function openProjectUpdateFromRoute() {
+  await openProjectUpdate();
+  if (!projectAssignmentDialogOpen.value && !projectTransferRequestDialogOpen.value) {
+    emit("project-update-dialog-closed");
+  }
 }
 
 function copyTooltip(field: 'email' | 'telegram') {

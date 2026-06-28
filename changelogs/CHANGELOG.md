@@ -5,6 +5,9 @@
 - Moved Java backend services under `backend/`, added backend Maven reactor/parent/common modules, upgraded services to Spring Boot 4.0.5, and updated GitHub Actions/devops scripts.
 - Implemented notification inbox UI and Yandex Messenger notification delivery.
 - Disabled self-service current project updates for regular employees
+- Added backend error contract for current project transfers that require approval.
+- Added current project transfer approver candidates for approval-required transfers.
+- Manager assignments for projects, business accounts, and departments now contribute to effective manager-scoped access in addition to manual user access settings.
 - Full migration from vue2 to vue3 
 
 ## 1.3.1 (2026-03-21)

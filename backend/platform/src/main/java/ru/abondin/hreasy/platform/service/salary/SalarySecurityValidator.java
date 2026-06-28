@@ -142,7 +142,7 @@ public class SalarySecurityValidator {
         if (!auth.getAuthorities().contains("approve_salary_request")) {
             return false;
         }
-        return projectHierarchyService.isBaManager(auth, businessAccount);
+        return projectHierarchyService.hasBusinessAccountAccess(auth, businessAccount);
     }
 
     public Mono<Boolean> validateUpdateOrDeleteSalaryRequest(AuthContext auth, SalaryRequestEntry salaryRequest) {

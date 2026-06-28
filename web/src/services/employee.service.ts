@@ -47,6 +47,41 @@ export interface EmployeeProjectChange {
   changedAt: string;
 }
 
+export interface CurrentProjectTransferApprover {
+  employeeId: number;
+  displayName: string;
+  email: string;
+  managerType: "project" | "business_account" | "department";
+}
+
+export interface CurrentProjectTransferApprovalRequestBody {
+  fromProjectId: number;
+  toProjectId: number;
+  role: string | null;
+  approverEmployeeId: number;
+}
+
+export interface CurrentProjectTransferRequest {
+  id: number;
+  employeeId: number;
+  fromProjectId: number;
+  fromProjectName: string;
+  toProjectId: number;
+  toProjectName: string;
+  requestedProjectRole: string | null;
+  createdBy: number;
+  createdByDisplayName: string;
+  approverEmployeeId: number;
+  approverDisplayName: string;
+  createdAt: string;
+  expiresAt: string;
+  canMakeDecision: boolean;
+}
+
+export interface CurrentProjectTransferDecisionBody {
+  comment: string | null;
+}
+
 export async function findEmployee(id: number): Promise<Employee> {
   const response = await http.get<Employee>(`v1/employee/${id}`);
   return response.data;
@@ -93,6 +128,69 @@ export async function updateEmployeeCurrentProject(
 ): Promise<number> {
   const response = await http.put<number>(
     `v1/employee/${employeeId}/currentProject`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function fetchCurrentProjectTransferApprovers(
+  employeeId: number,
+  newProjectId: number,
+): Promise<CurrentProjectTransferApprover[]> {
+  const response = await http.get<CurrentProjectTransferApprover[]>(
+    `v1/employee/${employeeId}/currentProject/transferApprovers`,
+    { params: { newProjectId } },
+  );
+  return response.data;
+}
+
+export async function fetchActiveCurrentProjectTransferRequest(
+  employeeId: number,
+): Promise<CurrentProjectTransferRequest | null> {
+  const response = await http.get<CurrentProjectTransferRequest | "">(
+    `v1/employee/${employeeId}/currentProject/transferRequests/active`,
+  );
+  return response.data || null;
+}
+
+export async function requestCurrentProjectTransferApproval(
+  employeeId: number,
+  payload: CurrentProjectTransferApprovalRequestBody,
+): Promise<void> {
+  await http.post<void>(
+    `v1/employee/${employeeId}/currentProject/transferApprovals`,
+    payload,
+  );
+}
+
+export async function approveCurrentProjectTransferRequest(
+  requestId: number,
+  payload: CurrentProjectTransferDecisionBody,
+): Promise<number> {
+  const response = await http.post<number>(
+    `v1/employee/currentProject/transferRequests/${requestId}/approve`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function rejectCurrentProjectTransferRequest(
+  requestId: number,
+  payload: CurrentProjectTransferDecisionBody,
+): Promise<number> {
+  const response = await http.post<number>(
+    `v1/employee/currentProject/transferRequests/${requestId}/reject`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function cancelCurrentProjectTransferRequest(
+  requestId: number,
+  payload: CurrentProjectTransferDecisionBody,
+): Promise<number> {
+  const response = await http.post<number>(
+    `v1/employee/currentProject/transferRequests/${requestId}/cancel`,
     payload,
   );
   return response.data;

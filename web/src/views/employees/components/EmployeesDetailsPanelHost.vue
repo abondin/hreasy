@@ -19,7 +19,9 @@
         <employee-details-panel
           v-if="employee"
           :employee="employee"
+          :open-project-update-dialog="openProjectUpdateDialog"
           @employee-updated="emit('employee-updated')"
+          @project-update-dialog-closed="emit('project-update-dialog-closed')"
         />
       </v-card-text>
     </v-card>
@@ -36,10 +38,7 @@
     :scrim="false"
     :width="drawerWidth"
   >
-    <div
-      v-click-outside="onDesktopOutsideClick"
-      class="h-100 d-flex flex-column"
-    >
+    <div class="h-100 d-flex flex-column">
       <v-toolbar density="comfortable" border="b">
         <v-spacer />
         <v-btn icon="mdi-close" variant="text" @click="openModel = false" />
@@ -49,7 +48,9 @@
         <employee-details-panel
           v-if="employee"
           :employee="employee"
+          :open-project-update-dialog="openProjectUpdateDialog"
           @employee-updated="emit('employee-updated')"
+          @project-update-dialog-closed="emit('project-update-dialog-closed')"
         />
       </div>
     </div>
@@ -64,6 +65,7 @@ import EmployeeDetailsPanel from "@/views/employees/components/EmployeeDetailsPa
 const props = defineProps<{
   modelValue: boolean;
   employee: Employee | null;
+  openProjectUpdateDialog?: boolean;
   useFullscreen: boolean;
   drawerWidth: number;
 }>();
@@ -71,30 +73,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   (event: "update:modelValue", value: boolean): void;
   (event: "employee-updated"): void;
+  (event: "project-update-dialog-closed"): void;
 }>();
 
 const openModel = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit("update:modelValue", value),
 });
-
-function onDesktopOutsideClick(event: MouseEvent) {
-  const target = event.target;
-  if (!(target instanceof Element)) {
-    openModel.value = false;
-    return;
-  }
-
-  if (target.closest(".v-overlay")) {
-    return;
-  }
-
-  if (target.closest('[data-testid="employees-table"] tbody tr')) {
-    return;
-  }
-
-  openModel.value = false;
-}
 
 function onWindowKeydown(event: KeyboardEvent) {
   if (props.useFullscreen || !openModel.value) {

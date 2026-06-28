@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform.service.salary;
 
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.service.notification.BusinessNotificationEvent;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementationState;
 
@@ -30,4 +31,34 @@ public record SalaryRequestImplementationNotificationEvent(
         String rejectReason,
         Integer rescheduledToNewPeriod
 ) implements BusinessNotificationEvent {
+    public static SalaryRequestImplementationNotificationEvent implemented(AuthContext auth,
+                                                                           SalaryRequestEntry entry) {
+        return new SalaryRequestImplementationNotificationEvent(
+                auth,
+                entry.getId(),
+                entry.getEmployeeId(),
+                entry.getCreatedBy(),
+                entry.getType(),
+                entry.getReqIncreaseStartPeriod(),
+                entry.getImplIncreaseStartPeriod(),
+                SalaryRequestImplementationState.IMPLEMENTED,
+                null,
+                null);
+    }
+
+    public static SalaryRequestImplementationNotificationEvent rejected(AuthContext auth,
+                                                                        SalaryRequestEntry entry,
+                                                                        Integer rescheduledToNewPeriod) {
+        return new SalaryRequestImplementationNotificationEvent(
+                auth,
+                entry.getId(),
+                entry.getEmployeeId(),
+                entry.getCreatedBy(),
+                entry.getType(),
+                entry.getReqIncreaseStartPeriod(),
+                null,
+                SalaryRequestImplementationState.REJECTED,
+                entry.getImplRejectReason(),
+                rescheduledToNewPeriod);
+    }
 }

@@ -48,7 +48,7 @@ public class AdminUserRolesController {
     @Data
     @Builder
     public static class AdminUserListFilter {
-        private boolean includeFired = false;
+        private boolean includeFired;
     }
 
 }

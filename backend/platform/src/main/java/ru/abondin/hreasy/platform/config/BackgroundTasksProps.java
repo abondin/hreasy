@@ -1,6 +1,8 @@
 package ru.abondin.hreasy.platform.config;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DurationUnit;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,8 @@ public class BackgroundTasksProps {
 
     private UpcomingVacationProps upcomingVacation = new UpcomingVacationProps();
     private NotificationRetentionProps notificationRetention = new NotificationRetentionProps();
+    private ProjectTransferRequestExpirationProps projectTransferRequestExpiration =
+            new ProjectTransferRequestExpirationProps();
 
     /**
      * Buffer size to scan all vacations to notify
@@ -48,5 +52,16 @@ public class BackgroundTasksProps {
         private Duration maxAge = Duration.ofDays(365);
 
         private String cron = "0 30 3 * * *";
+    }
+
+    @Getter
+    @Setter
+    public static class ProjectTransferRequestExpirationProps {
+        private boolean enabled = true;
+
+        @DurationUnit(ChronoUnit.DAYS)
+        private Duration maxAge = Duration.ofDays(14);
+
+        private String cron = "0 0 2 * * *";
     }
 }

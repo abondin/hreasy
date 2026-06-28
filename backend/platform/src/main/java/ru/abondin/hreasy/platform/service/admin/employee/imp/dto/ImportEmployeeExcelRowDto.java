@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.admin.employee.imp.dto;
 
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportRowDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
  * </p>
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class ImportEmployeeExcelRowDto extends ExcelImportRowDto {
     /**
      * Key property to merge employees from excel and database

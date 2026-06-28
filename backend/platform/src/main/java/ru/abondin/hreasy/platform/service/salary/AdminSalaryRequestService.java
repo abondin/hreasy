@@ -79,7 +79,10 @@ public class AdminSalaryRequestService {
                                     HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
                                     p, now, auth.getEmployeeInfo().getEmployeeId())
                                     .flatMap(history -> notificationOrchestrator.publishBestEffort(
-                                                    salaryRequestRejectedEvent(auth, p, body.getRescheduleToNewPeriod()))
+                                                    SalaryRequestImplementationNotificationEvent.rejected(
+                                                            auth,
+                                                            p,
+                                                            body.getRescheduleToNewPeriod()))
                                             .thenReturn(history)))
                             .map(HistoryEntry::getEntityId);
                 });
@@ -143,7 +146,7 @@ public class AdminSalaryRequestService {
                                             HistoryDomainService.HistoryEntityType.SALARY_REQUEST,
                                             p, now, auth.getEmployeeInfo().getEmployeeId())
                                             .flatMap(history -> notificationOrchestrator.publishBestEffort(
-                                                            salaryRequestImplementedEvent(auth, p))
+                                                            SalaryRequestImplementationNotificationEvent.implemented(auth, p))
                                                     .thenReturn(history)))
                                     .map(HistoryEntry::getEntityId);
                         }));
@@ -241,36 +244,6 @@ public class AdminSalaryRequestService {
                 .defaultIfEmpty(true);
     }
 
-    private SalaryRequestImplementationNotificationEvent salaryRequestImplementedEvent(AuthContext auth,
-                                                                                       SalaryRequestEntry entry) {
-        return new SalaryRequestImplementationNotificationEvent(
-                auth,
-                entry.getId(),
-                entry.getEmployeeId(),
-                entry.getCreatedBy(),
-                entry.getType(),
-                entry.getReqIncreaseStartPeriod(),
-                entry.getImplIncreaseStartPeriod(),
-                SalaryRequestImplementationState.IMPLEMENTED,
-                null,
-                null);
-    }
-
-    private SalaryRequestImplementationNotificationEvent salaryRequestRejectedEvent(AuthContext auth,
-                                                                                    SalaryRequestEntry entry,
-                                                                                    Integer rescheduledToNewPeriod) {
-        return new SalaryRequestImplementationNotificationEvent(
-                auth,
-                entry.getId(),
-                entry.getEmployeeId(),
-                entry.getCreatedBy(),
-                entry.getType(),
-                entry.getReqIncreaseStartPeriod(),
-                null,
-                SalaryRequestImplementationState.REJECTED,
-                entry.getImplRejectReason(),
-                rescheduledToNewPeriod);
-    }
     //</editor-fold>
 
 

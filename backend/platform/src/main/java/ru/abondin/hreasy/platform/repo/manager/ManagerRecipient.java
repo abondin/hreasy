@@ -13,4 +13,6 @@ public class ManagerRecipient {
     private String email;
     @Column("display_name")
     private String displayName;
+    @Column("manager_type")
+    private String managerType;
 }

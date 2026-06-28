@@ -26,6 +26,8 @@ public class NotificationPlan {
     private final String bodyKey;
     @Singular
     private final List<Object> bodyArgs;
+    private final String actionTitleKey;
+    private final String actionUrl;
     @Singular("context")
     private final Map<String, Object> context;
     private final Integer initiatorEmployeeId;

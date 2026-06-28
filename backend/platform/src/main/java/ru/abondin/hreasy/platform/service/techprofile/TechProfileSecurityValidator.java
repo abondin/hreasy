@@ -26,7 +26,7 @@ public class TechProfileSecurityValidator {
             if (!auth.getAuthorities().contains("techprofile_upload")) {
                 return Mono.just(false);
             }
-            return projectHierarchyService.isManager(auth, employeeId);
+            return projectHierarchyService.hasProjectAccess(auth, employeeId);
         }).flatMap(r -> {
             if (r) {
                 return Mono.just(true);
@@ -43,7 +43,7 @@ public class TechProfileSecurityValidator {
             if (!auth.getAuthorities().contains("techprofile_download")) {
                 return Mono.just(false);
             }
-            return projectHierarchyService.isManager(auth, employeeId);
+            return projectHierarchyService.hasProjectAccess(auth, employeeId);
         }).flatMap(r -> {
             if (r) {
                 return Mono.just(true);

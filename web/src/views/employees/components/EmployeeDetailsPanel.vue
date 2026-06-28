@@ -9,8 +9,10 @@
       :avatar-read-only="false"
       :project-read-only="false"
       :show-name="false"
+      :open-project-update-dialog="openProjectUpdateDialog"
       @avatar-updated="emit('employee-updated')"
       @update-project="emit('employee-updated')"
+      @project-update-dialog-closed="emit('project-update-dialog-closed')"
     />
 
     <detail-section-card :title="t('Текущие и планируемые отпуска')">
@@ -94,10 +96,12 @@ import ProfileTechProfilesCard from "@/views/profile/components/ProfileTechProfi
 
 const props = defineProps<{
   employee: Employee;
+  openProjectUpdateDialog?: boolean;
 }>();
 
 const emit = defineEmits<{
   (event: "employee-updated"): void;
+  (event: "project-update-dialog-closed"): void;
 }>();
 
 const { t } = useI18n();
@@ -111,15 +115,21 @@ const skillsLoading = ref(false);
 const skillsActionError = ref<unknown>(null);
 
 const canViewTechProfiles = computed(() =>
-  permissions.canDownloadTechProfiles(props.employee.id),
+  permissions.canDownloadTechProfiles(props.employee.id) &&
+  permissions.canAccessManagedEmployee(props.employee),
 );
 const {
-  canViewSkills,
+  canViewSkills: canViewSkillsByPermission,
   canEditSkills,
   canAddSkills,
   canDeleteSkills,
   canRateSkills,
 } = useEmployeeSkillPermissions(() => props.employee.id);
+
+const canViewSkills = computed(() =>
+  canViewSkillsByPermission.value &&
+  permissions.canAccessManagedEmployee(props.employee),
+);
 
 const skillsSectionLoading = computed(() => skillsLoading.value);
 const skillsSectionError = computed(() => skillsActionError.value ?? null);

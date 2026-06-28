@@ -1,8 +1,10 @@
 package ru.abondin.hreasy.platform.service.overtime;
 
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.overtime.OvertimeApprovalDecisionEntry;
 import ru.abondin.hreasy.platform.service.notification.BusinessNotificationEvent;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeApprovalDecisionDto;
+import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeReportDto;
 
 /**
  * Event emitted after an overtime report approval or decline decision has been saved.
@@ -26,4 +28,18 @@ public record OvertimeDecisionNotificationEvent(
         int approverEmployeeId,
         String comment
 ) implements BusinessNotificationEvent {
+    public static OvertimeDecisionNotificationEvent from(AuthContext auth,
+                                                         int employeeId,
+                                                         OvertimeReportDto report,
+                                                         OvertimeApprovalDecisionEntry decision) {
+        return new OvertimeDecisionNotificationEvent(
+                auth,
+                employeeId,
+                report.getId(),
+                report.getPeriod(),
+                decision.getId(),
+                decision.getDecision(),
+                decision.getApprover(),
+                decision.getComment());
+    }
 }

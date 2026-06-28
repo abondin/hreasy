@@ -2,10 +2,12 @@ package ru.abondin.hreasy.platform.repo.udr;
 
 import io.r2dbc.postgresql.codec.Json;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class JuniorView extends JuniorEntry {
 
     private String juniorEmplDisplayName;

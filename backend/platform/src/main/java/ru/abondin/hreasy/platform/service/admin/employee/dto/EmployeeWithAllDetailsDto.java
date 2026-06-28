@@ -1,9 +1,11 @@
 package ru.abondin.hreasy.platform.service.admin.employee.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 public class EmployeeWithAllDetailsDto extends EmployeeAllFields {
     private Integer id;

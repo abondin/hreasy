@@ -197,6 +197,14 @@ Follow these rules when creating or modifying `.java` files.
 - Avoid `@Autowired` annotation unless there is no other way
 - Prefer `@ConfigurationProperties` annotation to `@Value` annotation
 
+## MapStruct rules
+- Use MapStruct for DTO/entity/view mappings when adding non-trivial mapping code.
+- Prefer `@Mapper(componentModel = "spring")` for Spring-managed mappers.
+- Reuse `ru.abondin.hreasy.platform.service.mapper.MapperBase` for common dict/date/period helpers.
+- Extend `ru.abondin.hreasy.platform.service.mapper.MapperBaseWithJsonSupport` when mapping JSON fields.
+- Keep manual mapping only for very small local transformations where introducing a mapper would add more code than it removes.
+- Keep business decisions out of mappers; mappers should transform shapes, not validate permissions or mutate workflow state.
+
 ## Security and Role Model
 - Before implementing backend behavior, study the existing backend role and permission model for the affected domain.
 - Before implementing frontend-facing backend APIs, make sure every protected action and data shape is backed by backend permission checks.

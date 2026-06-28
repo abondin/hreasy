@@ -10,6 +10,7 @@ import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -89,10 +90,11 @@ public class NotificationOrchestrator {
         var locale = plan.getLocale() == null ? localeResolver.resolve(plan.getRecipient()) : plan.getLocale();
         var title = render(locale, plan.getTitleKey(), plan.getTitleArgs());
         var body = render(locale, plan.getBodyKey(), plan.getBodyArgs());
+        var externalBody = externalBody(locale, plan, body);
         var context = serializeContext(plan);
 
         return persistInbox(plan, title, body, context)
-                .then(notifyMsClient.sendBestEffort(notifyMsRequest(plan, locale, title, body, context)));
+                .then(notifyMsClient.sendBestEffort(notifyMsRequest(plan, locale, title, externalBody, context)));
     }
 
     private Mono<Void> persistInbox(NotificationPlan plan, String title, String body, String context) {
@@ -136,9 +138,20 @@ public class NotificationOrchestrator {
         return i18n.localize(locale, key, localizedArgs);
     }
 
+    private String externalBody(java.util.Locale locale, NotificationPlan plan, String body) {
+        if (plan.getActionTitleKey() == null || plan.getActionUrl() == null) {
+            return body;
+        }
+        var actionTitle = render(locale, plan.getActionTitleKey(), List.of());
+        return body + "\n\n[" + actionTitle + "](" + plan.getActionUrl() + ")";
+    }
+
     private Object renderArg(java.util.Locale locale, Object arg) {
         if (arg instanceof LocalDate date) {
             return i18n.formatDate(locale, date);
+        }
+        if (arg instanceof OffsetDateTime dateTime) {
+            return i18n.formatDateTime(locale, dateTime);
         }
         return arg;
     }

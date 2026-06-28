@@ -30,13 +30,19 @@ public class DeliveryWorker {
     public void run() {
         var now = OffsetDateTime.now();
         try {
+            log.debug("Notification delivery worker tick now={}, batchSize={}",
+                    now,
+                    props.getWorker().getBatchSize());
             deliveryRepo.claimDue(now, props.getWorker().getBatchSize())
                     .collectList()
                     .flatMapMany(deliveries -> {
-                        if (!deliveries.isEmpty()) {
-                            log.info("Claimed notification deliveries count={}, batchSize={}",
+                        if (deliveries.isEmpty()) {
+                            log.debug("No due notification deliveries claimed now={}", now);
+                        } else {
+                            log.info("Claimed notification deliveries count={}, batchSize={}, ids={}",
                                     deliveries.size(),
-                                    props.getWorker().getBatchSize());
+                                    props.getWorker().getBatchSize(),
+                                    deliveries.stream().map(NotificationDeliveryEntry::getId).toList());
                         }
                         return Flux.fromIterable(deliveries);
                     })
@@ -72,6 +78,14 @@ public class DeliveryWorker {
                 delivery.getChannel(),
                 delivery.getAttemptCount() + 1,
                 delivery.getMaxAttempts());
+        log.debug("Notification delivery payload id={}, notificationId={}, recipientType={}, recipientLogin={}, recipientChatId={}, dueAt={}, providerPayloadId={}",
+                delivery.getId(),
+                notification.getId(),
+                notification.getRecipientType(),
+                notification.getRecipientLogin(),
+                notification.getRecipientChatId(),
+                delivery.getDueAt(),
+                delivery.getProviderPayloadId());
         if (NotificationChannel.yandex_messenger.name().equals(delivery.getChannel())) {
             return yandexProvider.send(notification, delivery)
                     .flatMap(result -> applyResult(delivery, result));

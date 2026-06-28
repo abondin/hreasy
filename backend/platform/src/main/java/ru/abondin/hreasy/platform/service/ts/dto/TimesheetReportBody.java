@@ -29,5 +29,6 @@ public class TimesheetReportBody {
     private Integer project;
     private String comment;
 
+    @Builder.Default
     private List<TimesheetReportOneDay> hours = new ArrayList<>();
 }

@@ -40,7 +40,7 @@ public abstract class BasePostgresTest {
     private DatabaseClient db;
 
     @BeforeEach
-    void cleanDatabase() {
+    protected void cleanDatabase() {
         db.sql("delete from notify_ms.notification_delivery").then()
                 .then(db.sql("delete from notify_ms.notification").then())
                 .block();

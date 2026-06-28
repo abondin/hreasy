@@ -93,6 +93,12 @@ public class NotificationAcceptService {
         delivery.setDueAt(dueAt);
         delivery.setMaxAttempts(channel.getMaxAttempts());
         delivery.setProviderPayloadId(notification.getDedupeKey() + ":yandex_messenger");
+        log.debug("Prepare Yandex Messenger delivery notificationId={}, mode={}, now={}, dueAt={}, status={}",
+                notification.getId(),
+                channel.getMode(),
+                now,
+                dueAt,
+                delivery.getStatus());
         return deliveryRepo.save(delivery)
                 .doOnNext(saved -> log.info("Notification delivery created id={}, notificationId={}, channel={}, status={}, dueAt={}, maxAttempts={}",
                         saved.getId(),

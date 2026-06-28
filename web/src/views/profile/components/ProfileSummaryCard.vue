@@ -14,9 +14,11 @@
           :avatar-read-only="avatarReadOnly"
           :project-read-only="projectReadOnly"
           :show-name="showName"
+          :open-project-update-dialog="openProjectUpdateDialog"
           @avatar-updated="$emit('avatar-updated')"
           @edit-telegram="$emit('edit-telegram')"
           @update-project="$emit('update-project')"
+          @project-update-dialog-closed="$emit('project-update-dialog-closed')"
         />
       </v-col>
       <v-col v-if="$slots.default" cols="12" lg class="min-w-0">
@@ -39,6 +41,7 @@ const props = withDefaults(
     projectReadOnly?: boolean;
     showName?: boolean;
     title?: string | null;
+    openProjectUpdateDialog?: boolean;
   }>(),
   {
     readOnly: true,
@@ -46,6 +49,7 @@ const props = withDefaults(
     projectReadOnly: undefined,
     showName: true,
     title: null,
+    openProjectUpdateDialog: false,
   },
 );
 
@@ -55,5 +59,6 @@ defineEmits<{
   (event: "avatar-updated"): void;
   (event: "edit-telegram"): void;
   (event: "update-project"): void;
+  (event: "project-update-dialog-closed"): void;
 }>();
 </script>

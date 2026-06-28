@@ -37,7 +37,7 @@ public class AssessmentSecurityValidator {
                     } else if (assessmentOwners.contains(auth.getEmployeeInfo().getEmployeeId())) {
                         return Mono.just(true);
                     } else {
-                        return hierarchyAccessor.isManager(auth, employee);
+                        return hierarchyAccessor.hasProjectAccess(auth, employee);
                     }
                 }
         ).flatMap(v -> {

@@ -67,6 +67,13 @@ public class YandexMessengerProvider {
                 delivery.getId(),
                 notification.getRecipientType(),
                 delivery.getProviderPayloadId());
+        log.debug("Yandex Messenger request notificationId={}, deliveryId={}, baseUrl={}, recipientLogin={}, chatId={}, textLength={}",
+                notification.getId(),
+                delivery.getId(),
+                config.getBaseUrl(),
+                notification.getRecipientLogin(),
+                notification.getRecipientChatId(),
+                notification.getBody() == null ? 0 : notification.getBody().length());
         return webClientBuilder.baseUrl(config.getBaseUrl())
                 .build()
                 .post()

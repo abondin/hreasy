@@ -36,6 +36,7 @@ hreasy:
     default-email-from: "hreasy@stm-labs.ru"
     default-calendar-type: "default"
     default-calendar-region: "RU"
+    web-base-url: "http://127.0.0.1:8080"
   notifications:
     delivery-service:
       enabled: false
@@ -47,6 +48,10 @@ hreasy:
       enabled: true
       max-age: 365d
       cron: "0 30 3 * * *"
+    project-transfer-request-expiration:
+      enabled: true
+      max-age: 14d
+      cron: "0 0 2 * * *"
 #  background:
 #    upcoming-vacation:
 #      job-enabled: false

@@ -1,6 +1,7 @@
 package ru.abondin.hreasy.platform;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.Locale;
 
 /**
@@ -12,6 +13,8 @@ public interface I18Helper {
 
     String formatDate(LocalDate date);
     String formatDate(Locale locale, LocalDate date);
+    String formatDateTime(OffsetDateTime dateTime);
+    String formatDateTime(Locale locale, OffsetDateTime dateTime);
 
     class DummyI18Helper implements I18Helper{
         @Override
@@ -32,6 +35,16 @@ public interface I18Helper {
         @Override
         public String formatDate(Locale locale, LocalDate date) {
             return date == null ? null : date.toString();
+        }
+
+        @Override
+        public String formatDateTime(OffsetDateTime dateTime) {
+            return dateTime == null ? null : dateTime.toString();
+        }
+
+        @Override
+        public String formatDateTime(Locale locale, OffsetDateTime dateTime) {
+            return dateTime == null ? null : dateTime.toString();
         }
     }
 }

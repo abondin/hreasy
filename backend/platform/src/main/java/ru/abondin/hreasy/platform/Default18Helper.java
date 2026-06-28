@@ -8,6 +8,7 @@ import org.springframework.context.NoSuchMessageException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class Default18Helper implements I18Helper {
     private final MessageSource messageSource;
     private final Map<Locale, DateTimeFormatter> dateFormatters = new HashMap<>();
+    private final Map<Locale, DateTimeFormatter> dateTimeFormatters = new HashMap<>();
     private Locale defaultLocale;
 
     @PostConstruct
@@ -58,5 +60,21 @@ public class Default18Helper implements I18Helper {
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(l)
         );
         return formatter.format(date);
+    }
+
+    @Override
+    public String formatDateTime(OffsetDateTime dateTime) {
+        return formatDateTime(defaultLocale, dateTime);
+    }
+
+    @Override
+    public String formatDateTime(Locale locale, OffsetDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
+        }
+        var formatter = dateTimeFormatters.computeIfAbsent(locale, l ->
+                DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withLocale(l)
+        );
+        return formatter.format(dateTime);
     }
 }

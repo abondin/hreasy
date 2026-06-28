@@ -41,6 +41,9 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
             pr.accessible_projects as accessible_projects,
             deps.accessible_departments as accessible_departments,
             bas.accessible_bas as accessible_bas,
+            coalesce(managed_pr.managed_projects, array[]::integer[]) as managed_projects,
+            coalesce(managed_deps.managed_departments, array[]::integer[]) as managed_departments,
+            coalesce(managed_bas.managed_bas, array[]::integer[]) as managed_bas,
             r.roles
             from empl.employee e
                 left join
@@ -55,6 +58,24 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
                 left join
                     (select b.employee_id, array_agg(b.ba_id) accessible_bas from sec.employee_accessible_bas b group by b.employee_id) bas
                 on e.id=bas.employee_id
+                left join
+                    (select m.employee, array_agg(distinct m.object_id) managed_projects
+                     from empl.manager m
+                     where m.object_type = 'project'
+                     group by m.employee) managed_pr
+                on e.id=managed_pr.employee
+                left join
+                    (select m.employee, array_agg(distinct m.object_id) managed_departments
+                     from empl.manager m
+                     where m.object_type = 'department'
+                     group by m.employee) managed_deps
+                on e.id=managed_deps.employee
+                left join
+                    (select m.employee, array_agg(distinct m.object_id) managed_bas
+                     from empl.manager m
+                     where m.object_type = 'business_account'
+                     group by m.employee) managed_bas
+                on e.id=managed_bas.employee
             """)
     Flux<UserSecurityInfoEntry> findWithSecurityInfo();
 

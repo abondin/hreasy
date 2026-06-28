@@ -33,36 +33,36 @@ public class ProjectHierarchyAccessor {
 
 
     /**
-     * @param managerAuth
+     * @param auth
      * @param employeeId
-     * @return true if employee from auth is manager for given employee. Manager means (or):
+     * @return true if employee from auth has effective access to given employee. Access means (or):
      * <ul>
-     *     <li>Manager of current project of employee</li>
-     *     <li>Manager of department of current project of employee</li>
-     *     <li>Manager of department of employee</li>
+     *     <li>Access to current project of employee</li>
+     *     <li>Access to department of current project of employee</li>
+     *     <li>Access to department of employee</li>
      * </ul>
      */
-    public Mono<Boolean> isManager(AuthContext managerAuth, int employeeId) {
+    public Mono<Boolean> hasProjectAccess(AuthContext auth, int employeeId) {
         return Mono.zip(projectRepo.getEmployeeCurrentProject(employeeId),
                         employeeRepo.findById(employeeId))
                 .map(tuple -> {
                     var project = tuple.getT1();
                     var employee = tuple.getT2();
-                    return isManager(managerAuth, employee.getDepartmentId(),
+                    return hasProjectAccess(auth, employee.getDepartmentId(),
                             new ProjectInfo(project.getId(), project.getDepartmentId(), project.getBaId()));
                 })
                 .defaultIfEmpty(true);
     }
 
     /**
-     * Check if manager without additional access to database
+     * Check project access without additional database queries.
      *
      * @param auth
      * @param employeeDepartmentId
      * @param currentProject
      * @return
      */
-    public Boolean isManager(AuthContext auth, Integer employeeDepartmentId, ProjectInfo currentProject) {
+    public Boolean hasProjectAccess(AuthContext auth, Integer employeeDepartmentId, ProjectInfo currentProject) {
         return currentProject == null ||
                 (
                         auth.getEmployeeInfo().getAccessibleProjects().contains(currentProject.getId())
@@ -72,27 +72,27 @@ public class ProjectHierarchyAccessor {
                 );
     }
 
-    public Boolean isBaManager(AuthContext auth, Integer businessAccountId) {
+    public Boolean hasBusinessAccountAccess(AuthContext auth, Integer businessAccountId) {
         return businessAccountId == null || auth.getEmployeeInfo().getAccessibleBas().contains(businessAccountId);
     }
 
 
     /**
-     * @param managerAuth
+     * @param auth
      * @param projectIds  - ids of the projects
-     * @return true if employee from auth is manager for <b>all</b> given projects. Manager means (or):
+     * @return true if employee from auth has effective access to <b>all</b> given projects. Access means (or):
      * <ul>
-     *     <li>Manager of current project of employee</li>
-     *     <li>Manager of department of current project of employee</li>
-     *     <li>Manager of business account of current project of employee</li>
+     *     <li>Access to current project of employee</li>
+     *     <li>Access to department of current project of employee</li>
+     *     <li>Access to business account of current project of employee</li>
      * </ul>
      */
-    public Mono<Boolean> isManagerOfAllProject(AuthContext managerAuth, List<Integer> projectIds) {
+    public Mono<Boolean> hasProjectAccessToAll(AuthContext auth, List<Integer> projectIds) {
         return projectRepo.findByIds(projectIds).reduce(true,
                         (result, project) -> result &&
-                                (managerAuth.getEmployeeInfo().getAccessibleProjects().contains(project.getId())
-                                        || (project.getDepartmentId() != null && managerAuth.getEmployeeInfo().getAccessibleDepartments().contains(project.getDepartmentId()))
-                                        || (project.getBaId() != null && managerAuth.getEmployeeInfo().getAccessibleBas().contains(project.getBaId()))
+                                (auth.getEmployeeInfo().getAccessibleProjects().contains(project.getId())
+                                        || (project.getDepartmentId() != null && auth.getEmployeeInfo().getAccessibleDepartments().contains(project.getDepartmentId()))
+                                        || (project.getBaId() != null && auth.getEmployeeInfo().getAccessibleBas().contains(project.getBaId()))
                                 ))
                 .defaultIfEmpty(true);
     }

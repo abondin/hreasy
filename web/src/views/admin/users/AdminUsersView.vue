@@ -81,9 +81,18 @@
           <div class="d-flex flex-wrap ga-1">
             <v-chip
               v-for="baId in item.accessibleBas"
-              :key="baId"
+              :key="`manual-ba-${baId}`"
               size="small"
               variant="outlined"
+            >
+              {{ getById(businessAccounts, baId) }}
+            </v-chip>
+            <v-chip
+              v-for="baId in derivedOnly(item.managedBas, item.accessibleBas)"
+              :key="`managed-ba-${baId}`"
+              size="small"
+              color="grey"
+              variant="tonal"
             >
               {{ getById(businessAccounts, baId) }}
             </v-chip>
@@ -94,9 +103,18 @@
           <div class="d-flex flex-wrap ga-1">
             <v-chip
               v-for="projectId in item.accessibleProjects"
-              :key="projectId"
+              :key="`manual-project-${projectId}`"
               size="small"
               variant="outlined"
+            >
+              {{ getById(projects, projectId) }}
+            </v-chip>
+            <v-chip
+              v-for="projectId in derivedOnly(item.managedProjects, item.accessibleProjects)"
+              :key="`managed-project-${projectId}`"
+              size="small"
+              color="grey"
+              variant="tonal"
             >
               {{ getById(projects, projectId) }}
             </v-chip>
@@ -193,8 +211,10 @@ const filteredItems = computed(() => {
 
     return item.employee.name.toLowerCase().includes(query)
       || item.accessibleProjects.some((id) => matchingProjectIds.includes(id))
+      || item.managedProjects.some((id) => matchingProjectIds.includes(id))
       || item.accessibleDepartments.some((id) => matchingDepartmentIds.includes(id))
       || item.accessibleBas.some((id) => matchingBaIds.includes(id))
+      || item.managedBas.some((id) => matchingBaIds.includes(id))
       || item.roles.some((id) => matchingRoleIds.includes(id));
   });
 });
@@ -216,6 +236,10 @@ function getById(
 
 function getRoleName(roleId: string): string {
   return roles.value.find((role) => role.id === roleId)?.name ?? roleId;
+}
+
+function derivedOnly(derivedIds: number[] = [], manualIds: number[] = []): number[] {
+  return derivedIds.filter((id) => !manualIds.includes(id));
 }
 
 async function load(): Promise<void> {

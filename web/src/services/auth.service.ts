@@ -7,7 +7,9 @@ export interface LoginRequest {
 
 export interface EmployeeShortInfo {
   employeeId: number;
+  accessibleDepartments: number[];
   accessibleBas: number[];
+  accessibleProjects: number[];
 }
 
 export interface CurrentUser {
