@@ -81,7 +81,7 @@ class ProjectTransferRequestExpirationJobTest extends BaseServiceTest {
                         projectTransferNotifications(oldPending)))
                 .assertNext(states -> {
                     Assertions.assertEquals(ProjectTransferRequestEntry.STATE_EXPIRED, states.getT1().state());
-                    Assertions.assertEquals(now, states.getT1().updatedAt());
+                    Assertions.assertEquals(now.toInstant(), states.getT1().updatedAt().toInstant());
                     Assertions.assertNull(states.getT1().updatedBy());
 
                     Assertions.assertEquals(ProjectTransferRequestEntry.STATE_PENDING, states.getT2().state());
