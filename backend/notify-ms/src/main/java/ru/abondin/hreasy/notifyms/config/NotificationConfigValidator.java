@@ -13,10 +13,13 @@ public class NotificationConfigValidator implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        log.info("Notification service configuration workerEnabled={}, batchSize={}, yandexMessengerEnabled={}, emailEnabled={}, workingHoursTimezone={}",
+        var yandex = props.getChannels().getYandexMessenger();
+        log.info("Notification service configuration workerEnabled={}, batchSize={}, yandexMessengerEnabled={}, yandexMessengerMode={}, yandexMessengerTokenConfigured={}, emailEnabled={}, workingHoursTimezone={}",
                 props.getWorker().isEnabled(),
                 props.getWorker().getBatchSize(),
-                props.getChannels().getYandexMessenger().isEnabled(),
+                yandex.isEnabled(),
+                yandex.getMode(),
+                org.springframework.util.StringUtils.hasText(yandex.getOauthToken()),
                 props.getChannels().getEmail().isEnabled(),
                 props.getWorkingHours().getTimezone());
         if (props.getChannels().getEmail().isEnabled()) {

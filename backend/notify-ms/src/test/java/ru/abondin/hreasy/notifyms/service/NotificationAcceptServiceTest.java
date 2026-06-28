@@ -97,15 +97,20 @@ class NotificationAcceptServiceTest extends BasePostgresTest {
     void claimDueMarksDeliveryAsSending() {
         var request = request("assessment.assigned:456:123");
         service.accept(request).block();
+        var dueAt = deliveryRepo.findAll()
+                .single()
+                .map(delivery -> delivery.getDueAt().plusMinutes(1))
+                .block(DEFAULT_TIMEOUT);
+        assertNotNull(dueAt);
 
-        StepVerifier.create(deliveryRepo.claimDue(java.time.OffsetDateTime.now().plusMinutes(1), 10).collectList())
+        StepVerifier.create(deliveryRepo.claimDue(dueAt, 10).collectList())
                 .assertNext(deliveries -> {
                     assertEquals(1, deliveries.size());
                     assertEquals(DeliveryStatus.sending.name(), deliveries.getFirst().getStatus());
                 })
                 .verifyComplete();
 
-        StepVerifier.create(deliveryRepo.claimDue(java.time.OffsetDateTime.now().plusMinutes(1), 10).collectList())
+        StepVerifier.create(deliveryRepo.claimDue(dueAt, 10).collectList())
                 .assertNext(deliveries -> assertTrue(deliveries.isEmpty()))
                 .verifyComplete();
     }

@@ -9,6 +9,7 @@ import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectRepo;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeEntry;
 import ru.abondin.hreasy.platform.repo.employee.EmployeeRepo;
+import ru.abondin.hreasy.platform.service.WebUiLinkBuilder;
 import ru.abondin.hreasy.platform.service.notification.BusinessNotificationHandler;
 import ru.abondin.hreasy.platform.service.notification.NotificationPersistService;
 import ru.abondin.hreasy.platform.service.notification.NotificationPlan;
@@ -32,11 +33,13 @@ public class ProjectTransferRequestNotificationHandler
     private static final String EVENT_REJECTED = "project_transfer.request_rejected";
     private static final String EVENT_CANCELED = "project_transfer.request_canceled";
     private static final String EVENT_EXPIRED = "project_transfer.request_expired";
+    private static final String ACTION_TITLE_KEY = "notification.template.project-transfer-request.action";
     private static final String PRIORITY = "normal";
 
     private final EmployeeRepo employeeRepo;
     private final DictProjectRepo projectRepo;
     private final BackgroundTasksProps backgroundTasksProps;
+    private final WebUiLinkBuilder webUiLinkBuilder;
 
     @Override
     public Class<ProjectTransferRequestNotificationEvent> eventClass() {
@@ -118,6 +121,8 @@ public class ProjectTransferRequestNotificationHandler
                 .bodyArg(toProject.getName())
                 .bodyArg(event.comment() == null ? "" : event.comment())
                 .bodyArg(expiresAt)
+                .actionTitleKey(ACTION_TITLE_KEY)
+                .actionUrl(webUiLinkBuilder.employeeProjectChangeDialog(event.employeeId()))
                 .context("eventType", eventType)
                 .context("projectTransferRequestId", event.requestId())
                 .context("employeeId", event.employeeId())

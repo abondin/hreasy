@@ -90,10 +90,11 @@ public class NotificationOrchestrator {
         var locale = plan.getLocale() == null ? localeResolver.resolve(plan.getRecipient()) : plan.getLocale();
         var title = render(locale, plan.getTitleKey(), plan.getTitleArgs());
         var body = render(locale, plan.getBodyKey(), plan.getBodyArgs());
+        var externalBody = externalBody(locale, plan, body);
         var context = serializeContext(plan);
 
         return persistInbox(plan, title, body, context)
-                .then(notifyMsClient.sendBestEffort(notifyMsRequest(plan, locale, title, body, context)));
+                .then(notifyMsClient.sendBestEffort(notifyMsRequest(plan, locale, title, externalBody, context)));
     }
 
     private Mono<Void> persistInbox(NotificationPlan plan, String title, String body, String context) {
@@ -135,6 +136,14 @@ public class NotificationOrchestrator {
                 .map(arg -> renderArg(locale, arg))
                 .toArray();
         return i18n.localize(locale, key, localizedArgs);
+    }
+
+    private String externalBody(java.util.Locale locale, NotificationPlan plan, String body) {
+        if (plan.getActionTitleKey() == null || plan.getActionUrl() == null) {
+            return body;
+        }
+        var actionTitle = render(locale, plan.getActionTitleKey(), List.of());
+        return body + "\n\n[" + actionTitle + "](" + plan.getActionUrl() + ")";
     }
 
     private Object renderArg(java.util.Locale locale, Object arg) {

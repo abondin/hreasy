@@ -29,6 +29,9 @@ Technical delivery settings, channel configuration, API payloads, and provider b
 ## Project Transfer Notifications
 
 These notifications cover the employee current-project transfer request flow.
+Project-transfer message text formats the employee name and project names as markdown inline code. External messenger delivery
+includes a markdown action link to the employee project-change dialog. The Platform inbox keeps the business text and renders
+the action through the web notification template.
 
 | Event type | Business trigger | Business recipients | User-visible inbox | Business purpose | Status |
 |------------|------------------|---------------------|--------------------|------------------|--------|
