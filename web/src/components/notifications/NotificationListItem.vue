@@ -1,5 +1,5 @@
 <template>
-  <v-list-item class="notification-list-item">
+  <v-list-item class="notification-list-item notifications-menu__item">
     <div class="notification-list-item__header">
       <div class="notification-list-item__heading">
         <div class="notification-list-item__title">
