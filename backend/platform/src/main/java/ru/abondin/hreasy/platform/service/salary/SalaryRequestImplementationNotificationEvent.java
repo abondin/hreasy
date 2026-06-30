@@ -5,6 +5,8 @@ import ru.abondin.hreasy.platform.repo.salary.SalaryRequestEntry;
 import ru.abondin.hreasy.platform.service.notification.BusinessNotificationEvent;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementationState;
 
+import java.time.OffsetDateTime;
+
 /**
  * Event emitted after a salary request implementation state has been saved.
  *
@@ -15,6 +17,7 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementation
  * @param requestType salary request type code
  * @param requestPeriod requested salary request period
  * @param implementationPeriod actual implementation period, if available
+ * @param implementedAt date and time when implementation state was saved
  * @param implementationState saved implementation state
  * @param rejectReason reject reason, if the request was rejected
  * @param rescheduledToNewPeriod optional period used when rejection also reschedules the request
@@ -27,6 +30,7 @@ public record SalaryRequestImplementationNotificationEvent(
         Short requestType,
         Integer requestPeriod,
         Integer implementationPeriod,
+        OffsetDateTime implementedAt,
         SalaryRequestImplementationState implementationState,
         String rejectReason,
         Integer rescheduledToNewPeriod
@@ -41,6 +45,7 @@ public record SalaryRequestImplementationNotificationEvent(
                 entry.getType(),
                 entry.getReqIncreaseStartPeriod(),
                 entry.getImplIncreaseStartPeriod(),
+                entry.getImplementedAt(),
                 SalaryRequestImplementationState.IMPLEMENTED,
                 null,
                 null);
@@ -57,6 +62,7 @@ public record SalaryRequestImplementationNotificationEvent(
                 entry.getType(),
                 entry.getReqIncreaseStartPeriod(),
                 null,
+                entry.getImplementedAt(),
                 SalaryRequestImplementationState.REJECTED,
                 entry.getImplRejectReason(),
                 rescheduledToNewPeriod);

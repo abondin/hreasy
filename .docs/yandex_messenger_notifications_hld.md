@@ -499,8 +499,8 @@ Two idempotency levels are needed:
 - `overtime.approved:<reportId>:<employeeId>:<decisionId>`
 - `overtime.declined:<reportId>:<employeeId>:<decisionId>`
 - `vacation.upcoming:<vacationId>:<employeeId>`
-- `salary_request.implemented:<salaryRequestId>:<creatorEmployeeId>`
-- `salary_request.rejected:<salaryRequestId>:<creatorEmployeeId>`
+- `salary_request.implemented:<salaryRequestId>:<creatorEmployeeId>:<implementedAt>`
+- `salary_request.rejected:<salaryRequestId>:<creatorEmployeeId>:<implementedAt>`
 - `salary_request.approval_required:<requestId>:<approverEmployeeId>`
 
 If the platform resends the same notification, the notification service returns the existing `notificationId` instead of creating a duplicate delivery.

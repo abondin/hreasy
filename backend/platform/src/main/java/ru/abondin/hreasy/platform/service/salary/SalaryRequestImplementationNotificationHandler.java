@@ -13,6 +13,8 @@ import ru.abondin.hreasy.platform.service.notification.NotificationPlan;
 import ru.abondin.hreasy.platform.service.notification.NotificationRecipient;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementationState;
 
+import java.time.OffsetDateTime;
+
 /**
  * Builds notification plans for the creator of a salary request when it is implemented or rejected.
  */
@@ -64,7 +66,7 @@ public class SalaryRequestImplementationNotificationHandler
         return NotificationPlan.builder()
                 .eventType(eventType)
                 .category(NotificationPersistService.NotificationCategory.SALARY_REQUEST.getCategory())
-                .dedupeKey(dedupeKey(eventType, event.salaryRequestId(), event.createdByEmployeeId()))
+                .dedupeKey(dedupeKey(eventType, event.salaryRequestId(), event.createdByEmployeeId(), event.implementedAt()))
                 .recipient(NotificationRecipient.user(creator.getEmail(), creator.getId()))
                 .priority(PRIORITY)
                 .titleKey(titleKey(event.implementationState()))
@@ -107,7 +109,10 @@ public class SalaryRequestImplementationNotificationHandler
         return IMPLEMENTED_BODY_KEY;
     }
 
-    private String dedupeKey(String eventType, Integer salaryRequestId, Integer creatorEmployeeId) {
-        return eventType + ":" + salaryRequestId + ":" + creatorEmployeeId;
+    private String dedupeKey(String eventType,
+                             Integer salaryRequestId,
+                             Integer creatorEmployeeId,
+                             OffsetDateTime implementedAt) {
+        return eventType + ":" + salaryRequestId + ":" + creatorEmployeeId + ":" + implementedAt;
     }
 }

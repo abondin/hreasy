@@ -266,6 +266,48 @@ class SalaryRequestServiceTest extends BaseServiceTest {
                 .verifyComplete();
     }
 
+    /**
+     * Test goal: verifies that a salary request can be implemented again after implementation reset.
+     * <p>Precondition: an FMS manager created a salary request, and salary manager implemented it once.
+     * <p>Action: salary manager resets implementation and marks the same request as implemented again.
+     * <p>Verification: the second implementation completes and the request contains the new implementation values.
+     */
+    @Test
+    void salaryRequestCanBeImplementedAgainAfterReset() {
+        var adminAuth = auth(TestEmployees.Salary_Manager_Salary_Gold).block(MONO_DEFAULT_TIMEOUT);
+        var requestId = reportDefaultRequest();
+        var firstImplBody = SalaryRequestImplementBody.builder()
+                .increaseAmount(BigDecimal.valueOf(1100))
+                .increaseStartPeriod(202309)
+                .newPosition(testData.position_JavaDeveloper())
+                .comment("First implementation")
+                .build();
+        var secondImplBody = SalaryRequestImplementBody.builder()
+                .increaseAmount(BigDecimal.valueOf(1200))
+                .increaseStartPeriod(202310)
+                .newPosition(testData.position_JavaDeveloper())
+                .comment("Second implementation")
+                .build();
+
+        StepVerifier.create(salaryAdminRequestService.markAsImplemented(adminAuth, requestId, firstImplBody)
+                        .then(salaryAdminRequestService.resetImplementation(adminAuth, requestId))
+                        .then(salaryAdminRequestService.markAsImplemented(adminAuth, requestId, secondImplBody))
+                        .flatMap(updatedId -> {
+                            Assertions.assertEquals(requestId, updatedId, "Invalid ID after second implementation");
+                            return salaryRequestService.get(adminAuth, updatedId);
+                        }))
+                .expectNextMatches(dto ->
+                        dto.getImpl() != null
+                                && dto.getImpl().getImplementedAt() != null
+                                && dto.getImpl().getImplementedBy().getId() == adminAuth.getEmployeeInfo().getEmployeeId()
+                                && dto.getImpl().getComment().equals("Second implementation")
+                                && dto.getImpl().getState() == (short) 1
+                                && dto.getImpl().getIncreaseAmount().compareTo(BigDecimal.valueOf(1200)) == 0
+                                && dto.getImpl().getIncreaseStartPeriod().equals(202310)
+                )
+                .verifyComplete();
+    }
+
 
     @Test
     void testGetNotMyRequest() {

@@ -58,6 +58,17 @@ Recommended context fields:
 | `implementedByEmployeeId` | Employee who changed implementation state |
 | `rescheduledToNewPeriod` | Optional period when rejected request was rescheduled |
 
+## Deduplication
+
+The inbox dedupe key must identify a saved implementation-state change, not just the salary request. Include
+`implementedAt` in the key:
+
+- `salary_request.implemented:<salaryRequestId>:<creatorEmployeeId>:<implementedAt>`;
+- `salary_request.rejected:<salaryRequestId>:<creatorEmployeeId>:<implementedAt>`.
+
+Reason: implementation can be reset and then saved again for the same request. The second saved implementation is a new
+business notification and must not reuse the first inbox `client_uuid`.
+
 ## Open Implementation Notes
 
 - Rejection with rescheduling still sends `salary_request.rejected` for the original request.
