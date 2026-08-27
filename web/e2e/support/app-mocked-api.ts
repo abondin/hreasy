@@ -480,5 +480,6 @@ export const appMockedAuthorities = {
   employees: ["view_empl_current_project_role"],
   vacations: ["vacation_view", "vacation_edit"],
   overtimes: ["overtime_view", "overtime_admin"],
+  resourceAllocations: ["resource_allocation_edit"],
   mentorshipAdmin: ["admin_junior_reg", "access_junior_reg", "view_empl_current_project_role"],
 };

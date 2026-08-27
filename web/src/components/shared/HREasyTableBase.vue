@@ -29,7 +29,7 @@
         @update:sort-by="onUpdateSortBy"
       >
         <template
-          v-for="slotName in forwardedSlots"
+          v-for="slotName in forwardedSlots()"
           :key="slotName"
           #[slotName]="slotProps"
         >
@@ -102,11 +102,6 @@ let hasActivatedOnce = false;
 
 const hasFiltersSlot = computed(() => Boolean(slots.filters));
 const hasBeforeTableSlot = computed(() => Boolean(slots["before-table"]));
-const forwardedSlots = computed(() =>
-  Object.keys(slots).filter(
-    (name) => name.startsWith("item.") || name.startsWith("header."),
-  ),
-);
 const isSortByControlled = computed(() => Boolean(attrs["onUpdate:sortBy"]));
 const resolvedSortBy = computed(() =>
   isSortByControlled.value ? props.sortBy : internalSortBy.value,
@@ -205,6 +200,12 @@ function recalculateFillHeight(): void {
 
 function refreshVirtualTable(): void {
   virtualTableKey.value += 1;
+}
+
+function forwardedSlots(): string[] {
+  return Object.keys(slots).filter(
+    name => name.startsWith("item.") || name.startsWith("header."),
+  );
 }
 
 function onClickRow(eventPayload: Event, rowPayload: unknown) {

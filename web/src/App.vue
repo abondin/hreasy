@@ -27,6 +27,23 @@
             <v-list-item-title>{{ item.label }}</v-list-item-title>
           </v-list-item>
 
+          <v-list-group v-if="managerNavigationItems.length" value="manager-navigation-group">
+            <template #activator="{ props }">
+              <v-list-item v-bind="props" prepend-icon="mdi-account-tie">
+                <v-list-item-title>{{ t("Менеджерам") }}</v-list-item-title>
+              </v-list-item>
+            </template>
+            <v-list-item
+              v-for="item in managerNavigationItems"
+              :key="item.key"
+              :to="item.to"
+              link
+              @click="drawer = false"
+            >
+              <v-list-item-title>{{ item.label }}</v-list-item-title>
+            </v-list-item>
+          </v-list-group>
+
           <v-list-group v-if="salaryNavigationItems.length" value="salary-navigation-group">
             <template #activator="{ props }">
               <v-list-item v-bind="props" prepend-icon="mdi-currency-rub">
@@ -176,6 +193,7 @@ const keepAliveComponentNames = [
   "SalaryRequestsView",
   "SalaryLatestRequestsView",
   "MentorshipView",
+  "ResourceAllocationsView",
   "AdminProjectsView",
   "AdminBusinessAccountsView",
   "AdminManagersView",
@@ -278,6 +296,17 @@ const salaryNavigationItems = computed(() => {
   }
 
   return items;
+});
+
+const managerNavigationItems = computed(() => {
+  if (!isAuthenticated.value || !permissions.canEditResourceAllocations()) {
+    return [];
+  }
+  return [{
+    key: "resource-allocations",
+    label: t("Аллокация ресурсов"),
+    to: { name: "resource-allocations" },
+  }];
 });
 
 const postSalaryNavigationItems = computed(() => {

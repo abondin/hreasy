@@ -17,6 +17,7 @@ import SalaryRequestDetailsView from "@/views/salary/SalaryRequestDetailsView.vu
 import SalaryLatestRequestsView from "@/views/salary/SalaryLatestRequestsView.vue";
 import MentorshipView from "@/views/mentorship/MentorshipView.vue";
 import MentorshipDetailsView from "@/views/mentorship/MentorshipDetailsView.vue";
+import ResourceAllocationsView from "@/views/allocations/ResourceAllocationsView.vue";
 import AdminEmployeesTabsView from "@/views/admin/employees/AdminEmployeesTabsView.vue";
 import AdminEmployeesListView from "@/views/admin/employees/AdminEmployeesListView.vue";
 import AdminEmployeeKidsView from "@/views/admin/employees/AdminEmployeeKidsView.vue";
@@ -109,6 +110,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     { path: "/juniors", name: "mentorship", component: MentorshipView, meta: { requiresAuth: true, keepAlive: true } },
+    { path: "/management/resource-allocations", name: "resource-allocations", component: ResourceAllocationsView, meta: { requiresAuth: true, keepAlive: true } },
     {
       path: "/juniors/:juniorRegistryId",
       name: "mentorship-details",
@@ -215,6 +217,10 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
     && !permissions.canAccessJuniorsRegistry()
     && !permissions.canAdminJuniorRegistry()
   ) {
+    return { name: "profile-main" };
+  }
+
+  if (to.name === "resource-allocations" && !permissions.canEditResourceAllocations()) {
     return { name: "profile-main" };
   }
 
