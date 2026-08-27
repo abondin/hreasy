@@ -3,12 +3,12 @@
 
 ## Search targets before coding
 
-- `src/views/**`
-- `src/components/**`
-- `src/composables/**`
-- `src/stores/**`
-- `src/services/**`
-- `src/lib/**`
+- `web/src/views/**`
+- `web/src/components/**`
+- `web/src/composables/**`
+- `web/src/stores/**`
+- `web/src/services/**`
+- `web/src/lib/**`
 
 ## Reuse decision tree
 
@@ -28,9 +28,10 @@
 - Reusing existing module would introduce brittle conditional logic.
 - Separation improves maintainability without duplicating contracts.
 
-## Mandatory checks before completion
+## Checks before completion
 
 - User-facing strings are i18n-based.
 - Route/permissions behavior remains correct.
-- `npm run type-check` passes.
-- `npm run lint` passes.
+- From `web/`, `npm run type-check` passes.
+- From `web/`, `npm run lint` passes.
+- From `web/`, `npm run test:unit -- --run` passes when logic changed.

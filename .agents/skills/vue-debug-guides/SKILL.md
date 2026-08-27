@@ -1,9 +1,9 @@
 ---
 name: vue-debug-guides
-description: Vue 3 debugging and error handling for runtime errors, warnings, async failures, and SSR/hydration issues. Use when diagnosing or fixing Vue issues.
+description: Diagnose Vue 3 runtime, reactivity, component, and async failures in the HREasy web application. Use when investigating or fixing Vue behavior rather than implementing an ordinary feature.
 ---
 
-Vue 3 debugging and error handling for runtime issues, warnings, async failures, and hydration bugs.
+Vue 3 debugging and error handling for the client-side Vite application.
 For development best practices and common implementation guidance in this repository, use `hreasy-vue3-development`.
 
 ### Reactivity
@@ -34,11 +34,9 @@ For development best practices and common implementation guidance in this reposi
 
 ### Components
 - Child component throws "component not found" error -> See [local-components-not-in-descendants](reference/local-components-not-in-descendants.md)
-- Click listener doesn't fire on custom component -> See [click-events-on-components](reference/click-events-on-components.md)
 - Parent can't access child ref data in script setup -> See [component-ref-requires-defineexpose](reference/component-ref-requires-defineexpose.md)
 - HTML template parsing breaks Vue component syntax -> See [in-dom-template-parsing-caveats](reference/in-dom-template-parsing-caveats.md)
 - Wrong component renders due to naming collisions -> See [component-naming-conflicts](reference/component-naming-conflicts.md)
-- Parent styles don't apply to multi-root component -> See [multi-root-component-class-attrs](reference/multi-root-component-class-attrs.md)
 
 ### Props & Emits
 - Variables referenced in defineProps cause errors -> See [prop-defineprops-scope-limitation](reference/prop-defineprops-scope-limitation.md)
@@ -46,7 +44,6 @@ For development best practices and common implementation guidance in this reposi
 - defineEmits used inside function or conditional -> See [defineEmits-must-be-top-level](reference/defineEmits-must-be-top-level.md)
 - defineEmits has both type and runtime arguments -> See [defineEmits-no-runtime-and-type-mixed](reference/defineEmits-no-runtime-and-type-mixed.md)
 - Native event listeners not responding to clicks -> See [native-event-collision-with-emits](reference/native-event-collision-with-emits.md)
-- Component event fires twice when clicking -> See [undeclared-emits-double-firing](reference/undeclared-emits-double-firing.md)
 
 ### Templates
 - Getting template compilation errors with statements -> See [template-expressions-restrictions](reference/template-expressions-restrictions.md)
@@ -83,9 +80,7 @@ For development best practices and common implementation guidance in this reposi
 
 ### Lifecycle
 - Memory leaks from unremoved event listeners -> See [cleanup-side-effects](reference/cleanup-side-effects.md)
-- DOM access fails before component mounts -> See [lifecycle-dom-access-timing](reference/lifecycle-dom-access-timing.md)
 - DOM reads return stale values after state changes -> See [dom-update-timing-nexttick](reference/dom-update-timing-nexttick.md)
-- SSR rendering differs from client hydration -> See [lifecycle-ssr-awareness](reference/lifecycle-ssr-awareness.md)
 - Lifecycle hooks registered asynchronously never run -> See [lifecycle-hooks-synchronous-registration](reference/lifecycle-hooks-synchronous-registration.md)
 
 ### Slots
@@ -104,7 +99,6 @@ For development best practices and common implementation guidance in this reposi
 
 ### Attrs
 - Both internal and fallthrough event handlers execute -> See [attrs-event-listener-merging](reference/attrs-event-listener-merging.md)
-- Explicit attributes overwritten by fallthrough values -> See [fallthrough-attrs-overwrite-vue3](reference/fallthrough-attrs-overwrite-vue3.md)
 - Attributes applying to wrong element in wrappers -> See [inheritattrs-false-for-wrapper-components](reference/inheritattrs-false-for-wrapper-components.md)
 
 ### Composables
@@ -141,7 +135,6 @@ For development best practices and common implementation guidance in this reposi
 ### Render Functions
 - Render function output stays static after state changes -> See [rendering-render-function-return-from-setup](reference/rendering-render-function-return-from-setup.md)
 - Reused vnode instances render incorrectly -> See [render-function-vnodes-must-be-unique](reference/render-function-vnodes-must-be-unique.md)
-- String component names render as HTML elements -> See [rendering-resolve-component-for-string-names](reference/rendering-resolve-component-for-string-names.md)
 - Accessing vnode internals breaks on Vue updates -> See [render-function-avoid-internal-vnode-properties](reference/render-function-avoid-internal-vnode-properties.md)
 - Slot content not rendering from h() -> See [rendering-render-function-slots-as-functions](reference/rendering-render-function-slots-as-functions.md)
 
@@ -161,18 +154,11 @@ For development best practices and common implementation guidance in this reposi
 
 ### Teleport
 - Teleport target element not found in DOM -> See [teleport-target-must-exist](reference/teleport-target-must-exist.md)
-- Teleported content breaks SSR hydration -> See [teleport-ssr-hydration](reference/teleport-ssr-hydration.md)
 - Scoped styles not applying to teleported content -> See [teleport-scoped-styles-limitation](reference/teleport-scoped-styles-limitation.md)
 
 ### Suspense
 - Need to handle async errors from Suspense components -> See [suspense-no-builtin-error-handling](reference/suspense-no-builtin-error-handling.md)
-- Using Suspense with server-side rendering -> See [suspense-ssr-hydration-issues](reference/suspense-ssr-hydration-issues.md)
 - Async component loading/error UI ignored under Suspense -> See [async-component-suspense-control](reference/async-component-suspense-control.md)
-
-### SSR
-- HTML differs between server and client renders -> See [ssr-hydration-mismatch-causes](reference/ssr-hydration-mismatch-causes.md)
-- User state leaks between requests from shared singleton stores -> See [state-ssr-cross-request-pollution](reference/state-ssr-cross-request-pollution.md)
-- Browser-only APIs crash server rendering in universal code paths -> See [ssr-platform-specific-apis](reference/ssr-platform-specific-apis.md)
 
 ### Performance
 - List children re-render unnecessarily because parent passes unstable props -> See [perf-props-stability-update-optimization](reference/perf-props-stability-update-optimization.md)
@@ -184,11 +170,9 @@ For development best practices and common implementation guidance in this reposi
 - Scoped styles not applying to child component elements -> See [sfc-scoped-css-child-component-styling](reference/sfc-scoped-css-child-component-styling.md)
 - Scoped styles not applying to dynamic v-html content -> See [sfc-scoped-css-dynamic-content](reference/sfc-scoped-css-dynamic-content.md)
 - Scoped styles not applying to slot content -> See [sfc-scoped-css-slot-content](reference/sfc-scoped-css-slot-content.md)
-- Tailwind classes missing when built dynamically -> See [tailwind-dynamic-class-generation](reference/tailwind-dynamic-class-generation.md)
 - Recursive components not rendering due to name conflicts -> See [self-referencing-component-name](reference/self-referencing-component-name.md)
 
 ### Plugins
-- Debugging why global properties cause naming conflicts -> See [plugin-global-properties-sparingly](reference/plugin-global-properties-sparingly.md)
 - Plugin not working or inject returns undefined -> See [plugin-install-before-mount](reference/plugin-install-before-mount.md)
 - Plugin global properties are unavailable in setup-based components -> See [plugin-prefer-provide-inject-over-global-properties](reference/plugin-prefer-provide-inject-over-global-properties.md)
 - Plugin type augmentation mistakes break ComponentCustomProperties typing -> See [plugin-typescript-type-augmentation](reference/plugin-typescript-type-augmentation.md)
