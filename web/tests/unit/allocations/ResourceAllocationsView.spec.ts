@@ -1,4 +1,4 @@
-import { defineComponent, h, type PropType } from "vue";
+import { defineComponent, h, ref, type PropType } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ResourceAllocationsView from "@/views/allocations/ResourceAllocationsView.vue";
@@ -22,22 +22,57 @@ const PassThroughStub = defineComponent({
   },
 });
 
-const TableStub = defineComponent({
+interface GridColumnStub {
+  prop: string;
+  name?: string;
+  readonly?: boolean | ((props: { model: Record<string, unknown> }) => boolean);
+  cellProperties?: (props: { model: Record<string, unknown> }) => Record<string, unknown>;
+  cellTemplate?: (
+    createElement: typeof h,
+    props: { model: Record<string, unknown> },
+  ) => ReturnType<typeof h> | string | number | null | undefined;
+}
+
+const GridStub = defineComponent({
+  name: "RevoGridStub",
   props: {
-    items: { type: Array as PropType<Array<{ id: number; total: number }>>, default: () => [] },
+    source: { type: Array as PropType<Array<Record<string, unknown>>>, default: () => [] },
+    columns: { type: Array as PropType<GridColumnStub[]>, default: () => [] },
   },
-  setup(props, { slots }) {
+  emits: ["beforeeditstart", "afteredit"],
+  setup(props, { emit }) {
+    const activeCell = ref("");
     return () => h("div", [
-      ...Object.entries(slots)
-        .filter(([name]) => name.startsWith("header.project_"))
-        .flatMap(([, slot]) => slot?.({}) ?? []),
-      ...props.items.flatMap(item => [
-        slots["item.employee"]?.({ item }),
-        slots["item.total"]?.({ item }),
-        ...Object.entries(slots)
-          .filter(([name]) => name.startsWith("item.project_"))
-          .flatMap(([, slot]) => slot?.({ item }) ?? []),
-      ]),
+      ...props.columns.map(column => h("div", { role: "columnheader" }, column.name)),
+      ...props.source.flatMap((model, rowIndex) => props.columns.map((column) => {
+        const cellProps = column.cellProperties?.({ model }) ?? {};
+        const key = `${rowIndex}:${column.prop}`;
+        const readonly = typeof column.readonly === "function"
+          ? column.readonly({ model })
+          : column.readonly;
+        if (activeCell.value === key) {
+          return h("input", {
+            ...cellProps,
+            value: model[column.prop],
+          });
+        }
+        return h("div", {
+          ...cellProps,
+          tabindex: 0,
+          onClick: () => {
+            if (!readonly) {
+              activeCell.value = key;
+              emit("beforeeditstart");
+            }
+          },
+          onKeydown: (event: KeyboardEvent) => {
+            if (!readonly && (event.key === "Delete" || event.key === "Backspace")) {
+              model[column.prop] = "";
+              emit("afteredit", { detail: { prop: column.prop, model, val: "" } });
+            }
+          },
+        }, column.cellTemplate?.(h, { model }) ?? String(model[column.prop] ?? ""));
+      })),
     ]);
   },
 });
@@ -45,7 +80,8 @@ const TableStub = defineComponent({
 const globalStubs = {
   TableFirstPageLayout: PassThroughStub,
   TablePageCard: PassThroughStub,
-  HREasyTableBase: TableStub,
+  Grid: GridStub,
+  RevoGrid: GridStub,
   PeriodSwitcherControl: PassThroughStub,
   VBtn: PassThroughStub,
   VBtnToggle: PassThroughStub,
@@ -123,7 +159,7 @@ describe("ResourceAllocationsView", () => {
     const wrapper = mount(ResourceAllocationsView, { global: { stubs: globalStubs } });
     await flushPromises();
 
-    await wrapper.get('[data-testid="resource-allocation-clear-cell-1-10"]').trigger("click");
+    await wrapper.get('[data-testid="resource-allocation-cell-1-10"]').trigger("keydown", { key: "Delete" });
     await wrapper.get('[data-testid="resource-allocation-clear-row-2"]').trigger("click");
     await wrapper.get('[data-testid="resource-allocations-save"]').trigger("click");
     await flushPromises();

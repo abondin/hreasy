@@ -25,6 +25,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "7.3.1",
     "@mdi/font": "^7.4.47",
+    "@revolist/vue3-datagrid": "^4.26.2",
     "axios": "1.20.0",
     "dompurify": "3.4.14",
     "markdown-it": "15.0.1",

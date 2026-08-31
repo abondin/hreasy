@@ -47,22 +47,22 @@ Current stability/performance iteration: keep project columns unchanged while ed
 - Cell and employee-row clearing remain local edits until Save, like individual cell changes, and affect editable projects only. Project-column clearing is deferred because its header action reduced space for project names.
 - Employee and project filters are separate compact groups. Employee filters contain name search, `All / From my projects`, and an independent BA multi-select; project filters contain `Mine / All`, an independent BA multi-select, and `Only with allocations`.
 - `Only with allocations` keeps rows and project columns that contain a non-zero visible allocation and hides empty cell editors; switch it off to create new allocations.
-- Keep the matrix on `HREasyTableBase`; its optional `tableWidth` provides exact column sizing without a parallel table implementation. Use the native bottom scrollbar for horizontal navigation.
+- The allocation matrix is the bounded exception to the shared `HREasyTableBase`: RevoGrid Community virtualizes both axes and supplies spreadsheet selection, editing, clipboard, and autofill behavior. The surrounding page still uses the shared HR Easy layouts and Vuetify controls.
 - Employee BA membership is derived from `employee.currentProjectId -> project.baId`; no backend contract change is needed for the first filter version.
 - The employee column is 320px, the compact `Total` column is 90px, and a native Vuetify cell border separates the two fixed columns.
 - Allocated-only mode uses a centered `v-empty-state` instead of leaving an empty table fragment on screen.
 - Current values and allocation indexes are derived in one sparse pass over saved allocations and edits; row/project filters no longer rescan the employee-project matrix.
 - Employee-row clearing follows the neighboring manager-table action pattern: a reserved 24px slot, `mdi-delete`, error color, and hover/focus visibility. The fixed slot prevents virtual-table columns from shifting when the action appears.
 - Project search is independent from employee search and applies before project scope/BA/allocation filters.
-- Allocation cells render lightweight inactive values; clicking creates the only numeric input. In edit mode, Tab/Shift+Tab moves between editable projects and Enter/Shift+Enter moves between visible employees.
+- RevoGrid owns cell activation and the default Tab/Enter navigation; the page only validates percentages and records changed cells.
 - Search fields use the shared `normalizeSearchInput` helper so Vuetify clear events cannot leave a null search value.
 - Assessments and Resource Allocations are permission-controlled children of the Managers navigation group.
-- Project columns use 130px width/min/max constraints. Cell value/editor and a permanent 24px clear-action slot share the same fixed-width flex row, so activation and clearing cannot resize a column.
+- Project columns use fixed 130px constraints. Native Delete/Backspace clears selected cells; no per-cell clear control is rendered.
 - The API sheet is a `shallowRef` because nested response data is immutable on the page. Empty searches skip per-item lowercase conversion.
 - Allocation statistics process unchanged server values plus overriding edits directly; they no longer allocate and scan a second merged map on every commit.
 - The frequently repeated cell-clear control is a native accessible button with the existing MDI font icon instead of hundreds of hidden `v-btn` component instances.
-- An Excel-like grid replacement was evaluated against the current Vue 3/Vuetify matrix. Keep `HREasyTableBase` for the present scope: the current implementation already meets the tested 500-employee / 80-project target, while a replacement would require retheming and reimplementing allocation-specific filters, permissions, totals, clear actions, changed-only persistence, and exact keyboard semantics.
-- If the roadmap adds multi-cell selection, copy/paste, fill, or materially wider matrices, run a bounded RevoGrid Community proof of concept first. It is MIT-licensed and virtualizes both axes; AG Grid Community is the lower-risk mature fallback, but its Excel-like range selection, clipboard, and fill handle require Enterprise.
+- The RevoGrid Community proof of concept was accepted after user testing. One narrow adapter creates a 1x1 range when the native autofill handle is hovered, removing the library's Shift prerequisite without replacing its autofill implementation.
+- Projects are visible when active or when they have a non-zero allocation in the selected month; archived empty projects are omitted.
 
 ## Plan
 
@@ -88,6 +88,9 @@ Current stability/performance iteration: keep project columns unchanged while ed
 - [x] Review the allocation page against neighboring web sections and document intentional differences.
 - [x] Fix cell/column width stability and optimize the populated-matrix render path.
 - [x] Evaluate current Excel-like Vue grids against the allocation UX, performance, licensing, and architecture.
+- [x] Replace the allocation matrix with the bounded RevoGrid Community implementation and retain changed-only persistence.
+- [x] Use native Delete, default Tab/Enter, clipboard, range selection, and autofill without Shift.
+- [x] Hide archived projects without allocations in the selected month.
 
 ## Validation
 
@@ -110,7 +113,7 @@ Current stability/performance iteration: keep project columns unchanged while ed
 - Input/navigation/menu iteration: project search, click-to-edit cells, Tab/Enter movement, and Assessments under Managers pass both Chromium allocation scenarios. Full lint, 7 unit files / 19 tests, production build, and Windows text-integrity validation passed; Vite reports only the existing large-chunk warning.
 - Stability/performance iteration: Chromium verifies identical cell and project-column widths before, during, and after editing. The large scenario now contains 500 employees, 80 projects, and 5,000 non-zero allocations; activation, commit, and employee-BA filtering each stay within a 2-second budget. The dense scenario passed twice consecutively, and the full two-scenario allocation E2E passed.
 - After the stability/performance changes, full lint, 7 unit files / 19 tests, production build, and Windows text-integrity validation passed. Vite reports only the existing large-chunk warning.
-- Excel-like grid evaluation was documentation-only; no dependency or runtime code changed, so no additional build was required.
+- RevoGrid iteration: full type-check, lint, 7 unit files / 19 tests, production build, Windows text-integrity check, and both Chromium allocation scenarios passed. The E2E covers default Tab/Enter, native Delete, autofill without Shift, archived-project visibility, fixed column widths, and the 500-employee / 80-project / 5,000-allocation case. Vite reports only the existing large-chunk warning.
 - A Spring/Testcontainers test intended to apply Flyway could not run: sandbox access to the Docker named pipe was denied; the escalated retry then could not reach the configured Nexus to resolve Maven plugin artifacts. The migration still needs one execution in an environment with Docker and Nexus access.
 - The repository skill validator could not start because `python.exe` and `py.exe` are unavailable; frontmatter and structure were checked manually.
 

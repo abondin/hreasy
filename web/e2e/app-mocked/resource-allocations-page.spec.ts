@@ -46,7 +46,7 @@ const sheet = {
       departmentName: "Software Development",
       baId: 401,
       baName: "Northwind Delivery",
-      active: true,
+      active: false,
       editable: false,
     },
     ...Array.from({ length: 8 }, (_, index) => ({
@@ -56,7 +56,7 @@ const sheet = {
       departmentName: "Software Development",
       baId: 401,
       baName: "Northwind Delivery",
-      active: true,
+      active: index !== 7,
       editable: index === 0,
     })),
   ],
@@ -120,7 +120,8 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect.poll(async () => Math.round(await page.getByRole("columnheader", { name: "Сотрудник" })
       .evaluate(element => element.getBoundingClientRect().width))).toBe(320);
     await expect(page.getByTestId("resource-allocation-cell-101-302")).toHaveCount(0);
-    const firstRow = page.locator("tbody tr").filter({ hasText: "Alex Morgan" });
+    const firstEmployeeCell = page.getByTestId("resource-allocation-employee-101");
+    const firstRow = page.getByRole("row").filter({ has: firstEmployeeCell });
     await expect(firstRow).toContainText("100%");
     const firstProjectHeader = page.getByRole("columnheader", { name: "Retail Terminal Platform" });
     const projectXBeforeRowAction = await firstProjectHeader.evaluate(element => element.getBoundingClientRect().x);
@@ -129,23 +130,25 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect.poll(async () => firstProjectHeader.evaluate(element => element.getBoundingClientRect().x))
       .toBe(projectXBeforeRowAction);
     await expect.poll(async () => {
-      const total = await firstRow.locator("td").nth(1).boundingBox();
-      const project = await firstRow.locator("td").nth(2).boundingBox();
+      const total = await page.getByTestId("resource-allocation-total-101").boundingBox();
+      const project = await page.getByTestId("resource-allocation-cell-101-301").boundingBox();
       return total && project ? Math.round(project.x - total.x - total.width) : -1;
     }).toBeGreaterThanOrEqual(0);
 
     const populatedCell = page.getByTestId("resource-allocation-cell-101-301");
-    await populatedCell.hover();
-    await page.getByTestId("resource-allocation-clear-cell-101-301").click();
+    await populatedCell.click();
+    await page.keyboard.press("Delete");
     await expect(populatedCell).toHaveText("");
     const projectWidthBeforeEdit = await firstProjectHeader.evaluate(element => element.getBoundingClientRect().width);
     const cellWidthBeforeEdit = await populatedCell.evaluate(element => element.getBoundingClientRect().width);
-    await populatedCell.click();
+    await populatedCell.dblclick();
+    const editor = page.locator("revogr-edit input");
+    await expect(editor).toBeVisible();
     await expect.poll(async () => populatedCell.evaluate(element => element.getBoundingClientRect().width))
       .toBe(cellWidthBeforeEdit);
     await expect.poll(async () => firstProjectHeader.evaluate(element => element.getBoundingClientRect().width))
       .toBe(projectWidthBeforeEdit);
-    await populatedCell.fill("60");
+    await editor.fill("60");
     await page.keyboard.press("Tab");
     await expect.poll(async () => populatedCell.evaluate(element => element.getBoundingClientRect().width))
       .toBe(cellWidthBeforeEdit);
@@ -153,23 +156,29 @@ test.describe("App Mocked Resource Allocations Page", () => {
       .toBe(projectWidthBeforeEdit);
     await expect(page.getByTestId("resource-allocation-cell-101-303")).toBeFocused();
     await page.keyboard.press("Enter");
-    await expect(page.getByTestId("resource-allocation-cell-102-303")).toBeFocused();
+    await expect(editor).toBeVisible();
     await page.keyboard.press("Enter");
+    await expect(page.getByTestId("resource-allocation-cell-102-303")).toBeFocused();
 
     await page.getByTestId(selectors.resourceAllocationsScopeAll).click();
-    await expect(page.getByTestId("resource-allocation-cell-101-302")).toBeDisabled();
+    await projectSearch.fill("Additional Project 8");
+    await expect(page.getByRole("columnheader", { name: "Additional Project 8" })).toHaveCount(0);
+    await projectSearch.fill("Billing");
+    await expect(page.getByTestId("resource-allocation-cell-101-302"))
+      .toHaveClass(/resource-allocation-project-grid-cell--readonly/);
     await page.getByTestId(selectors.resourceAllocationsOnlyAllocated).click();
     await expect(page.getByTestId("resource-allocation-cell-101-302")).toBeVisible();
     await expect(page.getByTestId("resource-allocation-cell-102-302")).toHaveCount(0);
     await page.getByTestId(selectors.resourceAllocationsOnlyAllocated).click();
+    await projectSearch.fill("");
     await page.getByTestId(selectors.resourceAllocationsEmployeesMine).click();
-    await expect(page.locator("tbody tr").filter({ hasText: "Alex Morgan" })).toHaveCount(0);
+    await expect(page.getByTestId("resource-allocation-employee-101")).toHaveCount(0);
     await page.getByTestId(selectors.resourceAllocationsEmployeesAll).click();
 
     const editableCell = page.getByTestId("resource-allocation-cell-102-301");
-    await editableCell.click();
-    await editableCell.fill("75");
-    await editableCell.blur();
+    await editableCell.dblclick();
+    await editor.fill("75");
+    await editor.press("Enter");
 
     const saveRequest = page.waitForRequest(request =>
       request.method() === "PUT" && /\/api\/v1\/resource-allocations\/\d+$/.test(request.url()),
@@ -184,8 +193,8 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await page.getByTestId("resource-allocations-employee-ba").click();
     await page.getByRole("option", { name: "Alpine Operations" }).click();
     await page.keyboard.press("Escape");
-    await expect(page.locator("tbody tr").filter({ hasText: "Jordan Lee" })).toBeVisible();
-    await expect(page.locator("tbody tr").filter({ hasText: "Alex Morgan" })).toHaveCount(0);
+    await expect(page.getByTestId("resource-allocation-employee-102")).toBeVisible();
+    await expect(page.getByTestId("resource-allocation-employee-101")).toHaveCount(0);
   });
 
   test("keeps a large populated sheet responsive and shows a useful allocated-only empty state", async ({ page }) => {
@@ -219,21 +228,39 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await page.goto(appPath(routes.resourceAllocations), { waitUntil: "domcontentloaded" });
     const cell = page.getByTestId("resource-allocation-cell-1000-2000");
     await expect(cell).toBeVisible();
-    await expect(page.locator(".resource-allocation-input")).toHaveCount(0);
+    const editor = page.locator("revogr-edit input");
+    await expect(editor).toHaveCount(0);
 
     const activationStartedAt = Date.now();
-    await cell.click();
-    await expect(page.locator(".resource-allocation-input")).toHaveCount(1);
+    await cell.dblclick();
+    await expect(editor).toHaveCount(1);
     expect(Date.now() - activationStartedAt).toBeLessThan(2_000);
     const commitStartedAt = Date.now();
-    await cell.fill("50");
-    await cell.blur();
-    await expect(page.locator(".resource-allocation-input")).toHaveCount(0);
+    await editor.fill("50");
+    await editor.press("Enter");
+    await expect(editor).toHaveCount(0);
     await expect(cell).toHaveText("50");
     expect(Date.now() - commitStartedAt).toBeLessThan(2_000);
 
-    await cell.hover();
-    await page.getByTestId("resource-allocation-clear-cell-1000-2000").click();
+    const fillTarget = page.getByTestId("resource-allocation-cell-1001-2000");
+    await cell.click();
+    const fillHandle = page.locator(".autofill-handle");
+    await fillHandle.hover();
+    await expect.poll(() => page.getByTestId(selectors.resourceAllocationsTable)
+      .evaluate(async element => (await (element as HTMLRevoGridElement).getSelectedRange())?.x1)).toBe(0);
+    const handleBox = await fillHandle.boundingBox();
+    const targetBox = await fillTarget.boundingBox();
+    expect(handleBox).not.toBeNull();
+    expect(targetBox).not.toBeNull();
+    await page.mouse.move(handleBox!.x + handleBox!.width / 2, handleBox!.y + handleBox!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(targetBox!.x + targetBox!.width / 2, targetBox!.y + targetBox!.height / 2, { steps: 10 });
+    await expect(page.locator(".temp-bg-range")).toBeVisible();
+    await page.mouse.up();
+    await expect(fillTarget).toHaveText("50");
+
+    await cell.click();
+    await page.keyboard.press("Delete");
     await page.getByTestId("resource-allocations-employee-ba").click();
     const filterStartedAt = Date.now();
     await page.getByRole("option", { name: "Alpine Operations" }).click();
