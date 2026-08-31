@@ -260,15 +260,6 @@ const primaryNavigationItems = computed(() => {
     });
   }
 
-  if (permissions.canCreateAssessments()) {
-    items.push({
-      key: "assessments",
-      label: t("Ассессменты"),
-      icon: "mdi-book-check-outline",
-      to: { name: "assessments" },
-    });
-  }
-
   return items;
 });
 
@@ -299,14 +290,29 @@ const salaryNavigationItems = computed(() => {
 });
 
 const managerNavigationItems = computed(() => {
-  if (!isAuthenticated.value || !permissions.canEditResourceAllocations()) {
+  if (!isAuthenticated.value) {
     return [];
   }
-  return [{
-    key: "resource-allocations",
-    label: t("Аллокация ресурсов"),
-    to: { name: "resource-allocations" },
-  }];
+
+  const items = [];
+
+  if (permissions.canCreateAssessments()) {
+    items.push({
+      key: "assessments",
+      label: t("Ассессменты"),
+      to: { name: "assessments" },
+    });
+  }
+
+  if (permissions.canEditResourceAllocations()) {
+    items.push({
+      key: "resource-allocations",
+      label: t("Аллокация ресурсов"),
+      to: { name: "resource-allocations" },
+    });
+  }
+
+  return items;
 });
 
 const postSalaryNavigationItems = computed(() => {
