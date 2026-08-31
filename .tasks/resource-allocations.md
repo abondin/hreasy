@@ -63,6 +63,7 @@ Current stability/performance iteration: keep project columns unchanged while ed
 - The frequently repeated cell-clear control is a native accessible button with the existing MDI font icon instead of hundreds of hidden `v-btn` component instances.
 - The RevoGrid Community proof of concept was accepted after user testing. One narrow adapter creates a 1x1 range when the native autofill handle is hovered, removing the library's Shift prerequisite without replacing its autofill implementation.
 - Projects are visible when active or when they have a non-zero allocation in the selected month; archived empty projects are omitted.
+- Internal refresh and period changes with pending edits use a local Vuetify warning dialog instead of the browser `confirm`; cancelling keeps edits, confirming runs the deferred action.
 
 ## Plan
 
@@ -91,6 +92,7 @@ Current stability/performance iteration: keep project columns unchanged while ed
 - [x] Replace the allocation matrix with the bounded RevoGrid Community implementation and retain changed-only persistence.
 - [x] Use native Delete, default Tab/Enter, clipboard, range selection, and autofill without Shift.
 - [x] Hide archived projects without allocations in the selected month.
+- [x] Replace the unsaved-changes browser prompt with the standard Vuetify dialog pattern.
 
 ## Validation
 
@@ -114,6 +116,7 @@ Current stability/performance iteration: keep project columns unchanged while ed
 - Stability/performance iteration: Chromium verifies identical cell and project-column widths before, during, and after editing. The large scenario now contains 500 employees, 80 projects, and 5,000 non-zero allocations; activation, commit, and employee-BA filtering each stay within a 2-second budget. The dense scenario passed twice consecutively, and the full two-scenario allocation E2E passed.
 - After the stability/performance changes, full lint, 7 unit files / 19 tests, production build, and Windows text-integrity validation passed. Vite reports only the existing large-chunk warning.
 - RevoGrid iteration: full type-check, lint, 7 unit files / 19 tests, production build, Windows text-integrity check, and both Chromium allocation scenarios passed. The E2E covers default Tab/Enter, native Delete, autofill without Shift, archived-project visibility, fixed column widths, and the 500-employee / 80-project / 5,000-allocation case. Vite reports only the existing large-chunk warning.
+- Unsaved-dialog iteration: type-check, targeted lint, 2 allocation unit tests, and both Chromium allocation scenarios passed. Tests cover cancelling and confirming the deferred action; the E2E also checks the rendered dialog.
 - A Spring/Testcontainers test intended to apply Flyway could not run: sandbox access to the Docker named pipe was denied; the escalated retry then could not reach the configured Nexus to resolve Maven plugin artifacts. The migration still needs one execution in an environment with Docker and Nexus access.
 - The repository skill validator could not start because `python.exe` and `py.exe` are unavailable; frontmatter and structure were checked manually.
 

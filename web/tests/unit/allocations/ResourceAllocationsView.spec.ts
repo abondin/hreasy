@@ -22,6 +22,13 @@ const PassThroughStub = defineComponent({
   },
 });
 
+const DialogStub = defineComponent({
+  props: { modelValue: Boolean },
+  setup(props, { attrs, slots }) {
+    return () => props.modelValue ? h("div", attrs, slots.default?.()) : null;
+  },
+});
+
 interface GridColumnStub {
   prop: string;
   name?: string;
@@ -93,6 +100,12 @@ const globalStubs = {
   VAlert: PassThroughStub,
   VChip: PassThroughStub,
   VEmptyState: PassThroughStub,
+  VDialog: DialogStub,
+  VCard: PassThroughStub,
+  VCardTitle: PassThroughStub,
+  VCardText: PassThroughStub,
+  VCardActions: PassThroughStub,
+  VIcon: PassThroughStub,
 };
 
 afterEach(() => vi.unstubAllGlobals());
@@ -169,5 +182,18 @@ describe("ResourceAllocationsView", () => {
       { employeeId: 2, projectId: 10, percent: 0 },
       { employeeId: 2, projectId: 20, percent: 0 },
     ]);
+
+    await wrapper.get('[data-testid="resource-allocation-cell-1-10"]').trigger("keydown", { key: "Delete" });
+    const fetchCallsBeforeDiscard = vi.mocked(fetchResourceAllocations).mock.calls.length;
+    await wrapper.get('[aria-label="Обновить данные"]').trigger("click");
+    expect(wrapper.find('[data-testid="resource-allocations-discard-dialog"]').exists()).toBe(true);
+    expect(fetchResourceAllocations).toHaveBeenCalledTimes(fetchCallsBeforeDiscard);
+
+    await wrapper.get('[data-testid="resource-allocations-discard-cancel"]').trigger("click");
+    expect(wrapper.find('[data-testid="resource-allocations-discard-dialog"]').exists()).toBe(false);
+    await wrapper.get('[aria-label="Обновить данные"]').trigger("click");
+    await wrapper.get('[data-testid="resource-allocations-discard-confirm"]').trigger("click");
+    await flushPromises();
+    expect(fetchResourceAllocations).toHaveBeenCalledTimes(fetchCallsBeforeDiscard + 1);
   });
 });

@@ -154,11 +154,18 @@ test.describe("App Mocked Resource Allocations Page", () => {
       .toBe(cellWidthBeforeEdit);
     await expect.poll(async () => firstProjectHeader.evaluate(element => element.getBoundingClientRect().width))
       .toBe(projectWidthBeforeEdit);
-    await expect(page.getByTestId("resource-allocation-cell-101-303")).toBeFocused();
+    const allocationGrid = page.getByTestId(selectors.resourceAllocationsTable);
+    await expect.poll(() => allocationGrid.evaluate(async (element) => {
+      const focused = await (element as HTMLRevoGridElement).getFocused();
+      return { employeeId: focused?.model.id, project: focused?.column?.prop };
+    })).toEqual({ employeeId: 101, project: "project_303" });
     await page.keyboard.press("Enter");
     await expect(editor).toBeVisible();
     await page.keyboard.press("Enter");
-    await expect(page.getByTestId("resource-allocation-cell-102-303")).toBeFocused();
+    await expect.poll(() => allocationGrid.evaluate(async (element) => {
+      const focused = await (element as HTMLRevoGridElement).getFocused();
+      return { employeeId: focused?.model.id, project: focused?.column?.prop };
+    })).toEqual({ employeeId: 102, project: "project_303" });
 
     await page.getByTestId(selectors.resourceAllocationsScopeAll).click();
     await projectSearch.fill("Additional Project 8");
@@ -179,6 +186,11 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await editableCell.dblclick();
     await editor.fill("75");
     await editor.press("Enter");
+
+    await page.getByRole("button", { name: "Обновить данные" }).click();
+    await expect(page.getByTestId("resource-allocations-discard-dialog")).toBeVisible();
+    await page.getByTestId("resource-allocations-discard-cancel").click();
+    await expect(page.getByTestId("resource-allocations-discard-dialog")).toBeHidden();
 
     const saveRequest = page.waitForRequest(request =>
       request.method() === "PUT" && /\/api\/v1\/resource-allocations\/\d+$/.test(request.url()),

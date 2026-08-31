@@ -145,6 +145,27 @@
         />
       </template>
     </TablePageCard>
+
+    <v-dialog v-model="discardDialog" persistent max-width="520" data-testid="resource-allocations-discard-dialog">
+      <v-card>
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon icon="mdi-content-save-alert-outline" color="warning" />
+          <span>{{ t("Изменения не сохранены") }}</span>
+        </v-card-title>
+        <v-card-text>
+          {{ t("Если продолжить, внесённые изменения будут потеряны.") }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" data-testid="resource-allocations-discard-cancel" @click="cancelDiscard">
+            {{ t("Остаться") }}
+          </v-btn>
+          <v-btn color="warning" variant="flat" data-testid="resource-allocations-discard-confirm" @click="confirmDiscard">
+            {{ t("Продолжить без сохранения") }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </TableFirstPageLayout>
 </template>
 
@@ -207,6 +228,8 @@ const error = ref("");
 const gridEditing = ref(false);
 const grid = ref<ComponentPublicInstance | null>(null);
 const focusedCell = ref<FocusAfterRenderEvent | null>(null);
+const discardDialog = ref(false);
+let pendingDiscardAction: (() => void) | null = null;
 
 const periodLabel = computed(() => ReportPeriod.fromPeriodId(periodId.value).toString());
 const normalizedEmployeeSearch = computed(() => search.value.toLocaleLowerCase());
@@ -527,35 +550,48 @@ function totalColor(total: number): string {
 }
 
 function reload(): void {
-  if (discardEdits()) {
-    void load();
-  }
+  runAfterDiscard(() => void load());
 }
 
 function changePeriod(delta: number): void {
-  if (!discardEdits()) {
-    return;
-  }
-  const next = ReportPeriod.fromPeriodId(periodId.value);
-  if (delta > 0) {
-    next.increment();
-  } else {
-    next.decrement();
-  }
-  periodId.value = next.id;
-  void load();
+  runAfterDiscard(() => {
+    const next = ReportPeriod.fromPeriodId(periodId.value);
+    if (delta > 0) {
+      next.increment();
+    } else {
+      next.decrement();
+    }
+    periodId.value = next.id;
+    void load();
+  });
 }
 
 function goToCurrentPeriod(): void {
-  if (!discardEdits()) {
-    return;
-  }
-  periodId.value = currentPeriodId;
-  void load();
+  runAfterDiscard(() => {
+    periodId.value = currentPeriodId;
+    void load();
+  });
 }
 
-function discardEdits(): boolean {
-  return edits.value.size === 0 || window.confirm(t("Несохранённые изменения будут потеряны. Продолжить?"));
+function runAfterDiscard(action: () => void): void {
+  if (edits.value.size === 0) {
+    action();
+    return;
+  }
+  pendingDiscardAction = action;
+  discardDialog.value = true;
+}
+
+function cancelDiscard(): void {
+  discardDialog.value = false;
+  pendingDiscardAction = null;
+}
+
+function confirmDiscard(): void {
+  discardDialog.value = false;
+  const action = pendingDiscardAction;
+  pendingDiscardAction = null;
+  action?.();
 }
 </script>
 
