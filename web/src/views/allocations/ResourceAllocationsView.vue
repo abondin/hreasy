@@ -12,7 +12,73 @@
           @next="changePeriod(1)"
           @go-current="goToCurrentPeriod"
         />
+        <div class="resource-allocation-mode-controls d-flex flex-wrap align-center ga-2 border rounded pa-1">
+          <span class="font-weight-medium px-1">{{ t("Режим") }}</span>
+          <v-btn-toggle :model-value="activePreset" density="compact" color="primary">
+            <v-btn value="mine" data-testid="resource-allocations-preset-mine" @click="applyPreset('mine')">
+              {{ t("Мои проекты") }}
+            </v-btn>
+            <v-btn value="ba" data-testid="resource-allocations-preset-ba" @click="applyPreset('ba')">
+              {{ t("Бизнес-аккаунты") }}
+            </v-btn>
+            <v-btn value="company" data-testid="resource-allocations-preset-company" @click="applyPreset('company')">
+              {{ t("Компания") }}
+            </v-btn>
+          </v-btn-toggle>
+          <v-autocomplete
+            v-if="activePreset === 'ba'"
+            :model-value="sharedBaIds"
+            :items="businessAccounts"
+            item-title="name"
+            item-value="id"
+            multiple
+            clearable
+            hide-details
+            density="compact"
+            variant="outlined"
+            :label="t('Бизнес-аккаунты')"
+            class="resource-allocation-multi-filter"
+            data-testid="resource-allocations-preset-ba-values"
+            @update:model-value="applySharedBusinessAccounts"
+          >
+            <template #selection="{ item, index }">
+              <CollapsedSelectionContent
+                :index="index"
+                :total="sharedBaIds.length"
+                :label="getFilterSelectionLabel(item)"
+              />
+            </template>
+          </v-autocomplete>
+          <v-text-field
+            :model-value="search"
+            @update:model-value="search = normalizeSearchInput($event)"
+            clearable
+            hide-details
+            density="compact"
+            variant="outlined"
+            prepend-inner-icon="mdi-magnify"
+            :label="t('Поиск по ФИО')"
+            class="resource-allocation-quick-search"
+            data-testid="resource-allocations-employee-search"
+          />
+          <v-checkbox
+            v-model="onlyAllocatedCells"
+            hide-details
+            density="compact"
+            :label="t('Только с аллокациями')"
+            data-testid="resource-allocations-only-allocated"
+          />
+        </div>
         <v-spacer />
+        <v-btn
+          variant="text"
+          prepend-icon="mdi-undo-variant"
+          :disabled="!hasPendingChanges || loading || saving"
+          data-testid="resource-allocations-cancel"
+          @click="discardChanges"
+        >
+          {{ t("Отменить изменения") }}
+        </v-btn>
         <v-btn
           color="primary"
           prepend-icon="mdi-content-save"
@@ -27,80 +93,149 @@
 
       <div class="d-flex flex-wrap align-stretch ga-3 mb-4">
         <v-sheet border rounded class="resource-allocation-filter-group pa-2 d-flex flex-wrap align-center ga-2">
-          <span class="font-weight-medium">{{ t("Сотрудники") }}</span>
-          <v-text-field
-            :model-value="search"
-            @update:model-value="search = normalizeSearchInput($event)"
-            density="compact"
-            clearable
-            hide-details
-            variant="outlined"
-            prepend-inner-icon="mdi-magnify"
-            :label="t('Поиск по ФИО')"
-            class="resource-allocation-search"
-            data-testid="resource-allocations-employee-search"
-          />
-          <v-btn-toggle v-model="employeeScope" mandatory density="compact" color="primary">
-            <v-btn value="all" data-testid="resource-allocations-employees-all">{{ t("Все") }}</v-btn>
-            <v-btn value="mine" data-testid="resource-allocations-employees-mine">{{ t("С моих проектов") }}</v-btn>
-          </v-btn-toggle>
-          <v-select
+          <span class="font-weight-medium">{{ t("Кого распределяем") }}</span>
+          <v-btn-group density="compact" data-testid="resource-allocations-employee-scope">
+            <v-btn
+              :color="employeeScope === 'mine' ? 'primary' : undefined"
+              data-testid="resource-allocations-employees-mine"
+              @click="changeEmployeeScope('mine')"
+            >
+              {{ t("С моих проектов") }}
+            </v-btn>
+            <v-btn
+              :color="employeeScope === 'selected' ? 'primary' : undefined"
+              data-testid="resource-allocations-employees-selected"
+              @click="changeEmployeeScope('selected')"
+            >
+              {{ t("Выбрать") }}
+            </v-btn>
+            <v-btn
+              :color="employeeScope === 'all' ? 'primary' : undefined"
+              data-testid="resource-allocations-employees-all"
+              @click="changeEmployeeScope('all')"
+            >
+              {{ t("Все") }}
+            </v-btn>
+          </v-btn-group>
+          <v-autocomplete
+            v-if="employeeScope === 'selected'"
             v-model="employeeBaIds"
             :items="businessAccounts"
             item-title="name"
             item-value="id"
             multiple
-            chips
             clearable
             hide-details
             density="compact"
             variant="outlined"
             :label="t('БА сотрудников')"
-            class="resource-allocation-ba-filter"
+            class="resource-allocation-multi-filter"
             data-testid="resource-allocations-employee-ba"
-          />
+          >
+            <template #selection="{ item, index }">
+              <CollapsedSelectionContent
+                :index="index"
+                :total="employeeBaIds.length"
+                :label="getFilterSelectionLabel(item)"
+              />
+            </template>
+          </v-autocomplete>
+          <v-autocomplete
+            v-if="employeeScope === 'selected'"
+            v-model="employeeProjectIds"
+            :items="employeeProjectOptions"
+            item-title="name"
+            item-value="id"
+            multiple
+            clearable
+            hide-details
+            density="compact"
+            variant="outlined"
+            :label="t('Проекты сотрудников')"
+            class="resource-allocation-multi-filter"
+            data-testid="resource-allocations-employee-projects"
+          >
+            <template #selection="{ item, index }">
+              <CollapsedSelectionContent
+                :index="index"
+                :total="employeeProjectIds.length"
+                :label="getFilterSelectionLabel(item)"
+              />
+            </template>
+          </v-autocomplete>
         </v-sheet>
 
         <v-sheet border rounded class="resource-allocation-filter-group pa-2 d-flex flex-wrap align-center ga-2">
-          <span class="font-weight-medium">{{ t("Проекты") }}</span>
-          <v-text-field
-            :model-value="projectSearch"
-            @update:model-value="projectSearch = normalizeSearchInput($event)"
-            density="compact"
-            clearable
-            hide-details
-            variant="outlined"
-            prepend-inner-icon="mdi-magnify"
-            :label="t('Поиск по проектам')"
-            class="resource-allocation-search"
-            data-testid="resource-allocations-project-search"
-          />
-          <v-btn-toggle v-model="projectScope" mandatory density="compact" color="primary">
-            <v-btn value="mine" data-testid="resource-allocations-scope-mine">{{ t("Мои") }}</v-btn>
-            <v-btn value="all" data-testid="resource-allocations-scope-all">{{ t("Все") }}</v-btn>
-          </v-btn-toggle>
-          <v-select
+          <span class="font-weight-medium">{{ t("Куда распределяем") }}</span>
+          <v-btn-group density="compact" data-testid="resource-allocations-project-scope">
+            <v-btn
+              :color="projectScope === 'mine' ? 'primary' : undefined"
+              data-testid="resource-allocations-scope-mine"
+              @click="changeProjectScope('mine')"
+            >
+              {{ t("Мои проекты") }}
+            </v-btn>
+            <v-btn
+              :color="projectScope === 'selected' ? 'primary' : undefined"
+              data-testid="resource-allocations-scope-selected"
+              @click="changeProjectScope('selected')"
+            >
+              {{ t("Выбрать") }}
+            </v-btn>
+            <v-btn
+              :color="projectScope === 'all' ? 'primary' : undefined"
+              data-testid="resource-allocations-scope-all"
+              @click="changeProjectScope('all')"
+            >
+              {{ t("Все") }}
+            </v-btn>
+          </v-btn-group>
+          <v-autocomplete
+            v-if="projectScope === 'selected'"
             v-model="projectBaIds"
             :items="businessAccounts"
             item-title="name"
             item-value="id"
             multiple
-            chips
             clearable
             hide-details
             density="compact"
             variant="outlined"
             :label="t('БА проектов')"
-            class="resource-allocation-ba-filter"
+            class="resource-allocation-multi-filter"
             data-testid="resource-allocations-project-ba"
-          />
-          <v-checkbox
-            v-model="onlyAllocatedCells"
+          >
+            <template #selection="{ item, index }">
+              <CollapsedSelectionContent
+                :index="index"
+                :total="projectBaIds.length"
+                :label="getFilterSelectionLabel(item)"
+              />
+            </template>
+          </v-autocomplete>
+          <v-autocomplete
+            v-if="projectScope === 'selected'"
+            v-model="columnProjectIds"
+            :items="columnProjectOptions"
+            item-title="name"
+            item-value="id"
+            multiple
+            clearable
             hide-details
             density="compact"
-            :label="t('Только с аллокациями')"
-            data-testid="resource-allocations-only-allocated"
-          />
+            variant="outlined"
+            :label="t('Проекты')"
+            class="resource-allocation-multi-filter"
+            data-testid="resource-allocations-project-projects"
+          >
+            <template #selection="{ item, index }">
+              <CollapsedSelectionContent
+                :index="index"
+                :total="columnProjectIds.length"
+                :label="getFilterSelectionLabel(item)"
+              />
+            </template>
+          </v-autocomplete>
         </v-sheet>
       </div>
 
@@ -109,6 +244,9 @@
       </v-alert>
       <v-alert v-if="saved" type="success" variant="tonal" class="mb-3" closable @click:close="saved = false">
         {{ t("Изменения сохранены") }}
+      </v-alert>
+      <v-alert v-if="warning" type="warning" variant="tonal" class="mb-3" closable @click:close="warning = ''">
+        {{ warning }}
       </v-alert>
 
       <template #table>
@@ -146,49 +284,58 @@
       </template>
     </TablePageCard>
 
-    <v-dialog v-model="discardDialog" persistent max-width="520" data-testid="resource-allocations-discard-dialog">
-      <v-card>
-        <v-card-title class="d-flex align-center ga-2">
-          <v-icon icon="mdi-content-save-alert-outline" color="warning" />
-          <span>{{ t("Изменения не сохранены") }}</span>
-        </v-card-title>
-        <v-card-text>
-          {{ t("Если продолжить, внесённые изменения будут потеряны.") }}
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" data-testid="resource-allocations-discard-cancel" @click="cancelDiscard">
-            {{ t("Остаться") }}
-          </v-btn>
-          <v-btn color="warning" variant="flat" data-testid="resource-allocations-discard-confirm" @click="confirmDiscard">
-            {{ t("Продолжить без сохранения") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmDeleteDialog
+      :open="discardDialog"
+      :title="t('Несохранённые изменения')"
+      :message="t('Если продолжить, внесённые изменения будут потеряны.')"
+      :cancel-label="t('Отмена')"
+      :confirm-label="t('Продолжить')"
+      data-testid="resource-allocations-discard-dialog"
+      @close="cancelDiscard"
+      @confirm="confirmDiscard"
+    />
+    <ConfirmDeleteDialog
+      :open="clearEmployeeDialog"
+      :title="t('Очистить аллокации сотрудника?')"
+      :message="t('Все доступные аллокации сотрудника {employee} будут очищены после сохранения.', {
+        employee: employeeToClear?.employee ?? '',
+      })"
+      :cancel-label="t('Отмена')"
+      :confirm-label="t('Очистить')"
+      data-testid="resource-allocations-clear-employee-dialog"
+      @close="cancelClearEmployee"
+      @confirm="confirmClearEmployee"
+    />
   </TableFirstPageLayout>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, type ComponentPublicInstance } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch, type ComponentPublicInstance } from "vue";
 import { useI18n } from "vue-i18n";
+import { onBeforeRouteLeave } from "vue-router";
 import Grid from "@revolist/vue3-datagrid";
 import type {
   AfterEditEvent,
   BeforeSaveDataDetails,
+  ColumnGrouping,
   ColumnRegular,
   FocusAfterRenderEvent,
 } from "@revolist/revogrid";
 import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
+import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
+import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
-import { errorUtils } from "@/lib/errors";
+import { BusinessError, errorUtils } from "@/lib/errors";
 import { normalizeSearchInput } from "@/lib/search";
 import { ReportPeriod } from "@/services/overtime.service";
 import {
   fetchResourceAllocations,
   saveResourceAllocations,
+  type ResourceAllocationChange,
+  type ResourceAllocationProject,
   type ResourceAllocationSheet,
+  type ResourceAllocationValue,
 } from "@/services/resource-allocation.service";
 
 defineOptions({ name: "ResourceAllocationsView" });
@@ -209,33 +356,49 @@ interface BusinessAccountOption {
   name: string;
 }
 
+type AllocationScope = "mine" | "selected" | "all";
+type AllocationPreset = "mine" | "ba" | "company";
+
 const { t } = useI18n();
 const currentPeriodId = ReportPeriod.currentPeriod().id;
 const periodId = ref(currentPeriodId);
 const sheet = shallowRef<ResourceAllocationSheet | null>(null);
 const edits = ref(new Map<string, number>());
 const search = ref("");
-const projectSearch = ref("");
-const employeeScope = ref<"all" | "mine">("all");
+const employeeScope = ref<AllocationScope>("mine");
 const employeeBaIds = ref<number[]>([]);
-const projectScope = ref<"mine" | "all">("mine");
+const employeeProjectIds = ref<number[]>([]);
+const projectScope = ref<AllocationScope>("mine");
 const projectBaIds = ref<number[]>([]);
+const columnProjectIds = ref<number[]>([]);
 const onlyAllocatedCells = ref(false);
 const loading = ref(false);
 const saving = ref(false);
 const saved = ref(false);
 const error = ref("");
+const warning = ref("");
 const gridEditing = ref(false);
 const grid = ref<ComponentPublicInstance | null>(null);
 const focusedCell = ref<FocusAfterRenderEvent | null>(null);
 const discardDialog = ref(false);
+const clearEmployeeDialog = ref(false);
+const employeeToClear = ref<AllocationRow | null>(null);
 let pendingDiscardAction: (() => void) | null = null;
+let resolveRouteLeave: ((allow: boolean) => void) | null = null;
 
 const periodLabel = computed(() => ReportPeriod.fromPeriodId(periodId.value).toString());
-const normalizedEmployeeSearch = computed(() => search.value.toLocaleLowerCase());
-const normalizedProjectSearch = computed(() => projectSearch.value.toLocaleLowerCase());
+const normalizedSearch = computed(() => search.value.toLocaleLowerCase());
 const initialValues = computed(() => new Map(
   (sheet.value?.allocations ?? []).map(value => [cellKey(value.employeeId, value.projectId), value.percent]),
+));
+const initialRevisionIds = computed(() => new Map(
+  (sheet.value?.allocations ?? []).map(value => [cellKey(value.employeeId, value.projectId), value.revisionId]),
+));
+const previousValues = computed(() => new Map(
+  (sheet.value?.previousAllocations ?? []).map(value => [cellKey(value.employeeId, value.projectId), value.percent]),
+));
+const initiallyAllocatedProjectIds = computed(() => new Set(
+  (sheet.value?.allocations ?? []).filter(value => value.percent > 0).map(value => value.projectId),
 ));
 const hasPendingChanges = computed(() => edits.value.size > 0 || gridEditing.value);
 const projectsById = computed(() => new Map(
@@ -280,13 +443,35 @@ const businessAccounts = computed<BusinessAccountOption[]>(() => [
       name: project.baName ?? String(project.baId),
     }])).values(),
 ].sort((left, right) => left.name.localeCompare(right.name)));
-const visibleProjects = computed(() => (sheet.value?.projects ?? [])
-  .filter(project => project.active || allocationStats.value.allocatedProjectIds.has(project.id))
-  .filter(project => !normalizedProjectSearch.value
-    || project.name.toLocaleLowerCase().includes(normalizedProjectSearch.value))
-  .filter(project => projectScope.value === "all" || project.editable)
-  .filter(project => projectBaIds.value.length === 0
+const selectableProjects = computed(() => (sheet.value?.projects ?? [])
+  .filter(project => project.active || initiallyAllocatedProjectIds.value.has(project.id))
+  .sort((left, right) => left.name.localeCompare(right.name)));
+const activePreset = computed<AllocationPreset | null>(() => {
+  if (employeeScope.value === "mine" && projectScope.value === "mine") {
+    return "mine";
+  }
+  if (employeeScope.value === "all" && projectScope.value === "all") {
+    return "company";
+  }
+  if (employeeScope.value === "selected"
+    && projectScope.value === "selected"
+    && employeeProjectIds.value.length === 0
+    && columnProjectIds.value.length === 0
+    && sameIds(employeeBaIds.value, projectBaIds.value)) {
+    return "ba";
+  }
+  return null;
+});
+const sharedBaIds = computed(() => sameIds(employeeBaIds.value, projectBaIds.value) ? employeeBaIds.value : []);
+const employeeProjectOptions = computed(() => projectsForBusinessAccounts(employeeBaIds.value));
+const columnProjectOptions = computed(() => projectsForBusinessAccounts(projectBaIds.value));
+const visibleProjects = computed(() => selectableProjects.value
+  .filter(project => projectScope.value !== "mine" || project.managed)
+  .filter(project => projectScope.value !== "selected" || projectBaIds.value.length === 0
     || (project.baId != null && projectBaIds.value.includes(project.baId)))
+  .filter(project => projectScope.value !== "selected"
+    || columnProjectIds.value.length === 0
+    || columnProjectIds.value.includes(project.id))
   .filter(project => !onlyAllocatedCells.value
     || allocationStats.value.allocatedProjectIds.has(project.id))
   .sort((left, right) => Number(right.editable) - Number(left.editable)
@@ -294,12 +479,12 @@ const visibleProjects = computed(() => (sheet.value?.projects ?? [])
     || left.name.localeCompare(right.name)));
 const visibleProjectIds = computed(() => new Set(visibleProjects.value.map(project => project.id)));
 const rows = computed<AllocationRow[]>(() => (sheet.value?.employees ?? [])
-  .filter(employee => !normalizedEmployeeSearch.value
-    || employee.displayName.toLocaleLowerCase().includes(normalizedEmployeeSearch.value))
-  .filter(employee => employeeScope.value === "all"
-    || (employee.currentProjectId != null && projectsById.value.get(employee.currentProjectId)?.editable))
+  .filter(employee => !normalizedSearch.value
+    || employee.displayName.toLocaleLowerCase().includes(normalizedSearch.value))
+  .filter(employee => employeeScope.value !== "mine"
+    || (employee.currentProjectId != null && projectsById.value.get(employee.currentProjectId)?.managed))
   .filter((employee) => {
-    if (employeeBaIds.value.length === 0) {
+    if (employeeScope.value !== "selected" || employeeBaIds.value.length === 0) {
       return true;
     }
     const baId = employee.currentProjectId == null
@@ -307,6 +492,8 @@ const rows = computed<AllocationRow[]>(() => (sheet.value?.employees ?? [])
       : projectsById.value.get(employee.currentProjectId)?.baId;
     return baId != null && employeeBaIds.value.includes(baId);
   })
+  .filter(employee => employeeScope.value !== "selected" || employeeProjectIds.value.length === 0
+    || (employee.currentProjectId != null && employeeProjectIds.value.includes(employee.currentProjectId)))
   .filter(employee => !onlyAllocatedCells.value
     || [...(allocationStats.value.projectIdsByEmployee.get(employee.id) ?? [])]
       .some(projectId => visibleProjectIds.value.has(projectId)))
@@ -322,7 +509,18 @@ const gridRows = computed<AllocationGridRow[]>(() => rows.value.map((row) => {
   }
   return gridRow;
 }));
-const gridColumns = computed<ColumnRegular[]>(() => [
+const gridColumns = computed<(ColumnRegular | ColumnGrouping)[]>(() => {
+  const projectGroups = new Map<number | null, { name: string; projects: ResourceAllocationProject[] }>();
+  for (const project of visibleProjects.value) {
+    const group = projectGroups.get(project.baId) ?? {
+      name: project.baName ?? t("Без БА"),
+      projects: [],
+    };
+    group.projects.push(project);
+    projectGroups.set(project.baId, group);
+  }
+
+  return [
   {
     name: t("Сотрудник"),
     prop: "employee",
@@ -353,7 +551,7 @@ const gridColumns = computed<ColumnRegular[]>(() => [
           onMouseDown: (event: MouseEvent) => event.stopPropagation(),
           onClick: (event: MouseEvent) => {
             event.stopPropagation();
-            clearEmployee(model);
+            requestClearEmployee(model);
           },
         })
         : null]),
@@ -378,7 +576,9 @@ const gridColumns = computed<ColumnRegular[]>(() => [
       }, `${model.total}%`);
     },
   },
-  ...visibleProjects.value.map((project) => {
+  ...[...projectGroups.values()].map(group => ({
+    name: group.name,
+    children: group.projects.map((project) => {
     const prop = projectProp(project.id);
     return {
       name: project.name,
@@ -387,6 +587,7 @@ const gridColumns = computed<ColumnRegular[]>(() => [
       minSize: 130,
       maxSize: 130,
       sortable: false,
+      columnProperties: () => ({ title: project.name }),
       readonly: ({ model: sourceModel }) => {
         const model = sourceModel as AllocationGridRow;
         return saving.value || !project.editable || (onlyAllocatedCells.value && !Number(model[prop]));
@@ -407,23 +608,44 @@ const gridColumns = computed<ColumnRegular[]>(() => [
         if (onlyAllocatedCells.value && value === 0) {
           return "";
         }
+        const key = cellKey(model.id, project.id);
+        const previousValue = edits.value.has(key) ? 0 : previousValues.value.get(key) ?? 0;
         return h("div", { class: "resource-allocation-cell" }, [
-          h("span", { class: "resource-allocation-value" }, value ? String(value) : ""),
+          h("span", {
+            class: previousValue && !value
+              ? "resource-allocation-value resource-allocation-value--previous"
+              : "resource-allocation-value",
+            title: previousValue && !value ? t("В прошлом месяце: {value}%", { value: previousValue }) : undefined,
+          }, value ? String(value) : previousValue ? String(previousValue) : ""),
         ]);
       },
     } satisfies ColumnRegular;
-  }),
-]);
+    }),
+  })),
+  ];
+});
 
+watch(employeeProjectOptions, projects => pruneProjectSelection(employeeProjectIds, projects));
+watch(columnProjectOptions, projects => pruneProjectSelection(columnProjectIds, projects));
 onMounted(() => {
   document.addEventListener("mouseover", prepareAutofill, true);
   void load();
 });
 onBeforeUnmount(() => document.removeEventListener("mouseover", prepareAutofill, true));
+onBeforeRouteLeave(() => {
+  if (!hasPendingChanges.value) {
+    return true;
+  }
+  discardDialog.value = true;
+  return new Promise<boolean>((resolve) => {
+    resolveRouteLeave = resolve;
+  });
+});
 
 async function load(): Promise<void> {
   loading.value = true;
   error.value = "";
+  warning.value = "";
   saved.value = false;
   try {
     sheet.value = await fetchResourceAllocations(periodId.value);
@@ -440,18 +662,61 @@ async function save(): Promise<void> {
   await nextTick();
   saving.value = true;
   error.value = "";
+  warning.value = "";
   try {
     await saveResourceAllocations(periodId.value, [...edits.value].map(([key, percent]) => {
       const [employeeId, projectId] = key.split(":").map(Number);
-      return { employeeId, projectId, percent };
+      return { employeeId, projectId, percent, expectedRevisionId: initialRevisionIds.value.get(key) ?? null };
     }));
     await load();
     saved.value = true;
   } catch (saveError) {
-    error.value = errorUtils.shortMessage(saveError);
+    if (saveError instanceof BusinessError && saveError.code === "errors.resource_allocation.conflict") {
+      applyConflict(saveError);
+    } else {
+      error.value = errorUtils.shortMessage(saveError);
+    }
   } finally {
     saving.value = false;
   }
+}
+
+function applyConflict(conflictError: BusinessError): void {
+  const allocations = Array.isArray(conflictError.attrs?.allocations)
+    ? conflictError.attrs.allocations.filter(isAllocationValue)
+    : null;
+  const changes = Array.isArray(conflictError.attrs?.changes)
+    ? conflictError.attrs.changes.filter(isAllocationChange)
+    : null;
+  const conflicts = Array.isArray(conflictError.attrs?.conflicts) ? conflictError.attrs.conflicts : null;
+  if (!sheet.value || !allocations || !changes || !conflicts) {
+    error.value = conflictError.message;
+    return;
+  }
+  sheet.value = { ...sheet.value, allocations };
+  edits.value = new Map(changes.map(change => [cellKey(change.employeeId, change.projectId), change.percent]));
+  gridEditing.value = false;
+  warning.value = t(
+    "Данные обновлены. Конфликтующих ячеек: {count}. Остальные несохранённые изменения сохранены.",
+    { count: conflicts.length },
+  );
+}
+
+function isAllocationValue(value: unknown): value is ResourceAllocationValue {
+  return !!value && typeof value === "object"
+    && "employeeId" in value && typeof value.employeeId === "number"
+    && "projectId" in value && typeof value.projectId === "number"
+    && "percent" in value && typeof value.percent === "number"
+    && "revisionId" in value && typeof value.revisionId === "number";
+}
+
+function isAllocationChange(value: unknown): value is ResourceAllocationChange {
+  return !!value && typeof value === "object"
+    && "employeeId" in value && typeof value.employeeId === "number"
+    && "projectId" in value && typeof value.projectId === "number"
+    && "percent" in value && typeof value.percent === "number"
+    && "expectedRevisionId" in value
+    && (value.expectedRevisionId === null || typeof value.expectedRevisionId === "number");
 }
 
 function cellKey(employeeId: number, projectId: number): string {
@@ -472,6 +737,72 @@ function normalizePercent(value: string): number {
 
 function projectProp(projectId: number): string {
   return `project_${projectId}`;
+}
+
+function applyPreset(preset: AllocationPreset): void {
+  search.value = "";
+  clearEmployeeSelection();
+  clearProjectSelection();
+  employeeScope.value = preset === "mine" ? "mine" : preset === "company" ? "all" : "selected";
+  projectScope.value = employeeScope.value;
+}
+
+function applySharedBusinessAccounts(value: number[] | null): void {
+  const ids = value ?? [];
+  employeeBaIds.value = [...ids];
+  projectBaIds.value = [...ids];
+}
+
+function changeEmployeeScope(scope: AllocationScope): void {
+  employeeScope.value = scope;
+  if (scope !== "selected") {
+    clearEmployeeSelection();
+  }
+}
+
+function changeProjectScope(scope: AllocationScope): void {
+  projectScope.value = scope;
+  if (scope !== "selected") {
+    clearProjectSelection();
+  }
+}
+
+function clearEmployeeSelection(): void {
+  employeeBaIds.value = [];
+  employeeProjectIds.value = [];
+}
+
+function clearProjectSelection(): void {
+  projectBaIds.value = [];
+  columnProjectIds.value = [];
+}
+
+function sameIds(left: number[], right: number[]): boolean {
+  return left.length === right.length && left.every(id => right.includes(id));
+}
+
+function getFilterSelectionLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && "title" in item && typeof item.title === "string") {
+    return item.title;
+  }
+  if (item && typeof item === "object" && "name" in item && typeof item.name === "string") {
+    return item.name;
+  }
+  return "";
+}
+
+function projectsForBusinessAccounts(baIds: number[]): ResourceAllocationProject[] {
+  return baIds.length === 0
+    ? selectableProjects.value
+    : selectableProjects.value.filter(project => project.baId != null && baIds.includes(project.baId));
+}
+
+function pruneProjectSelection(selection: { value: number[] }, projects: ResourceAllocationProject[]): void {
+  const availableIds = new Set(projects.map(project => project.id));
+  selection.value = selection.value.filter(projectId => availableIds.has(projectId));
 }
 
 function projectIdFromProp(prop: string | number): number | null {
@@ -534,8 +865,20 @@ function canClearEmployee(employeeId: number): boolean {
   return allocationStats.value.clearableEmployeeIds.has(employeeId);
 }
 
-function clearEmployee(employee: AllocationRow): void {
-  if (!window.confirm(t("Очистить все доступные аллокации сотрудника {employee}?", { employee: employee.employee }))) {
+function requestClearEmployee(employee: AllocationRow): void {
+  employeeToClear.value = employee;
+  clearEmployeeDialog.value = true;
+}
+
+function cancelClearEmployee(): void {
+  clearEmployeeDialog.value = false;
+  employeeToClear.value = null;
+}
+
+function confirmClearEmployee(): void {
+  const employee = employeeToClear.value;
+  cancelClearEmployee();
+  if (!employee) {
     return;
   }
   for (const project of sheet.value?.projects ?? []) {
@@ -551,6 +894,10 @@ function totalColor(total: number): string {
 
 function reload(): void {
   runAfterDiscard(() => void load());
+}
+
+function discardChanges(): void {
+  runAfterDiscard(() => undefined);
 }
 
 function changePeriod(delta: number): void {
@@ -574,7 +921,7 @@ function goToCurrentPeriod(): void {
 }
 
 function runAfterDiscard(action: () => void): void {
-  if (edits.value.size === 0) {
+  if (!hasPendingChanges.value) {
     action();
     return;
   }
@@ -585,27 +932,37 @@ function runAfterDiscard(action: () => void): void {
 function cancelDiscard(): void {
   discardDialog.value = false;
   pendingDiscardAction = null;
+  resolveRouteLeave?.(false);
+  resolveRouteLeave = null;
 }
 
 function confirmDiscard(): void {
   discardDialog.value = false;
+  edits.value.clear();
+  gridEditing.value = false;
   const action = pendingDiscardAction;
   pendingDiscardAction = null;
+  resolveRouteLeave?.(true);
+  resolveRouteLeave = null;
   action?.();
 }
 </script>
 
 <style scoped>
-.resource-allocation-search {
-  min-width: 220px;
-  max-width: 320px;
+.resource-allocation-quick-search {
+  min-width: 280px;
+  max-width: 520px;
+}
+
+.resource-allocation-mode-controls {
+  flex: 1 1 900px;
 }
 
 .resource-allocation-filter-group {
   flex: 1 1 620px;
 }
 
-.resource-allocation-ba-filter {
+.resource-allocation-multi-filter {
   min-width: 220px;
   max-width: 300px;
 }
@@ -670,6 +1027,10 @@ function confirmDiscard(): void {
   min-width: 0;
   flex: 1 1 auto;
   text-align: right;
+}
+
+:deep(.resource-allocation-value--previous) {
+  opacity: 0.35;
 }
 
 :deep(.resource-allocation-row-delete) {

@@ -38,6 +38,7 @@ const sheet = {
       baName: "Alpine Operations",
       active: true,
       editable: true,
+      managed: true,
     },
     {
       id: 302,
@@ -48,6 +49,7 @@ const sheet = {
       baName: "Northwind Delivery",
       active: false,
       editable: false,
+      managed: false,
     },
     ...Array.from({ length: 8 }, (_, index) => ({
       id: 303 + index,
@@ -58,12 +60,16 @@ const sheet = {
       baName: "Northwind Delivery",
       active: index !== 7,
       editable: index === 0,
+      managed: index === 0,
     })),
   ],
   allocations: [
     { employeeId: 101, projectId: 301, percent: 60, revisionId: 1 },
     { employeeId: 101, projectId: 302, percent: 40, revisionId: 1 },
     { employeeId: 102, projectId: 301, percent: 30, revisionId: 1 },
+  ],
+  previousAllocations: [
+    { employeeId: 102, projectId: 303, percent: 15, revisionId: 1 },
   ],
 };
 
@@ -78,7 +84,7 @@ async function mockResourceAllocationsApi(page: Page, data = sheet): Promise<voi
   await page.route(/\/api\/v1\/resource-allocations\/\d+$/, async (route) => {
     if (route.request().method() === "PUT") {
       const body = route.request().postDataJSON() as {
-        changes: Array<{ employeeId: number; projectId: number; percent: number }>;
+        changes: Array<{ employeeId: number; projectId: number; percent: number; expectedRevisionId: number | null }>;
       };
       for (const change of body.changes) {
         const current = data.allocations.find(value =>
@@ -96,9 +102,56 @@ async function mockResourceAllocationsApi(page: Page, data = sheet): Promise<voi
 }
 
 test.describe("App Mocked Resource Allocations Page", () => {
+  test("rebases the draft from a backend conflict response", async ({ page }) => {
+    await installUnhandledApiGuard(page);
+    await mockAppRouteAuth(page, appMockedAuthorities.resourceAllocations);
+    let getCount = 0;
+    await page.route(/\/api\/v1\/resource-allocations\/\d+$/, async (route) => {
+      if (route.request().method() === "PUT") {
+        await route.fulfill({
+          status: 409,
+          contentType: "application/json",
+          body: JSON.stringify({
+            code: "errors.resource_allocation.conflict",
+            message: "Аллокации были изменены другим пользователем",
+            args: {
+              allocations: [
+                { employeeId: 101, projectId: 301, percent: 60, revisionId: 1 },
+                { employeeId: 101, projectId: 302, percent: 40, revisionId: 1 },
+                { employeeId: 102, projectId: 301, percent: 90, revisionId: 8 },
+              ],
+              changes: [],
+              conflicts: [{ employeeId: 102, projectId: 301 }],
+            },
+          }),
+        });
+        return;
+      }
+      getCount += 1;
+      await json(route, sheet);
+    });
+
+    await page.goto(appPath(routes.resourceAllocations), { waitUntil: "domcontentloaded" });
+    const cell = page.getByTestId("resource-allocation-cell-102-301");
+    await cell.dblclick();
+    await page.locator("revogr-edit input").fill("75");
+    await page.locator("revogr-edit input").press("Enter");
+    await page.getByTestId(selectors.resourceAllocationsSave).click();
+
+    await expect(cell).toHaveText("90");
+    await expect(page.getByText(/Конфликтующих ячеек: 1/)).toBeVisible();
+    await expect(page.getByTestId(selectors.resourceAllocationsSave)).toBeDisabled();
+    expect(getCount).toBe(1);
+  });
+
   test("edits accessible projects and saves only changed cells without backend", async ({ page }) => {
     await installUnhandledApiGuard(page);
-    await mockAppRouteAuth(page, [...appMockedAuthorities.resourceAllocations, "create_assessment"]);
+    await mockAppRouteAuth(page, [
+      ...appMockedAuthorities.resourceAllocations,
+      ...appMockedAuthorities.employees,
+      "create_assessment",
+      "project_admin_area",
+    ]);
     await mockResourceAllocationsApi(page);
 
     await page.goto(appPath(routes.resourceAllocations), { waitUntil: "domcontentloaded" });
@@ -108,15 +161,26 @@ test.describe("App Mocked Resource Allocations Page", () => {
     const managerNavigation = page.locator(".v-list-group").filter({ hasText: "Менеджерам" });
     await managerNavigation.getByText("Менеджерам", { exact: true }).click();
     await expect(managerNavigation.getByRole("link", { name: "Ассессменты" })).toBeVisible();
+    await expect(managerNavigation.getByRole("link", { name: "Все проекты" })).toBeVisible();
     await page.locator(".v-navigation-drawer__scrim").click();
     await expect(page.getByTestId(selectors.resourceAllocationsTable)).toBeVisible();
-    await expect(page.getByTestId("resource-allocations-employee-ba")).toBeVisible();
-    await expect(page.getByTestId("resource-allocations-project-ba")).toBeVisible();
-    const projectSearch = page.getByTestId(selectors.resourceAllocationsProjectSearch).locator("input");
-    await projectSearch.fill("Support");
-    await expect(page.getByRole("columnheader", { name: "Support Portal" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Retail Terminal Platform" })).toHaveCount(0);
-    await projectSearch.fill("");
+    await expect(page.getByTestId(selectors.resourceAllocationsTable).getByText("Alpine Operations", { exact: true })).toBeVisible();
+    await expect(page.getByTestId(selectors.resourceAllocationsTable).getByText("Northwind Delivery", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("resource-allocations-employee-ba")).toHaveCount(0);
+    await expect(page.getByTestId("resource-allocations-project-ba")).toHaveCount(0);
+    await expect(page.getByTestId("resource-allocation-employee-101")).toHaveCount(0);
+    await expect(page.getByTestId("resource-allocation-employee-102")).toBeVisible();
+    await page.getByTestId(selectors.resourceAllocationsEmployeesAll).click();
+    await expect(page.getByRole("columnheader", { name: "Support Portal" }))
+      .toHaveAttribute("title", "Support Portal");
+    await expect(page.getByTestId("resource-allocation-cell-102-303")).toHaveText("15");
+    await expect(page.getByTestId("resource-allocation-cell-102-303").locator(".resource-allocation-value--previous"))
+      .toBeVisible();
+    const employeeSearch = page.getByTestId(selectors.resourceAllocationsEmployeeSearch).locator("input");
+    await employeeSearch.fill("Alex Morgan");
+    await expect(page.getByTestId("resource-allocation-employee-101")).toBeVisible();
+    await expect(page.getByTestId("resource-allocation-employee-102")).toHaveCount(0);
+    await employeeSearch.fill("");
     await expect.poll(async () => Math.round(await page.getByRole("columnheader", { name: "Сотрудник" })
       .evaluate(element => element.getBoundingClientRect().width))).toBe(320);
     await expect(page.getByTestId("resource-allocation-cell-101-302")).toHaveCount(0);
@@ -161,23 +225,17 @@ test.describe("App Mocked Resource Allocations Page", () => {
     })).toEqual({ employeeId: 101, project: "project_303" });
     await page.keyboard.press("Enter");
     await expect(editor).toBeVisible();
-    await page.keyboard.press("Enter");
-    await expect.poll(() => allocationGrid.evaluate(async (element) => {
-      const focused = await (element as HTMLRevoGridElement).getFocused();
-      return { employeeId: focused?.model.id, project: focused?.column?.prop };
-    })).toEqual({ employeeId: 102, project: "project_303" });
+    await editor.press("Enter");
+    await expect(editor).toHaveCount(0);
 
     await page.getByTestId(selectors.resourceAllocationsScopeAll).click();
-    await projectSearch.fill("Additional Project 8");
     await expect(page.getByRole("columnheader", { name: "Additional Project 8" })).toHaveCount(0);
-    await projectSearch.fill("Billing");
     await expect(page.getByTestId("resource-allocation-cell-101-302"))
       .toHaveClass(/resource-allocation-project-grid-cell--readonly/);
     await page.getByTestId(selectors.resourceAllocationsOnlyAllocated).click();
     await expect(page.getByTestId("resource-allocation-cell-101-302")).toBeVisible();
-    await expect(page.getByTestId("resource-allocation-cell-102-302")).toHaveCount(0);
+    await expect(page.getByTestId("resource-allocation-cell-102-302")).toHaveText("");
     await page.getByTestId(selectors.resourceAllocationsOnlyAllocated).click();
-    await projectSearch.fill("");
     await page.getByTestId(selectors.resourceAllocationsEmployeesMine).click();
     await expect(page.getByTestId("resource-allocation-employee-101")).toHaveCount(0);
     await page.getByTestId(selectors.resourceAllocationsEmployeesAll).click();
@@ -187,10 +245,14 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await editor.fill("75");
     await editor.press("Enter");
 
-    await page.getByRole("button", { name: "Обновить данные" }).click();
+    await page.getByLabel("Открыть меню").click();
+    await page.locator(`a[href="${routes.employees}"]`).first().click();
     await expect(page.getByTestId("resource-allocations-discard-dialog")).toBeVisible();
-    await page.getByTestId("resource-allocations-discard-cancel").click();
+    await expect(page).toHaveURL(new RegExp(`${routes.resourceAllocations}$`));
+    await page.getByRole("button", { name: "Отмена" }).click();
     await expect(page.getByTestId("resource-allocations-discard-dialog")).toBeHidden();
+    await expect(page).toHaveURL(new RegExp(`${routes.resourceAllocations}$`));
+    await page.keyboard.press("Escape");
 
     const saveRequest = page.waitForRequest(request =>
       request.method() === "PUT" && /\/api\/v1\/resource-allocations\/\d+$/.test(request.url()),
@@ -198,15 +260,45 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await page.getByTestId(selectors.resourceAllocationsSave).click();
 
     expect((await saveRequest).postDataJSON()).toEqual({
-      changes: [{ employeeId: 102, projectId: 301, percent: 75 }],
+      changes: [{ employeeId: 102, projectId: 301, percent: 75, expectedRevisionId: 1 }],
     });
     await expect(editableCell).toHaveText("75");
 
+    await page.getByTestId("resource-allocations-employees-selected").click();
     await page.getByTestId("resource-allocations-employee-ba").click();
     await page.getByRole("option", { name: "Alpine Operations" }).click();
     await page.keyboard.press("Escape");
     await expect(page.getByTestId("resource-allocation-employee-102")).toBeVisible();
     await expect(page.getByTestId("resource-allocation-employee-101")).toHaveCount(0);
+    await page.getByTestId(selectors.resourceAllocationsEmployeeProjects).click();
+    await expect(page.getByRole("option", { name: "Retail Terminal Platform" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Billing Gateway" })).toHaveCount(0);
+    await page.getByRole("option", { name: "Retail Terminal Platform" }).click();
+    await page.keyboard.press("Escape");
+
+    await page.getByTestId("resource-allocations-scope-selected").click();
+    await page.getByTestId("resource-allocations-project-ba").click();
+    await page.getByRole("option", { name: "Northwind Delivery" }).click();
+    await page.keyboard.press("Escape");
+    await page.getByTestId(selectors.resourceAllocationsProjectProjects).click();
+    await expect(page.getByRole("option", { name: "Support Portal" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Retail Terminal Platform" })).toHaveCount(0);
+    await page.getByRole("option", { name: "Support Portal" }).click();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("columnheader", { name: "Support Portal" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Billing Gateway" })).toHaveCount(0);
+
+    await page.getByTestId("resource-allocation-cell-102-303").dblclick();
+    await editor.fill("20");
+    await editor.press("Enter");
+    await page.getByLabel("Открыть меню").click();
+    await page.locator(`a[href="${routes.employees}"]`).first().click();
+    await expect(page.getByTestId("resource-allocations-discard-dialog")).toBeVisible();
+    await page.getByRole("button", { name: "Продолжить", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${routes.employees}$`));
+    await page.goBack();
+    await expect(page.getByTestId(selectors.resourceAllocationsView)).toBeVisible();
+    await expect(page.getByTestId("resource-allocations-discard-dialog")).toBeHidden();
   });
 
   test("keeps a large populated sheet responsive and shows a useful allocated-only empty state", async ({ page }) => {
@@ -273,13 +365,19 @@ test.describe("App Mocked Resource Allocations Page", () => {
 
     await cell.click();
     await page.keyboard.press("Delete");
+    await page.getByTestId("resource-allocations-employees-selected").click();
     await page.getByTestId("resource-allocations-employee-ba").click();
     const filterStartedAt = Date.now();
     await page.getByRole("option", { name: "Alpine Operations" }).click();
     await page.keyboard.press("Escape");
     await expect(page.getByText("Employee 2", { exact: true })).toHaveCount(0);
     expect(Date.now() - filterStartedAt).toBeLessThan(2_000);
-    await page.getByTestId(selectors.resourceAllocationsProjectSearch).locator("input").fill("Missing project");
+    await page.getByTestId("resource-allocations-scope-selected").click();
+    const projectFilter = page.getByTestId(selectors.resourceAllocationsProjectProjects);
+    await projectFilter.click();
+    await projectFilter.locator("input").fill("Project 80");
+    await page.getByRole("option", { name: "Project 80", exact: true }).click();
+    await page.keyboard.press("Escape");
     await page.getByTestId(selectors.resourceAllocationsOnlyAllocated).click();
     await expect(page.getByTestId("resource-allocations-empty-allocated")).toBeVisible();
     await expect(page.getByTestId(selectors.resourceAllocationsTable)).toHaveCount(0);

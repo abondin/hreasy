@@ -312,6 +312,15 @@ const managerNavigationItems = computed(() => {
     });
   }
 
+  if (permissions.canAdminProjects()) {
+    items.push({
+      key: "admin-projects",
+      label: t("Все проекты"),
+      icon: "mdi-briefcase-edit-outline",
+      to: { name: "admin-projects" },
+    });
+  }
+
   return items;
 });
 
@@ -363,15 +372,6 @@ const adminNavigationItems = computed(() => {
       label: t("Справочники"),
       icon: "mdi-book-open-variant",
       to: "/admin/dicts",
-    });
-  }
-
-  if (permissions.canAdminProjects()) {
-    items.push({
-      key: "admin-projects",
-      label: t("Все проекты"),
-      icon: "mdi-briefcase-edit-outline",
-      to: { name: "admin-projects" },
     });
   }
 

@@ -18,6 +18,7 @@ export interface ResourceAllocationProject {
   baName: string | null;
   active: boolean;
   editable: boolean;
+  managed: boolean;
 }
 
 export interface ResourceAllocationValue {
@@ -32,12 +33,14 @@ export interface ResourceAllocationSheet {
   employees: ResourceAllocationEmployee[];
   projects: ResourceAllocationProject[];
   allocations: ResourceAllocationValue[];
+  previousAllocations: ResourceAllocationValue[];
 }
 
 export interface ResourceAllocationChange {
   employeeId: number;
   projectId: number;
   percent: number;
+  expectedRevisionId: number | null;
 }
 
 export async function fetchResourceAllocations(period: number): Promise<ResourceAllocationSheet> {

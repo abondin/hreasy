@@ -18,6 +18,16 @@ public class ResourceAllocationRepository {
     private final R2dbcEntityTemplate dbTemplate;
 
     /**
+     * Serializes allocation saves for one period inside the current transaction.
+     */
+    public Mono<Void> lockPeriod(int period) {
+        return dbTemplate.getDatabaseClient().sql("select pg_advisory_xact_lock(712011, :period)")
+                .bind("period", period)
+                .fetch().one()
+                .then();
+    }
+
+    /**
      * Finds employees whose employment overlaps the requested month.
      */
     public Flux<ResourceAllocationEmployeeView> findEmployees(LocalDate periodStart, LocalDate periodEnd) {
@@ -120,15 +130,14 @@ public class ResourceAllocationRepository {
     }
 
     /**
-     * Inserts or replaces the current value of one allocation cell.
+     * Inserts a cell only when it is still absent.
      */
-    public Mono<Long> upsert(int period, int employeeId, int projectId, int percent, int revisionId) {
+    public Mono<Long> insertIfAbsent(int period, int employeeId, int projectId, int percent, int revisionId) {
         return dbTemplate.getDatabaseClient().sql("""
                         insert into alloc.resource_allocation
                             (period, employee_id, project_id, percent, revision_id)
                         values (:period, :employeeId, :projectId, :percent, :revisionId)
-                        on conflict (period, employee_id, project_id) do update
-                        set percent = excluded.percent, revision_id = excluded.revision_id
+                        on conflict (period, employee_id, project_id) do nothing
                         """)
                 .bind("period", period)
                 .bind("employeeId", employeeId)
@@ -139,16 +148,38 @@ public class ResourceAllocationRepository {
     }
 
     /**
-     * Removes a current allocation cell while its deletion remains recorded in the revision.
+     * Replaces a cell only when it still has the revision seen by the client.
      */
-    public Mono<Long> delete(int period, int employeeId, int projectId) {
+    public Mono<Long> updateIfRevisionMatches(int period, int employeeId, int projectId, int percent,
+                                              int revisionId, int expectedRevisionId) {
         return dbTemplate.getDatabaseClient().sql("""
-                        delete from alloc.resource_allocation
+                        update alloc.resource_allocation
+                        set percent = :percent, revision_id = :revisionId
                         where period = :period and employee_id = :employeeId and project_id = :projectId
+                          and revision_id = :expectedRevisionId
                         """)
                 .bind("period", period)
                 .bind("employeeId", employeeId)
                 .bind("projectId", projectId)
+                .bind("percent", percent)
+                .bind("revisionId", revisionId)
+                .bind("expectedRevisionId", expectedRevisionId)
+                .fetch().rowsUpdated();
+    }
+
+    /**
+     * Removes a current allocation cell while its deletion remains recorded in the revision.
+     */
+    public Mono<Long> deleteIfRevisionMatches(int period, int employeeId, int projectId, int expectedRevisionId) {
+        return dbTemplate.getDatabaseClient().sql("""
+                        delete from alloc.resource_allocation
+                        where period = :period and employee_id = :employeeId and project_id = :projectId
+                          and revision_id = :expectedRevisionId
+                        """)
+                .bind("period", period)
+                .bind("employeeId", employeeId)
+                .bind("projectId", projectId)
+                .bind("expectedRevisionId", expectedRevisionId)
                 .fetch().rowsUpdated();
     }
 

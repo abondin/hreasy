@@ -13,5 +13,5 @@ import java.util.Map;
 public class BusinessErrorDto {
     private String code;
     private String message;
-    private Map<String, String> args = new HashMap<>();
+    private Map<String, Object> args = new HashMap<>();
 }
