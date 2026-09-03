@@ -9,8 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record ResourceAllocationSaveBody(@NotEmpty List<@Valid Change> changes) {
-    public record Change(@NotNull Integer employeeId,
-                         @NotNull Integer projectId,
+    public record Change(@NotNull Integer period,
+                         @NotNull Integer employeeId,
                          @Min(0) @Max(1000) int percent,
                          Integer expectedRevisionId) {
     }
