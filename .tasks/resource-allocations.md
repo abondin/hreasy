@@ -2,68 +2,60 @@
 
 ## Goal
 
-Add a manager-facing monthly resource allocation matrix with batch revisions and project-scoped editing.
+Provide a project-scoped annual allocation input workflow for managers and a separate read-only analytics matrix.
 
-## Agreed Scope
+## Agreed Requirements
 
-- Add `Managers > Resource allocations` to the navigation.
-- Work with one month at a time, using the existing zero-based `YYYYMM` period convention (`202005` means June 2020) and period switcher.
-- Show employees as rows and projects as columns.
-- Show each employee's total allocation: green at 100%, yellow below 100%, red above 100%.
-- Accept integer percentages from 0 through 1000. Zero or blank removes the allocation.
-- Show all project allocations, but disable cells outside the current user's project access.
-- Save only changed cells in one transactional revision.
-- Prefer the existing `ProjectHierarchyAccessor` even though its effective scope includes both manager-derived and manually granted project hierarchy access.
-- Keep the implementation small and reuse existing backend and frontend patterns.
+- `Data entry` is the only editable tab; `Analytics` is read-only.
+- Data entry defaults to the current calendar year and the first managed project alphabetically; users without managed projects fall back to their first available project.
+- Exactly one project is edited at a time; one screen exposes all 12 months.
+- Rows include current project employees, employees with allocations on that project in the selected year, and employees added in the current draft.
+- A cell is editable only when the user can edit the project, the month is open, and employment overlaps the month. The dismissal month is inclusive.
+- Dismissal and another current project remain visible in the employee text. Visual status styling is deferred until it can use native grid capabilities.
+- Closed months are marked in the column name and remain backend-enforced. Additional month/status styling is deferred.
+- Managers can edit only projects in their manager line. Explicit project access does not make a project `managed`; global edit permission remains global.
+- Empty/zero values are not stored. Percent values are integers from 1 through 1000.
+- Allocation data remains monthly, with physical `year` and `period` columns. Annual requests query the physical `year`; the DB constraint verifies it matches the legacy zero-based period convention.
+- One Save creates one project/year revision, with one immutable change per employee/month.
+- Per-cell optimistic revisions reject stale cells and return current server values plus the non-conflicting local draft for client-side rebase.
+- A version conflict reloads current server values, preserves non-conflicting draft changes, and marks conflicting cells red until they are edited again.
+- Month closing/reopening is backend-enforced and restricted by `resource_allocation_period_manage`.
 
-## Current Decisions
+## Implementation
 
-- Access requires a dedicated allocation permission plus project hierarchy access. `global_admin` has unrestricted access.
-- A manager may allocate any employee to a project they can access; employee hierarchy does not restrict editing.
-- Totals include allocations hidden by project filters.
-- Default project view is the user's accessible projects; an all-project view shows other projects read-only.
-- Save uses changed-cell semantics so unrelated project values are never replaced.
-- Revisions retain the changes made by one Save, including removals.
-- Allocation revision/change tables implement the feature's batch history requirement; there is no shared user-action audit integration.
-- Follow repository naming: `*View` for SQL projections, `*Dto` for responses, and `*Body` for request payloads; no persistence `*Entry` is needed while allocation writes use one custom SQL repository.
-- Keep permission rules in `ResourceAllocationSecurityValidator`; the service orchestrates the use case and the backend remains authoritative.
-- Log save attempts briefly (period, actor, change count) without logging the full allocation payload.
-- The agreed naming, repository, security-validator, logging, and history-separation practices are recorded in `.agents/skills/java-coding-style/SKILL.md`.
-- Lombok is already used where it removes boilerplate (`@RequiredArgsConstructor`, `@Slf4j`). Allocation API values and SQL projections remain small immutable records; converting them to mutable Lombok beans would add code without behavior.
-- MapStruct is reserved for mappings that are reused or structurally non-trivial. Allocation mapping stays explicit because it is local and includes runtime `active`/`editable` decisions; a dedicated mapper would add a file and dependency without simplifying the flow.
-- The agreed Lombok/record and MapStruct selection rules are recorded in `.agents/skills/java-coding-style/SKILL.md`.
-- Main allocation classes and public methods have concise Javadoc; the same documentation rule is recorded in the Java skill.
-- Dynamic allocation columns exposed a shared table issue: forwarded slot names were cached before async data created the slots. `HREasyTableBase` now resolves slot names on render.
-- Same-cell concurrent edits use last-write-wins for the first version; add optimistic checks only if real collisions appear.
-- No period closing, approval workflow, notifications, comments, or import/export in the first version.
-
-## Plan
-
-- [x] Inspect period, project hierarchy, manager, and role patterns.
-- [x] Agree on the minimal access approach and task workflow.
-- [x] Add the Flyway migration and allocation permission.
-- [x] Add backend read/save API with transactional revision history.
-- [x] Add focused backend tests for period handling, changed-only saves, and access flags.
-- [x] Add the frontend service, route, menu group, and allocation table.
-- [x] Add a focused frontend test for totals across hidden projects.
-- [x] Add a Playwright app-mocked flow for project access, totals, editing, and changed-only save.
-- [x] Run final backend and frontend validation available in the current environment.
+- Flyway schema stores `year` explicitly on current allocations, annual revisions, and closed periods.
+- Annual API: `GET /api/v1/resource-allocations/input/{year}` and `PUT /api/v1/resource-allocations/input/{year}/{projectId}`.
+- Period API: `PUT/DELETE /api/v1/resource-allocations/closed-periods/{period}`; the grid currently has no custom close/reopen control.
+- Annual analytics uses `GET /api/v1/resource-allocations/analytics/{year}` and returns only employees, projects, and employee/project pairs with non-zero values in that year.
+- Analytics has two read-only hierarchy modes and defaults to projects. Project mode uses RevoGrid's native nested BA -> project grouping with employee children; employee mode groups project children by employee. Group rows show monthly allocation sums through the native group-cell template and remain expanded by default.
+- Employee analytics is summary-first: employee groups start collapsed, retain their monthly totals, and show the sole project name or project count beside the employee. Project analytics remains expanded by default.
+- BA and dependent project multi-selects filter complete hierarchy branches. The current search matches an employee or project name and keeps matching employee/project pairs; its final parent/child retention semantics remain open for UX review.
+- RevoGrid provides virtualized annual editing, clipboard, range selection, native Tab/Enter, and native autofill behavior.
+- Shared HREasy page/layout, Vuetify controls, dialogs, period switcher, search normalization, and permissions remain in use.
+- Data entry now uses the same `AdaptiveFilterBar` and `TableToolbarActions` composition as neighboring manager pages. The project selector is a normal toolbar filter and the annual grid is full-width without a nested card.
+- Annual input uses a 600px resizable employee column and twelve fixed 110px month columns, fitting a 2048px viewport; smaller screens use native horizontal scrolling.
+- `Data entry` and `Analytics` are independent sibling child routes and components under a shared route-tab layout. The base URL redirects to `/management/resource-allocations/input`; analytics remains `/management/resource-allocations/analytics`.
+- Both allocation grids use native RevoGrid headers, editor, sizing, theme, resize, and autofill without deep selectors, CSS variables, or geometry workarounds.
+- The employee column uses RevoGrid's documented Vue cell-template adapter: dismissed employees get a Vuetify badge, another current project is small muted inline text, and the final row contains the employee autocomplete.
+- Successful saves rely on the standard loading state of the Save button and refreshed data; only errors and conflict warnings render page alerts.
+- The child route, input card, table slot, and RevoGrid now share one flex-height chain, so the input grid fills the remaining viewport instead of falling back to its approximately 300px intrinsic height.
+- The employee cell renderer disables Vue attribute fallthrough: RevoGrid metadata no longer reaches the Vuetify autocomplete input and resets its search text.
+- Analytics switches grouping direction by remounting only RevoGrid because the library otherwise preserves its previous internal grouping model for rows with stable IDs.
 
 ## Validation
 
-- `mvn -q -f backend/pom.xml -pl platform -am -DskipTests compile` passed.
-- `mvn -q -f backend/pom.xml -pl platform -am -Dtest=ResourceAllocationServiceTest "-Dsurefire.failIfNoSpecifiedTests=false" test` passed (3 tests), including backend rejection of an inaccessible project.
+- `mvn -q -f backend/pom.xml -pl platform -am -Dtest=ResourceAllocationServiceTest "-Dsurefire.failIfNoSpecifiedTests=false" test` passed.
 - `npm run type-check` passed.
-- `npm run lint` passed after fixing three local lint findings.
-- `npm run test:unit -- --run ResourceAllocationsView` passed (1 test).
-- `npm run build` passed; Vite reported only the repository's existing large-chunk warning.
-- `npm run build-only` passed after the E2E selectors and dynamic-slot fix; only the existing large-chunk warning remains.
-- Targeted ESLint for the allocation E2E, view, shared table, and support files passed.
-- `npm run test:e2e -- app-mocked/resource-allocations-page.spec.ts --reporter=line` passed (1 Chromium test) without a backend.
-- `npm run check:win-text-integrity` passed.
-- A Spring/Testcontainers test intended to apply Flyway could not run: sandbox access to the Docker named pipe was denied; the escalated retry then could not reach the configured Nexus to resolve Maven plugin artifacts. The migration still needs one execution in an environment with Docker and Nexus access.
-- The repository skill validator could not start because `python.exe` and `py.exe` are unavailable; frontmatter and structure were checked manually.
+- Targeted ESLint for the allocation view, service, unit test, and E2E passed.
+- `npm run test:unit -- ResourceAllocationsView` passed: 5 tests.
+- Allocation Chromium E2E passed: 3 tests, including conflict rebase, annual save, direct sibling-route selection, nested analytics groups with totals, and a 500-employee/80-project matrix.
+- `npm run check:win-text-integrity` and `git diff --check` passed.
+- Route separation passed type-check, targeted ESLint, 5 unit scenarios, direct analytics navigation, route-tab navigation, and the large mocked browser scenario. Fixed grid height avoids RevoGrid resize-observer loops.
+- The compact input and redesigned analytics toolbar were visually checked at 2048x1080; the final Chromium E2E also passed at the default viewport.
+- The annual input browser scenario types the full employee name character by character, verifies the search value and selection, and asserts the grid is taller than its former collapsed height.
 
-## Open Questions
+## Remaining
 
-- No product questions are blocking. Apply the migration once in an environment with Docker/PostgreSQL and Nexus access before release.
+- Cell comment threads are not a built-in RevoGrid feature. RevoGrid supplies the cell renderer/interaction surface, but durable threads require a separate backend model, API, permissions, and comment UI; implementation awaits an explicit product decision.
+- Apply the edited live migration by recreating the local database, as agreed.
+- After user acceptance, update `changelogs/CHANGELOG.md` and remove this task file.

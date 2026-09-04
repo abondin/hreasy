@@ -22,7 +22,7 @@ export class BusinessError extends Error {
   constructor(
     message: string,
     public code?: string,
-    public attrs?: Record<string, string>,
+    public attrs?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "BusinessError";

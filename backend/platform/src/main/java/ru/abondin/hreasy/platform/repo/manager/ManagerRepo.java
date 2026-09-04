@@ -119,6 +119,17 @@ public interface ManagerRepo extends ReactiveCrudRepository<ManagerEntry, Intege
             """)
     Flux<Integer> findManagedDepartmentIds(@Param("employeeId") int employeeId);
 
+    @Query("""
+            select distinct project.id
+            from proj.project project
+            join empl.manager manager
+              on manager.employee = :employeeId
+             and ((manager.object_type = 'project' and manager.object_id = project.id)
+               or (manager.object_type = 'business_account' and manager.object_id = project.ba_id)
+               or (manager.object_type = 'department' and manager.object_id = project.department_id))
+            """)
+    Flux<Integer> findManagedProjectHierarchyIds(@Param("employeeId") int employeeId);
+
     /**
      * Finds active managers of the employee current project, project business account, and project department
      * who have the requested permission.

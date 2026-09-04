@@ -5,7 +5,7 @@ import pluginVitest from '@vitest/eslint-plugin';
 import pluginPlaywright from 'eslint-plugin-playwright';
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting';
 
-export default defineConfigWithVueTs(
+const config: ReturnType<typeof defineConfigWithVueTs> = defineConfigWithVueTs(
   {
     name: 'app/files-to-lint',
     files: ['**/*.{ts,mts,tsx,vue}']
@@ -42,3 +42,5 @@ export default defineConfigWithVueTs(
   },
   skipFormatting
 );
+
+export default config;
