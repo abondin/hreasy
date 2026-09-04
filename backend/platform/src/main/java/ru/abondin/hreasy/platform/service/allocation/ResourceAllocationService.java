@@ -152,13 +152,19 @@ public class ResourceAllocationService {
                         var employees = data.getT1().stream().map(this::toInputEmployeeDto).toList();
                         if (selectedProjectId == null) {
                             return Mono.just(new ResourceAllocationProjectInputDto(year, null, months,
-                                    employees, projects, List.of(), securityValidator.canManagePeriods(auth)));
+                                    employees, projects, List.of(), List.of(),
+                                    securityValidator.canManagePeriods(auth)));
                         }
-                        return repository.findProjectAllocations(selectedProjectId, year)
-                                .map(this::toProjectInputAllocationDto)
-                                .collectList()
+                        return Mono.zip(
+                                        repository.findProjectAllocations(selectedProjectId, year)
+                                                .map(this::toProjectInputAllocationDto).collectList(),
+                                        repository.findOtherProjectAllocations(selectedProjectId, year)
+                                                .map(allocation -> new ResourceAllocationProjectInputDto.OtherAllocationDto(
+                                                        allocation.period(), allocation.employeeId(),
+                                                        allocation.percent()))
+                                                .collectList())
                                 .map(allocations -> new ResourceAllocationProjectInputDto(year, selectedProjectId,
-                                        months, employees, projects, allocations,
+                                        months, employees, projects, allocations.getT1(), allocations.getT2(),
                                         securityValidator.canManagePeriods(auth)));
                     });
         }));

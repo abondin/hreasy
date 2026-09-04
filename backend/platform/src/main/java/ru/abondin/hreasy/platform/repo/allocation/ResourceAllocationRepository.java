@@ -154,6 +154,26 @@ public class ResourceAllocationRepository {
     }
 
     /**
+     * Returns monthly allocation totals on projects other than the selected one.
+     */
+    public Flux<OtherProjectAllocationView> findOtherProjectAllocations(int projectId, int year) {
+        return dbTemplate.getDatabaseClient().sql("""
+                        select period, employee_id, sum(percent)::integer as percent
+                        from alloc.resource_allocation
+                        where project_id <> :projectId and year = :year
+                        group by period, employee_id
+                        order by period, employee_id
+                        """)
+                .bind("projectId", projectId)
+                .bind("year", year)
+                .map((row, _) -> new OtherProjectAllocationView(
+                        row.get("period", Integer.class),
+                        row.get("employee_id", Integer.class),
+                        row.get("percent", Integer.class)))
+                .all();
+    }
+
+    /**
      * Creates the parent revision for one Save operation.
      */
     public Mono<Integer> createRevision(int year, int projectId, OffsetDateTime createdAt, int createdBy) {
@@ -308,5 +328,8 @@ public class ResourceAllocationRepository {
 
     public record PeriodResourceAllocationView(Integer period, Integer employeeId, Integer projectId,
                                                int percent, Integer revisionId) {
+    }
+
+    public record OtherProjectAllocationView(Integer period, Integer employeeId, int percent) {
     }
 }

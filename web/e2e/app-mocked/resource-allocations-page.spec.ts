@@ -100,6 +100,20 @@ function projectInput(data: typeof sheet, projectId?: number) {
   const projects = data.projects.filter(project => project.managed && project.active)
     .sort((left, right) => left.name.localeCompare(right.name));
   const selectedProjectId = projectId ?? projects[0]?.id ?? null;
+  const otherAllocations = new Map<string, { period: number; employeeId: number; percent: number }>();
+  for (const value of [
+    ...data.allocations.map(allocation => ({ ...allocation, period: data.period })),
+    ...data.previousAllocations.map(allocation => ({ ...allocation, period: 202606 })),
+  ]) {
+    if (value.projectId === selectedProjectId) continue;
+    const key = `${value.period}:${value.employeeId}`;
+    const current = otherAllocations.get(key);
+    otherAllocations.set(key, {
+      period: value.period,
+      employeeId: value.employeeId,
+      percent: (current?.percent ?? 0) + value.percent,
+    });
+  }
   return {
     year: 2026,
     selectedProjectId,
@@ -117,6 +131,7 @@ function projectInput(data: typeof sheet, projectId?: number) {
       ...data.previousAllocations.filter(value => value.projectId === selectedProjectId)
         .map(value => ({ period: 202606, employeeId: value.employeeId, percent: value.percent, revisionId: value.revisionId })),
     ],
+    otherAllocations: [...otherAllocations.values()],
     canManagePeriods: false,
   };
 }
@@ -207,7 +222,7 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await page.locator("revogr-edit input").press("Enter");
     await page.getByTestId(selectors.resourceAllocationsSave).click();
 
-    await expect(cell).toHaveText("90");
+    await expect(cell).toHaveText("90%");
     const conflictAlert = page.getByTestId("resource-allocations-conflict");
     await expect(conflictAlert).toContainText("Не все изменения сохранены");
     await expect(conflictAlert).toContainText("уже изменил другой пользователь");
@@ -230,13 +245,13 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await page.goto(appPath(routes.resourceAllocations), { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId(selectors.resourceAllocationsView)).toBeVisible();
-    await expect(page).toHaveURL(/\/management\/resource-allocations\/input$/);
+    await expect(page).toHaveURL(/\/management\/resource-allocations\/input\?year=2026&projectId=301$/);
     await expect(page.getByTestId("resource-allocations-tab-input")).toHaveAttribute("aria-selected", "true");
     const projectFilter = await revealAdaptiveFilter(page, "resource-allocations-input-project");
     await expect(projectFilter).toContainText("Retail Terminal Platform");
     await page.keyboard.press("Escape");
     const inputCell = page.getByTestId("resource-allocation-input-102-202607");
-    await expect(page.getByTestId("resource-allocation-input-101-202607")).toBeVisible();
+    await expect(page.getByTestId("resource-allocation-input-101-202607")).toContainText("+ 40%");
     await expect(inputCell).toBeVisible();
     await expect(page.getByTestId("resource-allocation-input-employee-101")).toContainText("Alex Morgan");
     const inputGrid = page.getByTestId("resource-allocations-input-grid");

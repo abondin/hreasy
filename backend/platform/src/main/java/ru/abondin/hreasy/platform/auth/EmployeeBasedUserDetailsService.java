@@ -27,6 +27,10 @@ public class EmployeeBasedUserDetailsService {
         return findNotDismissedByUsername(username, AuthContext.LoginType.TELEGRAM_BOT_SERVICE, telegramAccount);
     }
 
+    public Mono<UserDetails> findForExternal(String username) {
+        return findNotDismissedByUsername(username, AuthContext.LoginType.EXTERNAL_API, null);
+    }
+
     private Mono<UserDetails> findNotDismissedByUsername(String username, AuthContext.LoginType loginType, String telegramName) {
         return employeeAuthDomainService.findNotDismissedByUsername(username)
                 .switchIfEmpty(Mono.error(new BusinessError("errors.no.employee.found", username)))

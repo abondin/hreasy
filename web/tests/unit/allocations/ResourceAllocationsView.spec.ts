@@ -10,6 +10,18 @@ import {
   saveResourceAllocations,
 } from "@/services/resource-allocation.service";
 
+const routerMocks = vi.hoisted(() => ({
+  query: {} as Record<string, string>,
+  replace: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("vue-router", async () => ({
+  ...await vi.importActual<typeof import("vue-router")>("vue-router"),
+  onBeforeRouteLeave: vi.fn(),
+  useRoute: () => ({ query: routerMocks.query }),
+  useRouter: () => ({ replace: routerMocks.replace }),
+}));
+
 vi.mock("vue-i18n", () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }));
@@ -77,7 +89,7 @@ interface GridColumnStub {
   }) => Record<string, unknown>;
   cellTemplate?: (
     createElement: typeof h,
-    props: { model: Record<string, unknown> },
+    props: { model: Record<string, unknown>; prop: string; value: unknown },
     addition?: Record<string, unknown>,
   ) => ReturnType<typeof h> | string | number | null | undefined;
 }
@@ -164,7 +176,11 @@ const GridStub = defineComponent({
                   }
                 },
               },
-              column.cellTemplate?.(h, { model }, props.additionalData) ??
+              column.cellTemplate?.(
+                h,
+                { model, prop: column.prop, value: model[column.prop] },
+                props.additionalData,
+              ) ??
                 String(model[column.prop] ?? ""),
             );
           }),
@@ -211,6 +227,7 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  routerMocks.query = {};
   vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
     year: 2026,
     selectedProjectId: null,
@@ -221,12 +238,14 @@ beforeEach(() => {
     employees: [],
     projects: [],
     allocations: [],
+    otherAllocations: [],
     canManagePeriods: false,
   });
 });
 
 describe("ResourceAllocationsView", () => {
   it("opens the first managed project and supports adding any employee", async () => {
+    routerMocks.query = { year: "2026", projectId: "20" };
     vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
       year: 2026,
       selectedProjectId: 20,
@@ -300,6 +319,9 @@ describe("ResourceAllocationsView", () => {
         { period: 202607, employeeId: 4, percent: 25, revisionId: 2 },
         { period: 202606, employeeId: 2, percent: 30, revisionId: 1 },
       ],
+      otherAllocations: [
+        { period: 202607, employeeId: 1, percent: 50 },
+      ],
       canManagePeriods: false,
     });
     vi.mocked(saveResourceAllocations).mockResolvedValue();
@@ -308,6 +330,11 @@ describe("ResourceAllocationsView", () => {
       global: { stubs: globalStubs },
     });
     await flushPromises();
+
+    expect(fetchResourceAllocationProjectInput).toHaveBeenCalledWith(2026, 20);
+    expect(routerMocks.replace).toHaveBeenCalledWith({
+      query: { year: "2026", projectId: "20" },
+    });
 
     const inputProject = wrapper
       .findAllComponents(SelectStub)
@@ -320,8 +347,8 @@ describe("ResourceAllocationsView", () => {
     expect(
       wrapper
         .find('[data-testid="resource-allocation-input-1-202607"]')
-        .exists(),
-    ).toBe(true);
+        .text(),
+    ).toContain("+ 50%");
     expect(
       wrapper
         .find('[data-testid="resource-allocation-input-2-202606"]')
@@ -395,6 +422,7 @@ describe("ResourceAllocationsView", () => {
         },
       ],
       allocations: [],
+      otherAllocations: [],
       canManagePeriods: false,
     });
     const wrapper = mount(ResourceAllocationInputView, {
@@ -523,6 +551,9 @@ describe("ResourceAllocationsView", () => {
         { period: 202600, employeeId: 1, percent: 60, revisionId: 1 },
         { period: 202601, employeeId: 1, percent: 20, revisionId: 1 },
       ],
+      otherAllocations: [
+        { period: 202600, employeeId: 1, percent: 40 },
+      ],
       canManagePeriods: false,
     });
     vi.mocked(saveResourceAllocations).mockRejectedValue(
@@ -565,7 +596,7 @@ describe("ResourceAllocationsView", () => {
     expect(fetchResourceAllocationProjectInput).toHaveBeenCalledTimes(1);
     expect(
       wrapper.get('[data-testid="resource-allocation-input-1-202600"]').text(),
-    ).toBe("80");
+    ).toBe("80%+ 40%");
     expect(
       wrapper.get('[data-testid="resource-allocation-input-1-202601"]').text(),
     ).toBe("");

@@ -50,6 +50,12 @@ export interface ResourceAllocationProjectInputValue {
   revisionId: number;
 }
 
+export interface ResourceAllocationOtherValue {
+  period: number;
+  employeeId: number;
+  percent: number;
+}
+
 export interface ResourceAllocationInputMonth {
   period: number;
   closed: boolean;
@@ -72,6 +78,7 @@ export interface ResourceAllocationProjectInput {
   employees: ResourceAllocationInputEmployee[];
   projects: ResourceAllocationProject[];
   allocations: ResourceAllocationProjectInputValue[];
+  otherAllocations: ResourceAllocationOtherValue[];
   canManagePeriods: boolean;
 }
 

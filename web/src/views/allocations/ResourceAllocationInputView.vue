@@ -137,9 +137,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onActivated, onMounted, ref, shallowRef, type ComponentPublicInstance } from "vue";
 import { useI18n } from "vue-i18n";
-import { onBeforeRouteLeave } from "vue-router";
+import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import Grid, { VGridVueTemplate } from "@revolist/vue3-datagrid";
-import type { AfterEditEvent, BeforeSaveDataDetails, ColumnRegular } from "@revolist/revogrid";
+import type { AfterEditEvent, BeforeSaveDataDetails, CellTemplate, ColumnRegular } from "@revolist/revogrid";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
 import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
@@ -171,14 +171,16 @@ interface InputGridRow {
 }
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 const currentPeriodId = ReportPeriod.currentPeriod().id;
 const currentYear = Math.trunc(currentPeriodId / 100);
-const inputYear = ref(currentYear);
+const inputYear = ref(queryInteger(route.query.year) ?? currentYear);
 const inputSheet = shallowRef<ResourceAllocationProjectInput | null>(null);
 const inputEdits = ref(new Map<string, number>());
 const inputInitialValues = ref(new Map<string, number>());
 const inputInitialRevisionIds = ref(new Map<string, number>());
-const inputProjectId = ref<number | null>(null);
+const inputProjectId = ref<number | null>(queryInteger(route.query.projectId));
 const addedInputEmployeeIds = ref(new Set<number>());
 const loading = ref(false);
 const saving = ref(false);
@@ -192,6 +194,50 @@ let resolveRouteLeave: ((allow: boolean) => void) | null = null;
 let activated = false;
 const employeeCellTemplate = VGridVueTemplate(ResourceAllocationEmployeeCell);
 const inputGridAdditionalData = { addEmployee: addInputEmployee };
+const allocationCellTemplate: CellTemplate = (createElement, props) => {
+  const model = props.model as InputGridRow;
+  if (model.addEmployee) return "";
+  const period = periodFromInputProp(props.prop);
+  const otherPercent = period == null
+    ? 0
+    : Number(model[inputOtherMonthProp(period)] ?? 0);
+  const value = props.value == null || props.value === "" ? "" : `${String(props.value)}%`;
+  return createElement(
+    "div",
+    {
+      style: {
+        alignItems: "center",
+        boxSizing: "border-box",
+        display: "flex",
+        height: "100%",
+        justifyContent: "center",
+        pointerEvents: "none",
+        position: "relative",
+        width: "100%",
+      },
+    },
+    [
+      createElement("span", null, value),
+      otherPercent > 0
+        ? createElement(
+            "span",
+            {
+              title: t("На остальных проектах: {percent}%", { percent: otherPercent }),
+              style: {
+                bottom: "2px",
+                color: "rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity))",
+                fontSize: "10px",
+                lineHeight: "1",
+                position: "absolute",
+                right: "4px",
+              },
+            },
+            `+ ${otherPercent}%`,
+          )
+        : null,
+    ],
+  );
+};
 
 const toolbarFilterItems = [{ id: "project", minWidth: 360 }];
 const hasPendingChanges = computed(() => inputEdits.value.size > 0);
@@ -226,6 +272,12 @@ const employeesAvailableToAdd = computed(() =>
 );
 const inputGridRows = computed<InputGridRow[]>(() => {
   const conflicts = conflictCellKeys.value;
+  const otherAllocations = new Map(
+    (inputSheet.value?.otherAllocations ?? []).map((allocation) => [
+      inputCellKey(allocation.period, allocation.employeeId),
+      allocation.percent,
+    ]),
+  );
   const rows = inputEmployees.value.map((employee) => {
     const row: InputGridRow = {
       id: employee.id,
@@ -252,6 +304,8 @@ const inputGridRows = computed<InputGridRow[]>(() => {
     for (const month of inputSheet.value?.months ?? []) {
       row[inputMonthProp(month.period)] =
         inputCellValue(month.period, employee.id) || "";
+      row[inputOtherMonthProp(month.period)] =
+        otherAllocations.get(inputCellKey(month.period, employee.id)) ?? 0;
     }
     return row;
   });
@@ -288,6 +342,7 @@ const inputGridColumns = computed<ColumnRegular[]>(() => [
         minSize: 110,
         maxSize: 110,
         sortable: false,
+        cellTemplate: allocationCellTemplate,
         readonly: ({ model: sourceModel }) =>
           month.closed ||
           !inputProject.value?.editable ||
@@ -473,6 +528,10 @@ function inputMonthProp(period: number): string {
   return `month_${period}`;
 }
 
+function inputOtherMonthProp(period: number): string {
+  return `other_month_${period}`;
+}
+
 function periodFromInputProp(prop: string | number): number | null {
   const match = /^month_(\d+)$/.exec(String(prop));
   return match ? Number(match[1]) : null;
@@ -619,6 +678,7 @@ async function loadView(clearDraft: boolean): Promise<void> {
     rememberInputBaseline(response);
     inputSheet.value = response;
     inputProjectId.value = response.selectedProjectId;
+    updateRouteQuery();
     await nextTick();
     await (
       inputGrid.value?.$el as HTMLRevoGridElement | undefined
@@ -672,6 +732,21 @@ function goToCurrentYear(): void {
     resetLoadedData();
     void load();
   });
+}
+
+function queryInteger(value: unknown): number | null {
+  const parsed = Number(Array.isArray(value) ? value[0] : value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function updateRouteQuery(): void {
+  const query = {
+    ...route.query,
+    year: String(inputYear.value),
+    ...(inputProjectId.value == null ? {} : { projectId: String(inputProjectId.value) }),
+  };
+  if (inputProjectId.value == null) delete query.projectId;
+  router.replace({ query }).catch(() => undefined);
 }
 
 function resetLoadedData(): void {

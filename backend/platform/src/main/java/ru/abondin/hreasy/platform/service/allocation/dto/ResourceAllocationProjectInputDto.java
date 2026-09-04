@@ -11,6 +11,7 @@ public record ResourceAllocationProjectInputDto(int year,
                                                 List<EmployeeDto> employees,
                                                 List<ProjectDto> projects,
                                                 List<AllocationDto> allocations,
+                                                List<OtherAllocationDto> otherAllocations,
                                                 boolean canManagePeriods) {
     public record MonthDto(int period, boolean closed) {
     }
@@ -22,5 +23,8 @@ public record ResourceAllocationProjectInputDto(int year,
     }
 
     public record AllocationDto(int period, Integer employeeId, int percent, Integer revisionId) {
+    }
+
+    public record OtherAllocationDto(int period, Integer employeeId, int percent) {
     }
 }

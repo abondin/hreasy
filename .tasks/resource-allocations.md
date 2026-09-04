@@ -19,12 +19,17 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 - One Save creates one project/year revision, with one immutable change per employee/month.
 - Per-cell optimistic revisions reject stale cells and return current server values plus the non-conflicting local draft for client-side rebase.
 - A version conflict reloads current server values, preserves non-conflicting draft changes, and marks conflicting cells red until they are edited again.
+- Input cells show a muted `+ N%` only when the employee has a positive allocation on other projects in that month; the selected-project value remains primary.
+- The selected-project value includes `%` outside edit mode while the editor keeps the raw numeric value.
+- The selected input year and project are persisted as `year` and `projectId` URL query parameters.
 - Month closing/reopening is backend-enforced and restricted by `resource_allocation_period_manage`.
 
 ## Implementation
 
 - Flyway schema stores `year` explicitly on current allocations, annual revisions, and closed periods.
 - Annual API: `GET /api/v1/resource-allocations/input/{year}` and `PUT /api/v1/resource-allocations/input/{year}/{projectId}`.
+- Annual input returns employee/month sums from projects other than the selected project; the UI renders positive values as a muted `+ N%` hint.
+- Input initializes `year` and `projectId` from the URL and replaces those query parameters after the backend resolves the selected project.
 - Period API: `PUT/DELETE /api/v1/resource-allocations/closed-periods/{period}`; the grid currently has no custom close/reopen control.
 - Annual analytics uses `GET /api/v1/resource-allocations/analytics/{year}` and returns only employees, projects, and employee/project pairs with non-zero values in that year.
 - Analytics has two read-only hierarchy modes and defaults to projects. Project mode uses RevoGrid's native nested BA -> project grouping with employee children; employee mode groups project children by employee. Group rows show monthly allocation sums through the native group-cell template and remain expanded by default.
@@ -41,9 +46,15 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 - The child route, input card, table slot, and RevoGrid now share one flex-height chain, so the input grid fills the remaining viewport instead of falling back to its approximately 300px intrinsic height.
 - The employee cell renderer disables Vue attribute fallthrough: RevoGrid metadata no longer reaches the Vuetify autocomplete input and resets its search text.
 - Analytics switches grouping direction by remounting only RevoGrid because the library otherwise preserves its previous internal grouping model for rows with stable IDs.
+- Durable business, access, API, and persistence documentation is available in `.docs/resource_allocations.md` and linked from the README key features.
+- The durable document is user-first: workflows and cell behavior precede access restrictions, while API and persistence details remain at the end.
 
 ## Validation
 
+- User-first resource allocation documentation structure and README link passed `git diff --check`.
+- Other-project allocation hints, read-only `%` suffix, and input URL state passed the focused backend test, frontend type-check, targeted ESLint, 5 unit tests, and 3 Chromium E2E scenarios.
+- `web/src/locales/ru.json` passed `jq`; the Windows text-integrity script could not run because PowerShell is unavailable in the Linux environment.
+- Resource allocation documentation, README link, and `git diff --check` passed.
 - `mvn -q -f backend/pom.xml -pl platform -am -Dtest=ResourceAllocationServiceTest "-Dsurefire.failIfNoSpecifiedTests=false" test` passed.
 - `npm run type-check` passed.
 - Targeted ESLint for the allocation view, service, unit test, and E2E passed.

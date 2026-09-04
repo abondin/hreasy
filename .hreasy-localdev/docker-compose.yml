@@ -69,6 +69,8 @@ services:
   hreasyweb:
     image: docker.io/abondin/hreasyweb:latest
     restart: unless-stopped
+    environment:
+      HREASY_EXTERNAL_ALLOWED_IPS: ${HREASY_EXTERNAL_ALLOWED_IPS:-127.0.0.1,::1}
     depends_on:
       - hreasyplatform
     ports:

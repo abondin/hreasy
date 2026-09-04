@@ -56,6 +56,7 @@ public class UserDetailsWithEmployeeInfo implements UserDetails {
      * 2 - INTERNAL,
      * 3 - Master password (only in developer environment)
      * 4 - Telegram bot communication
+     * 5 - External API
      */
     private Short loggedInType;
 

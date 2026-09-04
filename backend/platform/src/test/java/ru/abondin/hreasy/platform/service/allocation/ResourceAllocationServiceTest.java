@@ -88,6 +88,8 @@ class ResourceAllocationServiceTest {
         when(repository.findProjectAllocations(20, 2026)).thenReturn(Flux.just(
                 new PeriodResourceAllocationView(202605, 1, 20, 30, 4),
                 new PeriodResourceAllocationView(202611, 2, 20, 50, 5)));
+        when(repository.findOtherProjectAllocations(20, 2026)).thenReturn(Flux.just(
+                new ResourceAllocationRepository.OtherProjectAllocationView(202605, 1, 40)));
 
         StepVerifier.create(service.getProjectInput(2026, null, auth))
                 .assertNext(input -> {
@@ -97,6 +99,7 @@ class ResourceAllocationServiceTest {
                     assertEquals(List.of("Project 10", "Project 20"),
                             input.projects().stream().map(project -> project.name()).toList());
                     assertEquals(2, input.allocations().size());
+                    assertEquals(40, input.otherAllocations().getFirst().percent());
                 })
                 .verifyComplete();
     }
