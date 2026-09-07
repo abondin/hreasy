@@ -5,8 +5,11 @@ import { BusinessError } from "@/lib/errors";
 import ResourceAllocationAnalyticsView from "@/views/allocations/ResourceAllocationAnalyticsView.vue";
 import ResourceAllocationInputView from "@/views/allocations/ResourceAllocationInputView.vue";
 import {
+  closeResourceAllocationPeriod,
+  fetchClosedResourceAllocationPeriods,
   fetchResourceAllocationAnalytics,
   fetchResourceAllocationProjectInput,
+  reopenResourceAllocationPeriod,
   saveResourceAllocations,
 } from "@/services/resource-allocation.service";
 
@@ -14,6 +17,7 @@ const routerMocks = vi.hoisted(() => ({
   query: {} as Record<string, string>,
   replace: vi.fn().mockResolvedValue(undefined),
 }));
+const permissionMocks = vi.hoisted(() => ({ canAdmin: false }));
 
 vi.mock("vue-router", async () => ({
   ...await vi.importActual<typeof import("vue-router")>("vue-router"),
@@ -26,9 +30,18 @@ vi.mock("vue-i18n", () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }));
 
+vi.mock("@/lib/permissions", () => ({
+  usePermissions: () => ({
+    canAdminResourceAllocations: () => permissionMocks.canAdmin,
+  }),
+}));
+
 vi.mock("@/services/resource-allocation.service", () => ({
+  closeResourceAllocationPeriod: vi.fn(),
+  fetchClosedResourceAllocationPeriods: vi.fn(),
   fetchResourceAllocationAnalytics: vi.fn(),
   fetchResourceAllocationProjectInput: vi.fn(),
+  reopenResourceAllocationPeriod: vi.fn(),
   saveResourceAllocations: vi.fn(),
 }));
 
@@ -76,6 +89,12 @@ const ToggleStub = defineComponent({
   emits: ["update:modelValue"],
   setup(_, { attrs, slots }) {
     return () => h("div", attrs, slots.default?.());
+  },
+});
+
+const TooltipStub = defineComponent({
+  setup(_, { slots }) {
+    return () => h("div", slots.activator?.({ props: {} }));
   },
 });
 
@@ -219,6 +238,7 @@ const globalStubs = {
   VCardText: PassThroughStub,
   VCardActions: PassThroughStub,
   VIcon: PassThroughStub,
+  VTooltip: TooltipStub,
 };
 
 afterEach(() => {
@@ -228,6 +248,8 @@ afterEach(() => {
 
 beforeEach(() => {
   routerMocks.query = {};
+  permissionMocks.canAdmin = false;
+  vi.mocked(fetchClosedResourceAllocationPeriods).mockResolvedValue([]);
   vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
     year: 2026,
     selectedProjectId: null,
@@ -239,16 +261,17 @@ beforeEach(() => {
     projects: [],
     allocations: [],
     otherAllocations: [],
-    canManagePeriods: false,
   });
 });
 
 describe("ResourceAllocationsView", () => {
   it("opens the first managed project and supports adding any employee", async () => {
-    routerMocks.query = { year: "2026", projectId: "20" };
+    routerMocks.query = { year: "2026", projectId: "20", workstreamId: "11" };
     vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
       year: 2026,
       selectedProjectId: 20,
+      selectedWorkstreamId: 11,
+      workstreams: [{ id: 11, displayName: "Delivery" }],
       months: Array.from({ length: 12 }, (_, month) => ({
         period: 202600 + month,
         closed: false,
@@ -301,7 +324,6 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
-          managed: true,
         },
         {
           id: 20,
@@ -312,7 +334,6 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
-          managed: true,
         },
       ],
       allocations: [
@@ -322,7 +343,6 @@ describe("ResourceAllocationsView", () => {
       otherAllocations: [
         { period: 202607, employeeId: 1, percent: 50 },
       ],
-      canManagePeriods: false,
     });
     vi.mocked(saveResourceAllocations).mockResolvedValue();
 
@@ -331,9 +351,9 @@ describe("ResourceAllocationsView", () => {
     });
     await flushPromises();
 
-    expect(fetchResourceAllocationProjectInput).toHaveBeenCalledWith(2026, 20);
+    expect(fetchResourceAllocationProjectInput).toHaveBeenCalledWith(2026, 20, 11);
     expect(routerMocks.replace).toHaveBeenCalledWith({
-      query: { year: "2026", projectId: "20" },
+      query: { year: "2026", projectId: "20", workstreamId: "11" },
     });
 
     const inputProject = wrapper
@@ -384,7 +404,7 @@ describe("ResourceAllocationsView", () => {
       .trigger("click");
     await flushPromises();
 
-    expect(saveResourceAllocations).toHaveBeenCalledWith(2026, 20, [
+    expect(saveResourceAllocations).toHaveBeenCalledWith(2026, 20, 11, [
       { period: 202607, employeeId: 3, percent: 40, expectedRevisionId: null },
     ]);
   });
@@ -418,12 +438,10 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
-          managed: true,
         },
       ],
       allocations: [],
       otherAllocations: [],
-      canManagePeriods: false,
     });
     const wrapper = mount(ResourceAllocationInputView, {
       global: { stubs: globalStubs },
@@ -465,7 +483,6 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
-          managed: true,
         },
         {
           id: 20,
@@ -476,11 +493,11 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: false,
-          managed: false,
         },
       ],
+      workstreams: [{ id: 11, displayName: "Delivery" }],
       allocations: [
-        { period: 202600, employeeId: 1, projectId: 10, percent: 60 },
+        { period: 202600, employeeId: 1, projectId: 10, workstreamId: 11, percent: 60 },
         { period: 202601, employeeId: 1, projectId: 10, percent: 40 },
       ],
     });
@@ -494,24 +511,31 @@ describe("ResourceAllocationsView", () => {
     expect(grid.props("columns")).toHaveLength(13);
     expect(grid.props("grouping")).toEqual(
       expect.objectContaining({
-        props: ["businessAccountGroup", "projectGroup"],
+        props: ["businessAccountGroup", "projectGroup", "workstreamGroup"],
+        expandedAll: false,
       }),
     );
-    expect(grid.props("source")).toEqual([
+    expect(grid.props("source")).toEqual(expect.arrayContaining([
       expect.objectContaining({
         businessAccountGroup: "ba:none",
         projectGroup: "project:10",
         entity: "Alex Morgan",
         month_202600: 60,
-        month_202601: 40,
+        workstreamId: 11,
       }),
-    ]);
+      expect.objectContaining({
+        projectGroup: "project:10",
+        month_202601: 40,
+        workstreamId: null,
+      }),
+    ]));
     const summaries = grid.props("additionalData") as unknown as Map<
       string,
-      { label: string; months: Map<number, number>; projects: Set<string> }
+      { label: string; months: Map<number, number>; projects: Set<string>; workstreams: Set<string> }
     >;
     expect(summaries.get("ba:none")?.months.get(202600)).toBe(60);
     expect(summaries.get("ba:none,project:10")?.months.get(202601)).toBe(40);
+    expect(summaries.get("ba:none,project:10")?.workstreams).toEqual(new Set(["Delivery"]));
     expect(wrapper.findAll("input")).toHaveLength(0);
   });
 
@@ -544,7 +568,6 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
-          managed: true,
         },
       ],
       allocations: [
@@ -554,7 +577,6 @@ describe("ResourceAllocationsView", () => {
       otherAllocations: [
         { period: 202600, employeeId: 1, percent: 40 },
       ],
-      canManagePeriods: false,
     });
     vi.mocked(saveResourceAllocations).mockRejectedValue(
       new BusinessError(
@@ -649,7 +671,6 @@ describe("ResourceAllocationsView", () => {
           baName: "BA A",
           active: true,
           editable: true,
-          managed: true,
         },
         {
           id: 20,
@@ -660,7 +681,6 @@ describe("ResourceAllocationsView", () => {
           baName: "BA B",
           active: true,
           editable: true,
-          managed: true,
         },
         {
           id: 30,
@@ -671,7 +691,6 @@ describe("ResourceAllocationsView", () => {
           baName: "BA B",
           active: true,
           editable: true,
-          managed: false,
         },
       ],
       allocations: [
@@ -716,7 +735,10 @@ describe("ResourceAllocationsView", () => {
     wrapper.getComponent(ToggleStub).vm.$emit("update:modelValue", "employees");
     await flushPromises();
     expect(wrapper.getComponent(GridStub).props("grouping")).toEqual(
-      expect.objectContaining({ props: ["employeeGroup"], expandedAll: false }),
+      expect.objectContaining({
+        props: ["employeeGroup", "projectGroup", "workstreamGroup"],
+        expandedAll: false,
+      }),
     );
     expect(wrapper.getComponent(GridStub).props("source")).toEqual([
       expect.objectContaining({
@@ -724,5 +746,33 @@ describe("ResourceAllocationsView", () => {
         entity: "Manual access",
       }),
     ]);
+  });
+
+  it("reopens a closed allocation period from analytics for an admin", async () => {
+    permissionMocks.canAdmin = true;
+    vi.mocked(fetchClosedResourceAllocationPeriods).mockResolvedValue([202600]);
+    vi.mocked(fetchResourceAllocationAnalytics).mockResolvedValue({
+      year: 2026,
+      employees: [],
+      projects: [],
+      workstreams: [],
+      allocations: [],
+    });
+
+    const wrapper = mount(ResourceAllocationAnalyticsView, {
+      global: { stubs: globalStubs },
+    });
+    await flushPromises();
+
+    const periodSelect = wrapper
+      .findAllComponents(SelectStub)
+      .find((component) => component.attributes("data-testid") === "resource-allocations-managed-period");
+    periodSelect?.vm.$emit("update:modelValue", 202600);
+    await flushPromises();
+    await wrapper.get('[data-testid="resource-allocations-period-toggle"]').trigger("click");
+    await flushPromises();
+
+    expect(reopenResourceAllocationPeriod).toHaveBeenCalledWith(202600);
+    expect(closeResourceAllocationPeriod).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,5 @@
 import http from "@/lib/http";
+import type { ProjectWorkstream } from "@/services/projects.service";
 
 export interface ResourceAllocationEmployee {
   id: number;
@@ -18,22 +19,6 @@ export interface ResourceAllocationProject {
   baName: string | null;
   active: boolean;
   editable: boolean;
-  managed: boolean;
-}
-
-export interface ResourceAllocationValue {
-  employeeId: number;
-  projectId: number;
-  percent: number;
-  revisionId: number;
-}
-
-export interface ResourceAllocationSheet {
-  period: number;
-  employees: ResourceAllocationEmployee[];
-  projects: ResourceAllocationProject[];
-  allocations: ResourceAllocationValue[];
-  previousAllocations: ResourceAllocationValue[];
 }
 
 export interface ResourceAllocationChange {
@@ -74,18 +59,20 @@ export interface ResourceAllocationInputEmployee {
 export interface ResourceAllocationProjectInput {
   year: number;
   selectedProjectId: number | null;
+  selectedWorkstreamId?: number | null;
   months: ResourceAllocationInputMonth[];
   employees: ResourceAllocationInputEmployee[];
   projects: ResourceAllocationProject[];
+  workstreams?: ProjectWorkstream[];
   allocations: ResourceAllocationProjectInputValue[];
   otherAllocations: ResourceAllocationOtherValue[];
-  canManagePeriods: boolean;
 }
 
 export interface ResourceAllocationAnalyticsValue {
   period: number;
   employeeId: number;
   projectId: number;
+  workstreamId?: number | null;
   percent: number;
 }
 
@@ -93,20 +80,20 @@ export interface ResourceAllocationAnalytics {
   year: number;
   employees: ResourceAllocationEmployee[];
   projects: ResourceAllocationProject[];
+  workstreams?: ProjectWorkstream[];
   allocations: ResourceAllocationAnalyticsValue[];
-}
-
-export async function fetchResourceAllocations(period: number): Promise<ResourceAllocationSheet> {
-  const response = await http.get<ResourceAllocationSheet>(`v1/resource-allocations/${period}`);
-  return response.data;
 }
 
 export async function fetchResourceAllocationProjectInput(
   year: number,
   projectId?: number,
+  workstreamId?: number,
 ): Promise<ResourceAllocationProjectInput> {
   const response = await http.get<ResourceAllocationProjectInput>(`v1/resource-allocations/input/${year}`, {
-    params: projectId == null ? undefined : { projectId },
+    params: {
+      ...(projectId == null ? {} : { projectId }),
+      ...(workstreamId == null ? {} : { workstreamId }),
+    },
   });
   return response.data;
 }
@@ -123,9 +110,12 @@ export async function fetchResourceAllocationAnalytics(
 export async function saveResourceAllocations(
   year: number,
   projectId: number,
+  workstreamId: number | null,
   changes: ResourceAllocationChange[],
 ): Promise<void> {
-  await http.put(`v1/resource-allocations/input/${year}/${projectId}`, { changes });
+  await http.put(`v1/resource-allocations/input/${year}/${projectId}`, { changes }, {
+    params: workstreamId == null ? undefined : { workstreamId },
+  });
 }
 
 export async function closeResourceAllocationPeriod(period: number): Promise<void> {
@@ -134,4 +124,9 @@ export async function closeResourceAllocationPeriod(period: number): Promise<voi
 
 export async function reopenResourceAllocationPeriod(period: number): Promise<void> {
   await http.delete(`v1/resource-allocations/closed-periods/${period}`);
+}
+
+export async function fetchClosedResourceAllocationPeriods(year: number): Promise<number[]> {
+  const response = await http.get<number[]>(`v1/resource-allocations/closed-periods/${year}`);
+  return response.data;
 }

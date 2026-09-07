@@ -21,6 +21,7 @@ public class ResourceAllocationRepository {
      * Serializes allocation saves for one period inside the current transaction.
      */
     public Mono<Void> lockPeriod(int period) {
+        // ponytail: one lock per month; use project/workstream lock keys only if write contention becomes measurable.
         return dbTemplate.getDatabaseClient().sql("select pg_advisory_xact_lock(712011, :period)")
                 .bind("period", period)
                 .fetch().one()
@@ -81,25 +82,6 @@ public class ResourceAllocationRepository {
     }
 
     /**
-     * Returns the current non-zero allocation cells for a period.
-     */
-    public Flux<ResourceAllocationView> findAllocations(int year, int period) {
-        return dbTemplate.getDatabaseClient().sql("""
-                        select employee_id, project_id, percent, revision_id
-                        from alloc.resource_allocation
-                        where year = :year and period = :period
-                        """)
-                .bind("year", year)
-                .bind("period", period)
-                .map((row, _) -> new ResourceAllocationView(
-                        row.get("employee_id", Integer.class),
-                        row.get("project_id", Integer.class),
-                        row.get("percent", Short.class).intValue(),
-                        row.get("revision_id", Integer.class)))
-                .all();
-    }
-
-    /**
      * Returns projects with allocation values in the requested calendar year.
      */
     public Flux<Integer> findAllocatedProjectIds(int year) {
@@ -118,7 +100,7 @@ public class ResourceAllocationRepository {
      */
     public Flux<PeriodResourceAllocationView> findYearAllocations(int year) {
         return dbTemplate.getDatabaseClient().sql("""
-                        select period, employee_id, project_id, percent, revision_id
+                        select period, employee_id, project_id, workstream_id, percent, revision_id
                         from alloc.resource_allocation
                         where year = :year
                         order by period, employee_id, project_id
@@ -128,6 +110,7 @@ public class ResourceAllocationRepository {
                         row.get("period", Integer.class),
                         row.get("employee_id", Integer.class),
                         row.get("project_id", Integer.class),
+                        row.get("workstream_id", Integer.class),
                         row.get("percent", Short.class).intValue(),
                         row.get("revision_id", Integer.class)))
                 .all();
@@ -136,36 +119,41 @@ public class ResourceAllocationRepository {
     /**
      * Returns all monthly allocation values for one project and calendar year.
      */
-    public Flux<PeriodResourceAllocationView> findProjectAllocations(int projectId, int year) {
-        return dbTemplate.getDatabaseClient().sql("""
-                        select period, employee_id, project_id, percent, revision_id
+    public Flux<PeriodResourceAllocationView> findProjectAllocations(int projectId, Integer workstreamId, int year) {
+        var spec = dbTemplate.getDatabaseClient().sql("""
+                        select period, employee_id, project_id, workstream_id, percent, revision_id
                         from alloc.resource_allocation
-                        where project_id = :projectId and year = :year
+                        where project_id = :projectId and workstream_id is not distinct from :workstreamId
+                          and year = :year
                         """)
                 .bind("projectId", projectId)
-                .bind("year", year)
+                .bind("year", year);
+        return (workstreamId == null ? spec.bindNull("workstreamId", Integer.class) : spec.bind("workstreamId", workstreamId))
                 .map((row, _) -> new PeriodResourceAllocationView(
                         row.get("period", Integer.class),
                         row.get("employee_id", Integer.class),
                         row.get("project_id", Integer.class),
+                        row.get("workstream_id", Integer.class),
                         row.get("percent", Short.class).intValue(),
                         row.get("revision_id", Integer.class)))
                 .all();
     }
 
     /**
-     * Returns monthly allocation totals on projects other than the selected one.
+     * Returns monthly totals on dimensions other than the selected project/workstream pair.
      */
-    public Flux<OtherProjectAllocationView> findOtherProjectAllocations(int projectId, int year) {
-        return dbTemplate.getDatabaseClient().sql("""
+    public Flux<OtherProjectAllocationView> findOtherProjectAllocations(int projectId, Integer workstreamId, int year) {
+        var spec = dbTemplate.getDatabaseClient().sql("""
                         select period, employee_id, sum(percent)::integer as percent
                         from alloc.resource_allocation
-                        where project_id <> :projectId and year = :year
+                        where year = :year
+                          and (project_id <> :projectId or workstream_id is distinct from :workstreamId)
                         group by period, employee_id
                         order by period, employee_id
                         """)
                 .bind("projectId", projectId)
-                .bind("year", year)
+                .bind("year", year);
+        return (workstreamId == null ? spec.bindNull("workstreamId", Integer.class) : spec.bind("workstreamId", workstreamId))
                 .map((row, _) -> new OtherProjectAllocationView(
                         row.get("period", Integer.class),
                         row.get("employee_id", Integer.class),
@@ -176,16 +164,19 @@ public class ResourceAllocationRepository {
     /**
      * Creates the parent revision for one Save operation.
      */
-    public Mono<Integer> createRevision(int year, int projectId, OffsetDateTime createdAt, int createdBy) {
-        return dbTemplate.getDatabaseClient().sql("""
-                        insert into alloc.resource_allocation_revision (year, project_id, created_at, created_by)
-                        values (:year, :projectId, :createdAt, :createdBy)
+    public Mono<Integer> createRevision(int year, int projectId, Integer workstreamId,
+                                        OffsetDateTime createdAt, int createdBy) {
+        var spec = dbTemplate.getDatabaseClient().sql("""
+                        insert into alloc.resource_allocation_revision
+                            (year, project_id, workstream_id, created_at, created_by)
+                        values (:year, :projectId, :workstreamId, :createdAt, :createdBy)
                         returning id
                         """)
                 .bind("year", year)
                 .bind("projectId", projectId)
                 .bind("createdAt", createdAt)
-                .bind("createdBy", createdBy)
+                .bind("createdBy", createdBy);
+        return (workstreamId == null ? spec.bindNull("workstreamId", Integer.class) : spec.bind("workstreamId", workstreamId))
                 .map((row, _) -> row.get("id", Integer.class))
                 .one();
     }
@@ -211,31 +202,34 @@ public class ResourceAllocationRepository {
     /**
      * Inserts a cell only when it is still absent.
      */
-    public Mono<Long> insertIfAbsent(int year, int period, int employeeId, int projectId, int percent, int revisionId) {
-        return dbTemplate.getDatabaseClient().sql("""
+    public Mono<Long> insertIfAbsent(int year, int period, int employeeId, int projectId, Integer workstreamId,
+                                     int percent, int revisionId) {
+        var spec = dbTemplate.getDatabaseClient().sql("""
                         insert into alloc.resource_allocation
-                            (year, period, employee_id, project_id, percent, revision_id)
-                        values (:year, :period, :employeeId, :projectId, :percent, :revisionId)
-                        on conflict (year, period, employee_id, project_id) do nothing
+                            (year, period, employee_id, project_id, workstream_id, percent, revision_id)
+                        values (:year, :period, :employeeId, :projectId, :workstreamId, :percent, :revisionId)
+                        on conflict (year, period, employee_id, project_id, workstream_id) do nothing
                         """)
                 .bind("year", year)
                 .bind("period", period)
                 .bind("employeeId", employeeId)
                 .bind("projectId", projectId)
                 .bind("percent", percent)
-                .bind("revisionId", revisionId)
+                .bind("revisionId", revisionId);
+        return (workstreamId == null ? spec.bindNull("workstreamId", Integer.class) : spec.bind("workstreamId", workstreamId))
                 .fetch().rowsUpdated();
     }
 
     /**
      * Replaces a cell only when it still has the revision seen by the client.
      */
-    public Mono<Long> updateIfRevisionMatches(int year, int period, int employeeId, int projectId, int percent,
+    public Mono<Long> updateIfRevisionMatches(int year, int period, int employeeId, int projectId, Integer workstreamId, int percent,
                                               int revisionId, int expectedRevisionId) {
-        return dbTemplate.getDatabaseClient().sql("""
+        var spec = dbTemplate.getDatabaseClient().sql("""
                         update alloc.resource_allocation
                         set percent = :percent, revision_id = :revisionId
                         where year = :year and period = :period and employee_id = :employeeId and project_id = :projectId
+                          and workstream_id is not distinct from :workstreamId
                           and revision_id = :expectedRevisionId
                         """)
                 .bind("year", year)
@@ -244,25 +238,28 @@ public class ResourceAllocationRepository {
                 .bind("projectId", projectId)
                 .bind("percent", percent)
                 .bind("revisionId", revisionId)
-                .bind("expectedRevisionId", expectedRevisionId)
+                .bind("expectedRevisionId", expectedRevisionId);
+        return (workstreamId == null ? spec.bindNull("workstreamId", Integer.class) : spec.bind("workstreamId", workstreamId))
                 .fetch().rowsUpdated();
     }
 
     /**
      * Removes a current allocation cell while its deletion remains recorded in the revision.
      */
-    public Mono<Long> deleteIfRevisionMatches(int year, int period, int employeeId, int projectId,
+    public Mono<Long> deleteIfRevisionMatches(int year, int period, int employeeId, int projectId, Integer workstreamId,
                                               int expectedRevisionId) {
-        return dbTemplate.getDatabaseClient().sql("""
+        var spec = dbTemplate.getDatabaseClient().sql("""
                         delete from alloc.resource_allocation
                         where year = :year and period = :period and employee_id = :employeeId and project_id = :projectId
+                          and workstream_id is not distinct from :workstreamId
                           and revision_id = :expectedRevisionId
                         """)
                 .bind("year", year)
                 .bind("period", period)
                 .bind("employeeId", employeeId)
                 .bind("projectId", projectId)
-                .bind("expectedRevisionId", expectedRevisionId)
+                .bind("expectedRevisionId", expectedRevisionId);
+        return (workstreamId == null ? spec.bindNull("workstreamId", Integer.class) : spec.bind("workstreamId", workstreamId))
                 .fetch().rowsUpdated();
     }
 
@@ -322,11 +319,7 @@ public class ResourceAllocationRepository {
                                                 LocalDate startDate, LocalDate endDate) {
     }
 
-    public record ResourceAllocationView(Integer employeeId, Integer projectId,
-                                         int percent, Integer revisionId) {
-    }
-
-    public record PeriodResourceAllocationView(Integer period, Integer employeeId, Integer projectId,
+    public record PeriodResourceAllocationView(Integer period, Integer employeeId, Integer projectId, Integer workstreamId,
                                                int percent, Integer revisionId) {
     }
 

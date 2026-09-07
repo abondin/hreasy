@@ -4,7 +4,11 @@
     data-testid="resource-allocations-analytics-view"
   >
     <TablePageCard test-id="resource-allocations-analytics-card">
-      <AdaptiveFilterBar :items="toolbarFilterItems" class="mb-4">
+      <AdaptiveFilterBar
+        :items="toolbarFilterItems"
+        :has-right-actions="canAdminPeriods"
+        class="mb-4"
+      >
         <template #left-actions>
           <TableToolbarActions
             show-refresh
@@ -21,6 +25,43 @@
             @next="changeYear(1)"
             @go-current="goToCurrentYear"
           />
+        </template>
+
+        <template v-if="canAdminPeriods" #right-actions>
+          <v-select
+            v-model="managedPeriod"
+            :items="monthOptions"
+            item-title="name"
+            item-value="id"
+            hide-details
+            density="compact"
+            variant="outlined"
+            :disabled="loading || periodUpdating"
+            class="resource-allocation-period-select"
+            data-testid="resource-allocations-managed-period"
+          />
+          <v-tooltip location="bottom">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                :icon="managedPeriodClosed ? 'mdi-lock-open' : 'mdi-lock'"
+                variant="text"
+                :loading="periodUpdating"
+                :disabled="loading"
+                data-testid="resource-allocations-period-toggle"
+                @click="toggleManagedPeriod"
+              />
+            </template>
+            <span>
+              {{
+                t(
+                  managedPeriodClosed
+                    ? "Переоткрыть период. Вернуть возможность вносить изменения"
+                    : "Закрыть период. Запретить внесение изменений.",
+                )
+              }}
+            </span>
+          </v-tooltip>
         </template>
 
         <template #filter-mode>
@@ -93,7 +134,7 @@
             density="compact"
             variant="outlined"
             prepend-inner-icon="mdi-magnify"
-            :label="t('Поиск по сотруднику или проекту')"
+            :label="t('Поиск по сотруднику, проекту или направлению работ')"
             data-testid="resource-allocations-analytics-search"
             @update:model-value="search = normalizeSearchInput($event)"
           />
@@ -160,10 +201,14 @@ import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { errorUtils } from "@/lib/errors";
+import { usePermissions } from "@/lib/permissions";
 import { normalizeSearchInput } from "@/lib/search";
 import { ReportPeriod } from "@/services/overtime.service";
 import {
+  closeResourceAllocationPeriod,
+  fetchClosedResourceAllocationPeriods,
   fetchResourceAllocationAnalytics,
+  reopenResourceAllocationPeriod,
   type ResourceAllocationAnalytics,
 } from "@/services/resource-allocation.service";
 
@@ -184,19 +229,23 @@ interface AnalyticsGridRow {
   businessAccount: string;
   employeeGroup: string;
   projectGroup: string;
+  workstreamGroup: string;
   businessAccountGroup: string;
   employeeId: number;
   projectId: number;
-  [key: string]: string | number;
+  workstreamId: number | null;
+  [key: string]: string | number | null;
 }
 
 interface GroupSummary {
   label: string;
   months: Map<number, number>;
   projects: Set<string>;
+  workstreams: Set<string>;
 }
 
 const { t } = useI18n();
+const permissions = usePermissions();
 const currentYear = Math.trunc(ReportPeriod.currentPeriod().id / 100);
 const year = ref(currentYear);
 const mode = ref<AnalyticsMode>("projects");
@@ -206,16 +255,11 @@ const projectIds = ref<number[]>([]);
 const search = ref("");
 const loading = ref(false);
 const error = ref("");
+const closedPeriods = ref(new Set<number>());
+const managedPeriod = ref(ReportPeriod.currentPeriod().periodId());
+const periodUpdating = ref(false);
 let activated = false;
 
-const grouping = computed<GroupingOptions>(() => ({
-  props:
-    mode.value === "projects"
-      ? ["businessAccountGroup", "projectGroup"]
-      : ["employeeGroup"],
-  expandedAll: mode.value === "projects",
-  groupCellTemplate,
-}));
 const toolbarFilterItems = computed(() => [
   { id: "mode", minWidth: 260 },
   { id: "ba", minWidth: 260, active: businessAccountIds.value.length > 0 },
@@ -227,6 +271,17 @@ const employeesById = computed(
 );
 const projectsById = computed(
   () => new Map((sheet.value?.projects ?? []).map((project) => [project.id, project])),
+);
+const workstreamsById = computed(
+  () => new Map((sheet.value?.workstreams ?? []).map((workstream) => [workstream.id, workstream])),
+);
+const canAdminPeriods = computed(() => permissions.canAdminResourceAllocations());
+const managedPeriodClosed = computed(() => closedPeriods.value.has(managedPeriod.value));
+const monthOptions = computed(() =>
+  Array.from({ length: 12 }, (_, month) => {
+    const id = year.value * 100 + month;
+    return { id, name: `${closedPeriods.value.has(id) ? "🔒 " : ""}${formatMonth(id)}` };
+  }),
 );
 const businessAccounts = computed<BusinessAccountOption[]>(() =>
   [
@@ -263,14 +318,18 @@ const gridRows = computed<AnalyticsGridRow[]>(() => {
     if (allocation.percent <= 0 || !visibleProjectIds.value.has(allocation.projectId)) continue;
     const employee = employeesById.value.get(allocation.employeeId);
     const project = projectsById.value.get(allocation.projectId);
+    const workstream = allocation.workstreamId == null
+      ? null
+      : workstreamsById.value.get(allocation.workstreamId);
     if (!employee || !project) continue;
     if (
       normalizedSearch.value &&
       !employee.displayName.toLocaleLowerCase().includes(normalizedSearch.value) &&
-      !project.name.toLocaleLowerCase().includes(normalizedSearch.value)
+      !project.name.toLocaleLowerCase().includes(normalizedSearch.value) &&
+      !workstream?.displayName.toLocaleLowerCase().includes(normalizedSearch.value)
     ) continue;
-    const key = `${employee.id}:${project.id}`;
-    const row = rows.get(key) ?? {
+    const key = `${employee.id}:${project.id}:${allocation.workstreamId ?? "project"}`;
+    const row: AnalyticsGridRow = rows.get(key) ?? {
       id: key,
       entity: mode.value === "employees" ? project.name : employee.displayName,
       employee: employee.displayName,
@@ -278,11 +337,15 @@ const gridRows = computed<AnalyticsGridRow[]>(() => {
       businessAccount: project.baName ?? t("Без бизнес-аккаунта"),
       employeeGroup: `employee:${employee.id}`,
       projectGroup: `project:${project.id}`,
+      workstreamGroup: allocation.workstreamId == null
+        ? `workstream:${project.id}:project`
+        : `workstream:${project.id}:${allocation.workstreamId}`,
       businessAccountGroup: project.baId == null ? "ba:none" : `ba:${project.baId}`,
       employeeId: employee.id,
       projectId: project.id,
+      workstreamId: allocation.workstreamId ?? null,
     };
-    row[monthProp(allocation.period)] = allocation.percent;
+    row[monthProp(allocation.period)] = Number(row[monthProp(allocation.period)] ?? 0) + allocation.percent;
     rows.set(key, row);
   }
   return [...rows.values()].sort((left, right) => {
@@ -290,6 +353,33 @@ const gridRows = computed<AnalyticsGridRow[]>(() => {
     const rightGroup = mode.value === "employees" ? right.employee : right.project;
     return leftGroup.localeCompare(rightGroup) || left.entity.localeCompare(right.entity);
   });
+});
+const grouping = computed<GroupingOptions>(() => {
+  const rows = gridRows.value;
+  const streamedScopes = new Set(
+    rows.filter((row) => row.workstreamId != null).map((row) =>
+      mode.value === "projects" ? String(row.projectId) : `${row.employeeId}:${row.projectId}`),
+  );
+  const prevExpanded: Record<string, boolean> = {};
+  for (const row of rows) {
+    const projectPath = mode.value === "projects"
+      ? `${row.businessAccountGroup},${row.projectGroup}`
+      : `${row.employeeGroup},${row.projectGroup}`;
+    if (mode.value === "projects") prevExpanded[row.businessAccountGroup] = true;
+    const scope = mode.value === "projects" ? String(row.projectId) : `${row.employeeId}:${row.projectId}`;
+    if (!streamedScopes.has(scope)) {
+      prevExpanded[projectPath] = true;
+      prevExpanded[`${projectPath},${row.workstreamGroup}`] = true;
+    }
+  }
+  return {
+    props: mode.value === "projects"
+      ? ["businessAccountGroup", "projectGroup", "workstreamGroup"]
+      : ["employeeGroup", "projectGroup", "workstreamGroup"],
+    expandedAll: false,
+    prevExpanded,
+    groupCellTemplate,
+  };
 });
 const groupSummaries = computed(() => {
   const summaries = new Map<string, GroupSummary>();
@@ -299,15 +389,35 @@ const groupSummaries = computed(() => {
         ? [
             [row.businessAccountGroup, row.businessAccount],
             [`${row.businessAccountGroup},${row.projectGroup}`, row.project],
+            [
+              `${row.businessAccountGroup},${row.projectGroup},${row.workstreamGroup}`,
+              row.workstreamId == null
+                ? t("Без направления")
+                : workstreamsById.value.get(row.workstreamId)?.displayName ?? String(row.workstreamId),
+            ],
           ]
-        : [[row.employeeGroup, row.employee]];
+        : [
+            [row.employeeGroup, row.employee],
+            [`${row.employeeGroup},${row.projectGroup}`, row.project],
+            [
+              `${row.employeeGroup},${row.projectGroup},${row.workstreamGroup}`,
+              row.workstreamId == null
+                ? t("Без направления")
+                : workstreamsById.value.get(row.workstreamId)?.displayName ?? String(row.workstreamId),
+            ],
+          ];
     for (const [path, label] of groups) {
       const summary = summaries.get(path) ?? {
         label,
         months: new Map<number, number>(),
         projects: new Set<string>(),
+        workstreams: new Set<string>(),
       };
       if (mode.value === "employees") summary.projects.add(row.project);
+      if (row.workstreamId != null) {
+        const workstreamName = workstreamsById.value.get(row.workstreamId)?.displayName;
+        if (workstreamName) summary.workstreams.add(workstreamName);
+      }
       for (let month = 0; month < 12; month += 1) {
         const period = year.value * 100 + month;
         const value = Number(row[monthProp(period)] ?? 0);
@@ -360,7 +470,12 @@ async function load(): Promise<void> {
   loading.value = true;
   error.value = "";
   try {
-    sheet.value = await fetchResourceAllocationAnalytics(year.value);
+    const [analytics, periods] = await Promise.all([
+      fetchResourceAllocationAnalytics(year.value),
+      fetchClosedResourceAllocationPeriods(year.value),
+    ]);
+    sheet.value = analytics;
+    closedPeriods.value = new Set(periods);
   } catch (loadError) {
     error.value = errorUtils.shortMessage(loadError);
   } finally {
@@ -377,12 +492,17 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
   const summary = (summaries as Map<string, GroupSummary>).get(path);
   if (props.group.isLabelColumn) {
     const projectCount = summary?.projects.size ?? 0;
-    const detail =
-      mode.value === "employees" && projectCount > 0
+    const workstreamCount = summary?.workstreams.size ?? 0;
+    const pathDepth = path.split(",").length;
+    const detail = mode.value === "employees" && pathDepth === 1 && projectCount > 0
         ? projectCount === 1
           ? [...summary!.projects][0]
           : t("{count} проектов", { count: projectCount })
-        : "";
+        : pathDepth === 2 && workstreamCount > 0
+          ? workstreamCount === 1
+            ? [...summary!.workstreams][0]
+            : t("{count} направлений", { count: workstreamCount })
+          : "";
     return createElement(
       "button",
       {
@@ -461,11 +581,39 @@ function filterLabel(item: unknown): string {
 
 function changeYear(delta: number): void {
   year.value += delta;
+  managedPeriod.value = year.value * 100;
   void load();
 }
 
 function goToCurrentYear(): void {
   year.value = currentYear;
+  managedPeriod.value = ReportPeriod.currentPeriod().periodId();
   void load();
 }
+
+async function toggleManagedPeriod(): Promise<void> {
+  periodUpdating.value = true;
+  error.value = "";
+  try {
+    if (managedPeriodClosed.value) {
+      await reopenResourceAllocationPeriod(managedPeriod.value);
+      closedPeriods.value = new Set(
+        [...closedPeriods.value].filter((period) => period !== managedPeriod.value),
+      );
+    } else {
+      await closeResourceAllocationPeriod(managedPeriod.value);
+      closedPeriods.value = new Set([...closedPeriods.value, managedPeriod.value]);
+    }
+  } catch (updateError) {
+    error.value = errorUtils.shortMessage(updateError);
+  } finally {
+    periodUpdating.value = false;
+  }
+}
 </script>
+
+<style scoped>
+.resource-allocation-period-select {
+  min-width: 180px;
+}
+</style>

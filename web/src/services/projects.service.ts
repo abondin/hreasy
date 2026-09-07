@@ -15,7 +15,16 @@ export interface ManagerOfObject {
 }
 
 export interface ProjectDictDto extends SimpleDict {
-  baId: number;
+  baId?: number | null;
+  externalId?: string | null;
+  workstreams?: ProjectWorkstream[];
+}
+
+export interface ProjectWorkstream {
+  id?: number;
+  externalId?: string | null;
+  displayName: string;
+  description?: string | null;
 }
 
 export interface CurrentProjectRole {
@@ -24,6 +33,7 @@ export interface CurrentProjectRole {
 
 export interface ProjectInfo {
   id: number;
+  externalId?: string | null;
   name: string;
   startDate?: string;
   planStartDate?: string;
@@ -35,6 +45,7 @@ export interface ProjectInfo {
   info?: string;
   managers: ManagerOfObject[];
   baManagers: ManagerOfObject[];
+  workstreams: ProjectWorkstream[];
 }
 
 export async function fetchProjects(): Promise<ProjectDictDto[]> {

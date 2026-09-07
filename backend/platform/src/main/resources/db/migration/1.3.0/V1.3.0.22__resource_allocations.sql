@@ -82,14 +82,21 @@ CREATE INDEX resource_allocation_closed_period_year_idx
     ON alloc.resource_allocation_closed_period (year, period);
 
 INSERT INTO sec.perm (permission, description) VALUES
-    ('resource_allocation_edit', 'View and edit monthly resource allocations'),
-    ('resource_allocation_edit_globally', 'Edit resource allocations for every project'),
-    ('resource_allocation_period_manage', 'Close and reopen resource allocation periods')
+    ('resource_allocation_read', 'View monthly resource allocations'),
+    ('resource_allocation_write', 'Edit monthly resource allocations'),
+    ('resource_allocation_admin', 'Close and reopen resource allocation periods')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO sec.role_perm (role, permission) VALUES
-    ('global_admin', 'resource_allocation_edit'),
-    ('global_admin', 'resource_allocation_edit_globally'),
-    ('global_admin', 'resource_allocation_period_manage'),
-    ('pm', 'resource_allocation_edit')
+    ('pm', 'resource_allocation_read'),
+    ('pm', 'resource_allocation_write'),
+    ('finance', 'resource_allocation_read'),
+    ('finance', 'resource_allocation_write'),
+    ('pm_finance', 'resource_allocation_read'),
+    ('pm_finance', 'resource_allocation_write'),
+    ('salary_manager', 'resource_allocation_read'),
+    ('salary_manager', 'resource_allocation_write'),
+    ('global_admin', 'resource_allocation_read'),
+    ('global_admin', 'resource_allocation_write'),
+    ('global_admin', 'resource_allocation_admin')
 ON CONFLICT DO NOTHING;

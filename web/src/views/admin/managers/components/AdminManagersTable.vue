@@ -180,7 +180,7 @@
           <div class="d-flex align-center ga-2 min-width-0">
             <span class="text-truncate">{{ item.employee?.name }}</span>
             <div
-              v-if="editable && mode === 'compact'"
+              v-if="editable && mode === 'compact' && canDeleteManager(item)"
               class="manager-row-delete-slot d-inline-flex align-center justify-center flex-shrink-0"
             >
               <v-btn
@@ -300,7 +300,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            v-if="dialogMode === 'edit'"
+            v-if="dialogMode === 'edit' && current && canDeleteManager(current)"
             color="error"
             variant="text"
             :disabled="saving"
@@ -323,6 +323,15 @@
         <v-card-title>{{ t("Удалить") }}</v-card-title>
         <v-card-text>
           {{ t("Вы уверены, что хотите удалить менеджера?") }}
+          <v-alert
+            v-if="saveError"
+            type="error"
+            variant="tonal"
+            border="start"
+            class="mt-4"
+          >
+            {{ saveError }}
+          </v-alert>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -342,6 +351,8 @@
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { VForm } from "vuetify/components";
+import { useAuthStore } from "@/stores/auth";
+import { usePermissions } from "@/lib/permissions";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
@@ -401,6 +412,8 @@ const props = withDefaults(defineProps<{
 });
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const permissions = usePermissions();
 
 const loading = ref(false);
 const saving = ref(false);
@@ -435,6 +448,9 @@ const form = reactive<ManagerFormState>({
 });
 
 const editable = computed(() => props.editable !== false);
+function canDeleteManager(manager: Manager): boolean {
+  return permissions.canAdminManagers() || manager.createdBy === authStore.employeeId;
+}
 function getFilterSelectionLabel(item: unknown): string {
   if (typeof item === "string") {
     return item;

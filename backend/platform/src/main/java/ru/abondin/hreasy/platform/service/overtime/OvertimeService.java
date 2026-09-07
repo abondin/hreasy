@@ -9,12 +9,17 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
+import ru.abondin.hreasy.platform.repo.dict.ProjectWorkstreamEntry;
 import ru.abondin.hreasy.platform.repo.overtime.*;
+import ru.abondin.hreasy.platform.repo.dict.ProjectWorkstreamRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.notification.NotificationOrchestrator;
 import ru.abondin.hreasy.platform.service.overtime.dto.*;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -28,6 +33,7 @@ public class OvertimeService {
     private final OvertimeMapper mapper;
     private final DateTimeService dateTimeService;
     private final OvertimeClosedPeriodRepo closedPeriodRepo;
+    private final ProjectWorkstreamRepo workstreamRepo;
 
     private final OvertimeSecurityValidator securityValidator;
     private final NotificationOrchestrator notificationOrchestrator;
@@ -57,6 +63,7 @@ public class OvertimeService {
         // 0. Validate auth
         return securityValidator.validateEditOvertimeItem(auth, employeeId)
                 .then(validatePeriodNotClosed(periodId))
+                .then(validateWorkstream(newItem.getProjectId(), newItem.getWorkstreamId()))
                 .then(
                 // 1. Get report
                 get(employeeId, periodId)
@@ -221,8 +228,8 @@ public class OvertimeService {
                 .flatMap(report -> itemRepo.get(report.getId())
                         // 4. Map items to dto and collect to list
                         .map(item -> mapper.itemToDto(item)).collectList()
-                        // 5. Return empty list if no items found
-                        .defaultIfEmpty(new ArrayList<>())
+                        // 5. Resolve active and soft-deleted workstream names for historical items
+                        .flatMap(this::populateWorkstreamNames)
                         // 6. Populate items in report
                         .map(items -> {
                             report.setItems(items);
@@ -240,12 +247,38 @@ public class OvertimeService {
                 );
     }
 
+    private Mono<List<OvertimeItemDto>> populateWorkstreamNames(List<OvertimeItemDto> items) {
+        var workstreamIds = items.stream()
+                .map(OvertimeItemDto::getWorkstreamId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (workstreamIds.isEmpty()) {
+            return Mono.just(items);
+        }
+        return workstreamRepo.findAllById(workstreamIds)
+                .collectMap(ProjectWorkstreamEntry::getId, ProjectWorkstreamEntry::getDisplayName)
+                .map(names -> {
+                    items.forEach(item -> item.setWorkstreamDisplayName(names.get(item.getWorkstreamId())));
+                    return items;
+                });
+    }
+
 
     private Mono<Boolean> validatePeriodNotClosed(int period) {
         return closedPeriodRepo.findById(period)
                 .flatMap(p -> Mono.error(new BusinessError("errors.overtime.period.closed", Integer.toString(p.getPeriod()))))
                 .map(p -> false)
                 .defaultIfEmpty(true);
+    }
+
+    private Mono<Void> validateWorkstream(int projectId, Integer workstreamId) {
+        if (workstreamId == null) {
+            return Mono.empty();
+        }
+        return workstreamRepo.findById(workstreamId)
+                .filter(workstream -> workstream.getDeletedAt() == null && workstream.getProjectId() == projectId)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.project.workstream.invalid")))
+                .then();
     }
 
 }

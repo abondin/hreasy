@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.allocation.ResourceAllocationService;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationSaveBody;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnalyticsDto;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationProjectInputDto;
-import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationSheetDto;
 
 /**
  * HTTP API for allocation analytics, annual project input, and period closing.
@@ -28,14 +28,6 @@ public class ResourceAllocationController {
     private final ResourceAllocationService service;
 
     /**
-     * Returns the allocation matrix for one zero-based {@code YYYYMM} period.
-     */
-    @GetMapping("/{period}")
-    public Mono<ResourceAllocationSheetDto> getSheet(@PathVariable int period) {
-        return AuthHandler.currentAuth().flatMap(auth -> service.getSheet(period, auth));
-    }
-
-    /**
      * Returns all non-empty allocation cells for one calendar year.
      */
     @GetMapping("/analytics/{year}")
@@ -44,12 +36,13 @@ public class ResourceAllocationController {
     }
 
     /**
-     * Returns all twelve months of one managed project and calendar year.
+     * Returns all twelve months of one project and calendar year.
      */
     @GetMapping("/input/{year}")
     public Mono<ResourceAllocationProjectInputDto> getProjectInput(@PathVariable int year,
-                                                                   @RequestParam(required = false) Integer projectId) {
-        return AuthHandler.currentAuth().flatMap(auth -> service.getProjectInput(year, projectId, auth));
+                                                                   @RequestParam(required = false) Integer projectId,
+                                                                   @RequestParam(required = false) Integer workstreamId) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.getProjectInput(year, projectId, workstreamId, auth));
     }
 
     /**
@@ -57,8 +50,9 @@ public class ResourceAllocationController {
      */
     @PutMapping("/input/{year}/{projectId}")
     public Mono<Integer> save(@PathVariable int year, @PathVariable int projectId,
+                              @RequestParam(required = false) Integer workstreamId,
                               @Valid @RequestBody ResourceAllocationSaveBody request) {
-        return AuthHandler.currentAuth().flatMap(auth -> service.save(year, projectId, request, auth));
+        return AuthHandler.currentAuth().flatMap(auth -> service.save(year, projectId, workstreamId, request, auth));
     }
 
     /**
@@ -76,6 +70,14 @@ public class ResourceAllocationController {
     @DeleteMapping("/closed-periods/{period}")
     public Mono<Void> reopenPeriod(@PathVariable int period) {
         return AuthHandler.currentAuth().flatMap(auth -> service.reopenPeriod(period, auth));
+    }
+
+    /**
+     * Returns closed allocation periods for a calendar year.
+     */
+    @GetMapping("/closed-periods/{year}")
+    public Flux<Integer> closedPeriods(@PathVariable int year) {
+        return AuthHandler.currentAuth().flatMapMany(auth -> service.getClosedPeriods(year, auth));
     }
 
     public record PeriodCommentBody(String comment) {

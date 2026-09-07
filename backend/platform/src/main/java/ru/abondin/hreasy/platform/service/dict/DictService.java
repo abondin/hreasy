@@ -29,6 +29,7 @@ import static ru.abondin.hreasy.platform.service.admin.dict.AdminOfficeMapServic
 public class DictService {
 
     private final DictProjectRepo projectRepo;
+    private final ProjectWorkstreamRepo projectWorkstreamRepo;
     private final DateTimeService dateTimeService;
     private final DepartmentRepo departmentRepo;
     private final DictOrganizationRepo organizationRepo;
@@ -45,13 +46,18 @@ public class DictService {
     public Flux<ProjectDictDto> findProjects(AuthContext auth) {
         log.trace("Get all projects {}", auth.getUsername());
         var now = dateTimeService.now().toLocalDate();
-        return projectRepo
-                .findAll()
-                .map(e -> {
+        return Mono.zip(projectRepo.findAll().collectList(),
+                        projectWorkstreamRepo.findActive().collectMultimap(ProjectWorkstreamEntry::getProjectId))
+                .flatMapMany(data -> Flux.fromIterable(data.getT1()).map(e -> {
                     var dto = mapper.projectToDto(e);
                     dto.setActive(e.getEndDate() == null || e.getEndDate().isAfter(now));
+                    dto.setWorkstreams(data.getT2().getOrDefault(e.getId(), java.util.List.of()).stream()
+                            .map(workstream -> new ru.abondin.hreasy.platform.service.dto.ProjectWorkstreamDto(
+                                    workstream.getId(), workstream.getExternalId(), workstream.getDisplayName(),
+                                    workstream.getDescription()))
+                            .toList());
                     return dto;
-                });
+                }));
     }
 
     public Flux<SimpleDictDto> findOrganizations(AuthContext auth) {

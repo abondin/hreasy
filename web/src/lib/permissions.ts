@@ -72,8 +72,12 @@ export enum Permissions {
   ViewEmplCurrentProjectRole = "view_empl_current_project_role",
   /** Admin managers */
   AdminManagers = "admin_managers",
-  /** View and edit monthly resource allocations */
-  EditResourceAllocations = "resource_allocation_edit",
+  /** View monthly resource allocations */
+  ReadResourceAllocations = "resource_allocation_read",
+  /** Edit monthly resource allocations */
+  WriteResourceAllocations = "resource_allocation_write",
+  /** Close and reopen resource allocation periods */
+  AdminResourceAllocations = "resource_allocation_admin",
 }
 
 function hasAuthority(
@@ -391,8 +395,16 @@ export function usePermissions() {
     return simplePermissionCheck(Permissions.AdminManagers);
   }
 
-  function canEditResourceAllocations(): boolean {
-    return simplePermissionCheck(Permissions.EditResourceAllocations);
+  function canReadResourceAllocations(): boolean {
+    return simplePermissionCheck(Permissions.ReadResourceAllocations);
+  }
+
+  function canWriteResourceAllocations(): boolean {
+    return simplePermissionCheck(Permissions.WriteResourceAllocations);
+  }
+
+  function canAdminResourceAllocations(): boolean {
+    return simplePermissionCheck(Permissions.AdminResourceAllocations);
   }
 
   return {
@@ -443,6 +455,8 @@ export function usePermissions() {
     canViewEmplCurrentProjectRole,
     canRateSkills,
     canAdminManagers,
-    canEditResourceAllocations,
+    canReadResourceAllocations,
+    canWriteResourceAllocations,
+    canAdminResourceAllocations,
   };
 }

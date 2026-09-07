@@ -38,6 +38,9 @@
                   <profile-summary-item :label="t('Наименование')">
                     {{ project.name }}
                   </profile-summary-item>
+                  <profile-summary-item :label="t('Внешний идентификатор')">
+                    {{ project.externalId ?? t("Не задан") }}
+                  </profile-summary-item>
                   <profile-summary-item :label="t('Отдел')">
                     {{ project.department?.name ?? t("Не задан") }}
                   </profile-summary-item>
@@ -80,6 +83,16 @@
                           </span>
                         </v-tooltip>
                       </v-chip>
+                    </div>
+                  </profile-summary-item>
+                  <profile-summary-item
+                    v-if="project.workstreams?.length"
+                    :label="t('Направления работ')"
+                  >
+                    <div class="d-flex flex-column ga-2">
+                      <div v-for="workstream in project.workstreams" :key="workstream.id">
+                        {{ workstream.displayName }}
+                      </div>
                     </div>
                   </profile-summary-item>
                 </property-list>

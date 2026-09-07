@@ -32,7 +32,7 @@
         <template #filter-project>
           <v-autocomplete
             :model-value="inputProjectId"
-            :items="managedProjects"
+            :items="projects"
             item-title="name"
             item-value="id"
             hide-details
@@ -42,6 +42,23 @@
             :label="t('Проект')"
             data-testid="resource-allocations-input-project"
             @update:model-value="changeInputProject"
+          />
+        </template>
+
+        <template #filter-workstream>
+          <v-autocomplete
+            :model-value="inputWorkstreamId"
+            :items="inputSheet?.workstreams ?? []"
+            item-title="displayName"
+            item-value="id"
+            hide-details
+            density="compact"
+            variant="outlined"
+            clearable
+            :disabled="loading || saving || inputProjectId == null"
+            :label="t('Направление работ')"
+            data-testid="resource-allocations-input-workstream"
+            @update:model-value="changeInputWorkstream"
           />
         </template>
 
@@ -181,6 +198,7 @@ const inputEdits = ref(new Map<string, number>());
 const inputInitialValues = ref(new Map<string, number>());
 const inputInitialRevisionIds = ref(new Map<string, number>());
 const inputProjectId = ref<number | null>(queryInteger(route.query.projectId));
+const inputWorkstreamId = ref<number | null>(queryInteger(route.query.workstreamId));
 const addedInputEmployeeIds = ref(new Set<number>());
 const loading = ref(false);
 const saving = ref(false);
@@ -222,7 +240,7 @@ const allocationCellTemplate: CellTemplate = (createElement, props) => {
         ? createElement(
             "span",
             {
-              title: t("На остальных проектах: {percent}%", { percent: otherPercent }),
+              title: t("В остальных аллокациях: {percent}%", { percent: otherPercent }),
               style: {
                 bottom: "2px",
                 color: "rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity))",
@@ -239,12 +257,15 @@ const allocationCellTemplate: CellTemplate = (createElement, props) => {
   );
 };
 
-const toolbarFilterItems = [{ id: "project", minWidth: 360 }];
+const toolbarFilterItems = [
+  { id: "project", minWidth: 320 },
+  { id: "workstream", minWidth: 280 },
+];
 const hasPendingChanges = computed(() => inputEdits.value.size > 0);
-const managedProjects = computed(() => inputSheet.value?.projects ?? []);
+const projects = computed(() => inputSheet.value?.projects ?? []);
 const inputProject = computed(
   () =>
-    managedProjects.value.find(
+    projects.value.find(
       (project) => project.id === inputProjectId.value,
     ) ?? null,
 );
@@ -400,6 +421,7 @@ async function save(): Promise<void> {
     await saveResourceAllocations(
       inputYear.value,
       inputProjectId.value,
+      inputWorkstreamId.value,
       [...inputEdits.value].map(([key, percent]) => {
         const [period, employeeId] = key.split(":").map(Number);
         return {
@@ -662,6 +684,18 @@ function changeInputProject(projectId: number | null): void {
   }
   runAfterDiscard(() => {
     inputProjectId.value = projectId;
+    inputWorkstreamId.value = null;
+    inputSheet.value = null;
+    void loadView(true);
+  });
+}
+
+function changeInputWorkstream(workstreamId: number | null): void {
+  if (workstreamId === inputWorkstreamId.value) {
+    return;
+  }
+  runAfterDiscard(() => {
+    inputWorkstreamId.value = workstreamId;
     inputSheet.value = null;
     void loadView(true);
   });
@@ -674,10 +708,12 @@ async function loadView(clearDraft: boolean): Promise<void> {
     const response = await fetchResourceAllocationProjectInput(
       inputYear.value,
       inputProjectId.value ?? undefined,
+      inputWorkstreamId.value ?? undefined,
     );
     rememberInputBaseline(response);
     inputSheet.value = response;
     inputProjectId.value = response.selectedProjectId;
+    inputWorkstreamId.value = response.selectedWorkstreamId ?? null;
     updateRouteQuery();
     await nextTick();
     await (
@@ -720,6 +756,7 @@ function changeYear(delta: number): void {
   runAfterDiscard(() => {
     inputYear.value += delta;
     inputProjectId.value = null;
+    inputWorkstreamId.value = null;
     resetLoadedData();
     void load();
   });
@@ -729,6 +766,7 @@ function goToCurrentYear(): void {
   runAfterDiscard(() => {
     inputYear.value = currentYear;
     inputProjectId.value = null;
+    inputWorkstreamId.value = null;
     resetLoadedData();
     void load();
   });
@@ -744,8 +782,10 @@ function updateRouteQuery(): void {
     ...route.query,
     year: String(inputYear.value),
     ...(inputProjectId.value == null ? {} : { projectId: String(inputProjectId.value) }),
+    ...(inputWorkstreamId.value == null ? {} : { workstreamId: String(inputWorkstreamId.value) }),
   };
   if (inputProjectId.value == null) delete query.projectId;
+  if (inputWorkstreamId.value == null) delete query.workstreamId;
   router.replace({ query }).catch(() => undefined);
 }
 

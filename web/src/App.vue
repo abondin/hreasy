@@ -304,7 +304,7 @@ const managerNavigationItems = computed(() => {
     });
   }
 
-  if (permissions.canEditResourceAllocations()) {
+  if (permissions.canReadResourceAllocations()) {
     items.push({
       key: "resource-allocations",
       label: t("Аллокация ресурсов"),

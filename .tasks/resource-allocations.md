@@ -7,13 +7,15 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 ## Agreed Requirements
 
 - `Data entry` is the only editable tab; `Analytics` is read-only.
-- Data entry defaults to the current calendar year and the first managed project alphabetically; users without managed projects fall back to their first available project.
+- Data entry defaults to the current calendar year and the first writable project alphabetically; other projects remain readable.
 - Exactly one project is edited at a time; one screen exposes all 12 months.
+- An optional project workstream selects an independent allocation dimension. Project-level and multiple workstream-level values may coexist for one employee/month/project.
 - Rows include current project employees, employees with allocations on that project in the selected year, and employees added in the current draft.
-- A cell is editable only when the user can edit the project, the month is open, and employment overlaps the month. The dismissal month is inclusive.
+- A cell is editable only when the user has write permission and shared hierarchy access to the target project, the month is open, and employment overlaps the month. The dismissal month is inclusive.
 - Dismissal and another current project remain visible in the employee text. Visual status styling is deferred until it can use native grid capabilities.
 - Closed months are marked in the column name and remain backend-enforced. Additional month/status styling is deferred.
-- Managers can edit only projects in their manager line. Explicit project access does not make a project `managed`; global edit permission remains global.
+- Authentication already merges manager responsibility with explicit project/department/BA access. Allocation write scope reuses `ProjectHierarchyAccessor`; any employee can be assigned to an accessible project.
+- Read permission exposes all allocation input and analytics data. Write and read permissions are granted by default to `pm`, `finance`, `pm_finance`, `salary_manager`, and `global_admin`; allocation admin is granted to `global_admin`.
 - Empty/zero values are not stored. Percent values are integers from 1 through 1000.
 - Allocation data remains monthly, with physical `year` and `period` columns. Annual requests query the physical `year`; the DB constraint verifies it matches the legacy zero-based period convention.
 - One Save creates one project/year revision, with one immutable change per employee/month.
@@ -22,18 +24,18 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 - Input cells show a muted `+ N%` only when the employee has a positive allocation on other projects in that month; the selected-project value remains primary.
 - The selected-project value includes `%` outside edit mode while the editor keeps the raw numeric value.
 - The selected input year and project are persisted as `year` and `projectId` URL query parameters.
-- Month closing/reopening is backend-enforced and restricted by `resource_allocation_period_manage`.
+- Month closing/reopening is backend-enforced and restricted by `resource_allocation_admin`.
 
 ## Implementation
 
 - Flyway schema stores `year` explicitly on current allocations, annual revisions, and closed periods.
-- Annual API: `GET /api/v1/resource-allocations/input/{year}` and `PUT /api/v1/resource-allocations/input/{year}/{projectId}`.
+- Annual API: `GET /api/v1/resource-allocations/input/{year}` and `PUT /api/v1/resource-allocations/input/{year}/{projectId}`, both with optional `workstreamId`.
 - Annual input returns employee/month sums from projects other than the selected project; the UI renders positive values as a muted `+ N%` hint.
 - Input initializes `year` and `projectId` from the URL and replaces those query parameters after the backend resolves the selected project.
-- Period API: `PUT/DELETE /api/v1/resource-allocations/closed-periods/{period}`; the grid currently has no custom close/reopen control.
+- Period API: `GET /api/v1/resource-allocations/closed-periods/{year}` and `PUT/DELETE /api/v1/resource-allocations/closed-periods/{period}`. Allocation admins manage a selected month from the analytics toolbar.
 - Annual analytics uses `GET /api/v1/resource-allocations/analytics/{year}` and returns only employees, projects, and employee/project pairs with non-zero values in that year.
-- Analytics has two read-only hierarchy modes and defaults to projects. Project mode uses RevoGrid's native nested BA -> project grouping with employee children; employee mode groups project children by employee. Group rows show monthly allocation sums through the native group-cell template and remain expanded by default.
-- Employee analytics is summary-first: employee groups start collapsed, retain their monthly totals, and show the sole project name or project count beside the employee. Project analytics remains expanded by default.
+- Analytics has two read-only hierarchy modes and defaults to projects. Both use the same nested project/workstream behavior: a sole workstream is shown inline, projects remain expandable with one stream, and stream branches start collapsed.
+- Employee analytics is summary-first: employee groups start collapsed, retain their monthly totals, and show the sole project name or project count beside the employee. Business-account groups start expanded; projects with workstreams and all workstream groups start collapsed.
 - BA and dependent project multi-selects filter complete hierarchy branches. The current search matches an employee or project name and keeps matching employee/project pairs; its final parent/child retention semantics remain open for UX review.
 - RevoGrid provides virtualized annual editing, clipboard, range selection, native Tab/Enter, and native autofill behavior.
 - Shared HREasy page/layout, Vuetify controls, dialogs, period switcher, search normalization, and permissions remain in use.
@@ -51,22 +53,16 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 
 ## Validation
 
-- User-first resource allocation documentation structure and README link passed `git diff --check`.
-- Other-project allocation hints, read-only `%` suffix, and input URL state passed the focused backend test, frontend type-check, targeted ESLint, 5 unit tests, and 3 Chromium E2E scenarios.
-- `web/src/locales/ru.json` passed `jq`; the Windows text-integrity script could not run because PowerShell is unavailable in the Linux environment.
-- Resource allocation documentation, README link, and `git diff --check` passed.
-- `mvn -q -f backend/pom.xml -pl platform -am -Dtest=ResourceAllocationServiceTest "-Dsurefire.failIfNoSpecifiedTests=false" test` passed.
-- `npm run type-check` passed.
-- Targeted ESLint for the allocation view, service, unit test, and E2E passed.
-- `npm run test:unit -- ResourceAllocationsView` passed: 5 tests.
-- Allocation Chromium E2E passed: 3 tests, including conflict rebase, annual save, direct sibling-route selection, nested analytics groups with totals, and a 500-employee/80-project matrix.
-- `npm run check:win-text-integrity` and `git diff --check` passed.
-- Route separation passed type-check, targeted ESLint, 5 unit scenarios, direct analytics navigation, route-tab navigation, and the large mocked browser scenario. Fixed grid height avoids RevoGrid resize-observer loops.
-- The compact input and redesigned analytics toolbar were visually checked at 2048x1080; the final Chromium E2E also passed at the default viewport.
-- The annual input browser scenario types the full employee name character by character, verifies the search value and selection, and asserts the grid is taller than its former collapsed height.
+- Focused backend suite passed: 18 tests covering allocation access, project/workstream admin mapping, request deserialization, and external authentication/controller delegation.
+- PostgreSQL/Testcontainers `OvertimeServiceTest` passed: all 49 migrations through V1.3.0.23 applied, detailed overtime retained its optional workstream, and summaries aggregated it with project-level overtime.
+- Frontend type-check and targeted ESLint passed.
+- Focused frontend suite passed: 11 unit tests and 4 Chromium E2E scenarios, including the three-level analytics hierarchy and large mocked matrix.
+- `web/src/locales/ru.json` parses as JSON and `git diff --check` passes.
 
 ## Remaining
 
+- The input project dropdown currently renders every project returned for global read access. Restrict data-entry selection to projects with `editable=true`; analytics remains global.
 - Cell comment threads are not a built-in RevoGrid feature. RevoGrid supplies the cell renderer/interaction surface, but durable threads require a separate backend model, API, permissions, and comment UI; implementation awaits an explicit product decision.
-- Apply the edited live migration by recreating the local database, as agreed.
+- Decide how current allocations on a soft-deleted workstream are retired: analytics can still resolve the deleted stream, but annual input intentionally lists active workstreams only, so such cells cannot currently be set to zero in the UI.
+- Recreate the local database after the edited allocation/workstream migrations, as agreed.
 - After user acceptance, update `changelogs/CHANGELOG.md` and remove this task file.
