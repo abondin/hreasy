@@ -107,12 +107,11 @@ public class ResourceAllocationService {
                         var projects = data.getT2().stream()
                                 .map(project -> toProjectDto(project, selectedYear, auth))
                                 .filter(project -> project.active() || data.getT3().contains(project.id()))
+                                .filter(ProjectDto::editable)
                                 .sorted(Comparator.comparing(ProjectDto::name))
                                 .toList();
                         var selectedProjectId = requestedProjectId == null
-                                ? projects.stream().filter(ProjectDto::editable).findFirst()
-                                .or(() -> projects.stream().findFirst())
-                                .map(ProjectDto::id).orElse(null)
+                                ? projects.stream().findFirst().map(ProjectDto::id).orElse(null)
                                 : requestedProjectId;
                         if (selectedProjectId != null
                                 && projects.stream().noneMatch(project -> project.id().equals(selectedProjectId))) {

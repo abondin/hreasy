@@ -7,7 +7,7 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 ## Agreed Requirements
 
 - `Data entry` is the only editable tab; `Analytics` is read-only.
-- Data entry defaults to the current calendar year and the first writable project alphabetically; other projects remain readable.
+- Data entry lists only writable projects and defaults to the first one alphabetically; all allocations remain readable in analytics.
 - Exactly one project is edited at a time; one screen exposes all 12 months.
 - An optional project workstream selects an independent allocation dimension. Project-level and multiple workstream-level values may coexist for one employee/month/project.
 - Rows include current project employees, employees with allocations on that project in the selected year, and employees added in the current draft.

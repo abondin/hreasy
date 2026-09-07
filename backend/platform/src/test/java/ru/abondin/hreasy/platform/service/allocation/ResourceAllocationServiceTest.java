@@ -58,7 +58,7 @@ class ResourceAllocationServiceTest {
     }
 
     @Test
-    void loadsEveryProjectForReadAndDefaultsToFirstWritableProject() {
+    void loadsOnlyWritableProjectsAndDefaultsToFirstOne() {
         when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
                 .thenReturn(Flux.just(employee(1), employee(2)));
         when(repository.findProjects()).thenReturn(Flux.just(project(20), project(10)));
@@ -75,10 +75,9 @@ class ResourceAllocationServiceTest {
                     assertEquals(10, input.selectedProjectId());
                     assertEquals(12, input.months().size());
                     assertTrue(input.months().get(1).closed());
-                    assertEquals(List.of("Project 10", "Project 20"),
+                    assertEquals(List.of("Project 10"),
                             input.projects().stream().map(project -> project.name()).toList());
                     assertTrue(input.projects().getFirst().editable());
-                    assertFalse(input.projects().getLast().editable());
                     assertEquals(2, input.allocations().size());
                     assertEquals(40, input.otherAllocations().getFirst().percent());
                 })

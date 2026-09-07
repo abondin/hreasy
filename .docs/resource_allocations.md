@@ -10,7 +10,7 @@ The feature has two sections:
 ## Enter allocations
 
 1. Open **Managers → Resource allocations → Data entry**.
-2. Select a year, a project, and optionally one of its workstreams. The current year and the first writable project are selected by default.
+2. Select a year, one of the writable projects, and optionally one of its workstreams. The current year and the first project alphabetically are selected by default.
 3. Find an employee in the grid or add one through the last row.
 4. Enter allocation percentages for the required months.
 5. Review the changes and click **Save**.
@@ -73,7 +73,7 @@ The backend checks all permissions and project scopes. Hiding controls in the UI
 | `resource_allocation_write` | Edit allocations for projects available through the acting user's effective hierarchy access. |
 | `resource_allocation_admin` | Close and reopen months. |
 
-Authentication merges manager responsibilities with explicit project, department, and business-account access. Allocation authorization uses the same shared `ProjectHierarchyAccessor` as assessments and neighboring workflows. A writable project may receive allocations for any employee. Projects outside the write scope remain visible but read-only.
+Authentication merges manager responsibilities with explicit project, department, and business-account access. Allocation authorization uses the same shared `ProjectHierarchyAccessor` as assessments and neighboring workflows. A writable project may receive allocations for any employee. Projects outside the write scope are available in analytics, but not in the data-entry selector.
 
 Closed months remain protected by the backend even if a save request is sent manually.
 
