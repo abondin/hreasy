@@ -1,8 +1,8 @@
 package ru.abondin.hreasy.platform.api.allocation;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +17,8 @@ import ru.abondin.hreasy.platform.service.allocation.ResourceAllocationService;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationSaveBody;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnalyticsDto;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationProjectInputDto;
+
+import java.util.List;
 
 /**
  * HTTP API for allocation analytics, annual project input, and period closing.
@@ -56,20 +58,12 @@ public class ResourceAllocationController {
     }
 
     /**
-     * Closes one month for allocation editing.
+     * Replaces the closed allocation periods for one calendar year.
      */
-    @PutMapping("/closed-periods/{period}")
-    public Mono<Integer> closePeriod(@PathVariable int period, @RequestBody(required = false) PeriodCommentBody body) {
-        var comment = body == null ? null : body.comment();
-        return AuthHandler.currentAuth().flatMap(auth -> service.closePeriod(period, comment, auth));
-    }
-
-    /**
-     * Reopens one month for allocation editing.
-     */
-    @DeleteMapping("/closed-periods/{period}")
-    public Mono<Void> reopenPeriod(@PathVariable int period) {
-        return AuthHandler.currentAuth().flatMap(auth -> service.reopenPeriod(period, auth));
+    @PutMapping("/closed-periods/{year}")
+    public Mono<List<Integer>> saveClosedPeriods(@PathVariable int year,
+                                                  @Valid @RequestBody ClosedPeriodsBody body) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.saveClosedPeriods(year, body.closedPeriods(), auth));
     }
 
     /**
@@ -80,6 +74,6 @@ public class ResourceAllocationController {
         return AuthHandler.currentAuth().flatMapMany(auth -> service.getClosedPeriods(year, auth));
     }
 
-    public record PeriodCommentBody(String comment) {
+    public record ClosedPeriodsBody(@NotNull List<@NotNull Integer> closedPeriods) {
     }
 }

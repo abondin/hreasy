@@ -67,7 +67,6 @@ CREATE TABLE alloc.resource_allocation_closed_period (
     year integer NOT NULL,
     closed_at timestamp with time zone NOT NULL,
     closed_by integer NOT NULL REFERENCES empl.employee (id),
-    comment text NULL,
     CONSTRAINT resource_allocation_closed_period_year_check CHECK (year = period / 100)
 );
 
@@ -76,10 +75,31 @@ COMMENT ON COLUMN alloc.resource_allocation_closed_period.period IS 'Closed peri
 COMMENT ON COLUMN alloc.resource_allocation_closed_period.year IS 'Calendar year stored explicitly for annual queries';
 COMMENT ON COLUMN alloc.resource_allocation_closed_period.closed_at IS 'Time when the period was closed';
 COMMENT ON COLUMN alloc.resource_allocation_closed_period.closed_by IS 'Employee who closed the period';
-COMMENT ON COLUMN alloc.resource_allocation_closed_period.comment IS 'Optional close reason';
 
 CREATE INDEX resource_allocation_closed_period_year_idx
     ON alloc.resource_allocation_closed_period (year, period);
+
+CREATE SEQUENCE IF NOT EXISTS alloc.resource_allocation_period_history_id_seq;
+CREATE TABLE alloc.resource_allocation_period_history (
+    id integer PRIMARY KEY NOT NULL DEFAULT nextval('alloc.resource_allocation_period_history_id_seq'),
+    year integer NOT NULL,
+    period integer NOT NULL,
+    state integer NOT NULL CHECK (state IN (1, 2)),
+    created_at timestamp with time zone NOT NULL,
+    created_by integer NOT NULL REFERENCES empl.employee (id),
+    CONSTRAINT resource_allocation_period_history_year_check CHECK (year = period / 100)
+);
+
+COMMENT ON TABLE alloc.resource_allocation_period_history IS 'Immutable history of allocation period state changes';
+COMMENT ON COLUMN alloc.resource_allocation_period_history.id IS 'Primary key';
+COMMENT ON COLUMN alloc.resource_allocation_period_history.year IS 'Calendar year stored explicitly for annual queries';
+COMMENT ON COLUMN alloc.resource_allocation_period_history.period IS 'Changed period in zero-based YYYYMM format';
+COMMENT ON COLUMN alloc.resource_allocation_period_history.state IS 'New period state: 1 - closed, 2 - open';
+COMMENT ON COLUMN alloc.resource_allocation_period_history.created_at IS 'Time when the period state changed';
+COMMENT ON COLUMN alloc.resource_allocation_period_history.created_by IS 'Employee who changed the period state';
+
+CREATE INDEX resource_allocation_period_history_period_idx
+    ON alloc.resource_allocation_period_history (year, period, created_at);
 
 INSERT INTO sec.perm (permission, description) VALUES
     ('resource_allocation_read', 'View monthly resource allocations'),

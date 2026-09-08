@@ -42,7 +42,15 @@
             :label="t('Проект')"
             data-testid="resource-allocations-input-project"
             @update:model-value="changeInputProject"
-          />
+          >
+            <template #item="{ props, item }">
+              <v-list-item
+                v-bind="props"
+                :title="item.name"
+                :subtitle="projectClosedLabel(item)"
+              />
+            </template>
+          </v-autocomplete>
         </template>
 
         <template #filter-workstream>
@@ -163,12 +171,14 @@ import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import ResourceAllocationEmployeeCell from "@/views/allocations/ResourceAllocationEmployeeCell.vue";
+import { formatDate } from "@/lib/datetime";
 import { BusinessError, errorUtils } from "@/lib/errors";
 import { ReportPeriod } from "@/services/overtime.service";
 import {
   fetchResourceAllocationProjectInput,
   saveResourceAllocations,
   type ResourceAllocationChange,
+  type ResourceAllocationProject,
   type ResourceAllocationProjectInput,
 } from "@/services/resource-allocation.service";
 
@@ -181,6 +191,7 @@ interface InputGridRow {
   dateOfDismissal: string;
   dismissedLabel?: string;
   otherProject?: string;
+  projectRole?: string;
   addEmployee?: boolean;
   employeesAvailableToAdd?: ResourceAllocationProjectInput["employees"];
   conflictingPeriods?: Set<number>;
@@ -279,6 +290,11 @@ const inputEmployeeIds = computed(() => {
   for (const allocation of inputSheet.value?.allocations ?? []) {
     ids.add(allocation.employeeId);
   }
+  for (const allocation of inputSheet.value?.otherAllocations ?? []) {
+    if (allocation.sameProject) {
+      ids.add(allocation.employeeId);
+    }
+  }
   return ids;
 });
 const inputEmployees = computed(() =>
@@ -314,6 +330,7 @@ const inputGridRows = computed<InputGridRow[]>(() => {
         employee.currentProjectId !== inputProjectId.value
           ? employee.currentProjectName
           : undefined,
+      projectRole: employee.currentProjectRole ?? undefined,
       conflictingPeriods: new Set(
         (inputSheet.value?.months ?? [])
           .map((month) => month.period)
@@ -357,12 +374,18 @@ const inputGridColumns = computed<ColumnRegular[]>(() => [
   ...(inputSheet.value?.months ?? []).map(
     (month) =>
       ({
-        name: `${month.closed ? "🔒 " : ""}${formatMonth(month.period)}`,
+        name: formatMonth(month.period),
         prop: inputMonthProp(month.period),
         size: 110,
         minSize: 110,
         maxSize: 110,
         sortable: false,
+        columnTemplate: month.closed
+          ? (createElement) => createElement("span", null, [
+              createElement("i", { class: "mdi mdi-lock mr-1", "aria-hidden": "true" }),
+              createElement("span", null, formatMonth(month.period)),
+            ])
+          : undefined,
         cellTemplate: allocationCellTemplate,
         readonly: ({ model: sourceModel }) =>
           month.closed ||
@@ -565,10 +588,8 @@ function formatMonth(period: number): string {
     .replace(/\s+\d{4}$/, "");
 }
 
-function formatDate(value: string): string {
-  return value
-    ? new Intl.DateTimeFormat("ru-RU").format(new Date(`${value}T00:00:00`))
-    : "";
+function projectClosedLabel(project: ResourceAllocationProject): string | undefined {
+  return project.endDate ? t("Закрыт: {date}", { date: formatDate(project.endDate) }) : undefined;
 }
 
 function normalizePercent(value: string): number {

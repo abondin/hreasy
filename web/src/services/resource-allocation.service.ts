@@ -8,6 +8,7 @@ export interface ResourceAllocationEmployee {
   departmentName: string | null;
   currentProjectId: number | null;
   currentProjectName: string | null;
+  currentProjectRole?: string | null;
 }
 
 export interface ResourceAllocationProject {
@@ -17,6 +18,8 @@ export interface ResourceAllocationProject {
   departmentName: string | null;
   baId: number | null;
   baName: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   active: boolean;
   editable: boolean;
 }
@@ -39,6 +42,7 @@ export interface ResourceAllocationOtherValue {
   period: number;
   employeeId: number;
   percent: number;
+  sameProject: boolean;
 }
 
 export interface ResourceAllocationInputMonth {
@@ -51,6 +55,7 @@ export interface ResourceAllocationInputEmployee {
   displayName: string;
   currentProjectId: number | null;
   currentProjectName: string | null;
+  currentProjectRole?: string | null;
   dateOfEmployment: string | null;
   dateOfDismissal: string | null;
   dismissed: boolean;
@@ -118,12 +123,14 @@ export async function saveResourceAllocations(
   });
 }
 
-export async function closeResourceAllocationPeriod(period: number): Promise<void> {
-  await http.put(`v1/resource-allocations/closed-periods/${period}`, {});
-}
-
-export async function reopenResourceAllocationPeriod(period: number): Promise<void> {
-  await http.delete(`v1/resource-allocations/closed-periods/${period}`);
+export async function saveClosedResourceAllocationPeriods(
+  year: number,
+  closedPeriods: number[],
+): Promise<number[]> {
+  const response = await http.put<number[]>(`v1/resource-allocations/closed-periods/${year}`, {
+    closedPeriods,
+  });
+  return response.data;
 }
 
 export async function fetchClosedResourceAllocationPeriods(year: number): Promise<number[]> {

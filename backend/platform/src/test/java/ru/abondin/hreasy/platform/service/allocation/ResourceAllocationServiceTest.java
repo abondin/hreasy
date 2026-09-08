@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static ru.abondin.hreasy.platform.service.allocation.ResourceAllocationSecurityValidator.READ_PERMISSION;
@@ -68,7 +69,8 @@ class ResourceAllocationServiceTest {
                 new PeriodResourceAllocationView(202605, 1, 10, null, 30, 4),
                 new PeriodResourceAllocationView(202611, 2, 10, null, 50, 5)));
         when(repository.findOtherProjectAllocations(10, null, 2026)).thenReturn(Flux.just(
-                new ResourceAllocationRepository.OtherProjectAllocationView(202605, 1, 40)));
+                new ResourceAllocationRepository.OtherProjectAllocationView(202605, 1, 40, false),
+                new ResourceAllocationRepository.OtherProjectAllocationView(202606, 2, 30, true)));
 
         StepVerifier.create(service.getProjectInput(2026, null, null, auth))
                 .assertNext(input -> {
@@ -78,8 +80,32 @@ class ResourceAllocationServiceTest {
                     assertEquals(List.of("Project 10"),
                             input.projects().stream().map(project -> project.name()).toList());
                     assertTrue(input.projects().getFirst().editable());
+                    assertEquals("Developer", input.employees().getFirst().currentProjectRole());
                     assertEquals(2, input.allocations().size());
                     assertEquals(40, input.otherAllocations().getFirst().percent());
+                    assertTrue(input.otherAllocations().getLast().sameProject());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void filtersProjectsByYearButKeepsProjectsWithAllocations() {
+        auth.getEmployeeInfo().setAccessibleProjects(List.of(10, 20, 30, 40));
+        when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
+                .thenReturn(Flux.empty());
+        when(repository.findProjects()).thenReturn(Flux.just(
+                project(10, LocalDate.of(2020, 1, 1), LocalDate.of(2025, 12, 31)),
+                project(20, LocalDate.of(2027, 1, 1), null),
+                project(30, LocalDate.of(2020, 1, 1), LocalDate.of(2025, 12, 31)),
+                project(40, LocalDate.of(2020, 1, 1), LocalDate.of(2026, 6, 30))));
+        when(repository.findAllocatedProjectIds(2026)).thenReturn(Flux.just(30));
+        when(repository.findProjectAllocations(30, null, 2026)).thenReturn(Flux.empty());
+        when(repository.findOtherProjectAllocations(30, null, 2026)).thenReturn(Flux.empty());
+
+        StepVerifier.create(service.getProjectInput(2026, null, null, auth))
+                .assertNext(input -> {
+                    assertEquals(List.of(30, 40), input.projects().stream().map(project -> project.id()).toList());
+                    assertEquals(LocalDate.of(2026, 6, 30), input.projects().getLast().endDate());
                 })
                 .verifyComplete();
     }
@@ -97,6 +123,7 @@ class ResourceAllocationServiceTest {
         StepVerifier.create(service.getAnalytics(2026, auth))
                 .assertNext(analytics -> {
                     assertEquals(List.of(1), analytics.employees().stream().map(employee -> employee.id()).toList());
+                    assertEquals("Developer", analytics.employees().getFirst().currentProjectRole());
                     assertEquals(List.of(10), analytics.projects().stream().map(project -> project.id()).toList());
                     assertEquals(List.of(202600, 202601),
                             analytics.allocations().stream().map(allocation -> allocation.period()).toList());
@@ -105,19 +132,23 @@ class ResourceAllocationServiceTest {
     }
 
     @Test
-    void closesPeriodsOnlyWithAdminPermission() {
+    void savesOnlyChangedPeriodStatesWithAdminPermission() {
         auth.setAuthorities(List.of(READ_PERMISSION, WRITE_PERMISSION, ADMIN_PERMISSION));
         var now = OffsetDateTime.parse("2026-09-03T10:00:00Z");
         when(dateTimeService.now()).thenReturn(now);
-        when(repository.closePeriod(2026, 202600, now, 1, null)).thenReturn(Mono.just(1L));
+        when(repository.findClosedPeriods(2026)).thenReturn(Flux.just(202600, 202602));
+        when(repository.closePeriod(2026, 202601, now, 1)).thenReturn(Mono.just(1L));
+        when(repository.reopenPeriod(202602, now, 1)).thenReturn(Mono.just(1L));
 
-        StepVerifier.create(service.closePeriod(202600, null, auth))
-                .expectNext(202600)
+        StepVerifier.create(service.saveClosedPeriods(2026, List.of(202600, 202601), auth))
+                .expectNext(List.of(202600, 202601))
                 .verifyComplete();
+        verify(repository, never()).closePeriod(2026, 202600, now, 1);
+        verify(repository).closePeriod(2026, 202601, now, 1);
+        verify(repository).reopenPeriod(202602, now, 1);
 
-        when(repository.reopenPeriod(202600)).thenReturn(Mono.just(1L));
         auth.setAuthorities(List.of(READ_PERMISSION, WRITE_PERMISSION));
-        StepVerifier.create(service.reopenPeriod(202600, auth))
+        StepVerifier.create(service.saveClosedPeriods(2026, List.of(), auth))
                 .expectError(AccessDeniedException.class)
                 .verify();
     }
@@ -189,7 +220,8 @@ class ResourceAllocationServiceTest {
     @Test
     void rejectsClosedMonthsAndMonthsAfterDismissal() {
         var dismissed = new ResourceAllocationEmployeeView(1, "Test Employee 1",
-                null, null, 10, "Project 10", LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10));
+                null, null, 10, "Project 10", "Developer",
+                LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10));
         when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
                 .thenReturn(Flux.just(dismissed));
         when(repository.findProjects()).thenReturn(Flux.just(project(10)));
@@ -235,11 +267,15 @@ class ResourceAllocationServiceTest {
 
     private ResourceAllocationEmployeeView employee(int id) {
         return new ResourceAllocationEmployeeView(id, "Test Employee " + id,
-                null, null, null, null, LocalDate.of(2020, 1, 1), null);
+                null, null, null, null, "Developer", LocalDate.of(2020, 1, 1), null);
     }
 
     private ResourceAllocationProjectView project(int id) {
+        return project(id, null, null);
+    }
+
+    private ResourceAllocationProjectView project(int id, LocalDate startDate, LocalDate endDate) {
         return new ResourceAllocationProjectView(id, "Project " + id,
-                null, null, null, null, null, null);
+                null, null, null, null, startDate, endDate);
     }
 }

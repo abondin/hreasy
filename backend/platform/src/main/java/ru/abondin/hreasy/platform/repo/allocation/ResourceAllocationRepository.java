@@ -35,7 +35,7 @@ public class ResourceAllocationRepository {
         return dbTemplate.getDatabaseClient().sql("""
                         select e.id, e.display_name, e.department as department_id, d.name as department_name,
                                e.current_project as current_project_id, p.name as current_project_name,
-                               e.date_of_employment, e.date_of_dismissal
+                               e.current_project_role, e.date_of_employment, e.date_of_dismissal
                         from empl.employee e
                         left join dict.department d on d.id = e.department
                         left join proj.project p on p.id = e.current_project
@@ -52,6 +52,7 @@ public class ResourceAllocationRepository {
                         row.get("department_name", String.class),
                         row.get("current_project_id", Integer.class),
                         row.get("current_project_name", String.class),
+                        row.get("current_project_role", String.class),
                         row.get("date_of_employment", LocalDate.class),
                         row.get("date_of_dismissal", LocalDate.class)))
                 .all();
@@ -144,7 +145,8 @@ public class ResourceAllocationRepository {
      */
     public Flux<OtherProjectAllocationView> findOtherProjectAllocations(int projectId, Integer workstreamId, int year) {
         var spec = dbTemplate.getDatabaseClient().sql("""
-                        select period, employee_id, sum(percent)::integer as percent
+                        select period, employee_id, sum(percent)::integer as percent,
+                               bool_or(project_id = :projectId) as same_project
                         from alloc.resource_allocation
                         where year = :year
                           and (project_id <> :projectId or workstream_id is distinct from :workstreamId)
@@ -157,7 +159,8 @@ public class ResourceAllocationRepository {
                 .map((row, _) -> new OtherProjectAllocationView(
                         row.get("period", Integer.class),
                         row.get("employee_id", Integer.class),
-                        row.get("percent", Integer.class)))
+                        row.get("percent", Integer.class),
+                        row.get("same_project", Boolean.class)))
                 .all();
     }
 
@@ -281,35 +284,50 @@ public class ResourceAllocationRepository {
     /**
      * Closes a monthly period unless it is already closed.
      */
-    public Mono<Long> closePeriod(int year, int period, OffsetDateTime closedAt, int closedBy, String comment) {
-        var spec = dbTemplate.getDatabaseClient().sql("""
-                        insert into alloc.resource_allocation_closed_period
-                            (year, period, closed_at, closed_by, comment)
-                        values (:year, :period, :closedAt, :closedBy, :comment)
-                        on conflict (period) do nothing
+    public Mono<Long> closePeriod(int year, int period, OffsetDateTime changedAt, int changedBy) {
+        return dbTemplate.getDatabaseClient().sql("""
+                        with changed as (
+                            insert into alloc.resource_allocation_closed_period
+                                (year, period, closed_at, closed_by)
+                            values (:year, :period, :changedAt, :changedBy)
+                            on conflict (period) do nothing
+                            returning year, period
+                        )
+                        insert into alloc.resource_allocation_period_history
+                            (year, period, state, created_at, created_by)
+                        select year, period, 1, :changedAt, :changedBy from changed
                         """)
                 .bind("year", year)
                 .bind("period", period)
-                .bind("closedAt", closedAt)
-                .bind("closedBy", closedBy);
-        return (comment == null ? spec.bindNull("comment", String.class) : spec.bind("comment", comment))
+                .bind("changedAt", changedAt)
+                .bind("changedBy", changedBy)
                 .fetch().rowsUpdated();
     }
 
     /**
      * Reopens a monthly period.
      */
-    public Mono<Long> reopenPeriod(int period) {
+    public Mono<Long> reopenPeriod(int period, OffsetDateTime changedAt, int changedBy) {
         return dbTemplate.getDatabaseClient().sql("""
-                        delete from alloc.resource_allocation_closed_period where period = :period
+                        with changed as (
+                            delete from alloc.resource_allocation_closed_period
+                            where period = :period
+                            returning year, period
+                        )
+                        insert into alloc.resource_allocation_period_history
+                            (year, period, state, created_at, created_by)
+                        select year, period, 2, :changedAt, :changedBy from changed
                         """)
                 .bind("period", period)
+                .bind("changedAt", changedAt)
+                .bind("changedBy", changedBy)
                 .fetch().rowsUpdated();
     }
 
     public record ResourceAllocationEmployeeView(Integer id, String displayName,
                                                  Integer departmentId, String departmentName,
                                                  Integer currentProjectId, String currentProjectName,
+                                                 String currentProjectRole,
                                                  LocalDate dateOfEmployment, LocalDate dateOfDismissal) {
     }
 
@@ -323,6 +341,6 @@ public class ResourceAllocationRepository {
                                                int percent, Integer revisionId) {
     }
 
-    public record OtherProjectAllocationView(Integer period, Integer employeeId, int percent) {
+    public record OtherProjectAllocationView(Integer period, Integer employeeId, int percent, boolean sameProject) {
     }
 }

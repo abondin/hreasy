@@ -137,7 +137,7 @@ public class ResourceAllocationService {
                                         repository.findOtherProjectAllocations(selectedProjectId, requestedWorkstreamId, year)
                                                 .map(allocation -> new ResourceAllocationProjectInputDto.OtherAllocationDto(
                                                         allocation.period(), allocation.employeeId(),
-                                                        allocation.percent()))
+                                                        allocation.percent(), allocation.sameProject()))
                                                 .collectList())
                                     .map(allocations -> new ResourceAllocationProjectInputDto(year, selectedProjectId,
                                             requestedWorkstreamId, months, employees, projects,
@@ -274,28 +274,33 @@ public class ResourceAllocationService {
     }
 
     /**
-     * Closes one monthly allocation period for every project.
+     * Replaces the closed-period selection for one year and records only actual state changes.
      */
     @Transactional
-    public Mono<Integer> closePeriod(int period, String comment, AuthContext auth) {
-        var month = parsePeriod(period);
-        return securityValidator.validateAdmin(auth)
-                .then(repository.lockPeriod(period))
-                .then(repository.closePeriod(month.getYear(), period, dateTimeService.now(),
-                        auth.getEmployeeInfo().getEmployeeId(), comment))
-                .thenReturn(period);
-    }
-
-    /**
-     * Reopens one monthly allocation period.
-     */
-    @Transactional
-    public Mono<Void> reopenPeriod(int period, AuthContext auth) {
-        parsePeriod(period);
-        return securityValidator.validateAdmin(auth)
-                .then(repository.lockPeriod(period))
-                .then(repository.reopenPeriod(period))
-                .then();
+    public Mono<List<Integer>> saveClosedPeriods(int year, List<Integer> closedPeriods, AuthContext auth) {
+        return securityValidator.validateAdmin(auth).then(Mono.defer(() -> {
+            parseYear(year);
+            var desired = validateClosedPeriods(year, closedPeriods);
+            return Flux.range(0, 12)
+                    .concatMap(month -> repository.lockPeriod(year * 100 + month))
+                    .then(repository.findClosedPeriods(year).collect(java.util.stream.Collectors.toSet()))
+                    .flatMap(current -> {
+                        var toClose = desired.stream().filter(period -> !current.contains(period)).toList();
+                        var toOpen = current.stream().filter(period -> !desired.contains(period)).sorted().toList();
+                        if (toClose.isEmpty() && toOpen.isEmpty()) {
+                            return Mono.just(desired);
+                        }
+                        var changedAt = dateTimeService.now();
+                        var changedBy = auth.getEmployeeInfo().getEmployeeId();
+                        log.info("Changing {} resource allocation period states for year {} by {}",
+                                toClose.size() + toOpen.size(), year, auth.getUsername());
+                        return Flux.fromIterable(toClose)
+                                .concatMap(period -> repository.closePeriod(year, period, changedAt, changedBy))
+                                .thenMany(Flux.fromIterable(toOpen)
+                                        .concatMap(period -> repository.reopenPeriod(period, changedAt, changedBy)))
+                                .then(Mono.just(desired));
+                    });
+        }));
     }
 
     /**
@@ -311,7 +316,7 @@ public class ResourceAllocationService {
     private EmployeeDto toEmployeeDto(ResourceAllocationEmployeeView employee) {
         return new EmployeeDto(employee.id(), employee.displayName(),
                 employee.departmentId(), employee.departmentName(),
-                employee.currentProjectId(), employee.currentProjectName());
+                employee.currentProjectId(), employee.currentProjectName(), employee.currentProjectRole());
     }
 
     private ResourceAllocationProjectInputDto.AllocationDto toProjectInputAllocationDto(
@@ -324,7 +329,8 @@ public class ResourceAllocationService {
             ResourceAllocationEmployeeView employee) {
         var dismissalDate = employee.dateOfDismissal();
         return new ResourceAllocationProjectInputDto.EmployeeDto(employee.id(), employee.displayName(),
-                employee.currentProjectId(), employee.currentProjectName(), employee.dateOfEmployment(),
+                employee.currentProjectId(), employee.currentProjectName(), employee.currentProjectRole(),
+                employee.dateOfEmployment(),
                 dismissalDate, dismissalDate != null && !dismissalDate.isAfter(dateTimeService.now().toLocalDate()));
     }
 
@@ -332,7 +338,7 @@ public class ResourceAllocationService {
         var active = (project.startDate() == null || !project.startDate().isAfter(year.atMonth(12).atEndOfMonth()))
                 && (project.endDate() == null || !project.endDate().isBefore(year.atDay(1)));
         return new ProjectDto(project.id(), project.name(), project.departmentId(), project.departmentName(),
-                project.baId(), project.baName(), active,
+                project.baId(), project.baName(), project.startDate(), project.endDate(), active,
                 securityValidator.canWriteProject(auth, project));
     }
 
@@ -367,6 +373,21 @@ public class ResourceAllocationService {
             }
             parsePeriod(change.period());
         }
+    }
+
+    private List<Integer> validateClosedPeriods(int year, List<Integer> periods) {
+        if (periods == null) {
+            throw new BusinessError("errors.resource_allocation.invalid_period", "null");
+        }
+        var result = new HashSet<Integer>();
+        for (var period : periods) {
+            if (period == null || period / 100 != year) {
+                throw new BusinessError("errors.resource_allocation.invalid_period", String.valueOf(period));
+            }
+            parsePeriod(period);
+            result.add(period);
+        }
+        return result.stream().sorted().toList();
     }
 
     private boolean employmentOverlaps(ResourceAllocationEmployeeView employee, YearMonth month) {

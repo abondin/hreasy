@@ -5,11 +5,10 @@ import { BusinessError } from "@/lib/errors";
 import ResourceAllocationAnalyticsView from "@/views/allocations/ResourceAllocationAnalyticsView.vue";
 import ResourceAllocationInputView from "@/views/allocations/ResourceAllocationInputView.vue";
 import {
-  closeResourceAllocationPeriod,
   fetchClosedResourceAllocationPeriods,
   fetchResourceAllocationAnalytics,
   fetchResourceAllocationProjectInput,
-  reopenResourceAllocationPeriod,
+  saveClosedResourceAllocationPeriods,
   saveResourceAllocations,
 } from "@/services/resource-allocation.service";
 
@@ -27,7 +26,10 @@ vi.mock("vue-router", async () => ({
 }));
 
 vi.mock("vue-i18n", () => ({
-  useI18n: () => ({ t: (key: string) => key }),
+  useI18n: () => ({
+    t: (key: string, params: Record<string, unknown> = {}) => Object.entries(params)
+      .reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), key),
+  }),
 }));
 
 vi.mock("@/lib/permissions", () => ({
@@ -37,11 +39,10 @@ vi.mock("@/lib/permissions", () => ({
 }));
 
 vi.mock("@/services/resource-allocation.service", () => ({
-  closeResourceAllocationPeriod: vi.fn(),
   fetchClosedResourceAllocationPeriods: vi.fn(),
   fetchResourceAllocationAnalytics: vi.fn(),
   fetchResourceAllocationProjectInput: vi.fn(),
-  reopenResourceAllocationPeriod: vi.fn(),
+  saveClosedResourceAllocationPeriods: vi.fn(),
   saveResourceAllocations: vi.fn(),
 }));
 
@@ -58,6 +59,28 @@ const DialogStub = defineComponent({
   },
 });
 
+const CheckboxStub = defineComponent({
+  inheritAttrs: false,
+  props: {
+    modelValue: { type: Array as PropType<number[]>, default: () => [] },
+    value: { type: Number, required: true },
+  },
+  emits: ["update:modelValue"],
+  setup(props, { attrs, emit }) {
+    return () => h("input", {
+      ...attrs,
+      type: "checkbox",
+      checked: props.modelValue.includes(props.value),
+      onChange: (event: Event) => emit(
+        "update:modelValue",
+        (event.target as HTMLInputElement).checked
+          ? [...props.modelValue, props.value]
+          : props.modelValue.filter((period) => period !== props.value),
+      ),
+    });
+  },
+});
+
 const SelectStub = defineComponent({
   name: "VSelectStub",
   inheritAttrs: false,
@@ -71,8 +94,17 @@ const SelectStub = defineComponent({
     items: { type: Array, default: () => [] },
   },
   emits: ["update:modelValue"],
-  setup(_, { attrs }) {
-    return () => h("div", attrs);
+  setup(props, { attrs, slots }) {
+    return () => h("div", attrs, props.items.map((item, index) =>
+      slots.item?.({ props: {}, item, index }),
+    ));
+  },
+});
+
+const ListItemStub = defineComponent({
+  props: { title: String, subtitle: String },
+  setup(props) {
+    return () => h("div", [props.title, props.subtitle]);
   },
 });
 
@@ -103,6 +135,7 @@ interface GridColumnStub {
   name?: string;
   children?: GridColumnStub[];
   readonly?: boolean | ((props: { model: Record<string, unknown> }) => boolean);
+  columnTemplate?: (createElement: typeof h) => ReturnType<typeof h>;
   cellProperties?: (props: {
     model: Record<string, unknown>;
   }) => Record<string, unknown>;
@@ -126,6 +159,7 @@ const GridStub = defineComponent({
       default: () => ({}),
     },
     readonly: Boolean,
+    stretch: Boolean,
     grouping: { type: Object, default: undefined },
   },
   emits: ["beforeeditstart", "afteredit"],
@@ -140,7 +174,7 @@ const GridStub = defineComponent({
       );
       return h("div", [
         ...headers.map((column) =>
-          h("div", { role: "columnheader" }, column.name),
+          h("div", { role: "columnheader" }, column.columnTemplate?.(h) ?? column.name),
         ),
         ...props.source.flatMap((model, rowIndex) =>
           leafColumns.map((column) => {
@@ -225,19 +259,22 @@ const globalStubs = {
   VTextField: PassThroughStub,
   VSelect: SelectStub,
   VAutocomplete: SelectStub,
-  VCheckbox: PassThroughStub,
   VSheet: PassThroughStub,
-  VSpacer: PassThroughStub,
   VAlert: PassThroughStub,
   VChip: PassThroughStub,
   VDivider: PassThroughStub,
   VEmptyState: PassThroughStub,
   VDialog: DialogStub,
+  VCheckbox: CheckboxStub,
   VCard: PassThroughStub,
   VCardTitle: PassThroughStub,
   VCardText: PassThroughStub,
   VCardActions: PassThroughStub,
+  VRow: PassThroughStub,
+  VCol: PassThroughStub,
+  VSpacer: PassThroughStub,
   VIcon: PassThroughStub,
+  VListItem: ListItemStub,
   VTooltip: TooltipStub,
 };
 
@@ -274,7 +311,7 @@ describe("ResourceAllocationsView", () => {
       workstreams: [{ id: 11, displayName: "Delivery" }],
       months: Array.from({ length: 12 }, (_, month) => ({
         period: 202600 + month,
-        closed: false,
+        closed: month === 0,
       })),
       employees: [
         {
@@ -282,6 +319,7 @@ describe("ResourceAllocationsView", () => {
           displayName: "Alex Morgan",
           currentProjectId: 20,
           currentProjectName: "Alpha",
+          currentProjectRole: "Java Backend Developer",
           dateOfEmployment: "2020-01-01",
           dateOfDismissal: null,
           dismissed: false,
@@ -291,6 +329,7 @@ describe("ResourceAllocationsView", () => {
           displayName: "Jordan Lee",
           currentProjectId: 30,
           currentProjectName: "Other",
+          currentProjectRole: "QA Engineer",
           dateOfEmployment: "2020-01-01",
           dateOfDismissal: "2026-08-10",
           dismissed: true,
@@ -313,6 +352,25 @@ describe("ResourceAllocationsView", () => {
           dateOfDismissal: null,
           dismissed: false,
         },
+        {
+          id: 5,
+          displayName: "Morgan Reed",
+          currentProjectId: 30,
+          currentProjectName: "Other",
+          dateOfEmployment: "2020-01-01",
+          dateOfDismissal: null,
+          dismissed: false,
+        },
+        {
+          id: 6,
+          displayName: "Riley Chen",
+          currentProjectId: 30,
+          currentProjectName: "Other",
+          currentProjectRole: "QA Engineer",
+          dateOfEmployment: "2020-01-01",
+          dateOfDismissal: "2025-12-15",
+          dismissed: true,
+        },
       ],
       projects: [
         {
@@ -322,6 +380,7 @@ describe("ResourceAllocationsView", () => {
           departmentName: null,
           baId: null,
           baName: null,
+          endDate: "2026-06-30",
           active: true,
           editable: true,
         },
@@ -341,7 +400,8 @@ describe("ResourceAllocationsView", () => {
         { period: 202606, employeeId: 2, percent: 30, revisionId: 1 },
       ],
       otherAllocations: [
-        { period: 202607, employeeId: 1, percent: 50 },
+        { period: 202607, employeeId: 1, percent: 50, sameProject: false },
+        { period: 202607, employeeId: 5, percent: 20, sameProject: true },
       ],
     });
     vi.mocked(saveResourceAllocations).mockResolvedValue();
@@ -350,6 +410,11 @@ describe("ResourceAllocationsView", () => {
       global: { stubs: globalStubs },
     });
     await flushPromises();
+    expect(wrapper.text()).toContain("Закрыт: 30.06.2026");
+    expect(wrapper.text()).toContain("Текущий проект: Other");
+    expect(wrapper.text()).toContain("Роль: QA Engineer");
+    expect(wrapper.text()).toContain("Дата увольнения: 15.12.2025");
+    expect(wrapper.find(".mdi-lock").exists()).toBe(true);
 
     expect(fetchResourceAllocationProjectInput).toHaveBeenCalledWith(2026, 20, 11);
     expect(routerMocks.replace).toHaveBeenCalledWith({
@@ -377,6 +442,11 @@ describe("ResourceAllocationsView", () => {
     expect(
       wrapper
         .find('[data-testid="resource-allocation-input-4-202607"]')
+        .exists(),
+    ).toBe(true);
+    expect(
+      wrapper
+        .find('[data-testid="resource-allocation-input-5-202607"]')
         .exists(),
     ).toBe(true);
     expect(
@@ -471,6 +541,7 @@ describe("ResourceAllocationsView", () => {
           departmentName: null,
           currentProjectId: 10,
           currentProjectName: "Managed",
+          currentProjectRole: "Java Backend Developer",
         },
       ],
       projects: [
@@ -486,7 +557,7 @@ describe("ResourceAllocationsView", () => {
         },
         {
           id: 20,
-          name: "No data",
+          name: "Project only",
           departmentId: null,
           departmentName: null,
           baId: null,
@@ -499,6 +570,7 @@ describe("ResourceAllocationsView", () => {
       allocations: [
         { period: 202600, employeeId: 1, projectId: 10, workstreamId: 11, percent: 60 },
         { period: 202601, employeeId: 1, projectId: 10, percent: 40 },
+        { period: 202602, employeeId: 1, projectId: 20, percent: 25 },
       ],
     });
 
@@ -509,6 +581,7 @@ describe("ResourceAllocationsView", () => {
 
     const grid = wrapper.getComponent(GridStub);
     expect(grid.props("columns")).toHaveLength(13);
+    expect(grid.props("stretch")).toBe(true);
     expect(grid.props("grouping")).toEqual(
       expect.objectContaining({
         props: ["businessAccountGroup", "projectGroup", "workstreamGroup"],
@@ -519,7 +592,7 @@ describe("ResourceAllocationsView", () => {
       expect.objectContaining({
         businessAccountGroup: "ba:none",
         projectGroup: "project:10",
-        entity: "Alex Morgan",
+        entity: "Alex Morgan · Java Backend Developer",
         month_202600: 60,
         workstreamId: 11,
       }),
@@ -528,14 +601,34 @@ describe("ResourceAllocationsView", () => {
         month_202601: 40,
         workstreamId: null,
       }),
+      expect.objectContaining({
+        projectGroup: "project:20",
+        workstreamGroup: "employee:1",
+        month_202602: 25,
+      }),
     ]));
+    expect(wrapper.get('[data-testid="resource-allocation-analytics-row-1:10:11"]').classes())
+      .toContain("resource-allocation-terminal-cell");
+    expect(wrapper.get('[data-testid="resource-allocation-analytics-row-1:10:11"]').attributes("style"))
+      .toContain("padding-left: 48px");
     const summaries = grid.props("additionalData") as unknown as Map<
       string,
-      { label: string; months: Map<number, number>; projects: Set<string>; workstreams: Set<string> }
+      { label: string; months: Map<number, number>; projects: Set<string>; workstreams: Set<string>; dimensions: Set<string>; terminalRowId: string | null }
     >;
     expect(summaries.get("ba:none")?.months.get(202600)).toBe(60);
     expect(summaries.get("ba:none,project:10")?.months.get(202601)).toBe(40);
     expect(summaries.get("ba:none,project:10")?.workstreams).toEqual(new Set(["Delivery"]));
+    expect(summaries.get("ba:none,project:10")?.dimensions).toEqual(new Set(["11", "project"]));
+    expect(summaries.get("ba:none,project:20,employee:1")?.terminalRowId).toBe("1:20:project");
+    wrapper.getComponent(ToggleStub).vm.$emit("update:modelValue", "employees");
+    await flushPromises();
+    const employeeSummaries = wrapper.getComponent(GridStub).props("additionalData") as unknown as Map<
+      string,
+      { terminalRowId: string | null }
+    >;
+    expect(employeeSummaries.get("employee:1,project:20")?.terminalRowId).toBe("1:20:project");
+    expect(wrapper.get('[data-testid="resource-allocation-analytics-row-1:10:11"]').attributes("style"))
+      .toContain("padding-left: 32px");
     expect(wrapper.findAll("input")).toHaveLength(0);
   });
 
@@ -575,7 +668,7 @@ describe("ResourceAllocationsView", () => {
         { period: 202601, employeeId: 1, percent: 20, revisionId: 1 },
       ],
       otherAllocations: [
-        { period: 202600, employeeId: 1, percent: 40 },
+        { period: 202600, employeeId: 1, percent: 40, sameProject: false },
       ],
     });
     vi.mocked(saveResourceAllocations).mockRejectedValue(
@@ -693,9 +786,10 @@ describe("ResourceAllocationsView", () => {
           editable: true,
         },
       ],
+      workstreams: [{ id: 31, displayName: "Operations" }],
       allocations: [
         { period: 202600, employeeId: 1, projectId: 10, percent: 40 },
-        { period: 202601, employeeId: 2, projectId: 30, percent: 50 },
+        { period: 202601, employeeId: 2, projectId: 30, workstreamId: 31, percent: 50 },
       ],
     });
 
@@ -736,21 +830,22 @@ describe("ResourceAllocationsView", () => {
     await flushPromises();
     expect(wrapper.getComponent(GridStub).props("grouping")).toEqual(
       expect.objectContaining({
-        props: ["employeeGroup", "projectGroup", "workstreamGroup"],
+        props: ["employeeGroup", "projectGroup"],
         expandedAll: false,
       }),
     );
     expect(wrapper.getComponent(GridStub).props("source")).toEqual([
       expect.objectContaining({
         employeeGroup: "employee:2",
-        entity: "Manual access",
+        entity: "Operations",
       }),
     ]);
   });
 
-  it("reopens a closed allocation period from analytics for an admin", async () => {
+  it("saves the annual closed-period selection from analytics", async () => {
     permissionMocks.canAdmin = true;
     vi.mocked(fetchClosedResourceAllocationPeriods).mockResolvedValue([202600]);
+    vi.mocked(saveClosedResourceAllocationPeriods).mockResolvedValue([202600, 202601]);
     vi.mocked(fetchResourceAllocationAnalytics).mockResolvedValue({
       year: 2026,
       employees: [],
@@ -764,15 +859,13 @@ describe("ResourceAllocationsView", () => {
     });
     await flushPromises();
 
-    const periodSelect = wrapper
-      .findAllComponents(SelectStub)
-      .find((component) => component.attributes("data-testid") === "resource-allocations-managed-period");
-    periodSelect?.vm.$emit("update:modelValue", 202600);
-    await flushPromises();
     await wrapper.get('[data-testid="resource-allocations-period-toggle"]').trigger("click");
+    expect((wrapper.get('[data-testid="resource-allocations-period-202600"]').element as HTMLInputElement).checked)
+      .toBe(true);
+    await wrapper.get('[data-testid="resource-allocations-period-202601"]').setValue(true);
+    await wrapper.get('[data-testid="resource-allocations-periods-save"]').trigger("click");
     await flushPromises();
 
-    expect(reopenResourceAllocationPeriod).toHaveBeenCalledWith(202600);
-    expect(closeResourceAllocationPeriod).not.toHaveBeenCalled();
+    expect(saveClosedResourceAllocationPeriods).toHaveBeenCalledWith(2026, [202600, 202601]);
   });
 });

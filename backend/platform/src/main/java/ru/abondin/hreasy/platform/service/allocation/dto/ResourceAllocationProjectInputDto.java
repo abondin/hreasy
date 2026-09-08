@@ -20,6 +20,7 @@ public record ResourceAllocationProjectInputDto(int year,
 
     public record EmployeeDto(Integer id, String displayName,
                               Integer currentProjectId, String currentProjectName,
+                              String currentProjectRole,
                               LocalDate dateOfEmployment, LocalDate dateOfDismissal,
                               boolean dismissed) {
     }
@@ -27,6 +28,6 @@ public record ResourceAllocationProjectInputDto(int year,
     public record AllocationDto(int period, Integer employeeId, int percent, Integer revisionId) {
     }
 
-    public record OtherAllocationDto(int period, Integer employeeId, int percent) {
+    public record OtherAllocationDto(int period, Integer employeeId, int percent, boolean sameProject) {
     }
 }

@@ -15,15 +15,19 @@ The feature has two sections:
 4. Enter allocation percentages for the required months.
 5. Review the changes and click **Save**.
 
-All 12 months are shown on one screen. The selected year, project, and optional workstream are kept in the page URL, so the same view can be reopened or shared.
+All 12 months are shown on one screen. The table keeps current project employees and every employee allocated to any workstream of that project, even while another workstream is selected. The selected year, project, and optional workstream are kept in the page URL, so the same view can be reopened or shared.
 
 Project-level allocations and allocations for several workstreams of that project are independent and may coexist for the same employee and month.
+
+The project selector excludes projects that started after the selected year or ended before it, unless the project already has allocations in that year. Projects with an actual end date inside the year remain selectable and show `Closed` with that date below the name.
 
 The employee list contains:
 
 - employees currently assigned to the selected project;
 - employees who already have allocations on the project during the selected year;
 - employees added to the current unsaved draft.
+
+The add-employee selector shows the current project, project role, and dismissal date. Search matches the employee name, current project, and role, but not the dismissal date. Employee rows also show the project role.
 
 ### Read a cell
 
@@ -57,11 +61,13 @@ Two views are available:
 - **Projects** — business account → project → workstream → employees;
 - **Employees** — employee → project → workstream.
 
-Projects remain the parent level. Project rows show a single workstream name or a workstream count inline and can be expanded even when only one workstream exists. Workstream levels are collapsed by default. Project-level values are shown as `Without workstream`.
+Projects remain the parent level. A project without workstream allocations skips the intermediate `Without workstream` row in both hierarchy modes. Project rows show a single workstream name inline; when several direction rows are available, they show their grammatically declined count instead. Projects can be expanded even when only one workstream exists. Workstream levels are collapsed by default. Project-level values are shown as `Without workstream` only when they coexist with workstream allocations.
 
-Users with allocation admin permission can close or reopen a selected month from the analytics toolbar.
+Users with allocation admin permission open the period-lock dialog from the analytics toolbar, select the closed months for the current year, and save the whole selection at once. The current month is highlighted. Canceling the dialog does not change period states.
 
-Group rows show monthly totals. Data can be filtered by business account and project or searched by employee, project, and workstream name.
+Group rows show monthly totals. Data can be filtered by business account and project or searched by employee name, project role, project name, or workstream.
+
+Terminal data rows use a subtle background to distinguish them from expandable group rows. Their left offset follows the same hierarchy-depth step as group rows.
 
 ## Access and restrictions
 
@@ -101,12 +107,12 @@ The frontend uses two child routes:
 | `PUT` | `/api/v1/resource-allocations/input/{year}/{projectId}?workstreamId={id}` | Save changed employee/month cells for an optional workstream as one revision. |
 | `GET` | `/api/v1/resource-allocations/analytics/{year}` | Load annual read-only analytics. |
 | `GET` | `/api/v1/resource-allocations/closed-periods/{year}` | Load closed months for the analytics toolbar. |
-| `PUT` | `/api/v1/resource-allocations/closed-periods/{period}` | Close a month. |
-| `DELETE` | `/api/v1/resource-allocations/closed-periods/{period}` | Reopen a month. |
+| `PUT` | `/api/v1/resource-allocations/closed-periods/{year}` | Replace the closed-month selection for the year. |
 
 Periods use the repository's zero-based `YYYYMM` convention: `202600` is January 2026 and `202611` is December 2026.
+The annual period update body is `{ "closedPeriods": [202600, 202601] }`; omitted months are reopened.
 
-The annual input response separates allocations on the selected project from combined allocations on other projects:
+The annual input response separates the selected project/workstream dimension from combined allocations on all other dimensions. `sameProject` marks employees who must remain visible because another dimension of the selected project contains data:
 
 ```json
 {
@@ -114,7 +120,7 @@ The annual input response separates allocations on the selected project from com
     { "period": 202600, "employeeId": 42, "percent": 50, "revisionId": 17 }
   ],
   "otherAllocations": [
-    { "period": 202600, "employeeId": 42, "percent": 30 }
+    { "period": 202600, "employeeId": 42, "percent": 30, "sameProject": true }
   ]
 }
 ```
@@ -141,8 +147,11 @@ The Platform service owns the `alloc` schema:
 - `resource_allocation` stores current non-zero monthly values for a project and optional workstream;
 - `resource_allocation_revision` stores one Save operation for a project and optional workstream;
 - `resource_allocation_change` stores immutable before/after cell history;
-- `resource_allocation_closed_period` stores globally closed months.
+- `resource_allocation_closed_period` stores the currently closed months and who closed each one;
+- `resource_allocation_period_history` stores immutable close and reopen events with their actor and timestamp.
 
 One Save creates one project/year revision. Setting a cell to zero physically removes it from the current-state table because that table stores only non-zero values. The deletion remains auditable as an immutable change with the previous percentage and `new_percent = 0`; unlike ordinary CRUD entities, a second soft-deleted copy would duplicate the existing revision history.
+
+Period selection saves compare the requested and current sets. Existing closed months are left untouched, so resubmitting a checked month neither rewrites its original closure metadata nor creates a duplicate history event. Only actual open-to-closed and closed-to-open transitions are appended to history.
 
 Saving and closing periods are transactional. PostgreSQL transaction advisory locks serialize writes for affected months, and per-cell revision checks reject stale changes.

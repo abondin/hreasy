@@ -18,6 +18,7 @@ const sheet = {
       departmentName: "Software Development",
       currentProjectId: 302,
       currentProjectName: "Billing Gateway",
+      currentProjectRole: "Java Backend Developer",
     },
     {
       id: 102,
@@ -26,6 +27,7 @@ const sheet = {
       departmentName: "Software Development",
       currentProjectId: 301,
       currentProjectName: "Retail Terminal Platform",
+      currentProjectRole: "Business Analyst",
     },
     {
       id: 103,
@@ -34,6 +36,7 @@ const sheet = {
       departmentName: "Software Development",
       currentProjectId: 302,
       currentProjectName: "Billing Gateway",
+      currentProjectRole: "Java Backend Developer",
     },
   ],
   projects: [
@@ -44,6 +47,7 @@ const sheet = {
       departmentName: "Software Development",
       baId: 402,
       baName: "Alpine Operations",
+      endDate: "2026-06-30",
       active: true,
       editable: true,
     },
@@ -156,7 +160,10 @@ async function mockResourceAllocationsApi(page: Page, data = sheet): Promise<voi
   await page.route(/\/api\/v1\/resource-allocations\/(?:input\/\d+(?:\/\d+)?|analytics\/\d+|closed-periods\/\d+)(?:\?.*)?$/, async (route) => {
     const url = new URL(route.request().url());
     if (url.pathname.includes("/closed-periods/")) {
-      await json(route, []);
+      const periods = route.request().method() === "PUT"
+        ? (route.request().postDataJSON() as { closedPeriods: number[] }).closedPeriods
+        : [];
+      await json(route, periods);
       return;
     }
     if (url.pathname.includes("/analytics/")) {
@@ -253,17 +260,25 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect(page.getByTestId("resource-allocations-tab-input")).toHaveAttribute("aria-selected", "true");
     const projectFilter = await revealAdaptiveFilter(page, "resource-allocations-input-project");
     await expect(projectFilter).toContainText("Retail Terminal Platform");
+    await projectFilter.click();
+    await expect(page.getByText("Закрыт: 30.06.2026", { exact: true })).toBeVisible();
     await page.keyboard.press("Escape");
     const inputCell = page.getByTestId("resource-allocation-input-102-202607");
     await expect(page.getByTestId("resource-allocation-input-101-202607")).toContainText("+ 40%");
     await expect(inputCell).toBeVisible();
     await expect(page.getByTestId("resource-allocation-input-employee-101")).toContainText("Alex Morgan");
+    await expect(page.getByTestId("resource-allocation-input-employee-101")).toContainText("Java Backend Developer");
     const inputGrid = page.getByTestId("resource-allocations-input-grid");
     await expect.poll(async () => (await inputGrid.boundingBox())?.height ?? 0).toBeGreaterThan(350);
     const addEmployee = page.getByTestId("resource-allocations-add-employee");
+    await addEmployee.locator("input").fill("Billing Gateway");
+    const employeeOption = page.getByRole("option").filter({ hasText: "Taylor Kim" });
+    await expect(employeeOption).toContainText("Текущий проект: Billing Gateway");
+    await expect(employeeOption).toContainText("Роль: Java Backend Developer");
+    await addEmployee.locator("input").fill("");
     await addEmployee.locator("input").pressSequentially("Taylor Kim");
     await expect(addEmployee.locator("input")).toHaveValue("Taylor Kim");
-    await page.getByRole("option", { name: "Taylor Kim" }).click();
+    await employeeOption.click();
     await expect(page.getByTestId("resource-allocation-input-employee-103")).toBeVisible();
     await inputCell.dblclick();
     await page.locator("revogr-edit input").fill("75");
@@ -287,9 +302,17 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect(page.getByTestId("resource-allocation-group-ba:402-label")).toContainText("Alpine Operations");
     await expect(page.getByTestId("resource-allocation-group-ba:402,project:301-label")).toContainText("Retail Terminal Platform");
     await expect(page.getByTestId("resource-allocation-group-ba:402,project:301-202607")).toHaveText("135");
-    await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toHaveText("Alex Morgan");
+    await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toContainText("Alex Morgan");
     await expect(page.getByTestId("resource-allocation-analytics-cell-101:301:project-202607")).toHaveText("60");
     await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202606")).toHaveText("15");
+    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202600"))
+      .toHaveClass(/resource-allocation-terminal-cell/);
+    const terminalBackground = await page
+      .getByTestId("resource-allocation-analytics-cell-101:301:project-202607")
+      .locator("..")
+      .evaluate((cell) => getComputedStyle(cell).backgroundColor);
+    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202600").locator(".."))
+      .toHaveCSS("background-color", terminalBackground);
 
     const analyticsSearch = (await revealAdaptiveFilter(page, "resource-allocations-analytics-search")).locator("input");
     await analyticsSearch.fill("Billing Gateway");
@@ -298,6 +321,9 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await analyticsSearch.fill("Alex Morgan");
     await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toBeVisible();
     await expect(page.getByTestId("resource-allocation-analytics-row-101:302:project")).toBeVisible();
+    await expect(page.getByTestId("resource-allocation-analytics-row-102:301:project")).toHaveCount(0);
+    await analyticsSearch.fill("Java Backend");
+    await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toContainText("Java Backend Developer");
     await expect(page.getByTestId("resource-allocation-analytics-row-102:301:project")).toHaveCount(0);
     await analyticsSearch.fill("");
 
@@ -322,14 +348,6 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect(employeeGroup).toContainText("Jordan Lee");
     await expect(employeeGroup).toContainText("Support Portal");
     await employeeGroup.click();
-    const employeeProjectGroup = page.getByTestId("resource-allocation-group-employee:102,project:303-label");
-    await expect(employeeProjectGroup).toContainText("Support Portal");
-    await employeeProjectGroup.click();
-    const projectLevelGroup = page.getByTestId(
-      "resource-allocation-group-employee:102,project:303,workstream:303:project-label",
-    );
-    await expect(projectLevelGroup).toContainText("Без направления");
-    await projectLevelGroup.click();
     await expect(page.getByTestId("resource-allocation-analytics-row-102:303:project")).toHaveText("Support Portal");
   });
 

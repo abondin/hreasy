@@ -12,12 +12,14 @@ public record ResourceAllocationAnalyticsDto(int year,
                                               List<AllocationDto> allocations) {
     public record EmployeeDto(Integer id, String displayName,
                               Integer departmentId, String departmentName,
-                              Integer currentProjectId, String currentProjectName) {
+                              Integer currentProjectId, String currentProjectName,
+                              String currentProjectRole) {
     }
 
     public record ProjectDto(Integer id, String name,
                              Integer departmentId, String departmentName,
                              Integer baId, String baName,
+                             LocalDate startDate, LocalDate endDate,
                              boolean active, boolean editable) {
     }
 

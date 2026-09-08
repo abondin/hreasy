@@ -10,7 +10,7 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 - Data entry lists only writable projects and defaults to the first one alphabetically; all allocations remain readable in analytics.
 - Exactly one project is edited at a time; one screen exposes all 12 months.
 - An optional project workstream selects an independent allocation dimension. Project-level and multiple workstream-level values may coexist for one employee/month/project.
-- Rows include current project employees, employees with allocations on that project in the selected year, and employees added in the current draft.
+- Rows include current project employees, employees with allocations on any direction of that project in the selected year, and employees added in the current draft.
 - A cell is editable only when the user has write permission and shared hierarchy access to the target project, the month is open, and employment overlaps the month. The dismissal month is inclusive.
 - Dismissal and another current project remain visible in the employee text. Visual status styling is deferred until it can use native grid capabilities.
 - Closed months are marked in the column name and remain backend-enforced. Additional month/status styling is deferred.
@@ -24,19 +24,28 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 - Input cells show a muted `+ N%` only when the employee has a positive allocation on other projects in that month; the selected-project value remains primary.
 - The selected-project value includes `%` outside edit mode while the editor keeps the raw numeric value.
 - The selected input year and project are persisted as `year` and `projectId` URL query parameters.
-- Month closing/reopening is backend-enforced and restricted by `resource_allocation_admin`.
+- The input project selector excludes projects outside the selected year unless they have allocations in that year. Projects ended within the year show their closed status and actual end date as a Vuetify item subtitle.
+- The employee selector and input rows show the current project role. Selector search covers employee name, current project, and role, but not dismissal date. Analytics shows and searches by the role too.
+- Month closing/reopening is backend-enforced and restricted by `resource_allocation_admin`. The analytics lock dialog edits all twelve months of the selected year and saves the selection once.
 
 ## Implementation
 
 - Flyway schema stores `year` explicitly on current allocations, annual revisions, and closed periods.
 - Annual API: `GET /api/v1/resource-allocations/input/{year}` and `PUT /api/v1/resource-allocations/input/{year}/{projectId}`, both with optional `workstreamId`.
-- Annual input returns employee/month sums from projects other than the selected project; the UI renders positive values as a muted `+ N%` hint.
+- Annual input returns employee/month sums from dimensions other than the selected project/workstream pair and marks whether they include the same project; the UI uses that flag to retain project employees across workstreams and renders positive values as a muted `+ N%` hint.
 - Input initializes `year` and `projectId` from the URL and replaces those query parameters after the backend resolves the selected project.
-- Period API: `GET /api/v1/resource-allocations/closed-periods/{year}` and `PUT/DELETE /api/v1/resource-allocations/closed-periods/{period}`. Allocation admins manage a selected month from the analytics toolbar.
+- Period API: `GET` and `PUT /api/v1/resource-allocations/closed-periods/{year}`. The PUT compares requested and current sets and writes only real state transitions.
+- Current closed periods retain their original closer and timestamp. An immutable period history stores both close and reopen actors/timestamps; unchanged checked months create no history events.
+- The period dialog uses twelve checkboxes with Save/Cancel and highlights the current month. Closed input-grid headers use the installed MDI lock instead of a Unicode emoji.
 - Annual analytics uses `GET /api/v1/resource-allocations/analytics/{year}` and returns only employees, projects, and employee/project pairs with non-zero values in that year.
-- Analytics has two read-only hierarchy modes and defaults to projects. Both use the same nested project/workstream behavior: a sole workstream is shown inline, projects remain expandable with one stream, and stream branches start collapsed.
+- Analytics has two read-only hierarchy modes and defaults to projects. In employee mode, workstreams are terminal value rows under projects, without a duplicate project leaf. A sole workstream is shown inline, projects remain expandable with one stream, and stream branches start collapsed.
+- Project summaries count project-level allocation as a separate variant, so a workstream name is shown inline only when it is the sole child row.
+- In both hierarchy modes, projects without workstream allocations skip `Without workstream`; it remains a separate branch only when it distinguishes project-level values from workstream values.
+- Direction counts use the shared vue-i18n Russian plural rule, and terminal data rows have a subtle background in both hierarchy modes.
+- Group and terminal-row indentation uses one shared hierarchy step; a single leaf cell template positions terminal text one level below its parent instead of relying on RevoGrid's ignored container padding.
+- Regular and pseudo-group terminal cells use the same marker and one grid-cell CSS rule, so both row shapes have the same full-cell background, including empty months.
 - Employee analytics is summary-first: employee groups start collapsed, retain their monthly totals, and show the sole project name or project count beside the employee. Business-account groups start expanded; projects with workstreams and all workstream groups start collapsed.
-- BA and dependent project multi-selects filter complete hierarchy branches. The current search matches an employee or project name and keeps matching employee/project pairs; its final parent/child retention semantics remain open for UX review.
+- BA and dependent project multi-selects filter complete hierarchy branches. The shared text-search field matches employee, current project role, project, or workstream and keeps matching employee/project pairs; its final parent/child retention semantics remain open for UX review.
 - RevoGrid provides virtualized annual editing, clipboard, range selection, native Tab/Enter, and native autofill behavior.
 - Shared HREasy page/layout, Vuetify controls, dialogs, period switcher, search normalization, and permissions remain in use.
 - Data entry now uses the same `AdaptiveFilterBar` and `TableToolbarActions` composition as neighboring manager pages. The project selector is a normal toolbar filter and the annual grid is full-width without a nested card.
@@ -53,15 +62,14 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 
 ## Validation
 
-- Focused backend suite passed: 18 tests covering allocation access, project/workstream admin mapping, request deserialization, and external authentication/controller delegation.
-- PostgreSQL/Testcontainers `OvertimeServiceTest` passed: all 49 migrations through V1.3.0.23 applied, detailed overtime retained its optional workstream, and summaries aggregated it with project-level overtime.
-- Frontend type-check and targeted ESLint passed.
-- Focused frontend suite passed: 11 unit tests and 4 Chromium E2E scenarios, including the three-level analytics hierarchy and large mocked matrix.
+- Focused backend allocation tests pass, including employee project roles, year-based project filtering, the allocated-project exception, admin access, and writing only real period-state transitions.
+- PostgreSQL/Testcontainers `OvertimeServiceTest` passed after all 49 migrations through V1.3.0.23, including the allocation period history schema.
+- Frontend type-check, targeted ESLint, and text-integrity checks passed.
+- Focused frontend allocation checks passed, including role display/search, annual period selection, project closure subtitles, MDI closed-month headers, skipping `Without workstream` in both hierarchy modes, declined project/direction counts, full-width terminal-row highlighting, and consistent depth-based indentation; targeted Chromium E2E passes.
 - `web/src/locales/ru.json` parses as JSON and `git diff --check` passes.
 
 ## Remaining
 
-- The input project dropdown currently renders every project returned for global read access. Restrict data-entry selection to projects with `editable=true`; analytics remains global.
 - Cell comment threads are not a built-in RevoGrid feature. RevoGrid supplies the cell renderer/interaction surface, but durable threads require a separate backend model, API, permissions, and comment UI; implementation awaits an explicit product decision.
 - Decide how current allocations on a soft-deleted workstream are retired: analytics can still resolve the deleted stream, but annual input intentionally lists active workstreams only, so such cells cannot currently be set to zero in the UI.
 - Recreate the local database after the edited allocation/workstream migrations, as agreed.
