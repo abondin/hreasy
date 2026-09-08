@@ -26,16 +26,11 @@
           </template>
 
           <template #filter-search>
-            <v-text-field
-              :model-value="search"
-              @update:model-value="search = normalizeSearchInput($event)"
+            <SearchTextField
+              v-model="search"
+              v-model:settings="searchSettings"
               :label="t('Поиск')"
-              prepend-inner-icon="mdi-magnify"
-              clearable
-              density="compact"
-              variant="outlined"
-              hide-details
-              data-testid="salary-latest-filter-search"
+              test-id="salary-latest-filter-search"
             />
           </template>
 
@@ -177,9 +172,10 @@ import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
-import { matchesSearch, normalizeSearchInput } from "@/lib/search";
+import { createSearchSettings, matchesSearch } from "@/lib/search";
 import { fetchBusinessAccounts, type DictItem } from "@/services/dict.service";
 import {
   fetchEmployeesWithLatestSalaryRequest,
@@ -195,6 +191,7 @@ const error = ref("");
 const items = ref<EmployeeWithLatestSalaryRequest[]>([]);
 const bas = ref<DictItem[]>([]);
 const search = ref("");
+const searchSettings = ref(createSearchSettings());
 const selectedBas = ref<number[]>([]);
 const selectedCurrentProjects = ref<number[]>([]);
 const onlyWithRequests = ref(true);
@@ -264,12 +261,12 @@ const filteredItems = computed(() => {
       }
     }
 
-    return matchesSearch(search.value,
+    return matchesSearch(search.value, [
       item.employeeDisplayName,
       item.employeeEmail,
       item.employeeCurrentProject?.name,
       item.employeeCurrentProject?.role,
-    );
+    ], searchSettings.value);
   });
 });
 

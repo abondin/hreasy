@@ -79,13 +79,12 @@ function onAddEmployee(employeeId: number | null): void {
 
 function employeeFilter(_value: string, query: string, item?: unknown): boolean {
   const employee = (item as { raw?: ResourceAllocationInputEmployee } | undefined)?.raw;
-  return matchesSearch(
-    query,
+  return matchesSearch(query, [
     employee?.displayName,
     employee?.email,
     employee?.currentProjectName,
     employee?.currentProjectRole,
-  );
+  ]);
 }
 
 function employeeSubtitle(employee: ResourceAllocationInputEmployee): string | undefined {

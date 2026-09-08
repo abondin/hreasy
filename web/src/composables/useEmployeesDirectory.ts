@@ -1,13 +1,14 @@
 import { computed, ref, watch } from "vue";
 import type { Employee } from "@/services/employee.service";
 import { listEmployees } from "@/services/employee.service";
-import { matchesSearch } from "@/lib/search";
+import { createSearchSettings, matchesSearch, type SearchSettings } from "@/lib/search";
 
 export interface EmployeesFilter {
   search: string;
   departments: number[];
   projects: Array<number | null>;
   businessAccounts: number[];
+  searchSettings: SearchSettings;
 }
 
 const defaultFilter: EmployeesFilter = {
@@ -15,6 +16,7 @@ const defaultFilter: EmployeesFilter = {
   departments: [],
   projects: [],
   businessAccounts: [],
+  searchSettings: createSearchSettings(),
 };
 
 export function useEmployeesDirectory(initialFilter?: Partial<EmployeesFilter>) {
@@ -60,7 +62,7 @@ export function useEmployeesDirectory(initialFilter?: Partial<EmployeesFilter>) 
       ) {
         return false;
       }
-      return matchesSearch(filter.value.search,
+      return matchesSearch(filter.value.search, [
         employee.displayName,
         employee.department?.name,
         employee.email,
@@ -70,7 +72,7 @@ export function useEmployeesDirectory(initialFilter?: Partial<EmployeesFilter>) 
         employee.position?.name,
         employee.telegram,
         ...(employee.skills?.map((skill) => skill.name) ?? []),
-      );
+      ], filter.value.searchSettings);
     });
   });
 

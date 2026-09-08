@@ -30,16 +30,11 @@
         </template>
 
         <template #filter-search>
-          <v-text-field
-            :model-value="filter.search"
-            @update:model-value="filter.search = normalizeSearchInput($event)"
+          <SearchTextField
+            v-model="filter.search"
+            v-model:settings="filter.searchSettings"
             :label="t('Поиск')"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            density="compact"
-            hide-details
-            clearable
-            :data-testid="`${testId}-search`"
+            :test-id="`${testId}-search`"
           />
         </template>
 
@@ -357,9 +352,10 @@ import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
-import { matchesSearch, normalizeSearchInput } from "@/lib/search";
+import { createSearchSettings, matchesSearch, type SearchSettings } from "@/lib/search";
 import type { DictItem } from "@/services/dict.service";
 import { fetchBusinessAccounts, fetchDepartments } from "@/services/dict.service";
 import type { Employee } from "@/services/employee.service";
@@ -387,6 +383,7 @@ interface ManagerFilterState {
   departments: number[];
   businessAccounts: number[];
   currentProjects: number[];
+  searchSettings: SearchSettings;
 }
 
 interface ManagerFormState {
@@ -437,6 +434,7 @@ const filter = reactive<ManagerFilterState>({
   departments: [],
   businessAccounts: [],
   currentProjects: [],
+  searchSettings: createSearchSettings(),
 });
 
 const form = reactive<ManagerFormState>({
@@ -525,12 +523,12 @@ const filteredItems = computed(() => {
       return false;
     }
 
-    return matchesSearch(filter.search,
+    return matchesSearch(filter.search, [
       item.employee?.name,
       employee?.email,
       item.responsibilityObject?.name,
       item.comment,
-    );
+    ], filter.searchSettings);
   });
 });
 

@@ -4,7 +4,7 @@ import type { ComposerTranslation } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
 import { getJuniorProgressIcon } from "@/lib/mentorship";
-import { matchesSearch } from "@/lib/search";
+import { createSearchSettings, matchesSearch, type SearchSettings } from "@/lib/search";
 import {
   addJuniorToRegistry,
   exportJuniorsRegistry,
@@ -26,6 +26,7 @@ interface JuniorFilter {
   selectedBas: number[];
   selectedRoles: string[];
   selectedCurrentProjects: number[];
+  searchSettings: SearchSettings;
 }
 
 export function useJuniorRegistry(t: ComposerTranslation) {
@@ -55,6 +56,7 @@ export function useJuniorRegistry(t: ComposerTranslation) {
     selectedBas: [],
     selectedRoles: [],
     selectedCurrentProjects: [],
+    searchSettings: createSearchSettings(),
   });
 
   const canViewMentorship = computed(
@@ -120,7 +122,7 @@ export function useJuniorRegistry(t: ComposerTranslation) {
       ) {
         return false;
       }
-      return matchesSearch(filter.search,
+      return matchesSearch(filter.search, [
         item.juniorEmpl?.name,
         employeeEmail(item.juniorEmpl?.id),
         item.mentor?.name,
@@ -128,7 +130,7 @@ export function useJuniorRegistry(t: ComposerTranslation) {
         item.latestReport?.createdBy?.name,
         employeeEmail(item.latestReport?.createdBy?.id),
         item.role,
-      );
+      ], filter.searchSettings);
     });
   });
 

@@ -17,7 +17,7 @@ import {
 import { ReportPeriod } from "@/services/overtime.service";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
-import { matchesSearch } from "@/lib/search";
+import { createSearchSettings, matchesSearch, type SearchSettings } from "@/lib/search";
 
 interface SalaryFilter {
   search: string;
@@ -26,6 +26,7 @@ interface SalaryFilter {
   currentProjects: number[];
   implemented: boolean[];
   implementationStates: SalaryRequestImplementationState[];
+  searchSettings: SearchSettings;
 }
 
 /**
@@ -49,6 +50,7 @@ export function useSalaryRequests(t: ComposerTranslation) {
     currentProjects: [],
     implemented: [],
     implementationStates: [],
+    searchSettings: createSearchSettings(),
   });
 
   const canAdminSalaryRequests = computed(() => permissions.canAdminSalaryRequests());
@@ -132,14 +134,14 @@ export function useSalaryRequests(t: ComposerTranslation) {
         }
       }
 
-      return matchesSearch(filter.search,
+      return matchesSearch(filter.search, [
         item.employee?.name,
         item.employeeEmail,
         item.createdBy?.name,
         item.createdByEmail,
         item.budgetBusinessAccount?.name,
         item.req?.reason,
-      );
+      ], filter.searchSettings);
     });
   });
 

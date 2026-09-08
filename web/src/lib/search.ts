@@ -1,4 +1,4 @@
-seimport Fuse from "fuse.js";
+import Fuse from "fuse.js";
 
 const EN_LAYOUT = "`qwertyuiop[]asdfghjkl;'zxcvbnm,./";
 const RU_LAYOUT = "ёйцукенгшщзхъфывапролджэячсмитьбю.";
@@ -8,25 +8,40 @@ const fuzzyOptions = {
   minMatchCharLength: 4,
 } as const;
 
+export interface SearchSettings {
+  fuzzy: boolean;
+  keyboardLayout: boolean;
+  unorderedTerms: boolean;
+}
+
+export function createSearchSettings(): SearchSettings {
+  return { fuzzy: true, keyboardLayout: true, unorderedTerms: true };
+}
+
 export function normalizeSearchInput(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
 export function matchesSearch(
   query: string,
-  ...values: Array<string | null | undefined>
+  values: Array<string | null | undefined>,
+  settings: SearchSettings = createSearchSettings(),
 ): boolean {
-  const terms = normalize(query).split(/\s+/).filter(Boolean);
+  const normalizedQuery = normalize(query);
+  const terms = settings.unorderedTerms
+    ? normalizedQuery.split(/\s+/).filter(Boolean)
+    : [normalizedQuery].filter(Boolean);
   if (terms.length === 0) {
     return true;
   }
 
   const haystack = normalize(values.filter(Boolean).join(" "));
   const words = haystack.split(/\s+/);
-  return terms.every((term) => queryCandidates(term).some((candidate) =>
+  const fuzzyTargets = settings.unorderedTerms ? words : [haystack];
+  return terms.every((term) => queryCandidates(term, settings.keyboardLayout).some((candidate) =>
     haystack.includes(candidate)
-    || (candidate.length >= 4
-      && words.some((word) => Fuse.match(candidate, word, fuzzyOptions).isMatch)),
+    || (settings.fuzzy && candidate.length >= 4
+      && fuzzyTargets.some((target) => Fuse.match(candidate, target, fuzzyOptions).isMatch)),
   ));
 }
 
@@ -34,12 +49,14 @@ function normalize(value: string): string {
   return value.normalize("NFKC").toLocaleLowerCase("ru-RU").trim();
 }
 
-function queryCandidates(term: string): string[] {
-  return [...new Set([
-    term,
-    convertLayout(term, EN_LAYOUT, RU_LAYOUT),
-    convertLayout(term, RU_LAYOUT, EN_LAYOUT),
-  ])];
+function queryCandidates(term: string, keyboardLayout: boolean): string[] {
+  return keyboardLayout
+    ? [...new Set([
+      term,
+      convertLayout(term, EN_LAYOUT, RU_LAYOUT),
+      convertLayout(term, RU_LAYOUT, EN_LAYOUT),
+    ])]
+    : [term];
 }
 
 function convertLayout(value: string, from: string, to: string): string {

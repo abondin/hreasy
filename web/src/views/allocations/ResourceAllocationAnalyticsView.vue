@@ -106,16 +106,11 @@
         </template>
 
         <template #filter-search>
-          <v-text-field
-            :model-value="search"
-            @update:model-value="search = normalizeSearchInput($event)"
+          <SearchTextField
+            v-model="search"
+            v-model:settings="searchSettings"
             :label="t('Поиск по сотруднику, роли, проекту или направлению работ')"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            density="compact"
-            clearable
-            hide-details
-            data-testid="resource-allocations-analytics-search"
+            test-id="resource-allocations-analytics-search"
           />
         </template>
       </AdaptiveFilterBar>
@@ -221,11 +216,12 @@ import {
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
-import { matchesSearch, normalizeSearchInput } from "@/lib/search";
+import { createSearchSettings, matchesSearch } from "@/lib/search";
 import { ReportPeriod } from "@/services/overtime.service";
 import {
   fetchClosedResourceAllocationPeriods,
@@ -280,6 +276,7 @@ const sheet = shallowRef<ResourceAllocationAnalytics | null>(null);
 const businessAccountIds = ref<number[]>([]);
 const projectIds = ref<number[]>([]);
 const search = ref("");
+const searchSettings = ref(createSearchSettings());
 const loading = ref(false);
 const error = ref("");
 const closedPeriods = ref(new Set<number>());
@@ -350,14 +347,13 @@ const gridRows = computed<AnalyticsGridRow[]>(() => {
       ? null
       : workstreamsById.value.get(allocation.workstreamId);
     if (!employee || !project) continue;
-    if (!matchesSearch(
-      search.value,
+    if (!matchesSearch(search.value, [
       employee.displayName,
       employee.email,
       employee.currentProjectRole,
       project.name,
       workstream?.displayName,
-    )) continue;
+    ], searchSettings.value)) continue;
     const key = `${employee.id}:${project.id}:${allocation.workstreamId ?? "project"}`;
     const employeeText = employeeLabel(employee);
     const row: AnalyticsGridRow = rows.get(key) ?? {

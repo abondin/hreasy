@@ -28,16 +28,11 @@
             </template>
 
             <template #filter-search>
-              <v-text-field
-                :model-value="search"
-                @update:model-value="search = normalizeSearchInput($event)"
-                data-testid="admin-kids-search"
-                prepend-inner-icon="mdi-magnify"
-                density="compact"
+              <SearchTextField
+                v-model="search"
+                v-model:settings="searchSettings"
+                test-id="admin-kids-search"
                 :label="t('Поиск')"
-                variant="outlined"
-                hide-details
-                clearable
               />
             </template>
             <template #filter-hide-dismissed>
@@ -93,12 +88,13 @@ import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import AdminEmployeeKidForm from "@/views/admin/employees/components/AdminEmployeeKidForm.vue";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
-import { matchesSearch, normalizeSearchInput } from "@/lib/search";
+import { createSearchSettings, matchesSearch } from "@/lib/search";
 import { listEmployees, type Employee } from "@/services/employee.service";
 import {
   listEmployeeKids,
@@ -111,6 +107,7 @@ const loading = ref(false);
 const dialog = ref(false);
 const error = ref<string | null>(null);
 const search = ref("");
+const searchSettings = ref(createSearchSettings());
 const hideDismissed = ref(true);
 const kids = ref<EmployeeKid[]>([]);
 const employees = ref<Employee[]>([]);
@@ -135,7 +132,11 @@ const filteredItems = computed(() => {
       return false;
     }
     const parentEmail = employees.value.find((employee) => employee.id === it.parent?.id)?.email;
-    return matchesSearch(search.value, it.displayName, it.parent?.name, parentEmail);
+    return matchesSearch(
+      search.value,
+      [it.displayName, it.parent?.name, parentEmail],
+      searchSettings.value,
+    );
   });
 });
 

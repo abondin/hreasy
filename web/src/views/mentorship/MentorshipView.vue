@@ -37,17 +37,12 @@
           </template>
 
           <template #filter-search>
-            <v-text-field
-              :model-value="filter.search"
-              @update:model-value="filter.search = normalizeSearchInput($event)"
-              data-testid="mentorship-filter-search"
-              density="compact"
-              clearable
+            <SearchTextField
+              v-model="filter.search"
+              v-model:settings="filter.searchSettings"
+              test-id="mentorship-filter-search"
               :disabled="loading"
               :label="t('Поиск')"
-              prepend-inner-icon="mdi-magnify"
-              variant="outlined"
-              hide-details
             />
           </template>
 
@@ -258,11 +253,11 @@ import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import JuniorRegistryFormFields from "@/components/mentorship/JuniorRegistryFormFields.vue";
 import ValueWithStatusChip from "@/components/shared/ValueWithStatusChip.vue";
 import { formatDateTime } from "@/lib/datetime";
 import { useJuniorRegistry } from "@/composables/useJuniorRegistry";
-import { normalizeSearchInput } from "@/lib/search";
 import type { AddJuniorRegistryBody, UpdateJuniorRegistryBody } from "@/services/junior-registry.service";
 
 const { t } = useI18n();

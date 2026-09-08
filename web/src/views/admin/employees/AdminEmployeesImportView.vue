@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import { matchesSearch } from "@/lib/search";
+import { matchesSearch, type SearchSettings } from "@/lib/search";
 import AdminImportWorkflow from "@/views/admin/employees/components/AdminImportWorkflow.vue";
 import {
   adminEmployeeImportService,
@@ -116,7 +116,7 @@ function previewHeadersLoader() {
 
 function previewFilterFunction(
   items: ImportEmployeeExcelRow[],
-  filter: { search: string; hideNotUpdatedWithoutErrors: boolean },
+  filter: { search: string; searchSettings: SearchSettings; hideNotUpdatedWithoutErrors: boolean },
 ) {
   return items.filter((item) => {
     if (filter.hideNotUpdatedWithoutErrors && item.updatedCellsCount <= 0 && item.errorCount <= 0) {
@@ -124,8 +124,8 @@ function previewFilterFunction(
     }
     return matchesSearch(
       filter.search,
-      String(item.displayName?.importedValue ?? ""),
-      String(item.email ?? ""),
+      [String(item.displayName?.importedValue ?? ""), String(item.email ?? "")],
+      filter.searchSettings,
     );
   });
 }
