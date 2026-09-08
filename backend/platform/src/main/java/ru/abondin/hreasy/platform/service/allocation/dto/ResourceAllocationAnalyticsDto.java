@@ -13,7 +13,7 @@ public record ResourceAllocationAnalyticsDto(int year,
     public record EmployeeDto(Integer id, String displayName,
                               Integer departmentId, String departmentName,
                               Integer currentProjectId, String currentProjectName,
-                              String currentProjectRole) {
+                              String currentProjectRole, String email) {
     }
 
     public record ProjectDto(Integer id, String name,

@@ -147,7 +147,7 @@ import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
-import { normalizeSearchInput } from "@/lib/search";
+import { matchesSearch, normalizeSearchInput } from "@/lib/search";
 import type { DictItem } from "@/services/dict.service";
 import {
   fetchBusinessAccounts,
@@ -209,7 +209,7 @@ const filteredItems = computed(() => {
       .filter((role) => role.name.toLowerCase().includes(query))
       .map((role) => role.id);
 
-    return item.employee.name.toLowerCase().includes(query)
+    return matchesSearch(query, item.employee.name, item.email)
       || item.accessibleProjects.some((id) => matchingProjectIds.includes(id))
       || item.managedProjects.some((id) => matchingProjectIds.includes(id))
       || item.accessibleDepartments.some((id) => matchingDepartmentIds.includes(id))

@@ -106,10 +106,16 @@
         </template>
 
         <template #filter-search>
-          <SearchTextField
-            v-model="search"
+          <v-text-field
+            :model-value="search"
+            @update:model-value="search = normalizeSearchInput($event)"
             :label="t('Поиск по сотруднику, роли, проекту или направлению работ')"
-            test-id="resource-allocations-analytics-search"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            density="compact"
+            clearable
+            hide-details
+            data-testid="resource-allocations-analytics-search"
           />
         </template>
       </AdaptiveFilterBar>
@@ -215,11 +221,11 @@ import {
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
-import SearchTextField from "@/components/shared/SearchTextField.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
+import { matchesSearch, normalizeSearchInput } from "@/lib/search";
 import { ReportPeriod } from "@/services/overtime.service";
 import {
   fetchClosedResourceAllocationPeriods,
@@ -334,7 +340,6 @@ const visibleProjectIds = computed(() =>
       .map((project) => project.id),
   ),
 );
-const normalizedSearch = computed(() => search.value.trim().toLocaleLowerCase());
 const gridRows = computed<AnalyticsGridRow[]>(() => {
   const rows = new Map<string, AnalyticsGridRow>();
   for (const allocation of sheet.value?.allocations ?? []) {
@@ -345,13 +350,14 @@ const gridRows = computed<AnalyticsGridRow[]>(() => {
       ? null
       : workstreamsById.value.get(allocation.workstreamId);
     if (!employee || !project) continue;
-    if (
-      normalizedSearch.value &&
-      !employee.displayName.toLocaleLowerCase().includes(normalizedSearch.value) &&
-      !employee.currentProjectRole?.toLocaleLowerCase().includes(normalizedSearch.value) &&
-      !project.name.toLocaleLowerCase().includes(normalizedSearch.value) &&
-      !workstream?.displayName.toLocaleLowerCase().includes(normalizedSearch.value)
-    ) continue;
+    if (!matchesSearch(
+      search.value,
+      employee.displayName,
+      employee.email,
+      employee.currentProjectRole,
+      project.name,
+      workstream?.displayName,
+    )) continue;
     const key = `${employee.id}:${project.id}:${allocation.workstreamId ?? "project"}`;
     const employeeText = employeeLabel(employee);
     const row: AnalyticsGridRow = rows.get(key) ?? {

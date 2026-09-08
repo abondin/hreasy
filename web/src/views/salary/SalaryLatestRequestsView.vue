@@ -179,7 +179,7 @@ import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionCon
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
-import { normalizeSearchInput } from "@/lib/search";
+import { matchesSearch, normalizeSearchInput } from "@/lib/search";
 import { fetchBusinessAccounts, type DictItem } from "@/services/dict.service";
 import {
   fetchEmployeesWithLatestSalaryRequest,
@@ -245,8 +245,6 @@ const yesNoOptions = computed(() => [
 ]);
 
 const filteredItems = computed(() => {
-  const normalizedSearch = search.value.toLowerCase().trim();
-
   return items.value.filter((item) => {
     if (onlyWithRequests.value && !item.requestId) {
       return false;
@@ -266,20 +264,12 @@ const filteredItems = computed(() => {
       }
     }
 
-    if (!normalizedSearch) {
-      return true;
-    }
-
-    return [
+    return matchesSearch(search.value,
       item.employeeDisplayName,
       item.employeeEmail,
       item.employeeCurrentProject?.name,
       item.employeeCurrentProject?.role,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(normalizedSearch);
+    );
   });
 });
 

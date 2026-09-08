@@ -359,7 +359,7 @@ import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
-import { normalizeSearchInput } from "@/lib/search";
+import { matchesSearch, normalizeSearchInput } from "@/lib/search";
 import type { DictItem } from "@/services/dict.service";
 import { fetchBusinessAccounts, fetchDepartments } from "@/services/dict.service";
 import type { Employee } from "@/services/employee.service";
@@ -505,7 +505,6 @@ const headers = computed<Array<{ title: string; key: string; width?: string }>>(
   return result;
 });
 const filteredItems = computed(() => {
-  const query = filter.search.trim().toLowerCase();
   return items.value.filter((item) => {
     const employee = employees.value.find((employeeItem) => employeeItem.id === item.employee?.id);
     if (props.mode === "full" && filter.responsibilityObjectTypes.length > 0) {
@@ -526,19 +525,12 @@ const filteredItems = computed(() => {
       return false;
     }
 
-    if (!query) {
-      return true;
-    }
-
-    return [
+    return matchesSearch(filter.search,
       item.employee?.name,
+      employee?.email,
       item.responsibilityObject?.name,
       item.comment,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(query);
+    );
   });
 });
 

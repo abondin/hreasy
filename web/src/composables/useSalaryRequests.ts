@@ -17,6 +17,7 @@ import {
 import { ReportPeriod } from "@/services/overtime.service";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
+import { matchesSearch } from "@/lib/search";
 
 interface SalaryFilter {
   search: string;
@@ -100,8 +101,6 @@ export function useSalaryRequests(t: ComposerTranslation) {
   });
 
   const filteredItems = computed(() => {
-    const search = filter.search.toLowerCase().trim();
-
     return items.value.filter((item) => {
       if (item.type !== filter.type) {
         return false;
@@ -133,20 +132,14 @@ export function useSalaryRequests(t: ComposerTranslation) {
         }
       }
 
-      if (!search) {
-        return true;
-      }
-
-      return [
+      return matchesSearch(filter.search,
         item.employee?.name,
+        item.employeeEmail,
         item.createdBy?.name,
+        item.createdByEmail,
         item.budgetBusinessAccount?.name,
         item.req?.reason,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(search);
+      );
     });
   });
 

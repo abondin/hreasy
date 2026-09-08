@@ -26,12 +26,14 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 - The selected input year and project are persisted as `year` and `projectId` URL query parameters.
 - The input project selector excludes projects outside the selected year unless they have allocations in that year. Projects ended within the year show their closed status and actual end date as a Vuetify item subtitle.
 - The employee selector and input rows show the current project role. Selector search covers employee name, current project, and role, but not dismissal date. Analytics shows and searches by the role too.
+- Searches involving employee names use one case-insensitive AND-token matcher. It tries exact text in the entered and opposite RU/EN keyboard layouts before a strict per-word Fuse fallback; email participates in every person-oriented search.
 - Month closing/reopening is backend-enforced and restricted by `resource_allocation_admin`. The analytics lock dialog edits all twelve months of the selected year and saves the selection once.
 
 ## Implementation
 
 - Flyway schema stores `year` explicitly on current allocations, annual revisions, and closed periods.
 - Annual API: `GET /api/v1/resource-allocations/input/{year}` and `PUT /api/v1/resource-allocations/input/{year}/{projectId}`, both with optional `workstreamId`.
+- Allocation input and analytics employee payloads include email for text search. Salary request lists expose employee and creator emails, and the admin user list exposes employee email.
 - Annual input returns employee/month sums from dimensions other than the selected project/workstream pair and marks whether they include the same project; the UI uses that flag to retain project employees across workstreams and renders positive values as a muted `+ N%` hint.
 - Input initializes `year` and `projectId` from the URL and replaces those query parameters after the backend resolves the selected project.
 - Period API: `GET` and `PUT /api/v1/resource-allocations/closed-periods/{year}`. The PUT compares requested and current sets and writes only real state transitions.
@@ -45,7 +47,7 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 - Group and terminal-row indentation uses one shared hierarchy step; a single leaf cell template positions terminal text one level below its parent instead of relying on RevoGrid's ignored container padding.
 - Regular and pseudo-group terminal cells use the same marker and one grid-cell CSS rule, so both row shapes have the same full-cell background, including empty months.
 - Employee analytics is summary-first: employee groups start collapsed, retain their monthly totals, and show the sole project name or project count beside the employee. Business-account groups start expanded; projects with workstreams and all workstream groups start collapsed.
-- BA and dependent project multi-selects filter complete hierarchy branches. The shared text-search field matches employee, current project role, project, or workstream and keeps matching employee/project pairs; its final parent/child retention semantics remain open for UX review.
+- BA and dependent project multi-selects filter complete hierarchy branches. Analytics text search matches employee, current project role, project, or workstream and keeps matching employee/project pairs; its final parent/child retention semantics remain open for UX review.
 - RevoGrid provides virtualized annual editing, clipboard, range selection, native Tab/Enter, and native autofill behavior.
 - Shared HREasy page/layout, Vuetify controls, dialogs, period switcher, search normalization, and permissions remain in use.
 - Data entry now uses the same `AdaptiveFilterBar` and `TableToolbarActions` composition as neighboring manager pages. The project selector is a normal toolbar filter and the annual grid is full-width without a nested card.
@@ -63,8 +65,9 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 ## Validation
 
 - Focused backend allocation tests pass, including employee project roles, year-based project filtering, the allocated-project exception, admin access, and writing only real period-state transitions.
+- Allocation API tests also verify employee email in both input and analytics responses. Salary request integration validation could not start because the local Docker engine is unavailable; compilation and generated MapStruct mappings succeeded.
 - PostgreSQL/Testcontainers `OvertimeServiceTest` passed after all 49 migrations through V1.3.0.23, including the allocation period history schema.
-- Frontend type-check, targeted ESLint, and text-integrity checks passed.
+- Frontend type-check, targeted ESLint, full unit suite, and text-integrity checks passed.
 - Focused frontend allocation checks passed, including role display/search, annual period selection, project closure subtitles, MDI closed-month headers, skipping `Without workstream` in both hierarchy modes, declined project/direction counts, full-width terminal-row highlighting, and consistent depth-based indentation; targeted Chromium E2E passes.
 - `web/src/locales/ru.json` parses as JSON and `git diff --check` passes.
 

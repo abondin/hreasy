@@ -219,7 +219,7 @@ import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
-import { normalizeSearchInput } from "@/lib/search";
+import { matchesSearch, normalizeSearchInput } from "@/lib/search";
 import {
   fetchBusinessAccounts,
   fetchDepartments,
@@ -320,7 +320,6 @@ const activePositions = computed(() =>
 );
 
 const filteredItems = computed(() => {
-  const q = search.value.trim().toLowerCase();
   return items.value.filter((item) => {
     if (hideDismissed.value && !item.active) {
       return false;
@@ -343,14 +342,7 @@ const filteredItems = computed(() => {
     ) {
       return false;
     }
-    if (!q) {
-      return true;
-    }
-    return [item.displayName, item.email, item.skype, item.phone]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(q);
+    return matchesSearch(search.value, item.displayName, item.email, item.skype, item.phone);
   });
 });
 

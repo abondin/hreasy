@@ -17,6 +17,7 @@ import {
 } from "@/services/overtime.service";
 import { extractDataTableRow } from "@/lib/data-table";
 import { usePermissions } from "@/lib/permissions";
+import { matchesSearch } from "@/lib/search";
 
 interface EmployeeRef {
   id: number;
@@ -111,14 +112,10 @@ export function useOvertimesSummary(t: ComposerTranslation) {
 
   const filteredOvertimes = computed(() =>
     baseRows.value.filter((row) => {
-      if (
-        filter.search &&
-        !row.employee.name.toLowerCase().includes(filter.search.toLowerCase())
-      ) {
+      const employee = employees.value.find((item) => item.id === row.employee.id);
+      if (!matchesSearch(filter.search, row.employee.name, employee?.email)) {
         return false;
       }
-
-      const employee = employees.value.find((item) => item.id === row.employee.id);
       if (
         filter.selectedDepartments.length > 0 &&
         !filter.selectedDepartments.includes(employee?.department?.id ?? -1)

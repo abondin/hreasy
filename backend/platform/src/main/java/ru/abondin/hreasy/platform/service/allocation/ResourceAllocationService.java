@@ -316,7 +316,8 @@ public class ResourceAllocationService {
     private EmployeeDto toEmployeeDto(ResourceAllocationEmployeeView employee) {
         return new EmployeeDto(employee.id(), employee.displayName(),
                 employee.departmentId(), employee.departmentName(),
-                employee.currentProjectId(), employee.currentProjectName(), employee.currentProjectRole());
+                employee.currentProjectId(), employee.currentProjectName(), employee.currentProjectRole(),
+                employee.email());
     }
 
     private ResourceAllocationProjectInputDto.AllocationDto toProjectInputAllocationDto(
@@ -331,7 +332,8 @@ public class ResourceAllocationService {
         return new ResourceAllocationProjectInputDto.EmployeeDto(employee.id(), employee.displayName(),
                 employee.currentProjectId(), employee.currentProjectName(), employee.currentProjectRole(),
                 employee.dateOfEmployment(),
-                dismissalDate, dismissalDate != null && !dismissalDate.isAfter(dateTimeService.now().toLocalDate()));
+                dismissalDate, dismissalDate != null && !dismissalDate.isAfter(dateTimeService.now().toLocalDate()),
+                employee.email());
     }
 
     private ProjectDto toProjectDto(ResourceAllocationProjectView project, Year year, AuthContext auth) {

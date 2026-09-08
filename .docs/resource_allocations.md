@@ -103,9 +103,9 @@ The frontend uses two child routes:
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| `GET` | `/api/v1/resource-allocations/input/{year}?projectId={id}&workstreamId={id}` | Load annual input data for an optional workstream, closed periods, and employee/month totals on all other allocation dimensions. |
+| `GET` | `/api/v1/resource-allocations/input/{year}?projectId={id}&workstreamId={id}` | Load annual input data for an optional workstream, searchable employee details including email, closed periods, and employee/month totals on all other allocation dimensions. |
 | `PUT` | `/api/v1/resource-allocations/input/{year}/{projectId}?workstreamId={id}` | Save changed employee/month cells for an optional workstream as one revision. |
-| `GET` | `/api/v1/resource-allocations/analytics/{year}` | Load annual read-only analytics. |
+| `GET` | `/api/v1/resource-allocations/analytics/{year}` | Load annual read-only analytics with searchable employee details including email. |
 | `GET` | `/api/v1/resource-allocations/closed-periods/{year}` | Load closed months for the analytics toolbar. |
 | `PUT` | `/api/v1/resource-allocations/closed-periods/{year}` | Replace the closed-month selection for the year. |
 

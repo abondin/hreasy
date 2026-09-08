@@ -4,6 +4,7 @@ import type { ProjectWorkstream } from "@/services/projects.service";
 export interface ResourceAllocationEmployee {
   id: number;
   displayName: string;
+  email?: string | null;
   departmentId: number | null;
   departmentName: string | null;
   currentProjectId: number | null;
@@ -53,6 +54,7 @@ export interface ResourceAllocationInputMonth {
 export interface ResourceAllocationInputEmployee {
   id: number;
   displayName: string;
+  email?: string | null;
   currentProjectId: number | null;
   currentProjectName: string | null;
   currentProjectRole?: string | null;

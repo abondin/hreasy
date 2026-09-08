@@ -98,7 +98,7 @@ import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
-import { normalizeSearchInput } from "@/lib/search";
+import { matchesSearch, normalizeSearchInput } from "@/lib/search";
 import { listEmployees, type Employee } from "@/services/employee.service";
 import {
   listEmployeeKids,
@@ -130,19 +130,12 @@ const headers = computed(() => [
 ]);
 
 const filteredItems = computed(() => {
-  const q = search.value.trim().toLowerCase();
   return kids.value.filter((it) => {
     if (hideDismissed.value && !it.parent?.active) {
       return false;
     }
-    if (!q) {
-      return true;
-    }
-    return [it.displayName, it.parent?.name]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(q);
+    const parentEmail = employees.value.find((employee) => employee.id === it.parent?.id)?.email;
+    return matchesSearch(search.value, it.displayName, it.parent?.name, parentEmail);
   });
 });
 

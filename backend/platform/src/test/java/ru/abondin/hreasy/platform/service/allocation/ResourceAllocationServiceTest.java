@@ -81,6 +81,7 @@ class ResourceAllocationServiceTest {
                             input.projects().stream().map(project -> project.name()).toList());
                     assertTrue(input.projects().getFirst().editable());
                     assertEquals("Developer", input.employees().getFirst().currentProjectRole());
+                    assertEquals("employee1@example.com", input.employees().getFirst().email());
                     assertEquals(2, input.allocations().size());
                     assertEquals(40, input.otherAllocations().getFirst().percent());
                     assertTrue(input.otherAllocations().getLast().sameProject());
@@ -124,6 +125,7 @@ class ResourceAllocationServiceTest {
                 .assertNext(analytics -> {
                     assertEquals(List.of(1), analytics.employees().stream().map(employee -> employee.id()).toList());
                     assertEquals("Developer", analytics.employees().getFirst().currentProjectRole());
+                    assertEquals("employee1@example.com", analytics.employees().getFirst().email());
                     assertEquals(List.of(10), analytics.projects().stream().map(project -> project.id()).toList());
                     assertEquals(List.of(202600, 202601),
                             analytics.allocations().stream().map(allocation -> allocation.period()).toList());
@@ -221,7 +223,7 @@ class ResourceAllocationServiceTest {
     void rejectsClosedMonthsAndMonthsAfterDismissal() {
         var dismissed = new ResourceAllocationEmployeeView(1, "Test Employee 1",
                 null, null, 10, "Project 10", "Developer",
-                LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10));
+                LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10), "employee@example.com");
         when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
                 .thenReturn(Flux.just(dismissed));
         when(repository.findProjects()).thenReturn(Flux.just(project(10)));
@@ -267,7 +269,8 @@ class ResourceAllocationServiceTest {
 
     private ResourceAllocationEmployeeView employee(int id) {
         return new ResourceAllocationEmployeeView(id, "Test Employee " + id,
-                null, null, null, null, "Developer", LocalDate.of(2020, 1, 1), null);
+                null, null, null, null, "Developer", LocalDate.of(2020, 1, 1), null,
+                "employee" + id + "@example.com");
     }
 
     private ResourceAllocationProjectView project(int id) {

@@ -14,6 +14,7 @@ import {
   isDateInRange,
 } from "@/lib/vacation-dates";
 import { usePermissions } from "@/lib/permissions";
+import { matchesSearch } from "@/lib/search";
 import {
   exportVacations,
   fetchVacations,
@@ -188,13 +189,12 @@ export function useVacationsManagement(t: ComposerTranslation) {
       filtered = filtered && isDateInRange(item.startDate, filter.selectedDates);
     }
 
-    if (filter.search) {
-      const search = filter.search.toLowerCase();
-      const combined = `${item.employeeDisplayName ?? ""} ${
-        item.employeeCurrentProject?.role ?? ""
-      }`.toLowerCase();
-      filtered = filtered && combined.includes(search);
-    }
+    filtered = filtered && matchesSearch(
+      filter.search,
+      item.employeeDisplayName,
+      employee?.email,
+      item.employeeCurrentProject?.role,
+    );
 
     return filtered;
   }
