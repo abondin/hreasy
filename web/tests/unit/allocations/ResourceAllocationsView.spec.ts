@@ -1,6 +1,7 @@
 import { defineComponent, h, ref, type PropType } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { PSEUDO_GROUP_ITEM_VALUE } from "@revolist/revogrid";
 import { BusinessError } from "@/lib/errors";
 import ResourceAllocationAnalyticsView from "@/views/allocations/ResourceAllocationAnalyticsView.vue";
 import ResourceAllocationInputView from "@/views/allocations/ResourceAllocationInputView.vue";
@@ -266,6 +267,17 @@ const globalStubs = {
   VEmptyState: PassThroughStub,
   VDialog: DialogStub,
   VCheckbox: CheckboxStub,
+  VCheckboxBtn: defineComponent({
+    props: { modelValue: Boolean },
+    emits: ["update:modelValue"],
+    setup(props, { emit }) {
+      return () => h("button", {
+        role: "checkbox",
+        "aria-checked": String(props.modelValue),
+        onClick: () => emit("update:modelValue", !props.modelValue),
+      });
+    },
+  }),
   VCard: PassThroughStub,
   VCardTitle: PassThroughStub,
   VCardText: PassThroughStub,
@@ -469,6 +481,11 @@ describe("ResourceAllocationsView", () => {
     await wrapper
       .get('[data-testid="resource-allocation-input-3-202607"]')
       .trigger("keydown", { key: "Enter" });
+    const replaceCalls = routerMocks.replace.mock.calls.length;
+    await wrapper.get('[data-testid="resource-allocation-open-employee-3"]').trigger("click");
+    expect(wrapper.emitted("open-employee")).toEqual([[3]]);
+    expect(routerMocks.replace).toHaveBeenCalledTimes(replaceCalls);
+    expect(saveResourceAllocations).not.toHaveBeenCalled();
     await wrapper
       .get('[data-testid="resource-allocations-save"]')
       .trigger("click");
@@ -534,7 +551,8 @@ describe("ResourceAllocationsView", () => {
     const october = wrapper.get('[data-testid="resource-allocation-input-1-202609"]');
     expect(october.text()).toBe("0%");
     const grid = wrapper.getComponent(GridStub);
-    const model = grid.props("source")[0];
+    const model = grid.props("source")?.[0];
+    expect(model).toBeDefined();
     const numericEdit = new CustomEvent("beforeedit", {
       cancelable: true, detail: { model, prop: "month_202609", val: "0" },
     });
@@ -633,8 +651,14 @@ describe("ResourceAllocationsView", () => {
     });
     await flushPromises();
 
+    const unitControl = wrapper.getComponent('[data-testid="resource-allocations-display-unit"]');
+    expect(unitControl.props("modelValue")).toBe("personMonths");
+    expect(wrapper.get('[data-testid="resource-allocation-analytics-cell-1:10:11-year-total"]').text()).toBe("0,6");
+    unitControl.vm.$emit("update:modelValue", "percent");
+    await flushPromises();
     const grid = wrapper.getComponent(GridStub);
-    expect(grid.props("columns")).toHaveLength(13);
+    expect(grid.props("columns")).toHaveLength(14);
+    expect(grid.props("columns")?.[1]?.prop).toBe("yearTotal");
     expect(grid.props("stretch")).toBe(true);
     expect(grid.props("grouping")).toEqual(
       expect.objectContaining({
@@ -667,24 +691,88 @@ describe("ResourceAllocationsView", () => {
       .toContain("padding-left: 48px");
     const summaries = grid.props("additionalData") as unknown as Map<
       string,
-      { label: string; months: Map<number, number>; projects: Set<string>; workstreams: Set<string>; dimensions: Set<string>; terminalRowId: string | null }
+      { label: string; months: Map<number, number>; projects: Set<string>; workstreams: Set<string>; dimensions: Set<string>; terminalRowId: string | null; yearTotal: number | null }
     >;
     expect(summaries.get("ba:none")?.months.get(202600)).toBe(60);
+    expect(summaries.get("ba:none")?.yearTotal).toBe(100);
+    expect(wrapper.get('[data-testid="resource-allocation-analytics-cell-1:10:11-year-total"]').text()).toBe("60%");
     expect(summaries.get("ba:none,project:20")?.months.get(202602)).toBe(0);
     expect(summaries.get("ba:none,project:10")?.months.get(202601)).toBe(40);
     expect(summaries.get("ba:none,project:10")?.workstreams).toEqual(new Set(["Delivery"]));
     expect(summaries.get("ba:none,project:10")?.dimensions).toEqual(new Set(["11", "project"]));
     expect(summaries.get("ba:none,project:20,employee:1")?.terminalRowId).toBe("1:20:project");
-    wrapper.getComponent(ToggleStub).vm.$emit("update:modelValue", "employees");
+    const totalsToggle = wrapper.get('[data-testid="resource-allocations-group-totals"]');
+    const originalRows = grid.props("source");
+    const originalGrouping = grid.props("grouping");
+    const loadsBeforeToggle = vi.mocked(fetchResourceAllocationAnalytics).mock.calls.length;
+    await totalsToggle.trigger("click");
+    const withoutTotals = grid.props("additionalData") as unknown as typeof summaries;
+    expect(withoutTotals.get("ba:none")?.months.size).toBe(0);
+    expect(withoutTotals.get("ba:none")?.yearTotal).toBeNull();
+    expect(withoutTotals.get("ba:none,project:20,employee:1")?.yearTotal).toBe(0);
+    expect(withoutTotals.get("ba:none,project:10")?.months.size).toBe(0);
+    expect(withoutTotals.get("ba:none,project:10,workstream:10:11")?.months.size).toBe(0);
+    expect(withoutTotals.get("ba:none,project:20,employee:1")?.months.get(202602)).toBe(0);
+    expect(grid.props("source")).toBe(originalRows);
+    expect(grid.props("grouping")).toBe(originalGrouping);
+    expect(fetchResourceAllocationAnalytics).toHaveBeenCalledTimes(loadsBeforeToggle);
+    await wrapper.findAll('[data-testid="resource-allocation-open-employee-1"]')[0]!.trigger("click");
+    expect(wrapper.emitted("open-employee")).toEqual([[1]]);
+    wrapper.getComponent('[data-testid="resource-allocations-analytics-mode"]').vm.$emit("update:modelValue", "employees");
     await flushPromises();
     const employeeSummaries = wrapper.getComponent(GridStub).props("additionalData") as unknown as Map<
       string,
-      { terminalRowId: string | null }
+      { terminalRowId: string | null; months: Map<number, number> }
     >;
+    expect(employeeSummaries.get("employee:1")?.months.size).toBe(0);
+    expect(employeeSummaries.get("employee:1,project:10")?.months.size).toBe(0);
+    expect(employeeSummaries.get("employee:1,project:20")?.months.get(202602)).toBe(0);
+    await totalsToggle.trigger("click");
+    const restoredTotals = grid.props("additionalData") as unknown as typeof employeeSummaries;
+    expect(restoredTotals.get("employee:1")?.months.get(202600)).toBe(60);
     expect(employeeSummaries.get("employee:1,project:20")?.terminalRowId).toBe("1:20:project");
     expect(wrapper.get('[data-testid="resource-allocation-analytics-row-1:10:11"]').attributes("style"))
       .toContain("padding-left: 32px");
     expect(wrapper.findAll("input")).toHaveLength(0);
+
+    const onExpand = vi.fn();
+    const gridClick = vi.fn();
+    const renderGroup = grid.props("grouping")?.groupCellTemplate;
+    const group = mount(defineComponent({
+      setup: () => () => h("div", { onClick: gridClick }, [renderGroup(h, {
+        model: { [PSEUDO_GROUP_ITEM_VALUE]: "employee:1" },
+        group: { isLabelColumn: true, depth: 0, expanded: false, onExpand },
+      }, employeeSummaries)]),
+    }));
+    const profileButton = group.get('[data-testid="resource-allocation-open-employee-1"]');
+    await profileButton.trigger("pointerdown");
+    await profileButton.trigger("keydown", { key: "Enter" });
+    await profileButton.trigger("click");
+    expect(wrapper.emitted("open-employee")).toEqual([[1], [1]]);
+    expect(onExpand).not.toHaveBeenCalled();
+    expect(gridClick).not.toHaveBeenCalled();
+    await group.get('[data-testid="resource-allocation-group-employee:1-label"]').trigger("click");
+    expect(onExpand).toHaveBeenCalledOnce();
+    expect(wrapper.emitted("open-employee")).toHaveLength(2);
+    group.unmount();
+
+    const groupingBeforeUnits = grid.props("grouping");
+    wrapper.getComponent('[data-testid="resource-allocations-display-unit"]').vm.$emit("update:modelValue", "personMonths");
+    await flushPromises();
+    const personMonthSummaries = grid.props("additionalData") as unknown as typeof summaries;
+    expect(personMonthSummaries.get("employee:1")?.months.get(202600)).toBe(0.6);
+    expect(personMonthSummaries.get("employee:1")?.yearTotal).toBe(1);
+    expect(wrapper.get('[data-testid="resource-allocation-analytics-cell-1:10:11-year-total"]').text()).toBe("0,6");
+    expect(wrapper.get('[data-testid="resource-allocation-analytics-cell-1:20:project-202602"]').text()).toBe("0");
+    expect(grid.props("source")).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "1:10:11", month_202600: 0.6, yearTotal: 0.6 }),
+    ]));
+    expect(grid.props("grouping")).toBe(groupingBeforeUnits);
+    expect(fetchResourceAllocationAnalytics).toHaveBeenCalledTimes(loadsBeforeToggle);
+    wrapper.getComponent('[data-testid="resource-allocations-display-unit"]').vm.$emit("update:modelValue", "percent");
+    await flushPromises();
+    expect(wrapper.get('[data-testid="resource-allocation-analytics-cell-1:10:11-year-total"]').text()).toBe("60%");
+    wrapper.unmount();
   });
 
   it("applies server conflicts and keeps unrelated local edits without another load", async () => {
@@ -881,7 +969,7 @@ describe("ResourceAllocationsView", () => {
       }),
     ]);
 
-    wrapper.getComponent(ToggleStub).vm.$emit("update:modelValue", "employees");
+    wrapper.getComponent('[data-testid="resource-allocations-analytics-mode"]').vm.$emit("update:modelValue", "employees");
     await flushPromises();
     expect(wrapper.getComponent(GridStub).props("grouping")).toEqual(
       expect.objectContaining({

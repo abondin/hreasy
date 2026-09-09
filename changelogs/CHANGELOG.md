@@ -2,6 +2,10 @@
 
 ## 1.4.0 (Work in progress)
 
+features:
+
+- Added monthly employee resource allocations by project and workstream, with annual data entry, project- and employee-based analytics, period locking, change history, and concurrent-edit conflict protection.
+- Added a read-only external API for employees, avatar downloads by employee ID or email, project dictionaries, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, an nginx IP allowlist, and Swagger documentation.
 - Moved Java backend services under `backend/`, added backend Maven reactor/parent/common modules, upgraded services to Spring Boot 4.0.5, and updated GitHub Actions/devops scripts.
 - Implemented notification inbox UI and Yandex Messenger notification delivery.
 - Disabled self-service current project updates for regular employees
@@ -9,6 +13,11 @@
 - Added current project transfer approver candidates for approval-required transfers.
 - Manager assignments for projects, business accounts, and departments now contribute to effective manager-scoped access in addition to manual user access settings.
 - Full migration from vue2 to vue3 
+
+bugfix:
+
+- Fixed menu navigation from an open employee details panel returning users to the employee directory; manual panel closure preserves search filters.
+
 
 ## 1.3.1 (2026-03-21)
 

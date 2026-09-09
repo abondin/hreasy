@@ -184,6 +184,7 @@ import {
 } from "@/services/resource-allocation.service";
 
 defineOptions({ name: "ResourceAllocationInputView" });
+const emit = defineEmits<{ (event: "open-employee", employeeId: number): void }>();
 
 interface InputGridRow {
   id: number;
@@ -222,9 +223,11 @@ const discardDialog = ref(false);
 let pendingDiscardAction: (() => void) | null = null;
 let resolveRouteLeave: ((allow: boolean) => void) | null = null;
 let activated = false;
+const employeeColumnWidth = Math.max(600, Math.min(800, Math.round(window.innerWidth * 0.36)));
 const employeeCellTemplate = VGridVueTemplate(ResourceAllocationEmployeeCell);
 const inputGridAdditionalData = computed(() => ({
   addEmployee: addInputEmployee,
+  openEmployee: (employeeId: number) => emit("open-employee", employeeId),
   disabled: loading.value || saving.value,
 }));
 const allocationCellTemplate: CellTemplate = (createElement, props) => {
@@ -367,7 +370,7 @@ const inputGridColumns = computed<ColumnRegular[]>(() => [
   {
     name: t("Сотрудник"),
     prop: "employee",
-    size: 600,
+    size: employeeColumnWidth,
     pin: "colPinStart",
     readonly: true,
     cellTemplate: employeeCellTemplate,

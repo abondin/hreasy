@@ -25,6 +25,25 @@
     </template>
   </v-autocomplete>
   <div v-else class="d-flex align-center ga-2 h-100 overflow-hidden">
+    <v-btn
+      v-if="addition?.openEmployee"
+      icon
+      size="24"
+      variant="text"
+      class="flex-shrink-0 resource-allocation-employee-details-button"
+      :title="t('Открыть карточку сотрудника')"
+      :aria-label="t('Открыть карточку сотрудника')"
+      :data-testid="`resource-allocation-open-employee-${model.id}`"
+      @pointerdown.stop
+      @mousedown.stop
+      @touchstart.stop
+      @keydown.stop
+      @keyup.stop
+      @dblclick.stop
+      @click.stop="addition.openEmployee(model.id)"
+    >
+      <v-icon icon="mdi-information-outline" size="14" />
+    </v-btn>
     <span class="text-truncate">{{ model.employee }}</span>
     <span
       v-if="model.projectRole"
@@ -58,6 +77,7 @@ import type { ResourceAllocationInputEmployee } from "@/services/resource-alloca
 defineOptions({ inheritAttrs: false });
 
 interface EmployeeCellModel {
+  id: number;
   employee: string;
   dismissedLabel?: string;
   otherProject?: string;
@@ -71,6 +91,7 @@ const props = defineProps<{
   addition?: {
     disabled?: boolean;
     addEmployee: (employeeId: number | null) => void;
+    openEmployee?: (employeeId: number) => void;
   };
 }>();
 const { t } = useI18n();

@@ -1,4 +1,4 @@
-.package ru.abondin.hreasy.platform.api;
+package ru.abondin.hreasy.platform.api;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

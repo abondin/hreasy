@@ -105,6 +105,32 @@
           </v-autocomplete>
         </template>
 
+        <template #filter-totals>
+          <div class="d-flex align-center h-100">
+            <v-checkbox-btn
+              v-model="showGroupTotals"
+              :label="t('Итоги по группам')"
+              density="compact"
+              data-testid="resource-allocations-group-totals"
+            />
+          </div>
+        </template>
+
+        <template #filter-display>
+          <v-btn-toggle
+            v-model="displayUnit"
+            mandatory
+            divided
+            density="compact"
+            variant="outlined"
+            :aria-label="t('Единицы измерения')"
+            data-testid="resource-allocations-display-unit"
+          >
+            <v-btn value="percent">{{ t("Проценты (%)") }}</v-btn>
+            <v-btn value="personMonths">{{ t("Человеко-месяцы") }}</v-btn>
+          </v-btn-toggle>
+        </template>
+
         <template #filter-search>
           <SearchTextField
             v-model="search"
@@ -210,6 +236,7 @@ import Grid from "@revolist/vue3-datagrid";
 import {
   PSEUDO_GROUP_ITEM_VALUE,
   type ColumnRegular,
+  type CellTemplate,
   type GroupCellTemplateFunc,
   type GroupingOptions,
 } from "@revolist/revogrid";
@@ -232,6 +259,7 @@ import {
 } from "@/services/resource-allocation.service";
 
 defineOptions({ name: "ResourceAllocationAnalyticsView" });
+const emit = defineEmits<{ (event: "open-employee", employeeId: number): void }>();
 
 type AnalyticsMode = "employees" | "projects";
 
@@ -264,6 +292,7 @@ interface GroupSummary {
   workstreams: Set<string>;
   dimensions: Set<string>;
   terminalRowId: string | null;
+  yearTotal: number | null;
 }
 
 const { t } = useI18n();
@@ -272,6 +301,8 @@ const currentPeriod = ReportPeriod.currentPeriod().periodId();
 const currentYear = Math.trunc(currentPeriod / 100);
 const year = ref(currentYear);
 const mode = ref<AnalyticsMode>("projects");
+const showGroupTotals = ref(true);
+const displayUnit = ref<"percent" | "personMonths">("personMonths");
 const sheet = shallowRef<ResourceAllocationAnalytics | null>(null);
 const businessAccountIds = ref<number[]>([]);
 const projectIds = ref<number[]>([]);
@@ -288,7 +319,9 @@ const terminalCellClass = "resource-allocation-terminal-cell";
 let activated = false;
 
 const toolbarFilterItems = computed(() => [
-  { id: "mode", minWidth: 260 },
+  { id: "mode", minWidth: 210 },
+  { id: "totals", minWidth: 190, active: !showGroupTotals.value },
+  { id: "display", minWidth: 320, active: displayUnit.value !== "personMonths" },
   { id: "ba", minWidth: 260, active: businessAccountIds.value.length > 0 },
   { id: "projects", minWidth: 280, active: projectIds.value.length > 0 },
   { id: "search", minWidth: 260, active: search.value.trim().length > 0, grow: true },
@@ -337,7 +370,7 @@ const visibleProjectIds = computed(() =>
       .map((project) => project.id),
   ),
 );
-const gridRows = computed<AnalyticsGridRow[]>(() => {
+const allocationRows = computed<AnalyticsGridRow[]>(() => {
   const rows = new Map<string, AnalyticsGridRow>();
   for (const allocation of sheet.value?.allocations ?? []) {
     if (!visibleProjectIds.value.has(allocation.projectId)) continue;
@@ -405,8 +438,24 @@ const gridRows = computed<AnalyticsGridRow[]>(() => {
     return leftGroup.localeCompare(rightGroup) || left.entity.localeCompare(right.entity);
   });
 });
+// Keep the API snapshot in percentages; grid values also drive clipboard copying.
+const gridRows = computed(() => allocationRows.value.map((row) => {
+  const displayed = { ...row };
+  let yearTotal = 0;
+  for (let month = 0; month < 12; month += 1) {
+    const prop = monthProp(year.value * 100 + month);
+    const value = row[prop];
+    if (value != null) {
+      yearTotal += Number(value);
+      displayed[prop] = toDisplayValue(Number(value));
+    }
+  }
+  displayed.yearTotal = toDisplayValue(yearTotal);
+  return displayed;
+}));
+
 const grouping = computed<GroupingOptions>(() => {
-  const rows = gridRows.value;
+  const rows = allocationRows.value;
   const streamedScopes = new Set(
     rows.filter((row) => row.workstreamId != null).map((row) =>
       mode.value === "projects" ? String(row.projectId) : `${row.employeeId}:${row.projectId}`),
@@ -436,7 +485,7 @@ const grouping = computed<GroupingOptions>(() => {
 });
 const groupSummaries = computed(() => {
   const summaries = new Map<string, GroupSummary>();
-  for (const row of gridRows.value) {
+  for (const row of allocationRows.value) {
     const groups =
       mode.value === "projects"
         ? [
@@ -463,6 +512,7 @@ const groupSummaries = computed(() => {
         workstreams: new Set<string>(),
         dimensions: new Set<string>(),
         terminalRowId: null,
+        yearTotal: null,
       };
       const terminalPath = mode.value === "projects"
         ? `${row.businessAccountGroup},${row.projectGroup},${row.workstreamGroup}`
@@ -476,21 +526,33 @@ const groupSummaries = computed(() => {
         const workstreamName = workstreamsById.value.get(row.workstreamId)?.displayName;
         if (workstreamName) summary.workstreams.add(workstreamName);
       }
-      for (let month = 0; month < 12; month += 1) {
-        const period = year.value * 100 + month;
-        const value = row[monthProp(period)];
-        if (value != null) summary.months.set(period, (summary.months.get(period) ?? 0) + Number(value));
+      // Terminal groups represent actual data rows, including explicit zeros.
+      if (showGroupTotals.value || summary.terminalRowId != null) {
+        for (let month = 0; month < 12; month += 1) {
+          const period = year.value * 100 + month;
+          const value = row[monthProp(period)];
+          if (value != null) summary.months.set(period, (summary.months.get(period) ?? 0) + Number(value));
+        }
       }
       summaries.set(path, summary);
     }
   }
+  for (const summary of summaries.values()) {
+    if (summary.months.size > 0) {
+      summary.yearTotal = toDisplayValue([...summary.months.values()].reduce((sum, value) => sum + value, 0));
+      for (const [period, value] of summary.months) {
+        summary.months.set(period, toDisplayValue(value));
+      }
+    }
+  }
   return summaries;
 });
+const entityColumnWidth = Math.max(520, Math.min(800, Math.round(window.innerWidth * 0.36)));
 const gridColumns = computed<ColumnRegular[]>(() => [
   {
     name: mode.value === "employees" ? t("Проект") : t("Сотрудник"),
     prop: "entity",
-    size: 520,
+    size: entityColumnWidth,
     pin: "colPinStart",
     readonly: true,
     cellTemplate: (createElement, props) => createElement(
@@ -503,29 +565,48 @@ const gridColumns = computed<ColumnRegular[]>(() => [
           paddingLeft: `${(mode.value === "projects" ? 3 : 2) * hierarchyIndent}px`,
         },
       },
-      String(props.value ?? ""),
+      [
+        mode.value === "projects"
+          ? employeeDetailsButton(createElement, (props.model as AnalyticsGridRow).employeeId)
+          : null,
+        String(props.value ?? ""),
+      ],
     ),
   },
-  ...Array.from({ length: 12 }, (_, month) => {
-    const period = year.value * 100 + month;
-    return {
-      name: formatMonth(period),
-      prop: monthProp(period),
-      size: 110,
-      minSize: 110,
-      maxSize: 110,
-      sortable: false,
-      readonly: true,
-      cellTemplate: (createElement, props) => createElement(
-        "span",
-        {
-          class: (props.model as AnalyticsGridRow).terminalGroup ? undefined : terminalCellClass,
-          "data-testid": `resource-allocation-analytics-cell-${(props.model as AnalyticsGridRow).id}-${period}`,
-        },
-        String(props.value ?? ""),
-      ),
-    } satisfies ColumnRegular;
-  }),
+  ...[
+    { prop: "yearTotal", name: t("За год"), testId: "year-total", closed: false },
+    ...Array.from({ length: 12 }, (_, month) => {
+      const period = year.value * 100 + month;
+      return {
+        prop: monthProp(period),
+        name: formatMonth(period),
+        testId: String(period),
+        closed: closedPeriods.value.has(period),
+      };
+    }),
+  ].map(({ prop, name, testId, closed }) => ({
+    name,
+    prop,
+    size: 110,
+    minSize: 110,
+    maxSize: 110,
+    sortable: false,
+    readonly: true,
+    columnTemplate: closed
+      ? (createElement) => createElement("span", null, [
+          createElement("i", { class: "mdi mdi-lock mr-1", "aria-hidden": "true" }),
+          createElement("span", null, name),
+        ])
+      : undefined,
+    cellTemplate: (createElement, props) => createElement(
+      "span",
+      {
+        class: (props.model as AnalyticsGridRow).terminalGroup ? undefined : terminalCellClass,
+        "data-testid": `resource-allocation-analytics-cell-${(props.model as AnalyticsGridRow).id}-${testId}`,
+      },
+      formatAllocationValue(props.value),
+    ),
+  } satisfies ColumnRegular)),
 ]);
 
 watch(availableProjects, (projects) => {
@@ -565,10 +646,46 @@ function employeeLabel(employee: ResourceAllocationEmployee): string {
     : employee.displayName;
 }
 
+function employeeDetailsButton(createElement: Parameters<CellTemplate>[0], employeeId: number) {
+  const stopPropagation = (event: Event) => event.stopPropagation();
+  return createElement("button", {
+    type: "button",
+    class: "mdi mdi-information-outline resource-allocation-employee-details-button",
+    title: t("Открыть карточку сотрудника"),
+    "aria-label": t("Открыть карточку сотрудника"),
+    "data-testid": `resource-allocation-open-employee-${employeeId}`,
+    style: {
+      background: "transparent",
+      border: "0",
+      color: "inherit",
+      cursor: "pointer",
+      fontSize: "14px",
+      width: "24px",
+      height: "24px",
+      marginRight: "4px",
+      flexShrink: "0",
+    },
+    onPointerDown: stopPropagation,
+    onMouseDown: stopPropagation,
+    onTouchStart: stopPropagation,
+    onKeyDown: stopPropagation,
+    onKeyUp: stopPropagation,
+    onDblClick: stopPropagation,
+    onClick: (event: MouseEvent) => {
+      event.stopPropagation();
+      emit("open-employee", employeeId);
+    },
+  });
+}
+
 const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summaries) => {
   const path = String(props.model[PSEUDO_GROUP_ITEM_VALUE] ?? "");
   const summary = (summaries as Map<string, GroupSummary>).get(path);
   if (props.group.isLabelColumn) {
+    const employeeGroup = path.split(",").at(-1);
+    const employeeId = employeeGroup?.startsWith("employee:")
+      ? Number(employeeGroup.slice("employee:".length))
+      : null;
     if (summary?.terminalRowId) {
       return createElement(
         "span",
@@ -583,7 +700,7 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
             width: "100%",
           },
         },
-        summary.label,
+        [employeeId == null ? null : employeeDetailsButton(createElement, employeeId), summary.label],
       );
     }
     const projectCount = summary?.projects.size ?? 0;
@@ -599,7 +716,7 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
             ? [...summary!.workstreams][0]
             : t("workstreamCounts", { plural: dimensionCount, n: dimensionCount })
           : "";
-    return createElement(
+    const expandButton = createElement(
       "button",
       {
         type: "button",
@@ -640,10 +757,16 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
           : null,
       ],
     );
+    // Keep the profile action beside, never inside, the group expansion button.
+    return employeeId == null ? expandButton : createElement(
+      "div",
+      { style: { display: "flex", alignItems: "center", height: "100%" } },
+      [employeeDetailsButton(createElement, employeeId), expandButton],
+    );
   }
 
-  const period = Number(String(props.prop).replace("month_", ""));
-  const value = summary?.months.get(period);
+  const period = props.prop === "yearTotal" ? "year-total" : Number(String(props.prop).replace("month_", ""));
+  const value = period === "year-total" ? summary?.yearTotal : summary?.months.get(period);
   if (summary?.terminalRowId) {
     return createElement(
       "span",
@@ -658,7 +781,7 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
           width: "100%",
         },
       },
-      String(value ?? ""),
+      formatAllocationValue(value),
     );
   }
   return value != null
@@ -672,10 +795,20 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
             fontWeight: "600",
           },
         },
-        String(value),
+        formatAllocationValue(value),
       )
     : "";
 };
+
+function toDisplayValue(percent: number): number {
+  return displayUnit.value === "personMonths" ? percent / 100 : percent;
+}
+
+function formatAllocationValue(value: unknown): string {
+  if (value == null || value === "") return "";
+  const number = Number(value).toLocaleString("ru-RU", { maximumFractionDigits: 2 });
+  return displayUnit.value === "percent" ? `${number}%` : number;
+}
 
 function formatMonth(period: number): string {
   return ReportPeriod.fromPeriodId(period).toString().replace(/\s+\d{4}$/, "");

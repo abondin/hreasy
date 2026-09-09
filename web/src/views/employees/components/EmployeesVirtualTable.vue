@@ -114,7 +114,13 @@ const tableHeight = computed(() => props.tableHeight ?? 'fill');
 const departmentOptions = computed(() => props.departmentOptions);
 const projectOptions = computed(() => props.projectOptions);
 const baOptions = computed(() => props.businessAccountOptions);
+const isEmployeeRoute = computed(() =>
+  route.name === 'employees' || route.name === 'employee-change-current-project',
+);
 const selectedEmployeeIdFromRoute = computed(() => {
+  if (!isEmployeeRoute.value) {
+    return null;
+  }
   const paramValue = route.params.employeeId;
   if (typeof paramValue === 'string') {
     const parsed = Number(paramValue);
@@ -171,7 +177,8 @@ watch(
 );
 
 watch(detailsOpen, (open) => {
-  if (open) {
+  // KeepAlive watchers also run when navigation closes the employee panel.
+  if (open || !isEmployeeRoute.value || selectedEmployeeIdFromRoute.value == null) {
     return;
   }
 
