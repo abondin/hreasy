@@ -155,3 +155,15 @@ One Save creates one project/year revision. Clearing a cell (`percent: null`) ph
 Period selection saves compare the requested and current sets. Existing closed months are left untouched, so resubmitting a checked month neither rewrites its original closure metadata nor creates a duplicate history event. Only actual open-to-closed and closed-to-open transitions are appended to history.
 
 Saving and closing periods are transactional. PostgreSQL transaction advisory locks serialize writes for affected months, and per-cell revision checks reject stale changes.
+
+### Analytics Excel export
+
+The analytics toolbar exports a flat XLSX using the selected year and display unit only. Search, business-account/project filters, grouping, collapsed rows and group totals do not restrict the export. All recorded annual allocations available to the acting user are included.
+
+`GET /api/v1/resource-allocations/analytics/{year}/export?unit=personMonths` requires the same `resource_allocation_read` permission as analytics. Supported units are `personMonths` (default) and `percent`.
+
+Columns: business account, project, workstream, employee, email, current project role, annual total and January through December. Each employee/project/workstream combination has a separate row. Project-level allocations are separate from workstream allocations; there are no subtotal rows. Organizational metadata describes the current configuration.
+
+Values are numeric fractions: 100 stored percent exports as 1 person-month or 100% with Excel percentage formatting. Annual totals are sums of monthly values (12 or 1200% for a full year). Missing months remain blank; explicitly recorded zero remains numeric zero. The workbook includes auto-filter and frozen headers, ready for user-defined pivots.
+
+The JXLS template is `backend/platform/src/main/resources/jxls/resource_allocations_template.xlsx`, following existing overtime and salary exports. Analytics links preserve year and unit, for example `/management/resource-allocations/analytics?year=2026&unit=personMonths`.

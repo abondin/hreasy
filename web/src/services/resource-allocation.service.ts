@@ -1,6 +1,30 @@
 import http from "@/lib/http";
 import type { ProjectWorkstream } from "@/services/projects.service";
 
+export type ResourceAllocationDisplayUnit = "percent" | "personMonths";
+
+/** Downloads all annual allocations; UI filters are intentionally not included. */
+export async function exportResourceAllocationAnalytics(
+  year: number,
+  unit: ResourceAllocationDisplayUnit,
+): Promise<void> {
+  const response = await http.get<ArrayBuffer>(`v1/resource-allocations/analytics/${year}/export`, {
+    params: { unit },
+    responseType: "arraybuffer",
+  });
+  const blob = new Blob([response.data], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `ResourceAllocations-${year}-${unit}.xlsx`;
+  try {
+    link.click();
+  } finally {
+    window.URL.revokeObjectURL(url);
+  }
+}
 export interface ResourceAllocationEmployee {
   id: number;
   displayName: string;

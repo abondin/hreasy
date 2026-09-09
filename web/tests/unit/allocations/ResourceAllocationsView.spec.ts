@@ -1,4 +1,4 @@
-import { defineComponent, h, ref, type PropType } from "vue";
+import { defineComponent, h, reactive, ref, type PropType } from "vue";
 import { flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PSEUDO_GROUP_ITEM_VALUE } from "@revolist/revogrid";
@@ -6,6 +6,7 @@ import { BusinessError } from "@/lib/errors";
 import ResourceAllocationAnalyticsView from "@/views/allocations/ResourceAllocationAnalyticsView.vue";
 import ResourceAllocationInputView from "@/views/allocations/ResourceAllocationInputView.vue";
 import {
+  exportResourceAllocationAnalytics,
   fetchClosedResourceAllocationPeriods,
   fetchResourceAllocationAnalytics,
   fetchResourceAllocationProjectInput,
@@ -22,7 +23,7 @@ const permissionMocks = vi.hoisted(() => ({ canAdmin: false }));
 vi.mock("vue-router", async () => ({
   ...await vi.importActual<typeof import("vue-router")>("vue-router"),
   onBeforeRouteLeave: vi.fn(),
-  useRoute: () => ({ query: routerMocks.query }),
+  useRoute: () => ({ name: "resource-allocations-analytics", query: routerMocks.query }),
   useRouter: () => ({ replace: routerMocks.replace }),
 }));
 
@@ -40,6 +41,7 @@ vi.mock("@/lib/permissions", () => ({
 }));
 
 vi.mock("@/services/resource-allocation.service", () => ({
+  exportResourceAllocationAnalytics: vi.fn(),
   fetchClosedResourceAllocationPeriods: vi.fn(),
   fetchResourceAllocationAnalytics: vi.fn(),
   fetchResourceAllocationProjectInput: vi.fn(),
@@ -314,6 +316,72 @@ beforeEach(() => {
 });
 
 describe("ResourceAllocationsView", () => {
+  it("exports only year and units, prevents duplicate downloads and recovers after failure", async () => {
+    routerMocks.query = { year: "2028", unit: "percent", search: "ignored", projectId: "401" };
+    vi.mocked(fetchResourceAllocationAnalytics).mockResolvedValue({
+      year: 2028, employees: [], projects: [], workstreams: [], allocations: [],
+    });
+    let rejectExport!: (error: Error) => void;
+    vi.mocked(exportResourceAllocationAnalytics).mockReturnValueOnce(new Promise<void>((_, reject) => {
+      rejectExport = reject;
+    }));
+    const wrapper = mount(ResourceAllocationAnalyticsView, {
+      global: { stubs: {
+        ...globalStubs,
+        TableToolbarActions: defineComponent({
+          props: { disabled: Boolean },
+          emits: ["export", "refresh"],
+          setup() { return () => h("div"); },
+        }),
+      } },
+    });
+    await flushPromises();
+    const actions = wrapper.getComponent('[data-testid="resource-allocations-toolbar-actions"]');
+    actions.vm.$emit("export");
+    actions.vm.$emit("export");
+    await flushPromises();
+    expect(exportResourceAllocationAnalytics).toHaveBeenCalledExactlyOnceWith(2028, "percent");
+    expect(actions.props("disabled")).toBe(true);
+    rejectExport(new Error("Export failed"));
+    await flushPromises();
+    expect(wrapper.text()).toContain("Export failed");
+    expect(actions.props("disabled")).toBe(false);
+    vi.mocked(exportResourceAllocationAnalytics).mockResolvedValueOnce();
+    wrapper.getComponent('[data-testid="resource-allocations-display-unit"]').vm.$emit("update:modelValue", "personMonths");
+    await flushPromises();
+    actions.vm.$emit("export");
+    await flushPromises();
+    expect(exportResourceAllocationAnalytics).toHaveBeenLastCalledWith(2028, "personMonths");
+    wrapper.unmount();
+  });
+
+  it("restores analytics year and units from the URL and synchronizes changes", async () => {
+    routerMocks.query = reactive({ year: "2028", unit: "percent", other: "keep" });
+    vi.mocked(fetchResourceAllocationAnalytics).mockResolvedValue({
+      year: 2028, employees: [], projects: [], workstreams: [], allocations: [],
+    });
+    const wrapper = mount(ResourceAllocationAnalyticsView, { global: { stubs: globalStubs } });
+    await flushPromises();
+    expect(fetchResourceAllocationAnalytics).toHaveBeenCalledWith(2028);
+    const unitControl = wrapper.getComponent('[data-testid="resource-allocations-display-unit"]');
+    expect(unitControl.props("modelValue")).toBe("percent");
+    const loads = vi.mocked(fetchResourceAllocationAnalytics).mock.calls.length;
+    unitControl.vm.$emit("update:modelValue", "personMonths");
+    await flushPromises();
+    expect(routerMocks.replace).toHaveBeenLastCalledWith({
+      query: { year: "2028", unit: "personMonths", other: "keep" },
+    });
+    expect(fetchResourceAllocationAnalytics).toHaveBeenCalledTimes(loads);
+
+    routerMocks.query.year = "2029";
+    routerMocks.query.unit = "personMonths";
+    await flushPromises();
+    expect(fetchResourceAllocationAnalytics).toHaveBeenLastCalledWith(2029);
+    expect(fetchClosedResourceAllocationPeriods).toHaveBeenLastCalledWith(2029);
+    expect(unitControl.props("modelValue")).toBe("personMonths");
+    wrapper.unmount();
+  });
+
   it("opens the first managed project and supports adding any employee", async () => {
     routerMocks.query = { year: "2026", projectId: "20", workstreamId: "11" };
     vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({

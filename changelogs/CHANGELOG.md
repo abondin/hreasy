@@ -4,7 +4,7 @@
 
 features:
 
-- Added monthly employee resource allocations by project and workstream, with annual data entry, project- and employee-based analytics, period locking, change history, and concurrent-edit conflict protection.
+- Added monthly employee resource allocations by project and workstream, with annual data entry, project- and employee-based analytics, period locking, change history, concurrent-edit conflict protection, and flat annual Excel export in percentages or person-months.
 - Added a read-only external API for employees, avatar downloads by employee ID or email, project dictionaries, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, an nginx IP allowlist, and Swagger documentation.
 - Moved Java backend services under `backend/`, added backend Maven reactor/parent/common modules, upgraded services to Spring Boot 4.0.5, and updated GitHub Actions/devops scripts.
 - Implemented notification inbox UI and Yandex Messenger notification delivery.

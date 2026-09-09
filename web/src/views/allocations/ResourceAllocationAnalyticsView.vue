@@ -11,10 +11,14 @@
       >
         <template #left-actions>
           <TableToolbarActions
+            data-testid="resource-allocations-toolbar-actions"
             show-refresh
-            :disabled="loading"
+            show-export
+            :disabled="loading || exporting"
             :refresh-label="t('Обновить данные')"
+            :export-label="t('Экспорт в Excel за весь год')"
             @refresh="load"
+            @export="exportToExcel"
           />
           <PeriodSwitcherControl
             :label="String(year)"
@@ -231,6 +235,7 @@
 
 <script setup lang="ts">
 import { computed, onActivated, onMounted, ref, shallowRef, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import Grid from "@revolist/vue3-datagrid";
 import {
@@ -251,11 +256,13 @@ import { usePermissions } from "@/lib/permissions";
 import { createSearchSettings, matchesSearch } from "@/lib/search";
 import { ReportPeriod } from "@/services/overtime.service";
 import {
+  exportResourceAllocationAnalytics,
   fetchClosedResourceAllocationPeriods,
   fetchResourceAllocationAnalytics,
   saveClosedResourceAllocationPeriods,
   type ResourceAllocationAnalytics,
   type ResourceAllocationEmployee,
+  type ResourceAllocationDisplayUnit,
 } from "@/services/resource-allocation.service";
 
 defineOptions({ name: "ResourceAllocationAnalyticsView" });
@@ -296,19 +303,22 @@ interface GroupSummary {
 }
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 const permissions = usePermissions();
 const currentPeriod = ReportPeriod.currentPeriod().periodId();
 const currentYear = Math.trunc(currentPeriod / 100);
-const year = ref(currentYear);
+const year = ref(yearFromQuery(route.query.year));
 const mode = ref<AnalyticsMode>("projects");
 const showGroupTotals = ref(true);
-const displayUnit = ref<"percent" | "personMonths">("personMonths");
+const displayUnit = ref(unitFromQuery(route.query.unit));
 const sheet = shallowRef<ResourceAllocationAnalytics | null>(null);
 const businessAccountIds = ref<number[]>([]);
 const projectIds = ref<number[]>([]);
 const search = ref("");
 const searchSettings = ref(createSearchSettings());
 const loading = ref(false);
+const exporting = ref(false);
 const error = ref("");
 const closedPeriods = ref(new Set<number>());
 const closedPeriodsDraft = ref<number[]>([]);
@@ -317,6 +327,7 @@ const periodUpdating = ref(false);
 const hierarchyIndent = 16;
 const terminalCellClass = "resource-allocation-terminal-cell";
 let activated = false;
+let loadRequestId = 0;
 
 const toolbarFilterItems = computed(() => [
   { id: "mode", minWidth: 210 },
@@ -613,13 +624,27 @@ watch(availableProjects, (projects) => {
   const availableIds = new Set(projects.map((project) => project.id));
   projectIds.value = projectIds.value.filter((projectId) => availableIds.has(projectId));
 });
-onMounted(load);
+watch(
+  () => [route.name, route.query.year, route.query.unit],
+  () => {
+    if (route.name !== "resource-allocations-analytics") return;
+    year.value = yearFromQuery(route.query.year);
+    displayUnit.value = unitFromQuery(route.query.unit);
+  },
+);
+watch([year, displayUnit], syncQuery);
+watch(year, () => { void load(); });
+onMounted(() => {
+  syncQuery();
+  void load();
+});
 onActivated(() => {
   if (activated) void load();
   activated = true;
 });
 
 async function load(): Promise<void> {
+  const requestId = ++loadRequestId;
   loading.value = true;
   error.value = "";
   try {
@@ -627,12 +652,14 @@ async function load(): Promise<void> {
       fetchResourceAllocationAnalytics(year.value),
       fetchClosedResourceAllocationPeriods(year.value),
     ]);
+    if (requestId !== loadRequestId) return;
     sheet.value = analytics;
     closedPeriods.value = new Set(periods);
   } catch (loadError) {
+    if (requestId !== loadRequestId) return;
     error.value = errorUtils.shortMessage(loadError);
   } finally {
-    loading.value = false;
+    if (requestId === loadRequestId) loading.value = false;
   }
 }
 
@@ -827,18 +854,45 @@ function filterLabel(item: unknown): string {
 
 function changeYear(delta: number): void {
   year.value += delta;
-  void load();
 }
 
 function goToCurrentYear(): void {
   year.value = currentYear;
-  void load();
+}
+
+function yearFromQuery(value: unknown): number {
+  const parsed = typeof value === "string" && /^\d{4}$/.test(value) ? Number(value) : NaN;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : currentYear;
+}
+
+function unitFromQuery(value: unknown): ResourceAllocationDisplayUnit {
+  return value === "percent" ? "percent" : "personMonths";
+}
+
+function syncQuery(): void {
+  if (route.name !== "resource-allocations-analytics") return;
+  const query = { ...route.query, year: String(year.value), unit: displayUnit.value };
+  if (route.query.year === query.year && route.query.unit === query.unit) return;
+  void router.replace({ query }).catch(() => undefined);
 }
 
 function openPeriodDialog(): void {
   error.value = "";
   closedPeriodsDraft.value = [...closedPeriods.value].sort();
   periodDialog.value = true;
+}
+
+async function exportToExcel(): Promise<void> {
+  if (exporting.value) return;
+  exporting.value = true;
+  error.value = "";
+  try {
+    await exportResourceAllocationAnalytics(year.value, displayUnit.value);
+  } catch (exportError) {
+    error.value = errorUtils.shortMessage(exportError);
+  } finally {
+    exporting.value = false;
+  }
 }
 
 async function savePeriodSelection(): Promise<void> {
