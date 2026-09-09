@@ -40,13 +40,13 @@ For example, `50%` with `+ 30%` means that the employee is allocated 50% to the 
 ### Editing rules
 
 - Values must be whole numbers from `0` through `1000`.
-- An empty value or `0` removes the allocation.
+- An empty value sends `null` and removes the allocation. `0` is an explicit allocation stored and displayed as `0%`.
 - A month can be edited only while it is open and overlaps the employee's employment period.
-- The employee's dismissal month remains editable; later months do not.
+- The employee's dismissal month remains editable. Existing values outside employment can be cleared, but no numeric value (including zero) can be entered there.
 - Closed months have a lock in the column header and cannot be changed.
 - Employees dismissed by the current date are marked in the employee column. If an active employee belongs to another current project, that project is shown next to the name.
 
-Copy, paste, range selection, autofill, Tab, and Enter work directly in the grid. Changing the year, project, or page with unsaved changes requires confirmation.
+The grid is read-only while loading or saving. Copy, paste, range selection, autofill, Tab, and Enter work directly in the grid. Changing the year, project, or page with unsaved changes requires confirmation.
 
 ### Concurrent changes
 
@@ -54,7 +54,7 @@ If another user changes the same cell first, the page loads the current server v
 
 ## Analyze allocations
 
-Open the **Analytics** tab to review non-zero allocations for the selected year. Analytics is read-only.
+Open the **Analytics** tab to review recorded allocations, including explicit zeros, for the selected year. Analytics is read-only.
 
 Two views are available:
 
@@ -125,7 +125,7 @@ The annual input response separates the selected project/workstream dimension fr
 }
 ```
 
-The save request contains only changed cells. `expectedRevisionId` is `null` for a new cell, while `percent: 0` removes an existing allocation:
+The save request contains only changed cells. `expectedRevisionId` is `null` for a new cell, while `percent: null` removes an existing allocation; `percent: 0` stores an explicit zero:
 
 ```json
 {
@@ -144,13 +144,13 @@ The save request contains only changed cells. `expectedRevisionId` is `null` for
 
 The Platform service owns the `alloc` schema:
 
-- `resource_allocation` stores current non-zero monthly values for a project and optional workstream;
+- `resource_allocation` stores current monthly values, including explicit zeros, for a project and optional workstream;
 - `resource_allocation_revision` stores one Save operation for a project and optional workstream;
 - `resource_allocation_change` stores immutable before/after cell history;
 - `resource_allocation_closed_period` stores the currently closed months and who closed each one;
 - `resource_allocation_period_history` stores immutable close and reopen events with their actor and timestamp.
 
-One Save creates one project/year revision. Setting a cell to zero physically removes it from the current-state table because that table stores only non-zero values. The deletion remains auditable as an immutable change with the previous percentage and `new_percent = 0`; unlike ordinary CRUD entities, a second soft-deleted copy would duplicate the existing revision history.
+One Save creates one project/year revision. Clearing a cell (`percent: null`) physically removes it from the current-state table. The deletion remains auditable as an immutable change with the previous percentage and `new_percent = null`; unlike ordinary CRUD entities, a second soft-deleted copy would duplicate the existing revision history.
 
 Period selection saves compare the requested and current sets. Existing closed months are left untouched, so resubmitting a checked month neither rewrites its original closure metadata nor creates a duplicate history event. Only actual open-to-closed and closed-to-open transitions are appended to history.
 

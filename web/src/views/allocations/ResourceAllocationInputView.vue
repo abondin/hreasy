@@ -124,7 +124,7 @@
               :columns="inputGridColumns"
               :source="inputGridRows"
               :additional-data="inputGridAdditionalData"
-              :readonly="saving || !inputProject.editable"
+              :readonly="loading || saving || !inputProject.editable"
               :range="true"
               :use-clipboard="true"
               :apply-on-close="true"
@@ -134,6 +134,7 @@
               class="h-100 w-100"
               data-testid="resource-allocations-input-grid"
               @beforeedit="handleInputBeforeEdit"
+              @beforerangeedit="handleInputBeforeRangeEdit"
               @afteredit="handleInputAfterEdit"
             />
           </template>
@@ -164,7 +165,7 @@ import { computed, nextTick, onActivated, onMounted, ref, shallowRef, type Compo
 import { useI18n } from "vue-i18n";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import Grid, { VGridVueTemplate } from "@revolist/vue3-datagrid";
-import type { AfterEditEvent, BeforeSaveDataDetails, CellTemplate, ColumnRegular } from "@revolist/revogrid";
+import type { AfterEditEvent, BeforeRangeSaveDataDetails, BeforeSaveDataDetails, CellTemplate, ColumnRegular } from "@revolist/revogrid";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
 import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
@@ -205,7 +206,7 @@ const currentPeriodId = ReportPeriod.currentPeriod().id;
 const currentYear = Math.trunc(currentPeriodId / 100);
 const inputYear = ref(queryInteger(route.query.year) ?? currentYear);
 const inputSheet = shallowRef<ResourceAllocationProjectInput | null>(null);
-const inputEdits = ref(new Map<string, number>());
+const inputEdits = ref(new Map<string, number | null>());
 const inputInitialValues = ref(new Map<string, number>());
 const inputInitialRevisionIds = ref(new Map<string, number>());
 const inputProjectId = ref<number | null>(queryInteger(route.query.projectId));
@@ -222,7 +223,10 @@ let pendingDiscardAction: (() => void) | null = null;
 let resolveRouteLeave: ((allow: boolean) => void) | null = null;
 let activated = false;
 const employeeCellTemplate = VGridVueTemplate(ResourceAllocationEmployeeCell);
-const inputGridAdditionalData = { addEmployee: addInputEmployee };
+const inputGridAdditionalData = computed(() => ({
+  addEmployee: addInputEmployee,
+  disabled: loading.value || saving.value,
+}));
 const allocationCellTemplate: CellTemplate = (createElement, props) => {
   const model = props.model as InputGridRow;
   if (model.addEmployee) return "";
@@ -341,7 +345,7 @@ const inputGridRows = computed<InputGridRow[]>(() => {
     };
     for (const month of inputSheet.value?.months ?? []) {
       row[inputMonthProp(month.period)] =
-        inputCellValue(month.period, employee.id) || "";
+        inputCellValue(month.period, employee.id) ?? "";
       row[inputOtherMonthProp(month.period)] =
         otherAllocations.get(inputCellKey(month.period, employee.id)) ?? 0;
     }
@@ -390,7 +394,8 @@ const inputGridColumns = computed<ColumnRegular[]>(() => [
         readonly: ({ model: sourceModel }) =>
           month.closed ||
           !inputProject.value?.editable ||
-          !employeeMonthEditable(sourceModel as InputGridRow, month.period),
+          (!employeeMonthEditable(sourceModel as InputGridRow, month.period)
+            && !inputInitialValues.value.has(inputCellKey(month.period, (sourceModel as InputGridRow).id))),
         cellProperties: ({ model: sourceModel }) => {
           const model = sourceModel as InputGridRow;
           const conflict = model.conflictingPeriods?.has(month.period);
@@ -553,7 +558,7 @@ function isAllocationChange(value: unknown): value is ResourceAllocationChange {
     "employeeId" in value &&
     typeof value.employeeId === "number" &&
     "percent" in value &&
-    typeof value.percent === "number" &&
+    (value.percent === null || typeof value.percent === "number") &&
     "expectedRevisionId" in value &&
     (value.expectedRevisionId === null ||
       typeof value.expectedRevisionId === "number")
@@ -564,9 +569,11 @@ function inputCellKey(period: number, employeeId: number): string {
   return `${period}:${employeeId}`;
 }
 
-function inputCellValue(period: number, employeeId: number): number {
+function inputCellValue(period: number, employeeId: number): number | null {
   const key = inputCellKey(period, employeeId);
-  return inputEdits.value.get(key) ?? inputInitialValues.value.get(key) ?? 0;
+  return inputEdits.value.has(key)
+    ? inputEdits.value.get(key)!
+    : inputInitialValues.value.get(key) ?? null;
 }
 
 function inputMonthProp(period: number): string {
@@ -592,14 +599,15 @@ function projectClosedLabel(project: ResourceAllocationProject): string | undefi
   return project.endDate ? t("Закрыт: {date}", { date: formatDate(project.endDate) }) : undefined;
 }
 
-function normalizePercent(value: string): number {
+function normalizePercent(value: string): number | null {
+  if (!value.trim()) return null;
   return Math.min(1000, Math.max(0, Math.round(Number(value) || 0)));
 }
 
 function updateInputCell(
   period: number,
   employeeId: number,
-  percent: number,
+  percent: number | null,
 ): void {
   const key = inputCellKey(period, employeeId);
   if (conflictCellKeys.value.has(key)) {
@@ -610,18 +618,46 @@ function updateInputCell(
       warning.value = "";
     }
   }
-  if (percent === (inputInitialValues.value.get(key) ?? 0)) {
+  if (percent === (inputInitialValues.value.get(key) ?? null)) {
     inputEdits.value.delete(key);
   } else {
     inputEdits.value.set(key, percent);
   }
 }
 
-function handleInputBeforeEdit(
-  event: CustomEvent<BeforeSaveDataDetails>,
-): void {
-  if (periodFromInputProp(event.detail.prop) != null) {
-    event.detail.val = normalizePercent(String(event.detail.val ?? ""));
+function canSetInputValue(model: InputGridRow, period: number, percent: number | null): boolean {
+  return !!inputProject.value?.editable
+    && !model.addEmployee
+    && inputSheet.value?.months.some(month => month.period === period && !month.closed) === true
+    && (employeeMonthEditable(model, period) || percent === null);
+}
+
+function handleInputBeforeEdit(event: CustomEvent<BeforeSaveDataDetails>): void {
+  const period = periodFromInputProp(event.detail.prop);
+  if (period == null) return;
+  const percent = normalizePercent(String(event.detail.val ?? ""));
+  if (loading.value || saving.value
+      || !canSetInputValue(event.detail.model as InputGridRow, period, percent)) {
+    event.preventDefault();
+    return;
+  }
+  event.detail.val = percent;
+}
+
+function handleInputBeforeRangeEdit(event: CustomEvent<BeforeRangeSaveDataDetails>): void {
+  for (const [rowIndex, changes] of Object.entries(event.detail.data)) {
+    const model = event.detail.models[Number(rowIndex)] as InputGridRow | undefined;
+    if (!model) continue;
+    for (const [prop, value] of Object.entries(changes)) {
+      const period = periodFromInputProp(prop);
+      if (period == null) continue;
+      const percent = normalizePercent(String(value ?? ""));
+      if (loading.value || saving.value || !canSetInputValue(model, period, percent)) {
+        event.preventDefault();
+        return;
+      }
+      changes[prop] = percent;
+    }
   }
 }
 
@@ -630,35 +666,20 @@ function handleInputAfterEdit(event: CustomEvent<AfterEditEvent>): void {
   if ("prop" in detail) {
     const model = detail.model as InputGridRow;
     const period = periodFromInputProp(detail.prop);
-    if (period != null && employeeMonthEditable(model, period)) {
-      updateInputCell(
-        period,
-        model.id,
-        normalizePercent(String(detail.val ?? model[detail.prop])),
-      );
+    const percent = normalizePercent(String(detail.val ?? ""));
+    if (period != null && canSetInputValue(model, period, percent)) {
+      updateInputCell(period, model.id, percent);
     }
     return;
   }
   for (const [rowIndex, changedModel] of Object.entries(detail.data)) {
     const model = detail.models[Number(rowIndex)] as InputGridRow | undefined;
-    if (!model) {
-      continue;
-    }
+    if (!model) continue;
     for (const [prop, value] of Object.entries(changedModel)) {
       const period = periodFromInputProp(prop);
-      const month = inputSheet.value?.months.find(
-        (item) => item.period === period,
-      );
-      if (
-        period != null &&
-        !month?.closed &&
-        employeeMonthEditable(model, period)
-      ) {
-        updateInputCell(
-          period,
-          model.id,
-          normalizePercent(String(value ?? "")),
-        );
+      const percent = normalizePercent(String(value ?? ""));
+      if (period != null && canSetInputValue(model, period, percent)) {
+        updateInputCell(period, model.id, percent);
       }
     }
   }
@@ -690,7 +711,7 @@ function periodBounds(period: number): { start: string; end: string } {
 }
 
 function addInputEmployee(employeeId: number | null): void {
-  if (employeeId == null) {
+  if (employeeId == null || loading.value || saving.value) {
     return;
   }
   addedInputEmployeeIds.value = new Set([

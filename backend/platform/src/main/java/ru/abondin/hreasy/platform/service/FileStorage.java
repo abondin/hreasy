@@ -15,6 +15,7 @@ import ru.abondin.hreasy.platform.config.HrEasyFileStorageProperties;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * Upload and stream files
@@ -31,7 +32,7 @@ public class FileStorage implements InitializingBean {
 
     public boolean fileExists(String resourceType, String filename) {
         var resourceHome = new File(rootDir, resourceType);
-        var image = new File(resourceHome, filename);
+        var image = resolveFile(resourceHome, filename);
         return image.isFile();
     }
 
@@ -44,8 +45,8 @@ public class FileStorage implements InitializingBean {
     public Mono<Resource> streamImage(String resourceType, String filename, boolean returnFailback) {
         Resource resource;
         var resourceHome = new File(rootDir, resourceType);
+        var image = resolveFile(resourceHome, filename);
         validateAndCreateDir(resourceHome, true);
-        var image = new File(resourceHome, filename);
         if (image.exists()) {
             resource = new FileSystemResource(image);
         } else {
@@ -66,8 +67,8 @@ public class FileStorage implements InitializingBean {
      */
     public Mono<Resource> streamFile(String resourceHome, String filename) {
         var resourceAbsoluteHome = new File(rootDir, resourceHome);
+        var file = resolveFile(resourceAbsoluteHome, filename);
         validateAndCreateDir(resourceAbsoluteHome, true);
-        var file = new File(resourceAbsoluteHome, filename);
         if (file.exists()) {
             return Mono.just(new FileSystemResource(file));
         } else {
@@ -95,30 +96,33 @@ public class FileStorage implements InitializingBean {
      * @return
      */
     public Mono<Boolean> toRecycleBin(String path, String filename) {
-        var file = new File(new File(rootDir, path), filename);
-        var recycledFolder = new File(recycleDir, path);
-        //1. Try to create folder for new recycled file
-        validateAndCreateDir(recycledFolder, true);
-        var recycledFile = new File(recycledFolder, filename);
-        var success = false;
-        if (file.isFile()) {
-            // 2. Delete old file from recycled if already exists (in case of add/delete/add/delete for one file)
-            if (recycledFile.isFile()) {
-                boolean deleted = recycledFile.delete();
-                if (!deleted) {
-                    log.warn("Unable to delete old file in recycle", path, filename);
+        // Defer all filesystem effects until the preceding authorization succeeds.
+        return Mono.fromCallable(() -> {
+            var file = resolveFile(new File(rootDir, path), filename);
+            var recycledFolder = new File(recycleDir, path);
+            var recycledFile = resolveFile(recycledFolder, filename);
+            //1. Try to create folder for new recycled file
+            validateAndCreateDir(recycledFolder, true);
+            var success = false;
+            if (file.isFile()) {
+                // 2. Delete old file from recycled if already exists (in case of add/delete/add/delete for one file)
+                if (recycledFile.isFile()) {
+                    boolean deleted = recycledFile.delete();
+                    if (!deleted) {
+                        log.warn("Unable to delete old file in recycle", path, filename);
+                    }
                 }
-            }
-            var renamed = file.renameTo(recycledFile);
-            if (renamed) {
-                success = true;
+                var renamed = file.renameTo(recycledFile);
+                if (renamed) {
+                    success = true;
+                } else {
+                    log.warn("Rename operation failed for {}/{}", path, filename);
+                }
             } else {
-                log.warn("Rename operation failed for {}/{}", path, filename);
+                log.warn("Unable to find file {} in path {} to move to recycle bin", filename, path);
             }
-        } else {
-            log.warn("Unable to find file {} in path {} to move to recycle bin", filename, path);
-        }
-        return Mono.just(success);
+            return success;
+        });
     }
 
     public Mono<Void> uploadFile(String resourceType, String filename, FilePart filePart, long contentLength) {
@@ -129,13 +133,14 @@ public class FileStorage implements InitializingBean {
                     props.getDefaultUploadContentSizeLimitBytes() + " bytes"));
         }
         var resourceHome = new File(rootDir, resourceType);
+        var targetFile = resolveFile(resourceHome, filename);
         var dir = validateAndCreateDir(resourceHome, true);
         // check file number limit
         if (dir.listFiles((file -> file.isFile())).length > props.getDefaultMaxFilesInDirectory()) {
             return Mono.error(new ResponseStatusException(HttpStatus.INSUFFICIENT_STORAGE, "Maximum number of files in one folder"));
         }
 
-        return filePart.transferTo(new File(resourceHome, filename));
+        return filePart.transferTo(targetFile);
     }
 
 
@@ -148,6 +153,22 @@ public class FileStorage implements InitializingBean {
         validateAndCreateDir(recycleDir, props.isCreateResourceDirOnStart());
     }
 
+
+    /**
+     * Filenames are single names supplied by clients; resource directories are server-owned.
+     */
+    private File resolveFile(File directory, String filename) {
+        if (filename == null || filename.isBlank() || filename.equals(".") || filename.equals("..")
+                || filename.contains("/") || filename.contains("\\") || filename.contains(":")
+                || filename.indexOf('\0') >= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid filename");
+        }
+        var file = new File(directory, filename);
+        if (Files.isSymbolicLink(file.toPath())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Symbolic links are not supported");
+        }
+        return file;
+    }
 
     private File validateAndCreateDir(File dir, boolean autocreate) {
         if (!dir.exists()) {

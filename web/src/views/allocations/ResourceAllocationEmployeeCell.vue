@@ -2,6 +2,7 @@
   <v-autocomplete
     v-if="model.addEmployee"
     :items="model.employeesAvailableToAdd"
+    :disabled="addition?.disabled"
     item-title="displayName"
     item-value="id"
     :custom-filter="employeeFilter"
@@ -68,6 +69,7 @@ interface EmployeeCellModel {
 const props = defineProps<{
   model: EmployeeCellModel;
   addition?: {
+    disabled?: boolean;
     addEmployee: (employeeId: number | null) => void;
   };
 }>();

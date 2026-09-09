@@ -174,12 +174,14 @@ async function mockResourceAllocationsApi(page: Page, data = sheet): Promise<voi
       const projectId = url.searchParams.get("projectId");
       if (route.request().method() === "PUT") {
         const body = route.request().postDataJSON() as {
-          changes: Array<{ period: number; employeeId: number; percent: number; expectedRevisionId: number | null }>;
+          changes: Array<{ period: number; employeeId: number; percent: number | null; expectedRevisionId: number | null }>;
         };
         for (const change of body.changes) {
           const current = data.allocations.find(value => value.employeeId === change.employeeId
             && value.projectId === Number(url.pathname.split("/").at(-1)));
-          if (current) {
+          if (current && change.percent === null) {
+            data.allocations.splice(data.allocations.indexOf(current), 1);
+          } else if (current && change.percent !== null) {
             current.percent = change.percent;
           }
         }

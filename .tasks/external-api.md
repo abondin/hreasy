@@ -3,7 +3,7 @@
 ## Goal and scope
 
 - Design a read-only `/external` API for system-to-system integrations.
-- Cover employees, overtime summaries, resource allocation analytics, and projects.
+- Cover employees, employee avatar downloads by ID/email, overtime summaries, resource allocation analytics, and projects.
 - Authenticate a pair of external system and HR Easy acting user.
 - Restrict `/external/**` with one nginx IP allowlist, with localhost-only access by default.
 - Implement the approved backend API and nginx allowlist without new persistence or Vue UI.
@@ -26,8 +26,14 @@
 - [x] Added nginx proxying and a configurable localhost-only-by-default allowlist for `/external/**`.
 - [x] Added hashed opaque-token configuration and authentication for the external-system plus acting-user pair.
 - [x] Added an interactive offline token generation script that prints a Docker Compose environment fragment.
-- [x] Added the four read-only endpoints over existing application services.
+- [x] Added the four original read-only endpoints over existing application services.
+- [x] Added PNG avatar endpoints by employee ID and exact case-insensitive email, including dismissed employees; unknown employee or absent image returns 404 without a fallback.
+- [x] Documented avatar methods and binary responses in Swagger; added focused service checks for ID/email resolution and missing data. Tests have not been run, as requested.
 - [x] Added focused opaque-token and overtime-period adapter tests.
+- [x] Documented all four methods with Swagger operation IDs, parameters, response schemas, errors, and opaque Bearer security.
+- [x] Added schemas for all response DTOs, nested references/ratings/overtime rows, and business errors; named nested allocation schemas explicitly to avoid EmployeeDto/ProjectDto collisions.
+- [x] Documented zero versus missing allocation, zero-based periods, external-ID joins, read scope, and read-only limitations.
+- Annotation-only iteration: statically inspected source; builds, generated OpenAPI, and runtime Swagger validation are left to the user as requested.
 - [ ] Review remaining open contract questions with the user.
 - [ ] Validate nginx startup; the user chose to run this check locally.
 

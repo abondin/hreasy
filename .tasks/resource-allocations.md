@@ -11,12 +11,12 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 - Exactly one project is edited at a time; one screen exposes all 12 months.
 - An optional project workstream selects an independent allocation dimension. Project-level and multiple workstream-level values may coexist for one employee/month/project.
 - Rows include current project employees, employees with allocations on any direction of that project in the selected year, and employees added in the current draft.
-- A cell is editable only when the user has write permission and shared hierarchy access to the target project, the month is open, and employment overlaps the month. The dismissal month is inclusive.
+- Numeric input is allowed only when the user has write permission and shared hierarchy access to the target project, the month is open, and employment overlaps the month. The dismissal month is inclusive.
 - Dismissal and another current project remain visible in the employee text. Visual status styling is deferred until it can use native grid capabilities.
 - Closed months are marked in the column name and remain backend-enforced. Additional month/status styling is deferred.
 - Authentication already merges manager responsibility with explicit project/department/BA access. Allocation write scope reuses `ProjectHierarchyAccessor`; any employee can be assigned to an accessible project.
 - Read permission exposes all allocation input and analytics data. Write and read permissions are granted by default to `pm`, `finance`, `pm_finance`, `salary_manager`, and `global_admin`; allocation admin is granted to `global_admin`.
-- Empty/zero values are not stored. Percent values are integers from 1 through 1000.
+- Empty input sends null and removes a cell; explicit zero is stored. Percent values are integers from 0 through 1000.
 - Allocation data remains monthly, with physical `year` and `period` columns. Annual requests query the physical `year`; the DB constraint verifies it matches the legacy zero-based period convention.
 - One Save creates one project/year revision, with one immutable change per employee/month.
 - Per-cell optimistic revisions reject stale cells and return current server values plus the non-conflicting local draft for client-side rebase.
@@ -40,7 +40,7 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 - Period API: `GET` and `PUT /api/v1/resource-allocations/closed-periods/{year}`. The PUT compares requested and current sets and writes only real state transitions.
 - Current closed periods retain their original closer and timestamp. An immutable period history stores both close and reopen actors/timestamps; unchanged checked months create no history events.
 - The period dialog uses twelve checkboxes with Save/Cancel and highlights the current month. Closed input-grid headers use the installed MDI lock instead of a Unicode emoji.
-- Annual analytics uses `GET /api/v1/resource-allocations/analytics/{year}` and returns only employees, projects, and employee/project pairs with non-zero values in that year.
+- Annual analytics uses `GET /api/v1/resource-allocations/analytics/{year}` and includes explicit zero allocations.
 - Analytics has two read-only hierarchy modes and defaults to projects. In employee mode, workstreams are terminal value rows under projects, without a duplicate project leaf. A sole workstream is shown inline, projects remain expandable with one stream, and stream branches start collapsed.
 - Project summaries count project-level allocation as a separate variant, so a workstream name is shown inline only when it is the sole child row.
 - In both hierarchy modes, projects without workstream allocations skip `Without workstream`; it remains a separate branch only when it distinguishes project-level values from workstream values.
@@ -64,6 +64,17 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 - Durable business, access, API, and persistence documentation is available in `.docs/resource_allocations.md` and linked from the README key features.
 - The durable document is user-first: workflows and cell behavior precede access restrictions, while API and persistence details remain at the end.
 
+## Current iteration
+
+- Distinguish explicit zero from absence throughout grid, API, current values, and nullable revision history.
+- Allow clearing existing allocations outside employment while retaining project access, closed-period, and optimistic-revision checks.
+- Keep employees referenced by annual allocations visible even after employment dates change.
+- Disable grid input while loading or saving.
+- Edit the existing SQL migration: the user will recreate the database; this feature has not reached production.
+- Completed static review of the complete allocation feature and external API integration usability; see `allocation-feature-review.md`.
+- Before the user delegated execution to themselves: the focused backend allocation/external-controller command passed, and 30 frontend unit tests passed. Type-check passed before the last UI/test edits. SQL and browser behavior were not exercised.
+- Final small UI/documentation edits were reviewed statically only. Do not run further builds, tests, Docker, or application starts: the user handles execution.
+
 ## Validation
 
 - Focused backend allocation tests pass, including employee project roles, year-based project filtering, the allocated-project exception, admin access, and writing only real period-state transitions.
@@ -77,6 +88,6 @@ Provide a project-scoped annual allocation input workflow for managers and a sep
 ## Remaining
 
 - Cell comment threads are not a built-in RevoGrid feature. RevoGrid supplies the cell renderer/interaction surface, but durable threads require a separate backend model, API, permissions, and comment UI; implementation awaits an explicit product decision.
-- Decide how current allocations on a soft-deleted workstream are retired: analytics can still resolve the deleted stream, but annual input intentionally lists active workstreams only, so such cells cannot currently be set to zero in the UI.
+- Decide how current allocations on a soft-deleted workstream are retired: analytics can still resolve the deleted stream, but annual input intentionally lists active workstreams only, so such cells cannot currently be cleared in the UI.
 - Recreate the local database after the edited allocation/workstream migrations, as agreed.
 - After user acceptance, update `changelogs/CHANGELOG.md` and remove this task file.

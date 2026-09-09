@@ -340,7 +340,7 @@ const visibleProjectIds = computed(() =>
 const gridRows = computed<AnalyticsGridRow[]>(() => {
   const rows = new Map<string, AnalyticsGridRow>();
   for (const allocation of sheet.value?.allocations ?? []) {
-    if (allocation.percent <= 0 || !visibleProjectIds.value.has(allocation.projectId)) continue;
+    if (!visibleProjectIds.value.has(allocation.projectId)) continue;
     const employee = employeesById.value.get(allocation.employeeId);
     const project = projectsById.value.get(allocation.projectId);
     const workstream = allocation.workstreamId == null
@@ -478,8 +478,8 @@ const groupSummaries = computed(() => {
       }
       for (let month = 0; month < 12; month += 1) {
         const period = year.value * 100 + month;
-        const value = Number(row[monthProp(period)] ?? 0);
-        if (value) summary.months.set(period, (summary.months.get(period) ?? 0) + value);
+        const value = row[monthProp(period)];
+        if (value != null) summary.months.set(period, (summary.months.get(period) ?? 0) + Number(value));
       }
       summaries.set(path, summary);
     }
@@ -661,7 +661,7 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
       String(value ?? ""),
     );
   }
-  return value
+  return value != null
     ? createElement(
         "span",
         {

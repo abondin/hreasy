@@ -11,7 +11,7 @@ import java.util.List;
 public record ResourceAllocationSaveBody(@NotEmpty List<@Valid Change> changes) {
     public record Change(@NotNull Integer period,
                          @NotNull Integer employeeId,
-                         @Min(0) @Max(1000) int percent,
+                         @Min(0) @Max(1000) Integer percent,
                          Integer expectedRevisionId) {
     }
 }

@@ -28,7 +28,7 @@ export interface ResourceAllocationProject {
 export interface ResourceAllocationChange {
   period: number;
   employeeId: number;
-  percent: number;
+  percent: number | null;
   expectedRevisionId: number | null;
 }
 

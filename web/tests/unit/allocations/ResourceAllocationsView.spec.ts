@@ -465,7 +465,7 @@ describe("ResourceAllocationsView", () => {
       .trigger("click");
     await wrapper
       .get('[data-testid="resource-allocation-input-3-202607"]')
-      .setValue("40");
+      .setValue("0");
     await wrapper
       .get('[data-testid="resource-allocation-input-3-202607"]')
       .trigger("keydown", { key: "Enter" });
@@ -475,17 +475,17 @@ describe("ResourceAllocationsView", () => {
     await flushPromises();
 
     expect(saveResourceAllocations).toHaveBeenCalledWith(2026, 20, 11, [
-      { period: 202607, employeeId: 3, percent: 40, expectedRevisionId: null },
+      { period: 202607, employeeId: 3, percent: 0, expectedRevisionId: null },
     ]);
   });
 
-  it("allows the dismissal month and blocks later months", async () => {
+  it("allows only clearing existing cells after dismissal and protects closed months", async () => {
     vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
       year: 2026,
       selectedProjectId: 10,
       months: Array.from({ length: 12 }, (_, month) => ({
         period: 202600 + month,
-        closed: false,
+        closed: month === 10,
       })),
       employees: [
         {
@@ -510,7 +510,10 @@ describe("ResourceAllocationsView", () => {
           editable: true,
         },
       ],
-      allocations: [],
+      allocations: [
+        { period: 202609, employeeId: 1, percent: 0, revisionId: 5 },
+        { period: 202610, employeeId: 1, percent: 50, revisionId: 6 },
+      ],
       otherAllocations: [],
     });
     const wrapper = mount(ResourceAllocationInputView, {
@@ -528,6 +531,57 @@ describe("ResourceAllocationsView", () => {
     await september.trigger("click");
     expect(wrapper.findAll("input")).toHaveLength(1);
     expect(wrapper.text()).toContain("Уволен");
+    const october = wrapper.get('[data-testid="resource-allocation-input-1-202609"]');
+    expect(october.text()).toBe("0%");
+    const grid = wrapper.getComponent(GridStub);
+    const model = grid.props("source")[0];
+    const numericEdit = new CustomEvent("beforeedit", {
+      cancelable: true, detail: { model, prop: "month_202609", val: "0" },
+    });
+    grid.vm.$emit("beforeedit", numericEdit);
+    expect(numericEdit.defaultPrevented).toBe(true);
+    const rangeEdit = new CustomEvent("beforerangeedit", {
+      cancelable: true, detail: { models: { 0: model }, data: { 0: { month_202609: "0" } } },
+    });
+    grid.vm.$emit("beforerangeedit", rangeEdit);
+    expect(rangeEdit.defaultPrevented).toBe(true);
+    await october.trigger("keydown", { key: "Delete" });
+    await wrapper.get('[data-testid="resource-allocation-input-1-202610"]').trigger("keydown", { key: "Delete" });
+    vi.mocked(saveResourceAllocations).mockResolvedValue();
+    await wrapper.get('[data-testid="resource-allocations-save"]').trigger("click");
+    await flushPromises();
+    expect(saveResourceAllocations).toHaveBeenCalledWith(expect.any(Number), 10, null, [
+      { period: 202609, employeeId: 1, percent: null, expectedRevisionId: 5 },
+    ]);
+    wrapper.unmount();
+  });
+
+  it("disables the grid throughout refresh", async () => {
+    const response = await fetchResourceAllocationProjectInput(2026);
+    vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
+      ...response, selectedProjectId: 10,
+      projects: [{ id: 10, name: "Alpha", departmentId: null, departmentName: null,
+        baId: null, baName: null, active: true, editable: true }],
+    });
+    const wrapper = mount(ResourceAllocationInputView, { global: { stubs: {
+      ...globalStubs,
+      AdaptiveFilterBar: defineComponent({ setup(_, { slots }) {
+        return () => h("div", Object.values(slots).map(slot => slot?.()));
+      } }),
+      TableToolbarActions: defineComponent({ emits: ["refresh"], setup(_, { emit }) {
+        return () => h("button", { "data-testid": "refresh", onClick: () => emit("refresh") });
+      } }),
+    } } });
+    await flushPromises();
+    expect(wrapper.getComponent(GridStub).props("readonly")).toBe(false);
+    let finishRefresh!: (value: typeof response) => void;
+    vi.mocked(fetchResourceAllocationProjectInput).mockImplementationOnce(() =>
+      new Promise(resolve => { finishRefresh = resolve; }));
+    await wrapper.get('[data-testid="refresh"]').trigger("click");
+    expect(wrapper.getComponent(GridStub).props("readonly")).toBe(true);
+    finishRefresh(response);
+    await flushPromises();
+    wrapper.unmount();
   });
 
   it("builds an annual project hierarchy with group totals", async () => {
@@ -570,7 +624,7 @@ describe("ResourceAllocationsView", () => {
       allocations: [
         { period: 202600, employeeId: 1, projectId: 10, workstreamId: 11, percent: 60 },
         { period: 202601, employeeId: 1, projectId: 10, percent: 40 },
-        { period: 202602, employeeId: 1, projectId: 20, percent: 25 },
+        { period: 202602, employeeId: 1, projectId: 20, percent: 0 },
       ],
     });
 
@@ -604,7 +658,7 @@ describe("ResourceAllocationsView", () => {
       expect.objectContaining({
         projectGroup: "project:20",
         workstreamGroup: "employee:1",
-        month_202602: 25,
+        month_202602: 0,
       }),
     ]));
     expect(wrapper.get('[data-testid="resource-allocation-analytics-row-1:10:11"]').classes())
@@ -616,6 +670,7 @@ describe("ResourceAllocationsView", () => {
       { label: string; months: Map<number, number>; projects: Set<string>; workstreams: Set<string>; dimensions: Set<string>; terminalRowId: string | null }
     >;
     expect(summaries.get("ba:none")?.months.get(202600)).toBe(60);
+    expect(summaries.get("ba:none,project:20")?.months.get(202602)).toBe(0);
     expect(summaries.get("ba:none,project:10")?.months.get(202601)).toBe(40);
     expect(summaries.get("ba:none,project:10")?.workstreams).toEqual(new Set(["Delivery"]));
     expect(summaries.get("ba:none,project:10")?.dimensions).toEqual(new Set(["11", "project"]));
@@ -684,7 +739,7 @@ describe("ResourceAllocationsView", () => {
             {
               period: 202601,
               employeeId: 1,
-              percent: 0,
+              percent: null,
               expectedRevisionId: 1,
             },
           ],

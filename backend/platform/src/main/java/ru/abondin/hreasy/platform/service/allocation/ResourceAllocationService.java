@@ -49,7 +49,7 @@ public class ResourceAllocationService {
     private final ProjectWorkstreamRepo workstreamRepo;
 
     /**
-     * Loads the non-empty allocation hierarchy for one calendar year.
+     * Loads the allocation hierarchy, including explicit zero values, for one calendar year.
      */
     @Transactional(readOnly = true)
     public Mono<ResourceAllocationAnalyticsDto> getAnalytics(int year, AuthContext auth) {
@@ -190,7 +190,8 @@ public class ResourceAllocationService {
         }
         for (var change : requested) {
             var employee = employeeById.get(change.employeeId());
-            if (employee == null || !employmentOverlaps(employee, parsePeriod(change.period()))) {
+            if (change.percent() != null
+                    && (employee == null || !employmentOverlaps(employee, parsePeriod(change.period())))) {
                 return Mono.error(new BusinessError("errors.resource_allocation.employee_not_employed",
                         change.employeeId().toString(), change.period().toString()));
             }
@@ -213,14 +214,14 @@ public class ResourceAllocationService {
                     .collect(java.util.stream.Collectors.toSet());
             var rebasedChanges = requested.stream()
                     .filter(change -> !conflictKeys.contains(new CellKey(change.period(), change.employeeId())))
-                    .filter(change -> currentPercent(current.get(new CellKey(change.period(), change.employeeId())))
-                            != change.percent())
+                    .filter(change -> !Objects.equals(currentPercent(current.get(new CellKey(change.period(), change.employeeId()))),
+                            change.percent()))
                     .toList();
             return Mono.error(conflict(existing, rebasedChanges, conflicts));
         }
         var changes = requested.stream()
-                .filter(change -> currentPercent(current.get(new CellKey(change.period(), change.employeeId())))
-                        != change.percent())
+                .filter(change -> !Objects.equals(currentPercent(current.get(new CellKey(change.period(), change.employeeId()))),
+                        change.percent()))
                 .toList();
         if (changes.isEmpty()) {
             return Mono.error(new BusinessError("errors.resource_allocation.no_changes"));
@@ -237,7 +238,7 @@ public class ResourceAllocationService {
     private Mono<Long> persistChange(int year, int projectId, Integer workstreamId, int revisionId, Change change,
                                      PeriodResourceAllocationView previousValue) {
         Mono<Long> update;
-        if (change.percent() == 0) {
+        if (change.percent() == null) {
             update = repository.deleteIfRevisionMatches(year, change.period(), change.employeeId(), projectId, workstreamId,
                     change.expectedRevisionId());
         } else if (change.expectedRevisionId() == null) {
@@ -248,7 +249,7 @@ public class ResourceAllocationService {
                     change.percent(), revisionId, change.expectedRevisionId());
         }
         return repository.recordChange(revisionId, change.period(), change.employeeId(),
-                        previousValue == null ? 0 : previousValue.percent(), change.percent())
+                        currentPercent(previousValue), change.percent())
                 .then(update)
                 .flatMap(updated -> updated == 1 ? Mono.just(updated) : Mono.error(conflict(change)));
     }
@@ -368,7 +369,7 @@ public class ResourceAllocationService {
         for (var change : changes) {
             if (change == null || change.period() == null || change.employeeId() == null
                     || change.period() / 100 != year
-                    || change.percent() < 0 || change.percent() > 1000
+                    || (change.percent() != null && (change.percent() < 0 || change.percent() > 1000))
                     || (change.expectedRevisionId() != null && change.expectedRevisionId() <= 0)
                     || !cells.add(new CellKey(change.period(), change.employeeId()))) {
                 throw new BusinessError("errors.resource_allocation.invalid_changes");
@@ -398,8 +399,8 @@ public class ResourceAllocationService {
                 || !employee.dateOfDismissal().isBefore(month.atDay(1)));
     }
 
-    private int currentPercent(PeriodResourceAllocationView allocation) {
-        return allocation == null ? 0 : allocation.percent();
+    private Integer currentPercent(PeriodResourceAllocationView allocation) {
+        return allocation == null ? null : allocation.percent();
     }
 
     private Mono<Void> validateWorkstream(int projectId, Integer workstreamId) {

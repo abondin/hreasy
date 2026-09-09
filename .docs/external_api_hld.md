@@ -31,6 +31,8 @@ The implementation may reuse the stateless Bearer authentication shape of the ex
 | Endpoint | Parameters | Response | Existing business flow |
 |---|---|---|---|
 | `GET /external/api/v1/employees` | `includeFired=false` | `EmployeeDto[]` | `EmployeeService.findAll` |
+| `GET /external/api/v1/employees/{employeeId}/avatar` | HR Easy employee ID | PNG image, or 404 | `EmployeeService.avatar` / `FileStorage.streamImage` |
+| `GET /external/api/v1/employees/avatar` | required `email` query parameter | PNG image, or 404 | `EmployeeService.avatarByEmail` / `FileStorage.streamImage` |
 | `GET /external/api/v1/overtimes/{period}` | `period` is `YYYY-MM` | `OvertimeEmployeeSummary[]` | `OvertimeService.getSummary` |
 | `GET /external/api/v1/resource-allocations/analytics/{year}` | four-digit calendar year | `ResourceAllocationAnalyticsDto` | `ResourceAllocationService.getAnalytics` |
 | `GET /external/api/v1/projects` | none | `ProjectDictDto[]` | `DictService.findProjects` |
@@ -56,6 +58,16 @@ The response matches `GET /api/v1/employee`:
 
 The current basic response does not contain `extErpId`. Adding it is a separate contract decision because it would require a different query/DTO than the web endpoint.
 
+### Employee avatars
+
+Both avatar endpoints use the same external Bearer authentication and nginx IP allowlist as the employee list. Active and dismissed employees are supported. A successful response contains the actual image bytes with `Content-Type: image/png`.
+
+- By ID: `GET /external/api/v1/employees/101/avatar`.
+- By email: `GET /external/api/v1/employees/avatar?email=alex.morgan%40example.test`.
+- Email lookup is exact and case-insensitive; surrounding whitespace is ignored. URL-encode the query value, especially `+` as `%2B`. SQL wildcard characters have no special meaning.
+- A missing employee or avatar returns `404`; no default profile image is substituted. Missing or blank email returns `400`.
+- The employee list's `hasAvatar` field can be used to skip downloads for employees without an image.
+
 ### Overtimes
 
 The response matches the web overtime summary and contains employee/report identifiers, total hours, approval status timestamps, and items grouped by date and project. Workstream-level overtime details remain available in the employee report API, not in the summary.
@@ -64,7 +76,21 @@ The external contract uses `YYYY-MM` instead of exposing the existing zero-based
 
 ### Resource allocations
 
-The response matches annual allocation analytics: year, referenced employees, referenced projects, and non-empty monthly allocation cells. Each cell has an optional `workstreamId`; project-level and multiple workstream-level cells may coexist for the same employee and month.
+The response matches annual allocation analytics: `year`, referenced `employees`, `projects`, `workstreams`, and recorded monthly `allocations`. Each cell has an optional `workstreamId`; project-level and multiple workstream-level cells may coexist for the same employee and month.
+
+Allocation periods retain the internal zero-based numeric convention: `202600` is January 2026, `202608` is September, and `202611` is December. This differs from the ISO month in the overtime request URL.
+
+A cell with `percent: 0` is an explicit zero allocation. An absent cell means no allocation; the read response does not emit a dense matrix of null cells. Clearing through the internal write API sends `percent: null`, deletes the current cell, and preserves a nullable before/after history entry.
+
+For a full annual import:
+
+1. Fetch `/external/api/v1/resource-allocations/analytics/{year}`.
+2. Match cells to the included employees and workstreams by their HR Easy IDs. Referenced soft-deleted workstreams are included in analytics; do not rely only on the active workstream list from `/projects`.
+3. Fetch `/external/api/v1/projects` if the consumer needs project `externalId`, and join by `projectId`.
+4. Identify each cell by `(period, employeeId, projectId, workstreamId)`, treating null workstream as a separate project-level dimension. Keep explicit zeros.
+5. Replace the consumer's annual snapshot after a successful complete response. Upserting only returned cells would leave previously deleted allocations behind.
+
+The external API provides no writes, allocation revision/history feed, or closed-period states. Consumers cannot infer whether an allocation month is finalized from this response. These are contract limitations, not permissions that can be enabled on the existing endpoint.
 
 ### Projects
 
@@ -122,6 +148,7 @@ The external endpoint then calls the same application service as the web endpoin
 | Data | Existing authorization behavior |
 |---|---|
 | Employees | available to an authenticated user; project roles and skills are filtered by the current employee permissions and scope |
+| Employee avatars | available to an authenticated external user, including dismissed employees |
 | Overtime summary | requires `overtime_view` |
 | Allocation analytics | requires `resource_allocation_read`; the response contains all allocations |
 | Projects | available to an authenticated user |
@@ -199,7 +226,7 @@ The minimum implementation is:
 1. nginx `/external/` proxying and a global allowlist generated from `HREASY_EXTERNAL_ALLOWED_IPS`;
 2. configuration properties for hashed tokens and their system/user bindings;
 3. one ordered WebFlux security chain for `/external/**` with an opaque-token authentication converter;
-4. read-only external controllers delegating to the four existing services;
+4. read-only external controllers delegating to the existing services;
 5. focused security tests for valid, unknown, and malformed tokens plus existing business permissions;
 6. focused controller tests for period conversion and delegation.
 

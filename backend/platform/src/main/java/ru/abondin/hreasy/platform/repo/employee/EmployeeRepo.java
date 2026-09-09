@@ -25,6 +25,12 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
             """)
     Mono<EmployeeShortInfoEntry> findNotDismissedIdByEmail(String email, OffsetDateTime now);
 
+    @Query("select id from empl.employee where id = :employeeId")
+    Mono<Integer> findIdForAvatar(int employeeId);
+
+    @Query("select id from empl.employee where lower(trim(email)) = lower(trim(:email))")
+    Mono<Integer> findIdByEmailIgnoreCase(String email);
+
     @Query("select department_id from sec.employee_accessible_departments where employee_id=:employeeId")
     Flux<Integer> findAccessibleDepartments(int employeeId);
 

@@ -81,7 +81,7 @@ class ResourceAllocationServiceTest {
                             input.projects().stream().map(project -> project.name()).toList());
                     assertTrue(input.projects().getFirst().editable());
                     assertEquals("Developer", input.employees().getFirst().currentProjectRole());
-                    assertEquals("employee1@example.com", input.employees().getFirst().email());
+                    assertEquals("employee1@example.test", input.employees().getFirst().email());
                     assertEquals(2, input.allocations().size());
                     assertEquals(40, input.otherAllocations().getFirst().percent());
                     assertTrue(input.otherAllocations().getLast().sameProject());
@@ -125,7 +125,7 @@ class ResourceAllocationServiceTest {
                 .assertNext(analytics -> {
                     assertEquals(List.of(1), analytics.employees().stream().map(employee -> employee.id()).toList());
                     assertEquals("Developer", analytics.employees().getFirst().currentProjectRole());
-                    assertEquals("employee1@example.com", analytics.employees().getFirst().email());
+                    assertEquals("employee1@example.test", analytics.employees().getFirst().email());
                     assertEquals(List.of(10), analytics.projects().stream().map(project -> project.id()).toList());
                     assertEquals(List.of(202600, 202601),
                             analytics.allocations().stream().map(allocation -> allocation.period()).toList());
@@ -165,7 +165,7 @@ class ResourceAllocationServiceTest {
                 new PeriodResourceAllocationView(202600, 1, 10, null, 50, 5)));
         when(dateTimeService.now()).thenReturn(now);
         when(repository.createRevision(2026, 10, null, now, 1)).thenReturn(Mono.just(7));
-        when(repository.recordChange(7, 202601, 2, 0, 70)).thenReturn(Mono.just(1L));
+        when(repository.recordChange(7, 202601, 2, null, 70)).thenReturn(Mono.just(1L));
         when(repository.insertIfAbsent(2026, 202601, 2, 10, null, 70, 7)).thenReturn(Mono.just(1L));
 
         var request = new ResourceAllocationSaveBody(List.of(
@@ -175,7 +175,7 @@ class ResourceAllocationServiceTest {
         StepVerifier.create(service.save(2026, 10, null, request, auth))
                 .expectNext(7)
                 .verifyComplete();
-        verify(repository).recordChange(7, 202601, 2, 0, 70);
+        verify(repository).recordChange(7, 202601, 2, null, 70);
         verify(repository).insertIfAbsent(2026, 202601, 2, 10, null, 70, 7);
     }
 
@@ -192,7 +192,7 @@ class ResourceAllocationServiceTest {
         when(repository.findProjectAllocations(10, 30, 2026)).thenReturn(Flux.empty());
         when(dateTimeService.now()).thenReturn(now);
         when(repository.createRevision(2026, 10, 30, now, 1)).thenReturn(Mono.just(8));
-        when(repository.recordChange(8, 202601, 1, 0, 60)).thenReturn(Mono.just(1L));
+        when(repository.recordChange(8, 202601, 1, null, 60)).thenReturn(Mono.just(1L));
         when(repository.insertIfAbsent(2026, 202601, 1, 10, 30, 60, 8)).thenReturn(Mono.just(1L));
 
         var request = new ResourceAllocationSaveBody(List.of(
@@ -223,7 +223,7 @@ class ResourceAllocationServiceTest {
     void rejectsClosedMonthsAndMonthsAfterDismissal() {
         var dismissed = new ResourceAllocationEmployeeView(1, "Test Employee 1",
                 null, null, 10, "Project 10", "Developer",
-                LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10), "employee@example.com");
+                LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10), "employee@example.test");
         when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
                 .thenReturn(Flux.just(dismissed));
         when(repository.findProjects()).thenReturn(Flux.just(project(10)));
@@ -267,10 +267,67 @@ class ResourceAllocationServiceTest {
                 .verify();
     }
 
+    @Test
+    void distinguishesNewZeroUpdatedZeroAndDeletionAfterDismissal() {
+        var now = dateTimeService.now();
+        var dismissed = new ResourceAllocationEmployeeView(1, "Alex Morgan",
+                null, null, 10, "Project 10", "Developer",
+                LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10), "alex.morgan@example.test");
+        when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
+                .thenReturn(Flux.just(dismissed));
+        when(repository.findProjects()).thenReturn(Flux.just(project(10)));
+        when(repository.findProjectAllocations(10, null, 2026)).thenReturn(Flux.just(
+                new PeriodResourceAllocationView(202607, 1, 10, null, 50, 5),
+                new PeriodResourceAllocationView(202608, 1, 10, null, 0, 6)));
+        when(repository.createRevision(2026, 10, null, now, 1)).thenReturn(Mono.just(7));
+        when(repository.recordChange(7, 202606, 1, null, 0)).thenReturn(Mono.just(1L));
+        when(repository.insertIfAbsent(2026, 202606, 1, 10, null, 0, 7)).thenReturn(Mono.just(1L));
+        when(repository.recordChange(7, 202607, 1, 50, 0)).thenReturn(Mono.just(1L));
+        when(repository.updateIfRevisionMatches(2026, 202607, 1, 10, null, 0, 7, 5))
+                .thenReturn(Mono.just(1L));
+        when(repository.recordChange(7, 202608, 1, 0, null)).thenReturn(Mono.just(1L));
+        when(repository.deleteIfRevisionMatches(2026, 202608, 1, 10, null, 6)).thenReturn(Mono.just(1L));
+        var request = new ResourceAllocationSaveBody(List.of(
+                new ResourceAllocationSaveBody.Change(202606, 1, 0, null),
+                new ResourceAllocationSaveBody.Change(202607, 1, 0, 5),
+                new ResourceAllocationSaveBody.Change(202608, 1, null, 6)));
+
+        StepVerifier.create(service.save(2026, 10, null, request, auth)).expectNext(7).verifyComplete();
+        verify(repository).recordChange(7, 202606, 1, null, 0);
+        verify(repository).recordChange(7, 202607, 1, 50, 0);
+        verify(repository).recordChange(7, 202608, 1, 0, null);
+    }
+
+    @Test
+    void rejectsZeroAfterDismissalAndStillProtectsClosedPeriodsAndRevisionsOnClear() {
+        when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
+                .thenReturn(Flux.empty());
+        when(repository.findProjects()).thenReturn(Flux.just(project(10)));
+        when(repository.findProjectAllocations(10, null, 2026)).thenReturn(Flux.just(
+                new PeriodResourceAllocationView(202600, 1, 10, null, 50, 5)));
+        StepVerifier.create(service.save(2026, 10, null, new ResourceAllocationSaveBody(List.of(
+                        new ResourceAllocationSaveBody.Change(202600, 1, 0, 5))), auth))
+                .expectErrorMatches(error -> error instanceof ru.abondin.hreasy.platform.BusinessError be
+                        && "errors.resource_allocation.employee_not_employed".equals(be.getCode()))
+                .verify();
+        when(repository.findClosedPeriods(2026)).thenReturn(Flux.just(202600));
+        StepVerifier.create(service.save(2026, 10, null, new ResourceAllocationSaveBody(List.of(
+                        new ResourceAllocationSaveBody.Change(202600, 1, null, 5))), auth))
+                .expectErrorMatches(error -> error instanceof ru.abondin.hreasy.platform.BusinessError be
+                        && "errors.resource_allocation.period_closed".equals(be.getCode()))
+                .verify();
+        when(repository.findClosedPeriods(2026)).thenReturn(Flux.empty());
+        StepVerifier.create(service.save(2026, 10, null, new ResourceAllocationSaveBody(List.of(
+                        new ResourceAllocationSaveBody.Change(202600, 1, null, 4))), auth))
+                .expectErrorMatches(error -> error instanceof ru.abondin.hreasy.platform.BusinessError be
+                        && be.getStatus() == HttpStatus.CONFLICT)
+                .verify();
+    }
+
     private ResourceAllocationEmployeeView employee(int id) {
         return new ResourceAllocationEmployeeView(id, "Test Employee " + id,
                 null, null, null, null, "Developer", LocalDate.of(2020, 1, 1), null,
-                "employee" + id + "@example.com");
+                "employee" + id + "@example.test");
     }
 
     private ResourceAllocationProjectView project(int id) {

@@ -1,0 +1,31 @@
+# External and web API security review
+
+Scope: static source review on 2026-09-09, current feature/resource_allocation working tree. No builds, tests, application starts, network probes, or dependency vulnerability scans were run, as requested. Findings 1 and 2 fixed in source after user approval; other findings explicitly deferred. Existing allocation and external API changes preserved.
+
+## Findings
+
+1. **P1: unauthorized tech profile deletion happens before authorization.** `TechProfileService.java:69-71` passes an already evaluated `FileStorage.toRecycleBin(...)` into `then`. `FileStorage.java:97-121` synchronously moves/deletes files before returning its Mono. An authenticated employee who knows another employee ID and filename can call `DELETE /api/v1/techprofile/{employeeId}/file/{filename}`; a subsequent 403 does not undo the move, and the DB deletion log is skipped. Make the shared filesystem operation lazy and keep it sequenced after authorization. Regression check: rejected deletion leaves both the file and existing recycle copy unchanged.
+
+2. **P1: multipart filenames escape the intended storage directory.** `TechProfileService.java:52,61` forwards the client-controlled FilePart filename to `FileStorage.java:138`, which resolves it using `new File(resourceHome, filename)` without validating containment. Every employee can upload their own tech profile; parent-directory components can target an existing writable sibling directory, including another employee's documents. Assessment/article/map uploads share this sink. File reads and recycling also lack containment checks. Validate filenames centrally, reject separators/dot components, and enforce storage boundaries for every operation. No HTTP exploit was run; encoded path-variable acceptance on download routes is not asserted. Regression check: a multipart filename containing parent-directory components must fail without touching a sibling file.
+
+3. **P1: Telegram authentication creates a web session.** `WebSecurityConfig.java:225` configures the Telegram AuthenticationWebFilter with the shared WebSessionServerSecurityContextRepository, despite the Telegram chain's NoOp repository. The converter loads ordinary employee authorities. A valid Telegram JWT can establish a session that `/api/**` accepts because the web chain only checks authenticated(). The risk also includes unconfirmed bindings: `EmployeeAuthDomainService.findEmailByTelegramAccount` ignores onlyConfirmed, while `/telegram/api/v1/confirm/start` requires authentication alone. Prerequisite: a valid Telegram JWT for an account bound to an active employee, and access to the Telegram backend route. Use NoOp on the Telegram authentication filter as already done for external API. Regression check: a Telegram request must not create a session capable of calling web API.
+
+4. **P2: anonymous access to employee avatars and article attachments.** `WebSecurityConfig.java:98` permits all `/api/v1/fs/**`; `StaticContentController.java:33-40` serves avatars and article attachments without authentication. An unauthenticated caller with an employee ID or article ID/filename can retrieve these files, including unpublished/archived article attachments because publication status is not checked. The new external avatar endpoint's token and IP gate do not protect the same images available through the old route. Require a web session for internal files and deliberately scope any public exceptions. Regression check: anonymous file requests are rejected while authenticated UI image loading still works.
+
+All four findings above are pre-existing web/shared infrastructure problems, not introduced by the new external controller.
+
+## Deployment-dependent exposure
+
+`application.yaml:98-99` exposes actuator loggers and metrics, while `WebSecurityConfig.java:99` permits `/actuator/**` with CSRF disabled. Direct backend access therefore permits anonymous logger inspection/changes as well as metrics access. The supplied frontend nginx does not proxy actuator, but `.hreasy-localdev/docker-compose.yml:40-41` publishes the backend container port to a host port without a loopback restriction. Direct backend access also bypasses the new external API's nginx IP allowlist (Bearer authentication still applies). Production reachability/firewall configuration was not inspected. Restrict backend network access and require authorization for management endpoints; keep any necessary public health exception narrow.
+
+## External API and allocation checks
+
+No direct Bearer-authentication bypass found in the inspected source. External chain requires the reserved external authority, accepts GET only, and uses NoOp repositories on both chain and authentication filter. Tokens are validated as opaque SHA-256-backed values; current subject permissions are loaded on each request. Avatar ID is an integer and email lookup uses bound exact case-insensitive SQL, not interpolation or wildcard matching. Allocation reads require resource_allocation_read; writes validate feature permission and project access, and period management requires admin permission. Global annual read scope is intentional and documented.
+
+This is a static review, not a claim that the APIs have no other vulnerabilities. Cookie/CSRF browser behavior, file response execution policies, live ingress behavior, and dependency CVEs remain unverified. Next action: user runs FileStorageTest and reviews fixes for findings 1-2. Findings 3-4 and deployment exposure remain unchanged by request. User retains ownership of builds and runtime checks.
+
+## Approved remediation (2026-09-09)
+
+- FileStorage.toRecycleBin now defers all filesystem effects until subscription, preserving authorization sequencing in TechProfileService and all other callers.
+- All client filename operations share validation: reject empty/dot names, separators, drive/stream syntax, NUL, and symbolic-link file targets. Server-generated resource directories retain their existing layout.
+- Added FileStorageTest for rejected deletion preserving both current and recycled files, successful deletion, unsafe filenames across upload/read/existence/recycle, sibling overwrite prevention, and ordinary file lifecycle. Tests and builds were not run per user instruction.

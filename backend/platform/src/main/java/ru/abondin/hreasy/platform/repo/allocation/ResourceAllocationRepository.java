@@ -29,7 +29,7 @@ public class ResourceAllocationRepository {
     }
 
     /**
-     * Finds employees whose employment overlaps the requested month.
+     * Finds employees employed in the requested period or referenced by its allocations.
      */
     public Flux<ResourceAllocationEmployeeView> findEmployees(LocalDate periodStart, LocalDate periodEnd) {
         return dbTemplate.getDatabaseClient().sql("""
@@ -39,12 +39,15 @@ public class ResourceAllocationRepository {
                         from empl.employee e
                         left join dict.department d on d.id = e.department
                         left join proj.project p on p.id = e.current_project
-                        where (e.date_of_employment is null or e.date_of_employment <= :periodEnd)
-                          and (e.date_of_dismissal is null or e.date_of_dismissal >= :periodStart)
+                        where ((e.date_of_employment is null or e.date_of_employment <= :periodEnd)
+                          and (e.date_of_dismissal is null or e.date_of_dismissal >= :periodStart))
+                           or exists (select 1 from alloc.resource_allocation a
+                                      where a.employee_id = e.id and a.year = :year)
                         order by e.display_name
                         """)
                 .bind("periodStart", periodStart)
                 .bind("periodEnd", periodEnd)
+                .bind("year", periodStart.getYear())
                 .map((row, _) -> new ResourceAllocationEmployeeView(
                         row.get("id", Integer.class),
                         row.get("display_name", String.class),
@@ -98,7 +101,7 @@ public class ResourceAllocationRepository {
     }
 
     /**
-     * Returns all non-zero allocation cells for one calendar year.
+     * Returns all allocation cells, including explicit zero values, for one calendar year.
      */
     public Flux<PeriodResourceAllocationView> findYearAllocations(int year) {
         return dbTemplate.getDatabaseClient().sql("""
@@ -189,18 +192,20 @@ public class ResourceAllocationRepository {
      * Appends an immutable before/after value to a revision.
      */
     public Mono<Long> recordChange(int revisionId, int period, int employeeId,
-                                   int previousPercent, int newPercent) {
-        return dbTemplate.getDatabaseClient().sql("""
+                                   Integer previousPercent, Integer newPercent) {
+        var spec = dbTemplate.getDatabaseClient().sql("""
                         insert into alloc.resource_allocation_change
                             (revision_id, period, employee_id, previous_percent, new_percent)
                         values (:revisionId, :period, :employeeId, :previousPercent, :newPercent)
                         """)
                 .bind("revisionId", revisionId)
                 .bind("period", period)
-                .bind("employeeId", employeeId)
-                .bind("previousPercent", previousPercent)
-                .bind("newPercent", newPercent)
-                .fetch().rowsUpdated();
+                .bind("employeeId", employeeId);
+        spec = previousPercent == null ? spec.bindNull("previousPercent", Integer.class)
+                : spec.bind("previousPercent", previousPercent);
+        spec = newPercent == null ? spec.bindNull("newPercent", Integer.class)
+                : spec.bind("newPercent", newPercent);
+        return spec.fetch().rowsUpdated();
     }
 
     /**
