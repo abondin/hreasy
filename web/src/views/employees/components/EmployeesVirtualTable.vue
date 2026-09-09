@@ -17,10 +17,12 @@
           :project-options="projectOptions"
           :business-account-options="baOptions"
           :search="search"
+          :search-settings="searchSettings"
           :department="department"
           :project="project"
           :business-account="businessAccount"
           @update:search="emit('update:search', $event)"
+          @update:search-settings="emit('update:searchSettings', $event)"
           @update:department="emit('update:department', $event)"
           @update:project="emit('update:project', $event)"
           @update:business-account="emit('update:ba', $event)"
@@ -48,6 +50,7 @@ import { useDisplay } from 'vuetify';
 import type { VDataTable } from 'vuetify/components';
 import TablePageCard from '@/components/shared/TablePageCard.vue';
 import type { Employee } from '@/services/employee.service';
+import type { SearchSettings } from '@/lib/search';
 import { usePermissions } from '@/lib/permissions';
 import EmployeesFilters from '@/views/employees/components/EmployeesFilters.vue';
 import EmployeesTable from '@/views/employees/components/EmployeesTable.vue';
@@ -68,6 +71,7 @@ const props = defineProps<{
   projectOptions: Array<{ title: string; value: number | null }>;
   businessAccountOptions: Array<{ title: string; value: number }>;
   search?: string;
+  searchSettings?: SearchSettings;
   department?: number[];
   project?: Array<number | null>;
   businessAccount?: number[];
@@ -76,6 +80,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (event: 'update:search', value: string): void;
+  (event: 'update:searchSettings', value: SearchSettings): void;
   (event: 'update:department', value: number[]): void;
   (event: 'update:project', value: Array<number | null>): void;
   (event: 'update:ba', value: number[]): void;

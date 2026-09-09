@@ -18,6 +18,7 @@ const sheet = {
       departmentName: "Software Development",
       currentProjectId: 302,
       currentProjectName: "Billing Gateway",
+      currentProjectRole: "Java Backend Developer",
     },
     {
       id: 102,
@@ -26,6 +27,7 @@ const sheet = {
       departmentName: "Software Development",
       currentProjectId: 301,
       currentProjectName: "Retail Terminal Platform",
+      currentProjectRole: "Business Analyst",
     },
     {
       id: 103,
@@ -34,6 +36,7 @@ const sheet = {
       departmentName: "Software Development",
       currentProjectId: 302,
       currentProjectName: "Billing Gateway",
+      currentProjectRole: "Java Backend Developer",
     },
   ],
   projects: [
@@ -44,9 +47,9 @@ const sheet = {
       departmentName: "Software Development",
       baId: 402,
       baName: "Alpine Operations",
+      endDate: "2026-06-30",
       active: true,
       editable: true,
-      managed: true,
     },
     {
       id: 302,
@@ -57,7 +60,6 @@ const sheet = {
       baName: "Northwind Delivery",
       active: false,
       editable: false,
-      managed: false,
     },
     ...Array.from({ length: 8 }, (_, index) => ({
       id: 303 + index,
@@ -68,7 +70,6 @@ const sheet = {
       baName: "Northwind Delivery",
       active: index !== 7,
       editable: index === 0,
-      managed: index === 0,
     })),
   ],
   allocations: [
@@ -97,9 +98,13 @@ async function revealAdaptiveFilter(page: Page, testId: string) {
 }
 
 function projectInput(data: typeof sheet, projectId?: number) {
-  const projects = data.projects.filter(project => project.managed && project.active)
+  const allocatedProjectIds = new Set([
+    ...data.allocations.map(allocation => allocation.projectId),
+    ...data.previousAllocations.map(allocation => allocation.projectId),
+  ]);
+  const projects = data.projects.filter(project => project.active || allocatedProjectIds.has(project.id))
     .sort((left, right) => left.name.localeCompare(right.name));
-  const selectedProjectId = projectId ?? projects[0]?.id ?? null;
+  const selectedProjectId = projectId ?? projects.find(project => project.editable)?.id ?? projects[0]?.id ?? null;
   const otherAllocations = new Map<string, { period: number; employeeId: number; percent: number }>();
   for (const value of [
     ...data.allocations.map(allocation => ({ ...allocation, period: data.period })),
@@ -132,7 +137,6 @@ function projectInput(data: typeof sheet, projectId?: number) {
         .map(value => ({ period: 202606, employeeId: value.employeeId, percent: value.percent, revisionId: value.revisionId })),
     ],
     otherAllocations: [...otherAllocations.values()],
-    canManagePeriods: false,
   };
 }
 
@@ -147,13 +151,21 @@ function analytics(data: typeof sheet) {
     year: 2026,
     employees: data.employees.filter(employee => employeeIds.has(employee.id)),
     projects: data.projects.filter(project => projectIds.has(project.id)),
+    workstreams: [],
     allocations,
   };
 }
 
 async function mockResourceAllocationsApi(page: Page, data = sheet): Promise<void> {
-  await page.route(/\/api\/v1\/resource-allocations\/(?:input\/\d+(?:\/\d+)?|analytics\/\d+|\d+)(?:\?.*)?$/, async (route) => {
+  await page.route(/\/api\/v1\/resource-allocations\/(?:input\/\d+(?:\/\d+)?|analytics\/\d+|closed-periods\/\d+)(?:\?.*)?$/, async (route) => {
     const url = new URL(route.request().url());
+    if (url.pathname.includes("/closed-periods/")) {
+      const periods = route.request().method() === "PUT"
+        ? (route.request().postDataJSON() as { closedPeriods: number[] }).closedPeriods
+        : [];
+      await json(route, periods);
+      return;
+    }
     if (url.pathname.includes("/analytics/")) {
       await json(route, analytics(data));
       return;
@@ -177,7 +189,6 @@ async function mockResourceAllocationsApi(page: Page, data = sheet): Promise<voi
       await json(route, projectInput(data, projectId == null ? undefined : Number(projectId)));
       return;
     }
-    await json(route, data);
   });
 }
 
@@ -249,17 +260,25 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect(page.getByTestId("resource-allocations-tab-input")).toHaveAttribute("aria-selected", "true");
     const projectFilter = await revealAdaptiveFilter(page, "resource-allocations-input-project");
     await expect(projectFilter).toContainText("Retail Terminal Platform");
+    await projectFilter.click();
+    await expect(page.getByText("Закрыт: 30.06.2026", { exact: true })).toBeVisible();
     await page.keyboard.press("Escape");
     const inputCell = page.getByTestId("resource-allocation-input-102-202607");
     await expect(page.getByTestId("resource-allocation-input-101-202607")).toContainText("+ 40%");
     await expect(inputCell).toBeVisible();
     await expect(page.getByTestId("resource-allocation-input-employee-101")).toContainText("Alex Morgan");
+    await expect(page.getByTestId("resource-allocation-input-employee-101")).toContainText("Java Backend Developer");
     const inputGrid = page.getByTestId("resource-allocations-input-grid");
     await expect.poll(async () => (await inputGrid.boundingBox())?.height ?? 0).toBeGreaterThan(350);
     const addEmployee = page.getByTestId("resource-allocations-add-employee");
+    await addEmployee.locator("input").fill("Billing Gateway");
+    const employeeOption = page.getByRole("option").filter({ hasText: "Taylor Kim" });
+    await expect(employeeOption).toContainText("Текущий проект: Billing Gateway");
+    await expect(employeeOption).toContainText("Роль: Java Backend Developer");
+    await addEmployee.locator("input").fill("");
     await addEmployee.locator("input").pressSequentially("Taylor Kim");
     await expect(addEmployee.locator("input")).toHaveValue("Taylor Kim");
-    await page.getByRole("option", { name: "Taylor Kim" }).click();
+    await employeeOption.click();
     await expect(page.getByTestId("resource-allocation-input-employee-103")).toBeVisible();
     await inputCell.dblclick();
     await page.locator("revogr-edit input").fill("75");
@@ -283,18 +302,29 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect(page.getByTestId("resource-allocation-group-ba:402-label")).toContainText("Alpine Operations");
     await expect(page.getByTestId("resource-allocation-group-ba:402,project:301-label")).toContainText("Retail Terminal Platform");
     await expect(page.getByTestId("resource-allocation-group-ba:402,project:301-202607")).toHaveText("135");
-    await expect(page.getByTestId("resource-allocation-analytics-row-101:301")).toHaveText("Alex Morgan");
-    await expect(page.getByTestId("resource-allocation-analytics-cell-101:301-202607")).toHaveText("60");
-    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303-202606")).toHaveText("15");
+    await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toContainText("Alex Morgan");
+    await expect(page.getByTestId("resource-allocation-analytics-cell-101:301:project-202607")).toHaveText("60");
+    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202606")).toHaveText("15");
+    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202600"))
+      .toHaveClass(/resource-allocation-terminal-cell/);
+    const terminalBackground = await page
+      .getByTestId("resource-allocation-analytics-cell-101:301:project-202607")
+      .locator("..")
+      .evaluate((cell) => getComputedStyle(cell).backgroundColor);
+    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202600").locator(".."))
+      .toHaveCSS("background-color", terminalBackground);
 
     const analyticsSearch = (await revealAdaptiveFilter(page, "resource-allocations-analytics-search")).locator("input");
     await analyticsSearch.fill("Billing Gateway");
-    await expect(page.getByTestId("resource-allocation-analytics-row-101:302")).toBeVisible();
-    await expect(page.getByTestId("resource-allocation-analytics-row-101:301")).toHaveCount(0);
+    await expect(page.getByTestId("resource-allocation-analytics-row-101:302:project")).toBeVisible();
+    await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toHaveCount(0);
     await analyticsSearch.fill("Alex Morgan");
-    await expect(page.getByTestId("resource-allocation-analytics-row-101:301")).toBeVisible();
-    await expect(page.getByTestId("resource-allocation-analytics-row-101:302")).toBeVisible();
-    await expect(page.getByTestId("resource-allocation-analytics-row-102:301")).toHaveCount(0);
+    await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toBeVisible();
+    await expect(page.getByTestId("resource-allocation-analytics-row-101:302:project")).toBeVisible();
+    await expect(page.getByTestId("resource-allocation-analytics-row-102:301:project")).toHaveCount(0);
+    await analyticsSearch.fill("Java Backend");
+    await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toContainText("Java Backend Developer");
+    await expect(page.getByTestId("resource-allocation-analytics-row-102:301:project")).toHaveCount(0);
     await analyticsSearch.fill("");
 
     const businessAccountFilter = await revealAdaptiveFilter(page, "resource-allocations-business-accounts");
@@ -307,10 +337,10 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect(page.getByRole("option", { name: "Retail Terminal Platform" })).toHaveCount(0);
     await page.getByRole("option", { name: "Support Portal" }).click();
     await page.keyboard.press("Escape");
-    await expect(page.getByTestId("resource-allocation-analytics-row-102:303")).toBeVisible();
-    await expect(page.getByTestId("resource-allocation-analytics-row-101:302")).toHaveCount(0);
+    await expect(page.getByTestId("resource-allocation-analytics-row-102:303:project")).toBeVisible();
+    await expect(page.getByTestId("resource-allocation-analytics-row-101:302:project")).toHaveCount(0);
 
-    await page.getByTestId("resource-allocation-analytics-cell-102:303-202606").dblclick();
+    await page.getByTestId("resource-allocation-analytics-cell-102:303:project-202606").dblclick();
     await expect(page.locator("revogr-edit input")).toHaveCount(0);
 
     await page.getByTestId("resource-allocations-analytics-mode").getByRole("button", { name: "Сотрудники" }).click();
@@ -318,7 +348,7 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect(employeeGroup).toContainText("Jordan Lee");
     await expect(employeeGroup).toContainText("Support Portal");
     await employeeGroup.click();
-    await expect(page.getByTestId("resource-allocation-analytics-row-102:303")).toHaveText("Support Portal");
+    await expect(page.getByTestId("resource-allocation-analytics-row-102:303:project")).toHaveText("Support Portal");
   });
 
   test("keeps a large populated annual hierarchy responsive", async ({ page }) => {
@@ -351,7 +381,7 @@ test.describe("App Mocked Resource Allocations Page", () => {
 
     await page.goto(appPath(`${routes.resourceAllocations}/analytics`), { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("resource-allocations-tab-analytics")).toHaveAttribute("aria-selected", "true");
-    const cell = page.getByTestId("resource-allocation-analytics-cell-1000:2000-202607");
+    const cell = page.getByTestId("resource-allocation-analytics-cell-1000:2000:project-202607");
     await expect(cell).toBeVisible();
     const editor = page.locator("revogr-edit input");
     await expect(editor).toHaveCount(0);
@@ -370,6 +400,6 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await projectFilter.locator("input").fill("Project 10");
     await page.getByRole("option", { name: "Project 10", exact: true }).click();
     await page.keyboard.press("Escape");
-    await expect(page.getByTestId("resource-allocation-analytics-row-1000:2009")).toBeVisible();
+    await expect(page.getByTestId("resource-allocation-analytics-row-1000:2009:project")).toBeVisible();
   });
 });

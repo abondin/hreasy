@@ -7,7 +7,10 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.repo.dict.DictProjectEntry;
+import ru.abondin.hreasy.platform.repo.manager.ManagerEntry;
 import ru.abondin.hreasy.platform.service.admin.AdminSecurityValidator;
+
+import java.util.Objects;
 
 /**
  * Validate security rules to admin managers
@@ -35,6 +38,15 @@ public class ManagerSecurityValidator {
             }
             return Mono.just(true);
         });
+    }
+
+    public Mono<Boolean> validateDeleteManager(AuthContext auth, ManagerEntry manager) {
+        if (auth.getAuthorities().contains("admin_managers")
+                || Objects.equals(manager.getCreatedBy(), auth.getEmployeeInfo().getEmployeeId())) {
+            return Mono.just(true);
+        }
+        return Mono.error(new AccessDeniedException(
+                "Only admin_managers or the employee who created the manager link can delete it"));
     }
 
     /**

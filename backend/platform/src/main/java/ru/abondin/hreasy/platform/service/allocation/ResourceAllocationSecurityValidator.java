@@ -14,59 +14,48 @@ import ru.abondin.hreasy.platform.sec.ProjectHierarchyAccessor;
 @Component
 @RequiredArgsConstructor
 public class ResourceAllocationSecurityValidator {
-    public static final String EDIT_PERMISSION = "resource_allocation_edit";
-    public static final String EDIT_GLOBALLY_PERMISSION = "resource_allocation_edit_globally";
-    public static final String MANAGE_PERIODS_PERMISSION = "resource_allocation_period_manage";
+    public static final String READ_PERMISSION = "resource_allocation_read";
+    public static final String WRITE_PERMISSION = "resource_allocation_write";
+    public static final String ADMIN_PERMISSION = "resource_allocation_admin";
 
     private final ProjectHierarchyAccessor projectHierarchyAccessor;
 
     /**
      * Requires access to the resource allocation feature.
      */
-    public Mono<Boolean> validateCanEditAllocations(AuthContext auth) {
-        return auth.getAuthorities().contains(EDIT_PERMISSION)
+    public Mono<Boolean> validateCanReadAllocations(AuthContext auth) {
+        return auth.getAuthorities().contains(READ_PERMISSION)
                 ? Mono.just(true)
-                : Mono.error(new AccessDeniedException("Missing permission " + EDIT_PERMISSION));
+                : Mono.error(new AccessDeniedException("Missing permission " + READ_PERMISSION));
     }
 
     /**
-     * Returns whether the user may edit allocations for the supplied project hierarchy.
+     * Requires permission to change allocations.
      */
-    public boolean canEditProject(AuthContext auth, ResourceAllocationProjectView project) {
-        return canEditGlobally(auth)
-                || projectHierarchyAccessor.hasProjectAccess(auth, null,
+    public Mono<Boolean> validateCanWriteAllocations(AuthContext auth) {
+        return canWriteAllocations(auth)
+                ? Mono.just(true)
+                : Mono.error(new AccessDeniedException("Missing permission " + WRITE_PERMISSION));
+    }
+
+    public boolean canWriteAllocations(AuthContext auth) {
+        return auth.getAuthorities().contains(WRITE_PERMISSION);
+    }
+
+    /**
+     * Returns whether the user may edit allocations for a managed or explicitly accessible project.
+     */
+    public boolean canWriteProject(AuthContext auth, ResourceAllocationProjectView project) {
+        return canWriteAllocations(auth) && projectHierarchyAccessor.hasProjectAccess(auth, null,
                 new ProjectHierarchyAccessor.ProjectInfo(project.id(), project.departmentId(), project.baId()));
-    }
-
-    /**
-     * Returns whether the user may edit allocations outside their managed project line.
-     */
-    public boolean canEditGlobally(AuthContext auth) {
-        return auth.getAuthorities().contains(EDIT_GLOBALLY_PERMISSION);
-    }
-
-    /**
-     * Returns whether the user may close and reopen allocation periods.
-     */
-    public boolean canManagePeriods(AuthContext auth) {
-        return auth.getAuthorities().contains(MANAGE_PERIODS_PERMISSION);
-    }
-
-    /**
-     * Rejects a mutation when the user cannot edit the supplied project.
-     */
-    public void validateEditProject(AuthContext auth, ResourceAllocationProjectView project) {
-        if (!canEditProject(auth, project)) {
-            throw new AccessDeniedException("No access to resource allocation project " + project.id());
-        }
     }
 
     /**
      * Requires permission to close and reopen allocation periods.
      */
-    public Mono<Boolean> validateManagePeriods(AuthContext auth) {
-        return canManagePeriods(auth)
+    public Mono<Boolean> validateAdmin(AuthContext auth) {
+        return auth.getAuthorities().contains(ADMIN_PERMISSION)
                 ? Mono.just(true)
-                : Mono.error(new AccessDeniedException("Missing permission " + MANAGE_PERIODS_PERMISSION));
+                : Mono.error(new AccessDeniedException("Missing permission " + ADMIN_PERMISSION));
     }
 }

@@ -26,6 +26,14 @@
         />
 
         <v-text-field
+          v-model="form.externalId"
+          :label="t('Внешний идентификатор')"
+          :counter="255"
+          variant="outlined"
+          data-testid="admin-project-external-id"
+        />
+
+        <v-text-field
           v-model="form.name"
           :label="t('Наименование')"
           :counter="255"
@@ -67,6 +75,71 @@
           :label="t('Информация о проекте (Markdown)')"
           :counter="4000"
         />
+
+        <v-divider class="my-4" />
+        <div class="d-flex align-center mb-3">
+          <div class="text-h6">{{ t("Направления работ") }}</div>
+          <v-spacer />
+          <v-btn prepend-icon="mdi-plus" variant="text" data-testid="admin-project-add-workstream" @click="addWorkstream">
+            {{ t("Добавить") }}
+          </v-btn>
+        </div>
+        <v-table class="admin-project-workstreams-table" density="compact">
+          <thead>
+            <tr>
+              <th>{{ t("Наименование") }}</th>
+              <th>{{ t("Внешний идентификатор") }}</th>
+              <th>{{ t("Описание") }}</th>
+              <th class="admin-project-workstream-actions" />
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(workstream, index) in form.workstreams"
+              :key="workstream.key"
+              :data-testid="`admin-project-workstream-${index}`"
+            >
+              <td>
+                <v-text-field
+                  v-model="workstream.displayName"
+                  :counter="255"
+                  :rules="requiredTextRules"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                />
+              </td>
+              <td>
+                <v-text-field
+                  v-model="workstream.externalId"
+                  :counter="255"
+                  variant="outlined"
+                  density="compact"
+                  hide-details="auto"
+                />
+              </td>
+              <td>
+                <v-textarea
+                  v-model="workstream.description"
+                  rows="1"
+                  auto-grow
+                  variant="outlined"
+                  density="compact"
+                  hide-details
+                />
+              </td>
+              <td>
+                <v-btn
+                  icon="mdi-delete"
+                  color="error"
+                  variant="text"
+                  :aria-label="t('Удалить')"
+                  @click="form.workstreams.splice(index, 1)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
       </v-form>
 
       <v-alert
@@ -105,11 +178,13 @@ import {
   type CreateOrUpdateProjectBody,
   updateAdminProject,
 } from "@/services/admin/admin-project.service";
+import type { ProjectWorkstream } from "@/services/projects.service";
 
 type VFormInstance = InstanceType<typeof VForm>;
 
 /** Form state for admin project create/update dialogs. */
 interface ProjectFormState {
+  externalId: string;
   name: string;
   startDate: string;
   endDate: string;
@@ -119,6 +194,11 @@ interface ProjectFormState {
   departmentId?: number;
   baId: number | null;
   info: string;
+  workstreams: WorkstreamFormState[];
+}
+
+interface WorkstreamFormState extends ProjectWorkstream {
+  key: string;
 }
 
 const props = defineProps<{
@@ -139,6 +219,7 @@ const saving = ref(false);
 const error = ref("");
 
 const form = reactive<ProjectFormState>({
+  externalId: "",
   name: "",
   startDate: "",
   endDate: "",
@@ -148,7 +229,10 @@ const form = reactive<ProjectFormState>({
   departmentId: undefined,
   baId: null,
   info: "",
+  workstreams: [],
 });
+
+let workstreamKey = 0;
 
 const isCreateMode = computed(() => !props.input?.id);
 const businessAccountsWithCurrent = computed(() => {
@@ -179,6 +263,7 @@ watch(
 
 function resetForm(): void {
   error.value = "";
+  form.externalId = props.input?.externalId ?? "";
   form.name = props.input?.name ?? "";
   form.startDate = props.input?.startDate ?? "";
   form.endDate = props.input?.endDate ?? "";
@@ -188,11 +273,18 @@ function resetForm(): void {
   form.departmentId = props.input?.department?.id;
   form.baId = props.input?.businessAccount?.id ?? null;
   form.info = props.input?.info ?? "";
+  form.workstreams = (props.input?.workstreams ?? []).map((workstream) => ({
+    ...workstream,
+    externalId: workstream.externalId ?? "",
+    description: workstream.description ?? "",
+    key: String(workstream.id ?? `new-${workstreamKey++}`),
+  }));
   formRef.value?.resetValidation();
 }
 
 function buildPayload(): CreateOrUpdateProjectBody {
   return {
+    externalId: form.externalId.trim() || undefined,
     name: form.name.trim(),
     customer: form.customer.trim(),
     startDate: form.startDate || undefined,
@@ -202,7 +294,22 @@ function buildPayload(): CreateOrUpdateProjectBody {
     departmentId: form.departmentId,
     baId: form.baId,
     info: form.info || undefined,
+    workstreams: form.workstreams.map((workstream) => ({
+      id: workstream.id,
+      externalId: workstream.externalId?.trim() || undefined,
+      displayName: workstream.displayName.trim(),
+      description: workstream.description?.trim() || undefined,
+    })),
   };
+}
+
+function addWorkstream(): void {
+  form.workstreams.push({
+    key: `new-${workstreamKey++}`,
+    externalId: "",
+    displayName: "",
+    description: "",
+  });
 }
 
 async function submit(): Promise<void> {
@@ -226,3 +333,13 @@ async function submit(): Promise<void> {
   }
 }
 </script>
+
+<style scoped>
+.admin-project-workstream-actions {
+  width: 48px;
+}
+
+.admin-project-workstreams-table td {
+  vertical-align: top;
+}
+</style>

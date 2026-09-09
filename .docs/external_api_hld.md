@@ -58,18 +58,19 @@ The current basic response does not contain `extErpId`. Adding it is a separate 
 
 ### Overtimes
 
-The response matches the web overtime summary and contains employee/report identifiers, total hours, approval status timestamps, and items grouped by date and project.
+The response matches the web overtime summary and contains employee/report identifiers, total hours, approval status timestamps, and items grouped by date and project. Workstream-level overtime details remain available in the employee report API, not in the summary.
 
 The external contract uses `YYYY-MM` instead of exposing the existing zero-based numeric month representation. For example, `2026-09` maps internally to report period `202608`.
 
 ### Resource allocations
 
-The response matches annual allocation analytics: year, referenced employees, referenced projects, and non-empty monthly allocation cells.
+The response matches annual allocation analytics: year, referenced employees, referenced projects, and non-empty monthly allocation cells. Each cell has an optional `workstreamId`; project-level and multiple workstream-level cells may coexist for the same employee and month.
 
 ### Projects
 
-The response matches the existing project dictionary: HR Easy project ID, name, active flag, and business account ID.
-The current project model has no external project identifier.
+The response matches the existing project dictionary and includes the HR Easy project ID, optional `externalId`, name, active flag, business account ID, and active workstreams. Each workstream contains `id`, optional `externalId`, `displayName`, and optional `description`.
+
+External IDs are stable integration keys. Project external IDs are globally unique when present; workstream external IDs are unique among active workstreams in one project.
 
 ## Authentication
 
@@ -122,7 +123,7 @@ The external endpoint then calls the same application service as the web endpoin
 |---|---|
 | Employees | available to an authenticated user; project roles and skills are filtered by the current employee permissions and scope |
 | Overtime summary | requires `overtime_view` |
-| Allocation analytics | requires `resource_allocation_edit` |
+| Allocation analytics | requires `resource_allocation_read`; the response contains all allocations |
 | Projects | available to an authenticated user |
 
 Access is therefore the intersection of:
@@ -207,6 +208,5 @@ No new repositories, migrations, or Vue changes are required.
 ## Open Contract Questions
 
 - Does the first consumer need employee `extErpId`, or is HR Easy employee ID/email sufficient?
-- Do projects need a stable external identifier before the project endpoint is useful?
 - Which external systems and acting users are required for the first deployment?
 - Which production CIDRs must nginx allow, and is there another trusted proxy in front of nginx?

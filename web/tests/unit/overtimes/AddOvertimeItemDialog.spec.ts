@@ -242,7 +242,12 @@ function mountDialog() {
       periodId: 202602,
       periodClosed: false,
       defaultProject: 7,
-      allProjects: [{ id: 7, name: "Project 7", active: true }],
+      allProjects: [{
+        id: 7,
+        name: "Project 7",
+        active: true,
+        workstreams: [{ id: 11, displayName: "Delivery" }],
+      }],
     },
     global: {
       stubs: {
@@ -320,8 +325,24 @@ describe("AddOvertimeItemDialog", () => {
       202602,
       expect.objectContaining({
         projectId: 7,
+        workstreamId: undefined,
         hours: 2,
       }),
+    );
+  });
+
+  it("submits an optional project workstream", async () => {
+    const wrapper = mountDialog();
+
+    await openDialog(wrapper);
+    const inputs = wrapper.findAll('[data-test="project-input"]');
+    await inputs[1]!.setValue("11");
+    await getSubmitButton(wrapper).trigger("click");
+
+    expect(mockAddOvertimeItem).toHaveBeenCalledWith(
+      42,
+      202602,
+      expect.objectContaining({ projectId: 7, workstreamId: 11 }),
     );
   });
 });

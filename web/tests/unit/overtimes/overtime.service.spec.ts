@@ -27,6 +27,7 @@ describe("overtime service", () => {
       id: 10,
       date: "2026-06-04",
       projectId: 1162,
+      workstreamId: 23,
       hours: 4,
       notes: "Release support",
       createdAt: "2026-06-04T14:17:18.537Z",
@@ -36,6 +37,7 @@ describe("overtime service", () => {
     expect(http.post).toHaveBeenCalledWith("v1/overtimes/42/report/202604/item", {
       date: "2026-06-04",
       projectId: 1162,
+      workstreamId: 23,
       hours: 4,
       notes: "Release support",
     });

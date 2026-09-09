@@ -39,6 +39,19 @@
           class="px-3"
         />
 
+        <v-autocomplete
+          v-if="activeWorkstreams.length"
+          v-model="item.workstreamId"
+          :items="activeWorkstreams"
+          item-title="displayName"
+          item-value="id"
+          :label="t('Направление работ')"
+          :placeholder="t('Без направления')"
+          persistent-placeholder
+          clearable
+          data-testid="overtime-workstream"
+        />
+
         <v-textarea
           v-model="item.notes"
           :label="t('Комментарий')"
@@ -73,13 +86,13 @@ import {
   type OvertimeItem,
   type OvertimeReport,
 } from "@/services/overtime.service";
-import type { SimpleDict } from "@/services/projects.service";
+import type { ProjectDictDto } from "@/services/projects.service";
 
 const props = defineProps<{
   employeeId: number;
   periodId: number;
   periodClosed: boolean;
-  allProjects: SimpleDict[];
+  allProjects: ProjectDictDto[];
   defaultProject?: number | null;
 }>();
 
@@ -110,7 +123,19 @@ const activeProjects = computed(() => {
     id,
     name: `${t("Архив")} #${id}`,
     active: false,
+    baId: 0,
+    workstreams: [],
   }));
+});
+
+const activeWorkstreams = computed(() =>
+  props.allProjects.find((project) => project.id === item.projectId)?.workstreams ?? [],
+);
+
+watch(() => item.projectId, () => {
+  if (!activeWorkstreams.value.some((workstream) => workstream.id === item.workstreamId)) {
+    item.workstreamId = undefined;
+  }
 });
 
 watch(dialog, (value) => {
@@ -126,17 +151,19 @@ function createDefaultItem(
   projectId?: number | null,
   date?: string,
   hours = 4,
+  workstreamId?: number,
 ): OvertimeItem {
   return {
     projectId: projectId ?? props.defaultProject ?? undefined,
+    workstreamId,
     date: date ?? formatIsoDate(new Date()),
     hours,
     notes: undefined,
   };
 }
 
-function resetItem(projectId?: number | null, date?: string, hours = 4): void {
-  Object.assign(item, createDefaultItem(projectId, date, hours));
+function resetItem(projectId?: number | null, date?: string, hours = 4, workstreamId?: number): void {
+  Object.assign(item, createDefaultItem(projectId, date, hours, workstreamId));
 }
 
 function shiftDate(days: number): void {
@@ -191,7 +218,7 @@ async function submit(): Promise<void> {
       const currentProject = item.projectId;
       const nextDate = new Date(item.date);
       nextDate.setDate(nextDate.getDate() + 1);
-      resetItem(currentProject ?? null, formatIsoDate(nextDate), item.hours);
+      resetItem(currentProject ?? null, formatIsoDate(nextDate), item.hours, item.workstreamId);
     } else {
       closeDialog();
     }

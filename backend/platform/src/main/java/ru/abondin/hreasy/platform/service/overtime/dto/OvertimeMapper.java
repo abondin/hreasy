@@ -17,6 +17,7 @@ public interface OvertimeMapper {
     @Mapping(target = "approvals", ignore = true)
     OvertimeReportDto reportToDto(OvertimeReportEntry entry);
 
+    @Mapping(target = "workstreamDisplayName", ignore = true)
     OvertimeItemDto itemToDto(OvertimeItemEntry entry);
 
 

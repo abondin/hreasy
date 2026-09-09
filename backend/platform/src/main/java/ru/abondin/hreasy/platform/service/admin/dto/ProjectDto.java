@@ -5,10 +5,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.lang.Nullable;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.dto.ProjectWorkstreamDto;
 
 import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * DTO object for CRUD operations with Project Dictionary
@@ -18,6 +20,9 @@ import java.time.OffsetDateTime;
 public class ProjectDto {
 
     private int id;
+
+    @Nullable
+    private String externalId;
 
     @NonNull
     private String name;
@@ -49,10 +54,15 @@ public class ProjectDto {
 
     private String info;
 
+    private List<ProjectWorkstreamDto> workstreams = List.of();
+
     @Data
     @NoArgsConstructor
     @ToString
     public static class CreateOrUpdateProjectDto {
+        @Nullable
+        private String externalId;
+
         @NonNull
         private String name;
 
@@ -75,5 +85,8 @@ public class ProjectDto {
         private Integer baId;
 
         private String info;
+
+        @Nullable
+        private List<ProjectWorkstreamDto> workstreams;
     }
 }

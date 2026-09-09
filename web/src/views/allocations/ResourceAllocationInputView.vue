@@ -32,7 +32,7 @@
         <template #filter-project>
           <v-autocomplete
             :model-value="inputProjectId"
-            :items="managedProjects"
+            :items="projects"
             item-title="name"
             item-value="id"
             hide-details
@@ -42,6 +42,31 @@
             :label="t('Проект')"
             data-testid="resource-allocations-input-project"
             @update:model-value="changeInputProject"
+          >
+            <template #item="{ props, item }">
+              <v-list-item
+                v-bind="props"
+                :title="item.name"
+                :subtitle="projectClosedLabel(item)"
+              />
+            </template>
+          </v-autocomplete>
+        </template>
+
+        <template #filter-workstream>
+          <v-autocomplete
+            :model-value="inputWorkstreamId"
+            :items="inputSheet?.workstreams ?? []"
+            item-title="displayName"
+            item-value="id"
+            hide-details
+            density="compact"
+            variant="outlined"
+            clearable
+            :disabled="loading || saving || inputProjectId == null"
+            :label="t('Направление работ')"
+            data-testid="resource-allocations-input-workstream"
+            @update:model-value="changeInputWorkstream"
           />
         </template>
 
@@ -146,12 +171,14 @@ import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import ResourceAllocationEmployeeCell from "@/views/allocations/ResourceAllocationEmployeeCell.vue";
+import { formatDate } from "@/lib/datetime";
 import { BusinessError, errorUtils } from "@/lib/errors";
 import { ReportPeriod } from "@/services/overtime.service";
 import {
   fetchResourceAllocationProjectInput,
   saveResourceAllocations,
   type ResourceAllocationChange,
+  type ResourceAllocationProject,
   type ResourceAllocationProjectInput,
 } from "@/services/resource-allocation.service";
 
@@ -164,6 +191,7 @@ interface InputGridRow {
   dateOfDismissal: string;
   dismissedLabel?: string;
   otherProject?: string;
+  projectRole?: string;
   addEmployee?: boolean;
   employeesAvailableToAdd?: ResourceAllocationProjectInput["employees"];
   conflictingPeriods?: Set<number>;
@@ -181,6 +209,7 @@ const inputEdits = ref(new Map<string, number>());
 const inputInitialValues = ref(new Map<string, number>());
 const inputInitialRevisionIds = ref(new Map<string, number>());
 const inputProjectId = ref<number | null>(queryInteger(route.query.projectId));
+const inputWorkstreamId = ref<number | null>(queryInteger(route.query.workstreamId));
 const addedInputEmployeeIds = ref(new Set<number>());
 const loading = ref(false);
 const saving = ref(false);
@@ -222,7 +251,7 @@ const allocationCellTemplate: CellTemplate = (createElement, props) => {
         ? createElement(
             "span",
             {
-              title: t("На остальных проектах: {percent}%", { percent: otherPercent }),
+              title: t("В остальных аллокациях: {percent}%", { percent: otherPercent }),
               style: {
                 bottom: "2px",
                 color: "rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity))",
@@ -239,12 +268,15 @@ const allocationCellTemplate: CellTemplate = (createElement, props) => {
   );
 };
 
-const toolbarFilterItems = [{ id: "project", minWidth: 360 }];
+const toolbarFilterItems = [
+  { id: "project", minWidth: 320 },
+  { id: "workstream", minWidth: 280 },
+];
 const hasPendingChanges = computed(() => inputEdits.value.size > 0);
-const managedProjects = computed(() => inputSheet.value?.projects ?? []);
+const projects = computed(() => inputSheet.value?.projects ?? []);
 const inputProject = computed(
   () =>
-    managedProjects.value.find(
+    projects.value.find(
       (project) => project.id === inputProjectId.value,
     ) ?? null,
 );
@@ -257,6 +289,11 @@ const inputEmployeeIds = computed(() => {
   }
   for (const allocation of inputSheet.value?.allocations ?? []) {
     ids.add(allocation.employeeId);
+  }
+  for (const allocation of inputSheet.value?.otherAllocations ?? []) {
+    if (allocation.sameProject) {
+      ids.add(allocation.employeeId);
+    }
   }
   return ids;
 });
@@ -293,6 +330,7 @@ const inputGridRows = computed<InputGridRow[]>(() => {
         employee.currentProjectId !== inputProjectId.value
           ? employee.currentProjectName
           : undefined,
+      projectRole: employee.currentProjectRole ?? undefined,
       conflictingPeriods: new Set(
         (inputSheet.value?.months ?? [])
           .map((month) => month.period)
@@ -336,12 +374,18 @@ const inputGridColumns = computed<ColumnRegular[]>(() => [
   ...(inputSheet.value?.months ?? []).map(
     (month) =>
       ({
-        name: `${month.closed ? "🔒 " : ""}${formatMonth(month.period)}`,
+        name: formatMonth(month.period),
         prop: inputMonthProp(month.period),
         size: 110,
         minSize: 110,
         maxSize: 110,
         sortable: false,
+        columnTemplate: month.closed
+          ? (createElement) => createElement("span", null, [
+              createElement("i", { class: "mdi mdi-lock mr-1", "aria-hidden": "true" }),
+              createElement("span", null, formatMonth(month.period)),
+            ])
+          : undefined,
         cellTemplate: allocationCellTemplate,
         readonly: ({ model: sourceModel }) =>
           month.closed ||
@@ -400,6 +444,7 @@ async function save(): Promise<void> {
     await saveResourceAllocations(
       inputYear.value,
       inputProjectId.value,
+      inputWorkstreamId.value,
       [...inputEdits.value].map(([key, percent]) => {
         const [period, employeeId] = key.split(":").map(Number);
         return {
@@ -543,10 +588,8 @@ function formatMonth(period: number): string {
     .replace(/\s+\d{4}$/, "");
 }
 
-function formatDate(value: string): string {
-  return value
-    ? new Intl.DateTimeFormat("ru-RU").format(new Date(`${value}T00:00:00`))
-    : "";
+function projectClosedLabel(project: ResourceAllocationProject): string | undefined {
+  return project.endDate ? t("Закрыт: {date}", { date: formatDate(project.endDate) }) : undefined;
 }
 
 function normalizePercent(value: string): number {
@@ -662,6 +705,18 @@ function changeInputProject(projectId: number | null): void {
   }
   runAfterDiscard(() => {
     inputProjectId.value = projectId;
+    inputWorkstreamId.value = null;
+    inputSheet.value = null;
+    void loadView(true);
+  });
+}
+
+function changeInputWorkstream(workstreamId: number | null): void {
+  if (workstreamId === inputWorkstreamId.value) {
+    return;
+  }
+  runAfterDiscard(() => {
+    inputWorkstreamId.value = workstreamId;
     inputSheet.value = null;
     void loadView(true);
   });
@@ -674,10 +729,12 @@ async function loadView(clearDraft: boolean): Promise<void> {
     const response = await fetchResourceAllocationProjectInput(
       inputYear.value,
       inputProjectId.value ?? undefined,
+      inputWorkstreamId.value ?? undefined,
     );
     rememberInputBaseline(response);
     inputSheet.value = response;
     inputProjectId.value = response.selectedProjectId;
+    inputWorkstreamId.value = response.selectedWorkstreamId ?? null;
     updateRouteQuery();
     await nextTick();
     await (
@@ -720,6 +777,7 @@ function changeYear(delta: number): void {
   runAfterDiscard(() => {
     inputYear.value += delta;
     inputProjectId.value = null;
+    inputWorkstreamId.value = null;
     resetLoadedData();
     void load();
   });
@@ -729,6 +787,7 @@ function goToCurrentYear(): void {
   runAfterDiscard(() => {
     inputYear.value = currentYear;
     inputProjectId.value = null;
+    inputWorkstreamId.value = null;
     resetLoadedData();
     void load();
   });
@@ -744,8 +803,10 @@ function updateRouteQuery(): void {
     ...route.query,
     year: String(inputYear.value),
     ...(inputProjectId.value == null ? {} : { projectId: String(inputProjectId.value) }),
+    ...(inputWorkstreamId.value == null ? {} : { workstreamId: String(inputWorkstreamId.value) }),
   };
   if (inputProjectId.value == null) delete query.projectId;
+  if (inputWorkstreamId.value == null) delete query.workstreamId;
   router.replace({ query }).catch(() => undefined);
 }
 

@@ -30,6 +30,7 @@ Follow `backend/AGENTS.md` and the style of the affected module.
 - Use MapStruct for reused or structurally non-trivial mappings. Keep one-off constructor mappings explicit when a mapper would add more structure than it removes, especially when fields depend on runtime access or business context.
 - Do not add a service interface for a single implementation.
 - Do not introduce a nullability annotation dependency; none is currently used.
+- Never compare boxed values or object identifiers with `==` or `!=`; use `Objects.equals`. When a regression test covers boxed numeric equality, use values outside the JVM's standard integer cache so reference equality cannot accidentally pass.
 
 ## Errors, Logging, and Security
 

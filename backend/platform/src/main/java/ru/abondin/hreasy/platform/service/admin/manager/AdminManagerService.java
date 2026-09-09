@@ -86,10 +86,13 @@ public class AdminManagerService {
     @Transactional
     public Mono<Void> delete(AuthContext auth, int managerId) {
         var deletedAt = dateTimeService.now();
+        var deletedBy = auth.getEmployeeInfo().getEmployeeId();
         log.info("Deleting manager link {} by {}", managerId, auth.getUsername());
-        return securityValidator.validateAdminManagers(auth)
-                .flatMap(valid -> history.persistHistory(
-                        managerId, HistoryDomainService.HistoryEntityType.MANAGER, null, deletedAt, auth.getEmployeeInfo().getEmployeeId()))
-                .flatMap(h -> repo.deleteById(managerId));
+        return repo.findById(managerId)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.entity.not.found", Integer.toString(managerId))))
+                .flatMap(manager -> securityValidator.validateDeleteManager(auth, manager)
+                        .then(history.persistHistory(managerId, HistoryDomainService.HistoryEntityType.MANAGER,
+                                null, deletedAt, deletedBy))
+                        .then(repo.deleteById(managerId)));
     }
 }

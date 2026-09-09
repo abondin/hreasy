@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.lang.Nullable;
 import ru.abondin.hreasy.platform.service.dto.ManagerInfoDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.dto.ProjectWorkstreamDto;
 
 import org.springframework.lang.NonNull;
 import java.time.LocalDate;
@@ -13,6 +14,9 @@ import java.util.List;
 @Data
 public class ProjectCardInfoDto {
     private int id;
+
+    @Nullable
+    private String externalId;
 
     @NonNull
     private String name;
@@ -41,4 +45,5 @@ public class ProjectCardInfoDto {
 
     private List<ManagerInfoDto> managers = new ArrayList<>();
     private List<ManagerInfoDto> baManagers = new ArrayList<>();
+    private List<ProjectWorkstreamDto> workstreams = new ArrayList<>();
 }

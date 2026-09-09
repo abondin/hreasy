@@ -13,18 +13,17 @@ import ru.abondin.hreasy.platform.repo.allocation.ResourceAllocationRepository;
 import ru.abondin.hreasy.platform.repo.allocation.ResourceAllocationRepository.ResourceAllocationEmployeeView;
 import ru.abondin.hreasy.platform.repo.allocation.ResourceAllocationRepository.PeriodResourceAllocationView;
 import ru.abondin.hreasy.platform.repo.allocation.ResourceAllocationRepository.ResourceAllocationProjectView;
-import ru.abondin.hreasy.platform.repo.allocation.ResourceAllocationRepository.ResourceAllocationView;
-import ru.abondin.hreasy.platform.repo.manager.ManagerRepo;
+import ru.abondin.hreasy.platform.repo.dict.ProjectWorkstreamEntry;
+import ru.abondin.hreasy.platform.repo.dict.ProjectWorkstreamRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationSaveBody;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationSaveBody.Change;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnalyticsDto;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationProjectInputDto;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationProjectInputDto.MonthDto;
-import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationSheetDto;
-import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationSheetDto.AllocationDto;
-import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationSheetDto.EmployeeDto;
-import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationSheetDto.ProjectDto;
+import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnalyticsDto.EmployeeDto;
+import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnalyticsDto.ProjectDto;
+import ru.abondin.hreasy.platform.service.dto.ProjectWorkstreamDto;
 
 import java.time.DateTimeException;
 import java.time.Year;
@@ -35,11 +34,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.IntStream;
 
 /**
- * Builds monthly allocation sheets and persists changed cells in immutable batch revisions.
+ * Builds annual allocation views and persists changed cells in immutable batch revisions.
  */
 @Service
 @RequiredArgsConstructor
@@ -48,98 +46,72 @@ public class ResourceAllocationService {
     private final ResourceAllocationRepository repository;
     private final ResourceAllocationSecurityValidator securityValidator;
     private final DateTimeService dateTimeService;
-    private final ManagerRepo managerRepo;
-
-    /**
-     * Loads employees, projects, current and previous allocations, and project editability for one period.
-     * The repository-wide period convention uses a zero-based month, so {@code 202600} is January 2026.
-     */
-    @Transactional(readOnly = true)
-    public Mono<ResourceAllocationSheetDto> getSheet(int period, AuthContext auth) {
-        return securityValidator.validateCanEditAllocations(auth).then(Mono.defer(() -> {
-            var month = parsePeriod(period);
-            return Mono.zip(
-                            repository.findEmployees(month.atDay(1), month.atEndOfMonth()).collectList(),
-                            repository.findProjects().collectList(),
-                            repository.findAllocations(month.getYear(), period).collectList(),
-                            managerRepo.findManagedProjectHierarchyIds(auth.getEmployeeInfo().getEmployeeId())
-                                    .collect(java.util.stream.Collectors.toSet()),
-                            repository.findAllocations(month.minusMonths(1).getYear(),
-                                    toPeriod(month.minusMonths(1))).collectList())
-                    .map(data -> new ResourceAllocationSheetDto(period,
-                            data.getT1().stream().map(this::toEmployeeDto).toList(),
-                            data.getT2().stream().map(project -> toProjectDto(project, month, auth,
-                                    data.getT4().contains(project.id()))).toList(),
-                            data.getT3().stream().map(this::toAllocationDto).toList(),
-                            data.getT5().stream().map(this::toAllocationDto).toList()));
-        }));
-    }
+    private final ProjectWorkstreamRepo workstreamRepo;
 
     /**
      * Loads the non-empty allocation hierarchy for one calendar year.
      */
     @Transactional(readOnly = true)
     public Mono<ResourceAllocationAnalyticsDto> getAnalytics(int year, AuthContext auth) {
-        return securityValidator.validateCanEditAllocations(auth).then(Mono.defer(() -> {
+        return securityValidator.validateCanReadAllocations(auth).then(Mono.defer(() -> {
             var selectedYear = parseYear(year);
             return Mono.zip(
                             repository.findEmployees(selectedYear.atDay(1),
                                     selectedYear.atMonth(12).atEndOfMonth()).collectList(),
                             repository.findProjects().collectList(),
                             repository.findYearAllocations(year).collectList(),
-                            managerRepo.findManagedProjectHierarchyIds(auth.getEmployeeInfo().getEmployeeId())
-                                    .collect(java.util.stream.Collectors.toSet()))
+                            workstreamRepo.findAll().collectList())
                     .map(data -> {
                         var allocations = data.getT3();
                         var employeeIds = allocations.stream()
                                 .map(PeriodResourceAllocationView::employeeId).collect(java.util.stream.Collectors.toSet());
                         var projectIds = allocations.stream()
                                 .map(PeriodResourceAllocationView::projectId).collect(java.util.stream.Collectors.toSet());
+                        var workstreamIds = allocations.stream()
+                                .map(PeriodResourceAllocationView::workstreamId).filter(Objects::nonNull)
+                                .collect(java.util.stream.Collectors.toSet());
                         return new ResourceAllocationAnalyticsDto(year,
                                 data.getT1().stream().filter(employee -> employeeIds.contains(employee.id()))
                                         .map(this::toEmployeeDto).toList(),
                                 data.getT2().stream().filter(project -> projectIds.contains(project.id()))
-                                        .map(project -> toProjectDto(project, selectedYear, auth,
-                                                data.getT4().contains(project.id())))
+                                        .map(project -> toProjectDto(project, selectedYear, auth))
                                         .sorted(Comparator.comparing(ProjectDto::name)).toList(),
+                                data.getT4().stream().filter(workstream -> workstreamIds.contains(workstream.getId()))
+                                        .map(this::toWorkstreamDto).toList(),
                                 allocations.stream().map(allocation ->
                                         new ResourceAllocationAnalyticsDto.AllocationDto(allocation.period(),
-                                                allocation.employeeId(), allocation.projectId(), allocation.percent()))
+                                                allocation.employeeId(), allocation.projectId(),
+                                                allocation.workstreamId(), allocation.percent()))
                                         .toList());
                     });
         }));
     }
 
     /**
-     * Loads all twelve months of one calendar year for a single managed project.
+     * Loads all twelve months of one calendar year for a single project.
      */
     @Transactional(readOnly = true)
     public Mono<ResourceAllocationProjectInputDto> getProjectInput(int year, Integer requestedProjectId,
+                                                                   Integer requestedWorkstreamId,
                                                                    AuthContext auth) {
-        return securityValidator.validateCanEditAllocations(auth).then(Mono.defer(() -> {
+        return securityValidator.validateCanReadAllocations(auth).then(Mono.defer(() -> {
             var selectedYear = parseYear(year);
             var yearStart = selectedYear.atDay(1);
             var yearEnd = selectedYear.atMonth(12).atEndOfMonth();
             return Mono.zip(
                             repository.findEmployees(yearStart, yearEnd).collectList(),
                             repository.findProjects().collectList(),
-                            managerRepo.findManagedProjectHierarchyIds(auth.getEmployeeInfo().getEmployeeId())
-                                    .collect(java.util.stream.Collectors.toSet()),
                             repository.findAllocatedProjectIds(year).collect(java.util.stream.Collectors.toSet()),
                             repository.findClosedPeriods(year).collect(java.util.stream.Collectors.toSet()))
                     .flatMap(data -> {
                         var projects = data.getT2().stream()
-                                .filter(project -> securityValidator.canEditGlobally(auth)
-                                        || data.getT3().contains(project.id()))
-                                .map(project -> toProjectDto(project, selectedYear, auth,
-                                        data.getT3().contains(project.id())))
-                                .filter(project -> project.active() || data.getT4().contains(project.id()))
+                                .map(project -> toProjectDto(project, selectedYear, auth))
+                                .filter(project -> project.active() || data.getT3().contains(project.id()))
+                                .filter(ProjectDto::editable)
                                 .sorted(Comparator.comparing(ProjectDto::name))
                                 .toList();
                         var selectedProjectId = requestedProjectId == null
-                                ? projects.stream().filter(ProjectDto::managed).findFirst()
-                                .or(() -> projects.stream().findFirst())
-                                .map(ProjectDto::id).orElse(null)
+                                ? projects.stream().findFirst().map(ProjectDto::id).orElse(null)
                                 : requestedProjectId;
                         if (selectedProjectId != null
                                 && projects.stream().noneMatch(project -> project.id().equals(selectedProjectId))) {
@@ -147,25 +119,31 @@ public class ResourceAllocationService {
                         }
                         var months = IntStream.range(0, 12)
                                 .map(index -> year * 100 + index)
-                                .mapToObj(period -> new MonthDto(period, data.getT5().contains(period)))
+                                .mapToObj(period -> new MonthDto(period, data.getT4().contains(period)))
                                 .toList();
                         var employees = data.getT1().stream().map(this::toInputEmployeeDto).toList();
                         if (selectedProjectId == null) {
-                            return Mono.just(new ResourceAllocationProjectInputDto(year, null, months,
-                                    employees, projects, List.of(), List.of(),
-                                    securityValidator.canManagePeriods(auth)));
+                            return Mono.just(new ResourceAllocationProjectInputDto(year, null, null, months,
+                                    employees, projects, List.of(), List.of(), List.of()));
                         }
-                        return Mono.zip(
-                                        repository.findProjectAllocations(selectedProjectId, year)
+                        return workstreamRepo.findActiveByProjectId(selectedProjectId).collectList().flatMap(workstreams -> {
+                            if (requestedWorkstreamId != null && workstreams.stream()
+                                    .noneMatch(workstream -> workstream.getId().equals(requestedWorkstreamId))) {
+                                return Mono.error(new BusinessError("errors.project.workstream.invalid"));
+                            }
+                            return Mono.zip(
+                                        repository.findProjectAllocations(selectedProjectId, requestedWorkstreamId, year)
                                                 .map(this::toProjectInputAllocationDto).collectList(),
-                                        repository.findOtherProjectAllocations(selectedProjectId, year)
+                                        repository.findOtherProjectAllocations(selectedProjectId, requestedWorkstreamId, year)
                                                 .map(allocation -> new ResourceAllocationProjectInputDto.OtherAllocationDto(
                                                         allocation.period(), allocation.employeeId(),
-                                                        allocation.percent()))
+                                                        allocation.percent(), allocation.sameProject()))
                                                 .collectList())
-                                .map(allocations -> new ResourceAllocationProjectInputDto(year, selectedProjectId,
-                                        months, employees, projects, allocations.getT1(), allocations.getT2(),
-                                        securityValidator.canManagePeriods(auth)));
+                                    .map(allocations -> new ResourceAllocationProjectInputDto(year, selectedProjectId,
+                                            requestedWorkstreamId, months, employees, projects,
+                                            workstreams.stream().map(this::toWorkstreamDto).toList(),
+                                            allocations.getT1(), allocations.getT2()));
+                        });
                     });
         }));
     }
@@ -174,10 +152,11 @@ public class ResourceAllocationService {
      * Saves one project/year draft as a single revision.
      */
     @Transactional
-    public Mono<Integer> save(int year, int projectId, ResourceAllocationSaveBody request, AuthContext auth) {
+    public Mono<Integer> save(int year, int projectId, Integer workstreamId,
+                              ResourceAllocationSaveBody request, AuthContext auth) {
         log.info("Saving {} resource allocation changes for project {} and year {} by {}",
                 request.changes() == null ? 0 : request.changes().size(), projectId, year, auth.getUsername());
-        return securityValidator.validateCanEditAllocations(auth).then(Mono.defer(() -> {
+        return securityValidator.validateCanWriteAllocations(auth).then(Mono.defer(() -> {
             var selectedYear = parseYear(year);
             validateChanges(year, request.changes());
             var periods = request.changes().stream().map(Change::period).distinct().sorted().toList();
@@ -185,27 +164,30 @@ public class ResourceAllocationService {
                             repository.findEmployees(selectedYear.atDay(1),
                                     selectedYear.atMonth(12).atEndOfMonth()).collectList(),
                             repository.findProjects().collectList(),
-                            repository.findProjectAllocations(projectId, year).collectList(),
-                            managerRepo.findManagedProjectHierarchyIds(auth.getEmployeeInfo().getEmployeeId())
-                                    .collect(java.util.stream.Collectors.toSet()),
+                            repository.findProjectAllocations(projectId, workstreamId, year).collectList(),
                             repository.findClosedPeriods(year).collect(java.util.stream.Collectors.toSet())))
-                    .flatMap(data -> saveValidated(year, projectId, request.changes(), auth,
-                            data.getT1(), data.getT2(), data.getT3(), data.getT4(), data.getT5()));
+                    .flatMap(data -> validateWorkstream(projectId, workstreamId)
+                            .then(saveValidated(year, projectId, workstreamId, request.changes(), auth,
+                                    data.getT1(), data.getT2(), data.getT3(), data.getT4())));
         }));
     }
 
-    private Mono<Integer> saveValidated(int year, int projectId, List<Change> requested, AuthContext auth,
+    private Mono<Integer> saveValidated(int year, int projectId, Integer workstreamId,
+                                        List<Change> requested, AuthContext auth,
                                         List<ResourceAllocationEmployeeView> employees,
                                         List<ResourceAllocationProjectView> projects,
                                         List<PeriodResourceAllocationView> existing,
-                                        Set<Integer> managedProjectIds, Set<Integer> closedPeriods) {
+                                        java.util.Set<Integer> closedPeriods) {
         var employeeById = employees.stream().collect(java.util.stream.Collectors.toMap(
                 ResourceAllocationEmployeeView::id, employee -> employee));
         var project = projects.stream().filter(value -> value.id().equals(projectId)).findFirst().orElse(null);
-        if (project == null || (!securityValidator.canEditGlobally(auth) && !managedProjectIds.contains(projectId))) {
+        if (project == null) {
             return Mono.error(new BusinessError("errors.resource_allocation.invalid_reference"));
         }
-        securityValidator.validateEditProject(auth, project);
+        if (!securityValidator.canWriteProject(auth, project)) {
+            return Mono.error(new org.springframework.security.access.AccessDeniedException(
+                    "No access to resource allocation project " + projectId));
+        }
         for (var change : requested) {
             var employee = employeeById.get(change.employeeId());
             if (employee == null || !employmentOverlaps(employee, parsePeriod(change.period()))) {
@@ -244,25 +226,25 @@ public class ResourceAllocationService {
             return Mono.error(new BusinessError("errors.resource_allocation.no_changes"));
         }
 
-        return repository.createRevision(year, projectId, dateTimeService.now(),
+        return repository.createRevision(year, projectId, workstreamId, dateTimeService.now(),
                         auth.getEmployeeInfo().getEmployeeId())
                 .flatMap(revisionId -> Flux.fromIterable(changes)
-                        .concatMap(change -> persistChange(year, projectId, revisionId, change,
+                        .concatMap(change -> persistChange(year, projectId, workstreamId, revisionId, change,
                                 current.get(new CellKey(change.period(), change.employeeId()))))
                         .then(Mono.just(revisionId)));
     }
 
-    private Mono<Long> persistChange(int year, int projectId, int revisionId, Change change,
+    private Mono<Long> persistChange(int year, int projectId, Integer workstreamId, int revisionId, Change change,
                                      PeriodResourceAllocationView previousValue) {
         Mono<Long> update;
         if (change.percent() == 0) {
-            update = repository.deleteIfRevisionMatches(year, change.period(), change.employeeId(), projectId,
+            update = repository.deleteIfRevisionMatches(year, change.period(), change.employeeId(), projectId, workstreamId,
                     change.expectedRevisionId());
         } else if (change.expectedRevisionId() == null) {
-            update = repository.insertIfAbsent(year, change.period(), change.employeeId(), projectId,
+            update = repository.insertIfAbsent(year, change.period(), change.employeeId(), projectId, workstreamId,
                     change.percent(), revisionId);
         } else {
-            update = repository.updateIfRevisionMatches(year, change.period(), change.employeeId(), projectId,
+            update = repository.updateIfRevisionMatches(year, change.period(), change.employeeId(), projectId, workstreamId,
                     change.percent(), revisionId, change.expectedRevisionId());
         }
         return repository.recordChange(revisionId, change.period(), change.employeeId(),
@@ -292,39 +274,50 @@ public class ResourceAllocationService {
     }
 
     /**
-     * Closes one monthly allocation period for every project.
+     * Replaces the closed-period selection for one year and records only actual state changes.
      */
     @Transactional
-    public Mono<Integer> closePeriod(int period, String comment, AuthContext auth) {
-        var month = parsePeriod(period);
-        return securityValidator.validateManagePeriods(auth)
-                .then(repository.lockPeriod(period))
-                .then(repository.closePeriod(month.getYear(), period, dateTimeService.now(),
-                        auth.getEmployeeInfo().getEmployeeId(), comment))
-                .thenReturn(period);
+    public Mono<List<Integer>> saveClosedPeriods(int year, List<Integer> closedPeriods, AuthContext auth) {
+        return securityValidator.validateAdmin(auth).then(Mono.defer(() -> {
+            parseYear(year);
+            var desired = validateClosedPeriods(year, closedPeriods);
+            return Flux.range(0, 12)
+                    .concatMap(month -> repository.lockPeriod(year * 100 + month))
+                    .then(repository.findClosedPeriods(year).collect(java.util.stream.Collectors.toSet()))
+                    .flatMap(current -> {
+                        var toClose = desired.stream().filter(period -> !current.contains(period)).toList();
+                        var toOpen = current.stream().filter(period -> !desired.contains(period)).sorted().toList();
+                        if (toClose.isEmpty() && toOpen.isEmpty()) {
+                            return Mono.just(desired);
+                        }
+                        var changedAt = dateTimeService.now();
+                        var changedBy = auth.getEmployeeInfo().getEmployeeId();
+                        log.info("Changing {} resource allocation period states for year {} by {}",
+                                toClose.size() + toOpen.size(), year, auth.getUsername());
+                        return Flux.fromIterable(toClose)
+                                .concatMap(period -> repository.closePeriod(year, period, changedAt, changedBy))
+                                .thenMany(Flux.fromIterable(toOpen)
+                                        .concatMap(period -> repository.reopenPeriod(period, changedAt, changedBy)))
+                                .then(Mono.just(desired));
+                    });
+        }));
     }
 
     /**
-     * Reopens one monthly allocation period.
+     * Returns closed allocation periods for a calendar year.
      */
-    @Transactional
-    public Mono<Void> reopenPeriod(int period, AuthContext auth) {
-        parsePeriod(period);
-        return securityValidator.validateManagePeriods(auth)
-                .then(repository.lockPeriod(period))
-                .then(repository.reopenPeriod(period))
-                .then();
+    @Transactional(readOnly = true)
+    public Flux<Integer> getClosedPeriods(int year, AuthContext auth) {
+        parseYear(year);
+        return securityValidator.validateCanReadAllocations(auth)
+                .thenMany(repository.findClosedPeriods(year));
     }
 
     private EmployeeDto toEmployeeDto(ResourceAllocationEmployeeView employee) {
         return new EmployeeDto(employee.id(), employee.displayName(),
                 employee.departmentId(), employee.departmentName(),
-                employee.currentProjectId(), employee.currentProjectName());
-    }
-
-    private AllocationDto toAllocationDto(ResourceAllocationView allocation) {
-        return new AllocationDto(allocation.employeeId(), allocation.projectId(),
-                allocation.percent(), allocation.revisionId());
+                employee.currentProjectId(), employee.currentProjectName(), employee.currentProjectRole(),
+                employee.email());
     }
 
     private ResourceAllocationProjectInputDto.AllocationDto toProjectInputAllocationDto(
@@ -337,24 +330,18 @@ public class ResourceAllocationService {
             ResourceAllocationEmployeeView employee) {
         var dismissalDate = employee.dateOfDismissal();
         return new ResourceAllocationProjectInputDto.EmployeeDto(employee.id(), employee.displayName(),
-                employee.currentProjectId(), employee.currentProjectName(), employee.dateOfEmployment(),
-                dismissalDate, dismissalDate != null && !dismissalDate.isAfter(dateTimeService.now().toLocalDate()));
+                employee.currentProjectId(), employee.currentProjectName(), employee.currentProjectRole(),
+                employee.dateOfEmployment(),
+                dismissalDate, dismissalDate != null && !dismissalDate.isAfter(dateTimeService.now().toLocalDate()),
+                employee.email());
     }
 
-    private ProjectDto toProjectDto(ResourceAllocationProjectView project, YearMonth month, AuthContext auth,
-                                    boolean managed) {
-        var active = (project.startDate() == null || !project.startDate().isAfter(month.atEndOfMonth()))
-                && (project.endDate() == null || !project.endDate().isBefore(month.atDay(1)));
-        return new ProjectDto(project.id(), project.name(), project.departmentId(), project.departmentName(),
-                project.baId(), project.baName(), active, securityValidator.canEditProject(auth, project), managed);
-    }
-
-    private ProjectDto toProjectDto(ResourceAllocationProjectView project, Year year, AuthContext auth,
-                                    boolean managed) {
+    private ProjectDto toProjectDto(ResourceAllocationProjectView project, Year year, AuthContext auth) {
         var active = (project.startDate() == null || !project.startDate().isAfter(year.atMonth(12).atEndOfMonth()))
                 && (project.endDate() == null || !project.endDate().isBefore(year.atDay(1)));
         return new ProjectDto(project.id(), project.name(), project.departmentId(), project.departmentName(),
-                project.baId(), project.baName(), active, securityValidator.canEditProject(auth, project), managed);
+                project.baId(), project.baName(), project.startDate(), project.endDate(), active,
+                securityValidator.canWriteProject(auth, project));
     }
 
     private YearMonth parsePeriod(int period) {
@@ -371,10 +358,6 @@ public class ResourceAllocationService {
         } catch (DateTimeException error) {
             throw new BusinessError("errors.resource_allocation.invalid_year", Integer.toString(year));
         }
-    }
-
-    private int toPeriod(YearMonth month) {
-        return month.getYear() * 100 + month.getMonthValue() - 1;
     }
 
     private void validateChanges(int year, List<Change> changes) {
@@ -394,6 +377,21 @@ public class ResourceAllocationService {
         }
     }
 
+    private List<Integer> validateClosedPeriods(int year, List<Integer> periods) {
+        if (periods == null) {
+            throw new BusinessError("errors.resource_allocation.invalid_period", "null");
+        }
+        var result = new HashSet<Integer>();
+        for (var period : periods) {
+            if (period == null || period / 100 != year) {
+                throw new BusinessError("errors.resource_allocation.invalid_period", String.valueOf(period));
+            }
+            parsePeriod(period);
+            result.add(period);
+        }
+        return result.stream().sorted().toList();
+    }
+
     private boolean employmentOverlaps(ResourceAllocationEmployeeView employee, YearMonth month) {
         return (employee.dateOfEmployment() == null || !employee.dateOfEmployment().isAfter(month.atEndOfMonth()))
                 && (employee.dateOfDismissal() == null
@@ -402,6 +400,21 @@ public class ResourceAllocationService {
 
     private int currentPercent(PeriodResourceAllocationView allocation) {
         return allocation == null ? 0 : allocation.percent();
+    }
+
+    private Mono<Void> validateWorkstream(int projectId, Integer workstreamId) {
+        if (workstreamId == null) {
+            return Mono.empty();
+        }
+        return workstreamRepo.findById(workstreamId)
+                .filter(workstream -> workstream.getDeletedAt() == null && workstream.getProjectId() == projectId)
+                .switchIfEmpty(Mono.error(new BusinessError("errors.project.workstream.invalid")))
+                .then();
+    }
+
+    private ProjectWorkstreamDto toWorkstreamDto(ProjectWorkstreamEntry workstream) {
+        return new ProjectWorkstreamDto(workstream.getId(), workstream.getExternalId(),
+                workstream.getDisplayName(), workstream.getDescription());
     }
 
     private record CellKey(int period, int employeeId) {

@@ -80,6 +80,10 @@
         {{ projectName(item.projectId) }}
       </template>
 
+      <template #[`item.workstreamId`]="{ item }">
+        {{ workstreamName(item) }}
+      </template>
+
       <template #[`item.createdAt`]="{ item }">
         {{ formatDateTime(item.createdAt) }}
       </template>
@@ -109,7 +113,7 @@ import { useAuthStore } from "@/stores/auth";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
 import { findEmployee } from "@/services/employee.service";
-import { fetchProjects, type SimpleDict } from "@/services/projects.service";
+import { fetchProjects, type ProjectDictDto } from "@/services/projects.service";
 import {
   deleteOvertimeItem,
   fetchClosedOvertimes,
@@ -160,7 +164,7 @@ const currentPeriodId = ReportPeriod.currentPeriod().periodId();
 const selectedPeriodLabel = computed(() => selectedPeriod.value.toString());
 const isCurrentPeriod = computed(() => selectedPeriodId.value === currentPeriodId);
 
-const allProjects = ref<SimpleDict[]>([]);
+const allProjects = ref<ProjectDictDto[]>([]);
 const internalClosedPeriods = ref<ClosedOvertimePeriod[]>([]);
 const defaultProjectId = ref<number | null>(null);
 const report = ref<OvertimeReport>({
@@ -174,6 +178,7 @@ const report = ref<OvertimeReport>({
 const headers = computed(() => [
   { title: t("Дата"), key: "date" },
   { title: t("Проект"), key: "projectId" },
+  { title: t("Направление работ"), key: "workstreamId" },
   { title: t("Часы"), key: "hours" },
   { title: t("Комментарий"), key: "notes" },
   { title: t("Запись добавлена"), key: "createdAt" },
@@ -310,6 +315,20 @@ function projectName(projectId?: number): string {
     return project.name;
   }
   return t("Неизвестный проект N", { projectId });
+}
+
+function workstreamName(item: OvertimeItem): string {
+  if (!item.workstreamId) {
+    return t("Без направления");
+  }
+  if (item.workstreamDisplayName) {
+    return item.workstreamDisplayName;
+  }
+  if (!item.projectId) {
+    return `#${item.workstreamId}`;
+  }
+  return allProjects.value.find((project) => project.id === item.projectId)?.workstreams
+    ?.find((workstream) => workstream.id === item.workstreamId)?.displayName ?? `#${item.workstreamId}`;
 }
 
 function onReportSubmitted(updatedReport: OvertimeReport): void {

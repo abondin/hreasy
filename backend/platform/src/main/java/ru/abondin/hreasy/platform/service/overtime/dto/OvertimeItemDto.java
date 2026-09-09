@@ -14,6 +14,8 @@ public class OvertimeItemDto {
      */
     private LocalDate date;
     private int projectId;
+    private Integer workstreamId;
+    private String workstreamDisplayName;
     private float hours;
     private String notes;
     private OffsetDateTime createdAt;

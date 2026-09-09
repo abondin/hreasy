@@ -232,7 +232,7 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
     return { name: "profile-main" };
   }
 
-  if (to.matched.some(route => route.name === "resource-allocations") && !permissions.canEditResourceAllocations()) {
+  if (to.matched.some(route => route.name === "resource-allocations") && !permissions.canReadResourceAllocations()) {
     return { name: "profile-main" };
   }
 
