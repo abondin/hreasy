@@ -75,11 +75,11 @@ The backend checks all permissions and project scopes. Hiding controls in the UI
 
 | Permission | User capability |
 | --- | --- |
-| `resource_allocation_read` | View all allocations and analytics. |
+| `resource_allocation_read` | View employee-scoped allocation analytics. |
 | `resource_allocation_write` | Edit allocations for projects available through the acting user's effective hierarchy access. |
 | `resource_allocation_admin` | Close and reopen months. |
 
-Authentication merges manager responsibilities with explicit project, department, and business-account access. Allocation authorization uses the same shared `ProjectHierarchyAccessor` as assessments and neighboring workflows. A writable project may receive allocations for any employee. Projects outside the write scope are available in analytics, but not in the data-entry selector.
+Authentication merges manager responsibilities with explicit project, department, and business-account access. Allocation authorization uses the same shared `ProjectHierarchyAccessor` as assessments and neighboring workflows. A writable project may receive allocations for any employee. Analytics includes employees whose current project is accessible OR who have at least one recorded allocation (including zero) on an accessible project in the selected year. All annual allocations of those employees are visible, including other projects and business accounts. Employees without recorded allocations in the selected year are omitted. Project-transfer history alone does not qualify an employee. Excel and the external API use this same scope. Projects outside the write scope are not available in the data-entry selector.
 
 Closed months remain protected by the backend even if a save request is sent manually.
 

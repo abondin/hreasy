@@ -127,7 +127,7 @@ public class ExternalApiController {
     }
 
     @Operation(operationId = "externalGetAllocationAnalytics", summary = "Get annual resource allocation analytics",
-            description = "Requires resource_allocation_read. Returns all allocations, not only managed projects, as a sparse annual snapshot. "
+            description = "Requires resource_allocation_read. Returns employees whose current project is accessible or who have an allocation on an accessible project in this year, with all their annual allocations across projects. Employees without annual allocations are omitted. "
                     + "Explicit zeros are included; absent cells mean no allocation. Periods use zero-based YYYYMM. "
                     + "No write operations, revision feed, or closed-period states are exposed.")
     @ApiResponse(responseCode = "200", description = "Complete annual allocation snapshot.", content = @Content(mediaType = "application/json",

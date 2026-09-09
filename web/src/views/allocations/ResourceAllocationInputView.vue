@@ -262,7 +262,7 @@ const allocationCellTemplate: CellTemplate = (createElement, props) => {
               style: {
                 bottom: "2px",
                 color: "rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity))",
-                fontSize: "10px",
+                fontSize: "9px",
                 lineHeight: "1",
                 position: "absolute",
                 right: "4px",

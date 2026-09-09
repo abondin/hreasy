@@ -2,6 +2,8 @@ package ru.abondin.hreasy.platform.service.allocation;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import reactor.core.publisher.Flux;
@@ -109,6 +111,48 @@ class ResourceAllocationServiceTest {
                     assertEquals(LocalDate.of(2026, 6, 30), input.projects().getLast().endDate());
                 })
                 .verifyComplete();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"project", "department", "account", "none"})
+    void scopesAnalyticsToCurrentOrAllocatedEmployeesAndKeepsTheirOtherProjects(String access) {
+        auth.setAuthorities(List.of(READ_PERMISSION));
+        auth.getEmployeeInfo().setAccessibleProjects(access.equals("project") ? List.of(310) : List.of());
+        auth.getEmployeeInfo().setAccessibleDepartments(access.equals("department") ? List.of(510) : List.of());
+        auth.getEmployeeInfo().setAccessibleBas(access.equals("account") ? List.of(610) : List.of());
+        when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
+                .thenReturn(Flux.just(employee(201, 310), employee(202, 320), employee(203, 310),
+                        employee(204, 320), employee(205, 320)));
+        when(repository.findProjects()).thenReturn(Flux.just(
+                new ResourceAllocationProjectView(310, "Accessible project", 510, "Department", 610, "Account", null, null),
+                project(320), project(330)));
+        var visibleStream = new ProjectWorkstreamEntry();
+        visibleStream.setId(710);
+        var hiddenStream = new ProjectWorkstreamEntry();
+        hiddenStream.setId(720);
+        when(workstreamRepo.findAll()).thenReturn(Flux.just(visibleStream, hiddenStream));
+        when(repository.findYearAllocations(2026)).thenReturn(Flux.just(
+                new PeriodResourceAllocationView(202600, 201, 320, 710, 50, 1),
+                new PeriodResourceAllocationView(202601, 202, 310, null, 0, 2),
+                new PeriodResourceAllocationView(202602, 202, 320, null, 100, 3),
+                new PeriodResourceAllocationView(202600, 204, 330, 720, 100, 4),
+                new PeriodResourceAllocationView(202600, 205, 320, null, 100, 5)));
+
+        StepVerifier.create(service.getAnalytics(2026, auth)).assertNext(analytics -> {
+            if (access.equals("none")) {
+                assertTrue(analytics.employees().isEmpty());
+                assertTrue(analytics.allocations().isEmpty());
+                assertTrue(analytics.projects().isEmpty());
+                assertTrue(analytics.workstreams().isEmpty());
+            } else {
+                assertEquals(List.of(201, 202), analytics.employees().stream().map(e -> e.id()).toList());
+                assertEquals(List.of(201, 202, 202), analytics.allocations().stream().map(a -> a.employeeId()).toList());
+                assertEquals(List.of(50, 0, 100), analytics.allocations().stream().map(a -> a.percent()).toList());
+                assertEquals(List.of(310, 320), analytics.projects().stream().map(project -> project.id()).toList());
+                assertEquals(List.of(710), analytics.workstreams().stream().map(stream -> stream.id()).toList());
+                assertTrue(analytics.projects().stream().noneMatch(project -> project.editable()));
+            }
+        }).verifyComplete();
     }
 
     @Test
@@ -322,6 +366,12 @@ class ResourceAllocationServiceTest {
                 .expectErrorMatches(error -> error instanceof ru.abondin.hreasy.platform.BusinessError be
                         && be.getStatus() == HttpStatus.CONFLICT)
                 .verify();
+    }
+
+    private ResourceAllocationEmployeeView employee(int id, int currentProjectId) {
+        return new ResourceAllocationEmployeeView(id, "Employee " + id, null, null,
+                currentProjectId, "Project " + currentProjectId, "Developer", LocalDate.of(2020, 1, 1), null,
+                "employee" + id + "@example.test");
     }
 
     private ResourceAllocationEmployeeView employee(int id) {

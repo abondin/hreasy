@@ -150,7 +150,7 @@ The external endpoint then calls the same application service as the web endpoin
 | Employees | available to an authenticated user; project roles and skills are filtered by the current employee permissions and scope |
 | Employee avatars | available to an authenticated external user, including dismissed employees |
 | Overtime summary | requires `overtime_view` |
-| Allocation analytics | requires `resource_allocation_read`; the response contains all allocations |
+| Allocation analytics | requires `resource_allocation_read`; only employees with annual allocations whose current project is accessible to the acting user or who have an allocation on an accessible project in that year are included; all annual allocations of these employees are returned, across projects and accounts |
 | Projects | available to an authenticated user |
 
 Access is therefore the intersection of:

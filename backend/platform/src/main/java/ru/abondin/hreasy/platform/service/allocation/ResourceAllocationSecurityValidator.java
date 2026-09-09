@@ -46,7 +46,12 @@ public class ResourceAllocationSecurityValidator {
      * Returns whether the user may edit allocations for a managed or explicitly accessible project.
      */
     public boolean canWriteProject(AuthContext auth, ResourceAllocationProjectView project) {
-        return canWriteAllocations(auth) && projectHierarchyAccessor.hasProjectAccess(auth, null,
+        return canWriteAllocations(auth) && canReadProject(auth, project);
+    }
+
+    /** Project scope is shared by readers and writers; reading does not require write permission. */
+    public boolean canReadProject(AuthContext auth, ResourceAllocationProjectView project) {
+        return projectHierarchyAccessor.hasProjectAccess(auth, null,
                 new ProjectHierarchyAccessor.ProjectInfo(project.id(), project.departmentId(), project.baId()));
     }
 

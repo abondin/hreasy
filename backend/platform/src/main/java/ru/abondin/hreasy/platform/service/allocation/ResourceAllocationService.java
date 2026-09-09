@@ -62,16 +62,25 @@ public class ResourceAllocationService {
                             repository.findYearAllocations(year).collectList(),
                             workstreamRepo.findAll().collectList())
                     .map(data -> {
-                        var allocations = data.getT3();
-                        var employeeIds = allocations.stream()
-                                .map(PeriodResourceAllocationView::employeeId).collect(java.util.stream.Collectors.toSet());
+                        var accessibleProjectIds = data.getT2().stream()
+                                .filter(project -> securityValidator.canReadProject(auth, project))
+                                .map(ResourceAllocationProjectView::id).collect(java.util.stream.Collectors.toSet());
+                        var employeeIds = data.getT1().stream()
+                                .filter(employee -> accessibleProjectIds.contains(employee.currentProjectId()))
+                                .map(ResourceAllocationEmployeeView::id).collect(java.util.stream.Collectors.toSet());
+                        data.getT3().stream().filter(allocation -> accessibleProjectIds.contains(allocation.projectId()))
+                                .map(PeriodResourceAllocationView::employeeId).forEach(employeeIds::add);
+                        var allocations = data.getT3().stream()
+                                .filter(allocation -> employeeIds.contains(allocation.employeeId())).toList();
                         var projectIds = allocations.stream()
                                 .map(PeriodResourceAllocationView::projectId).collect(java.util.stream.Collectors.toSet());
+                        var allocatedEmployeeIds = allocations.stream()
+                                .map(PeriodResourceAllocationView::employeeId).collect(java.util.stream.Collectors.toSet());
                         var workstreamIds = allocations.stream()
                                 .map(PeriodResourceAllocationView::workstreamId).filter(Objects::nonNull)
                                 .collect(java.util.stream.Collectors.toSet());
                         return new ResourceAllocationAnalyticsDto(year,
-                                data.getT1().stream().filter(employee -> employeeIds.contains(employee.id()))
+                                data.getT1().stream().filter(employee -> allocatedEmployeeIds.contains(employee.id()))
                                         .map(this::toEmployeeDto).toList(),
                                 data.getT2().stream().filter(project -> projectIds.contains(project.id()))
                                         .map(project -> toProjectDto(project, selectedYear, auth))

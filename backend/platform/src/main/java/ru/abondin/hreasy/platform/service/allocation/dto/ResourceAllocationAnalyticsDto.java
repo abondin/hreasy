@@ -6,13 +6,13 @@ import ru.abondin.hreasy.platform.service.dto.ProjectWorkstreamDto;
 import java.time.LocalDate;
 import java.util.List;
 
-@Schema(description = "Complete sparse annual allocation snapshot. Explicit zeros are included; missing cells mean no allocation. "
+@Schema(description = "Employee-scoped sparse annual allocation snapshot: current employees of accessible projects or employees with a recorded allocation on an accessible project in the selected year. All annual allocations of these employees are included. Explicit zeros are included; missing cells mean no allocation. "
         + "No revision feed or closed-period states are included.")
 public record ResourceAllocationAnalyticsDto(
         @Schema(description = "Calendar year.", example = "2026") int year,
-        @Schema(description = "Employees referenced by allocation cells, including dismissed employees with recorded allocations.")
+        @Schema(description = "Visible employees with recorded annual allocations, including dismissed employees with qualifying recorded allocations.")
         List<EmployeeDto> employees,
-        @Schema(description = "Projects referenced by allocation cells. Join /external/api/v1/projects by id for externalId.")
+        @Schema(description = "Projects referenced by visible allocation cells. Join /external/api/v1/projects by id for externalId.")
         List<ProjectDto> projects,
         @Schema(description = "Workstreams referenced by allocation cells, including soft-deleted workstreams.")
         List<ProjectWorkstreamDto> workstreams,
