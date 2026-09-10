@@ -36,6 +36,10 @@ import static ru.abondin.hreasy.platform.service.allocation.ResourceAllocationSe
 import static ru.abondin.hreasy.platform.service.allocation.ResourceAllocationSecurityValidator.ADMIN_PERMISSION;
 import static ru.abondin.hreasy.platform.service.allocation.ResourceAllocationSecurityValidator.WRITE_PERMISSION;
 
+/**
+ * Repository mocks are intentional here: the suite forces exact revision/conflict outcomes and verifies the
+ * persistence commands produced by service-level allocation rules without relying on concurrent transaction timing.
+ */
 class ResourceAllocationServiceTest {
     private ResourceAllocationRepository repository;
     private DateTimeService dateTimeService;

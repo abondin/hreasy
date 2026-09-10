@@ -4,11 +4,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PSEUDO_GROUP_ITEM_VALUE } from "@revolist/revogrid";
 import { BusinessError } from "@/lib/errors";
 import ResourceAllocationAnalyticsView from "@/views/allocations/ResourceAllocationAnalyticsView.vue";
+import ResourceAllocationCommentsPopover from "@/views/allocations/ResourceAllocationCommentsPopover.vue";
 import ResourceAllocationInputView from "@/views/allocations/ResourceAllocationInputView.vue";
 import {
+  createResourceAllocationComment,
   exportResourceAllocationAnalytics,
   fetchClosedResourceAllocationPeriods,
   fetchResourceAllocationAnalytics,
+  fetchResourceAllocationCommentSummary,
+  fetchResourceAllocationComments,
   fetchResourceAllocationProjectInput,
   saveClosedResourceAllocationPeriods,
   saveResourceAllocations,
@@ -41,12 +45,17 @@ vi.mock("@/lib/permissions", () => ({
 }));
 
 vi.mock("@/services/resource-allocation.service", () => ({
+  createResourceAllocationComment: vi.fn(),
+  deleteResourceAllocationComment: vi.fn(),
   exportResourceAllocationAnalytics: vi.fn(),
   fetchClosedResourceAllocationPeriods: vi.fn(),
   fetchResourceAllocationAnalytics: vi.fn(),
+  fetchResourceAllocationCommentSummary: vi.fn(),
+  fetchResourceAllocationComments: vi.fn(),
   fetchResourceAllocationProjectInput: vi.fn(),
   saveClosedResourceAllocationPeriods: vi.fn(),
   saveResourceAllocations: vi.fn(),
+  updateResourceAllocationComment: vi.fn(),
 }));
 
 const PassThroughStub = defineComponent({
@@ -106,8 +115,8 @@ const SelectStub = defineComponent({
 
 const ListItemStub = defineComponent({
   props: { title: String, subtitle: String },
-  setup(props) {
-    return () => h("div", [props.title, props.subtitle]);
+  setup(props, { slots }) {
+    return () => h("div", [slots.title?.() ?? props.title, props.subtitle]);
   },
 });
 
@@ -130,6 +139,35 @@ const ToggleStub = defineComponent({
 const TooltipStub = defineComponent({
   setup(_, { slots }) {
     return () => h("div", slots.activator?.({ props: {} }));
+  },
+});
+
+const TextareaStub = defineComponent({
+  inheritAttrs: false,
+  props: { modelValue: String },
+  emits: ["update:modelValue"],
+  setup(props, { attrs, emit, expose }) {
+    const element = ref<HTMLTextAreaElement | null>(null);
+    expose({ focus: () => element.value?.focus() });
+    return () => h("textarea", {
+      ...attrs,
+      ref: element,
+      value: props.modelValue,
+      onInput: (event: Event) => emit("update:modelValue", (event.target as HTMLTextAreaElement).value),
+    });
+  },
+});
+
+const CommentsPopoverStub = defineComponent({
+  name: "ResourceAllocationCommentsPopover",
+  props: {
+    open: Boolean,
+    target: { type: Object, default: null },
+    cell: { type: Object, default: null },
+  },
+  emits: ["update:open", "count"],
+  setup(_, { attrs }) {
+    return () => h("div", attrs);
   },
 });
 
@@ -282,6 +320,7 @@ const globalStubs = {
   }),
   VCard: PassThroughStub,
   VCardTitle: PassThroughStub,
+  VCardSubtitle: PassThroughStub,
   VCardText: PassThroughStub,
   VCardActions: PassThroughStub,
   VRow: PassThroughStub,
@@ -290,6 +329,10 @@ const globalStubs = {
   VIcon: PassThroughStub,
   VListItem: ListItemStub,
   VTooltip: TooltipStub,
+  VMenu: PassThroughStub,
+  VProgressCircular: PassThroughStub,
+  VTextarea: TextareaStub,
+  ResourceAllocationCommentsPopover: CommentsPopoverStub,
 };
 
 function getToggle(wrapper: VueWrapper, testId: string) {
@@ -308,6 +351,7 @@ beforeEach(() => {
   routerMocks.query = {};
   permissionMocks.canAdmin = false;
   vi.mocked(fetchClosedResourceAllocationPeriods).mockResolvedValue([]);
+  vi.mocked(fetchResourceAllocationCommentSummary).mockResolvedValue({ year: 2026, rows: [] });
   vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
     year: 2026,
     selectedProjectId: null,
@@ -323,6 +367,140 @@ beforeEach(() => {
 });
 
 describe("ResourceAllocationsView", () => {
+  it("loads and adds a comment in the cell-anchored popover", async () => {
+    vi.mocked(fetchResourceAllocationComments).mockResolvedValue([]);
+    vi.mocked(createResourceAllocationComment).mockResolvedValue({
+      id: 1,
+      text: "Needs review",
+      author: { id: 42, displayName: "Alex Morgan" },
+      createdAt: "2026-09-10T09:15:00Z",
+      updatedAt: null,
+      mine: true,
+    });
+    const cell = {
+      period: 202600,
+      employeeId: 7,
+      projectId: 70,
+      workstreamId: null,
+      employeeName: "Alex Morgan",
+      projectName: "Example project",
+      workstreamName: null,
+    };
+    const wrapper = mount(ResourceAllocationCommentsPopover, {
+      attachTo: document.body,
+      props: { open: true, target: document.body, cell },
+      global: { stubs: globalStubs },
+    });
+    await flushPromises();
+
+    expect(fetchResourceAllocationComments).toHaveBeenCalledWith(cell);
+    expect(document.activeElement).toBe(wrapper.get('[data-testid="resource-allocation-comment-input"]').element);
+    await wrapper.get('[data-testid="resource-allocation-comment-input"]').trigger("keydown", { key: "Enter" });
+    expect(createResourceAllocationComment).not.toHaveBeenCalled();
+    await wrapper.get('[data-testid="resource-allocation-comment-input"]').setValue("Needs review");
+    await wrapper.get('[data-testid="resource-allocation-comment-submit"]').trigger("click");
+    await flushPromises();
+
+    expect(createResourceAllocationComment).toHaveBeenCalledWith(cell, "Needs review");
+    expect(wrapper.emitted("count")).toEqual([[cell, 1]]);
+    expect(wrapper.get('[data-testid="resource-allocation-comment-1"]').text()).toContain("Needs review");
+    expect(wrapper.get('[data-testid="resource-allocation-comment-counter"]').text()).toBe("0 / 4000");
+    expect(document.activeElement).toBe(wrapper.get('[data-testid="resource-allocation-comment-input"]').element);
+    await wrapper.get('[data-testid="resource-allocation-comments-close"]').trigger("click");
+    expect(wrapper.emitted("update:open")).toEqual([[false]]);
+    wrapper.unmount();
+  });
+
+  it("ignores a completed comment mutation after switching cells", async () => {
+    vi.mocked(fetchResourceAllocationComments).mockResolvedValue([]);
+    let finishCreate!: (comment: Awaited<ReturnType<typeof createResourceAllocationComment>>) => void;
+    vi.mocked(createResourceAllocationComment).mockReturnValue(new Promise(resolve => {
+      finishCreate = resolve;
+    }));
+    const firstCell = {
+      period: 202600,
+      employeeId: 7,
+      projectId: 70,
+      workstreamId: null,
+      employeeName: "Alex Morgan",
+      projectName: "Example project",
+      workstreamName: null,
+    };
+    const wrapper = mount(ResourceAllocationCommentsPopover, {
+      props: { open: true, target: document.body, cell: firstCell },
+      global: { stubs: globalStubs },
+    });
+    await flushPromises();
+    await wrapper.get('[data-testid="resource-allocation-comment-input"]').setValue("First cell");
+    await wrapper.get('[data-testid="resource-allocation-comment-submit"]').trigger("click");
+    await wrapper.setProps({ cell: { ...firstCell, period: 202601 } });
+    finishCreate({
+      id: 1,
+      text: "First cell",
+      author: { id: 42, displayName: "Alex Morgan" },
+      createdAt: "2026-09-10T09:15:00Z",
+      updatedAt: null,
+      mine: true,
+    });
+    await flushPromises();
+
+    expect(wrapper.emitted("count")).toBeUndefined();
+    expect(wrapper.find('[data-testid="resource-allocation-comment-1"]').exists()).toBe(false);
+  });
+
+  it("opens comments from a row represented only by another workstream allocation", async () => {
+    vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
+      year: 2026,
+      selectedProjectId: 10,
+      selectedWorkstreamId: null,
+      months: [{ period: 202600, closed: false }],
+      employees: [{
+        id: 1,
+        displayName: "Alex Morgan",
+        currentProjectId: 20,
+        currentProjectName: "Other project",
+        dateOfEmployment: "2020-01-01",
+        dateOfDismissal: null,
+        dismissed: false,
+      }],
+      projects: [{
+        id: 10,
+        name: "Example project",
+        departmentId: null,
+        departmentName: null,
+        baId: null,
+        baName: null,
+        active: true,
+        editable: true,
+      }],
+      workstreams: [],
+      allocations: [],
+      otherAllocations: [{ period: 202600, employeeId: 1, percent: 30, sameProject: true }],
+    });
+    vi.mocked(fetchResourceAllocationCommentSummary).mockResolvedValue({
+      year: 2026,
+      rows: [],
+    });
+    const wrapper = mount(ResourceAllocationInputView, { global: { stubs: globalStubs } });
+    await flushPromises();
+
+    await wrapper.get('[data-testid="resource-allocation-input-comments-1-202600"]').trigger("click");
+
+    expect(wrapper.findAll("input")).toHaveLength(0);
+    expect(wrapper.getComponent(CommentsPopoverStub).props("open")).toBe(true);
+    expect(wrapper.getComponent(CommentsPopoverStub).props("cell")).toEqual(expect.objectContaining({
+      period: 202600,
+      employeeId: 1,
+      projectId: 10,
+      workstreamId: null,
+    }));
+    expect(wrapper.get('[data-testid="resource-allocation-input-comments-1-202600"]').classes())
+      .not.toContain("has-comments");
+    expect(wrapper.get('[data-testid="resource-allocation-input-comments-1-202600"]').attributes("style"))
+      .toContain("opacity: 0");
+    expect(wrapper.get('[data-testid="resource-allocation-input-comments-1-202600"]').text()).toBe("");
+  });
+
   it("exports only year and units, prevents duplicate downloads and recovers after failure", async () => {
     routerMocks.query = { year: "2028", unit: "percent", search: "ignored", projectId: "401" };
     vi.mocked(fetchResourceAllocationAnalytics).mockResolvedValue({
@@ -500,6 +678,7 @@ describe("ResourceAllocationsView", () => {
     });
     await flushPromises();
     expect(wrapper.text()).toContain("Закрыт: 30.06.2026");
+    expect(wrapper.find(".text-decoration-line-through").text()).toBe("Zulu");
     expect(wrapper.text()).toContain("Текущий проект: Other");
     expect(wrapper.text()).toContain("Роль: QA Engineer");
     expect(wrapper.text()).toContain("Дата увольнения: 15.12.2025");
@@ -568,6 +747,8 @@ describe("ResourceAllocationsView", () => {
     await wrapper
       .get('[data-testid="resource-allocation-input-3-202607"]')
       .trigger("keydown", { key: "Enter" });
+    expect(wrapper.get('[data-testid="resource-allocation-input-3-202607"]')
+      .attributes("data-dirty")).toBe("true");
     const replaceCalls = routerMocks.replace.mock.calls.length;
     await wrapper.get('[data-testid="resource-allocation-open-employee-3"]').trigger("click");
     expect(wrapper.emitted("open-employee")).toEqual([[3]]);
@@ -634,6 +815,8 @@ describe("ResourceAllocationsView", () => {
     await august.trigger("click");
     await september.trigger("click");
     expect(wrapper.findAll("input")).toHaveLength(1);
+    await wrapper.get('[data-testid="resource-allocation-input-comments-1-202608"]').trigger("click");
+    expect(wrapper.getComponent(CommentsPopoverStub).props("open")).toBe(true);
     expect(wrapper.text()).toContain("Уволен");
     const october = wrapper.get('[data-testid="resource-allocation-input-1-202609"]');
     expect(october.text()).toBe("0%");
@@ -732,6 +915,30 @@ describe("ResourceAllocationsView", () => {
         { period: 202602, employeeId: 1, projectId: 20, percent: 0 },
       ],
     });
+    vi.mocked(fetchResourceAllocationCommentSummary).mockResolvedValue({
+      year: 2026,
+      rows: [{
+        employee: {
+          id: 1,
+          displayName: "Alex Morgan",
+          departmentId: null,
+          departmentName: null,
+          currentProjectId: 10,
+          currentProjectName: "Managed",
+          currentProjectRole: "Java Backend Developer",
+        },
+        project: {
+          id: 10,
+          name: "Managed",
+          departmentId: null,
+          departmentName: null,
+          baId: null,
+          baName: null,
+        },
+        workstream: { id: 11, displayName: "Delivery" },
+        cells: [{ period: 202600, commentCount: 2 }],
+      }],
+    });
 
     const wrapper = mount(ResourceAllocationAnalyticsView, {
       global: { stubs: globalStubs },
@@ -756,7 +963,9 @@ describe("ResourceAllocationsView", () => {
     const grid = wrapper.getComponent(GridStub);
     expect(grid.props("columns")).toHaveLength(14);
     expect(grid.props("columns")?.[1]?.prop).toBe("yearTotal");
-    expect(grid.props("stretch")).toBe(true);
+    expect(grid.props("columns")?.[1]?.cellProperties?.({ model: {} }).style)
+      .toEqual(expect.objectContaining({ borderRight: expect.any(String) }));
+    expect(grid.props("stretch")).toBe(false);
     expect(grid.props("grouping")).toEqual(
       expect.objectContaining({
         props: ["businessAccountGroup", "projectGroup", "workstreamGroup"],
@@ -786,6 +995,22 @@ describe("ResourceAllocationsView", () => {
       .toContain("resource-allocation-terminal-cell");
     expect(wrapper.get('[data-testid="resource-allocation-analytics-row-1:10:11"]').attributes("style"))
       .toContain("padding-left: 48px");
+    expect(wrapper.get('[data-testid="resource-allocation-comments-1:10:11-202600"]').classes())
+      .toContain("has-comments");
+    expect(wrapper.get('[data-testid="resource-allocation-comments-1:10:11-202600"]').text()).toBe("");
+    const emptyCommentButton = wrapper.get('[data-testid="resource-allocation-comments-1:10:11-202601"]');
+    expect(emptyCommentButton.classes())
+      .not.toContain("has-comments");
+    expect(emptyCommentButton.attributes("style")).toContain("opacity: 0");
+    await wrapper.get('[data-testid="resource-allocation-comments-1:10:11-202600"]').trigger("click");
+    const commentsPopover = wrapper.getComponent(CommentsPopoverStub);
+    expect(commentsPopover.props("open")).toBe(true);
+    expect(commentsPopover.props("cell")).toEqual(expect.objectContaining({
+      period: 202600,
+      employeeId: 1,
+      projectId: 10,
+      workstreamId: 11,
+    }));
     const summaries = grid.props("additionalData") as unknown as Map<
       string,
       { label: string; months: Map<number, number>; projects: Set<string>; workstreams: Set<string>; dimensions: Set<string>; terminalRowId: string | null; yearTotal: number | null }
@@ -958,6 +1183,47 @@ describe("ResourceAllocationsView", () => {
         .get('[data-testid="resource-allocations-save"]')
         .attributes("disabled"),
     ).toBe("false");
+  });
+
+  it("keeps comment-only analytics rows without turning missing values into zero", async () => {
+    vi.mocked(fetchResourceAllocationAnalytics).mockResolvedValue({
+      year: 2026, employees: [], projects: [], workstreams: [], allocations: [],
+    });
+    vi.mocked(fetchResourceAllocationCommentSummary).mockResolvedValue({
+      year: 2026,
+      rows: [{
+        employee: {
+          id: 7,
+          displayName: "Alex Morgan",
+          email: "alex.morgan@example.test",
+          departmentId: null,
+          departmentName: null,
+          currentProjectId: null,
+          currentProjectName: null,
+        },
+        project: {
+          id: 70,
+          name: "Example project",
+          departmentId: null,
+          departmentName: null,
+          baId: null,
+          baName: null,
+        },
+        workstream: null,
+        cells: [{ period: 202603, commentCount: 1 }],
+      }],
+    });
+
+    const wrapper = mount(ResourceAllocationAnalyticsView, { global: { stubs: globalStubs } });
+    await flushPromises();
+
+    expect(wrapper.getComponent(GridStub).props("source")).toEqual([
+      expect.objectContaining({ id: "7:70:project", yearTotal: null }),
+    ]);
+    expect(wrapper.get('[data-testid="resource-allocation-analytics-cell-7:70:project-202603"]').text())
+      .not.toContain("0");
+    expect(wrapper.get('[data-testid="resource-allocation-comments-7:70:project-202603"]').classes())
+      .toContain("has-comments");
   });
 
   it("filters whole allocation groups by BA and switches hierarchy direction", async () => {

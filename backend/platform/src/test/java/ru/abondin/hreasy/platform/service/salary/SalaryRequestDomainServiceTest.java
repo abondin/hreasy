@@ -19,6 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/** Repository mocks are constructor-only and must not be reached before the source/destination equality guard. */
 class SalaryRequestDomainServiceTest {
 
     @Test

@@ -179,7 +179,6 @@
           :resize="true"
           :range="true"
           :use-clipboard="true"
-          :stretch="true"
           :hide-attribution="true"
           theme="compact"
           class="h-100 w-100"
@@ -187,6 +186,14 @@
         />
       </template>
     </TablePageCard>
+
+    <ResourceAllocationCommentsPopover
+      :open="commentOpen"
+      :target="commentTarget"
+      :cell="commentCell"
+      @update:open="handleCommentOpen"
+      @count="updateCommentCount"
+    />
 
     <v-dialog v-model="periodDialog" max-width="560">
       <v-card>
@@ -251,6 +258,9 @@ import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue
 import SearchTextField from "@/components/shared/SearchTextField.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import ResourceAllocationCommentsPopover, {
+  type ResourceAllocationCommentCellContext,
+} from "@/views/allocations/ResourceAllocationCommentsPopover.vue";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
 import { createSearchSettings, matchesSearch } from "@/lib/search";
@@ -259,10 +269,15 @@ import {
   exportResourceAllocationAnalytics,
   fetchClosedResourceAllocationPeriods,
   fetchResourceAllocationAnalytics,
+  fetchResourceAllocationCommentSummary,
   saveClosedResourceAllocationPeriods,
   type ResourceAllocationAnalytics,
+  type ResourceAllocationCommentCellKey,
+  type ResourceAllocationCommentRow,
+  type ResourceAllocationCommentSummary,
   type ResourceAllocationEmployee,
   type ResourceAllocationDisplayUnit,
+  type ResourceAllocationProject,
 } from "@/services/resource-allocation.service";
 
 defineOptions({ name: "ResourceAllocationAnalyticsView" });
@@ -313,6 +328,10 @@ const mode = ref<AnalyticsMode>("projects");
 const showGroupTotals = ref(true);
 const displayUnit = ref(unitFromQuery(route.query.unit));
 const sheet = shallowRef<ResourceAllocationAnalytics | null>(null);
+const commentSummary = shallowRef<ResourceAllocationCommentSummary | null>(null);
+const commentOpen = ref(false);
+const commentTarget = ref<HTMLElement | null>(null);
+const commentCell = ref<ResourceAllocationCommentCellContext | null>(null);
 const businessAccountIds = ref<number[]>([]);
 const projectIds = ref<number[]>([]);
 const search = ref("");
@@ -326,6 +345,8 @@ const periodDialog = ref(false);
 const periodUpdating = ref(false);
 const hierarchyIndent = 16;
 const terminalCellClass = "resource-allocation-terminal-cell";
+const groupCellClass = "resource-allocation-group-cell";
+const yearColumnStyle = { borderRight: "1px solid rgba(var(--v-theme-on-surface), 0.2)" };
 let activated = false;
 let loadRequestId = 0;
 
@@ -337,15 +358,33 @@ const toolbarFilterItems = computed(() => [
   { id: "projects", minWidth: 280, active: projectIds.value.length > 0 },
   { id: "search", minWidth: 260, active: search.value.trim().length > 0, grow: true },
 ]);
-const employeesById = computed(
-  () => new Map((sheet.value?.employees ?? []).map((employee) => [employee.id, employee])),
-);
-const projectsById = computed(
-  () => new Map((sheet.value?.projects ?? []).map((project) => [project.id, project])),
-);
-const workstreamsById = computed(
-  () => new Map((sheet.value?.workstreams ?? []).map((workstream) => [workstream.id, workstream])),
-);
+const employeesById = computed(() => {
+  const employees = new Map((sheet.value?.employees ?? []).map((employee) => [employee.id, employee]));
+  for (const row of commentSummary.value?.rows ?? []) {
+    if (!employees.has(row.employee.id)) employees.set(row.employee.id, row.employee);
+  }
+  return employees;
+});
+const projectsById = computed(() => {
+  const projects = new Map((sheet.value?.projects ?? []).map((project) => [project.id, project]));
+  for (const row of commentSummary.value?.rows ?? []) {
+    if (!projects.has(row.project.id)) projects.set(row.project.id, {
+      ...row.project,
+      active: true,
+      editable: false,
+    });
+  }
+  return projects;
+});
+const workstreamsById = computed(() => {
+  const workstreams = new Map((sheet.value?.workstreams ?? []).map((workstream) => [workstream.id, workstream]));
+  for (const row of commentSummary.value?.rows ?? []) {
+    if (row.workstream?.id != null && !workstreams.has(row.workstream.id)) {
+      workstreams.set(row.workstream.id, row.workstream);
+    }
+  }
+  return workstreams;
+});
 const canAdminPeriods = computed(() => permissions.canAdminResourceAllocations());
 const monthOptions = computed(() =>
   Array.from({ length: 12 }, (_, month) => {
@@ -356,7 +395,7 @@ const monthOptions = computed(() =>
 const businessAccounts = computed<BusinessAccountOption[]>(() =>
   [
     ...new Map(
-      (sheet.value?.projects ?? [])
+      [...projectsById.value.values()]
         .filter((project) => project.baId != null)
         .map((project) => [
           project.baId as number,
@@ -366,7 +405,7 @@ const businessAccounts = computed<BusinessAccountOption[]>(() =>
   ].sort((left, right) => left.name.localeCompare(right.name)),
 );
 const availableProjects = computed(() =>
-  (sheet.value?.projects ?? [])
+  [...projectsById.value.values()]
     .filter(
       (project) =>
         businessAccountIds.value.length === 0 ||
@@ -384,45 +423,14 @@ const visibleProjectIds = computed(() =>
 const allocationRows = computed<AnalyticsGridRow[]>(() => {
   const rows = new Map<string, AnalyticsGridRow>();
   for (const allocation of sheet.value?.allocations ?? []) {
-    if (!visibleProjectIds.value.has(allocation.projectId)) continue;
-    const employee = employeesById.value.get(allocation.employeeId);
-    const project = projectsById.value.get(allocation.projectId);
-    const workstream = allocation.workstreamId == null
-      ? null
-      : workstreamsById.value.get(allocation.workstreamId);
-    if (!employee || !project) continue;
-    if (!matchesSearch(search.value, [
-      employee.displayName,
-      employee.email,
-      employee.currentProjectRole,
-      project.name,
-      workstream?.displayName,
-    ], searchSettings.value)) continue;
-    const key = `${employee.id}:${project.id}:${allocation.workstreamId ?? "project"}`;
-    const employeeText = employeeLabel(employee);
-    const row: AnalyticsGridRow = rows.get(key) ?? {
-      id: key,
-      entity: mode.value === "employees"
-        ? allocation.workstreamId == null
-          ? t("Без направления")
-          : workstream?.displayName ?? String(allocation.workstreamId)
-        : employeeText,
-      employee: employeeText,
-      project: project.name,
-      businessAccount: project.baName ?? t("Без бизнес-аккаунта"),
-      employeeGroup: `employee:${employee.id}`,
-      projectGroup: `project:${project.id}`,
-      workstreamGroup: allocation.workstreamId == null
-        ? `workstream:${project.id}:project`
-        : `workstream:${project.id}:${allocation.workstreamId}`,
-      businessAccountGroup: project.baId == null ? "ba:none" : `ba:${project.baId}`,
-      employeeId: employee.id,
-      projectId: project.id,
-      workstreamId: allocation.workstreamId ?? null,
-      terminalGroup: false,
-    };
+    const row = getOrCreateRow(rows, allocation.employeeId, allocation.projectId,
+      allocation.workstreamId ?? null);
+    if (!row) continue;
     row[monthProp(allocation.period)] = Number(row[monthProp(allocation.period)] ?? 0) + allocation.percent;
-    rows.set(key, row);
+  }
+  for (const commentRow of commentSummary.value?.rows ?? []) {
+    getOrCreateRow(rows, commentRow.employee.id, commentRow.project.id,
+      commentRow.workstream?.id ?? null);
   }
   const result = [...rows.values()];
   if (mode.value === "projects") {
@@ -453,17 +461,33 @@ const allocationRows = computed<AnalyticsGridRow[]>(() => {
 const gridRows = computed(() => allocationRows.value.map((row) => {
   const displayed = { ...row };
   let yearTotal = 0;
+  let hasValue = false;
   for (let month = 0; month < 12; month += 1) {
     const prop = monthProp(year.value * 100 + month);
     const value = row[prop];
     if (value != null) {
+      hasValue = true;
       yearTotal += Number(value);
       displayed[prop] = toDisplayValue(Number(value));
     }
   }
-  displayed.yearTotal = toDisplayValue(yearTotal);
+  displayed.yearTotal = hasValue ? toDisplayValue(yearTotal) : null;
   return displayed;
 }));
+
+const allocationRowsById = computed(() =>
+  new Map(allocationRows.value.map(row => [row.id, row])),
+);
+const commentCounts = computed(() => {
+  const counts = new Map<string, number>();
+  for (const row of commentSummary.value?.rows ?? []) {
+    for (const cell of row.cells) {
+      counts.set(commentCellKey(cell.period, row.employee.id, row.project.id,
+        row.workstream?.id ?? null), cell.commentCount);
+    }
+  }
+  return counts;
+});
 
 const grouping = computed<GroupingOptions>(() => {
   const rows = allocationRows.value;
@@ -603,20 +627,24 @@ const gridColumns = computed<ColumnRegular[]>(() => [
     maxSize: 110,
     sortable: false,
     readonly: true,
+    columnProperties: testId === "year-total" ? () => ({ style: yearColumnStyle }) : undefined,
+    cellProperties: testId === "year-total" ? () => ({ style: yearColumnStyle }) : undefined,
     columnTemplate: closed
       ? (createElement) => createElement("span", null, [
           createElement("i", { class: "mdi mdi-lock mr-1", "aria-hidden": "true" }),
           createElement("span", null, name),
         ])
       : undefined,
-    cellTemplate: (createElement, props) => createElement(
-      "span",
-      {
-        class: (props.model as AnalyticsGridRow).terminalGroup ? undefined : terminalCellClass,
-        "data-testid": `resource-allocation-analytics-cell-${(props.model as AnalyticsGridRow).id}-${testId}`,
-      },
-      formatAllocationValue(props.value),
-    ),
+    cellTemplate: (createElement, props) => {
+      const row = props.model as AnalyticsGridRow;
+      if (testId !== "year-total") {
+        return commentCellTemplate(createElement, row, Number(testId), props.value);
+      }
+      return allocationValueCell(createElement, props.value, {
+          class: row.terminalGroup ? undefined : terminalCellClass,
+          "data-testid": `resource-allocation-analytics-cell-${row.id}-${testId}`,
+      });
+    },
   } satisfies ColumnRegular)),
 ]);
 
@@ -633,7 +661,10 @@ watch(
   },
 );
 watch([year, displayUnit], syncQuery);
-watch(year, () => { void load(); });
+watch(year, () => {
+  commentOpen.value = false;
+  void load();
+});
 onMounted(() => {
   syncQuery();
   void load();
@@ -648,13 +679,15 @@ async function load(): Promise<void> {
   loading.value = true;
   error.value = "";
   try {
-    const [analytics, periods] = await Promise.all([
+    const [analytics, periods, comments] = await Promise.all([
       fetchResourceAllocationAnalytics(year.value),
       fetchClosedResourceAllocationPeriods(year.value),
+      fetchResourceAllocationCommentSummary(year.value),
     ]);
     if (requestId !== loadRequestId) return;
     sheet.value = analytics;
     closedPeriods.value = new Set(periods);
+    commentSummary.value = comments;
   } catch (loadError) {
     if (requestId !== loadRequestId) return;
     error.value = errorUtils.shortMessage(loadError);
@@ -671,6 +704,239 @@ function employeeLabel(employee: ResourceAllocationEmployee): string {
   return employee.currentProjectRole
     ? `${employee.displayName} · ${employee.currentProjectRole}`
     : employee.displayName;
+}
+
+function getOrCreateRow(
+  rows: Map<string, AnalyticsGridRow>,
+  employeeId: number,
+  projectId: number,
+  workstreamId: number | null,
+): AnalyticsGridRow | null {
+  if (!visibleProjectIds.value.has(projectId)) return null;
+  const employee = employeesById.value.get(employeeId);
+  const project = projectsById.value.get(projectId);
+  const workstream = workstreamId == null ? null : workstreamsById.value.get(workstreamId);
+  if (!employee || !project) return null;
+  if (!matchesSearch(search.value, [
+    employee.displayName,
+    employee.email,
+    employee.currentProjectRole,
+    project.name,
+    workstream?.displayName,
+  ], searchSettings.value)) return null;
+  const key = `${employee.id}:${project.id}:${workstreamId ?? "project"}`;
+  const existing = rows.get(key);
+  if (existing) return existing;
+  const employeeText = employeeLabel(employee);
+  const row: AnalyticsGridRow = {
+    id: key,
+    entity: mode.value === "employees"
+      ? workstreamId == null
+        ? t("Без направления")
+        : workstream?.displayName ?? String(workstreamId)
+      : employeeText,
+    employee: employeeText,
+    project: project.name,
+    businessAccount: project.baName ?? t("Без бизнес-аккаунта"),
+    employeeGroup: `employee:${employee.id}`,
+    projectGroup: `project:${project.id}`,
+    workstreamGroup: workstreamId == null
+      ? `workstream:${project.id}:project`
+      : `workstream:${project.id}:${workstreamId}`,
+    businessAccountGroup: project.baId == null ? "ba:none" : `ba:${project.baId}`,
+    employeeId: employee.id,
+    projectId: project.id,
+    workstreamId,
+    terminalGroup: false,
+  };
+  rows.set(key, row);
+  return row;
+}
+
+function commentCellTemplate(
+  createElement: Parameters<CellTemplate>[0],
+  row: AnalyticsGridRow,
+  period: number,
+  value: unknown,
+) {
+  const count = commentCounts.value.get(commentCellKey(period, row.employeeId, row.projectId,
+    row.workstreamId)) ?? 0;
+  const stopPropagation = (event: Event) => event.stopPropagation();
+  const stopPointer = (event: Event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  const button = createElement(
+    "button",
+    {
+      type: "button",
+      class: ["resource-allocation-comment-button", count > 0 ? "has-comments text-primary" : ""],
+      title: t("Открыть комментарии"),
+      "aria-label": t("Открыть комментарии: {count}", { count }),
+      "data-testid": `resource-allocation-comments-${row.id}-${period}`,
+      style: {
+        background: "transparent",
+        border: "0",
+        color: "inherit",
+        cursor: "pointer",
+        font: "inherit",
+        fontSize: "11px",
+        opacity: count > 0 ? "1" : "0",
+        padding: "0",
+      },
+      onPointerDown: stopPointer,
+      onMouseDown: stopPointer,
+      onTouchStart: stopPropagation,
+      onKeyDown: stopPropagation,
+      onMouseEnter: (event: MouseEvent) => setCommentButtonVisible(event.currentTarget, true, count),
+      onMouseLeave: (event: MouseEvent) => setCommentButtonVisible(event.currentTarget, false, count),
+      onFocus: (event: FocusEvent) => setCommentButtonVisible(event.currentTarget, true, count),
+      onBlur: (event: FocusEvent) => setCommentButtonVisible(event.currentTarget, false, count),
+      onDblClick: stopPropagation,
+      onClick: (event: MouseEvent) => {
+        event.stopPropagation();
+        openComments(row, period, event.currentTarget as HTMLElement);
+      },
+    },
+    [
+      createElement("i", {
+        class: count > 0 ? "mdi mdi-comment-text-outline" : "mdi mdi-comment-plus-outline",
+        "aria-hidden": "true",
+      }),
+    ],
+  );
+  return allocationValueCell(createElement, value, {
+    class: terminalCellClass,
+    "data-testid": `resource-allocation-analytics-cell-${row.id}-${period}`,
+    onMouseEnter: (event: MouseEvent) => setCellCommentButtonVisible(event.currentTarget, true, count),
+    onMouseLeave: (event: MouseEvent) => setCellCommentButtonVisible(event.currentTarget, false, count),
+  }, button);
+}
+
+function setCellCommentButtonVisible(target: EventTarget | null, visible: boolean, count: number): void {
+  setCommentButtonVisible((target as HTMLElement | null)
+    ?.querySelector<HTMLElement>(".resource-allocation-comment-button") ?? null, visible, count);
+}
+
+function setCommentButtonVisible(target: EventTarget | null, visible: boolean, count: number): void {
+  if (target && count === 0) (target as HTMLElement).style.opacity = visible ? "1" : "0";
+}
+
+function allocationValueCell(
+  createElement: Parameters<CellTemplate>[0],
+  value: unknown,
+  attributes: Record<string, unknown> = {},
+  action?: ReturnType<Parameters<CellTemplate>[0]>,
+) {
+  return createElement("div", {
+    ...attributes,
+    style: {
+      alignItems: "center",
+      boxSizing: "border-box",
+      display: "flex",
+      height: "100%",
+      justifyContent: "center",
+      padding: "0 24px",
+      position: "relative",
+      width: "100%",
+      ...(attributes.style as Record<string, unknown> | undefined),
+    },
+  }, [
+    createElement("span", null, formatAllocationValue(value)),
+    createElement("span", {
+      style: {
+        alignItems: "center",
+        display: "flex",
+        height: "100%",
+        justifyContent: "center",
+        position: "absolute",
+        right: "2px",
+        top: "0",
+        width: "20px",
+      },
+    }, action == null ? [] : [action]),
+  ]);
+}
+
+function openComments(row: AnalyticsGridRow, period: number, target: HTMLElement): void {
+  const employee = employeesById.value.get(row.employeeId);
+  const project = projectsById.value.get(row.projectId);
+  if (!employee || !project) return;
+  commentCell.value = {
+    period,
+    employeeId: row.employeeId,
+    projectId: row.projectId,
+    workstreamId: row.workstreamId,
+    employeeName: employee.displayName,
+    projectName: project.name,
+    workstreamName: row.workstreamId == null
+      ? null
+      : workstreamsById.value.get(row.workstreamId)?.displayName ?? null,
+  };
+  commentTarget.value = target;
+  commentOpen.value = true;
+}
+
+function updateCommentCount(cell: ResourceAllocationCommentCellKey, count: number): void {
+  const summary = commentSummary.value;
+  if (!summary) return;
+  const rows = summary.rows.map(row => ({ ...row, cells: [...row.cells] }));
+  let row = rows.find(item => item.employee.id === cell.employeeId
+    && item.project.id === cell.projectId
+    && (item.workstream?.id ?? null) === cell.workstreamId);
+  if (!row && count > 0) {
+    const employee = employeesById.value.get(cell.employeeId);
+    const project = projectsById.value.get(cell.projectId);
+    if (!employee || !project) return;
+    row = commentSummaryRow(employee, project, cell.workstreamId);
+    rows.push(row);
+  }
+  if (!row) return;
+  row.cells = row.cells.filter(item => item.period !== cell.period);
+  row.cells.push({ period: cell.period, commentCount: count });
+  commentSummary.value = {
+    ...summary,
+    rows,
+  };
+}
+
+function handleCommentOpen(open: boolean): void {
+  commentOpen.value = open;
+  if (open || !commentSummary.value) return;
+  commentSummary.value = {
+    ...commentSummary.value,
+    rows: commentSummary.value.rows
+      .map(row => ({ ...row, cells: row.cells.filter(cell => cell.commentCount > 0) }))
+      .filter(row => row.cells.length > 0),
+  };
+}
+
+function commentSummaryRow(
+  employee: ResourceAllocationEmployee,
+  project: ResourceAllocationProject,
+  workstreamId: number | null,
+): ResourceAllocationCommentRow {
+  return {
+    employee,
+    project: {
+      id: project.id,
+      name: project.name,
+      departmentId: project.departmentId,
+      departmentName: project.departmentName,
+      baId: project.baId,
+      baName: project.baName,
+    },
+    workstream: workstreamId == null ? null : {
+      id: workstreamId,
+      displayName: workstreamsById.value.get(workstreamId)?.displayName ?? String(workstreamId),
+    },
+    cells: [],
+  };
+}
+
+function commentCellKey(period: number, employeeId: number, projectId: number,
+                         workstreamId: number | null): string {
+  return `${period}:${employeeId}:${projectId}:${workstreamId ?? "project"}`;
 }
 
 function employeeDetailsButton(createElement: Parameters<CellTemplate>[0], employeeId: number) {
@@ -750,6 +1016,7 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
       "button",
       {
         type: "button",
+        class: groupCellClass,
         onClick: props.group.onExpand,
         "aria-expanded": String(props.group.expanded),
         "data-testid": `resource-allocation-group-${path}-label`,
@@ -790,7 +1057,7 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
     // Keep the profile action beside, never inside, the group expansion button.
     return employeeId == null ? expandButton : createElement(
       "div",
-      { style: { display: "flex", alignItems: "center", height: "100%" } },
+      { class: groupCellClass, style: { display: "flex", alignItems: "center", height: "100%" } },
       [employeeDetailsButton(createElement, employeeId), expandButton],
     );
   }
@@ -798,36 +1065,32 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
   const period = props.prop === "yearTotal" ? "year-total" : Number(String(props.prop).replace("month_", ""));
   const value = period === "year-total" ? summary?.yearTotal : summary?.months.get(period);
   if (summary?.terminalRowId) {
-    return createElement(
-      "span",
-      {
+    const row = allocationRowsById.value.get(summary.terminalRowId);
+    if (period !== "year-total" && row) {
+      return commentCellTemplate(createElement, row, period, value);
+    }
+    return allocationValueCell(createElement, value, {
         class: terminalCellClass,
         "data-testid": `resource-allocation-analytics-cell-${summary.terminalRowId}-${period}`,
         style: {
-          display: "block",
           fontSize: "12px",
           fontWeight: "normal",
-          height: "100%",
-          width: "100%",
         },
-      },
-      formatAllocationValue(value),
-    );
+    });
   }
-  return value != null
-    ? createElement(
-        "span",
-        {
+  return allocationValueCell(createElement, value, {
+    class: groupCellClass,
+    ...(value != null
+      ? {
           "data-testid": `resource-allocation-group-${path}-${period}`,
           style: {
             color: "rgb(var(--v-theme-primary))",
             fontSize: "12px",
             fontWeight: "600",
           },
-        },
-        formatAllocationValue(value),
-      )
-    : "";
+        }
+      : {}),
+  });
 };
 
 function toDisplayValue(percent: number): number {
@@ -915,6 +1178,11 @@ async function savePeriodSelection(): Promise<void> {
 
 <style scoped>
 :deep(.rgCell:has(.resource-allocation-terminal-cell)) {
-  background-color: rgba(var(--v-theme-primary), 0.04);
+  background-color: rgb(var(--v-theme-surface));
 }
+
+:deep(.rgCell:has(.resource-allocation-group-cell)) {
+  background-color: rgba(var(--v-theme-on-surface), 0.04);
+}
+
 </style>

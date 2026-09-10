@@ -157,8 +157,12 @@ function analytics(data: typeof sheet) {
 }
 
 async function mockResourceAllocationsApi(page: Page, data = sheet): Promise<void> {
-  await page.route(/\/api\/v1\/resource-allocations\/(?:input\/\d+(?:\/\d+)?|analytics\/\d+|closed-periods\/\d+)(?:\?.*)?$/, async (route) => {
+  await page.route(/\/api\/v1\/resource-allocations\/(?:input\/\d+(?:\/\d+)?|analytics\/\d+|closed-periods\/\d+|comments\/summary\/\d+)(?:\?.*)?$/, async (route) => {
     const url = new URL(route.request().url());
+    if (url.pathname.includes("/comments/summary/")) {
+      await json(route, { year: 2026, rows: [] });
+      return;
+    }
     if (url.pathname.includes("/closed-periods/")) {
       const periods = route.request().method() === "PUT"
         ? (route.request().postDataJSON() as { closedPeriods: number[] }).closedPeriods
@@ -292,7 +296,7 @@ test.describe("App Mocked Resource Allocations Page", () => {
       changes: [{ period: 202607, employeeId: 102, percent: 75, expectedRevisionId: 1 }],
     });
     await page.getByTestId("resource-allocations-tab-analytics").click();
-    await expect(page).toHaveURL(/\/management\/resource-allocations\/analytics$/);
+    await expect(page).toHaveURL(/\/management\/resource-allocations\/analytics\?year=2026&unit=personMonths$/);
     await expect(page.getByTestId("resource-allocations-tab-analytics")).toHaveAttribute("aria-selected", "true");
     await page.getByLabel("Открыть меню").click();
     const managerNavigation = page.locator(".v-list-group").filter({ hasText: "Менеджерам" });

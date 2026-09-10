@@ -37,6 +37,8 @@ A small `+ N%` in the lower-right corner shows the employee's combined allocatio
 
 For example, `50%` with `+ 30%` means that the employee is allocated 50% to the selected project and another 30% to other projects.
 
+Monthly cells in data entry and terminal analytics rows support comment threads. The comment action stays visible when a thread exists and appears on hover or keyboard focus for an empty thread. Anyone who can read the analytics cell can read all of its comments and add their own; authors alone can edit or delete their comments. Comments are plain text up to 4000 characters and remain attached to the cell when its allocation is cleared. Closed allocation periods do not lock comments.
+
 ### Editing rules
 
 - Values must be whole numbers from `0` through `1000`.
@@ -77,7 +79,7 @@ The backend checks all permissions and project scopes. Hiding controls in the UI
 
 | Permission | User capability |
 | --- | --- |
-| `resource_allocation_read` | View employee-scoped allocation analytics. |
+| `resource_allocation_read` | View employee-scoped allocation analytics and read/add comments on visible monthly cells. |
 | `resource_allocation_write` | Edit allocations for projects available through the acting user's effective hierarchy access. |
 | `resource_allocation_admin` | Close and reopen months. |
 
@@ -87,7 +89,6 @@ Closed months remain protected by the backend even if a save request is sent man
 
 ### Current limitations
 
-- Cell comment threads are not implemented.
 - A workstream removed from project editing is no longer available for allocation input. Existing cells remain visible in analytics, but cannot currently be cleared through the input page.
 - Clearing the last annual cell of an otherwise ineligible project can leave that project selected while the refreshed input endpoint rejects it; the UI does not yet recover by selecting another eligible project.
 
@@ -111,6 +112,11 @@ The frontend uses two child routes:
 | `GET` | `/api/v1/resource-allocations/analytics/{year}` | Load annual read-only analytics with searchable employee details including email. |
 | `GET` | `/api/v1/resource-allocations/closed-periods/{year}` | Load closed months for the analytics toolbar. |
 | `PUT` | `/api/v1/resource-allocations/closed-periods/{year}` | Replace the closed-month selection for the year. |
+| `GET` | `/api/v1/resource-allocations/comments/summary/{year}` | Load visible annual comment counts and metadata for comment-only rows. |
+| `GET` | `/api/v1/resource-allocations/comments?period={period}&employeeId={id}&projectId={id}&workstreamId={id}` | Load one visible cell thread. |
+| `POST` | `/api/v1/resource-allocations/comments` | Add a comment to a visible monthly cell. |
+| `PUT` | `/api/v1/resource-allocations/comments/{commentId}` | Edit the acting user's comment. |
+| `DELETE` | `/api/v1/resource-allocations/comments/{commentId}` | Delete the acting user's comment. |
 
 Periods use the repository's zero-based `YYYYMM` convention: `202600` is January 2026 and `202611` is December 2026.
 The annual period update body is `{ "closedPeriods": [202600, 202601] }`; omitted months are reopened.
@@ -152,12 +158,15 @@ The Platform service owns the `alloc` schema:
 - `resource_allocation_change` stores immutable before/after cell history;
 - `resource_allocation_closed_period` stores the currently closed months and who closed each one;
 - `resource_allocation_period_history` stores immutable close and reopen events with their actor and timestamp.
+- `resource_allocation_comment` stores monthly cell comments independently of current allocation values.
 
 One Save creates one project/year revision. Clearing a cell (`percent: null`) physically removes it from the current-state table. The deletion remains auditable as an immutable change with the previous percentage and `new_percent = null`; unlike ordinary CRUD entities, a second soft-deleted copy would duplicate the existing revision history.
 
 Period selection saves compare the requested and current sets. Existing closed months are left untouched, so resubmitting a checked month neither rewrites its original closure metadata nor creates a duplicate history event. Only actual open-to-closed and closed-to-open transitions are appended to history.
 
 Saving and closing periods are transactional. PostgreSQL transaction advisory locks serialize writes for affected months, and per-cell revision checks reject stale changes.
+
+Comment identity consists of period, employee, project, and optional workstream. Comment-only rows remain visible to users with the corresponding allocation scope. Comments are not included in Excel exports or the external API.
 
 ### Analytics Excel export
 

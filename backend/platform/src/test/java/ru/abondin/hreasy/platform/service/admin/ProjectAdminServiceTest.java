@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/** Repository mocks are intentional: this test verifies soft-delete marking before entries are passed to saveAll. */
 class ProjectAdminServiceTest {
 
     @Test

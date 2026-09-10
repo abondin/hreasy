@@ -1,22 +1,77 @@
 package ru.abondin.hreasy.platform.config;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.web.server.WebFilterChainProxy;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import ru.abondin.hreasy.platform.I18Helper;
+import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
+import ru.abondin.hreasy.platform.config.external.ExternalTokenAuthenticationConverter;
 import ru.abondin.hreasy.platform.config.telegram.TelegramJwtAuthenticationConverter;
 import ru.abondin.hreasy.platform.tg.TgAuthLogService;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
 class WebSecurityConfigTest {
+
+    @Test
+    void externalApiChainIsBearerOnlyStatelessAndReadOnly() {
+        var converter = mock(ExternalTokenAuthenticationConverter.class);
+        var externalAuthority = new SimpleGrantedAuthority(
+                ExternalTokenAuthenticationConverter.EXTERNAL_API_RESERVED_AUTHORITY);
+        var externalAuth = UsernamePasswordAuthenticationToken.authenticated(
+                "external", null, List.of(externalAuthority));
+        when(converter.convert(any())).thenAnswer(invocation -> {
+            var exchange = invocation.<org.springframework.web.server.ServerWebExchange>getArgument(0);
+            return "Bearer valid".equals(exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
+                    ? Mono.just(externalAuth)
+                    : Mono.empty();
+        });
+        var errorHandler = new GlobalWebErrorsHandler(
+                mock(HrEasyCorsWebFilter.class), new I18Helper.DummyI18Helper(), new ObjectMapper());
+        var securityChain = new WebSecurityConfig().externalApiSecurityWebFilterChain(
+                org.springframework.security.config.web.server.ServerHttpSecurity.http(), errorHandler, converter);
+        var webSessionAuth = UsernamePasswordAuthenticationToken.authenticated("web", null, List.of());
+        org.springframework.web.server.WebFilter sessionSeeder = (exchange, chain) -> exchange.getSession()
+                .flatMap(session -> {
+                    session.getAttributes().put(
+                            WebSessionServerSecurityContextRepository.DEFAULT_SPRING_SECURITY_CONTEXT_ATTR_NAME,
+                            new SecurityContextImpl(webSessionAuth));
+                    return chain.filter(exchange);
+                });
+        var routes = route(GET("/external/test"), _ -> ok().bodyValue("ok"))
+                .andRoute(POST("/external/test"), _ -> ok().bodyValue("ok"));
+        var client = WebTestClient.bindToRouterFunction(routes)
+                .webFilter(sessionSeeder, new WebFilterChainProxy(securityChain))
+                .build();
+
+        client.get().uri("/external/test").exchange().expectStatus().isUnauthorized();
+        client.get().uri("/external/test").header(HttpHeaders.AUTHORIZATION, "Bearer invalid")
+                .exchange().expectStatus().isUnauthorized();
+        client.post().uri("/external/test").header(HttpHeaders.AUTHORIZATION, "Bearer valid")
+                .exchange().expectStatus().isForbidden();
+        client.get().uri("/external/test").header(HttpHeaders.AUTHORIZATION, "Bearer valid")
+                .exchange().expectStatus().isOk();
+    }
 
     @Test
     void telegramAuthenticationDoesNotCreateWebSession() {
