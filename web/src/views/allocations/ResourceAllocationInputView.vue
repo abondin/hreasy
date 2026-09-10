@@ -602,9 +602,12 @@ function projectClosedLabel(project: ResourceAllocationProject): string | undefi
   return project.endDate ? t("Закрыт: {date}", { date: formatDate(project.endDate) }) : undefined;
 }
 
-function normalizePercent(value: string): number | null {
+function normalizePercent(value: string): number | null | undefined {
   if (!value.trim()) return null;
-  return Math.min(1000, Math.max(0, Math.round(Number(value) || 0)));
+  const percent = Number(value);
+  return Number.isInteger(percent) && percent >= 0 && percent <= 1000
+    ? percent
+    : undefined;
 }
 
 function updateInputCell(
@@ -639,7 +642,7 @@ function handleInputBeforeEdit(event: CustomEvent<BeforeSaveDataDetails>): void 
   const period = periodFromInputProp(event.detail.prop);
   if (period == null) return;
   const percent = normalizePercent(String(event.detail.val ?? ""));
-  if (loading.value || saving.value
+  if (percent === undefined || loading.value || saving.value
       || !canSetInputValue(event.detail.model as InputGridRow, period, percent)) {
     event.preventDefault();
     return;
@@ -655,7 +658,8 @@ function handleInputBeforeRangeEdit(event: CustomEvent<BeforeRangeSaveDataDetail
       const period = periodFromInputProp(prop);
       if (period == null) continue;
       const percent = normalizePercent(String(value ?? ""));
-      if (loading.value || saving.value || !canSetInputValue(model, period, percent)) {
+      if (percent === undefined || loading.value || saving.value
+          || !canSetInputValue(model, period, percent)) {
         event.preventDefault();
         return;
       }
@@ -670,7 +674,7 @@ function handleInputAfterEdit(event: CustomEvent<AfterEditEvent>): void {
     const model = detail.model as InputGridRow;
     const period = periodFromInputProp(detail.prop);
     const percent = normalizePercent(String(detail.val ?? ""));
-    if (period != null && canSetInputValue(model, period, percent)) {
+    if (period != null && percent !== undefined && canSetInputValue(model, period, percent)) {
       updateInputCell(period, model.id, percent);
     }
     return;
@@ -681,7 +685,7 @@ function handleInputAfterEdit(event: CustomEvent<AfterEditEvent>): void {
     for (const [prop, value] of Object.entries(changedModel)) {
       const period = periodFromInputProp(prop);
       const percent = normalizePercent(String(value ?? ""));
-      if (period != null && canSetInputValue(model, period, percent)) {
+      if (period != null && percent !== undefined && canSetInputValue(model, period, percent)) {
         updateInputCell(period, model.id, percent);
       }
     }

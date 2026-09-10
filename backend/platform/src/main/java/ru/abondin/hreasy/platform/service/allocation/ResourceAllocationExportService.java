@@ -38,7 +38,7 @@ public class ResourceAllocationExportService {
             // getAnalytics enforces resource_allocation_read before loading any data.
             return allocationService.getAnalytics(year, auth).flatMap(analytics -> Mono.<Resource>fromCallable(() -> {
                 try (var output = new ByteArrayOutputStream()) {
-                    exporter.export(analytics, percentages, dateTimeService.now(), output);
+                    exporter.export(analytics, percentages, dateTimeService.now(), auth.getUsername(), output);
                     return new ByteArrayResource(output.toByteArray());
                 } catch (IOException error) {
                     log.error("Unable to export allocation workbook", error);

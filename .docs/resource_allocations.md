@@ -65,7 +65,9 @@ Projects remain the parent level. A project without workstream allocations skips
 
 Users with allocation admin permission open the period-lock dialog from the analytics toolbar, select the closed months for the current year, and save the whole selection at once. The current month is highlighted. Canceling the dialog does not change period states.
 
-Group rows show monthly totals. Data can be filtered by business account and project or searched by employee name, project role, project name, or workstream.
+Group rows show monthly totals. A separate control hides group totals without hiding terminal values. Values can be displayed as percentages or person-months, and the year-total column follows the employee/group column. Data can be filtered by business account and project or searched by employee name, project role, project name, or workstream.
+
+The information action next to an employee opens the existing employee profile card in a dialog without changing the URL, filters, expanded groups, or an unsaved allocation draft.
 
 Terminal data rows use a subtle background to distinguish them from expandable group rows. Their left offset follows the same hierarchy-depth step as group rows.
 
@@ -87,6 +89,7 @@ Closed months remain protected by the backend even if a save request is sent man
 
 - Cell comment threads are not implemented.
 - A workstream removed from project editing is no longer available for allocation input. Existing cells remain visible in analytics, but cannot currently be cleared through the input page.
+- Clearing the last annual cell of an otherwise ineligible project can leave that project selected while the refreshed input endpoint rejects it; the UI does not yet recover by selecting another eligible project.
 
 ### Project and workstream lifecycle
 
@@ -162,8 +165,8 @@ The analytics toolbar exports a flat XLSX using the selected year and display un
 
 `GET /api/v1/resource-allocations/analytics/{year}/export?unit=personMonths` requires the same `resource_allocation_read` permission as analytics. Supported units are `personMonths` (default) and `percent`.
 
-Columns: business account, project, workstream, employee, email, current project role, annual total and January through December. Each employee/project/workstream combination has a separate row. Project-level allocations are separate from workstream allocations; there are no subtotal rows. Organizational metadata describes the current configuration.
+Columns: employee, email, business account, project, workstream, current project role, annual total and January through December. Each employee/project/workstream combination has a separate row. Project-level allocations are separate from workstream allocations; there are no subtotal rows. Organizational metadata describes the current configuration.
 
-Values are numeric fractions: 100 stored percent exports as 1 person-month or 100% with Excel percentage formatting. Annual totals are sums of monthly values (12 or 1200% for a full year). Missing months remain blank; explicitly recorded zero remains numeric zero. The workbook includes auto-filter and frozen headers, ready for user-defined pivots.
+Values are numeric fractions: 100 stored percent exports as 1 person-month or 100% with Excel percentage formatting. Annual totals are sums of monthly values (12 or 1200% for a full year). Missing months remain blank; explicitly recorded zero remains numeric zero. The workbook records the export timestamp and acting username and includes an expanding Excel table with frozen headers, ready for filtering and user-defined pivots.
 
 The JXLS template is `backend/platform/src/main/resources/jxls/resource_allocations_template.xlsx`, following existing overtime and salary exports. Analytics links preserve year and unit, for example `/management/resource-allocations/analytics?year=2026&unit=personMonths`.

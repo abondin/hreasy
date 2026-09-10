@@ -54,11 +54,12 @@ public class ResourceAllocationExcelExporter {
      * Both units store fractions numerically; Excel's percentage format determines presentation.
      */
     public void export(ResourceAllocationAnalyticsDto analytics, boolean percentages,
-                       OffsetDateTime exportedAt, OutputStream output) throws IOException {
+                       OffsetDateTime exportedAt, String exportedBy, OutputStream output) throws IOException {
         var context = new Context();
         context.putVar("year", analytics.year());
         context.putVar("unit", percentages ? "Проценты" : "Человеко-месяцы");
         context.putVar("exportedAt", exportedAt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm XXX")));
+        context.putVar("exportedBy", exportedBy);
         context.putVar("rows", rows(analytics));
         try (var input = template.getInputStream(); var rendered = new ByteArrayOutputStream()) {
             JxlsHelper.getInstance().processTemplate(input, rendered, context);

@@ -4,8 +4,8 @@
 
 features:
 
-- Added monthly employee resource allocations by project and workstream, with annual data entry, project- and employee-based analytics, period locking, change history, concurrent-edit conflict protection, and flat annual Excel export in percentages or person-months.
-- Added a read-only external API for employees, avatar downloads by employee ID or email, project dictionaries, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, an nginx IP allowlist, and Swagger documentation.
+- Added monthly employee resource allocations by project and workstream, with annual data entry, scoped project- and employee-based analytics, employee profile previews, period locking, change history, concurrent-edit conflict protection, and flat annual Excel export in percentages or person-months.
+- Added a read-only external API for employees, avatar downloads by employee ID or email, project dictionaries, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, deployment-owned network controls, and Swagger documentation.
 - Moved Java backend services under `backend/`, added backend Maven reactor/parent/common modules, upgraded services to Spring Boot 4.0.5, and updated GitHub Actions/devops scripts.
 - Implemented notification inbox UI and Yandex Messenger notification delivery.
 - Disabled self-service current project updates for regular employees
@@ -17,6 +17,12 @@ features:
 bugfix:
 
 - Fixed menu navigation from an open employee details panel returning users to the employee directory; manual panel closure preserves search filters.
+- Allowed manager-link deletion by its creator or an administrator and surfaced backend deletion errors in the confirmation dialog.
+- Prevented Telegram API authentication from creating a reusable web session and hardened file storage against unsafe filenames and filesystem changes before authorization.
+
+technical:
+
+- Updated compatible frontend dependencies and retained TypeScript 6 until the Vue toolchain supports TypeScript 7.
 
 
 ## 1.3.1 (2026-03-21)

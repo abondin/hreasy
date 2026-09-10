@@ -577,10 +577,10 @@ const gridColumns = computed<ColumnRegular[]>(() => [
         },
       },
       [
-        mode.value === "projects"
-          ? employeeDetailsButton(createElement, (props.model as AnalyticsGridRow).employeeId)
-          : null,
-        String(props.value ?? ""),
+        ...(mode.value === "projects"
+          ? [employeeDetailsButton(createElement, (props.model as AnalyticsGridRow).employeeId)]
+          : []),
+        createElement("span", null, String(props.value ?? "")),
       ],
     ),
   },
@@ -727,7 +727,10 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
             width: "100%",
           },
         },
-        [employeeId == null ? null : employeeDetailsButton(createElement, employeeId), summary.label],
+        [
+          ...(employeeId == null ? [] : [employeeDetailsButton(createElement, employeeId)]),
+          createElement("span", null, summary.label),
+        ],
       );
     }
     const projectCount = summary?.projects.size ?? 0;
