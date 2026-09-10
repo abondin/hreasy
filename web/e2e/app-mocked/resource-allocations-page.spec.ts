@@ -202,6 +202,9 @@ test.describe("App Mocked Resource Allocations Page", () => {
   test("rebases the draft from a backend conflict response", async ({ page }) => {
     await installUnhandledApiGuard(page);
     await mockAppRouteAuth(page, appMockedAuthorities.resourceAllocations);
+    await page.route(/\/api\/v1\/resource-allocations\/comments\/summary\/\d+$/, async (route) => {
+      await json(route, { year: 2026, rows: [] });
+    });
     await page.route(/\/api\/v1\/resource-allocations\/(?:input\/\d+(?:\/\d+)?|\d+)(?:\?.*)?$/, async (route) => {
       if (new URL(route.request().url()).pathname.includes("/input/")) {
         if (route.request().method() !== "PUT") {
@@ -307,10 +310,10 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect(page.getByTestId(selectors.resourceAllocationsTable)).toBeVisible();
     await expect(page.getByTestId("resource-allocation-group-ba:402-label")).toContainText("Alpine Operations");
     await expect(page.getByTestId("resource-allocation-group-ba:402,project:301-label")).toContainText("Retail Terminal Platform");
-    await expect(page.getByTestId("resource-allocation-group-ba:402,project:301-202607")).toHaveText("135");
+    await expect(page.getByTestId("resource-allocation-group-ba:402,project:301-202607")).toHaveText("1,35");
     await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toContainText("Alex Morgan");
-    await expect(page.getByTestId("resource-allocation-analytics-cell-101:301:project-202607")).toHaveText("60");
-    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202606")).toHaveText("15");
+    await expect(page.getByTestId("resource-allocation-analytics-cell-101:301:project-202607")).toHaveText("0,6");
+    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202606")).toHaveText("0,15");
     await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202600"))
       .toHaveClass(/resource-allocation-terminal-cell/);
     const terminalBackground = await page

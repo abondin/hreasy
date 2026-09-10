@@ -1,15 +1,19 @@
 package ru.abondin.hreasy.platform.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.server.WebFilterChainProxy;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import ru.abondin.hreasy.platform.I18Helper;
@@ -17,8 +21,6 @@ import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
 import ru.abondin.hreasy.platform.config.external.ExternalTokenAuthenticationConverter;
 import ru.abondin.hreasy.platform.config.telegram.TelegramJwtAuthenticationConverter;
 import ru.abondin.hreasy.platform.tg.TgAuthLogService;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -41,7 +43,7 @@ class WebSecurityConfigTest {
         var externalAuth = UsernamePasswordAuthenticationToken.authenticated(
                 "external", null, List.of(externalAuthority));
         when(converter.convert(any())).thenAnswer(invocation -> {
-            var exchange = invocation.<org.springframework.web.server.ServerWebExchange>getArgument(0);
+            var exchange = invocation.<ServerWebExchange>getArgument(0);
             return "Bearer valid".equals(exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
                     ? Mono.just(externalAuth)
                     : Mono.empty();
@@ -49,9 +51,9 @@ class WebSecurityConfigTest {
         var errorHandler = new GlobalWebErrorsHandler(
                 mock(HrEasyCorsWebFilter.class), new I18Helper.DummyI18Helper(), new ObjectMapper());
         var securityChain = new WebSecurityConfig().externalApiSecurityWebFilterChain(
-                org.springframework.security.config.web.server.ServerHttpSecurity.http(), errorHandler, converter);
+                ServerHttpSecurity.http(), errorHandler, converter);
         var webSessionAuth = UsernamePasswordAuthenticationToken.authenticated("web", null, List.of());
-        org.springframework.web.server.WebFilter sessionSeeder = (exchange, chain) -> exchange.getSession()
+        WebFilter sessionSeeder = (exchange, chain) -> exchange.getSession()
                 .flatMap(session -> {
                     session.getAttributes().put(
                             WebSessionServerSecurityContextRepository.DEFAULT_SPRING_SECURITY_CONTEXT_ATTR_NAME,

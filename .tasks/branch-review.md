@@ -14,12 +14,19 @@ Close the remaining release checks found by the full branch review against `orig
 
 ## Remaining
 
-- In allocation input, strike through closed project names, allow comments on non-editable cells, highlight dirty cells, and add the year-column right border.
-- In allocation analytics, keep terminal data rows white, shade group rows light gray, and add the year-column right border.
-- Fix and rerun `web/e2e/app-mocked/resource-allocations-page.spec.ts`: its mock still does not handle the annual comment-summary request, and its analytics URL assertion still expects no `year`/`unit` query parameters.
-- Add an HTTP-level external security-chain test proving missing/invalid Bearer tokens return 401, non-GET methods are rejected, and a web session cannot authenticate `/external/**`.
-- Replace the repository-mocking comment test with database-backed coverage; this is tracked in `.tasks/repository-mock-tests.md` together with the other repository mocks.
+- User visual confirmation of the latest input/analytics styling.
+
+## Latest iteration
+
+- Closed project names are struck through in the input selector.
+- Comment actions remain available in monthly cells where allocation editing is prohibited.
+- Dirty input cells are highlighted; conflict highlighting keeps precedence.
+- Analytics group rows use a pale gray background and terminal data rows stay white.
+- The analytics year-total column has a right border.
+- Allocation Playwright mocks and person-month assertions were fixed; all three scenarios pass.
+- The external API security-chain HTTP test covers missing/invalid Bearer tokens, non-GET rejection, web-session isolation, and valid GET access.
+- Repository-mock review is tracked separately in `.tasks/repository-mock-tests.md`.
 
 ## Status
 
-The review itself is complete, but the branch is not ready to call production-ready until the remaining E2E and external security-chain checks pass. Keep this task as the release checklist.
+Implementation and release checks are complete. Keep this task until the user confirms the latest visual changes.
