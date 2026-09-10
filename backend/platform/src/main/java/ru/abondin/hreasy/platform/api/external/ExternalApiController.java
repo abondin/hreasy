@@ -39,14 +39,14 @@ import java.time.YearMonth;
 /**
  * Read-only integration API that applies the acting HR Easy user's current access rules.
  */
-@Tag(name = "External API", description = "Read-only system-to-system API. Requires an opaque Bearer token and an allowed source IP at nginx.")
+@Tag(name = "External API", description = "Read-only system-to-system API. Requires an opaque Bearer token; network policy is enforced by the external load balancer.")
 @SecurityScheme(name = "externalBearer", type = SecuritySchemeType.HTTP, scheme = "bearer",
         bearerFormat = "opaque", description = "HR Easy-generated opaque token bound to an acting user. Not a JWT.")
 @SecurityRequirement(name = "externalBearer")
 @ApiResponses({
         @ApiResponse(responseCode = "401", description = "Missing or invalid token, or unavailable acting user.",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = BusinessErrorDto.class))),
-        @ApiResponse(responseCode = "403", description = "Acting user lacks access, or nginx rejects the source IP. Nginx may return HTML.",
+        @ApiResponse(responseCode = "403", description = "Acting user lacks access, or the external load balancer rejects the request.",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = BusinessErrorDto.class)))
 })
 @RestController

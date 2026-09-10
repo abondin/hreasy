@@ -157,8 +157,12 @@ function analytics(data: typeof sheet) {
 }
 
 async function mockResourceAllocationsApi(page: Page, data = sheet): Promise<void> {
-  await page.route(/\/api\/v1\/resource-allocations\/(?:input\/\d+(?:\/\d+)?|analytics\/\d+|closed-periods\/\d+)(?:\?.*)?$/, async (route) => {
+  await page.route(/\/api\/v1\/resource-allocations\/(?:input\/\d+(?:\/\d+)?|analytics\/\d+|closed-periods\/\d+|comments\/summary\/\d+)(?:\?.*)?$/, async (route) => {
     const url = new URL(route.request().url());
+    if (url.pathname.includes("/comments/summary/")) {
+      await json(route, { year: 2026, rows: [] });
+      return;
+    }
     if (url.pathname.includes("/closed-periods/")) {
       const periods = route.request().method() === "PUT"
         ? (route.request().postDataJSON() as { closedPeriods: number[] }).closedPeriods
@@ -198,6 +202,9 @@ test.describe("App Mocked Resource Allocations Page", () => {
   test("rebases the draft from a backend conflict response", async ({ page }) => {
     await installUnhandledApiGuard(page);
     await mockAppRouteAuth(page, appMockedAuthorities.resourceAllocations);
+    await page.route(/\/api\/v1\/resource-allocations\/comments\/summary\/\d+$/, async (route) => {
+      await json(route, { year: 2026, rows: [] });
+    });
     await page.route(/\/api\/v1\/resource-allocations\/(?:input\/\d+(?:\/\d+)?|\d+)(?:\?.*)?$/, async (route) => {
       if (new URL(route.request().url()).pathname.includes("/input/")) {
         if (route.request().method() !== "PUT") {
@@ -292,7 +299,7 @@ test.describe("App Mocked Resource Allocations Page", () => {
       changes: [{ period: 202607, employeeId: 102, percent: 75, expectedRevisionId: 1 }],
     });
     await page.getByTestId("resource-allocations-tab-analytics").click();
-    await expect(page).toHaveURL(/\/management\/resource-allocations\/analytics$/);
+    await expect(page).toHaveURL(/\/management\/resource-allocations\/analytics\?year=2026&unit=personMonths$/);
     await expect(page.getByTestId("resource-allocations-tab-analytics")).toHaveAttribute("aria-selected", "true");
     await page.getByLabel("Открыть меню").click();
     const managerNavigation = page.locator(".v-list-group").filter({ hasText: "Менеджерам" });
@@ -303,10 +310,10 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect(page.getByTestId(selectors.resourceAllocationsTable)).toBeVisible();
     await expect(page.getByTestId("resource-allocation-group-ba:402-label")).toContainText("Alpine Operations");
     await expect(page.getByTestId("resource-allocation-group-ba:402,project:301-label")).toContainText("Retail Terminal Platform");
-    await expect(page.getByTestId("resource-allocation-group-ba:402,project:301-202607")).toHaveText("135");
+    await expect(page.getByTestId("resource-allocation-group-ba:402,project:301-202607")).toHaveText("1,35");
     await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toContainText("Alex Morgan");
-    await expect(page.getByTestId("resource-allocation-analytics-cell-101:301:project-202607")).toHaveText("60");
-    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202606")).toHaveText("15");
+    await expect(page.getByTestId("resource-allocation-analytics-cell-101:301:project-202607")).toHaveText("0,6");
+    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202606")).toHaveText("0,15");
     await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202600"))
       .toHaveClass(/resource-allocation-terminal-cell/);
     const terminalBackground = await page

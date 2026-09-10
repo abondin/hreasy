@@ -37,6 +37,8 @@ A small `+ N%` in the lower-right corner shows the employee's combined allocatio
 
 For example, `50%` with `+ 30%` means that the employee is allocated 50% to the selected project and another 30% to other projects.
 
+Monthly cells in data entry and terminal analytics rows support comment threads. The comment action stays visible when a thread exists and appears on hover or keyboard focus for an empty thread. Anyone who can read the analytics cell can read all of its comments and add their own; authors alone can edit or delete their comments. Comments are plain text up to 4000 characters and remain attached to the cell when its allocation is cleared. Closed allocation periods do not lock comments.
+
 ### Editing rules
 
 - Values must be whole numbers from `0` through `1000`.
@@ -65,7 +67,9 @@ Projects remain the parent level. A project without workstream allocations skips
 
 Users with allocation admin permission open the period-lock dialog from the analytics toolbar, select the closed months for the current year, and save the whole selection at once. The current month is highlighted. Canceling the dialog does not change period states.
 
-Group rows show monthly totals. Data can be filtered by business account and project or searched by employee name, project role, project name, or workstream.
+Group rows show monthly totals. A separate control hides group totals without hiding terminal values. Values can be displayed as percentages or person-months, and the year-total column follows the employee/group column. Data can be filtered by business account and project or searched by employee name, project role, project name, or workstream.
+
+The information action next to an employee opens the existing employee profile card in a dialog without changing the URL, filters, expanded groups, or an unsaved allocation draft.
 
 Terminal data rows use a subtle background to distinguish them from expandable group rows. Their left offset follows the same hierarchy-depth step as group rows.
 
@@ -75,7 +79,7 @@ The backend checks all permissions and project scopes. Hiding controls in the UI
 
 | Permission | User capability |
 | --- | --- |
-| `resource_allocation_read` | View employee-scoped allocation analytics. |
+| `resource_allocation_read` | View employee-scoped allocation analytics and read/add comments on visible monthly cells. |
 | `resource_allocation_write` | Edit allocations for projects available through the acting user's effective hierarchy access. |
 | `resource_allocation_admin` | Close and reopen months. |
 
@@ -85,8 +89,8 @@ Closed months remain protected by the backend even if a save request is sent man
 
 ### Current limitations
 
-- Cell comment threads are not implemented.
 - A workstream removed from project editing is no longer available for allocation input. Existing cells remain visible in analytics, but cannot currently be cleared through the input page.
+- Clearing the last annual cell of an otherwise ineligible project can leave that project selected while the refreshed input endpoint rejects it; the UI does not yet recover by selecting another eligible project.
 
 ### Project and workstream lifecycle
 
@@ -108,6 +112,11 @@ The frontend uses two child routes:
 | `GET` | `/api/v1/resource-allocations/analytics/{year}` | Load annual read-only analytics with searchable employee details including email. |
 | `GET` | `/api/v1/resource-allocations/closed-periods/{year}` | Load closed months for the analytics toolbar. |
 | `PUT` | `/api/v1/resource-allocations/closed-periods/{year}` | Replace the closed-month selection for the year. |
+| `GET` | `/api/v1/resource-allocations/comments/summary/{year}` | Load visible annual comment counts and metadata for comment-only rows. |
+| `GET` | `/api/v1/resource-allocations/comments?period={period}&employeeId={id}&projectId={id}&workstreamId={id}` | Load one visible cell thread. |
+| `POST` | `/api/v1/resource-allocations/comments` | Add a comment to a visible monthly cell. |
+| `PUT` | `/api/v1/resource-allocations/comments/{commentId}` | Edit the acting user's comment. |
+| `DELETE` | `/api/v1/resource-allocations/comments/{commentId}` | Delete the acting user's comment. |
 
 Periods use the repository's zero-based `YYYYMM` convention: `202600` is January 2026 and `202611` is December 2026.
 The annual period update body is `{ "closedPeriods": [202600, 202601] }`; omitted months are reopened.
@@ -149,6 +158,7 @@ The Platform service owns the `alloc` schema:
 - `resource_allocation_change` stores immutable before/after cell history;
 - `resource_allocation_closed_period` stores the currently closed months and who closed each one;
 - `resource_allocation_period_history` stores immutable close and reopen events with their actor and timestamp.
+- `resource_allocation_comment` stores monthly cell comments independently of current allocation values.
 
 One Save creates one project/year revision. Clearing a cell (`percent: null`) physically removes it from the current-state table. The deletion remains auditable as an immutable change with the previous percentage and `new_percent = null`; unlike ordinary CRUD entities, a second soft-deleted copy would duplicate the existing revision history.
 
@@ -156,14 +166,16 @@ Period selection saves compare the requested and current sets. Existing closed m
 
 Saving and closing periods are transactional. PostgreSQL transaction advisory locks serialize writes for affected months, and per-cell revision checks reject stale changes.
 
+Comment identity consists of period, employee, project, and optional workstream. Comment-only rows remain visible to users with the corresponding allocation scope. Comments are not included in Excel exports or the external API.
+
 ### Analytics Excel export
 
 The analytics toolbar exports a flat XLSX using the selected year and display unit only. Search, business-account/project filters, grouping, collapsed rows and group totals do not restrict the export. All recorded annual allocations available to the acting user are included.
 
 `GET /api/v1/resource-allocations/analytics/{year}/export?unit=personMonths` requires the same `resource_allocation_read` permission as analytics. Supported units are `personMonths` (default) and `percent`.
 
-Columns: business account, project, workstream, employee, email, current project role, annual total and January through December. Each employee/project/workstream combination has a separate row. Project-level allocations are separate from workstream allocations; there are no subtotal rows. Organizational metadata describes the current configuration.
+Columns: employee, email, business account, project, workstream, current project role, annual total and January through December. Each employee/project/workstream combination has a separate row. Project-level allocations are separate from workstream allocations; there are no subtotal rows. Organizational metadata describes the current configuration.
 
-Values are numeric fractions: 100 stored percent exports as 1 person-month or 100% with Excel percentage formatting. Annual totals are sums of monthly values (12 or 1200% for a full year). Missing months remain blank; explicitly recorded zero remains numeric zero. The workbook includes auto-filter and frozen headers, ready for user-defined pivots.
+Values are numeric fractions: 100 stored percent exports as 1 person-month or 100% with Excel percentage formatting. Annual totals are sums of monthly values (12 or 1200% for a full year). Missing months remain blank; explicitly recorded zero remains numeric zero. The workbook records the export timestamp and acting username and includes an expanding Excel table with frozen headers, ready for filtering and user-defined pivots.
 
 The JXLS template is `backend/platform/src/main/resources/jxls/resource_allocations_template.xlsx`, following existing overtime and salary exports. Analytics links preserve year and unit, for example `/management/resource-allocations/analytics?year=2026&unit=personMonths`.

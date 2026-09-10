@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.excel;
 
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -41,9 +42,12 @@ class ResourceAllocationExcelExporterTest {
             assertEquals(19, sheet.getRow(4).getLastCellNum());
             assertEquals("За год", sheet.getRow(4).getCell(6).getStringCellValue());
             var projectRow = sheet.getRow(5);
-            assertEquals(CellType.STRING, projectRow.getCell(1).getCellType());
-            assertEquals("=2+2", projectRow.getCell(1).getStringCellValue());
-            assertEquals("Alex Morgan", projectRow.getCell(3).getStringCellValue());
+            assertEquals("Alex Morgan", projectRow.getCell(0).getStringCellValue());
+            assertEquals("alex.morgan@example.test", projectRow.getCell(1).getStringCellValue());
+            assertEquals("Example account", projectRow.getCell(2).getStringCellValue());
+            assertEquals(CellType.STRING, projectRow.getCell(3).getCellType());
+            assertEquals("=2+2", projectRow.getCell(3).getStringCellValue());
+            assertEquals("Developer", projectRow.getCell(5).getStringCellValue());
             assertEquals(CellType.NUMERIC, projectRow.getCell(6).getCellType());
             assertEquals(0.75, projectRow.getCell(6).getNumericCellValue(), 0.000001);
             assertEquals(0.5, projectRow.getCell(7).getNumericCellValue(), 0.000001);
@@ -52,9 +56,11 @@ class ResourceAllocationExcelExporterTest {
             assertTrue(projectRow.getCell(9) == null || projectRow.getCell(9).getCellType() == CellType.BLANK);
             assertEquals(0.25, projectRow.getCell(18).getNumericCellValue(), 0.000001);
             assertEquals(percentages, projectRow.getCell(7).getCellStyle().getDataFormatString().contains("%"));
-            assertEquals("Delivery", sheet.getRow(6).getCell(2).getStringCellValue());
+            assertEquals("Delivery", sheet.getRow(6).getCell(4).getStringCellValue());
             assertEquals(1, sheet.getRow(6).getCell(6).getNumericCellValue());
             assertNotNull(sheet.getPaneInformation());
+            assertEquals(sheet.getLastRowNum(), ((XSSFSheet) sheet).getTables().getFirst().getEndRowIndex());
+            assertTrue(sheet.getRow(2).getCell(1).getStringCellValue().contains("JUnit test"));
             for (var row : sheet) {
                 for (var cell : row) {
                     if (cell.getCellType() == CellType.STRING) {
@@ -70,7 +76,8 @@ class ResourceAllocationExcelExporterTest {
         var empty = new ResourceAllocationAnalyticsDto(2026, List.of(), List.of(), List.of(), List.of());
         try (var workbook = WorkbookFactory.create(new ByteArrayInputStream(render(empty, false)))) {
             var sheet = workbook.getSheetAt(0);
-            assertEquals("Бизнес-аккаунт", sheet.getRow(4).getCell(0).getStringCellValue());
+            assertEquals("Сотрудник", sheet.getRow(4).getCell(0).getStringCellValue());
+            assertEquals(sheet.getLastRowNum(), ((XSSFSheet) sheet).getTables().getFirst().getEndRowIndex());
             for (int index = 5; index <= sheet.getLastRowNum(); index++) {
                 var row = sheet.getRow(index);
                 if (row == null) continue;
@@ -82,7 +89,7 @@ class ResourceAllocationExcelExporterTest {
     private byte[] render(ResourceAllocationAnalyticsDto analytics, boolean percentages) throws Exception {
         exporter.setTemplate(new ClassPathResource("jxls/resource_allocations_template.xlsx"));
         try (var output = new ByteArrayOutputStream()) {
-            exporter.export(analytics, percentages, OffsetDateTime.parse("2026-09-09T12:00:00Z"), output);
+            exporter.export(analytics, percentages, OffsetDateTime.parse("2026-09-09T12:00:00Z"), "JUnit test", output);
             return output.toByteArray();
         }
     }

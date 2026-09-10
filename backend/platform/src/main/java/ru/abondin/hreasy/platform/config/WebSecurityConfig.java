@@ -190,7 +190,6 @@ public class WebSecurityConfig {
     public SecurityWebFilterChain internalApiSecurityWebFilterChain(
             ServerHttpSecurity http,
             GlobalWebErrorsHandler errorHandler,
-            ServerSecurityContextRepository securityContextRepository,
             TelegramJwtAuthenticationConverter telegramJwtAuthenticationConverter,
             TgAuthLogService tgAuthLogService
     ) {
@@ -209,20 +208,18 @@ public class WebSecurityConfig {
                         .accessDeniedHandler(errorHandler)
                         .authenticationEntryPoint(errorHandler))
                 .addFilterAt(telegramAuthenticationWebFilter(
-                        securityContextRepository,
                         telegramJwtAuthenticationConverter,
                         tgAuthLogService
                 ), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
 
-    private AuthenticationWebFilter telegramAuthenticationWebFilter(
-            ServerSecurityContextRepository securityContextRepository,
+    AuthenticationWebFilter telegramAuthenticationWebFilter(
             TelegramJwtAuthenticationConverter jwtServerAuthenticationConverter,
             TgAuthLogService tgAuthLogService) {
         AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(telegramAuthenticationManager(tgAuthLogService));
         authenticationWebFilter.setServerAuthenticationConverter(jwtServerAuthenticationConverter);
-        authenticationWebFilter.setSecurityContextRepository(securityContextRepository);
+        authenticationWebFilter.setSecurityContextRepository(NoOpServerSecurityContextRepository.getInstance());
         return authenticationWebFilter;
     }
 

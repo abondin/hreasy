@@ -115,6 +115,40 @@ export interface ResourceAllocationAnalytics {
   allocations: ResourceAllocationAnalyticsValue[];
 }
 
+export interface ResourceAllocationCommentCell {
+  period: number;
+  commentCount: number;
+}
+
+export interface ResourceAllocationCommentRow {
+  employee: ResourceAllocationEmployee;
+  project: Pick<ResourceAllocationProject,
+    "id" | "name" | "departmentId" | "departmentName" | "baId" | "baName">;
+  workstream: Pick<ProjectWorkstream, "id" | "displayName"> | null;
+  cells: ResourceAllocationCommentCell[];
+}
+
+export interface ResourceAllocationCommentSummary {
+  year: number;
+  rows: ResourceAllocationCommentRow[];
+}
+
+export interface ResourceAllocationCommentCellKey {
+  period: number;
+  employeeId: number;
+  projectId: number;
+  workstreamId: number | null;
+}
+
+export interface ResourceAllocationComment {
+  id: number;
+  text: string;
+  author: { id: number; displayName: string };
+  createdAt: string;
+  updatedAt: string | null;
+  mine: boolean;
+}
+
 export async function fetchResourceAllocationProjectInput(
   year: number,
   projectId?: number,
@@ -136,6 +170,59 @@ export async function fetchResourceAllocationAnalytics(
     `v1/resource-allocations/analytics/${year}`,
   );
   return response.data;
+}
+
+export async function fetchResourceAllocationCommentSummary(
+  year: number,
+): Promise<ResourceAllocationCommentSummary> {
+  const response = await http.get<ResourceAllocationCommentSummary>(
+    `v1/resource-allocations/comments/summary/${year}`,
+  );
+  return response.data;
+}
+
+export async function fetchResourceAllocationComments(
+  cell: ResourceAllocationCommentCellKey,
+): Promise<ResourceAllocationComment[]> {
+  const response = await http.get<ResourceAllocationComment[]>("v1/resource-allocations/comments", {
+    params: cellParams(cell),
+  });
+  return response.data;
+}
+
+export async function createResourceAllocationComment(
+  cell: ResourceAllocationCommentCellKey,
+  text: string,
+): Promise<ResourceAllocationComment> {
+  const response = await http.post<ResourceAllocationComment>("v1/resource-allocations/comments", {
+    ...cell,
+    text,
+  });
+  return response.data;
+}
+
+export async function updateResourceAllocationComment(
+  commentId: number,
+  text: string,
+): Promise<ResourceAllocationComment> {
+  const response = await http.put<ResourceAllocationComment>(
+    `v1/resource-allocations/comments/${commentId}`,
+    { text },
+  );
+  return response.data;
+}
+
+export async function deleteResourceAllocationComment(commentId: number): Promise<void> {
+  await http.delete(`v1/resource-allocations/comments/${commentId}`);
+}
+
+function cellParams(cell: ResourceAllocationCommentCellKey) {
+  return {
+    period: cell.period,
+    employeeId: cell.employeeId,
+    projectId: cell.projectId,
+    ...(cell.workstreamId == null ? {} : { workstreamId: cell.workstreamId }),
+  };
 }
 
 export async function saveResourceAllocations(

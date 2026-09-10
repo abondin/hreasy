@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+/** Repository and storage mocks are intentional: these tests verify lookup routing and short-circuit behavior. */
 class EmployeeAvatarTest {
     private final EmployeeRepo repository = mock(EmployeeRepo.class);
     private final FileStorage storage = mock(FileStorage.class);

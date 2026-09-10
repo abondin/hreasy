@@ -15,7 +15,7 @@ The implementation may reuse the stateless Bearer authentication shape of the ex
 - Expose annual resource allocation analytics.
 - Expose basic project information.
 - Identify both the calling external system and the HR Easy user on whose behalf it operates.
-- Restrict the complete external API to an nginx IP allowlist; allow only localhost by default.
+- Leave external routing, source-IP restrictions, and traffic limits to the deployment load balancer.
 - Preserve the current HR Easy permission and project-scope rules.
 
 ## Non-goals
@@ -24,7 +24,7 @@ The implementation may reuse the stateless Bearer authentication shape of the ex
 - A UI or database tables for managing integrations.
 - An HR Easy endpoint that issues tokens.
 - Reimplementation of employee, overtime, allocation, or project queries.
-- Pagination, rate limiting, or a generic integration framework in v1.
+- Reverse-proxy routing, IP filtering, rate limiting, pagination, or a generic integration framework in v1.
 
 ## API Contract
 
@@ -56,11 +56,11 @@ The response matches `GET /api/v1/employee`:
 - dismissed employees when `includeFired=true`;
 - the same fields, ordering, permission-based role visibility, and skill visibility as the web API.
 
-The current basic response does not contain `extErpId`. Adding it is a separate contract decision because it would require a different query/DTO than the web endpoint.
+The current basic response does not contain `extErpId`; consumers match employees by HR Easy ID or email. ERP-specific identifiers are outside this contract.
 
 ### Employee avatars
 
-Both avatar endpoints use the same external Bearer authentication and nginx IP allowlist as the employee list. Active and dismissed employees are supported. A successful response contains the actual image bytes with `Content-Type: image/png`.
+Both avatar endpoints use the same external Bearer authentication as the employee list. Active and dismissed employees are supported. A successful response contains the actual image bytes with `Content-Type: image/png`.
 
 - By ID: `GET /external/api/v1/employees/101/avatar`.
 - By email: `GET /external/api/v1/employees/avatar?email=alex.morgan%40example.test`.
@@ -120,24 +120,9 @@ backend/platform/devops/generate-external-token.sh
 
 The script asks for the external system and acting HR Easy subject. It prints the raw token once and a ready-to-paste Docker Compose `environment` fragment containing the system, subject, and token hash. The raw Bearer token is a secret and must be transferred and stored as such.
 
-## Nginx IP Restriction
+## Network boundary
 
-Nginx is the only public entry point. The platform backend is available only on the internal network and `/external/**` is proxied by nginx after a global IP/CIDR check.
-
-If `HREASY_EXTERNAL_ALLOWED_IPS` is not configured, the allowlist contains only:
-
-- `127.0.0.1/32`
-- `::1/128`
-
-The variable is a comma-separated list of IPv4 addresses, IPv6 addresses, or CIDRs:
-
-```text
-HREASY_EXTERNAL_ALLOWED_IPS=10.20.30.40,10.20.31.0/24,2001:db8::10
-```
-
-At container startup, `web/devops/run.sh` converts the values to nginx `allow` directives and always appends `deny all`. Invalid characters stop startup. The generated file is included only in the `/external/` location.
-
-Nginx evaluates the address of its direct client. If another load balancer or reverse proxy is placed in front of nginx, nginx `real_ip` settings must trust only that proxy's CIDR before the external allowlist is enabled. The application does not use forwarded headers for IP authorization.
+The web container does not proxy `/external/**` and does not implement external IP restrictions. The deployment's external load balancer routes this prefix directly to the platform backend and owns source-IP allowlists, trusted-proxy handling, TLS, and traffic limits. The platform remains responsible for Bearer authentication, acting-user authorization, and read-only method enforcement.
 
 ## Authorization
 
@@ -155,7 +140,7 @@ The external endpoint then calls the same application service as the web endpoin
 
 Access is therefore the intersection of:
 
-1. the request source accepted by the global nginx allowlist;
+1. the request accepted and routed by the external load balancer;
 2. a valid token bound to an external system and subject;
 3. the acting user's current enabled state, authorities, and project hierarchy scope.
 
@@ -165,7 +150,7 @@ Disabling the employee or changing their permissions affects subsequent external
 
 ```text
 external system
-  -> nginx global IP allowlist
+  -> external load balancer routing and IP/traffic policy
   -> /external security chain
   -> calculate SHA-256 of the opaque Bearer token
   -> resolve its configured system and subject
@@ -207,15 +192,15 @@ Token rotation is a configuration/deployment operation in v1. Runtime credential
 |---|---|
 | `400 Bad Request` | invalid `YYYY-MM`, year, or query parameter |
 | `401 Unauthorized` | missing, malformed, unknown, or revoked token |
-| `403 Forbidden` | nginx rejects the source IP, or the subject/acting user lacks required access |
+| `403 Forbidden` | the external load balancer rejects the request, or the subject/acting user lacks required access |
 | `404 Not Found` | requested endpoint or referenced domain object does not exist |
 | `5xx` | unexpected platform failure |
 
-Backend errors use the platform's standard JSON format. An IP rejected before proxying receives nginx's standard `403` response. Neither response may reveal secrets or token contents.
+Backend errors use the platform's standard JSON format. Requests rejected by the external load balancer use its configured response. Neither response may reveal secrets or token contents.
 
 ## Logging and Operations
 
-The existing nginx access log records the source IP, method, path, and result status. Successful backend requests retain the external system ID in Spring Security authentication details while application services receive and log the acting HR Easy user.
+The external load balancer records the source IP, method, path, and result status. Successful backend requests retain the external system ID in Spring Security authentication details while application services receive and log the acting HR Easy user.
 
 Do not log the Bearer token or response payload. Existing health endpoints remain unchanged. The endpoints have OpenAPI operation metadata; a separate generated OpenAPI group is deferred until a consumer needs an independently published specification.
 
@@ -223,17 +208,14 @@ Do not log the Bearer token or response payload. Existing health endpoints remai
 
 The minimum implementation is:
 
-1. nginx `/external/` proxying and a global allowlist generated from `HREASY_EXTERNAL_ALLOWED_IPS`;
-2. configuration properties for hashed tokens and their system/user bindings;
-3. one ordered WebFlux security chain for `/external/**` with an opaque-token authentication converter;
-4. read-only external controllers delegating to the existing services;
-5. focused security tests for valid, unknown, and malformed tokens plus existing business permissions;
-6. focused controller tests for period conversion and delegation.
+1. configuration properties for hashed tokens and their system/user bindings;
+2. one ordered WebFlux security chain for `/external/**` with an opaque-token authentication converter;
+3. read-only external controllers delegating to the existing services;
+4. focused security tests for valid, unknown, and malformed tokens plus existing business permissions;
+5. focused controller tests for period conversion and delegation.
 
 No new repositories, migrations, or Vue changes are required.
 
 ## Open Contract Questions
 
-- Does the first consumer need employee `extErpId`, or is HR Easy employee ID/email sufficient?
 - Which external systems and acting users are required for the first deployment?
-- Which production CIDRs must nginx allow, and is there another trusted proxy in front of nginx?

@@ -46,9 +46,14 @@
             <template #item="{ props, item }">
               <v-list-item
                 v-bind="props"
-                :title="item.name"
                 :subtitle="projectClosedLabel(item)"
-              />
+              >
+                <template #title>
+                  <span :class="{ 'text-decoration-line-through': Boolean(item.endDate) }">
+                    {{ item.name }}
+                  </span>
+                </template>
+              </v-list-item>
             </template>
           </v-autocomplete>
         </template>
@@ -124,7 +129,7 @@
               :columns="inputGridColumns"
               :source="inputGridRows"
               :additional-data="inputGridAdditionalData"
-              :readonly="loading || saving || !inputProject.editable"
+              :readonly="loading || saving"
               :range="true"
               :use-clipboard="true"
               :apply-on-close="true"
@@ -157,6 +162,13 @@
       @close="cancelDiscard"
       @confirm="confirmDiscard"
     />
+    <ResourceAllocationCommentsPopover
+      :open="commentOpen"
+      :target="commentTarget"
+      :cell="commentCell"
+      @update:open="commentOpen = $event"
+      @count="updateCommentCount"
+    />
   </div>
 </template>
 
@@ -171,13 +183,19 @@ import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue
 import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import ResourceAllocationCommentsPopover, {
+  type ResourceAllocationCommentCellContext,
+} from "@/views/allocations/ResourceAllocationCommentsPopover.vue";
 import ResourceAllocationEmployeeCell from "@/views/allocations/ResourceAllocationEmployeeCell.vue";
 import { formatDate } from "@/lib/datetime";
 import { BusinessError, errorUtils } from "@/lib/errors";
 import { ReportPeriod } from "@/services/overtime.service";
 import {
+  fetchResourceAllocationCommentSummary,
   fetchResourceAllocationProjectInput,
   saveResourceAllocations,
+  type ResourceAllocationCommentCellKey,
+  type ResourceAllocationCommentSummary,
   type ResourceAllocationChange,
   type ResourceAllocationProject,
   type ResourceAllocationProjectInput,
@@ -207,6 +225,11 @@ const currentPeriodId = ReportPeriod.currentPeriod().id;
 const currentYear = Math.trunc(currentPeriodId / 100);
 const inputYear = ref(queryInteger(route.query.year) ?? currentYear);
 const inputSheet = shallowRef<ResourceAllocationProjectInput | null>(null);
+const commentSummary = shallowRef<ResourceAllocationCommentSummary | null>(null);
+const commentCountsOverride = ref(new Map<string, number>());
+const commentOpen = ref(false);
+const commentTarget = ref<HTMLElement | null>(null);
+const commentCell = ref<ResourceAllocationCommentCellContext | null>(null);
 const inputEdits = ref(new Map<string, number | null>());
 const inputInitialValues = ref(new Map<string, number>());
 const inputInitialRevisionIds = ref(new Map<string, number>());
@@ -238,16 +261,62 @@ const allocationCellTemplate: CellTemplate = (createElement, props) => {
     ? 0
     : Number(model[inputOtherMonthProp(period)] ?? 0);
   const value = props.value == null || props.value === "" ? "" : `${String(props.value)}%`;
+  const count = period == null ? 0 : inputCommentCount(period, model.id);
+  const stopPropagation = (event: Event) => event.stopPropagation();
+  const stopPointer = (event: Event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  const commentButton = period == null
+    ? null
+    : createElement("button", {
+        type: "button",
+        class: ["resource-allocation-comment-button", count > 0 ? "has-comments text-primary" : ""],
+        title: t("Открыть комментарии"),
+        "aria-label": t("Открыть комментарии: {count}", { count }),
+        "data-testid": `resource-allocation-input-comments-${model.id}-${period}`,
+        style: {
+          background: "transparent",
+          border: "0",
+          color: "inherit",
+          cursor: "pointer",
+          font: "inherit",
+          fontSize: "11px",
+          opacity: count > 0 ? "1" : "0",
+          padding: "0",
+        },
+        onPointerDown: stopPointer,
+        onMouseDown: stopPointer,
+        onTouchStart: stopPropagation,
+        onKeyDown: stopPropagation,
+        onMouseEnter: (event: MouseEvent) => setCommentButtonVisible(event.currentTarget, true, count),
+        onMouseLeave: (event: MouseEvent) => setCommentButtonVisible(event.currentTarget, false, count),
+        onFocus: (event: FocusEvent) => setCommentButtonVisible(event.currentTarget, true, count),
+        onBlur: (event: FocusEvent) => setCommentButtonVisible(event.currentTarget, false, count),
+        onDblClick: stopPropagation,
+        onClick: (event: MouseEvent) => {
+          event.stopPropagation();
+          openComments(model.id, period, event.currentTarget as HTMLElement);
+        },
+      }, [
+        createElement("i", {
+          class: count > 0 ? "mdi mdi-comment-text-outline" : "mdi mdi-comment-plus-outline",
+          "aria-hidden": "true",
+        }),
+      ]);
   return createElement(
     "div",
     {
+      class: "resource-allocation-comment-cell",
+      onMouseEnter: (event: MouseEvent) => setCellCommentButtonVisible(event.currentTarget, true, count),
+      onMouseLeave: (event: MouseEvent) => setCellCommentButtonVisible(event.currentTarget, false, count),
       style: {
         alignItems: "center",
         boxSizing: "border-box",
         display: "flex",
         height: "100%",
         justifyContent: "center",
-        pointerEvents: "none",
+        padding: "0 24px",
         position: "relative",
         width: "100%",
       },
@@ -265,15 +334,36 @@ const allocationCellTemplate: CellTemplate = (createElement, props) => {
                 fontSize: "9px",
                 lineHeight: "1",
                 position: "absolute",
-                right: "4px",
+                right: "24px",
               },
             },
             `+ ${otherPercent}%`,
           )
         : null,
+      createElement("span", {
+        style: {
+          alignItems: "center",
+          display: "flex",
+          height: "100%",
+          justifyContent: "center",
+          position: "absolute",
+          right: "2px",
+          top: "0",
+          width: "20px",
+        },
+      }, commentButton == null ? [] : [commentButton]),
     ],
   );
 };
+
+function setCellCommentButtonVisible(target: EventTarget | null, visible: boolean, count: number): void {
+  setCommentButtonVisible((target as HTMLElement | null)
+    ?.querySelector<HTMLElement>(".resource-allocation-comment-button") ?? null, visible, count);
+}
+
+function setCommentButtonVisible(target: EventTarget | null, visible: boolean, count: number): void {
+  if (target && count === 0) (target as HTMLElement).style.opacity = visible ? "1" : "0";
+}
 
 const toolbarFilterItems = [
   { id: "project", minWidth: 320 },
@@ -401,16 +491,24 @@ const inputGridColumns = computed<ColumnRegular[]>(() => [
             && !inputInitialValues.value.has(inputCellKey(month.period, (sourceModel as InputGridRow).id))),
         cellProperties: ({ model: sourceModel }) => {
           const model = sourceModel as InputGridRow;
+          const key = inputCellKey(month.period, model.id);
           const conflict = model.conflictingPeriods?.has(month.period);
+          const dirty = inputEdits.value.has(key);
           return {
             "data-testid": `resource-allocation-input-${model.id}-${month.period}`,
             "data-conflict": conflict || undefined,
+            "data-dirty": dirty || undefined,
             style: conflict
               ? {
                   backgroundColor: "rgba(var(--v-theme-error), 0.16)",
                   boxShadow: "inset 0 0 0 1px rgb(var(--v-theme-error))",
                 }
-              : undefined,
+              : dirty
+                ? {
+                    backgroundColor: "rgba(var(--v-theme-warning), 0.14)",
+                    boxShadow: "inset 0 0 0 1px rgba(var(--v-theme-warning), 0.65)",
+                  }
+                : undefined,
           };
         },
       }) satisfies ColumnRegular,
@@ -602,9 +700,12 @@ function projectClosedLabel(project: ResourceAllocationProject): string | undefi
   return project.endDate ? t("Закрыт: {date}", { date: formatDate(project.endDate) }) : undefined;
 }
 
-function normalizePercent(value: string): number | null {
+function normalizePercent(value: string): number | null | undefined {
   if (!value.trim()) return null;
-  return Math.min(1000, Math.max(0, Math.round(Number(value) || 0)));
+  const percent = Number(value);
+  return Number.isInteger(percent) && percent >= 0 && percent <= 1000
+    ? percent
+    : undefined;
 }
 
 function updateInputCell(
@@ -639,7 +740,7 @@ function handleInputBeforeEdit(event: CustomEvent<BeforeSaveDataDetails>): void 
   const period = periodFromInputProp(event.detail.prop);
   if (period == null) return;
   const percent = normalizePercent(String(event.detail.val ?? ""));
-  if (loading.value || saving.value
+  if (percent === undefined || loading.value || saving.value
       || !canSetInputValue(event.detail.model as InputGridRow, period, percent)) {
     event.preventDefault();
     return;
@@ -655,7 +756,8 @@ function handleInputBeforeRangeEdit(event: CustomEvent<BeforeRangeSaveDataDetail
       const period = periodFromInputProp(prop);
       if (period == null) continue;
       const percent = normalizePercent(String(value ?? ""));
-      if (loading.value || saving.value || !canSetInputValue(model, period, percent)) {
+      if (percent === undefined || loading.value || saving.value
+          || !canSetInputValue(model, period, percent)) {
         event.preventDefault();
         return;
       }
@@ -670,7 +772,7 @@ function handleInputAfterEdit(event: CustomEvent<AfterEditEvent>): void {
     const model = detail.model as InputGridRow;
     const period = periodFromInputProp(detail.prop);
     const percent = normalizePercent(String(detail.val ?? ""));
-    if (period != null && canSetInputValue(model, period, percent)) {
+    if (period != null && percent !== undefined && canSetInputValue(model, period, percent)) {
       updateInputCell(period, model.id, percent);
     }
     return;
@@ -681,7 +783,7 @@ function handleInputAfterEdit(event: CustomEvent<AfterEditEvent>): void {
     for (const [prop, value] of Object.entries(changedModel)) {
       const period = periodFromInputProp(prop);
       const percent = normalizePercent(String(value ?? ""));
-      if (period != null && canSetInputValue(model, period, percent)) {
+      if (period != null && percent !== undefined && canSetInputValue(model, period, percent)) {
         updateInputCell(period, model.id, percent);
       }
     }
@@ -750,15 +852,21 @@ async function loadView(clearDraft: boolean): Promise<void> {
   loading.value = true;
   error.value = "";
   try {
-    const response = await fetchResourceAllocationProjectInput(
-      inputYear.value,
-      inputProjectId.value ?? undefined,
-      inputWorkstreamId.value ?? undefined,
-    );
+    const [response, comments] = await Promise.all([
+      fetchResourceAllocationProjectInput(
+        inputYear.value,
+        inputProjectId.value ?? undefined,
+        inputWorkstreamId.value ?? undefined,
+      ),
+      fetchResourceAllocationCommentSummary(inputYear.value),
+    ]);
     rememberInputBaseline(response);
     inputSheet.value = response;
     inputProjectId.value = response.selectedProjectId;
     inputWorkstreamId.value = response.selectedWorkstreamId ?? null;
+    commentSummary.value = comments;
+    commentCountsOverride.value = new Map();
+    commentOpen.value = false;
     updateRouteQuery();
     await nextTick();
     await (
@@ -772,6 +880,46 @@ async function loadView(clearDraft: boolean): Promise<void> {
   } finally {
     loading.value = false;
   }
+}
+
+function inputCommentKey(period: number, employeeId: number): string {
+  return `${period}:${employeeId}:${inputProjectId.value}:${inputWorkstreamId.value ?? "project"}`;
+}
+
+function inputCommentCount(period: number, employeeId: number): number {
+  const key = inputCommentKey(period, employeeId);
+  const overridden = commentCountsOverride.value.get(key);
+  if (overridden != null) return overridden;
+  const row = commentSummary.value?.rows.find(item => item.employee.id === employeeId
+    && item.project.id === inputProjectId.value
+    && (item.workstream?.id ?? null) === inputWorkstreamId.value);
+  return row?.cells.find(cell => cell.period === period)?.commentCount ?? 0;
+}
+
+function openComments(employeeId: number, period: number, target: HTMLElement): void {
+  const employee = inputSheet.value?.employees.find(item => item.id === employeeId);
+  const project = inputProject.value;
+  if (!employee || !project) return;
+  const workstream = inputWorkstreamId.value == null
+    ? null
+    : inputSheet.value?.workstreams?.find(item => item.id === inputWorkstreamId.value) ?? null;
+  commentCell.value = {
+    period,
+    employeeId,
+    projectId: project.id,
+    workstreamId: inputWorkstreamId.value,
+    employeeName: employee.displayName,
+    projectName: project.name,
+    workstreamName: workstream?.displayName ?? null,
+  };
+  commentTarget.value = target;
+  commentOpen.value = true;
+}
+
+function updateCommentCount(cell: ResourceAllocationCommentCellKey, count: number): void {
+  const counts = new Map(commentCountsOverride.value);
+  counts.set(`${cell.period}:${cell.employeeId}:${cell.projectId}:${cell.workstreamId ?? "project"}`, count);
+  commentCountsOverride.value = counts;
 }
 
 function rememberInputBaseline(response: ResourceAllocationProjectInput): void {
@@ -836,6 +984,8 @@ function updateRouteQuery(): void {
 
 function resetLoadedData(): void {
   inputSheet.value = null;
+  commentSummary.value = null;
+  commentOpen.value = false;
   inputInitialValues.value = new Map();
   inputInitialRevisionIds.value = new Map();
   addedInputEmployeeIds.value = new Set();
