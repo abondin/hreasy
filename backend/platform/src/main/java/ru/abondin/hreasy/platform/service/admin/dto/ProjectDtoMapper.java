@@ -19,6 +19,7 @@ public interface ProjectDtoMapper extends MapperBase {
 
     @Mapping(target = "department", qualifiedByName = "department", source = ".")
     @Mapping(target = "businessAccount", qualifiedByName = "businessAccount", source = ".")
+    @Mapping(target = "workstreams", ignore = true)
     ProjectDto fromEntry(DictProjectEntry.ProjectFullEntry entry);
 
 

@@ -27,6 +27,23 @@
             <v-list-item-title>{{ item.label }}</v-list-item-title>
           </v-list-item>
 
+          <v-list-group v-if="managerNavigationItems.length" value="manager-navigation-group">
+            <template #activator="{ props }">
+              <v-list-item v-bind="props" prepend-icon="mdi-account-tie">
+                <v-list-item-title>{{ t("Менеджерам") }}</v-list-item-title>
+              </v-list-item>
+            </template>
+            <v-list-item
+              v-for="item in managerNavigationItems"
+              :key="item.key"
+              :to="item.to"
+              link
+              @click="drawer = false"
+            >
+              <v-list-item-title>{{ item.label }}</v-list-item-title>
+            </v-list-item>
+          </v-list-group>
+
           <v-list-group v-if="salaryNavigationItems.length" value="salary-navigation-group">
             <template #activator="{ props }">
               <v-list-item v-bind="props" prepend-icon="mdi-currency-rub">
@@ -176,6 +193,7 @@ const keepAliveComponentNames = [
   "SalaryRequestsView",
   "SalaryLatestRequestsView",
   "MentorshipView",
+  "ResourceAllocationsView",
   "AdminProjectsView",
   "AdminBusinessAccountsView",
   "AdminManagersView",
@@ -242,15 +260,6 @@ const primaryNavigationItems = computed(() => {
     });
   }
 
-  if (permissions.canCreateAssessments()) {
-    items.push({
-      key: "assessments",
-      label: t("Ассессменты"),
-      icon: "mdi-book-check-outline",
-      to: { name: "assessments" },
-    });
-  }
-
   return items;
 });
 
@@ -274,6 +283,41 @@ const salaryNavigationItems = computed(() => {
       key: "salary-latest",
       label: t("Последние повышения"),
       to: { name: "salary-latest" },
+    });
+  }
+
+  return items;
+});
+
+const managerNavigationItems = computed(() => {
+  if (!isAuthenticated.value) {
+    return [];
+  }
+
+  const items = [];
+
+  if (permissions.canCreateAssessments()) {
+    items.push({
+      key: "assessments",
+      label: t("Ассессменты"),
+      to: { name: "assessments" },
+    });
+  }
+
+  if (permissions.canReadResourceAllocations()) {
+    items.push({
+      key: "resource-allocations",
+      label: t("Аллокация ресурсов"),
+      to: { name: "resource-allocations" },
+    });
+  }
+
+  if (permissions.canAdminProjects()) {
+    items.push({
+      key: "admin-projects",
+      label: t("Все проекты"),
+      icon: "mdi-briefcase-edit-outline",
+      to: { name: "admin-projects" },
     });
   }
 
@@ -328,15 +372,6 @@ const adminNavigationItems = computed(() => {
       label: t("Справочники"),
       icon: "mdi-book-open-variant",
       to: "/admin/dicts",
-    });
-  }
-
-  if (permissions.canAdminProjects()) {
-    items.push({
-      key: "admin-projects",
-      label: t("Все проекты"),
-      icon: "mdi-briefcase-edit-outline",
-      to: { name: "admin-projects" },
     });
   }
 

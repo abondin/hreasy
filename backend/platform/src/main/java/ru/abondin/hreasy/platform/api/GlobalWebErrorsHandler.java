@@ -57,7 +57,7 @@ public class GlobalWebErrorsHandler implements WebExceptionHandler, ServerAccess
         var response = exchange.getResponse();
         final Object errorDto;
         if (ex instanceof BusinessError be) {
-            response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
+            response.setStatusCode(be.getStatus());
             errorDto = new BusinessErrorDto(be.getCode(),
                     i18Helper.localize(be.getCode(), (Object[]) be.getLocalizationArgs()), be.getAttrs());
             log.debug("Business error: {}", errorDto);

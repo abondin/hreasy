@@ -1,7 +1,9 @@
 import http from "@/lib/http";
 import type { DictItem } from "@/services/dict.service";
+import type { ProjectWorkstream } from "@/services/projects.service";
 
 export interface CreateOrUpdateProjectBody {
+  externalId?: string;
   name: string;
   startDate?: string;
   endDate?: string;
@@ -11,10 +13,12 @@ export interface CreateOrUpdateProjectBody {
   departmentId?: number;
   baId: number | null;
   info?: string;
+  workstreams: ProjectWorkstream[];
 }
 
 export interface AdminProjectInfo {
   id: number;
+  externalId?: string;
   name: string;
   startDate?: string;
   endDate?: string;
@@ -27,6 +31,7 @@ export interface AdminProjectInfo {
   createdAt?: string;
   info?: string;
   active: boolean;
+  workstreams: ProjectWorkstream[];
 }
 
 /** Admin CRUD contract for project management pages. */

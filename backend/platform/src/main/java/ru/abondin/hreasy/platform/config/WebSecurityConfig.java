@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.format.Formatter;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.http.HttpMethod;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.DelegatingReactiveAuthenticationManager;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -23,7 +24,9 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
+import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
+import ru.abondin.hreasy.platform.config.external.ExternalTokenAuthenticationConverter;
 import ru.abondin.hreasy.platform.config.telegram.TelegramJwtAuthenticationConverter;
 import ru.abondin.hreasy.platform.tg.TgAuthLogService;
 
@@ -81,7 +84,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    @Order(2)
+    @Order(3)
     SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
                                                   ServerSecurityContextRepository securityContextRepository,
                                                   GlobalWebErrorsHandler errorHandler
@@ -132,7 +135,49 @@ public class WebSecurityConfig {
         }
     }
 
-    // region Internal API
+    // region External API
+
+    /**
+     * Stateless Bearer authentication for read-only external integrations.
+     */
+    @Bean
+    @Order(1)
+    public SecurityWebFilterChain externalApiSecurityWebFilterChain(
+            ServerHttpSecurity http,
+            GlobalWebErrorsHandler errorHandler,
+            ExternalTokenAuthenticationConverter authenticationConverter
+    ) {
+        return http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/external/**"))
+                .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers(HttpMethod.GET, "/external/docs/**").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/external/**")
+                        .hasAuthority(ExternalTokenAuthenticationConverter.EXTERNAL_API_RESERVED_AUTHORITY)
+                        .anyExchange().denyAll()
+                )
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+                .anonymous(ServerHttpSecurity.AnonymousSpec::disable)
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                .exceptionHandling(exSpec -> exSpec
+                        .accessDeniedHandler(errorHandler)
+                        .authenticationEntryPoint(errorHandler))
+                .addFilterAt(externalAuthenticationWebFilter(authenticationConverter),
+                        SecurityWebFiltersOrder.AUTHENTICATION)
+                .build();
+    }
+
+    private AuthenticationWebFilter externalAuthenticationWebFilter(
+            ExternalTokenAuthenticationConverter authenticationConverter) {
+        ReactiveAuthenticationManager authenticationManager = Mono::just;
+        var authenticationWebFilter = new AuthenticationWebFilter(authenticationManager);
+        authenticationWebFilter.setServerAuthenticationConverter(authenticationConverter);
+        authenticationWebFilter.setSecurityContextRepository(NoOpServerSecurityContextRepository.getInstance());
+        return authenticationWebFilter;
+    }
+
+    // endregion
+
+    // region Telegram API
 
     /**
      * Isolated authentication manager for internal api
@@ -141,11 +186,10 @@ public class WebSecurityConfig {
      * @return
      */
     @Bean
-    @Order(1)
+    @Order(2)
     public SecurityWebFilterChain internalApiSecurityWebFilterChain(
             ServerHttpSecurity http,
             GlobalWebErrorsHandler errorHandler,
-            ServerSecurityContextRepository securityContextRepository,
             TelegramJwtAuthenticationConverter telegramJwtAuthenticationConverter,
             TgAuthLogService tgAuthLogService
     ) {
@@ -164,20 +208,18 @@ public class WebSecurityConfig {
                         .accessDeniedHandler(errorHandler)
                         .authenticationEntryPoint(errorHandler))
                 .addFilterAt(telegramAuthenticationWebFilter(
-                        securityContextRepository,
                         telegramJwtAuthenticationConverter,
                         tgAuthLogService
                 ), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
 
-    private AuthenticationWebFilter telegramAuthenticationWebFilter(
-            ServerSecurityContextRepository securityContextRepository,
+    AuthenticationWebFilter telegramAuthenticationWebFilter(
             TelegramJwtAuthenticationConverter jwtServerAuthenticationConverter,
             TgAuthLogService tgAuthLogService) {
         AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(telegramAuthenticationManager(tgAuthLogService));
         authenticationWebFilter.setServerAuthenticationConverter(jwtServerAuthenticationConverter);
-        authenticationWebFilter.setSecurityContextRepository(securityContextRepository);
+        authenticationWebFilter.setSecurityContextRepository(NoOpServerSecurityContextRepository.getInstance());
         return authenticationWebFilter;
     }
 
@@ -189,6 +231,3 @@ public class WebSecurityConfig {
     // endregion
 
 }
-
-
-

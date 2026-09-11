@@ -141,7 +141,7 @@
       </HREasyTableBase>
     </TablePageCard>
 
-    <v-dialog v-model="dialog" persistent width="96vw" max-width="960">
+    <v-dialog v-model="dialog" persistent scrollable width="96vw" max-width="960">
       <admin-project-form
         :input="null"
         :departments="departments"
@@ -190,6 +190,7 @@ const businessAccounts = ref<DictItem[]>([]);
 
 const headers = computed(() => [
   { title: t("Наименование"), key: "name", width: "240px" },
+  { title: t("Внешний идентификатор"), key: "externalId", width: "200px" },
   { title: t("Бизнес аккаунт"), key: "businessAccount.name", width: "220px" },
   { title: t("Заказчик"), key: "customer", width: "220px" },
   { title: t("Начало (план)"), key: "planStartDate", width: "150px" },
@@ -237,7 +238,7 @@ const filteredItems = computed(() => {
     if (!query) {
       return true;
     }
-    return [item.name, item.customer, item.department?.name, item.businessAccount?.name]
+    return [item.name, item.externalId, item.customer, item.department?.name, item.businessAccount?.name]
       .filter(Boolean)
       .join(" ")
       .toLowerCase()

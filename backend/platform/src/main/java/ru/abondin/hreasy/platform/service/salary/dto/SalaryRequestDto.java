@@ -21,6 +21,7 @@ public class SalaryRequestDto {
 
     @NonNull
     private SimpleDictDto employee;
+    private String employeeEmail;
     /**
      * @see SalaryRequestType
      */
@@ -37,6 +38,7 @@ public class SalaryRequestDto {
     private OffsetDateTime createdAt;
     @NonNull
     private SimpleDictDto createdBy;
+    private String createdByEmail;
 
     private SalaryRequestReq req = new SalaryRequestReq();
     private SalaryRequestImpl impl = null;

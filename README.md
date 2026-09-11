@@ -25,6 +25,7 @@
 - Download and upload Technical Profiles
 - Report, Implement and export salaries requests and bonuses
 - Junior and mentors registry
+- Annual [resource allocations](.docs/resource_allocations.md) by project with read-only analytics
 - Upload office location map. See [instruction](.docs/create_ofiice_workplace_map.md)
 
 ## Architecture overview

@@ -56,16 +56,11 @@
           </template>
 
           <template #filter-search>
-            <v-text-field
-              :model-value="filter.search"
-              @update:model-value="filter.search = normalizeSearchInput($event)"
+            <SearchTextField
+              v-model="filter.search"
+              v-model:settings="filter.searchSettings"
               :label="t('Поиск')"
-              prepend-inner-icon="mdi-magnify"
-              clearable
-              variant="outlined"
-              density="compact"
-              hide-details
-              data-testid="salary-requests-filter-search"
+              test-id="salary-requests-filter-search"
             />
           </template>
 
@@ -412,8 +407,8 @@ import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionCon
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import { useSalaryRequests } from "@/composables/useSalaryRequests";
-import { normalizeSearchInput } from "@/lib/search";
 import { ReportPeriod } from "@/services/overtime.service";
 import { listEmployees, type Employee } from "@/services/employee.service";
 import { fetchProjectInfo } from "@/services/projects.service";

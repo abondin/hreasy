@@ -10,6 +10,7 @@ HR Easy is a monorepository with separate backend services and a Vue frontend.
 - `backend/telegram/` - deprecated legacy Telegram bot; do not use it as a baseline for new work.
 - `web/` - Vue frontend; follow `web/AGENTS.md` for frontend work.
 - `.docs/` - architecture notes and diagrams.
+- `.tasks/` - tracked working context for active tasks.
 - `.hreasy-localdev/` - local Docker Compose environment.
 - `devops/` - build and deployment scripts.
 
@@ -35,9 +36,16 @@ HR Easy is a monorepository with separate backend services and a Vue frontend.
 
 ## Repository Skills
 
+- For any task that spans analysis, implementation, or verification iterations, use `.agents/skills/task-lifecycle`.
 - For Java changes, use `.agents/skills/java-coding-style`.
 - For JUnit work, use `.agents/skills/junit-tests-rules`.
 - For Platform Flyway migrations, use `.agents/skills/db-migration-style`.
 - For changes under `web/**`, use `.agents/skills/hreasy-vue3-development`.
 - For Vue tests, use `.agents/skills/vue-testing-best-practices`.
 - For Vue debugging, use `.agents/skills/vue-debug-guides`.
+
+## Task Lifecycle
+
+- Keep the current task context in `.tasks/<task-name>.md` and update it after each meaningful iteration.
+- Record agreed requirements, decisions, progress, checks, and remaining questions; keep it concise and current rather than appending a diary.
+- Do not remove the task file when implementation merely appears complete. After the user confirms the task is finished, update applicable durable documentation and `changelogs/CHANGELOG.md`, then delete the task file.

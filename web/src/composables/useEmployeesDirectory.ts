@@ -1,12 +1,14 @@
 import { computed, ref, watch } from "vue";
 import type { Employee } from "@/services/employee.service";
 import { listEmployees } from "@/services/employee.service";
+import { createSearchSettings, matchesSearch, type SearchSettings } from "@/lib/search";
 
 export interface EmployeesFilter {
   search: string;
   departments: number[];
   projects: Array<number | null>;
   businessAccounts: number[];
+  searchSettings: SearchSettings;
 }
 
 const defaultFilter: EmployeesFilter = {
@@ -14,6 +16,7 @@ const defaultFilter: EmployeesFilter = {
   departments: [],
   projects: [],
   businessAccounts: [],
+  searchSettings: createSearchSettings(),
 };
 
 export function useEmployeesDirectory(initialFilter?: Partial<EmployeesFilter>) {
@@ -40,7 +43,6 @@ export function useEmployeesDirectory(initialFilter?: Partial<EmployeesFilter>) 
   }
 
   const filteredEmployees = computed(() => {
-    const search = (filter.value.search ?? "").trim().toLowerCase();
     return employees.value.filter((employee) => {
       if (
         filter.value.departments.length > 0 &&
@@ -60,10 +62,7 @@ export function useEmployeesDirectory(initialFilter?: Partial<EmployeesFilter>) 
       ) {
         return false;
       }
-      if (!search) {
-        return true;
-      }
-      const haystack = [
+      return matchesSearch(filter.value.search, [
         employee.displayName,
         employee.department?.name,
         employee.email,
@@ -72,12 +71,8 @@ export function useEmployeesDirectory(initialFilter?: Partial<EmployeesFilter>) 
         employee.ba?.name,
         employee.position?.name,
         employee.telegram,
-      ]
-        .concat(employee.skills?.map((skill) => skill.name) ?? [])
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(search);
+        ...(employee.skills?.map((skill) => skill.name) ?? []),
+      ], filter.value.searchSettings);
     });
   });
 

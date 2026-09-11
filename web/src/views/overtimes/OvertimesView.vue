@@ -48,17 +48,11 @@
           </template>
 
           <template #filter-search>
-            <v-text-field
-              :model-value="filter.search"
-              @update:model-value="filter.search = normalizeSearchInput($event)"
-              data-testid="overtimes-filter-search"
-              density="compact"
-              clearable
-
+            <SearchTextField
+              v-model="filter.search"
+              v-model:settings="filter.searchSettings"
+              test-id="overtimes-filter-search"
               :label="t('ФИО Сотрудника')"
-              prepend-inner-icon="mdi-magnify"
-              variant="outlined"
-              hide-details
             />
           </template>
 
@@ -283,9 +277,9 @@ import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionCon
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import PeriodSwitcherControl from "@/components/shared/PeriodSwitcherControl.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import { useOvertimesSummary } from "@/composables/useOvertimesSummary";
 import { ReportPeriod } from "@/services/overtime.service";
-import { normalizeSearchInput } from "@/lib/search";
 
 const { t } = useI18n();
 const {

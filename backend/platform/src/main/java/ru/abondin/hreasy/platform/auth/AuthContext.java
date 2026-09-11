@@ -66,6 +66,7 @@ public class AuthContext {
          * 2 - INTERNAL,
          * 3 - Master password (only in developer environment)
          * 4 - Telegram Bot
+         * 5 - External API
          */
         @Nullable
         private Short loggedInType;
@@ -93,7 +94,7 @@ public class AuthContext {
     @AllArgsConstructor
     public enum LoginType {
         LDAP((short) 1), INTERNAL((short) 2), MASTER_PASSWORD((short) 3),
-        TELEGRAM_BOT_SERVICE((short) 4);
+        TELEGRAM_BOT_SERVICE((short) 4), EXTERNAL_API((short) 5);
         @Getter
         private final short value;
 

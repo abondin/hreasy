@@ -2,11 +2,13 @@ package ru.abondin.hreasy.platform.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthContext;
@@ -25,6 +27,7 @@ public class EmployeeService {
     private final DateTimeService dateTimeService;
     private final EmployeeRepo emplRepo;
     private final EmployeeProjectSecurityValidator employeeProjectSecurityValidator;
+    private final FileStorage fileStorage;
 
     public Flux<EmployeeDto> findAll(AuthContext auth, boolean includeFired) {
         log.debug("Find all employees from {} account", auth.getEmail());
@@ -48,6 +51,31 @@ public class EmployeeService {
                 .doOnNext(empl -> employeeProjectSecurityValidator.setToNullUngrantedFields(empl, auth));
     }
 
+
+    /**
+     * Returns an existing employee avatar, including dismissed employees, without a fallback image.
+     */
+    public Mono<Resource> avatar(int employeeId, AuthContext auth) {
+        log.debug("Get avatar for employee {} from {} account", employeeId, auth.getEmail());
+        return streamAvatar(emplRepo.findIdForAvatar(employeeId));
+    }
+
+    /**
+     * Resolves an employee by exact, case-insensitive email and returns their avatar.
+     */
+    public Mono<Resource> avatarByEmail(String email, AuthContext auth) {
+        log.debug("Get employee avatar by email from {} account", auth.getEmail());
+        if (email == null || email.isBlank()) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee email must not be blank"));
+        }
+        return streamAvatar(emplRepo.findIdByEmailIgnoreCase(email.trim()));
+    }
+
+    private Mono<Resource> streamAvatar(Mono<Integer> employeeId) {
+        return employeeId
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found")))
+                .flatMap(id -> fileStorage.streamImage("avatars", id + ".png", false));
+    }
 
     private Criteria addNotFiredCriteria(Criteria criteria) {
         var dateOfDismissalColumn = "date_of_dismissal";

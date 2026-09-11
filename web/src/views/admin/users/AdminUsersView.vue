@@ -27,15 +27,10 @@
               </template>
 
               <template #filter-search>
-                <v-text-field
-                  :model-value="search"
-                  @update:model-value="search = normalizeSearchInput($event)"
+                <SearchTextField
+                  v-model="search"
+                  v-model:settings="searchSettings"
                   :label="t('Поиск')"
-                  prepend-inner-icon="mdi-magnify"
-                  variant="outlined"
-                  density="compact"
-                  hide-details
-                  clearable
                 />
               </template>
             </AdaptiveFilterBar>
@@ -145,9 +140,10 @@ import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
-import { normalizeSearchInput } from "@/lib/search";
+import { createSearchSettings, matchesSearch } from "@/lib/search";
 import type { DictItem } from "@/services/dict.service";
 import {
   fetchBusinessAccounts,
@@ -168,6 +164,7 @@ const loading = ref(false);
 const dialog = ref(false);
 const error = ref("");
 const search = ref("");
+const searchSettings = ref(createSearchSettings());
 const items = ref<UserSecurityInfo[]>([]);
 const current = ref<UserSecurityInfo | null>(null);
 const departments = ref<DictItem[]>([]);
@@ -190,32 +187,20 @@ const filterBarItems = computed(() => [
 ]);
 
 const filteredItems = computed(() => {
-  const query = search.value.trim().toLowerCase();
   return items.value.filter((item) => {
-    if (!query) {
-      return true;
-    }
-
-    const matchingProjectIds = projects.value
-      .filter((project) => project.name.toLowerCase().includes(query))
-      .map((project) => project.id);
-    const matchingDepartmentIds = departments.value
-      .filter((department) => department.name.toLowerCase().includes(query))
-      .map((department) => department.id);
-    const matchingBaIds = businessAccounts.value
-      .filter((ba) => ba.name.toLowerCase().includes(query))
-      .map((ba) => ba.id);
-    const matchingRoleIds = roles.value
-      .filter((role) => role.name.toLowerCase().includes(query))
-      .map((role) => role.id);
-
-    return item.employee.name.toLowerCase().includes(query)
-      || item.accessibleProjects.some((id) => matchingProjectIds.includes(id))
-      || item.managedProjects.some((id) => matchingProjectIds.includes(id))
-      || item.accessibleDepartments.some((id) => matchingDepartmentIds.includes(id))
-      || item.accessibleBas.some((id) => matchingBaIds.includes(id))
-      || item.managedBas.some((id) => matchingBaIds.includes(id))
-      || item.roles.some((id) => matchingRoleIds.includes(id));
+    const projectIds = new Set([...item.accessibleProjects, ...item.managedProjects]);
+    const baIds = new Set([...item.accessibleBas, ...item.managedBas]);
+    return matchesSearch(search.value, [
+      item.employee.name,
+      item.email,
+      ...projects.value.filter((project) => projectIds.has(project.id)).map((project) => project.name),
+      ...departments.value.filter((department) =>
+        item.accessibleDepartments.includes(department.id)
+        || item.managedDepartments.includes(department.id),
+      ).map((department) => department.name),
+      ...businessAccounts.value.filter((ba) => baIds.has(ba.id)).map((ba) => ba.name),
+      ...roles.value.filter((role) => item.roles.includes(role.id)).map((role) => role.name),
+    ], searchSettings.value);
   });
 });
 
