@@ -76,6 +76,32 @@ class WebSecurityConfigTest {
     }
 
     @Test
+    void telegramPostRequiresBearerAndDoesNotRequireCsrfToken() {
+        var converter = mock(TelegramJwtAuthenticationConverter.class);
+        var authLogService = mock(TgAuthLogService.class);
+        var auth = UsernamePasswordAuthenticationToken.authenticated("telegram", null, List.of(
+                new SimpleGrantedAuthority(TelegramJwtAuthenticationConverter.TELEGRAM_CONFIRMED_RESERVED_AUTHORITY)));
+        when(converter.convert(any())).thenAnswer(invocation -> {
+            var exchange = invocation.<ServerWebExchange>getArgument(0);
+            return "Bearer valid".equals(exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
+                    ? Mono.just(auth) : Mono.empty();
+        });
+        when(authLogService.log(auth)).thenReturn(Mono.empty());
+        var errorHandler = new GlobalWebErrorsHandler(
+                mock(HrEasyCorsWebFilter.class), new I18Helper.DummyI18Helper(), new ObjectMapper());
+        var securityChain = new WebSecurityConfig().internalApiSecurityWebFilterChain(
+                ServerHttpSecurity.http(), errorHandler, converter, authLogService);
+        var client = WebTestClient.bindToRouterFunction(
+                        route(POST("/telegram/api/v1/support/request"), _ -> ok().bodyValue("ok")))
+                .webFilter(new WebFilterChainProxy(securityChain))
+                .build();
+
+        client.post().uri("/telegram/api/v1/support/request").exchange().expectStatus().isUnauthorized();
+        client.post().uri("/telegram/api/v1/support/request").header(HttpHeaders.AUTHORIZATION, "Bearer valid")
+                .exchange().expectStatus().isOk().expectCookie().doesNotExist("SESSION");
+    }
+
+    @Test
     void telegramAuthenticationDoesNotCreateWebSession() {
         var converter = mock(TelegramJwtAuthenticationConverter.class);
         var authLogService = mock(TgAuthLogService.class);

@@ -1,11 +1,6 @@
-FROM node:26-bullseye-slim AS base
-RUN apt-get update \
- && apt-get install -y --no-install-recommends tini \
- && rm -rf /var/lib/apt/lists/* \
- && mkdir -p /root/frontend
+FROM node:26-trixie-slim AS base
 
 WORKDIR /root/frontend
-ENTRYPOINT ["/usr/bin/tini", "--"]
 
 COPY package*.json ./
 RUN npm ci

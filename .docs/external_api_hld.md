@@ -159,7 +159,7 @@ external system
   -> return existing read-only DTO
 ```
 
-The chain is stateless and uses `NoOpServerSecurityContextRepository`. It disables form login, HTTP Basic, CSRF, and anonymous authentication for `/external/**`. Only `GET` is allowed; every other method under the prefix is denied.
+The chain is stateless and uses `NoOpServerSecurityContextRepository`. It disables form login, HTTP Basic, and anonymous authentication for `/external/**`. Standard Spring CSRF protection remains enabled; the allowed `GET` requests do not require a CSRF token. Every other method under the prefix is denied by authorization.
 
 ## Configuration
 
