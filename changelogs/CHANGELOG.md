@@ -4,9 +4,8 @@
 
 features:
 
-- Added monthly employee resource allocations by project and workstream, with annual data entry, scoped project- and employee-based analytics, employee profile previews, period locking, change history, concurrent-edit conflict protection, and flat annual Excel export in percentages or person-months.
-- Added per-cell resource-allocation comments in data entry and analytics, with shared read access and author-only edit/delete actions.
-- Added a read-only external API for employees, avatar downloads by employee ID or email, project dictionaries, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, deployment-owned network controls, and Swagger documentation.
+- Added monthly resource allocations by project and workstream, with annual data entry, project- and employee-based analytics, employee profile previews, period locking, change history, concurrent-edit conflict protection, cell comments with author-only editing/deletion, and annual Excel export in percentages or person-months. Access follows the acting user's permissions.
+- Added a read-only external API for employees, avatars by employee ID or email, projects, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, and OpenAPI documentation.
 - Moved Java backend services under `backend/`, added backend Maven reactor/parent/common modules, upgraded services to Spring Boot 4.0.5, and updated GitHub Actions/devops scripts.
 - Implemented notification inbox UI and Yandex Messenger notification delivery.
 - Disabled self-service current project updates for regular employees

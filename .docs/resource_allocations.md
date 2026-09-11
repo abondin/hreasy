@@ -71,7 +71,7 @@ Group rows show monthly totals. A separate control hides group totals without hi
 
 The information action next to an employee opens the existing employee profile card in a dialog without changing the URL, filters, expanded groups, or an unsaved allocation draft.
 
-Terminal data rows use a subtle background to distinguish them from expandable group rows. Their left offset follows the same hierarchy-depth step as group rows.
+Expandable group rows use a pale gray background and highlighted totals; terminal data rows use normal font weight. Both follow the same hierarchy-depth indentation. Horizontal separators and the vertical dividers beside the employee and annual-total columns remain visible with group totals enabled or hidden. On desktop, employee details and empty comment actions appear on hover or keyboard focus; existing-comment actions and touch-device actions remain visible.
 
 ## Access and restrictions
 
@@ -178,4 +178,4 @@ Columns: employee, email, business account, project, workstream, current project
 
 Values are numeric fractions: 100 stored percent exports as 1 person-month or 100% with Excel percentage formatting. Annual totals are sums of monthly values (12 or 1200% for a full year). Missing months remain blank; explicitly recorded zero remains numeric zero. The workbook records the export timestamp and acting username and includes an expanding Excel table with frozen headers, ready for filtering and user-defined pivots.
 
-The JXLS template is `backend/platform/src/main/resources/jxls/resource_allocations_template.xlsx`, following existing overtime and salary exports. Analytics links preserve year and unit, for example `/management/resource-allocations/analytics?year=2026&unit=personMonths`.
+The JXLS template is `backend/platform/src/main/resources/jxls/resource_allocations_template.xlsx`, following existing overtime and salary exports. The exporter prepares data and renders the template directly, without POI post-processing. Numeric formats and frozen headers are defined in the template; conditional formatting selects the percentage display from the unit label. The export timestamp is passed as a local date-time, following the other Excel exporters. Analytics links preserve year and unit, for example `/management/resource-allocations/analytics?year=2026&unit=personMonths`.

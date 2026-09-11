@@ -343,10 +343,6 @@ const closedPeriods = ref(new Set<number>());
 const closedPeriodsDraft = ref<number[]>([]);
 const periodDialog = ref(false);
 const periodUpdating = ref(false);
-const hierarchyIndent = 16;
-const terminalCellClass = "resource-allocation-terminal-cell";
-const groupCellClass = "resource-allocation-group-cell";
-const yearColumnStyle = { borderRight: "1px solid rgba(var(--v-theme-on-surface), 0.2)" };
 let activated = false;
 let loadRequestId = 0;
 
@@ -593,12 +589,9 @@ const gridColumns = computed<ColumnRegular[]>(() => [
     cellTemplate: (createElement, props) => createElement(
       "span",
       {
-        class: (props.model as AnalyticsGridRow).terminalGroup ? undefined : terminalCellClass,
+        class: "allocation-label",
+        style: { paddingInlineStart: `${(mode.value === "projects" ? 3 : 2) * 16}px` },
         "data-testid": `resource-allocation-analytics-row-${(props.model as AnalyticsGridRow).id}`,
-        style: {
-          display: "block",
-          paddingLeft: `${(mode.value === "projects" ? 3 : 2) * hierarchyIndent}px`,
-        },
       },
       [
         ...(mode.value === "projects"
@@ -627,8 +620,7 @@ const gridColumns = computed<ColumnRegular[]>(() => [
     maxSize: 110,
     sortable: false,
     readonly: true,
-    columnProperties: testId === "year-total" ? () => ({ style: yearColumnStyle }) : undefined,
-    cellProperties: testId === "year-total" ? () => ({ style: yearColumnStyle }) : undefined,
+    columnProperties: testId === "year-total" ? () => ({ class: "allocation-year-total" }) : undefined,
     columnTemplate: closed
       ? (createElement) => createElement("span", null, [
           createElement("i", { class: "mdi mdi-lock mr-1", "aria-hidden": "true" }),
@@ -641,7 +633,7 @@ const gridColumns = computed<ColumnRegular[]>(() => [
         return commentCellTemplate(createElement, row, Number(testId), props.value);
       }
       return allocationValueCell(createElement, props.value, {
-          class: row.terminalGroup ? undefined : terminalCellClass,
+          class: "allocation-year-total",
           "data-testid": `resource-allocation-analytics-cell-${row.id}-${testId}`,
       });
     },
@@ -770,28 +762,14 @@ function commentCellTemplate(
     "button",
     {
       type: "button",
-      class: ["resource-allocation-comment-button", count > 0 ? "has-comments text-primary" : ""],
+      class: `resource-allocation-comment-button${count > 0 ? " has-comments" : ""}`,
       title: t("Открыть комментарии"),
       "aria-label": t("Открыть комментарии: {count}", { count }),
       "data-testid": `resource-allocation-comments-${row.id}-${period}`,
-      style: {
-        background: "transparent",
-        border: "0",
-        color: "inherit",
-        cursor: "pointer",
-        font: "inherit",
-        fontSize: "11px",
-        opacity: count > 0 ? "1" : "0",
-        padding: "0",
-      },
       onPointerDown: stopPointer,
       onMouseDown: stopPointer,
       onTouchStart: stopPropagation,
       onKeyDown: stopPropagation,
-      onMouseEnter: (event: MouseEvent) => setCommentButtonVisible(event.currentTarget, true, count),
-      onMouseLeave: (event: MouseEvent) => setCommentButtonVisible(event.currentTarget, false, count),
-      onFocus: (event: FocusEvent) => setCommentButtonVisible(event.currentTarget, true, count),
-      onBlur: (event: FocusEvent) => setCommentButtonVisible(event.currentTarget, false, count),
       onDblClick: stopPropagation,
       onClick: (event: MouseEvent) => {
         event.stopPropagation();
@@ -806,20 +784,8 @@ function commentCellTemplate(
     ],
   );
   return allocationValueCell(createElement, value, {
-    class: terminalCellClass,
     "data-testid": `resource-allocation-analytics-cell-${row.id}-${period}`,
-    onMouseEnter: (event: MouseEvent) => setCellCommentButtonVisible(event.currentTarget, true, count),
-    onMouseLeave: (event: MouseEvent) => setCellCommentButtonVisible(event.currentTarget, false, count),
   }, button);
-}
-
-function setCellCommentButtonVisible(target: EventTarget | null, visible: boolean, count: number): void {
-  setCommentButtonVisible((target as HTMLElement | null)
-    ?.querySelector<HTMLElement>(".resource-allocation-comment-button") ?? null, visible, count);
-}
-
-function setCommentButtonVisible(target: EventTarget | null, visible: boolean, count: number): void {
-  if (target && count === 0) (target as HTMLElement).style.opacity = visible ? "1" : "0";
 }
 
 function allocationValueCell(
@@ -828,33 +794,12 @@ function allocationValueCell(
   attributes: Record<string, unknown> = {},
   action?: ReturnType<Parameters<CellTemplate>[0]>,
 ) {
-  return createElement("div", {
+  return createElement("span", {
     ...attributes,
-    style: {
-      alignItems: "center",
-      boxSizing: "border-box",
-      display: "flex",
-      height: "100%",
-      justifyContent: "center",
-      padding: "0 24px",
-      position: "relative",
-      width: "100%",
-      ...(attributes.style as Record<string, unknown> | undefined),
-    },
+    class: `allocation-value ${attributes.class ?? ""}`,
   }, [
     createElement("span", null, formatAllocationValue(value)),
-    createElement("span", {
-      style: {
-        alignItems: "center",
-        display: "flex",
-        height: "100%",
-        justifyContent: "center",
-        position: "absolute",
-        right: "2px",
-        top: "0",
-        width: "20px",
-      },
-    }, action == null ? [] : [action]),
+    ...(action == null ? [] : [action]),
   ]);
 }
 
@@ -947,17 +892,6 @@ function employeeDetailsButton(createElement: Parameters<CellTemplate>[0], emplo
     title: t("Открыть карточку сотрудника"),
     "aria-label": t("Открыть карточку сотрудника"),
     "data-testid": `resource-allocation-open-employee-${employeeId}`,
-    style: {
-      background: "transparent",
-      border: "0",
-      color: "inherit",
-      cursor: "pointer",
-      fontSize: "14px",
-      width: "24px",
-      height: "24px",
-      marginRight: "4px",
-      flexShrink: "0",
-    },
     onPointerDown: stopPropagation,
     onMouseDown: stopPropagation,
     onTouchStart: stopPropagation,
@@ -983,15 +917,9 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
       return createElement(
         "span",
         {
-          class: terminalCellClass,
+          class: "allocation-label",
+          style: { paddingInlineStart: `${props.group.depth * 16}px` },
           "data-testid": `resource-allocation-analytics-row-${summary.terminalRowId}`,
-          style: {
-            display: "block",
-            fontWeight: "normal",
-            height: "100%",
-            paddingLeft: `${props.group.depth * hierarchyIndent}px`,
-            width: "100%",
-          },
         },
         [
           ...(employeeId == null ? [] : [employeeDetailsButton(createElement, employeeId)]),
@@ -1016,22 +944,10 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
       "button",
       {
         type: "button",
-        class: groupCellClass,
+        class: "allocation-expand",
         onClick: props.group.onExpand,
         "aria-expanded": String(props.group.expanded),
         "data-testid": `resource-allocation-group-${path}-label`,
-        style: {
-          alignItems: "center",
-          background: "transparent",
-          border: "0",
-          color: "inherit",
-          cursor: "pointer",
-          display: "flex",
-          font: "inherit",
-          height: "100%",
-          paddingLeft: `${props.group.depth * hierarchyIndent}px`,
-          width: "100%",
-        },
       },
       [
         createElement(
@@ -1042,23 +958,20 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
         detail
           ? createElement(
               "span",
-              {
-                style: {
-                  color: "rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity))",
-                  fontSize: "11px",
-                  marginLeft: "8px",
-                },
-              },
+              { class: "allocation-group-detail" },
               detail,
             )
           : null,
       ],
     );
     // Keep the profile action beside, never inside, the group expansion button.
-    return employeeId == null ? expandButton : createElement(
+    return createElement(
       "div",
-      { class: groupCellClass, style: { display: "flex", alignItems: "center", height: "100%" } },
-      [employeeDetailsButton(createElement, employeeId), expandButton],
+      {
+        class: "allocation-label allocation-group",
+        style: { paddingInlineStart: `${props.group.depth * 16}px` },
+      },
+      [...(employeeId == null ? [] : [employeeDetailsButton(createElement, employeeId)]), expandButton],
     );
   }
 
@@ -1070,24 +983,15 @@ const groupCellTemplate: GroupCellTemplateFunc = (createElement, props, summarie
       return commentCellTemplate(createElement, row, period, value);
     }
     return allocationValueCell(createElement, value, {
-        class: terminalCellClass,
+        class: "allocation-year-total",
         "data-testid": `resource-allocation-analytics-cell-${summary.terminalRowId}-${period}`,
-        style: {
-          fontSize: "12px",
-          fontWeight: "normal",
-        },
     });
   }
   return allocationValueCell(createElement, value, {
-    class: groupCellClass,
+    class: `allocation-group${period === "year-total" ? " allocation-year-total" : ""}`,
     ...(value != null
       ? {
           "data-testid": `resource-allocation-group-${path}-${period}`,
-          style: {
-            color: "rgb(var(--v-theme-primary))",
-            fontSize: "12px",
-            fontWeight: "600",
-          },
         }
       : {}),
   });
@@ -1177,12 +1081,87 @@ async function savePeriodSelection(): Promise<void> {
 </script>
 
 <style scoped>
-:deep(.rgCell:has(.resource-allocation-terminal-cell)) {
-  background-color: rgb(var(--v-theme-surface));
-}
-
-:deep(.rgCell:has(.resource-allocation-group-cell)) {
+/* Keep backgrounds on rows: cell backgrounds cover RevoGrid's inset row separators. */
+:deep(.rgRow:has(.allocation-group)) {
   background-color: rgba(var(--v-theme-on-surface), 0.04);
 }
 
+/* Group cells bypass cellProperties; target both rendering paths by their content. */
+:deep(.rgCell:has(.allocation-year-total)),
+:deep(.rgHeaderCell.allocation-year-total),
+:deep(.colPinStart .rgCell:last-child) {
+  border-inline-end: 1px solid var(--rg-theme-cell-border);
+}
+
+:deep(.allocation-label) {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  font-weight: normal;
+}
+
+:deep(.allocation-value) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 100%;
+  padding: 0 24px;
+  font-weight: normal;
+}
+
+:deep(.allocation-group) {
+  font-weight: 600;
+}
+
+:deep(.allocation-value.allocation-group),
+:deep(.has-comments) {
+  color: rgb(var(--v-theme-primary));
+}
+
+:deep(.allocation-group-detail) {
+  margin-inline-start: 8px;
+  font-size: 11px;
+  color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity));
+}
+
+:deep(.allocation-expand),
+:deep(.resource-allocation-comment-button),
+:deep(.resource-allocation-employee-details-button) {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+:deep(.allocation-expand) {
+  flex: 1;
+  height: 100%;
+  color: inherit;
+  text-align: start;
+}
+
+:deep(.resource-allocation-employee-details-button) {
+  flex: 0 0 24px;
+  color: inherit;
+}
+
+:deep(.resource-allocation-comment-button) {
+  position: absolute;
+  inset-inline-end: 2px;
+  width: 20px;
+  font-size: 11px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :deep(.resource-allocation-comment-button:not(.has-comments)) {
+    opacity: 0;
+  }
+
+  :deep(.allocation-value:hover .resource-allocation-comment-button),
+  :deep(.resource-allocation-comment-button:focus-visible) {
+    opacity: 1;
+  }
+}
 </style>

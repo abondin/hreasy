@@ -314,14 +314,37 @@ test.describe("App Mocked Resource Allocations Page", () => {
     await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project")).toContainText("Alex Morgan");
     await expect(page.getByTestId("resource-allocation-analytics-cell-101:301:project-202607")).toHaveText("0,6");
     await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202606")).toHaveText("0,15");
-    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202600"))
-      .toHaveClass(/resource-allocation-terminal-cell/);
-    const terminalBackground = await page
-      .getByTestId("resource-allocation-analytics-cell-101:301:project-202607")
-      .locator("..")
-      .evaluate((cell) => getComputedStyle(cell).backgroundColor);
-    await expect(page.getByTestId("resource-allocation-analytics-cell-102:303:project-202600").locator(".."))
-      .toHaveCSS("background-color", terminalBackground);
+    await expect(page.locator(".v-navigation-drawer__scrim")).toBeHidden();
+    for (const marker of [
+      "resource-allocation-group-ba:402-year-total",
+      "resource-allocation-analytics-cell-101:301:project-year-total",
+      "resource-allocation-group-ba:402-label",
+      "resource-allocation-analytics-row-101:301:project",
+    ]) {
+      const cell = page.getByTestId(marker).locator("xpath=ancestor::*[contains(@class, 'rgCell')][1]");
+      await expect(cell).toHaveCSS("border-right-width", "1px");
+      await expect(cell).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    }
+    await expect(page.getByTestId("resource-allocation-analytics-row-101:301:project"))
+      .toHaveCSS("font-weight", "400");
+    await expect(page.getByTestId("resource-allocation-group-ba:402-label"))
+      .toHaveCSS("font-weight", "600");
+    await page.setViewportSize({ width: 2048, height: 1030 });
+    await expect(page.locator(".rgHeaderCell").filter({ hasText: "декабрь" })).toBeVisible();
+    const emptyComment = page.getByTestId("resource-allocation-comments-101:301:project-202600");
+    await expect(emptyComment).toHaveCSS("opacity", "0");
+    await page.getByTestId("resource-allocation-analytics-cell-101:301:project-202600").hover();
+    await expect(emptyComment).toHaveCSS("opacity", "1");
+    await page.getByTestId("resource-allocations-analytics-year").hover();
+    await emptyComment.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await expect(emptyComment).toBeFocused();
+    await expect(emptyComment).toHaveCSS("opacity", "1");
+    await page.getByTestId("resource-allocations-group-totals").click();
+    await expect(page.getByTestId("resource-allocation-group-ba:402-year-total")).toHaveCount(0);
+    await page.getByTestId("resource-allocations-group-totals").click();
+    await page.setViewportSize({ width: 1280, height: 720 });
 
     const analyticsSearch = (await revealAdaptiveFilter(page, "resource-allocations-analytics-search")).locator("input");
     await analyticsSearch.fill("Billing Gateway");

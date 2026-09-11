@@ -963,8 +963,6 @@ describe("ResourceAllocationsView", () => {
     const grid = wrapper.getComponent(GridStub);
     expect(grid.props("columns")).toHaveLength(14);
     expect(grid.props("columns")?.[1]?.prop).toBe("yearTotal");
-    expect(grid.props("columns")?.[1]?.cellProperties?.({ model: {} }).style)
-      .toEqual(expect.objectContaining({ borderRight: expect.any(String) }));
     expect(grid.props("stretch")).toBe(false);
     expect(grid.props("grouping")).toEqual(
       expect.objectContaining({
@@ -991,17 +989,10 @@ describe("ResourceAllocationsView", () => {
         month_202602: 0,
       }),
     ]));
-    expect(wrapper.get('[data-testid="resource-allocation-analytics-row-1:10:11"]').classes())
-      .toContain("resource-allocation-terminal-cell");
-    expect(wrapper.get('[data-testid="resource-allocation-analytics-row-1:10:11"]').attributes("style"))
-      .toContain("padding-left: 48px");
-    expect(wrapper.get('[data-testid="resource-allocation-comments-1:10:11-202600"]').classes())
-      .toContain("has-comments");
-    expect(wrapper.get('[data-testid="resource-allocation-comments-1:10:11-202600"]').text()).toBe("");
-    const emptyCommentButton = wrapper.get('[data-testid="resource-allocation-comments-1:10:11-202601"]');
-    expect(emptyCommentButton.classes())
-      .not.toContain("has-comments");
-    expect(emptyCommentButton.attributes("style")).toContain("opacity: 0");
+    expect(wrapper.get('[data-testid="resource-allocation-comments-1:10:11-202600"] i').classes())
+      .toContain("mdi-comment-text-outline");
+    expect(wrapper.get('[data-testid="resource-allocation-comments-1:10:11-202601"] i').classes())
+      .toContain("mdi-comment-plus-outline");
     await wrapper.get('[data-testid="resource-allocation-comments-1:10:11-202600"]').trigger("click");
     const commentsPopover = wrapper.getComponent(CommentsPopoverStub);
     expect(commentsPopover.props("open")).toBe(true);
@@ -1055,8 +1046,6 @@ describe("ResourceAllocationsView", () => {
     const restoredTotals = employeeGrid.props("additionalData") as unknown as typeof employeeSummaries;
     expect(restoredTotals.get("employee:1")?.months.get(202600)).toBe(60);
     expect(employeeSummaries.get("employee:1,project:20")?.terminalRowId).toBe("1:20:project");
-    expect(wrapper.get('[data-testid="resource-allocation-analytics-row-1:10:11"]').attributes("style"))
-      .toContain("padding-left: 32px");
     expect(wrapper.findAll("input")).toHaveLength(0);
 
     const onExpand = vi.fn();
@@ -1222,8 +1211,8 @@ describe("ResourceAllocationsView", () => {
     ]);
     expect(wrapper.get('[data-testid="resource-allocation-analytics-cell-7:70:project-202603"]').text())
       .not.toContain("0");
-    expect(wrapper.get('[data-testid="resource-allocation-comments-7:70:project-202603"]').classes())
-      .toContain("has-comments");
+    expect(wrapper.get('[data-testid="resource-allocation-comments-7:70:project-202603"] i').classes())
+      .toContain("mdi-comment-text-outline");
   });
 
   it("filters whole allocation groups by BA and switches hierarchy direction", async () => {

@@ -1,8 +1,12 @@
 package ru.abondin.hreasy.platform.excel;
 
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.formula.ConditionalFormattingEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -18,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,10 +60,17 @@ class ResourceAllocationExcelExporterTest {
             assertEquals(0, projectRow.getCell(8).getNumericCellValue());
             assertTrue(projectRow.getCell(9) == null || projectRow.getCell(9).getCellType() == CellType.BLANK);
             assertEquals(0.25, projectRow.getCell(18).getNumericCellValue(), 0.000001);
-            assertEquals(percentages, projectRow.getCell(7).getCellStyle().getDataFormatString().contains("%"));
+            var evaluator = new XSSFFormulaEvaluator((XSSFWorkbook) workbook);
+            var formatting = new ConditionalFormattingEvaluator(workbook, evaluator);
+            var formatter = new DataFormatter(Locale.US);
+            assertEquals(percentages ? "50%" : "0.5",
+                    formatter.formatCellValue(projectRow.getCell(7), evaluator, formatting));
             assertEquals("Delivery", sheet.getRow(6).getCell(4).getStringCellValue());
             assertEquals(1, sheet.getRow(6).getCell(6).getNumericCellValue());
+            assertEquals(percentages ? "100%" : "1",
+                    formatter.formatCellValue(sheet.getRow(6).getCell(6), evaluator, formatting));
             assertNotNull(sheet.getPaneInformation());
+            assertFalse(((XSSFSheet) sheet).getCTWorksheet().isSetAutoFilter());
             assertEquals(sheet.getLastRowNum(), ((XSSFSheet) sheet).getTables().getFirst().getEndRowIndex());
             assertTrue(sheet.getRow(2).getCell(1).getStringCellValue().contains("JUnit test"));
             for (var row : sheet) {

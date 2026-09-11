@@ -2,8 +2,6 @@ package ru.abondin.hreasy.platform.service.allocation;
 
 import lombok.Data;
 import lombok.Setter;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.jxls.common.Context;
 import org.jxls.util.JxlsHelper;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,13 +10,10 @@ import org.springframework.stereotype.Component;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnalyticsDto;
 import ru.abondin.hreasy.platform.service.dto.ProjectWorkstreamDto;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -58,32 +53,11 @@ public class ResourceAllocationExcelExporter {
         var context = new Context();
         context.putVar("year", analytics.year());
         context.putVar("unit", percentages ? "Проценты" : "Человеко-месяцы");
-        context.putVar("exportedAt", exportedAt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm XXX")));
+        context.putVar("exportedAt", exportedAt.toLocalDateTime());
         context.putVar("exportedBy", exportedBy);
         context.putVar("rows", rows(analytics));
-        try (var input = template.getInputStream(); var rendered = new ByteArrayOutputStream()) {
-            JxlsHelper.getInstance().processTemplate(input, rendered, context);
-            try (var workbook = WorkbookFactory.create(new ByteArrayInputStream(rendered.toByteArray()))) {
-                var sheet = workbook.getSheetAt(0);
-                var numericStyle = workbook.createCellStyle();
-                numericStyle.cloneStyleFrom(sheet.getRow(4).getCell(6).getCellStyle());
-                // Use the template data-row style when the report is non-empty.
-                if (sheet.getRow(5) != null && sheet.getRow(5).getCell(6) != null) {
-                    numericStyle.cloneStyleFrom(sheet.getRow(5).getCell(6).getCellStyle());
-                }
-                numericStyle.setDataFormat(workbook.createDataFormat().getFormat(percentages ? "0.##%" : "0.##"));
-                for (int rowIndex = 5; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-                    var row = sheet.getRow(rowIndex);
-                    if (row == null) continue;
-                    for (int column = 6; column < 19; column++) {
-                        var cell = row.getCell(column);
-                        if (cell != null) cell.setCellStyle(numericStyle);
-                    }
-                }
-                sheet.setAutoFilter(new CellRangeAddress(4, Math.max(4, sheet.getLastRowNum()), 0, 18));
-                sheet.createFreezePane(0, 5);
-                workbook.write(output);
-            }
+        try (var input = template.getInputStream()) {
+            JxlsHelper.getInstance().processTemplate(input, output, context);
         }
     }
 
