@@ -61,11 +61,15 @@ class WebSecurityConfigTest {
                     return chain.filter(exchange);
                 });
         var routes = route(GET("/external/test"), _ -> ok().bodyValue("ok"))
+                .andRoute(GET("/external/docs/openapi"), _ -> ok().bodyValue("docs"))
+                .andRoute(POST("/external/docs/openapi"), _ -> ok().bodyValue("docs"))
                 .andRoute(POST("/external/test"), _ -> ok().bodyValue("ok"));
         var client = WebTestClient.bindToRouterFunction(routes)
                 .webFilter(sessionSeeder, new WebFilterChainProxy(securityChain))
                 .build();
 
+        client.get().uri("/external/docs/openapi").exchange().expectStatus().isOk();
+        client.post().uri("/external/docs/openapi").exchange().expectStatus().isForbidden();
         client.get().uri("/external/test").exchange().expectStatus().isUnauthorized();
         client.get().uri("/external/test").header(HttpHeaders.AUTHORIZATION, "Bearer invalid")
                 .exchange().expectStatus().isUnauthorized();

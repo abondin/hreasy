@@ -163,11 +163,15 @@ public class FileStorage implements InitializingBean {
                 || filename.indexOf('\0') >= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid filename");
         }
-        var file = new File(directory, filename);
-        if (Files.isSymbolicLink(file.toPath())) {
+        var directoryPath = directory.toPath().toAbsolutePath().normalize();
+        var filePath = directoryPath.resolve(filename).normalize();
+        if (!filePath.startsWith(directoryPath)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid filename");
+        }
+        if (Files.isSymbolicLink(filePath)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Symbolic links are not supported");
         }
-        return file;
+        return filePath.toFile();
     }
 
     private File validateAndCreateDir(File dir, boolean autocreate) {

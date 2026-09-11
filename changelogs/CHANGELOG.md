@@ -5,7 +5,7 @@
 features:
 
 - Added monthly resource allocations by project and workstream, with annual data entry, project- and employee-based analytics, employee profile previews, period locking, change history, concurrent-edit conflict protection, cell comments with author-only editing/deletion, and annual Excel export in percentages or person-months. Access follows the acting user's permissions.
-- Added a read-only external API for employees, avatars by employee ID or email, projects, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, and OpenAPI documentation.
+- Added a read-only external API for employees, avatars by employee ID or email, projects, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, and dedicated Swagger UI and OpenAPI JSON/YAML documentation under `/external/docs/`.
 - Moved Java backend services under `backend/`, added backend Maven reactor/parent/common modules, upgraded services to Spring Boot 4.0.5, and updated GitHub Actions/devops scripts.
 - Implemented notification inbox UI and Yandex Messenger notification delivery.
 - Disabled self-service current project updates for regular employees
@@ -23,6 +23,7 @@ bugfix:
 technical:
 
 - Updated compatible frontend dependencies and retained TypeScript 6 until the Vue toolchain supports TypeScript 7.
+- Updated GitHub Actions tooling and the Node 26 build image to Debian Trixie, aligned npm to 11.19.1, and removed unused build-stage tini installation.
 
 
 ## 1.3.1 (2026-03-21)

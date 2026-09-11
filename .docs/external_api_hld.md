@@ -202,7 +202,13 @@ Backend errors use the platform's standard JSON format. Requests rejected by the
 
 The external load balancer records the source IP, method, path, and result status. Successful backend requests retain the external system ID in Spring Security authentication details while application services receive and log the acting HR Easy user.
 
-Do not log the Bearer token or response payload. Existing health endpoints remain unchanged. The endpoints have OpenAPI operation metadata; a separate generated OpenAPI group is deferred until a consumer needs an independently published specification.
+Do not log the Bearer token or response payload. Existing health endpoints remain unchanged. Springdoc publishes documentation containing only `/external/api/v1/**` operations:
+
+- Swagger UI: `/external/docs/swagger-ui.html`.
+- OpenAPI JSON: `/external/docs/openapi`.
+- OpenAPI YAML: `/external/docs/openapi.yaml`.
+
+Documentation GETs do not require a token. Use Swagger UI Authorize with the opaque token to execute API calls. API authentication and permissions remain unchanged. The external load balancer must forward the entire `/external/**` prefix, including documentation and its assets, to the backend; the web container does not proxy these paths.
 
 ## Implementation Outline
 

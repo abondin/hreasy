@@ -149,6 +149,7 @@ public class WebSecurityConfig {
     ) {
         return http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/external/**"))
                 .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers(HttpMethod.GET, "/external/docs/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/external/**")
                         .hasAuthority(ExternalTokenAuthenticationConverter.EXTERNAL_API_RESERVED_AUTHORITY)
                         .anyExchange().denyAll()
