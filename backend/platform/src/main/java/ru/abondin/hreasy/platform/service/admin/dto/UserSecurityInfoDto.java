@@ -14,6 +14,7 @@ import java.util.List;
 @Data
 public class UserSecurityInfoDto {
     private SimpleDictDto employee;
+    private String email;
 
     private List<String> roles = new ArrayList<>();
 

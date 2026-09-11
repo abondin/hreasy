@@ -9,16 +9,11 @@
     :overflow-menu-min-width="320"
   >
       <template #filter-search>
-        <v-text-field
-          :model-value="searchModel"
-          @update:model-value="searchModel = normalizeSearchInput($event)"
-          data-testid="employees-filter-search"
+        <SearchTextField
+          v-model="searchModel"
+          v-model:settings="searchSettingsModel"
+          test-id="employees-filter-search"
           :label="t('Поиск')"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          density="compact"
-          clearable
-          hide-details
         />
       </template>
 
@@ -104,13 +99,15 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
-import { normalizeSearchInput } from "@/lib/search";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
+import { createSearchSettings, type SearchSettings } from "@/lib/search";
 
 const props = defineProps<{
   departmentOptions: Array<{ title: string; value: number }>;
   projectOptions: Array<{ title: string; value: number | null }>;
   businessAccountOptions: Array<{ title: string; value: number }>;
   search?: string;
+  searchSettings?: SearchSettings;
   department?: number[];
   project?: Array<number | null>;
   businessAccount?: number[];
@@ -118,6 +115,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (event: 'update:search', value: string): void;
+  (event: 'update:searchSettings', value: SearchSettings): void;
   (event: 'update:department', value: number[]): void;
   (event: 'update:project', value: Array<number | null>): void;
   (event: 'update:businessAccount', value: number[]): void;
@@ -128,6 +126,11 @@ const { t } = useI18n();
 const searchModel = computed({
   get: () => props.search ?? '',
   set: (value: string) => emit('update:search', value),
+});
+
+const searchSettingsModel = computed({
+  get: () => props.searchSettings ?? createSearchSettings(),
+  set: (value: SearchSettings) => emit('update:searchSettings', value),
 });
 
 const departmentModel = computed<number[]>({

@@ -17,6 +17,11 @@ public class NewOvertimeItemDto {
      */
     private LocalDate date;
     private int projectId;
+    private Integer workstreamId;
     private float hours;
     private String notes;
+
+    public NewOvertimeItemDto(LocalDate date, int projectId, float hours, String notes) {
+        this(date, projectId, null, hours, notes);
+    }
 }

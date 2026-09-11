@@ -12,6 +12,7 @@ export const routes = {
   employees: "/employees",
   vacations: "/vacations",
   overtimes: "/overtimes",
+  resourceAllocations: "/management/resource-allocations",
   assessments: "/assessments",
   salaryRequests: "/salaries/requests",
   employeeAssessmentsPrefix: "/assessments/",

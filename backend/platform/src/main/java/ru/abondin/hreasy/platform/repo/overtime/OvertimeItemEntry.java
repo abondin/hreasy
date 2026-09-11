@@ -25,6 +25,7 @@ public class OvertimeItemEntry {
      */
     private LocalDate date;
     private int projectId;
+    private Integer workstreamId;
     private float hours;
     private String notes;
 

@@ -4,6 +4,8 @@ export interface OvertimeItem {
   id?: number;
   date: string;
   projectId?: number;
+  workstreamId?: number;
+  workstreamDisplayName?: string;
   hours: number;
   notes?: string;
   createdAt?: string | null;
@@ -157,6 +159,7 @@ export async function addOvertimeItem(
   const payload = {
     date: item.date,
     projectId: item.projectId,
+    workstreamId: item.workstreamId,
     hours: item.hours,
     notes: item.notes,
   };

@@ -4,6 +4,7 @@ import type { ComposerTranslation } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
 import { getJuniorProgressIcon } from "@/lib/mentorship";
+import { createSearchSettings, matchesSearch, type SearchSettings } from "@/lib/search";
 import {
   addJuniorToRegistry,
   exportJuniorsRegistry,
@@ -25,6 +26,7 @@ interface JuniorFilter {
   selectedBas: number[];
   selectedRoles: string[];
   selectedCurrentProjects: number[];
+  searchSettings: SearchSettings;
 }
 
 export function useJuniorRegistry(t: ComposerTranslation) {
@@ -54,6 +56,7 @@ export function useJuniorRegistry(t: ComposerTranslation) {
     selectedBas: [],
     selectedRoles: [],
     selectedCurrentProjects: [],
+    searchSettings: createSearchSettings(),
   });
 
   const canViewMentorship = computed(
@@ -100,7 +103,6 @@ export function useJuniorRegistry(t: ComposerTranslation) {
   });
 
   const filteredItems = computed(() => {
-    const search = filter.search.trim().toLowerCase();
     return juniors.value.filter((item) => {
       if (filter.onlyNotGraduated && item.graduation) {
         return false;
@@ -120,22 +122,21 @@ export function useJuniorRegistry(t: ComposerTranslation) {
       ) {
         return false;
       }
-      if (!search) {
-        return true;
-      }
-
-      return [
+      return matchesSearch(filter.search, [
         item.juniorEmpl?.name,
+        employeeEmail(item.juniorEmpl?.id),
         item.mentor?.name,
+        employeeEmail(item.mentor?.id),
         item.latestReport?.createdBy?.name,
+        employeeEmail(item.latestReport?.createdBy?.id),
         item.role,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(search);
+      ], filter.searchSettings);
     });
   });
+
+  function employeeEmail(id?: number): string | null | undefined {
+    return employees.value.find((employee) => employee.id === id)?.email;
+  }
 
   watch(
     () => addForm.juniorEmplId,

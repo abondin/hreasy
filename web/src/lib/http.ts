@@ -29,7 +29,7 @@ httpService.interceptors.response.use(
     const data = error.response?.data as
       | {
           code?: string;
-          args?: Record<string, string>;
+          args?: Record<string, unknown>;
           message?: string;
         }
       | undefined;
@@ -45,6 +45,7 @@ httpService.interceptors.response.use(
       case 403:
         wrappedError = new AccessDeniedError(message, code);
         break;
+      case 409:
       case 422:
         wrappedError = new BusinessError(message, code, data?.args);
         break;

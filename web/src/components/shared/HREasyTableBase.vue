@@ -12,6 +12,7 @@
       <v-data-table-virtual
         :key="virtualTableKey"
         :class="['h-reasy-table-base__table', tableClass]"
+        :style="resolvedTableWidth ? { '--h-reasy-table-width': resolvedTableWidth } : undefined"
         :headers="headers"
         :items="items"
         :item-key="itemKey"
@@ -29,7 +30,7 @@
         @update:sort-by="onUpdateSortBy"
       >
         <template
-          v-for="slotName in forwardedSlots"
+          v-for="slotName in forwardedSlots()"
           :key="slotName"
           #[slotName]="slotProps"
         >
@@ -65,6 +66,7 @@ const props = withDefaults(
     rowProps?: DataTableRowProps;
     itemKey?: string;
     tableClass?: string;
+    tableWidth?: number | string;
   }>(),
   {
     loading: false,
@@ -79,6 +81,7 @@ const props = withDefaults(
     rowProps: undefined,
     itemKey: "id",
     tableClass: "",
+    tableWidth: undefined,
   },
 );
 
@@ -102,11 +105,6 @@ let hasActivatedOnce = false;
 
 const hasFiltersSlot = computed(() => Boolean(slots.filters));
 const hasBeforeTableSlot = computed(() => Boolean(slots["before-table"]));
-const forwardedSlots = computed(() =>
-  Object.keys(slots).filter(
-    (name) => name.startsWith("item.") || name.startsWith("header."),
-  ),
-);
 const isSortByControlled = computed(() => Boolean(attrs["onUpdate:sortBy"]));
 const resolvedSortBy = computed(() =>
   isSortByControlled.value ? props.sortBy : internalSortBy.value,
@@ -117,6 +115,9 @@ const resolvedHeight = computed(() => {
   }
   return fillHeight.value != null ? `${fillHeight.value}px` : undefined;
 });
+const resolvedTableWidth = computed(() => typeof props.tableWidth === "number"
+  ? `${props.tableWidth}px`
+  : props.tableWidth);
 
 onMounted(async () => {
   await nextTick();
@@ -207,6 +208,12 @@ function refreshVirtualTable(): void {
   virtualTableKey.value += 1;
 }
 
+function forwardedSlots(): string[] {
+  return Object.keys(slots).filter(
+    name => name.startsWith("item.") || name.startsWith("header."),
+  );
+}
+
 function onClickRow(eventPayload: Event, rowPayload: unknown) {
   emit("click:row", eventPayload, rowPayload);
 }
@@ -220,6 +227,10 @@ function onUpdateSortBy(value: DataTableSortBy) {
 <style scoped>
 .h-reasy-table-base__table {
   min-height: 0;
+}
+
+:global(.h-reasy-table-base__table > .v-table__wrapper > table) {
+  width: var(--h-reasy-table-width, 100%);
 }
 
 .h-reasy-table-base__table-area :deep(.v-table__wrapper) {

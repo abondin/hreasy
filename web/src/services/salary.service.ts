@@ -19,11 +19,13 @@ export type SalaryRequestImplementationState = (typeof salaryRequestImplementati
 export interface SalaryIncreaseRequest {
   id: number;
   employee: Dict;
+  employeeEmail?: string | null;
   type: SalaryRequestType;
   budgetBusinessAccount: Dict | null;
   budgetExpectedFundingUntil: string | null;
   createdAt: string;
   createdBy: Dict;
+  createdByEmail?: string | null;
   assessment: Dict | null;
   employeeInfo: {
     currentProject: CurrentProjectDict | null;

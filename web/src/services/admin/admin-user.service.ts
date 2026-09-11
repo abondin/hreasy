@@ -3,6 +3,7 @@ import type { DictItem } from "@/services/dict.service";
 
 export interface UserSecurityInfo {
   employee: DictItem;
+  email?: string | null;
   userId?: number;
   departmentId?: number;
   currentProjectId?: number;

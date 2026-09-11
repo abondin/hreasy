@@ -17,6 +17,8 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 import ru.abondin.hreasy.platform.service.salary.dto.approval.SalaryRequestApprovalDto;
 import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkCreateBody;
 
+import java.util.Objects;
+
 /**
  * Middleware service with logic for salary report. Uses in {@link SalaryRequestService} and {@link AdminSalaryRequestService}
  */
@@ -85,7 +87,7 @@ public class SalaryRequestDomainService {
 
     Mono<Boolean> validateLinkCreation(AuthContext ctx, SalaryRequestLinkCreateBody body) {
         return secValidator.validateReportSalaryRequest(ctx).flatMap(v -> Mono.defer(() -> {
-            if (body.getSource() == body.getDestination()) {
+            if (Objects.equals(body.getSource(), body.getDestination())) {
                 return Mono.error(new BusinessError("errors.salary_request.link.source_equals_destination"));
             }
             return Mono.just(true);

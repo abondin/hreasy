@@ -22,6 +22,9 @@ public class DictProjectEntry {
     @Id
     private Integer id;
 
+    @Nullable
+    private String externalId;
+
     @NonNull
     private String name;
 
@@ -82,6 +85,9 @@ public class DictProjectEntry {
 
         @NonNull
         private Integer projectId;
+
+        @Nullable
+        private String externalId;
 
         @NonNull
         private String name;

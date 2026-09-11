@@ -1,6 +1,13 @@
 server:
   port: 8081
 
+springdoc:
+  api-docs:
+    path: /external/docs/openapi
+  paths-to-match: /external/api/v1/**
+  swagger-ui:
+    path: /external/docs/swagger-ui.html
+
 ## Configuring info endpoint
 info:
   app:

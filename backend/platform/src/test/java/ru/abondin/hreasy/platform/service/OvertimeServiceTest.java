@@ -18,7 +18,10 @@ import ru.abondin.hreasy.platform.service.overtime.dto.NewOvertimeItemDto;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -87,6 +90,48 @@ public class OvertimeServiceTest extends BaseServiceTest {
                                 new NewOvertimeItemDto(LocalDate.now(), testData.project_M1_Billing(), 4, null),
                                 ctx))
                 .expectNextCount(1).verifyComplete();
+    }
+
+    @Test
+    public void testReportOvertimeForProjectWorkstream() {
+        var employeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
+        var ctx = auth(TestEmployees.FMS_Empl_Jenson_Curtis).block(MONO_DEFAULT_TIMEOUT);
+        var summaryCtx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
+        var date = LocalDate.now();
+        var workstreamId = db.sql("""
+                        insert into proj.project_workstream
+                            (project_id, external_id, display_name, created_at, created_by)
+                        values (:projectId, :externalId, :displayName, :createdAt, :createdBy)
+                        returning id
+                        """)
+                .bind("projectId", testData.project_M1_Billing())
+                .bind("externalId", "test-overtime-workstream-" + UUID.randomUUID())
+                .bind("displayName", "Test Workstream")
+                .bind("createdAt", OffsetDateTime.now())
+                .bind("createdBy", employeeId)
+                .map((row, _) -> row.get("id", Integer.class))
+                .one().block(MONO_DEFAULT_TIMEOUT);
+
+        StepVerifier.create(overtimeService.addItem(employeeId, 202008,
+                        new NewOvertimeItemDto(date, testData.project_M1_Billing(), workstreamId, 4, null), ctx)
+                .doOnNext(report -> assertEquals(workstreamId, report.getItems().getFirst().getWorkstreamId()))
+                .then(overtimeService.addItem(employeeId, 202008,
+                        new NewOvertimeItemDto(date, testData.project_M1_Billing(), 2, null), ctx))
+                .then(db.sql("update proj.project_workstream set deleted_at = :deletedAt where id = :id")
+                        .bind("deletedAt", OffsetDateTime.now())
+                        .bind("id", workstreamId)
+                        .then())
+                .then(overtimeService.getOrStub(employeeId, 202008, ctx))
+                .doOnNext(report -> assertEquals("Test Workstream", report.getItems().stream()
+                        .filter(item -> workstreamId.equals(item.getWorkstreamId()))
+                        .findFirst().orElseThrow().getWorkstreamDisplayName()))
+                .thenMany(overtimeService.getSummary(202008, summaryCtx))
+                .filter(summary -> summary.getEmployeeId() == employeeId))
+                .assertNext(summary -> {
+                    assertEquals(1, summary.getItems().size());
+                    assertEquals(6, summary.getItems().getFirst().getHours());
+                })
+                .verifyComplete();
     }
 
     @Test

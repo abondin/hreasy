@@ -1,9 +1,11 @@
 param(
   [string[]]$Paths = @(
     "src",
-    ".agents",
     "AGENTS.md",
-    "README.md"
+    "README.md",
+    "../AGENTS.md",
+    "../backend/AGENTS.md",
+    "../.agents/skills"
   ),
   [string[]]$Include = @("*.vue", "*.ts", "*.md", "*.json"),
   [switch]$SkipUnicodeEscapes,
@@ -85,4 +87,4 @@ if ($issues.Count -gt 0) {
   exit 1
 }
 
-Write-Host "Text integrity check passed. UTF-8 without BOM, no Unicode escapes, no replacement chars found." -ForegroundColor Green
+Write-Host "Text integrity check passed." -ForegroundColor Green

@@ -53,6 +53,26 @@
       </div>
     </template>
 
+    <template v-if="project?.workstreams.length" #details>
+      <div class="text-h6 mb-3">{{ t("Направления работ") }}</div>
+      <v-table density="compact">
+        <thead>
+          <tr>
+            <th>{{ t("Наименование") }}</th>
+            <th>{{ t("Внешний идентификатор") }}</th>
+            <th>{{ t("Описание") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="workstream in project.workstreams" :key="workstream.id">
+            <td>{{ workstream.displayName }}</td>
+            <td>{{ workstream.externalId ?? t("Не задан") }}</td>
+            <td>{{ workstream.description ?? t("Не задан") }}</td>
+          </tr>
+        </tbody>
+      </v-table>
+    </template>
+
     <admin-managers-table
       v-if="project"
       :selected-object="{ id: project.id, type: 'project' }"
@@ -62,7 +82,7 @@
       test-id="admin-project-managers"
     />
 
-    <v-dialog v-model="editDialog" persistent width="96vw" max-width="960">
+    <v-dialog v-model="editDialog" persistent scrollable width="96vw" max-width="960">
       <admin-project-form
         :input="project"
         :departments="departments"
@@ -121,6 +141,7 @@ const summaryItems = computed<AdminDetailSummaryItem[]>(() => {
 
   return [
     { label: t("Наименование"), value: project.value.name },
+    { label: t("Внешний идентификатор"), value: project.value.externalId ?? t("Не задан") },
     { label: t("Отдел"), value: project.value.department?.name ?? t("Не задан") },
     { label: t("Бизнес аккаунт"), value: project.value.businessAccount?.name ?? t("Не задан") },
     { label: t("Заказчик"), value: project.value.customer ?? t("Не задан") },

@@ -51,6 +51,10 @@
             <slot name="content" />
           </v-col>
         </v-row>
+
+        <div v-if="$slots.details" class="mt-5">
+          <slot name="details" />
+        </div>
       </v-card>
 
       <div v-if="$slots.default" class="mt-5 d-flex flex-column ga-5">

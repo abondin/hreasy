@@ -1,7 +1,7 @@
 import {fileURLToPath, URL} from 'node:url';
 
 import {configDefaults, defineConfig, mergeConfig} from 'vitest/config';
-import rawViteConfig from './vite.config';
+import rawViteConfig from './vite.config.ts';
 
 const resolvedViteConfig =
   typeof rawViteConfig === 'function'

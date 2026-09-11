@@ -36,16 +36,11 @@
               </template>
 
               <template #filter-search>
-                <v-text-field
-                  :model-value="search"
-                  @update:model-value="search = normalizeSearchInput($event)"
-                  data-testid="admin-employees-search"
-                  prepend-inner-icon="mdi-magnify"
+                <SearchTextField
+                  v-model="search"
+                  v-model:settings="searchSettings"
+                  test-id="admin-employees-search"
                   :label="t('Поиск')"
-                  variant="outlined"
-                  density="compact"
-                  hide-details
-                  clearable
                 />
               </template>
               <template #filter-departments>
@@ -214,12 +209,13 @@ import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionCon
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import AdminEmployeeForm from "@/views/admin/employees/components/AdminEmployeeForm.vue";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
 import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
-import { normalizeSearchInput } from "@/lib/search";
+import { createSearchSettings, matchesSearch } from "@/lib/search";
 import {
   fetchBusinessAccounts,
   fetchDepartments,
@@ -246,6 +242,7 @@ const dialog = ref(false);
 const error = ref<string | null>(null);
 
 const search = ref("");
+const searchSettings = ref(createSearchSettings());
 const hideDismissed = ref(true);
 const selectedProjects = ref<number[]>([]);
 const selectedDepartments = ref<number[]>([]);
@@ -320,7 +317,6 @@ const activePositions = computed(() =>
 );
 
 const filteredItems = computed(() => {
-  const q = search.value.trim().toLowerCase();
   return items.value.filter((item) => {
     if (hideDismissed.value && !item.active) {
       return false;
@@ -343,14 +339,11 @@ const filteredItems = computed(() => {
     ) {
       return false;
     }
-    if (!q) {
-      return true;
-    }
-    return [item.displayName, item.email, item.skype, item.phone]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(q);
+    return matchesSearch(
+      search.value,
+      [item.displayName, item.email, item.skype, item.phone],
+      searchSettings.value,
+    );
   });
 });
 

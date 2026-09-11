@@ -2,6 +2,10 @@
 
 ## 1.4.0 (Work in progress)
 
+features:
+
+- Added monthly resource allocations by project and workstream, with annual data entry, project- and employee-based analytics, employee profile previews, period locking, change history, concurrent-edit conflict protection, cell comments with author-only editing/deletion, and annual Excel export in percentages or person-months. Access follows the acting user's permissions.
+- Added a read-only external API for employees, avatars by employee ID or email, projects, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, and dedicated Swagger UI and OpenAPI JSON/YAML documentation under `/external/docs/`.
 - Moved Java backend services under `backend/`, added backend Maven reactor/parent/common modules, upgraded services to Spring Boot 4.0.5, and updated GitHub Actions/devops scripts.
 - Implemented notification inbox UI and Yandex Messenger notification delivery.
 - Disabled self-service current project updates for regular employees
@@ -9,6 +13,18 @@
 - Added current project transfer approver candidates for approval-required transfers.
 - Manager assignments for projects, business accounts, and departments now contribute to effective manager-scoped access in addition to manual user access settings.
 - Full migration from vue2 to vue3 
+
+bugfix:
+
+- Fixed menu navigation from an open employee details panel returning users to the employee directory; manual panel closure preserves search filters.
+- Allowed manager-link deletion by its creator or an administrator and surfaced backend deletion errors in the confirmation dialog.
+- Prevented Telegram API authentication from creating a reusable web session and hardened file storage against unsafe filenames and filesystem changes before authorization.
+
+technical:
+
+- Updated compatible frontend dependencies and retained TypeScript 6 until the Vue toolchain supports TypeScript 7.
+- Updated GitHub Actions tooling and the Node 26 build image to Debian Trixie, aligned npm to 11.19.1, and removed unused build-stage tini installation.
+
 
 ## 1.3.1 (2026-03-21)
 

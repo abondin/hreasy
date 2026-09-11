@@ -28,16 +28,11 @@
           </template>
 
           <template #filter-search>
-            <v-text-field
-              :model-value="filter.search"
-              @update:model-value="filter.search = normalizeSearchInput($event)"
+            <SearchTextField
+              v-model="filter.search"
+              v-model:settings="filter.searchSettings"
               :label="t('Поиск')"
-              prepend-inner-icon="mdi-magnify"
-              clearable
-              variant="outlined"
-              density="compact"
-              hide-details
-              data-testid="assessments-filter-search"
+              test-id="assessments-filter-search"
             />
           </template>
 
@@ -194,9 +189,10 @@ import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionCon
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
-import { normalizeSearchInput } from "@/lib/search";
+import { createSearchSettings, matchesSearch } from "@/lib/search";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import { fetchBusinessAccounts, type DictItem } from "@/services/dict.service";
 import { fetchProjects, type ProjectDictDto } from "@/services/projects.service";
 import { listEmployees, type Employee } from "@/services/employee.service";
@@ -223,6 +219,7 @@ const filter = reactive({
   selectedDepartments: [] as number[],
   selectedBas: [] as number[],
   selectedProjects: [] as number[],
+  searchSettings: createSearchSettings(),
 });
 
 const canAccess = computed(() => permissions.canCreateAssessments());
@@ -266,15 +263,14 @@ function getFilterSelectionLabel(item: unknown): string {
 }
 
 const filteredItems = computed(() => {
-  const search = filter.search.toLowerCase().trim();
-
   return items.value.filter((item) => {
-    if (search && !item.displayName.toLowerCase().includes(search)) {
+    const employee = employees.value.find((candidate) => candidate.id === item.employeeId);
+    if (!matchesSearch(filter.search, [item.displayName, employee?.email], filter.searchSettings)) {
       return false;
     }
 
     if (filter.selectedDepartments.length > 0) {
-      const employeeDepartmentId = employees.value.find((employee) => employee.id === item.employeeId)?.department?.id;
+      const employeeDepartmentId = employee?.department?.id;
       if (!employeeDepartmentId || !filter.selectedDepartments.includes(employeeDepartmentId)) {
         return false;
       }

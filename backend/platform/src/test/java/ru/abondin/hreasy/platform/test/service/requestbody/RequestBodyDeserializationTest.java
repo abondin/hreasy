@@ -142,18 +142,24 @@ class RequestBodyDeserializationTest {
         var body = mapper.readValue("""
                 {
                   "name": "Project Phoenix",
+                  "externalId": "ERP-PHOENIX",
                   "customer": "Internal",
                   "startDate": "2026-06-17",
                   "departmentId": 10,
                   "baId": 604,
-                  "info": "Delivery project"
+                  "info": "Delivery project",
+                  "workstreams": [
+                    {"externalId": "ERP-DELIVERY", "displayName": "Delivery", "description": "Main delivery"}
+                  ]
                 }
                 """, ProjectDto.CreateOrUpdateProjectDto.class);
 
         assertEquals("Project Phoenix", body.getName());
+        assertEquals("ERP-PHOENIX", body.getExternalId());
         assertEquals(LocalDate.of(2026, 6, 17), body.getStartDate());
         assertEquals(10, body.getDepartmentId());
         assertEquals(604, body.getBaId());
+        assertEquals("Delivery", body.getWorkstreams().getFirst().displayName());
     }
 
     /**

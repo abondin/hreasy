@@ -30,16 +30,11 @@
         </template>
 
         <template #filter-search>
-          <v-text-field
-            :model-value="filter.search"
-            @update:model-value="filter.search = normalizeSearchInput($event)"
+          <SearchTextField
+            v-model="filter.search"
+            v-model:settings="filter.searchSettings"
             :label="t('Поиск')"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            density="compact"
-            hide-details
-            clearable
-            :data-testid="`${testId}-search`"
+            :test-id="`${testId}-search`"
           />
         </template>
 
@@ -180,7 +175,7 @@
           <div class="d-flex align-center ga-2 min-width-0">
             <span class="text-truncate">{{ item.employee?.name }}</span>
             <div
-              v-if="editable && mode === 'compact'"
+              v-if="editable && mode === 'compact' && canDeleteManager(item)"
               class="manager-row-delete-slot d-inline-flex align-center justify-center flex-shrink-0"
             >
               <v-btn
@@ -300,7 +295,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            v-if="dialogMode === 'edit'"
+            v-if="dialogMode === 'edit' && current && canDeleteManager(current)"
             color="error"
             variant="text"
             :disabled="saving"
@@ -323,6 +318,15 @@
         <v-card-title>{{ t("Удалить") }}</v-card-title>
         <v-card-text>
           {{ t("Вы уверены, что хотите удалить менеджера?") }}
+          <v-alert
+            v-if="saveError"
+            type="error"
+            variant="tonal"
+            border="start"
+            class="mt-4"
+          >
+            {{ saveError }}
+          </v-alert>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -342,13 +346,16 @@
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { VForm } from "vuetify/components";
+import { useAuthStore } from "@/stores/auth";
+import { usePermissions } from "@/lib/permissions";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import TableToolbarActions from "@/components/shared/TableToolbarActions.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { errorUtils } from "@/lib/errors";
-import { normalizeSearchInput } from "@/lib/search";
+import { createSearchSettings, matchesSearch, type SearchSettings } from "@/lib/search";
 import type { DictItem } from "@/services/dict.service";
 import { fetchBusinessAccounts, fetchDepartments } from "@/services/dict.service";
 import type { Employee } from "@/services/employee.service";
@@ -376,6 +383,7 @@ interface ManagerFilterState {
   departments: number[];
   businessAccounts: number[];
   currentProjects: number[];
+  searchSettings: SearchSettings;
 }
 
 interface ManagerFormState {
@@ -401,6 +409,8 @@ const props = withDefaults(defineProps<{
 });
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const permissions = usePermissions();
 
 const loading = ref(false);
 const saving = ref(false);
@@ -424,6 +434,7 @@ const filter = reactive<ManagerFilterState>({
   departments: [],
   businessAccounts: [],
   currentProjects: [],
+  searchSettings: createSearchSettings(),
 });
 
 const form = reactive<ManagerFormState>({
@@ -435,6 +446,9 @@ const form = reactive<ManagerFormState>({
 });
 
 const editable = computed(() => props.editable !== false);
+function canDeleteManager(manager: Manager): boolean {
+  return permissions.canAdminManagers() || manager.createdBy === authStore.employeeId;
+}
 function getFilterSelectionLabel(item: unknown): string {
   if (typeof item === "string") {
     return item;
@@ -489,7 +503,6 @@ const headers = computed<Array<{ title: string; key: string; width?: string }>>(
   return result;
 });
 const filteredItems = computed(() => {
-  const query = filter.search.trim().toLowerCase();
   return items.value.filter((item) => {
     const employee = employees.value.find((employeeItem) => employeeItem.id === item.employee?.id);
     if (props.mode === "full" && filter.responsibilityObjectTypes.length > 0) {
@@ -510,19 +523,12 @@ const filteredItems = computed(() => {
       return false;
     }
 
-    if (!query) {
-      return true;
-    }
-
-    return [
+    return matchesSearch(filter.search, [
       item.employee?.name,
+      employee?.email,
       item.responsibilityObject?.name,
       item.comment,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(query);
+    ], filter.searchSettings);
   });
 });
 

@@ -13,7 +13,10 @@ import java.util.List;
 public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestEntry, Integer> {
 
     String GET_SALARY_REQUEST_VIEW_BASE_SQL = """
-            select * from sal.v_salary_request_full r 
+            select r.*, employee.email as employee_email, creator.email as created_by_email
+            from sal.v_salary_request_full r
+            left join empl.employee employee on employee.id = r.employee_id
+            left join empl.employee creator on creator.id = r.created_by
             """;
     String GET_SALARY_REQUEST_VIEW_NOT_DELETED_SQL = GET_SALARY_REQUEST_VIEW_BASE_SQL + " where (r.deleted_at is null or r.deleted_at > :now) ";
 
@@ -79,4 +82,3 @@ public interface SalaryRequestRepo extends ReactiveCrudRepository<SalaryRequestE
             """)
     Flux<EmployeeWithLatestSalaryRequestView> findLatestIncreases(OffsetDateTime now);
 }
-

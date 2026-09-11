@@ -159,15 +159,10 @@
 
           <v-row density="comfortable" class="mb-3">
             <v-col cols="12" md="8">
-              <v-text-field
-                :model-value="previewFilter.search"
-                @update:model-value="previewFilter.search = normalizeSearchInput($event)"
-                append-inner-icon="mdi-magnify"
+              <SearchTextField
+                v-model="previewFilter.search"
+                v-model:settings="previewFilter.searchSettings"
                 :label="t('Поиск')"
-                variant="outlined"
-                density="compact"
-                hide-details
-                clearable
               />
             </v-col>
             <v-col cols="12" md="4">
@@ -313,10 +308,11 @@
 import { computed, onMounted, reactive, ref, toRaw } from "vue";
 import { useI18n } from "vue-i18n";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import FileUploadZone, { type UploadCompleteEvent } from "@/components/FileUploadZone.vue";
 import { errorUtils } from "@/lib/errors";
 import { formatDate } from "@/lib/datetime";
-import { normalizeSearchInput } from "@/lib/search";
+import { createSearchSettings, type SearchSettings } from "@/lib/search";
 import tableStartRowImage from "@/assets/employee-import/tableStartRow.jpg";
 import emailColumnImage from "@/assets/employee-import/email_column.jpg";
 import emailColumnAltImage from "@/assets/employee-import/email_column_alt.jpg";
@@ -350,7 +346,7 @@ const props = defineProps<{
   previewHeadersLoader?: () => PreviewHeader[];
   previewFilterFunction?: (
     rows: R[],
-    filter: { search: string; hideNotUpdatedWithoutErrors: boolean },
+    filter: { search: string; searchSettings: SearchSettings; hideNotUpdatedWithoutErrors: boolean },
   ) => R[];
   onCompleteAction?: () => void;
   statsLabels?: ImportStatsLabels;
@@ -368,6 +364,7 @@ const abortDialog = ref(false);
 
 const previewFilter = reactive({
   search: "",
+  searchSettings: createSearchSettings(),
   hideNotUpdatedWithoutErrors: true,
 });
 

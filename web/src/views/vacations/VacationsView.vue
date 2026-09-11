@@ -84,17 +84,12 @@
               </template>
 
               <template #filter-search>
-                <v-text-field
-                  :model-value="filter.search"
-                  @update:model-value="filter.search = normalizeSearchInput($event)"
-                  data-testid="vacations-filter-search"
+                <SearchTextField
+                  v-model="filter.search"
+                  v-model:settings="filter.searchSettings"
+                  test-id="vacations-filter-search"
                   :label="t('Поиск')"
-                  prepend-inner-icon="mdi-magnify"
-                  variant="outlined"
-                  density="compact"
-                  clearable
                   :disabled="loading"
-                  hide-details
                 />
               </template>
 
@@ -296,13 +291,13 @@ import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
 import CollapsedSelectionContent from "@/components/shared/CollapsedSelectionContent.vue";
 import MyDateRangeComponent from "@/components/shared/MyDateRangeComponent.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
 import VacationEditForm from "@/components/vacations/VacationEditForm.vue";
 import type { EmployeeVacationSummary } from "@/components/vacations/employeeVacationSummaryService";
 import VacationsListTab from "@/views/vacations/components/VacationsListTab.vue";
 import VacationsSummaryTab from "@/views/vacations/components/VacationsSummaryTab.vue";
 import VacationsTimelineTab from "@/views/vacations/components/VacationsTimelineTab.vue";
 import { extractDataTableRow } from "@/lib/data-table";
-import { normalizeSearchInput } from "@/lib/search";
 import { type Vacation } from "@/services/vacation.service";
 import { useVacationsManagement } from "@/composables/useVacationsManagement";
 

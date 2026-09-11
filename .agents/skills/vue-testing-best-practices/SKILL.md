@@ -20,7 +20,7 @@ Vue.js testing best practices, patterns, and common gotchas.
 - Tests keep breaking when refactoring component internals -> See [testing-component-blackbox-approach](reference/testing-component-blackbox-approach.md)
 - Tests fail intermittently with race conditions -> See [testing-async-await-flushpromises](reference/testing-async-await-flushpromises.md)
 - Composables using lifecycle hooks or inject fail to test -> See [testing-composables-helper-wrapper](reference/testing-composables-helper-wrapper.md)
-- Getting "injection Symbol(pinia) not found" errors in tests -> See [testing-pinia-store-setup](reference/testing-pinia-store-setup.md)
+- For Pinia tests, reuse the repository's installed `pinia` package with `setActivePinia(createPinia())`; do not add `@pinia/testing` by default.
 - Components with async setup won't render in tests -> See [testing-suspense-async-components](reference/testing-suspense-async-components.md)
 - Snapshot tests keep passing despite broken functionality -> See [testing-no-snapshot-only](reference/testing-no-snapshot-only.md)
 - Choosing end-to-end testing framework for Vue apps -> See [testing-e2e-playwright-recommended](reference/testing-e2e-playwright-recommended.md)

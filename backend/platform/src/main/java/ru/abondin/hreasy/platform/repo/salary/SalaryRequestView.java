@@ -13,10 +13,12 @@ import java.time.LocalDate;
 public class SalaryRequestView extends SalaryRequestEntry {
 
     private String employeeDisplayName;
+    private String employeeEmail;
 
     private String budgetBusinessAccountName;
     private LocalDate assessmentPlannedDate;
     private String createdByDisplayName;
+    private String createdByEmail;
     private String implementedByDisplayName;
 
     private Integer infoEmplPosition;
