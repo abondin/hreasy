@@ -5,8 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jxls.common.Context;
-import org.jxls.util.JxlsHelper;
+import org.jxls.transform.poi.JxlsPoiTemplateFillerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -21,6 +20,7 @@ import java.io.OutputStream;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
@@ -56,13 +56,13 @@ public class AdminSalaryRequestExcelExporter {
 
     public void exportSalaryRequests(AdminSalaryRequestExportBundle bundle, OutputStream out) throws IOException {
         try (var is = template.getInputStream()) {
-            var context = new Context();
-            context.putVar("requests", i18n(bundle.locale, bundle.requests, r -> SalaryRequestType.SALARY_INCREASE.getValue() == r.getTypeValue()));
-            context.putVar("bonuses", i18n(bundle.locale, bundle.requests, r -> SalaryRequestType.BONUS.getValue() == r.getTypeValue()));
-            context.putVar("exportedAt", bundle.getExportTime().toLocalDate());
-            context.putVar("exportedBy", bundle.getExportedBy());
-            context.putVar("period", MapperBase.fromPeriodId(bundle.getPeriod()));
-            JxlsHelper.getInstance().processTemplate(is, out, context);
+            var context = new HashMap<String, Object>();
+            context.put("requests", i18n(bundle.locale, bundle.requests, r -> SalaryRequestType.SALARY_INCREASE.getValue() == r.getTypeValue()));
+            context.put("bonuses", i18n(bundle.locale, bundle.requests, r -> SalaryRequestType.BONUS.getValue() == r.getTypeValue()));
+            context.put("exportedAt", i18Helper.formatDateTime(bundle.getLocale(), bundle.getExportTime()));
+            context.put("exportedBy", bundle.getExportedBy());
+            context.put("period", MapperBase.fromPeriodId(bundle.getPeriod()));
+            JxlsPoiTemplateFillerBuilder.newInstance().withTemplate(is).buildAndFill(context, () -> out);
         }
     }
 

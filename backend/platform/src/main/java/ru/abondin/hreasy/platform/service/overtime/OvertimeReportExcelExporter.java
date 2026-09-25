@@ -5,8 +5,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jxls.common.Context;
-import org.jxls.util.JxlsHelper;
+import org.jxls.transform.poi.JxlsPoiTemplateFillerBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -21,6 +20,7 @@ import java.io.OutputStream;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -62,11 +62,11 @@ public class OvertimeReportExcelExporter {
     public void exportReportForPeriod(OvertimeExportBundle bundle, OutputStream out) throws IOException {
         var overtimeSummaryExports = getOvertimeSummaryExports(bundle);
         try (var is = template.getInputStream()) {
-            var context = new Context();
-            context.putVar("overtimes", overtimeSummaryExports);
-            context.putVar("period", MapperBase.fromPeriodId(bundle.getPeriod()));
-            context.putVar("exportedAt", bundle.getExportTime().toLocalDateTime());
-            JxlsHelper.getInstance().processTemplate(is, out, context);
+            var context = new HashMap<String, Object>();
+            context.put("overtimes", overtimeSummaryExports);
+            context.put("period", MapperBase.fromPeriodId(bundle.getPeriod()));
+            context.put("exportedAt", i18Helper.formatDateTime(bundle.getLocale(), bundle.getExportTime()));
+            JxlsPoiTemplateFillerBuilder.newInstance().withTemplate(is).buildAndFill(context, () -> out);
         }
     }
 

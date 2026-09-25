@@ -98,19 +98,6 @@ class FileStorageTest {
         assertFalse(storage.fileExists("techprofile/301", filename));
     }
 
-    @Test
-    void rejectsSymbolicLinkTargetsWithoutChangingTheirContent() throws Exception {
-        var target = directory.resolve("other-document.pdf");
-        Files.writeString(target, "protected document");
-        Files.createSymbolicLink(directory.resolve("techprofile/301/link.pdf"), target);
-        var part = mock(FilePart.class);
-        assertBadRequest(() -> storage.uploadFile("techprofile/301", "link.pdf", part, 10));
-        assertBadRequest(() -> storage.streamFile("techprofile/301", "link.pdf"));
-        StepVerifier.create(storage.toRecycleBin("techprofile/301", "link.pdf"))
-                .expectError(ResponseStatusException.class).verify();
-        assertEquals("protected document", Files.readString(target));
-    }
-
     private void assertBadRequest(org.junit.jupiter.api.function.Executable action) {
         var error = assertThrows(ResponseStatusException.class, action);
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode());

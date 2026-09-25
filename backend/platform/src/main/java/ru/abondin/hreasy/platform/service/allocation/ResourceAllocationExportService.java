@@ -15,6 +15,7 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * Exports the complete authorized annual snapshot, ignoring UI search and organizational filters.
@@ -27,7 +28,7 @@ public class ResourceAllocationExportService {
     private final ResourceAllocationExcelExporter exporter;
     private final DateTimeService dateTimeService;
 
-    public Mono<Resource> export(int year, String unit, AuthContext auth) {
+    public Mono<Resource> export(int year, String unit, AuthContext auth, Locale locale) {
         return Mono.defer(() -> {
             boolean percentages = switch (unit) {
                 case "percent" -> true;
@@ -38,7 +39,7 @@ public class ResourceAllocationExportService {
             // getAnalytics enforces resource_allocation_read before loading any data.
             return allocationService.getAnalytics(year, auth).flatMap(analytics -> Mono.<Resource>fromCallable(() -> {
                 try (var output = new ByteArrayOutputStream()) {
-                    exporter.export(analytics, percentages, dateTimeService.now(), auth.getUsername(), output);
+                    exporter.export(analytics, percentages, dateTimeService.now(), auth.getUsername(), locale, output);
                     return new ByteArrayResource(output.toByteArray());
                 } catch (IOException error) {
                     log.error("Unable to export allocation workbook", error);

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.core.io.ClassPathResource;
+import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.allocation.ResourceAllocationExcelExporter;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnalyticsDto;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnalyticsDto.AllocationDto;
@@ -25,9 +26,11 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class ResourceAllocationExcelExporterTest {
-    private final ResourceAllocationExcelExporter exporter = new ResourceAllocationExcelExporter();
+    private final I18Helper i18Helper = mock(I18Helper.class);
+    private final ResourceAllocationExcelExporter exporter = new ResourceAllocationExcelExporter(i18Helper);
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
@@ -72,7 +75,8 @@ class ResourceAllocationExcelExporterTest {
             assertNotNull(sheet.getPaneInformation());
             assertFalse(((XSSFSheet) sheet).getCTWorksheet().isSetAutoFilter());
             assertEquals(sheet.getLastRowNum(), ((XSSFSheet) sheet).getTables().getFirst().getEndRowIndex());
-            assertTrue(sheet.getRow(2).getCell(1).getStringCellValue().contains("JUnit test"));
+            assertEquals("Сформировано: 09.09.2026 12:00  (JUnit test)",
+                    sheet.getRow(2).getCell(1).getStringCellValue());
             for (var row : sheet) {
                 for (var cell : row) {
                     if (cell.getCellType() == CellType.STRING) {
@@ -100,8 +104,11 @@ class ResourceAllocationExcelExporterTest {
 
     private byte[] render(ResourceAllocationAnalyticsDto analytics, boolean percentages) throws Exception {
         exporter.setTemplate(new ClassPathResource("jxls/resource_allocations_template.xlsx"));
+        var exportedAt = OffsetDateTime.parse("2026-09-09T12:00:00.638399200+03:00");
+        var locale = Locale.forLanguageTag("ru-RU");
+        when(i18Helper.formatDateTime(locale, exportedAt)).thenReturn("09.09.2026 12:00");
         try (var output = new ByteArrayOutputStream()) {
-            exporter.export(analytics, percentages, OffsetDateTime.parse("2026-09-09T12:00:00Z"), "JUnit test", output);
+            exporter.export(analytics, percentages, exportedAt, "JUnit test", locale, output);
             return output.toByteArray();
         }
     }

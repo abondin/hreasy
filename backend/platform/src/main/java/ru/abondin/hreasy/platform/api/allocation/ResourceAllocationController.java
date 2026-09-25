@@ -29,6 +29,7 @@ import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnaly
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationProjectInputDto;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * HTTP API for allocation analytics, annual project input, and period closing.
@@ -52,8 +53,8 @@ public class ResourceAllocationController {
     public Mono<ResponseEntity<Resource>> export(@PathVariable int year,
             @Parameter(description = "Display unit; input data is always stored in percentages.",
                     schema = @Schema(allowableValues = {"percent", "personMonths"}, defaultValue = "personMonths"))
-            @RequestParam(defaultValue = "personMonths") String unit) {
-        return AuthHandler.currentAuth().flatMap(auth -> exportService.export(year, unit, auth))
+            @RequestParam(defaultValue = "personMonths") String unit, Locale locale) {
+        return AuthHandler.currentAuth().flatMap(auth -> exportService.export(year, unit, auth, locale))
                 .map(resource -> ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
                                 .filename("ResourceAllocations-" + year + "-" + unit + ".xlsx").build().toString())

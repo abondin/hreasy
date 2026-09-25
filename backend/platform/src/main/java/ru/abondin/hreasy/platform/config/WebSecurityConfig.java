@@ -20,6 +20,7 @@ import org.springframework.security.web.server.authentication.AuthenticationWebF
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
+import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -102,6 +103,7 @@ public class WebSecurityConfig {
                         // Allow api methods for web interface only for Users, logged in web
                         .pathMatchers("/api/**")
                         .authenticated()
+                        .anyExchange().denyAll()
                 )
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(securityContextRepository)
@@ -149,14 +151,19 @@ public class WebSecurityConfig {
     ) {
         return http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/external/**"))
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers(HttpMethod.GET, "/external/docs/**").permitAll()
-                        .pathMatchers(HttpMethod.GET, "/external/**")
+                        .pathMatchers(HttpMethod.GET,
+                                "/external/docs/swagger-ui.html", "/external/docs/swagger-ui/**",
+                                "/external/docs/openapi", "/external/docs/openapi.yaml",
+                                "/external/docs/openapi/swagger-config").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/external/api/v1/**")
                         .hasAuthority(ExternalTokenAuthenticationConverter.EXTERNAL_API_RESERVED_AUTHORITY)
                         .anyExchange().denyAll()
                 )
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .anonymous(ServerHttpSecurity.AnonymousSpec::disable)
+                .requestCache(cache -> cache.requestCache(NoOpServerRequestCache.getInstance()))
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .exceptionHandling(exSpec -> exSpec
                         .accessDeniedHandler(errorHandler)

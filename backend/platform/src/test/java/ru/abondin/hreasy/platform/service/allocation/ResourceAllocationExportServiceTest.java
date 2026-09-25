@@ -13,6 +13,7 @@ import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnaly
 import java.io.OutputStream;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Locale;
 
 import static org.mockito.Mockito.*;
 
@@ -27,29 +28,29 @@ class ResourceAllocationExportServiceTest {
     @Test
     void permissionDenialNeverGeneratesAWorkbook() {
         when(allocations.getAnalytics(2026, auth)).thenReturn(Mono.error(new AccessDeniedException("Denied")));
-        StepVerifier.create(service.export(2026, "personMonths", auth))
+        StepVerifier.create(service.export(2026, "personMonths", auth, Locale.UK))
                 .expectError(AccessDeniedException.class).verify();
         verifyNoInteractions(exporter);
     }
 
     @Test
     void rejectsUnknownUnitsBeforeLoadingData() {
-        StepVerifier.create(service.export(2026, "hours", auth))
+        StepVerifier.create(service.export(2026, "hours", auth, Locale.UK))
                 .expectErrorMatches(error -> error instanceof ResponseStatusException status
                         && status.getStatusCode().equals(HttpStatus.BAD_REQUEST)).verify();
         verifyNoInteractions(allocations, exporter);
     }
 
     @Test
-    void passesActorToWorkbook() throws Exception {
+    void passesActorAndLocaleToWorkbook() throws Exception {
         var analytics = new ResourceAllocationAnalyticsDto(2026, List.of(), List.of(), List.of(), List.of());
         var exportedAt = OffsetDateTime.parse("2026-09-09T12:00:00Z");
         when(auth.getUsername()).thenReturn("alex");
         when(dateTimeService.now()).thenReturn(exportedAt);
         when(allocations.getAnalytics(2026, auth)).thenReturn(Mono.just(analytics));
 
-        StepVerifier.create(service.export(2026, "personMonths", auth)).expectNextCount(1).verifyComplete();
+        StepVerifier.create(service.export(2026, "personMonths", auth, Locale.UK)).expectNextCount(1).verifyComplete();
 
-        verify(exporter).export(eq(analytics), eq(false), eq(exportedAt), eq("alex"), any(OutputStream.class));
+        verify(exporter).export(eq(analytics), eq(false), eq(exportedAt), eq("alex"), eq(Locale.UK), any(OutputStream.class));
     }
 }

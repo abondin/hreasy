@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
+import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.vacation.VacationExcelExporter;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationDto;
 import ru.abondin.hreasy.platform.service.vacation.dto.VacationExportDto;
@@ -71,7 +72,8 @@ public class VacationsExportedTest {
                 .years(Arrays.asList(currentYear - 2, currentYear - 1, currentYear))
                 .build();
 
-        exporter = new VacationExcelExporter(new ClassPathResource("jxls/vacations_template.xlsx"));
+        exporter = new VacationExcelExporter(new I18Helper.DummyI18Helper());
+        exporter.setTemplate(new ClassPathResource("jxls/vacations_template.xlsx"));
     }
 
 
