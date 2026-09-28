@@ -159,7 +159,7 @@ external system
   -> return existing read-only DTO
 ```
 
-The chain is stateless and uses `NoOpServerSecurityContextRepository`. It disables form login, HTTP Basic, and anonymous authentication for `/external/**`. Standard Spring CSRF protection remains enabled; the allowed `GET` requests do not require a CSRF token. Every other method under the prefix is denied by authorization.
+The chain is stateless and uses `NoOpServerSecurityContextRepository` and `NoOpServerRequestCache`. It disables form login, HTTP Basic, CSRF, and anonymous authentication for `/external/**`. Business access is limited to `GET /external/api/v1/**` with an external Bearer token; a web session grants no access. Every other method and unlisted external path is denied by authorization. The documentation GET routes listed below are public.
 
 ## Configuration
 
@@ -208,7 +208,7 @@ Do not log the Bearer token or response payload. Existing health endpoints remai
 - OpenAPI JSON: `/external/docs/openapi`.
 - OpenAPI YAML: `/external/docs/openapi.yaml`.
 
-Documentation GETs do not require a token. Use Swagger UI Authorize with the opaque token to execute API calls. API authentication and permissions remain unchanged. The external load balancer must forward the entire `/external/**` prefix, including documentation and its assets, to the backend; the web container does not proxy these paths.
+Documentation GETs do not require a token and do not create a web session. The allowlist also includes `/external/docs/openapi/swagger-config` and `/external/docs/swagger-ui/**` assets. Use Swagger UI Authorize with the opaque token to execute API calls. API authentication and permissions remain unchanged. The external load balancer must forward the entire `/external/**` prefix, including documentation and its assets, to the backend; the web container does not proxy these paths.
 
 ## Implementation Outline
 

@@ -1,12 +1,13 @@
 package ru.abondin.hreasy.platform.service.allocation;
 
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.jxls.common.Context;
-import org.jxls.util.JxlsHelper;
+import org.jxls.transform.poi.JxlsPoiTemplateFillerBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnalyticsDto;
 import ru.abondin.hreasy.platform.service.dto.ProjectWorkstreamDto;
 
@@ -17,6 +18,7 @@ import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,7 +27,10 @@ import java.util.stream.Collectors;
  * Flat allocation workbook: one numeric row per employee/project/workstream, without subtotals.
  */
 @Component
+@RequiredArgsConstructor
 public class ResourceAllocationExcelExporter {
+    private final I18Helper i18Helper;
+
     @Setter
     @Value("classpath:jxls/resource_allocations_template.xlsx")
     private Resource template;
@@ -49,15 +54,15 @@ public class ResourceAllocationExcelExporter {
      * Both units store fractions numerically; Excel's percentage format determines presentation.
      */
     public void export(ResourceAllocationAnalyticsDto analytics, boolean percentages,
-                       OffsetDateTime exportedAt, String exportedBy, OutputStream output) throws IOException {
-        var context = new Context();
-        context.putVar("year", analytics.year());
-        context.putVar("unit", percentages ? "Проценты" : "Человеко-месяцы");
-        context.putVar("exportedAt", exportedAt.toLocalDateTime());
-        context.putVar("exportedBy", exportedBy);
-        context.putVar("rows", rows(analytics));
+                       OffsetDateTime exportedAt, String exportedBy, Locale locale, OutputStream output) throws IOException {
+        var context = new HashMap<String, Object>();
+        context.put("year", analytics.year());
+        context.put("unit", percentages ? "Проценты" : "Человеко-месяцы");
+        context.put("exportedAt", i18Helper.formatDateTime(locale, exportedAt));
+        context.put("exportedBy", exportedBy);
+        context.put("rows", rows(analytics));
         try (var input = template.getInputStream()) {
-            JxlsHelper.getInstance().processTemplate(input, output, context);
+            JxlsPoiTemplateFillerBuilder.newInstance().withTemplate(input).buildAndFill(context, () -> output);
         }
     }
 

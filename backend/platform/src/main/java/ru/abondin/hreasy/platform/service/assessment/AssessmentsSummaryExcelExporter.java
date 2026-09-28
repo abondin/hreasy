@@ -5,16 +5,17 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jxls.common.Context;
-import org.jxls.util.JxlsHelper;
+import org.jxls.transform.poi.JxlsPoiTemplateFillerBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.assessment.dto.EmployeeAssessmentsSummary;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -26,9 +27,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class AssessmentsSummaryExcelExporter {
 
-    // Uncomment me if any localization requires in exported data.
-    // For example i18Helper.localize(bundle.locale, "enum.SomeStatus." + report.getStatusEnumValue().toString())
-    //    private final I18Helper i18Helper;
+    private final I18Helper i18Helper;
 
     @Setter
     @Value("${classpath:jxls/assessments_summary_template.xlsx}")
@@ -45,10 +44,10 @@ public class AssessmentsSummaryExcelExporter {
 
     public void exportAssessmentsSummary(AssessmentsSummaryExportBundle bundle, OutputStream out) throws IOException {
         try (var is = template.getInputStream()) {
-            var context = new Context();
-            context.putVar("assessments", bundle.getAssessments());
-            context.putVar("exportedAt", bundle.getExportTime().toLocalDateTime());
-            JxlsHelper.getInstance().processTemplate(is, out, context);
+            var context = new HashMap<String, Object>();
+            context.put("assessments", bundle.getAssessments());
+            context.put("exportedAt", i18Helper.formatDateTime(bundle.getLocale(), bundle.getExportTime()));
+            JxlsPoiTemplateFillerBuilder.newInstance().withTemplate(is).buildAndFill(context, () -> out);
         }
     }
 }

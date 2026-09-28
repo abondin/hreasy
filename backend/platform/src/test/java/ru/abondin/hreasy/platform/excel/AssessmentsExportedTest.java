@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
+import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.assessment.AssessmentsSummaryExcelExporter;
 import ru.abondin.hreasy.platform.service.assessment.dto.EmployeeAssessmentsSummary;
 import ru.abondin.hreasy.platform.service.dto.CurrentProjectDictDto;
@@ -76,7 +77,7 @@ public class AssessmentsExportedTest {
                 .assessments(assessments)
                 .build();
 
-        exporter = new AssessmentsSummaryExcelExporter();
+        exporter = new AssessmentsSummaryExcelExporter(new I18Helper.DummyI18Helper());
         exporter.setTemplate(new ClassPathResource("jxls/assessments_summary_template.xlsx"));
     }
 

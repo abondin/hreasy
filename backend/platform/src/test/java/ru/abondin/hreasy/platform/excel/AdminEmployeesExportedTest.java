@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
+import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeExcelExporter;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeExportDto;
 
@@ -106,7 +107,8 @@ public class AdminEmployeesExportedTest {
                 .employees(employees)
                 .build();
 
-        exporter = new AdminEmployeeExcelExporter(new ClassPathResource("jxls/admin_employees_template.xlsx"));
+        exporter = new AdminEmployeeExcelExporter(new I18Helper.DummyI18Helper());
+        exporter.setTemplate(new ClassPathResource("jxls/admin_employees_template.xlsx"));
     }
 
 

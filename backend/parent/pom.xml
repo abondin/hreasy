@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.0</version>
+        <version>4.1.1</version>
         <relativePath/>
     </parent>
 
@@ -21,18 +21,18 @@
     <properties>
         <backend.version>1.4.0-SNAPSHOT</backend.version>
         <java.version>25</java.version>
-        <lombok.version>1.18.46</lombok.version>
+        <lombok.version>1.18.48</lombok.version>
         <testcontainers.version>2.0.5</testcontainers.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <git-commit-plugin.version>10.0.0</git-commit-plugin.version>
-        <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
-        <pg-classicjdbc.version>42.7.11</pg-classicjdbc.version>
-        <r2dbc-postgresql.version>1.1.1.RELEASE</r2dbc-postgresql.version>
-        <commons-collections4.version>4.5.0</commons-collections4.version>
-        <commons-io.version>2.20.0</commons-io.version>
+        <git-commit-plugin.version>10.0.1</git-commit-plugin.version>
+        <jib-maven-plugin.version>3.5.2</jib-maven-plugin.version>
+        <pg-classicjdbc.version>42.7.13</pg-classicjdbc.version>
+        <r2dbc-postgresql.version>1.1.3.RELEASE</r2dbc-postgresql.version>
+        <commons-collections4.version>4.6.0</commons-collections4.version>
+        <commons-io.version>2.22.0</commons-io.version>
         <commons-text.version>1.15.0</commons-text.version>
         <asciidoctor-maven-plugin.version>3.2.0</asciidoctor-maven-plugin.version>
-        <jxls.version>2.14.0</jxls.version>
+        <jxls.version>3.2.0</jxls.version>
         <jxls-reader.version>2.1.0</jxls-reader.version>
         <jjwt.version>0.13.0</jjwt.version>
         <springdoc-openapi.version>3.1.1</springdoc-openapi.version>
@@ -161,7 +161,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.14.1</version>
+                    <version>3.16.0</version>
                     <configuration>
                         <release>${java.version}</release>
                     </configuration>
