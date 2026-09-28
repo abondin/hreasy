@@ -18,6 +18,7 @@ import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -154,6 +155,32 @@ public class NotificationIntegrationTest extends BaseServiceTest {
                     assertEquals(freshUuid, notifications.getFirst().getClientUuid());
                 })
                 .verifyComplete();
+    }
+
+    /**
+     * Verifies that bulk acknowledgement is restricted to the current employee and supplied snapshot.
+     * Creates selected, unselected and foreign notifications, acknowledges the selected IDs twice,
+     * and checks that only the owned selected notification changed.
+     */
+    @Test
+    void bulkAcknowledgeRespectsOwnershipAndSnapshot() {
+        var employee = testData.employees.get(Admin_Shaan_Pitts);
+        var otherEmployee = testData.employees.values().stream().filter(id -> !id.equals(employee)).findFirst().orElseThrow();
+        var selected = persistService.sendNotificationTo(newNotification(UUID.randomUUID().toString()),
+                List.of(employee), null).blockFirst(MONO_DEFAULT_TIMEOUT);
+        var unselected = persistService.sendNotificationTo(newNotification(UUID.randomUUID().toString()),
+                List.of(employee), null).blockFirst(MONO_DEFAULT_TIMEOUT);
+        var foreign = persistService.sendNotificationTo(newNotification(UUID.randomUUID().toString()),
+                List.of(otherEmployee), null).blockFirst(MONO_DEFAULT_TIMEOUT);
+
+        StepVerifier.create(notificationService.acknowledgeMany(auth, List.of(selected, foreign)))
+                .expectNext(selected).verifyComplete();
+        StepVerifier.create(notificationService.acknowledgeMany(auth, List.of(selected, foreign)))
+                .verifyComplete();
+        StepVerifier.create(db.sql("select count(*) as unread from notify.notification where id in (:ids) and acknowledged_at is null")
+                        .bind("ids", List.of(unselected, foreign))
+                        .map((row, metadata) -> row.get("unread", Long.class)).one())
+                .expectNext(2L).verifyComplete();
     }
 
     private NewNotificationDto newNotification(String uuid) {

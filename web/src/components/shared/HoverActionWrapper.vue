@@ -36,7 +36,7 @@ withDefaults(
     icon: "mdi-content-copy",
     size: "x-small",
     variant: "text",
-    density: "compact",
+    density: "comfortable",
     tooltipLocation: "bottom",
   },
 );

@@ -326,6 +326,14 @@ export async function mockNotificationsApi(
     await jsonResponse(route, notifications);
   });
 
+  await page.route("**/api/v1/notifications/my/acknowledge", async (route) => {
+    const ids = route.request().postDataJSON() as number[];
+    const acknowledged = notifications.filter(item => ids.includes(item.id) && !item.acknowledgedAt).map(item => item.id);
+    notifications = notifications.map(item => acknowledged.includes(item.id)
+      ? { ...item, acknowledgedAt: "2026-06-02T09:30:00Z" } : item);
+    await jsonResponse(route, acknowledged);
+  });
+
   await page.route(/\/api\/v1\/notifications\/\d+\/acknowledge$/, async (route) => {
     const notificationId = Number(new URL(route.request().url()).pathname.split("/").slice(-2)[0]);
     const acknowledgedAt = "2026-06-02T09:30:00Z";

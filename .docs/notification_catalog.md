@@ -43,6 +43,10 @@ the action through the web notification template.
 
 ## Business Rules
 
+- The inbox filters unread notifications by category and shows unread counts per category.
+- Bulk acknowledgement applies to the displayed snapshot of the selected category (or all categories). The backend updates only the current employee's unread, non-archived notifications. New arrivals remain unread.
+- Reading a notification does not approve or reject the associated business request.
+
 - Business event types must be stable and should not contain transport-specific names.
 - Every implemented business notification must have a clear trigger moment and recipient rule.
 - Recipient rules must be checked against the backend role and permission model. The Platform backend is the source of truth for who is allowed to see or act on protected business objects.

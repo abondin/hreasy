@@ -13,6 +13,7 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.notification.dto.NotificationDto;
 import ru.abondin.hreasy.platform.service.notification.dto.NotificationMapper;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -55,6 +56,15 @@ public class NotificationService {
             notificationEntry.setAcknowledgedAt(now);
             notificationEntry.setAcknowledgedBy(auth.getEmployeeInfo().getEmployeeId());
         });
+    }
+
+    /** Marks the supplied inbox snapshot as read, excluding other employees and archived or read rows. */
+    public Flux<Integer> acknowledgeMany(AuthContext auth, List<Integer> ids) {
+        if (ids.isEmpty()) {
+            return Flux.empty();
+        }
+        log.info("Acknowledge {} notifications by {}", ids.size(), auth.getUsername());
+        return repo.acknowledgeByEmployee(auth.getEmployeeInfo().getEmployeeId(), ids, dateTimeService.now());
     }
 
     public Mono<Integer> archive(AuthContext auth, int notificationId) {

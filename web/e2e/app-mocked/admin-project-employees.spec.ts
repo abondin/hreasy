@@ -86,4 +86,76 @@ test("shows current project employees and opens the shared employee details dial
   await employees.getByRole("row").filter({ hasText: "Riley Brooks" }).click();
   await expect(dialog).toContainText("Riley Brooks");
   await expect(dialog).not.toContainText("Alex Morgan");
+  await dialog.getByRole("button", { name: "Закрыть", exact: true }).click();
+
+  await page.getByTestId("admin-project-add-employee").click();
+  await expect(page.getByTestId("project-assignment-submit")).toBeDisabled();
+  const employeeSelect = page.getByTestId("admin-project-add-employee-select").locator('input[type="text"]');
+  await employeeSelect.fill("Riley");
+  await expect(page.getByRole("option").filter({ hasText: "Riley Brooks" })).toHaveCount(0);
+  await employeeSelect.fill("Alex");
+  await page.getByRole("option").filter({ hasText: "Alex Morgan" }).click();
+  await expect(page.getByTestId("project-assignment-dialog")).toContainText("Текущий проект: Billing Gateway");
+  await expect(page.getByTestId("project-assignment-dialog").locator(".v-card-subtitle")).toHaveCount(0);
+  await expect(page.getByTestId("project-assignment-role").locator('input[type="text"]')).toHaveValue("Lead Engineer");
+  await expect(page.getByTestId("project-assignment-project")).toHaveCount(0);
+  await page.getByTestId("project-assignment-role").locator('input[type="text"]').fill("Developer");
+  await page.getByTestId("project-assignment-role").locator('input[type="text"]').press("Tab");
+  const assignmentRequest = page.waitForRequest(request => request.method() === "PUT" && request.url().endsWith("/101/currentProject"));
+  await page.getByTestId("project-assignment-submit").click();
+  expect((await assignmentRequest).postDataJSON()).toEqual({ id: 301, role: "Developer" });
+  await expect(employees).toContainText("Alex Morgan");
+  await expect(employees).toContainText("Developer");
+
+
+});
+
+test("requests transfer approval without changing project membership and shows pending-request errors", async ({ page }) => {
+  await installUnhandledApiGuard(page);
+  await mockAppRouteAuth(page, [...appMockedAuthorities.employees, "project_admin_area", "update_current_project"]);
+  const employee = { ...appMockedEmployees[0], currentProject: { id: 303, name: "Source project", role: "Developer" } };
+  await page.route("**/api/v1/employee", route => route.fulfill({ json: [employee] }));
+  await page.route("**/api/v1/admin/projects/301", route => route.fulfill({
+    json: { id: 301, name: "Target project", active: true, workstreams: [] },
+  }));
+  await page.route(/\/api\/v1\/(?:dict\/(?:departments|projects)|business_account|admin\/managers\/object\/project\/301|employee\/current_project_roles)$/, route =>
+    route.fulfill({ json: [] }),
+  );
+  let pending = false;
+  await page.route("**/api/v1/employee/101/currentProject", route => route.fulfill({ status: 409, json: {
+    code: pending ? "errors.current_project.transfer_request.already_pending" : "errors.current_project.transfer_approval_required",
+    message: pending ? "Transfer already pending" : "Approval required",
+    args: { fromProjectId: 303, toProjectId: 301 },
+  } }));
+  await page.route("**/api/v1/employee/101/currentProject/transferApprovers?*", route => route.fulfill({ json: [
+    { employeeId: 200, displayName: "Approver Example", email: "approver@example.test", managerType: "project" },
+  ] }));
+  await page.route("**/api/v1/employee/101/currentProject/transferApprovals", async route => {
+    expect(route.request().postDataJSON()).toEqual({ fromProjectId: 303, toProjectId: 301, role: "Developer", approverEmployeeId: 200 });
+    pending = true;
+    await route.fulfill({ json: 1 });
+  });
+  await page.goto(appPath("/admin/projects/301"));
+  const employees = page.getByTestId("admin-project-employees");
+  const select = page.getByTestId("admin-project-add-employee-select").locator('input[type="text"]');
+  await page.getByTestId("admin-project-add-employee").click();
+  await select.fill("Alex");
+  await page.getByRole("option").filter({ hasText: "Alex Morgan" }).click();
+  await page.getByTestId("project-assignment-submit").click();
+  await expect(page.getByTestId("project-assignment-transfer-approval-required")).toBeVisible();
+  await expect(page.getByTestId("project-assignment-transfer-approver")).toContainText("Approver Example");
+  await page.getByTestId("project-assignment-submit").click();
+  await expect(page.getByTestId("project-assignment-dialog")).toBeHidden();
+  await expect(employees).toContainText("Заявка на перевод отправлена");
+  await expect(employees).not.toContainText("Alex Morgan");
+  await page.getByTestId("admin-project-add-employee").click();
+  await select.fill("Alex");
+  await page.getByRole("option").filter({ hasText: "Alex Morgan" }).click();
+  await page.getByTestId("project-assignment-submit").click();
+  await expect(page.getByTestId("project-assignment-dialog")).toContainText("Transfer already pending");
+  await page.getByTestId("project-assignment-cancel").click();
+  await mockAppRouteAuth(page, [...appMockedAuthorities.employees, "project_admin_area"]);
+  await page.reload();
+  await expect(page.getByTestId("admin-project-employees")).toBeVisible();
+  await expect(page.getByTestId("admin-project-add-employee")).toHaveCount(0);
 });

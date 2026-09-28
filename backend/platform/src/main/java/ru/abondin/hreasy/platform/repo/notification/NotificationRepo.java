@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Repository
 public interface NotificationRepo extends ReactiveCrudRepository<NotificationEntry, Integer> {
@@ -28,6 +29,15 @@ public interface NotificationRepo extends ReactiveCrudRepository<NotificationEnt
                and archived_at is null
             """)
     Mono<Integer> countUnreadByEmployee(int employeeId);
+
+    @Query("""
+            update notify.notification
+               set acknowledged_at = :now, acknowledged_by = :employeeId
+             where employee = :employeeId and id in (:ids)
+               and acknowledged_at is null and archived_at is null
+         returning id
+            """)
+    Flux<Integer> acknowledgeByEmployee(int employeeId, List<Integer> ids, OffsetDateTime now);
 
     @Query("""
             delete

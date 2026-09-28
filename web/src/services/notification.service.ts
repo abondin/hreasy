@@ -26,3 +26,8 @@ export async function acknowledgeNotification(notificationId: number): Promise<n
   const response = await http.post<number>(`v1/notifications/${notificationId}/acknowledge`);
   return response.data;
 }
+
+export async function acknowledgeNotifications(ids: number[]): Promise<number[]> {
+  const response = await http.post<number[]>("v1/notifications/my/acknowledge", ids);
+  return response.data;
+}

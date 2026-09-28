@@ -16,6 +16,16 @@ const messages: Record<string, MessageSchema> = {};
 
 const ruBuiltInMessages: MessageSchema = {
   notifications: {
+    allTypes: "Все",
+    markAllAsRead: "Отметить все как прочитанные",
+    markCategoryAsRead: "Отметить все в выбранной категории как прочитанные",
+    acknowledgeError: "Не удалось отметить уведомления как прочитанные",
+    category: {
+      overtime: "Овертаймы",
+      project_transfer: "Переводы",
+      salary_request: "Зарплата",
+      upcoming_vacation: "Отпуска",
+    },
     title: "\u0423\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f",
     refresh: "\u041e\u0431\u043d\u043e\u0432\u0438\u0442\u044c \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f",
     empty: "\u041d\u0435\u0442 \u043d\u043e\u0432\u044b\u0445 \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u0439",

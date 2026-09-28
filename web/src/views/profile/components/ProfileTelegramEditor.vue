@@ -75,7 +75,7 @@ const authStore = useAuthStore();
 
 const actionIconButtonProps = {
   variant: "text",
-  density: "compact",
+  density: "comfortable",
   size: "x-small",
 } as const;
 

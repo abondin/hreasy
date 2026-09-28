@@ -93,7 +93,24 @@
           class="ms-auto flex-grow-0 w-100"
           max-width="360"
         />
+        <v-tooltip v-if="canManageEmployees" :text="t('Добавить сотрудника')" location="bottom">
+          <template #activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon="mdi-account-plus-outline"
+              variant="text"
+              size="small"
+              :aria-label="t('Добавить сотрудника')"
+              :disabled="loading || employeesLoading"
+              data-testid="admin-project-add-employee"
+              @click="openAddEmployee"
+            />
+          </template>
+        </v-tooltip>
       </div>
+      <v-alert v-if="assignmentNotice" type="info" class="mb-3" closable @click:close="assignmentNotice = ''">
+        {{ assignmentNotice }}
+      </v-alert>
       <v-alert v-if="employeesError" type="error" class="mb-3">
         {{ errorUtils.shortMessage(employeesError) }}
       </v-alert>
@@ -105,6 +122,39 @@
         @select-employee="selectedEmployeeId = $event.id"
       />
     </v-card>
+
+    <ProjectAssignmentDialog
+      v-if="addEmployeeDialog && project"
+      v-model="addEmployeeDialog"
+      :employee-id="employeeToAdd?.id ?? null"
+      :employee-name="employeeToAdd?.displayName ?? ''"
+      :current-project="employeeToAdd?.currentProject"
+      :target-project="project"
+      @updated="reloadEmployees"
+      @approval-requested="assignmentNotice = t('Заявка на перевод отправлена. Состав проекта изменится после согласования.')"
+    >
+      <template #employee="{ disabled }">
+        <v-autocomplete
+          v-model="employeeToAdd"
+          :items="employeesAvailableToAdd"
+          :disabled="disabled"
+          item-title="displayName"
+          item-value="id"
+          return-object
+          :label="t('Сотрудник')"
+          variant="underlined"
+          autofocus
+          data-testid="admin-project-add-employee-select"
+        >
+          <template #item="{ props: itemProps, item }">
+            <v-list-item v-bind="itemProps" :subtitle="item.currentProject?.name ?? t('Не задан')" />
+          </template>
+        </v-autocomplete>
+        <div v-if="employeeToAdd" class="employee-current-project text-medium-emphasis mb-3">
+          {{ t("Текущий проект: {project}", { project: employeeToAdd.currentProject?.name ?? t("Не задан") }) }}
+        </div>
+      </template>
+    </ProjectAssignmentDialog>
 
     <EmployeeDetailsDialog
       v-if="selectedEmployeeId != null"
@@ -134,6 +184,8 @@ import AdminDetailPageLayout from "@/components/shared/AdminDetailPageLayout.vue
 import AdminDetailSummaryCard, { type AdminDetailSummaryItem } from "@/components/shared/AdminDetailSummaryCard.vue";
 import MarkdownTextRenderer from "@/components/shared/MarkdownTextRenderer.vue";
 import SearchTextField from "@/components/shared/SearchTextField.vue";
+import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialog.vue";
+import type { Employee } from "@/services/employee.service";
 import { useEmployeesDirectory } from "@/composables/useEmployeesDirectory";
 import EmployeesTable from "@/views/employees/components/EmployeesTable.vue";
 import EmployeeDetailsDialog from "@/components/employee/EmployeeDetailsDialog.vue";
@@ -160,13 +212,21 @@ const project = ref<AdminProjectInfo | null>(null);
 const departments = ref<DictItem[]>([]);
 const businessAccounts = ref<DictItem[]>([]);
 const selectedEmployeeId = ref<number | null>(null);
+const addEmployeeDialog = ref(false);
+const employeeToAdd = ref<Employee | null>(null);
+const assignmentNotice = ref("");
 const {
+  employees,
   filteredEmployees: projectEmployees,
   loading: employeesLoading,
   error: employeesError,
   filter: employeeFilter,
   reload: reloadEmployees,
 } = useEmployeesDirectory();
+const canManageEmployees = computed(() => employees.value.some(employee => permissions.canUpdateCurrentProject(employee.id)));
+const employeesAvailableToAdd = computed(() => employees.value.filter(employee =>
+  employee.currentProject?.id !== project.value?.id && permissions.canUpdateCurrentProject(employee.id),
+));
 const employeeHeaders = computed(() => [
   { title: t("ФИО"), key: "displayName" },
   ...(permissions.canViewEmplCurrentProjectRole()
@@ -175,6 +235,7 @@ const employeeHeaders = computed(() => [
   { title: t("Отдел"), key: "department.name" },
   { title: t("E-mail"), key: "email" },
 ]);
+
 const projectSubtitle = computed(() => {
   if (!project.value) {
     return "";
@@ -235,6 +296,12 @@ function onSaved(): void {
   void load();
 }
 
+function openAddEmployee(): void {
+  employeeToAdd.value = null;
+  assignmentNotice.value = "";
+  addEmployeeDialog.value = true;
+}
+
 function formatPlanActual(plan?: string, actual?: string): string {
   const parts: string[] = [];
   const actualFormatted = formatDate(actual);
@@ -255,6 +322,11 @@ void load();
 </script>
 
 <style scoped>
+.employee-current-project {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .admin-detail-section {
   min-height: 100%;
 }

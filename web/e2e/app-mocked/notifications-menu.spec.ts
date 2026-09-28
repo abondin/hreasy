@@ -28,6 +28,64 @@ function notifications(count: number) {
 }
 
 test.describe("App Mocked Notifications Menu", () => {
+  test("keeps failed messages unread and allows dismissing the error", async ({ page }) => {
+    await installUnhandledApiGuard(page);
+    await mockAppRouteAuth(page, appMockedAuthorities.employees);
+    await mockEmployeesDirectoryApi(page);
+    await mockNotificationsApi(page, notifications(50));
+    await page.route("**/api/v1/notifications/my/acknowledge", route => route.fulfill({
+      status: 500, contentType: "application/json", body: JSON.stringify({ message: "Test failure" }),
+    }));
+    await page.goto(appPath(routes.employees));
+    await page.getByTestId("notifications-menu-button").click();
+    const bulk = page.getByTestId("notifications-acknowledge-all");
+    const alert = page.locator(".notifications-menu .v-alert");
+    await bulk.click();
+    await expect(alert).toContainText("Не удалось отметить уведомления как прочитанные");
+    await expect.poll(() => alert.evaluate(el => el.clientHeight)).toBeGreaterThan(40);
+    await expect(page.locator(".notifications-menu__item")).toHaveCount(50);
+    await alert.getByRole("button").click();
+    await expect(alert).toHaveCount(0);
+    await bulk.click();
+    await expect(alert).toBeVisible();
+    await page.getByTestId("notifications-categories").getByText("Овертаймы · 50").click();
+    await expect(alert).toHaveCount(0);
+    await bulk.click();
+    await expect(alert).toBeVisible();
+    await page.keyboard.press("Escape");
+    await page.getByTestId("notifications-menu-button").click();
+    await expect(alert).toHaveCount(0);
+  });
+
+  test("filters categories and acknowledges only the selected category, then all", async ({ page }) => {
+    await installUnhandledApiGuard(page);
+    await mockAppRouteAuth(page, appMockedAuthorities.employees);
+    await mockEmployeesDirectoryApi(page);
+    const items = notifications(3);
+    items[2]!.category = "upcoming_vacation";
+    await mockNotificationsApi(page, items);
+    await page.goto(appPath(routes.employees));
+    await page.getByTestId("notifications-menu-button").click();
+    const categories = page.getByTestId("notifications-categories");
+    const list = page.getByTestId("notifications-menu-list");
+    await expect(list.locator(".notifications-menu__item")).toHaveCount(3);
+    await expect.poll(() => page.locator(".notifications-menu").evaluate(el => el.clientWidth)).toBe(640);
+    await categories.getByText("Овертаймы · 2").click();
+    await expect(list.locator(".notifications-menu__item")).toHaveCount(2);
+    const bulk = page.getByTestId("notifications-acknowledge-all");
+    const request = page.waitForRequest("**/api/v1/notifications/my/acknowledge");
+    await bulk.click();
+    expect((await request).postDataJSON()).toEqual([9001, 9002]);
+    await expect(page.getByText("Нет новых уведомлений")).toBeVisible();
+    await categories.getByText("Все · 1", { exact: true }).click();
+    await expect(list.locator(".notifications-menu__item")).toHaveCount(1);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect.poll(() => page.locator(".notifications-menu").evaluate(el => el.getBoundingClientRect().right)).toBeLessThanOrEqual(390);
+    await bulk.click();
+    await expect(page.getByText("Нет новых уведомлений")).toBeVisible();
+    await expect(bulk).toBeDisabled();
+  });
+
   test("shows a scrollable unread list and acknowledges one item", async ({ page }) => {
     await installUnhandledApiGuard(page);
     await mockAppRouteAuth(page, appMockedAuthorities.employees);

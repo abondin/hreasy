@@ -34,7 +34,9 @@
           density="compact"
           class="mb-5"
         >
-          {{ t("Сотрудник уже планируется к переводу на другой проект.") }}
+          {{ canApproveOrRejectRequest
+            ? t('Вам необходимо согласовать перевод сотрудника. Одобрите или отклоните заявку через меню «Действия».')
+            : t('Заявка на перевод ожидает согласования.') }}
         </v-alert>
 
         <property-list v-if="request" variant="aligned" density="compact" label-width="156px">

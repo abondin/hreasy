@@ -1,17 +1,23 @@
 package ru.abondin.hreasy.platform.api.notification;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
 import ru.abondin.hreasy.platform.service.notification.NotificationService;
 import ru.abondin.hreasy.platform.service.notification.dto.NotificationDto;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,5 +54,11 @@ public class NotificationController {
     @PostMapping("/{notificationId}/archive")
     public Mono<Integer> archive(@PathVariable int notificationId) {
         return AuthHandler.currentAuth().flatMap(auth -> service.archive(auth, notificationId));
+    }
+
+    @Operation(summary = "Acknowledge selected current employee notifications")
+    @PostMapping("/my/acknowledge")
+    public Flux<Integer> acknowledgeMany(@Valid @RequestBody List<@NotNull @Positive Integer> ids) {
+        return AuthHandler.currentAuth().flatMapMany(auth -> service.acknowledgeMany(auth, ids));
     }
 }

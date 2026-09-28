@@ -5,8 +5,8 @@
   <v-dialog v-model="dialogOpen" max-width="560" scrollable persistent data-testid="project-assignment-dialog">
     <v-card>
       <v-card-item>
-        <template #title>{{ t("Обновление текущего проекта") }}</template>
-        <template #subtitle>{{ employeeName }}</template>
+        <template #title>{{ t(targetProject ? "Добавить сотрудника" : "Обновление текущего проекта") }}</template>
+        <template v-if="!targetProject" #subtitle>{{ employeeName }}</template>
       </v-card-item>
 
       <v-card-text>
@@ -20,13 +20,22 @@
           {{ errorMessage }}
         </v-alert>
 
+        <slot name="employee" :disabled="saving || approvalRequestSending || transferApproversLoading" />
+        <v-text-field
+          v-if="targetProject"
+          :model-value="targetProject.name"
+          :label="t('Проект')"
+          readonly
+          variant="underlined"
+        />
         <v-autocomplete
+          v-else
           v-model="selectedProjectId"
           data-testid="project-assignment-project"
           :items="projectItems"
           :label="t('Проекты')"
           :loading="dictionaryLoading"
-          :disabled="dictionaryLoading"
+          :disabled="dictionaryLoading || saving || approvalRequestSending"
           clearable
           item-title="name"
           item-value="id"
@@ -40,7 +49,7 @@
           :items="roleItems"
           :label="t('Роль')"
           :loading="dictionaryLoading"
-          :disabled="dictionaryLoading"
+          :disabled="dictionaryLoading || saving || approvalRequestSending"
           clearable
           variant="underlined"
           :rules="[validateRoleLength]"
@@ -142,6 +151,7 @@ const props = withDefaults(
     employeeId: number | null;
     employeeName: string;
     currentProject?: CurrentProjectDict | null;
+    targetProject?: { id: number; name: string };
   }>(),
   {
     modelValue: false,
@@ -153,6 +163,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   (event: "update:modelValue", value: boolean): void;
   (event: "updated"): void;
+  (event: "approval-requested"): void;
 }>();
 
 const { t } = useI18n();
@@ -208,9 +219,9 @@ const roleItems = computed(() =>
   projectRoles.value.map((role) => role.value),
 );
 const submitDisabled = computed(() =>
-  transferApprovalRequired.value
+  !props.employeeId || dictionaryLoading.value || validateRoleLength(roleOnProject.value) !== true || (transferApprovalRequired.value
     ? approvalRequestSending.value || transferApproversLoading.value || selectedApproverId.value === null
-    : saving.value,
+    : saving.value),
 );
 
 watch(
@@ -228,7 +239,7 @@ watch(
 );
 
 watch(
-  () => props.currentProject,
+  () => [props.employeeId, props.currentProject],
   () => {
     if (dialogOpen.value) {
       initialiseForm();
@@ -241,7 +252,7 @@ watch([selectedProjectId, roleOnProject], () => {
 });
 
 function initialiseForm() {
-  selectedProjectId.value = props.currentProject?.id ?? null;
+  selectedProjectId.value = props.targetProject?.id ?? props.currentProject?.id ?? null;
   roleOnProject.value = props.currentProject?.role ?? null;
   errorMessage.value = "";
   resetTransferApprovalState();
@@ -279,6 +290,7 @@ function validateRoleLength(value: string | null): true | string {
 }
 
 async function submit() {
+  if (submitDisabled.value) return;
   if (!props.employeeId) {
     errorMessage.value = t("Профиль_недоступен");
     return;
@@ -315,7 +327,7 @@ async function submit() {
     if (isTransferApprovalRequired(error)) {
       transferApprovalRequired.value = true;
       await loadTransferApprovers(error);
-    } else if (isTransferRequestAlreadyPending(error)) {
+    } else if (isTransferRequestAlreadyPending(error) && !props.targetProject) {
       dialogOpen.value = false;
       emit("updated");
     } else {
@@ -392,6 +404,7 @@ async function submitTransferApprovalRequest() {
       role: roleOnProject.value ?? null,
       approverEmployeeId: selectedApproverId.value,
     });
+    emit("approval-requested");
     dialogOpen.value = false;
     emit("updated");
   } catch (error) {
@@ -423,6 +436,7 @@ function approverSubtitle(approver: CurrentProjectTransferApprover): string {
 
 onMounted(() => {
   if (dialogOpen.value) {
+    initialiseForm();
     void loadDictionaries();
   }
 });

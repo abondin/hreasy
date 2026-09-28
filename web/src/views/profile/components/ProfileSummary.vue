@@ -203,7 +203,7 @@ const isMobile = computed(() => display.smAndDown.value);
 const showAvatar = computed(() => props.showAvatar);
 const actionIconButtonProps = {
   variant: 'text',
-  density: 'compact',
+  density: 'comfortable',
   size: 'x-small',
 } as const;
 
