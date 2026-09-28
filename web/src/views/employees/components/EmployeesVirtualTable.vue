@@ -51,7 +51,6 @@ import type { VDataTable } from 'vuetify/components';
 import TablePageCard from '@/components/shared/TablePageCard.vue';
 import type { Employee } from '@/services/employee.service';
 import type { SearchSettings } from '@/lib/search';
-import { usePermissions } from '@/lib/permissions';
 import EmployeesFilters from '@/views/employees/components/EmployeesFilters.vue';
 import EmployeesTable from '@/views/employees/components/EmployeesTable.vue';
 import EmployeesDetailsPanelHost from '@/views/employees/components/EmployeesDetailsPanelHost.vue';
@@ -90,7 +89,6 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const permissions = usePermissions();
 const display = useDisplay();
 
 const detailsOpen = ref(false);
@@ -104,9 +102,7 @@ const headers = computed<DataTableHeader>(() => {
     { title: t('E-mail'), key: 'email', width: '172px' },
     { title: t('Текущий проект'), key: 'currentProject.name', width: '192px' },
   ];
-  if (permissions.canViewEmplCurrentProjectRole()) {
-    items.push({ title: t('Роль на проекте'), key: 'currentProject.role', width: '172px' });
-  }
+  items.push({ title: t('Роль на проекте'), key: 'currentProject.role', width: '172px' });
   items.push({ title: t('Бизнес Аккаунт'), key: 'ba.name', width: '152px' });
   return items;
 });

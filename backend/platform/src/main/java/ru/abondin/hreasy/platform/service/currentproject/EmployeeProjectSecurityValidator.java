@@ -55,7 +55,6 @@ public class EmployeeProjectSecurityValidator {
             return;
         }
 
-        var hasViewCurrentProjectRolePerm = auth.getAuthorities().contains("view_empl_current_project_role");
         var hasViewSkillsPerm = auth.getAuthorities().contains("view_empl_skills");
         boolean hasProjectAccess = projectHierarchyService.hasProjectAccess(auth, empl.getDepartment() == null ? null : empl.getDepartment().getId(),
                 empl.getCurrentProject() == null ? null
@@ -64,11 +63,6 @@ public class EmployeeProjectSecurityValidator {
                                 empl.getDepartment() == null ? null : empl.getDepartment().getId(),
                                 empl.getBa() == null ? null : empl.getBa().getId()
                         ));
-        // Remove current project role
-        if ((!hasViewCurrentProjectRolePerm || !hasProjectAccess) && empl.getCurrentProject() != null) {
-            empl.getCurrentProject().setRole(null);
-        }
-
         // Remove skill
         if ((!hasViewSkillsPerm || !hasProjectAccess)) {
             empl.setSkills(Arrays.asList());

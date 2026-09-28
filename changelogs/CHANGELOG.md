@@ -4,6 +4,7 @@
 
 features:
 
+- Employee project roles are visible to anyone who can view the employee. Removed the `view_empl_current_project_role` permission and its role assignments; editing permissions are unchanged.
 - Added current project employees to the project details page with the same employee profile dialog used in resource allocations.
 - Added monthly resource allocations by project and workstream, with annual data entry, project- and employee-based analytics, employee profile previews, period locking, change history, concurrent-edit conflict protection, cell comments with author-only editing/deletion, and annual Excel export in percentages or person-months. Access follows the acting user's permissions.
 - Added a read-only external API for employees, avatars by employee ID or email, projects, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, and dedicated Swagger UI and OpenAPI JSON/YAML documentation under `/external/docs/`.

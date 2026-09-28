@@ -229,9 +229,7 @@ const employeesAvailableToAdd = computed(() => employees.value.filter(employee =
 ));
 const employeeHeaders = computed(() => [
   { title: t("ФИО"), key: "displayName" },
-  ...(permissions.canViewEmplCurrentProjectRole()
-    ? [{ title: t("Роль на проекте"), key: "currentProject.role" }]
-    : []),
+  { title: t("Роль на проекте"), key: "currentProject.role" },
   { title: t("Отдел"), key: "department.name" },
   { title: t("E-mail"), key: "email" },
 ]);

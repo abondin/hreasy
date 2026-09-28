@@ -65,6 +65,24 @@ public class EmployeeServiceTest extends BaseServiceTest {
     }
 
     @Test
+    void employeeSeesRoleOutsideOwnProjectButCannotChangeIt() {
+        var employeeId = testData.employees.get(TestEmployees.Billing_Empl_Asiyah_Bob);
+        var assignment = new UpdateCurrentProjectBody(testData.project_M1_Billing(), "Developer");
+        adminEmployeeService.updateCurrentProject(employeeId, assignment, auth).block(MONO_DEFAULT_TIMEOUT);
+        var viewer = auth(FMS_Empl_Ammara_Knott).block(MONO_DEFAULT_TIMEOUT);
+        Assertions.assertFalse(viewer.getAuthorities().contains("view_employee_full"));
+
+        StepVerifier.create(employeeService.find(employeeId, viewer))
+                .assertNext(employee -> Assertions.assertEquals("Developer", employee.getCurrentProject().getRole()))
+                .verifyComplete();
+        StepVerifier.create(employeeService.findAll(viewer, false).filter(employee -> employee.getId().equals(employeeId)))
+                .assertNext(employee -> Assertions.assertEquals("Developer", employee.getCurrentProject().getRole()))
+                .verifyComplete();
+        StepVerifier.create(adminEmployeeService.updateCurrentProject(employeeId, assignment, viewer))
+                .expectError(AccessDeniedException.class).verify(MONO_DEFAULT_TIMEOUT);
+    }
+
+    @Test
     public void testFindEmployeeReturnsBirthdayWithoutYear() {
         StepVerifier
                 .create(employeeService.find(testData.employees.get(TestEmployees.Admin_Shaan_Pitts), auth))

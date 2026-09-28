@@ -68,8 +68,6 @@ export enum Permissions {
   AdminDictOfficeLocations = "admin_office_location",
   /** View employee skills */
   ViewEmplSkills = "view_empl_skills",
-  /** View current project role */
-  ViewEmplCurrentProjectRole = "view_empl_current_project_role",
   /** Admin managers */
   AdminManagers = "admin_managers",
   /** View monthly resource allocations */
@@ -364,19 +362,6 @@ export function usePermissions() {
     return simplePermissionCheck(Permissions.AdminDictOffices);
   }
 
-  function canViewEmplCurrentProjectRole(employeeId?: number): boolean {
-    if (canAdminEmployees()) {
-      return true;
-    }
-    if (typeof employeeId === "number") {
-      return simplePermissionCheckOrCurrentEmployee(
-        Permissions.ViewEmplCurrentProjectRole,
-        employeeId,
-      );
-    }
-    return simplePermissionCheck(Permissions.ViewEmplCurrentProjectRole);
-  }
-
   function canViewEmplSkills(employeeId: number): boolean {
     return (
       canAdminEmployees() ||
@@ -452,7 +437,6 @@ export function usePermissions() {
     canAdminDictOfficeLocations,
     canAdminDictOffices,
     canViewEmplSkills,
-    canViewEmplCurrentProjectRole,
     canRateSkills,
     canAdminManagers,
     canReadResourceAllocations,

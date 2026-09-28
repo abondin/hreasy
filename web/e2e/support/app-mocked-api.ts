@@ -485,9 +485,9 @@ export async function mockMentorshipRegistryApi(page: Page): Promise<void> {
 }
 
 export const appMockedAuthorities = {
-  employees: ["view_empl_current_project_role"],
+  employees: [],
   vacations: ["vacation_view", "vacation_edit"],
   overtimes: ["overtime_view", "overtime_admin"],
   resourceAllocations: ["resource_allocation_read", "resource_allocation_write"],
-  mentorshipAdmin: ["admin_junior_reg", "access_junior_reg", "view_empl_current_project_role"],
+  mentorshipAdmin: ["admin_junior_reg", "access_junior_reg"],
 };

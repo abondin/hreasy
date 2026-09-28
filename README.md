@@ -122,7 +122,6 @@ project, business account, and department manager links from `empl.manager`.
 | `vacation_edit`                | Edit, export, and manage vacation planning periods for manager-scoped employees.                       |
 | `vacation_view`                | View vacations for oneself or manager-scoped employees.                                                |
 | `view_assessment_full`         | View and update all assessment details without owner or manager-scope restrictions.                    |
-| `view_empl_current_project_role` | View current project role for manager-scoped employees; own data and `view_employee_full` bypass this restriction. |
 | `view_empl_skills`             | View skills for manager-scoped employees; own data and `view_employee_full` bypass this restriction.  |
 | `view_employee_full`           | View full employee information, including protected employee fields.                                  |
 | `view_timesheet`               | View timesheets for oneself or employees allowed by backend timesheet validator.                       |
@@ -184,7 +183,6 @@ permissions below must stay aligned with Flyway migrations.
 | `vacation_edit`                | `global_admin`, `hr`, `pm` |
 | `vacation_view`                | `global_admin`, `hr`, `pm` |
 | `view_assessment_full`         | `global_admin`, `hr` |
-| `view_empl_current_project_role` | `global_admin`, `hr`, `pm` |
 | `view_empl_skills`             | `global_admin`, `hr`, `pm` |
 | `view_employee_full`           | `global_admin`, `hr` |
 | `view_timesheet`               | `global_admin`, `pm` |

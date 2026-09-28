@@ -11,7 +11,7 @@ import { appPath } from "../support/navigation";
 
 test("shows current project employees and opens the shared employee details dialog", async ({ page }) => {
   await installUnhandledApiGuard(page);
-  await mockAppRouteAuth(page, [...appMockedAuthorities.employees, "project_admin_area", "update_current_project_global"]);
+  await mockAppRouteAuth(page, ["project_admin_area", "update_current_project_global"]);
   await mockEmployeeDetailsApi(page);
   await mockCurrentOrFutureVacationsApi(page);
   const directory = structuredClone(appMockedEmployees.slice(0, 4));
