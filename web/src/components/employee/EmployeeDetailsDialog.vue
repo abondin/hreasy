@@ -5,7 +5,7 @@
     scrollable
     @update:model-value="!$event && emit('close')"
   >
-    <v-card data-testid="resource-allocation-employee-dialog">
+    <v-card data-testid="employee-details-dialog">
       <v-toolbar density="comfortable">
         <v-toolbar-title>{{ t("Карточка сотрудника") }}</v-toolbar-title>
         <v-btn
@@ -17,7 +17,7 @@
       <v-card-text>
         <v-progress-linear v-if="loading" indeterminate :aria-label="t('Загрузка_данных')" />
         <v-alert v-else-if="error" type="error">{{ errorUtils.shortMessage(error) }}</v-alert>
-        <EmployeeDetailsPanel v-else-if="employee" :employee="employee" @employee-updated="reload" />
+        <EmployeeDetailsPanel v-else-if="employee" :employee="employee" @employee-updated="onEmployeeUpdated" />
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -31,7 +31,15 @@ import EmployeeDetailsPanel from "@/views/employees/components/EmployeeDetailsPa
 
 // The parent keys this component by employee ID, isolating pending profile requests.
 const props = defineProps<{ employeeId: number }>();
-const emit = defineEmits<{ (event: "close"): void }>();
+const emit = defineEmits<{
+  (event: "close"): void;
+  (event: "employee-updated"): void;
+}>();
 const { t } = useI18n();
 const { employee, loading, error, reload } = useEmployeeProfile(() => props.employeeId);
+
+function onEmployeeUpdated(): void {
+  emit("employee-updated");
+  void reload();
+}
 </script>

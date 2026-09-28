@@ -22,7 +22,7 @@
       </v-tab>
     </v-tabs>
     <router-view class="flex-grow-1 min-h-0" @open-employee="selectedEmployeeId = $event" />
-    <ResourceAllocationEmployeeDialog
+    <EmployeeDetailsDialog
       v-if="selectedEmployeeId != null"
       :key="selectedEmployeeId"
       :employee-id="selectedEmployeeId"
@@ -36,7 +36,7 @@ import { computed, onDeactivated, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
-import ResourceAllocationEmployeeDialog from "@/views/allocations/ResourceAllocationEmployeeDialog.vue";
+import EmployeeDetailsDialog from "@/components/employee/EmployeeDetailsDialog.vue";
 
 defineOptions({ name: "ResourceAllocationsView" });
 

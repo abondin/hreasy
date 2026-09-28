@@ -280,7 +280,9 @@ test.describe("App Mocked Resource Allocations Page", () => {
     const inputGrid = page.getByTestId("resource-allocations-input-grid");
     await expect.poll(async () => (await inputGrid.boundingBox())?.height ?? 0).toBeGreaterThan(350);
     const addEmployee = page.getByTestId("resource-allocations-add-employee");
-    await addEmployee.locator("input").fill("Billing Gateway");
+    await addEmployee.locator("input").click();
+    await expect(addEmployee.locator("input")).toBeFocused();
+    await page.keyboard.type("Billing Gateway");
     const employeeOption = page.getByRole("option").filter({ hasText: "Taylor Kim" });
     await expect(employeeOption).toContainText("Текущий проект: Billing Gateway");
     await expect(employeeOption).toContainText("Роль: Java Backend Developer");

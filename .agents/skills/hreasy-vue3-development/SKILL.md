@@ -11,6 +11,10 @@ Follow `web/AGENTS.md`. Before editing:
 2. Extend the closest existing component or module when that stays simpler than adding a parallel one.
 3. Check route, menu, and backend-permission impact.
 
+## Reuse across feature boundaries
+
+When independent features need the same UI, move the component to a shared or domain directory with a neutral name. Keep feature-specific logic in callers; do not extract speculatively.
+
 Keep API calls in existing service modules, shared state in Pinia stores, and page-specific orchestration local to the page or a composable. Use Vuetify primitives before custom layout code and keep user-facing text in i18n.
 
 Read `references/reuse-checklist.md` only when the reuse decision is unclear.

@@ -174,6 +174,9 @@
         <template #[`item.employee.name`]="{ item }">
           <div class="d-flex align-center ga-2 min-width-0">
             <span class="text-truncate">{{ item.employee?.name }}</span>
+            <v-chip v-if="item.employee?.active === false" color="error" size="x-small" label>
+              {{ t("Уволен") }}
+            </v-chip>
             <div
               v-if="editable && mode === 'compact' && canDeleteManager(item)"
               class="manager-row-delete-slot d-inline-flex align-center justify-center flex-shrink-0"

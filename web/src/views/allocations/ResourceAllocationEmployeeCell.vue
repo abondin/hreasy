@@ -12,6 +12,8 @@
     :placeholder="t('Добавить сотрудника')"
     :aria-label="t('Добавить сотрудника')"
     data-testid="resource-allocations-add-employee"
+    @mousedown.stop
+    @touchstart.stop
     @keydown.stop
     @keyup.stop
     @update:model-value="onAddEmployee"

@@ -36,7 +36,7 @@ HR Easy is a monorepository with separate backend services and a Vue frontend.
 
 ## Repository Skills
 
-- For any task that spans analysis, implementation, or verification iterations, use `.agents/skills/task-lifecycle`.
+- For large, multi-stage tasks that need persistent working context, use `.agents/skills/task-lifecycle`. Small fixes and local enhancements do not require a task file.
 - For Java changes, use `.agents/skills/java-coding-style`.
 - For JUnit work, use `.agents/skills/junit-tests-rules`.
 - For Platform Flyway migrations, use `.agents/skills/db-migration-style`.
@@ -46,6 +46,8 @@ HR Easy is a monorepository with separate backend services and a Vue frontend.
 
 ## Task Lifecycle
 
-- Keep the current task context in `.tasks/<task-name>.md` and update it after each meaningful iteration.
+- Create a persistent `.tasks/<task-name>.md` only for large tasks such as cross-module features, architectural changes, or substantial migrations. Analysis, implementation, and verification alone do not make a task large.
+- For small fixes and local enhancements, skip the task file by default. If temporary notes help, delete them when implementation and validation finish; no separate user confirmation is needed.
+- For large tasks, update the task file after each meaningful iteration.
 - Record agreed requirements, decisions, progress, checks, and remaining questions; keep it concise and current rather than appending a diary.
-- Do not remove the task file when implementation merely appears complete. After the user confirms the task is finished, update applicable durable documentation and `changelogs/CHANGELOG.md`, then delete the task file.
+- Keep persistent files for large tasks until the user confirms completion. Then update applicable durable documentation and `changelogs/CHANGELOG.md`, and delete the task file.

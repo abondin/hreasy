@@ -4,6 +4,7 @@
 
 features:
 
+- Added current project employees to the project details page with the same employee profile dialog used in resource allocations.
 - Added monthly resource allocations by project and workstream, with annual data entry, project- and employee-based analytics, employee profile previews, period locking, change history, concurrent-edit conflict protection, cell comments with author-only editing/deletion, and annual Excel export in percentages or person-months. Access follows the acting user's permissions.
 - Added a read-only external API for employees, avatars by employee ID or email, projects, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, and dedicated Swagger UI and OpenAPI JSON/YAML documentation under `/external/docs/`.
 - Moved Java backend services under `backend/`, added backend Maven reactor/parent/common modules, upgraded services to Spring Boot 4.0.5, and updated GitHub Actions/devops scripts.
@@ -16,6 +17,7 @@ features:
 
 bugfix:
 
+- Fixed employee search focus in the resource allocation Add employee selector.
 - Fixed menu navigation from an open employee details panel returning users to the employee directory; manual panel closure preserves search filters.
 - Allowed manager-link deletion by its creator or an administrator and surfaced backend deletion errors in the confirmation dialog.
 - Prevented Telegram API authentication from creating a reusable web session and hardened file storage against unsafe filenames and filesystem changes before authorization.

@@ -82,6 +82,38 @@
       test-id="admin-project-managers"
     />
 
+    <v-card v-if="project" class="pa-6" data-testid="admin-project-employees">
+      <div class="d-flex align-center flex-wrap ga-3 mb-3">
+        <div class="text-h6">{{ t("Сотрудники") }}</div>
+        <SearchTextField
+          v-model="employeeFilter.search"
+          v-model:settings="employeeFilter.searchSettings"
+          :label="t('Поиск')"
+          test-id="admin-project-employees-search"
+          class="ms-auto flex-grow-0 w-100"
+          max-width="360"
+        />
+      </div>
+      <v-alert v-if="employeesError" type="error" class="mb-3">
+        {{ errorUtils.shortMessage(employeesError) }}
+      </v-alert>
+      <EmployeesTable
+        :items="projectEmployees"
+        :headers="employeeHeaders"
+        :loading="employeesLoading"
+        :table-height="360"
+        @select-employee="selectedEmployeeId = $event.id"
+      />
+    </v-card>
+
+    <EmployeeDetailsDialog
+      v-if="selectedEmployeeId != null"
+      :key="selectedEmployeeId"
+      :employee-id="selectedEmployeeId"
+      @employee-updated="reloadEmployees"
+      @close="selectedEmployeeId = null"
+    />
+
     <v-dialog v-model="editDialog" persistent scrollable width="96vw" max-width="960">
       <admin-project-form
         :input="project"
@@ -101,6 +133,10 @@ import { useI18n } from "vue-i18n";
 import AdminDetailPageLayout from "@/components/shared/AdminDetailPageLayout.vue";
 import AdminDetailSummaryCard, { type AdminDetailSummaryItem } from "@/components/shared/AdminDetailSummaryCard.vue";
 import MarkdownTextRenderer from "@/components/shared/MarkdownTextRenderer.vue";
+import SearchTextField from "@/components/shared/SearchTextField.vue";
+import { useEmployeesDirectory } from "@/composables/useEmployeesDirectory";
+import EmployeesTable from "@/views/employees/components/EmployeesTable.vue";
+import EmployeeDetailsDialog from "@/components/employee/EmployeeDetailsDialog.vue";
 import { formatDate } from "@/lib/datetime";
 import { errorUtils } from "@/lib/errors";
 import { usePermissions } from "@/lib/permissions";
@@ -123,6 +159,22 @@ const error = ref("");
 const project = ref<AdminProjectInfo | null>(null);
 const departments = ref<DictItem[]>([]);
 const businessAccounts = ref<DictItem[]>([]);
+const selectedEmployeeId = ref<number | null>(null);
+const {
+  filteredEmployees: projectEmployees,
+  loading: employeesLoading,
+  error: employeesError,
+  filter: employeeFilter,
+  reload: reloadEmployees,
+} = useEmployeesDirectory();
+const employeeHeaders = computed(() => [
+  { title: t("ФИО"), key: "displayName" },
+  ...(permissions.canViewEmplCurrentProjectRole()
+    ? [{ title: t("Роль на проекте"), key: "currentProject.role" }]
+    : []),
+  { title: t("Отдел"), key: "department.name" },
+  { title: t("E-mail"), key: "email" },
+]);
 const projectSubtitle = computed(() => {
   if (!project.value) {
     return "";
@@ -159,11 +211,13 @@ async function load(): Promise<void> {
 
   loading.value = true;
   error.value = "";
+  employeeFilter.value.projects = [projectId];
   try {
     const [projectInfo, departmentItems, baItems] = await Promise.all([
       fetchAdminProject(projectId),
       fetchDepartments(),
       fetchBusinessAccounts(),
+      reloadEmployees(),
     ]);
     project.value = projectInfo;
     departments.value = departmentItems;
