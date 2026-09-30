@@ -32,7 +32,7 @@ import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
 import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeService;
-import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
+import ru.abondin.hreasy.platform.service.overtime.dto.ExternalOvertimeSummaryDto;
 
 import java.time.YearMonth;
 
@@ -112,18 +112,18 @@ public class ExternalApiController {
 
     @Operation(operationId = "externalGetOvertimeSummary", summary = "Get overtime summary for a calendar month",
             description = "Requires overtime_view. Returns employee report totals and approval statuses. "
-                    + "Items aggregate hours by date and project across all workstreams.")
+                    + "Items aggregate hours by date, project and workstream, including soft-deleted workstreams.")
     @ApiResponse(responseCode = "200", description = "Monthly overtime summaries.", content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = OvertimeEmployeeSummary.class))))
+            array = @ArraySchema(schema = @Schema(implementation = ExternalOvertimeSummaryDto.class))))
     @ApiResponse(responseCode = "400", description = "Invalid calendar month.", content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = BusinessErrorDto.class)))
     @GetMapping("/overtimes/{period}")
-    public Flux<OvertimeEmployeeSummary> overtimes(
+    public Flux<ExternalOvertimeSummaryDto> overtimes(
             @Parameter(description = "Calendar month in ISO YYYY-MM format; month is 01 through 12.",
                     required = true, example = "2026-09", schema = @Schema(type = "string", pattern = "^[0-9]{4}-(0[1-9]|1[0-2])$"))
             @PathVariable @DateTimeFormat(pattern = "yyyy-MM") YearMonth period) {
         var internalPeriod = period.getYear() * 100 + period.getMonthValue() - 1;
-        return AuthHandler.currentAuth().flatMapMany(auth -> overtimeService.getSummary(internalPeriod, auth));
+        return AuthHandler.currentAuth().flatMapMany(auth -> overtimeService.getExternalSummary(internalPeriod, auth));
     }
 
     @Operation(operationId = "externalGetAllocationAnalytics", summary = "Get annual resource allocation analytics",

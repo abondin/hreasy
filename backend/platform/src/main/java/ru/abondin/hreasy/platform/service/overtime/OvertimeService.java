@@ -117,6 +117,16 @@ public class OvertimeService {
                         .then(get(employeeId, periodId)));
     }
 
+    /** Integration summary with the same permissions and approval status as the web summary. */
+    public Flux<ExternalOvertimeSummaryDto> getExternalSummary(int period, AuthContext auth) {
+        return securityValidator.validateViewOvertimeSummary(auth).thenMany(
+                reportRepo.summary(period).map(mapper::summaryFromEntry)
+                        .flatMap(summary -> itemViewRepo.groupedByWorkstream(summary.getReportId())
+                                .map(mapper::externalItem)
+                                .collectList()
+                                .map(items -> mapper.externalSummary(summary, items))));
+    }
+
     public Flux<OvertimeEmployeeSummary> getSummary(int period, AuthContext auth) {
         // Validate auth
         return securityValidator.validateViewOvertimeSummary(auth).thenMany(

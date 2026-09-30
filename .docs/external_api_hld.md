@@ -11,7 +11,7 @@ The implementation may reuse the stateless Bearer authentication shape of the ex
 ## Goals
 
 - Expose the employee list available through the basic employee API.
-- Expose the web overtime summary for a requested month.
+- Expose overtime totals by project and workstream for a requested month.
 - Expose annual resource allocation analytics.
 - Expose basic project information.
 - Identify both the calling external system and the HR Easy user on whose behalf it operates.
@@ -23,7 +23,7 @@ The implementation may reuse the stateless Bearer authentication shape of the ex
 - Write operations.
 - A UI or database tables for managing integrations.
 - An HR Easy endpoint that issues tokens.
-- Reimplementation of employee, overtime, allocation, or project queries.
+- Reimplementation of employee, allocation, or project queries.
 - Reverse-proxy routing, IP filtering, rate limiting, pagination, or a generic integration framework in v1.
 
 ## API Contract
@@ -33,11 +33,11 @@ The implementation may reuse the stateless Bearer authentication shape of the ex
 | `GET /external/api/v1/employees` | `includeFired=false` | `EmployeeDto[]` | `EmployeeService.findAll` |
 | `GET /external/api/v1/employees/{employeeId}/avatar` | HR Easy employee ID | PNG image, or 404 | `EmployeeService.avatar` / `FileStorage.streamImage` |
 | `GET /external/api/v1/employees/avatar` | required `email` query parameter | PNG image, or 404 | `EmployeeService.avatarByEmail` / `FileStorage.streamImage` |
-| `GET /external/api/v1/overtimes/{period}` | `period` is `YYYY-MM` | `OvertimeEmployeeSummary[]` | `OvertimeService.getSummary` |
+| `GET /external/api/v1/overtimes/{period}` | `period` is `YYYY-MM` | `ExternalOvertimeSummaryDto[]` | `OvertimeService.getExternalSummary` |
 | `GET /external/api/v1/resource-allocations/analytics/{year}` | four-digit calendar year | `ResourceAllocationAnalyticsDto` | `ResourceAllocationService.getAnalytics` |
 | `GET /external/api/v1/projects` | none | `ProjectDictDto[]` | `DictService.findProjects` |
 
-The external controller is an adapter over the existing services. It converts the ISO overtime period to the current internal report period and otherwise returns the existing web DTOs unchanged. This keeps the first contract and implementation small.
+The external controller is an adapter over the existing services. It converts the ISO overtime period to the current internal report period and uses a separate overtime DTO for the workstream breakdown. Other endpoints reuse the existing web DTOs.
 
 Example:
 
@@ -70,7 +70,9 @@ Both avatar endpoints use the same external Bearer authentication as the employe
 
 ### Overtimes
 
-The response matches the web overtime summary and contains employee/report identifiers, total hours, approval status timestamps, and items grouped by date and project. Workstream-level overtime details remain available in the employee report API, not in the summary.
+The response contains employee/report identifiers, total hours, approval status timestamps and `commonApprovalStatus`, with the same permissions and approval rules as the web summary. Its separate `ExternalOvertimeSummaryDto` groups `items` by date, project and workstream. Each item contains `date`, `projectId`, `reportId`, `hours`, nullable `workstreamId`, `workstreamExternalId` and `workstreamDisplayName`. Project-level overtime remains a separate group without a workstream. Referenced soft-deleted workstreams retain their identifiers and names; deleted overtime items are excluded. The web summary and its Excel export still aggregate across workstreams.
+
+Consumers must use `(date, projectId, workstreamId)` as the item key: a date/project pair can now have multiple items. Sum those items when project-level totals are needed.
 
 The external contract uses `YYYY-MM` instead of exposing the existing zero-based numeric month representation. For example, `2026-09` maps internally to report period `202608`.
 

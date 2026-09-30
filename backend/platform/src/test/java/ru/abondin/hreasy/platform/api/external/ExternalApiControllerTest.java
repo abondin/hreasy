@@ -30,7 +30,7 @@ class ExternalApiControllerTest {
     @Test
     void convertsIsoMonthToExistingZeroBasedOvertimePeriod() {
         var overtimeService = mock(OvertimeService.class);
-        when(overtimeService.getSummary(anyInt(), any(AuthContext.class))).thenReturn(Flux.empty());
+        when(overtimeService.getExternalSummary(anyInt(), any(AuthContext.class))).thenReturn(Flux.empty());
         var controller = new ExternalApiController(
                 mock(EmployeeService.class),
                 overtimeService,
@@ -49,6 +49,6 @@ class ExternalApiControllerTest {
                         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)))
                 .verifyComplete();
 
-        verify(overtimeService).getSummary(eq(202608), any(AuthContext.class));
+        verify(overtimeService).getExternalSummary(eq(202608), any(AuthContext.class));
     }
 }

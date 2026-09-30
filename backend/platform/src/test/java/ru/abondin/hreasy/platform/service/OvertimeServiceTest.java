@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ActiveProfiles({"test"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -76,6 +77,8 @@ public class OvertimeServiceTest extends BaseServiceTest {
         StepVerifier
                 .create(overtimeService.getSummary(202008, ctx))
                 .expectError(AccessDeniedException.class).verify(MONO_DEFAULT_TIMEOUT);
+        StepVerifier.create(overtimeService.getExternalSummary(202008, ctx))
+                .expectError(AccessDeniedException.class).verify(MONO_DEFAULT_TIMEOUT);
     }
 
     @Test
@@ -98,6 +101,7 @@ public class OvertimeServiceTest extends BaseServiceTest {
         var ctx = auth(TestEmployees.FMS_Empl_Jenson_Curtis).block(MONO_DEFAULT_TIMEOUT);
         var summaryCtx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
         var date = LocalDate.now();
+        var externalId = "test-overtime-workstream-" + UUID.randomUUID();
         var workstreamId = db.sql("""
                         insert into proj.project_workstream
                             (project_id, external_id, display_name, created_at, created_by)
@@ -105,7 +109,7 @@ public class OvertimeServiceTest extends BaseServiceTest {
                         returning id
                         """)
                 .bind("projectId", testData.project_M1_Billing())
-                .bind("externalId", "test-overtime-workstream-" + UUID.randomUUID())
+                .bind("externalId", externalId)
                 .bind("displayName", "Test Workstream")
                 .bind("createdAt", OffsetDateTime.now())
                 .bind("createdBy", employeeId)
@@ -115,6 +119,8 @@ public class OvertimeServiceTest extends BaseServiceTest {
         StepVerifier.create(overtimeService.addItem(employeeId, 202008,
                         new NewOvertimeItemDto(date, testData.project_M1_Billing(), workstreamId, 4, null), ctx)
                 .doOnNext(report -> assertEquals(workstreamId, report.getItems().getFirst().getWorkstreamId()))
+                .then(overtimeService.addItem(employeeId, 202008,
+                        new NewOvertimeItemDto(date, testData.project_M1_Billing(), workstreamId, 1, null), ctx))
                 .then(overtimeService.addItem(employeeId, 202008,
                         new NewOvertimeItemDto(date, testData.project_M1_Billing(), 2, null), ctx))
                 .then(db.sql("update proj.project_workstream set deleted_at = :deletedAt where id = :id")
@@ -129,9 +135,36 @@ public class OvertimeServiceTest extends BaseServiceTest {
                 .filter(summary -> summary.getEmployeeId() == employeeId))
                 .assertNext(summary -> {
                     assertEquals(1, summary.getItems().size());
-                    assertEquals(6, summary.getItems().getFirst().getHours());
+                    assertEquals(7, summary.getItems().getFirst().getHours());
                 })
                 .verifyComplete();
+
+        var webSummary = overtimeService.getSummary(202008, summaryCtx)
+                .filter(summary -> summary.getEmployeeId() == employeeId).single().block(MONO_DEFAULT_TIMEOUT);
+        StepVerifier.create(overtimeService.getExternalSummary(202008, summaryCtx)
+                        .filter(summary -> summary.employeeId() == employeeId))
+                .assertNext(summary -> {
+                    assertEquals(webSummary.getReportId(), summary.reportId());
+                    assertEquals(webSummary.getTotalHours(), summary.totalHours());
+                    assertEquals(webSummary.getLastUpdate(), summary.lastUpdate());
+                    assertEquals(webSummary.getLastApprove(), summary.lastApprove());
+                    assertEquals(webSummary.getLastDecline(), summary.lastDecline());
+                    assertEquals(webSummary.getCommonApprovalStatus(), summary.commonApprovalStatus());
+                    assertEquals(2, summary.items().size());
+                    var stream = summary.items().stream()
+                            .filter(item -> workstreamId.equals(item.workstreamId())).findFirst().orElseThrow();
+                    assertEquals(date, stream.date());
+                    assertEquals(testData.project_M1_Billing(), stream.projectId());
+                    assertEquals(summary.reportId(), stream.reportId());
+                    assertEquals(5, stream.hours());
+                    assertEquals(externalId, stream.workstreamExternalId());
+                    assertEquals("Test Workstream", stream.workstreamDisplayName());
+                    var project = summary.items().stream()
+                            .filter(item -> item.workstreamId() == null).findFirst().orElseThrow();
+                    assertEquals(2, project.hours());
+                    assertNull(project.workstreamExternalId());
+                    assertNull(project.workstreamDisplayName());
+                }).verifyComplete();
     }
 
     @Test

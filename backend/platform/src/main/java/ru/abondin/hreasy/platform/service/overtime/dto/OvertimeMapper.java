@@ -6,6 +6,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import ru.abondin.hreasy.platform.repo.overtime.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,6 +36,12 @@ public interface OvertimeMapper {
     @Mapping(target = "employeeId", source = "employee")
     @Mapping(target = "items", ignore = true)
     OvertimeEmployeeSummary summaryFromEntry(OvertimeReportEntry.OvertimeReportSummaryEntry entry);
+
+    @Mapping(target = "items", source = "items")
+    ExternalOvertimeSummaryDto externalSummary(OvertimeEmployeeSummary summary,
+                                              List<ExternalOvertimeSummaryDto.ItemDto> items);
+
+    ExternalOvertimeSummaryDto.ItemDto externalItem(OvertimeItemViewRepo.OvertimeWorkstreamSummaryView entry);
 
     @Mapping(target = "outdated", ignore = true)
     OvertimeApprovalDecisionDto fromEntry(OvertimeApprovalDecisionEntry.OvertimeApprovalDecisionWithEmployeeEntry entry);
