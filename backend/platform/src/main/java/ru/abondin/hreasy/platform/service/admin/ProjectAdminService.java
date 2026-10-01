@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import static org.apache.commons.lang3.StringUtils.stripToNull;
+
 /**
  * Simple CRUD for Project Dictionary
  */
@@ -134,15 +136,15 @@ public class ProjectAdminService {
                     entry.setProjectId(projectId);
                     entry.setCreatedAt(now);
                     entry.setCreatedBy(employeeId);
-                } else if (!Objects.equals(entry.getExternalId(), normalize(item.externalId()))
+                } else if (!Objects.equals(entry.getExternalId(), stripToNull(item.externalId()))
                         || !Objects.equals(entry.getDisplayName(), item.displayName().trim())
-                        || !Objects.equals(entry.getDescription(), normalize(item.description()))) {
+                        || !Objects.equals(entry.getDescription(), stripToNull(item.description()))) {
                     entry.setUpdatedAt(now);
                     entry.setUpdatedBy(employeeId);
                 }
-                entry.setExternalId(normalize(item.externalId()));
+                entry.setExternalId(stripToNull(item.externalId()));
                 entry.setDisplayName(item.displayName().trim());
-                entry.setDescription(normalize(item.description()));
+                entry.setDescription(stripToNull(item.description()));
                 return entry;
             }).toList();
             byId.values().forEach(item -> {
@@ -155,14 +157,10 @@ public class ProjectAdminService {
     }
 
     private void normalize(ProjectDto.CreateOrUpdateProjectDto project) {
-        project.setExternalId(normalize(project.getExternalId()));
+        project.setExternalId(stripToNull(project.getExternalId()));
         if (project.getExternalId() != null && project.getExternalId().length() > 255) {
             throw new BusinessError("errors.project.workstream.invalid");
         }
-    }
-
-    private String normalize(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
     }
 
     private ProjectWorkstreamDto toDto(ProjectWorkstreamEntry entry) {

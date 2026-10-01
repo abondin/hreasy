@@ -13,6 +13,7 @@ import org.springframework.lang.NonNull;
 public class CreateOrUpdateBABody {
     @NonNull
     private String name;
+    private String externalId;
     @Nullable
     private String description;
 

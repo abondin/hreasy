@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.admin.ba;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -59,6 +60,14 @@ public class AdminBusinessAccountService {
     }
 
     private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, BusinessAccountEntry entry, CreateOrUpdateBABody body) {
+        // Older web clients omit this field; an explicit blank value clears it.
+        if (body.getExternalId() != null) {
+            var externalId = StringUtils.stripToNull(body.getExternalId());
+            if (externalId != null && externalId.length() > 255) {
+                return Mono.error(new BusinessError("errors.illegal.argument", "externalId"));
+            }
+            entry.setExternalId(externalId);
+        }
         entry.setName(body.getName());
         entry.setDescription(body.getDescription());
         entry.setArchived(body.isArchived());

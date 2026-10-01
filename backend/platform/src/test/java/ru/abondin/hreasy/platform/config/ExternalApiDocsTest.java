@@ -22,6 +22,8 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
 import ru.abondin.hreasy.platform.config.external.ExternalTokenAuthenticationConverter;
+import ru.abondin.hreasy.platform.api.external.ExternalApiController;
+import ru.abondin.hreasy.platform.service.external.ExternalApiService;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,7 +40,8 @@ class ExternalApiDocsTest {
                         WebFluxAutoConfiguration.class, SpringDocConfiguration.class,
                         SpringDocWebFluxConfiguration.class, SwaggerConfig.class, SpringDocConfigProperties.class,
                         SwaggerUiConfigProperties.class, SwaggerUiOAuthProperties.class))
-                .withUserConfiguration(TestEndpoints.class)
+                .withUserConfiguration(TestEndpoints.class, ExternalApiController.class)
+                .withBean(ExternalApiService.class, () -> mock(ExternalApiService.class))
                 .run(context -> {
                     var converter = mock(ExternalTokenAuthenticationConverter.class);
                     when(converter.convert(any())).thenReturn(Mono.empty());
@@ -51,7 +54,15 @@ class ExternalApiDocsTest {
                     client.get().uri("/external/docs/openapi").exchange().expectStatus().isOk()
                             .expectCookie().doesNotExist("SESSION")
                             .expectBody().jsonPath("$.paths['/external/api/v1/test']").exists()
-                            .jsonPath("$.paths['/api/v1/internal']").doesNotExist();
+                            .jsonPath("$.paths['/api/v1/internal']").doesNotExist()
+                            .jsonPath("$.paths['/external/api/v1/employees/{employeeId}/avatar']").doesNotExist()
+                            .jsonPath("$.components.schemas.ExternalEmployee.properties.email").exists()
+                            .jsonPath("$.components.schemas.ExternalEmployee.properties.id").doesNotExist()
+                            .jsonPath("$.components.schemas.ExternalEmployee.properties.skills").doesNotExist()
+                            .jsonPath("$.components.schemas.ExternalEmployee.properties.officeLocation").doesNotExist()
+                            .jsonPath("$.components.schemas.ExternalReference.properties.externalId").exists()
+                            .jsonPath("$.components.schemas.EmployeeDto").doesNotExist()
+                            .jsonPath("$.components.schemas.ResourceAllocationAnalyticsDto").doesNotExist();
                     client.get().uri("/external/docs/openapi.yaml").exchange().expectStatus().isOk();
                     client.get().uri("/external/docs/openapi/swagger-config").exchange().expectStatus().isOk()
                             .expectBody().jsonPath("$.url").isEqualTo("/external/docs/openapi");
