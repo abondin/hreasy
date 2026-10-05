@@ -53,7 +53,7 @@ public interface RatingsMapper {
             return result;
         }
         for (var skillStr : StringUtils.splitByWholeSeparator(skillRatingsAssembledStr, SKILLS_SEPARATOR)) {
-            var skillAttrs = StringUtils.splitByWholeSeparator(skillStr, SKILL_ATTRS_SEPARATOR);
+            var skillAttrs = StringUtils.splitByWholeSeparatorPreserveAllTokens(skillStr, SKILL_ATTRS_SEPARATOR);
             var skillId = Integer.parseInt(skillAttrs[0]);
             var skillName = skillAttrs[1].trim();
             var groupId = Integer.parseInt(skillAttrs[2].trim());

@@ -59,6 +59,7 @@
         </template>
 
         <template #filter-workstream>
+          <div class="d-flex align-center ga-2">
           <v-autocomplete
             :model-value="inputWorkstreamId"
             :items="inputSheet?.workstreams ?? []"
@@ -73,6 +74,17 @@
             data-testid="resource-allocations-input-workstream"
             @update:model-value="changeInputWorkstream"
           />
+          <v-chip
+            v-if="workstreamMissing"
+            color="info"
+            variant="tonal"
+            size="small"
+            class="flex-shrink-0"
+            data-testid="resource-allocations-workstream-required"
+          >
+            {{ t("Направление работ для выбранного проекта обязательно") }}
+          </v-chip>
+          </div>
         </template>
 
         <template #right-actions>
@@ -365,10 +377,10 @@ function setCommentButtonVisible(target: EventTarget | null, visible: boolean, c
   if (target && count === 0) (target as HTMLElement).style.opacity = visible ? "1" : "0";
 }
 
-const toolbarFilterItems = [
+const toolbarFilterItems = computed(() => [
   { id: "project", minWidth: 320 },
-  { id: "workstream", minWidth: 280 },
-];
+  { id: "workstream", minWidth: workstreamMissing.value ? 680 : 280 },
+]);
 const hasPendingChanges = computed(() => inputEdits.value.size > 0);
 const projects = computed(() => inputSheet.value?.projects ?? []);
 const inputProject = computed(
@@ -377,6 +389,7 @@ const inputProject = computed(
       (project) => project.id === inputProjectId.value,
     ) ?? null,
 );
+const workstreamMissing = computed(() => !!inputProject.value?.workstreamRequired && inputWorkstreamId.value == null);
 const inputEmployeeIds = computed(() => {
   const ids = new Set(addedInputEmployeeIds.value);
   for (const employee of inputSheet.value?.employees ?? []) {
@@ -487,6 +500,7 @@ const inputGridColumns = computed<ColumnRegular[]>(() => [
         readonly: ({ model: sourceModel }) =>
           month.closed ||
           !inputProject.value?.editable ||
+          (workstreamMissing.value && !inputInitialValues.value.has(inputCellKey(month.period, (sourceModel as InputGridRow).id))) ||
           (!employeeMonthEditable(sourceModel as InputGridRow, month.period)
             && !inputInitialValues.value.has(inputCellKey(month.period, (sourceModel as InputGridRow).id))),
         cellProperties: ({ model: sourceModel }) => {
@@ -731,6 +745,7 @@ function updateInputCell(
 
 function canSetInputValue(model: InputGridRow, period: number, percent: number | null): boolean {
   return !!inputProject.value?.editable
+    && (!workstreamMissing.value || percent === null)
     && !model.addEmployee
     && inputSheet.value?.months.some(month => month.period === period && !month.closed) === true
     && (employeeMonthEditable(model, period) || percent === null);

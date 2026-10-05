@@ -367,6 +367,46 @@ beforeEach(() => {
 });
 
 describe("ResourceAllocationsView", () => {
+  it.each([null, 11])("requires a workstream for values while allowing deletion (stream %s)", async (workstreamId) => {
+    vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
+      year: 2026,
+      selectedProjectId: 10,
+      selectedWorkstreamId: workstreamId,
+      months: [{ period: 202600, closed: false }],
+      employees: [{ id: 1, displayName: "Alex Morgan", currentProjectId: 10,
+        currentProjectName: "Example project", dateOfEmployment: "2020-01-01",
+        dateOfDismissal: null, dismissed: false }],
+      projects: [{ id: 10, name: "Example project", departmentId: null, departmentName: null,
+        baId: null, baName: null, active: true, editable: true, workstreamRequired: true }],
+      workstreams: [{ id: 11, displayName: "Delivery" }],
+      allocations: [{ period: 202600, employeeId: 1, percent: 50, revisionId: 5 }],
+      otherAllocations: [],
+    });
+    const wrapper = mount(ResourceAllocationInputView, { global: { stubs: globalStubs } });
+    await flushPromises();
+    expect(wrapper.find('[data-testid="resource-allocations-workstream-required"]').exists()).toBe(workstreamId == null);
+    const grid = wrapper.getComponent(GridStub);
+    const model = grid.props("source")?.[0];
+    for (const val of ["0", "60"]) {
+      const edit = new CustomEvent("beforeedit", {
+        cancelable: true, detail: { model, prop: "month_202600", val },
+      });
+      grid.vm.$emit("beforeedit", edit);
+      expect(edit.defaultPrevented).toBe(workstreamId == null);
+      const range = new CustomEvent("beforerangeedit", {
+        cancelable: true, detail: { models: { 0: model }, data: { 0: { month_202600: val } } },
+      });
+      grid.vm.$emit("beforerangeedit", range);
+      expect(range.defaultPrevented).toBe(workstreamId == null);
+    }
+    const deletion = new CustomEvent("beforeedit", {
+      cancelable: true, detail: { model, prop: "month_202600", val: "" },
+    });
+    grid.vm.$emit("beforeedit", deletion);
+    expect(deletion.defaultPrevented).toBe(false);
+    wrapper.unmount();
+  });
+
   it("loads and adds a comment in the cell-anchored popover", async () => {
     vi.mocked(fetchResourceAllocationComments).mockResolvedValue([]);
     vi.mocked(createResourceAllocationComment).mockResolvedValue({

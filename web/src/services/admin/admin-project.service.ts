@@ -3,6 +3,7 @@ import type { DictItem } from "@/services/dict.service";
 import type { ProjectWorkstream } from "@/services/projects.service";
 
 export interface CreateOrUpdateProjectBody {
+  workstreamRequired: boolean;
   externalId?: string;
   name: string;
   startDate?: string;
@@ -17,6 +18,7 @@ export interface CreateOrUpdateProjectBody {
 }
 
 export interface AdminProjectInfo {
+  workstreamRequired?: boolean;
   id: number;
   externalId?: string;
   name: string;

@@ -111,9 +111,6 @@ public class ProjectAdminService {
 
     private Mono<Void> syncWorkstreams(int projectId, List<ProjectWorkstreamDto> requested,
                                        int employeeId, OffsetDateTime now) {
-        if (requested == null) {
-            return Mono.empty();
-        }
         var ids = new HashSet<Integer>();
         var externalIds = new HashSet<String>();
         for (var item : requested) {
@@ -157,6 +154,9 @@ public class ProjectAdminService {
     }
 
     private void normalize(ProjectDto.CreateOrUpdateProjectDto project) {
+        if (project.getWorkstreamRequired() && project.getWorkstreams().isEmpty()) {
+            throw new BusinessError("errors.project.workstream.required");
+        }
         project.setExternalId(stripToNull(project.getExternalId()));
         if (project.getExternalId() != null && project.getExternalId().length() > 255) {
             throw new BusinessError("errors.project.workstream.invalid");

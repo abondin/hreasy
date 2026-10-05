@@ -25,6 +25,12 @@
           variant="outlined"
         />
 
+        <v-checkbox
+          v-model="form.workstreamRequired"
+          :label="t('Выбор направления работ обязателен')"
+          data-testid="admin-project-workstream-required"
+        />
+
         <v-text-field
           v-model="form.externalId"
           :label="t('Внешний идентификатор')"
@@ -184,6 +190,7 @@ type VFormInstance = InstanceType<typeof VForm>;
 
 /** Form state for admin project create/update dialogs. */
 interface ProjectFormState {
+  workstreamRequired: boolean;
   externalId: string;
   name: string;
   startDate: string;
@@ -219,6 +226,7 @@ const saving = ref(false);
 const error = ref("");
 
 const form = reactive<ProjectFormState>({
+  workstreamRequired: false,
   externalId: "",
   name: "",
   startDate: "",
@@ -264,6 +272,7 @@ watch(
 function resetForm(): void {
   error.value = "";
   form.externalId = props.input?.externalId ?? "";
+  form.workstreamRequired = props.input?.workstreamRequired ?? false;
   form.name = props.input?.name ?? "";
   form.startDate = props.input?.startDate ?? "";
   form.endDate = props.input?.endDate ?? "";
@@ -285,6 +294,7 @@ function resetForm(): void {
 function buildPayload(): CreateOrUpdateProjectBody {
   return {
     externalId: form.externalId.trim() || undefined,
+    workstreamRequired: form.workstreamRequired,
     name: form.name.trim(),
     customer: form.customer.trim(),
     startDate: form.startDate || undefined,
@@ -313,6 +323,10 @@ function addWorkstream(): void {
 }
 
 async function submit(): Promise<void> {
+  if (form.workstreamRequired && form.workstreams.length === 0) {
+    error.value = t("Добавьте хотя бы одно направление работ");
+    return;
+  }
   const validation = await formRef.value?.validate();
   if (validation && !validation.valid) {
     return;

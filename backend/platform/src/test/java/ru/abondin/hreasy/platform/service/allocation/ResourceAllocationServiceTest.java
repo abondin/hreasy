@@ -128,7 +128,7 @@ class ResourceAllocationServiceTest {
                 .thenReturn(Flux.just(employee(201, 310), employee(202, 320), employee(203, 310),
                         employee(204, 320), employee(205, 320)));
         when(repository.findProjects()).thenReturn(Flux.just(
-                new ResourceAllocationProjectView(310, "Accessible project", 510, "Department", 610, "Account", null, null),
+                new ResourceAllocationProjectView(310, "Accessible project", 510, "Department", 610, "Account", null, null, false),
                 project(320), project(330)));
         var visibleStream = new ProjectWorkstreamEntry();
         visibleStream.setId(710);
@@ -227,8 +227,9 @@ class ResourceAllocationServiceTest {
         verify(repository).insertIfAbsent(2026, 202601, 2, 10, null, 70, 7);
     }
 
-    @Test
-    void savesAnIndependentWorkstreamAllocation() {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void savesAnIndependentWorkstreamAllocation(boolean workstreamRequired) {
         var now = OffsetDateTime.parse("2026-08-27T10:00:00Z");
         var workstream = new ProjectWorkstreamEntry();
         workstream.setId(30);
@@ -236,7 +237,8 @@ class ResourceAllocationServiceTest {
         when(workstreamRepo.findById(30)).thenReturn(Mono.just(workstream));
         when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
                 .thenReturn(Flux.just(employee(1)));
-        when(repository.findProjects()).thenReturn(Flux.just(project(10)));
+        when(repository.findProjects()).thenReturn(Flux.just(new ResourceAllocationProjectView(
+                10, "Example project", null, null, null, null, null, null, workstreamRequired)));
         when(repository.findProjectAllocations(10, 30, 2026)).thenReturn(Flux.empty());
         when(dateTimeService.now()).thenReturn(now);
         when(repository.createRevision(2026, 10, 30, now, 1)).thenReturn(Mono.just(8));
@@ -250,6 +252,29 @@ class ResourceAllocationServiceTest {
                 .expectNext(8)
                 .verifyComplete();
         verify(repository).insertIfAbsent(2026, 202601, 1, 10, 30, 60, 8);
+    }
+
+    @Test
+    void requiresWorkstreamForValuesButAllowsDeletingProjectLevelAllocations() {
+        when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
+                .thenReturn(Flux.just(employee(1)));
+        when(repository.findProjects()).thenReturn(Flux.just(new ResourceAllocationProjectView(
+                10, "Example project", null, null, null, null, null, null, true)));
+        when(repository.findProjectAllocations(10, null, 2026)).thenReturn(Flux.just(
+                new PeriodResourceAllocationView(202600, 1, 10, null, 50, 5)));
+        for (var percent : List.of(0, 50)) {
+            StepVerifier.create(service.save(2026, 10, null, new ResourceAllocationSaveBody(List.of(
+                            new ResourceAllocationSaveBody.Change(202600, 1, percent, 5))), auth))
+                    .expectErrorMatches(error -> error instanceof ru.abondin.hreasy.platform.BusinessError businessError
+                            && "errors.resource_allocation.workstream_required".equals(businessError.getCode()))
+                    .verify();
+        }
+        when(repository.createRevision(2026, 10, null, dateTimeService.now(), 1)).thenReturn(Mono.just(7));
+        when(repository.recordChange(7, 202600, 1, 50, null)).thenReturn(Mono.just(1L));
+        when(repository.deleteIfRevisionMatches(2026, 202600, 1, 10, null, 5)).thenReturn(Mono.just(1L));
+        StepVerifier.create(service.save(2026, 10, null, new ResourceAllocationSaveBody(List.of(
+                        new ResourceAllocationSaveBody.Change(202600, 1, null, 5))), auth))
+                .expectNext(7).verifyComplete();
     }
 
     @Test
@@ -390,6 +415,6 @@ class ResourceAllocationServiceTest {
 
     private ResourceAllocationProjectView project(int id, LocalDate startDate, LocalDate endDate) {
         return new ResourceAllocationProjectView(id, "Project " + id,
-                null, null, null, null, startDate, endDate);
+                null, null, null, null, startDate, endDate, false);
     }
 }
