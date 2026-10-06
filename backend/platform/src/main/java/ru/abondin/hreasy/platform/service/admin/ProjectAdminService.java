@@ -115,9 +115,9 @@ public class ProjectAdminService {
         var externalIds = new HashSet<String>();
         for (var item : requested) {
             if (item == null || item.displayName() == null || item.displayName().trim().isEmpty()
-                    || item.displayName().trim().length() > 255 || (item.id() != null && !ids.add(item.id()))
+                    || (item.id() != null && !ids.add(item.id()))
                     || (item.externalId() != null && !item.externalId().isBlank()
-                    && (!externalIds.add(item.externalId().trim()) || item.externalId().trim().length() > 255))) {
+                    && !externalIds.add(item.externalId().trim()))) {
                 return Mono.error(new BusinessError("errors.project.workstream.invalid"));
             }
         }
@@ -158,9 +158,6 @@ public class ProjectAdminService {
             throw new BusinessError("errors.project.workstream.required");
         }
         project.setExternalId(stripToNull(project.getExternalId()));
-        if (project.getExternalId() != null && project.getExternalId().length() > 255) {
-            throw new BusinessError("errors.project.workstream.invalid");
-        }
     }
 
     private ProjectWorkstreamDto toDto(ProjectWorkstreamEntry entry) {

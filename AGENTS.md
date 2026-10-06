@@ -20,6 +20,7 @@ HR Easy is a monorepository with separate backend services and a Vue frontend.
 - Reuse nearby project patterns before adding queries, abstractions, payload fields, fallback branches, or infrastructure.
 - Prefer the smallest clear backend/frontend contract that solves the agreed scenario.
 - The web frontend and backend are deployed together. Do not add compatibility with older web clients unless explicitly requested; update both sides of the internal web API contract together instead of adding fallbacks for omitted fields or legacy payloads. This rule does not apply to the external integration API.
+- For internal web CRUD, enforce field-length limits in frontend forms and database column definitions; do not duplicate them in backend services or add DTO length constraints unless explicitly requested. Requests bypassing the frontend may receive database errors. Keep the existing DTO length validation for allocation comments.
 - If a change requires substantial code or a non-obvious design, stop and ask before implementing it.
 
 ## Shared Rules

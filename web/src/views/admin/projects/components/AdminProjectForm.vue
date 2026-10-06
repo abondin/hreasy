@@ -35,6 +35,7 @@
           v-model="form.externalId"
           :label="t('Внешний идентификатор')"
           :counter="255"
+          :rules="externalIdRules"
           variant="outlined"
           data-testid="admin-project-external-id"
         />
@@ -119,6 +120,7 @@
                 <v-text-field
                   v-model="workstream.externalId"
                   :counter="255"
+                  :rules="externalIdRules"
                   variant="outlined"
                   density="compact"
                   hide-details="auto"
@@ -256,6 +258,9 @@ const requiredTextRules = computed(() => [
   (value: string) =>
     Boolean(value && value.length <= 255)
     || t("Обязательное поле. Не более N символов", { n: 255 }),
+]);
+const externalIdRules = computed(() => [
+  (value: string) => !value || value.length <= 255 || t("Не более N символов", { n: 255 }),
 ]);
 const dateRules = computed(() => [
   (value: unknown) => !value || typeof value === "string" || t("Дата в формате ДД.ММ.ГГ"),
