@@ -7,6 +7,7 @@
       <AdaptiveFilterBar
         :items="toolbarFilterItems"
         :has-right-actions="true"
+        :mobile="xs"
         class="mb-4"
       >
         <template #left-actions>
@@ -18,6 +19,7 @@
               @refresh="reload"
             />
             <PeriodSwitcherControl
+              :width="xs ? 196 : 248"
               :label="String(inputYear)"
               :is-current="inputYear === currentYear"
               :disabled="loading || saving"
@@ -59,7 +61,6 @@
         </template>
 
         <template #filter-workstream>
-          <div class="d-flex align-center ga-2">
           <v-autocomplete
             :model-value="inputWorkstreamId"
             :items="inputSheet?.workstreams ?? []"
@@ -74,8 +75,16 @@
             data-testid="resource-allocations-input-workstream"
             @update:model-value="changeInputWorkstream"
           />
+        </template>
+
+        <template #before-right-divider>
+          <v-tooltip v-if="workstreamMissing && xs" location="bottom" open-on-click :open-on-hover="false" :text="t('Направление работ для выбранного проекта обязательно')" max-width="280">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" icon="mdi-help-circle-outline" variant="text" size="small" color="info" :aria-label="t('Направление работ для выбранного проекта обязательно')" data-testid="resource-allocations-workstream-required" />
+            </template>
+          </v-tooltip>
           <v-chip
-            v-if="workstreamMissing"
+            v-else-if="workstreamMissing"
             color="info"
             variant="tonal"
             size="small"
@@ -84,7 +93,6 @@
           >
             {{ t("Направление работ для выбранного проекта обязательно") }}
           </v-chip>
-          </div>
         </template>
 
         <template #right-actions>
@@ -185,6 +193,7 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from "vuetify";
 import { computed, nextTick, onActivated, onMounted, ref, shallowRef, type ComponentPublicInstance } from "vue";
 import { useI18n } from "vue-i18n";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
@@ -231,6 +240,7 @@ interface InputGridRow {
 }
 
 const { t } = useI18n();
+const { xs } = useDisplay();
 const route = useRoute();
 const router = useRouter();
 const currentPeriodId = ReportPeriod.currentPeriod().id;
@@ -377,10 +387,10 @@ function setCommentButtonVisible(target: EventTarget | null, visible: boolean, c
   if (target && count === 0) (target as HTMLElement).style.opacity = visible ? "1" : "0";
 }
 
-const toolbarFilterItems = computed(() => [
+const toolbarFilterItems = [
   { id: "project", minWidth: 320 },
-  { id: "workstream", minWidth: workstreamMissing.value ? 680 : 280 },
-]);
+  { id: "workstream", minWidth: 280 },
+];
 const hasPendingChanges = computed(() => inputEdits.value.size > 0);
 const projects = computed(() => inputSheet.value?.projects ?? []);
 const inputProject = computed(

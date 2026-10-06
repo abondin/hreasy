@@ -6,6 +6,11 @@ import { BusinessError } from "@/lib/errors";
 import ResourceAllocationAnalyticsView from "@/views/allocations/ResourceAllocationAnalyticsView.vue";
 import ResourceAllocationCommentsPopover from "@/views/allocations/ResourceAllocationCommentsPopover.vue";
 import ResourceAllocationInputView from "@/views/allocations/ResourceAllocationInputView.vue";
+const displayMocks = vi.hoisted(() => ({ mobile: false }));
+vi.mock("vuetify", async (importOriginal) => ({
+  ...await importOriginal<typeof import("vuetify")>(),
+  useDisplay: () => ({ xs: ref(displayMocks.mobile) }),
+}));
 import {
   createResourceAllocationComment,
   exportResourceAllocationAnalytics,
@@ -348,6 +353,7 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  displayMocks.mobile = false;
   routerMocks.query = {};
   permissionMocks.canAdmin = false;
   vi.mocked(fetchClosedResourceAllocationPeriods).mockResolvedValue([]);
@@ -367,7 +373,11 @@ beforeEach(() => {
 });
 
 describe("ResourceAllocationsView", () => {
-  it.each([null, 11])("requires a workstream for values while allowing deletion (stream %s)", async (workstreamId) => {
+  it.each([
+    { workstreamId: null, mobile: false }, { workstreamId: 11, mobile: false },
+    { workstreamId: null, mobile: true }, { workstreamId: 11, mobile: true },
+  ])("requires a workstream for values while allowing deletion (stream $workstreamId, mobile $mobile)", async ({ workstreamId, mobile }) => {
+    displayMocks.mobile = mobile;
     vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
       year: 2026,
       selectedProjectId: 10,
@@ -382,9 +392,25 @@ describe("ResourceAllocationsView", () => {
       allocations: [{ period: 202600, employeeId: 1, percent: 50, revisionId: 5 }],
       otherAllocations: [],
     });
-    const wrapper = mount(ResourceAllocationInputView, { global: { stubs: globalStubs } });
+    const wrapper = mount(ResourceAllocationInputView, { global: { stubs: {
+      ...globalStubs,
+      VBadge: PassThroughStub,
+      VTooltip: defineComponent({ setup(_, { slots }) {
+        return () => h("div", slots.activator?.({ props: {} }));
+      } }),
+      VMenu: defineComponent({ setup(_, { slots }) {
+        return () => h("div", [slots.activator?.({ props: {} }), slots.default?.()]);
+      } }),
+    } } });
     await flushPromises();
     expect(wrapper.find('[data-testid="resource-allocations-workstream-required"]').exists()).toBe(workstreamId == null);
+    expect(wrapper.find(".adaptive-filter-bar__right [data-testid='resource-allocations-workstream-required']")
+      .exists()).toBe(workstreamId == null);
+    expect(wrapper.find(".adaptive-filter-bar__filters-grid [data-testid='resource-allocations-input-project']")
+      .exists()).toBe(!mobile);
+    expect(wrapper.find('[data-testid="adaptive-filter-overflow"]').exists()).toBe(mobile);
+    expect(wrapper.find(".adaptive-filter-bar__actions--left [label-test-id='resource-allocations-year']")
+      .exists()).toBe(true);
     const grid = wrapper.getComponent(GridStub);
     const model = grid.props("source")?.[0];
     for (const val of ["0", "60"]) {

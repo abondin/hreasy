@@ -12,6 +12,7 @@ import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeAllFieldsMapper;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeExportFilter;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeKidExportDto;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeWithAllDetailsDto;
 import ru.abondin.hreasy.platform.service.ba.BusinessAccountService;
 import ru.abondin.hreasy.platform.service.dict.DictService;
@@ -20,6 +21,7 @@ import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.time.Period;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -59,7 +61,7 @@ public class AdminEmployeeExportService {
             var organizations = fromDicts(tupple.getT7());
             // 2. Load all employees (include fired)
             return employeeService.findAll(auth, filter.isIncludeFired())
-                    .map(e -> {
+                    .collectMap(EmployeeWithAllDetailsDto::getId, e -> {
                         var emplExp = mapper.toExportWithoutDictionaries(e);
                         emplExp.setCurrentProject(e.getCurrentProjectId() == null ? null : projects.get(e.getCurrentProjectId()));
                         emplExp.setCurrentProjectRole(e.getCurrentProjectRole());
@@ -70,15 +72,21 @@ public class AdminEmployeeExportService {
                         emplExp.setLevel(levels.get(e.getLevelId()));
                         emplExp.setOfficeLocation(officeLocations.get(e.getOfficeLocationId()));
                         return emplExp;
-                    }).collectList().map(emplList ->
+                    }).flatMap(employees -> employeeService.findAllKids(auth)
+                            .filter(kid -> employees.containsKey(kid.getParent().getId()))
+                            .map(kid -> new EmployeeKidExportDto(employees.get(kid.getParent().getId()),
+                                    kid.getDisplayName(), kid.getBirthday(), kid.getBirthday() == null ? null :
+                                    Period.between(kid.getBirthday(), now.toLocalDate()).getYears()))
+                            .collectList().map(kids ->
                             // 4. Prepare export bundle //TODO Get rid of collectList() and export employees in pipe
                             AdminEmployeeExcelExporter.AdminEmployeeExportBundle.builder()
                                     .exportTime(now)
                                     .exportedBy(auth.getUsername())
                                     .locale(locale)
-                                    .employees(emplList)
+                                    .employees(List.copyOf(employees.values()))
+                                    .kids(kids)
                                     .build()
-                    )
+                    ))
                     // 5. Write exported document to resource. //TODO Another place to migrate to pipes
                     .flatMap(this::export);
         });
