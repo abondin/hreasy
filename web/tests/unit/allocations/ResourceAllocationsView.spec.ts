@@ -538,6 +538,7 @@ describe("ResourceAllocationsView", () => {
         baName: null,
         active: true,
         editable: true,
+        workstreamRequired: false,
       }],
       workstreams: [],
       allocations: [],
@@ -716,6 +717,7 @@ describe("ResourceAllocationsView", () => {
           endDate: "2026-06-30",
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
         {
           id: 20,
@@ -726,6 +728,7 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
       ],
       allocations: [
@@ -859,6 +862,7 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
       ],
       allocations: [
@@ -915,7 +919,7 @@ describe("ResourceAllocationsView", () => {
     vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
       ...response, selectedProjectId: 10,
       projects: [{ id: 10, name: "Alpha", departmentId: null, departmentName: null,
-        baId: null, baName: null, active: true, editable: true }],
+        baId: null, baName: null, active: true, editable: true, workstreamRequired: false }],
     });
     const wrapper = mount(ResourceAllocationInputView, { global: { stubs: {
       ...globalStubs,
@@ -962,6 +966,7 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
         {
           id: 20,
@@ -972,6 +977,7 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: false,
+          workstreamRequired: false,
         },
       ],
       workstreams: [{ id: 11, displayName: "Delivery" }],
@@ -1168,6 +1174,7 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
       ],
       allocations: [
@@ -1312,6 +1319,7 @@ describe("ResourceAllocationsView", () => {
           baName: "BA A",
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
         {
           id: 20,
@@ -1322,6 +1330,7 @@ describe("ResourceAllocationsView", () => {
           baName: "BA B",
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
         {
           id: 30,
@@ -1332,6 +1341,7 @@ describe("ResourceAllocationsView", () => {
           baName: "BA B",
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
       ],
       workstreams: [{ id: 31, displayName: "Operations" }],

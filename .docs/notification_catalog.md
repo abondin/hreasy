@@ -53,7 +53,7 @@ the action through the web notification template.
 - A user-visible notification should create a Platform inbox entry unless the product decision explicitly says otherwise.
 - External delivery channels are a delivery concern and must not change the business meaning of the notification.
 - If external delivery fails, the Platform inbox remains the user-visible source of truth.
-- Employee-level notification preferences are not part of the MVP business rules.
+- Notification delivery settings are global; employee-level preferences are not supported.
 - Assessment notifications are intentionally deferred until the assessment access and participation model is finalized.
 
 ## Adding A New Business Notification

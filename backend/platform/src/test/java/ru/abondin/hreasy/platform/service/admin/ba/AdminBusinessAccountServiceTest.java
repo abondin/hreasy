@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 
 class AdminBusinessAccountServiceTest {
     @Test
-    void omittedKeyPreservesValueWhileEmptyStringClearsIt() {
+    void replacesKeyAndClearsNullOrEmptyValues() {
         var repo = mock(BusinessAccountRepo.class);
         var history = mock(BusinessAccountHistoryRepo.class);
         var security = mock(AdminSecurityValidator.class);
@@ -40,8 +40,9 @@ class AdminBusinessAccountServiceTest {
         var body = new CreateOrUpdateBABody();
         body.setName("Example account");
         StepVerifier.create(service.update(auth, 501, body)).expectNext(501).verifyComplete();
-        assertEquals("account-alpha", entry.getExternalId());
+        assertNull(entry.getExternalId());
 
+        entry.setExternalId("account-alpha");
         body.setExternalId("");
         StepVerifier.create(service.update(auth, 501, body)).expectNext(501).verifyComplete();
         assertNull(entry.getExternalId());

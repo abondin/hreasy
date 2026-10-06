@@ -23,8 +23,8 @@
 - **find**
    - Find an employee by display name, email, or Telegram. Optionally specify project and project role.
       - `/find` - Open instructions.
-      - `/find Bondin Alexander` - Find a specific employee.
-      - `/find Alexander SuperProject` - Find employees associated with a project.
+      - `/find Alex Morgan` - Find a specific employee.
+      - `/find Alex ExampleProject` - Find employees associated with a project.
 
 - **my_profile**
    - Provides basic information about yourself.
@@ -44,7 +44,7 @@ VALUES (
   'IT',
   'IT Department',
   'Any questions with hardware and software',
-  '{"emails": ["Alexander.Bondin@hreasy.ru"],
+  '{"emails": ["support@example.test"],
    "categories": ["Hardware", "Software", "Accounts"]}'::jsonb,
     '2024-07-08 12:09:05.415',
      5, NULL, NULL);
@@ -66,4 +66,4 @@ hreasy:
 
 ## Auth and confirmation process in technical details
 
-![Architecture](../.docs/Telegram_auth_and_confirm.drawio.png "Architecture")
+![Architecture](../../.docs/Telegram_auth_and_confirm.drawio.png "Architecture")

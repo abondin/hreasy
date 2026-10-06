@@ -2,13 +2,13 @@
 
 ## Repository layout
 
-- Vue 3 app: repository root (`./`)
-- Main stack: Vue 3 + Vuetify 4 + Pinia + Vue Router 4 + Vue I18n
+- Vue 3 app: `web/` in the monorepository. Run the commands below from `web/`.
+- Main stack: Vue 3 + Vuetify 4 + Pinia + Vue Router 5 + Vue I18n
 
 ## Prerequisites
 
-- Node.js 20.x LTS
-- npm 10.x
+- Node.js 26.x
+- npm 11.19.1 (see `engines` and `packageManager` in `package.json`)
 
 ## Local development
 
@@ -18,6 +18,8 @@ export VITE_DEV_SERVER_PROXY=http://localhost:8081
 export VITE_API_BASE_URL=/api/
 npm run dev
 ```
+
+The dev server runs at `http://localhost:5173` and proxies `/api` to the Platform backend. The backend must be running at the configured proxy address. Bash environment syntax is shown above; in PowerShell use `$env:VITE_DEV_SERVER_PROXY='http://localhost:8081'`.
 
 Useful commands:
 
@@ -53,13 +55,11 @@ GitHub Actions runs both autonomous E2E layers:
 
 ## Docker build
 
-Container serves Vue 3 at `/`.
+Run from the monorepository root. The container serves Vue 3 at `/` and proxies `/api` to `HREASY_API_HOST`.
 
 ```shell
-cd devops
-export CI_DEPLOY_TAG=test
-./build.sh
-docker run -e HREASY_API_HOST=$BACKEND_HOST -p8080:80 --name hreasyweb hreasyweb:test
+docker build -t hreasyweb:test web
+docker run --rm -e HREASY_API_HOST=host.docker.internal:8081 -p8080:80 --name hreasyweb hreasyweb:test
 ```
 
 

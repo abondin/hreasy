@@ -18,7 +18,7 @@ export interface CreateOrUpdateProjectBody {
 }
 
 export interface AdminProjectInfo {
-  workstreamRequired?: boolean;
+  workstreamRequired: boolean;
   id: number;
   externalId?: string;
   name: string;

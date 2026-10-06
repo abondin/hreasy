@@ -1,12 +1,10 @@
-# HLD: External Read-only API
+# External Read-only API
 
 ## Context
 
-HR Easy needs a small server-to-server API for systems such as `pi-backend`. The API exposes existing HR data without creating a web session and performs every request on behalf of a real HR Easy user.
+HR Easy provides a server-to-server API for systems such as `pi-backend`. The API exposes HR data without creating a web session and performs every request on behalf of a configured HR Easy user.
 
 The URL prefix is `/external/api/v1`. All operations are read-only.
-
-The implementation may reuse the stateless Bearer authentication shape of the existing Telegram integration, but must use separate configuration and security components. The legacy Telegram module is not a domain API baseline.
 
 ## Goals
 
@@ -28,9 +26,8 @@ The implementation may reuse the stateless Bearer authentication shape of the ex
 
 ## API Contract
 
-The minimal contract replaces the previous v1 response shapes. Public records live in
-`service.external.dto.ExternalApiDto`; web DTOs and internal API behavior are unchanged.
-`ExternalApiService` adapts authorized domain reads and does not expose database IDs.
+The API identifies employees by email and projects, workstreams, and business accounts
+by configured external keys. Responses do not expose database IDs.
 
 | Endpoint | Parameters | Response |
 |---|---|---|
@@ -39,9 +36,6 @@ The minimal contract replaces the previous v1 response shapes. Public records li
 | `GET /external/api/v1/overtimes/{period}` | ISO `YYYY-MM` | Monthly overtime reports |
 | `GET /external/api/v1/resource-allocations/analytics/{year}` | calendar year | Annual allocation cells |
 | `GET /external/api/v1/projects` | none | Projects with active workstreams |
-
-The internal-ID avatar route and `includeFired` option have been removed. Supplying
-`includeFired=true` does not change the active-only employee response.
 
 ### Business identifiers
 
@@ -57,7 +51,6 @@ The internal-ID avatar route and `includeFired` option have been removed. Supply
 - Names may change without changing an external key. An email change changes the employee key.
 
 Business-account keys are edited in the existing admin BA form and retained in BA history.
-Older web clients omitting this field preserve its existing value; sending a blank string clears it.
 
 ### Employee profiles and avatars
 
@@ -69,7 +62,6 @@ Dismissed employees are never included.
 Avatar lookup matches the complete email case-insensitively and ignores surrounding whitespace.
 URL-encode the query value, especially plus signs. Missing/blank email returns 400.
 A dismissed or missing employee, or a missing image, returns 404 without a fallback image.
-The web avatar behavior remains unchanged.
 
 ### Overtimes
 
@@ -86,7 +78,7 @@ The active workstream supplies the display name; if none is active, the last del
 workstream supplies it. Workstreams without configured keys remain separate.
 A null workstream is a separate project-level dimension, not a total over workstreams.
 
-Approval behavior is unchanged from the web summary. In particular, `lastUpdate` means
+`lastUpdate` means
 the latest creation timestamp among remaining non-deleted items, not a modification cursor.
 It must not be used for incremental synchronization.
 
@@ -109,13 +101,13 @@ The response is `{year, allocations}`. Each allocation contains:
 ```
 
 The key is `(employeeEmail, period, project.externalId, workstream.externalId)` when
-configured. Periods use ISO `YYYY-MM`, not the web API's zero-based numeric encoding.
-Percentages of reused workstream keys are summed. Explicit zeros remain; absent cells mean
+configured. Periods use ISO `YYYY-MM`.
+Percentages of reused workstream keys are summed and may exceed 100. Explicit zeros remain; absent cells mean
 no allocation. Null workstreams remain separate from workstream-level allocations.
 
 Employee profiles and separate employee/project/workstream dictionaries are not included.
 Historical allocations of dismissed employees remain available by email.
-Existing employee-based allocation visibility is unchanged: current employees of accessible
+Allocation visibility is employee-based: current employees of accessible
 projects or employees allocated to accessible projects qualify, and all their annual
 allocations are included. Changes in user scope can therefore change the returned snapshot.
 
@@ -159,9 +151,9 @@ The web container does not proxy `/external/**` and does not implement external 
 
 Successful token validation loads the current HR Easy user details for the configured `subject`, including authorities and accessible departments, business accounts, and projects. The security chain adds a reserved `__external_api__` authority only to distinguish this authentication channel.
 
-The external endpoint then calls the same application service as the web endpoint with the acting user's normal `AuthContext`. Existing checks remain the source of truth:
+External endpoints delegate to application services with the acting user's `AuthContext`. Access rules are:
 
-| Data | Existing authorization behavior |
+| Data | Authorization behavior |
 |---|---|
 | Employees | active profiles available to an authenticated user; no roles, skills, offices or ratings are exported |
 | Employee avatars | active employees only, by email |
@@ -215,7 +207,7 @@ HREASY_EXTERNAL_API_TOKENS_0_SHA256=<hash-produced-by-the-script>
 
 Configuration validation fails application startup when the system, subject, or 64-character hexadecimal SHA-256 is invalid, or when a token hash is duplicated.
 
-Token rotation is a configuration/deployment operation in v1. Runtime credential management and automatic expiration are deferred until there is a concrete operational need.
+Token rotation is a configuration/deployment operation. Runtime credential management and automatic expiration are not supported.
 
 ## Error Handling
 
@@ -233,17 +225,17 @@ Backend errors use the platform's standard JSON format. Requests rejected by the
 
 The external load balancer records the source IP, method, path, and result status. Successful backend requests retain the external system ID in Spring Security authentication details while application services receive and log the acting HR Easy user.
 
-Do not log the Bearer token or response payload. Existing health endpoints remain unchanged. Springdoc publishes documentation containing only `/external/api/v1/**` operations:
+Do not log the Bearer token or response payload. Springdoc publishes documentation containing only `/external/api/v1/**` operations:
 
 - Swagger UI: `/external/docs/swagger-ui.html`.
 - OpenAPI JSON: `/external/docs/openapi`.
 - OpenAPI YAML: `/external/docs/openapi.yaml`.
 
-Documentation GETs do not require a token and do not create a web session. The allowlist also includes `/external/docs/openapi/swagger-config` and `/external/docs/swagger-ui/**` assets. Use Swagger UI Authorize with the opaque token to execute API calls. API authentication and permissions remain unchanged. The external load balancer must forward the entire `/external/**` prefix, including documentation and its assets, to the backend; the web container does not proxy these paths.
+Documentation GETs do not require a token and do not create a web session. The allowlist also includes `/external/docs/openapi/swagger-config` and `/external/docs/swagger-ui/**` assets. Use Swagger UI Authorize with the opaque token to execute API calls. API calls require Bearer authentication and the permissions listed above. The external load balancer must forward the entire `/external/**` prefix, including documentation and its assets, to the backend; the web container does not proxy these paths.
 
 ## Implementation Outline
 
-The minimum implementation is:
+The implementation consists of:
 
 1. configuration properties for hashed tokens and their system/user bindings;
 2. one ordered WebFlux security chain for `/external/**` with an opaque-token authentication converter;
@@ -251,8 +243,6 @@ The minimum implementation is:
 4. focused security tests for valid, unknown, and malformed tokens plus existing business permissions;
 5. focused controller tests for period conversion and delegation.
 
-The BA external key has a Flyway migration and an optional field in the existing Vue admin form. Web report DTOs and services are unchanged.
-
-## Open Contract Questions
-
-- Which external systems and acting users are required for the first deployment?
+Public records live in `service.external.dto.ExternalApiDto`.
+`ExternalApiService` adapts authorized domain reads to these records.
+The BA external key has a Flyway migration and an optional field in the Vue admin form.

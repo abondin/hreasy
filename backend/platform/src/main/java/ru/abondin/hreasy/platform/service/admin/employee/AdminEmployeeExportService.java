@@ -21,7 +21,6 @@ import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.time.Period;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -75,8 +74,7 @@ public class AdminEmployeeExportService {
                     }).flatMap(employees -> employeeService.findAllKids(auth)
                             .filter(kid -> employees.containsKey(kid.getParent().getId()))
                             .map(kid -> new EmployeeKidExportDto(employees.get(kid.getParent().getId()),
-                                    kid.getDisplayName(), kid.getBirthday(), kid.getBirthday() == null ? null :
-                                    Period.between(kid.getBirthday(), now.toLocalDate()).getYears()))
+                                    kid.getDisplayName(), kid.getBirthday(), kid.getAge()))
                             .collectList().map(kids ->
                             // 4. Prepare export bundle //TODO Get rid of collectList() and export employees in pipe
                             AdminEmployeeExcelExporter.AdminEmployeeExportBundle.builder()

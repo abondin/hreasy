@@ -33,7 +33,7 @@ class BusinessAccountExternalIdTest extends BaseServiceTest {
     }
 
     @Test
-    void persistsKeyAndHistoryWithoutBreakingOlderWebUpdates() {
+    void persistsKeyAndHistoryAndClearsNullOrEmptyValues() {
         var body = new CreateOrUpdateBABody();
         body.setName("Example business account");
         var key = "account-" + UUID.randomUUID();
@@ -49,9 +49,11 @@ class BusinessAccountExternalIdTest extends BaseServiceTest {
         body.setName("Updated account name");
         adminService.update(auth, id, body).block(MONO_DEFAULT_TIMEOUT);
         var updated = service.get(id).block(MONO_DEFAULT_TIMEOUT);
-        assertEquals(key, updated.getExternalId());
+        assertNull(updated.getExternalId());
         assertEquals("Updated account name", updated.getName());
 
+        body.setExternalId(key);
+        adminService.update(auth, id, body).block(MONO_DEFAULT_TIMEOUT);
         body.setExternalId("");
         adminService.update(auth, id, body).block(MONO_DEFAULT_TIMEOUT);
         assertNull(service.get(id).block(MONO_DEFAULT_TIMEOUT).getExternalId());

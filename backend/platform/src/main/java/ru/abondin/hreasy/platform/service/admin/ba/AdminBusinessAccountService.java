@@ -60,14 +60,11 @@ public class AdminBusinessAccountService {
     }
 
     private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, BusinessAccountEntry entry, CreateOrUpdateBABody body) {
-        // Older web clients omit this field; an explicit blank value clears it.
-        if (body.getExternalId() != null) {
-            var externalId = StringUtils.stripToNull(body.getExternalId());
-            if (externalId != null && externalId.length() > 255) {
-                return Mono.error(new BusinessError("errors.illegal.argument", "externalId"));
-            }
-            entry.setExternalId(externalId);
+        var externalId = StringUtils.stripToNull(body.getExternalId());
+        if (externalId != null && externalId.length() > 255) {
+            return Mono.error(new BusinessError("errors.illegal.argument", "externalId"));
         }
+        entry.setExternalId(externalId);
         entry.setName(body.getName());
         entry.setDescription(body.getDescription());
         entry.setArchived(body.isArchived());

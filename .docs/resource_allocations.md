@@ -10,7 +10,7 @@ The feature has two sections:
 ## Enter allocations
 
 1. Open **Managers → Resource allocations → Data entry**.
-2. Select a year, one of the writable projects, and optionally one of its workstreams. The current year and the first project alphabetically are selected by default.
+2. Select a year and one of the writable projects. Select a workstream when required by that project's settings; otherwise it is optional. The current year and the first project alphabetically are selected by default.
 3. Find an employee in the grid or add one through the last row.
 4. Enter allocation percentages for the required months.
 5. Review the changes and click **Save**.
@@ -42,6 +42,7 @@ Monthly cells in data entry and terminal analytics rows support comment threads.
 ### Editing rules
 
 - Values must be whole numbers from `0` through `1000`.
+- For projects with **Workstream selection required** enabled, a workstream must be selected to enter numeric values, including zero. Existing project-level allocations can still be cleared without selecting a workstream. Project administrators can enable this setting only when the project has at least one workstream; its default is disabled.
 - An empty value sends `null` and removes the allocation. `0` is an explicit allocation stored and displayed as `0%`.
 - A month can be edited only while it is open and overlaps the employee's employment period.
 - The employee's dismissal month remains editable. Existing values outside employment can be cleared, but no numeric value (including zero) can be entered there.
@@ -49,6 +50,8 @@ Monthly cells in data entry and terminal analytics rows support comment threads.
 - Employees dismissed by the current date are marked in the employee column. If an active employee belongs to another current project, that project is shown next to the name.
 
 The grid is read-only while loading or saving. Copy, paste, range selection, autofill, Tab, and Enter work directly in the grid. Changing the year, project, or page with unsaved changes requires confirmation.
+
+On mobile, project/workstream filters and save actions are in the filter menu; the year and refresh controls remain in the toolbar. A question-mark button explains required workstream selection when tapped. On desktop, the same guidance appears as a badge beside the toolbar divider.
 
 ### Concurrent changes
 

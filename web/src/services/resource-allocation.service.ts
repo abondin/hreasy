@@ -37,7 +37,7 @@ export interface ResourceAllocationEmployee {
 }
 
 export interface ResourceAllocationProject {
-  workstreamRequired?: boolean;
+  workstreamRequired: boolean;
   id: number;
   name: string;
   departmentId: number | null;

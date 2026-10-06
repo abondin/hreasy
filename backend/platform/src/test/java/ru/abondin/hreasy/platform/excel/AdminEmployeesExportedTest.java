@@ -78,7 +78,7 @@ class AdminEmployeesExportedTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
-    void exportsChildrenOnlyForSelectedEmployeesAndUsesExportDate(boolean includeFired) throws Exception {
+    void exportsChildrenOnlyForSelectedEmployeesAndUsesProvidedAge(boolean includeFired) throws Exception {
         var employees = mock(AdminEmployeeService.class);
         var dictionaries = mock(DictService.class);
         var accounts = mock(BusinessAccountService.class);
@@ -93,8 +93,8 @@ class AdminEmployeesExportedTest {
         when(employees.findAll(auth, includeFired)).thenReturn(includeFired ? Flux.just(active, fired) : Flux.just(active));
         when(mapper.toExportWithoutDictionaries(active)).thenReturn(employee("Alex Morgan", "alex.morgan@example.test"));
         when(mapper.toExportWithoutDictionaries(fired)).thenReturn(employee("Taylor Reed", "taylor.reed@example.test"));
-        when(employees.findAllKids(auth)).thenReturn(Flux.just(kid(301, "Casey Morgan", LocalDate.of(2018, 10, 6)),
-                kid(301, "Jordan Morgan", null), kid(501, "Sam Reed", LocalDate.of(2020, 11, 1))));
+        when(employees.findAllKids(auth)).thenReturn(Flux.just(kid(301, "Casey Morgan", LocalDate.of(2018, 10, 6), 8),
+                kid(301, "Jordan Morgan", null, null), kid(501, "Sam Reed", LocalDate.of(2020, 11, 1), 5)));
         when(clock.now()).thenReturn(now);
         when(dictionaries.findProjects(auth)).thenReturn(Flux.empty());
         when(dictionaries.findDepartments(auth)).thenReturn(Flux.empty());
@@ -134,11 +134,12 @@ class AdminEmployeesExportedTest {
         return employee;
     }
 
-    private EmployeeKidDto kid(int parent, String name, LocalDate birthday) {
+    private EmployeeKidDto kid(int parent, String name, LocalDate birthday, Integer age) {
         var kid = new EmployeeKidDto();
         kid.setParent(new SimpleDictDto(parent, "Example parent"));
         kid.setDisplayName(name);
         kid.setBirthday(birthday);
+        kid.setAge(age);
         return kid;
     }
 }

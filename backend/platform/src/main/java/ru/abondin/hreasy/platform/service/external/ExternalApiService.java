@@ -79,22 +79,21 @@ public class ExternalApiService {
     /** Retains historical hours using email, without exporting dismissed employee profiles. */
     public Flux<Overtime> overtimes(YearMonth period, AuthContext auth) {
         var internalPeriod = period.getYear() * 100 + period.getMonthValue() - 1;
-        return overtimeService.getExternalSummary(internalPeriod, auth).collectList().flatMapMany(reports ->
-                Mono.zip(catalog(auth), employeeRepo.findAll().collectMap(EmployeeEntry::getId, EmployeeEntry::getEmail))
-                        .flatMapMany(data -> Flux.fromIterable(reports).map(report -> {
-                            var catalog = data.getT1();
-                            var items = new LinkedHashMap<CellKey, OvertimeItem>();
-                            for (var item : report.items()) {
-                                var key = catalog.key(item.date(), item.projectId(), item.workstreamId());
-                                items.merge(key, new OvertimeItem(item.date(), catalog.project(item.projectId()),
-                                                catalog.workstream(item.workstreamId()), item.hours()),
-                                        (left, right) -> new OvertimeItem(left.date(), left.project(), left.workstream(),
-                                                left.hours() + right.hours()));
-                            }
-                            return new Overtime(data.getT2().get(report.employeeId()), period.toString(), report.totalHours(),
-                                    report.lastUpdate(), report.lastApprove(), report.lastDecline(),
-                                    report.commonApprovalStatus().name(), List.copyOf(items.values()));
-                        })));
+        return Mono.zip(catalog(auth), employeeRepo.findAll().collectMap(EmployeeEntry::getId, EmployeeEntry::getEmail))
+                .flatMapMany(data -> overtimeService.getExternalSummary(internalPeriod, auth).map(report -> {
+                    var catalog = data.getT1();
+                    var items = new LinkedHashMap<CellKey, OvertimeItem>();
+                    for (var item : report.items()) {
+                        var key = catalog.key(item.date(), item.projectId(), item.workstreamId());
+                        items.merge(key, new OvertimeItem(item.date(), catalog.project(item.projectId()),
+                                        catalog.workstream(item.workstreamId()), item.hours()),
+                                (left, right) -> new OvertimeItem(left.date(), left.project(), left.workstream(),
+                                        left.hours() + right.hours()));
+                    }
+                    return new Overtime(data.getT2().get(report.employeeId()), period.toString(), report.totalHours(),
+                            report.lastUpdate(), report.lastApprove(), report.lastDecline(),
+                            report.commonApprovalStatus().name(), List.copyOf(items.values()));
+                }));
     }
 
     /** Keeps existing allocation visibility while replacing internal references with business keys. */
