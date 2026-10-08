@@ -253,6 +253,7 @@ const summaryItems = computed<AdminDetailSummaryItem[]>(() => {
   return [
     { label: t("Наименование"), value: project.value.name },
     { label: t("Внешний идентификатор"), value: project.value.externalId ?? t("Не задан") },
+    { label: t("Выбор направления работ обязателен"), value: t(project.value.workstreamRequired ? "Да" : "Нет") },
     { label: t("Отдел"), value: project.value.department?.name ?? t("Не задан") },
     { label: t("Бизнес аккаунт"), value: project.value.businessAccount?.name ?? t("Не задан") },
     { label: t("Заказчик"), value: project.value.customer ?? t("Не задан") },

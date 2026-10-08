@@ -3,6 +3,7 @@ import type { ManagerOfObject } from "@/services/projects.service";
 
 export interface CreateOrUpdateBusinessAccountBody {
   name: string;
+  externalId?: string;
   description?: string;
   archived: boolean;
 }
@@ -10,6 +11,7 @@ export interface CreateOrUpdateBusinessAccountBody {
 export interface BusinessAccountInfo {
   id: number;
   name: string;
+  externalId?: string;
   description?: string;
   managers: ManagerOfObject[];
   createdBy?: number;

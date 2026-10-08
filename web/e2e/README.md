@@ -13,7 +13,7 @@ This folder contains end-to-end tests for the Vue 3 application.
 
 ## Run
 
-From repository root:
+From `web/`, after `npm ci` and `npx playwright install chromium`:
 
 ```sh
 npm run test:e2e
@@ -75,8 +75,8 @@ Example for app on `http://localhost:5174`:
 
 ```bash
 PLAYWRIGHT_PORT=5174 \
-E2E_EMPLOYEE_USERNAME=alexander.bondin \
-E2E_EMPLOYEE_PASSWORD=qwe123 \
+E2E_EMPLOYEE_USERNAME=test.employee \
+E2E_EMPLOYEE_PASSWORD='<test-password>' \
 npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
 ```
 
@@ -84,7 +84,7 @@ npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
 
 ```powershell
 $env:PLAYWRIGHT_PORT='5174'; `
-$env:E2E_EMPLOYEE_USERNAME='alexander.bondin'; `
-$env:E2E_EMPLOYEE_PASSWORD='qwe123'; `
+$env:E2E_EMPLOYEE_USERNAME='test.employee'; `
+$env:E2E_EMPLOYEE_PASSWORD='<test-password>'; `
 npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
 ```

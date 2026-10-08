@@ -18,6 +18,7 @@ public class BusinessAccountDto {
     private Integer id;
     @Nullable
     private String name;
+    private String externalId;
     private List<ManagerInfoDto> managers = new ArrayList<>();
     private String description;
     private boolean archived = false;

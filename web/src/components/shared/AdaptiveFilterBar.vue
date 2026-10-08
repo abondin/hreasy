@@ -1,5 +1,5 @@
 <template>
-  <div class="adaptive-filter-bar d-flex flex-nowrap align-center ga-4">
+  <div class="adaptive-filter-bar d-flex align-center" :class="props.mobile ? 'flex-wrap ga-1' : 'flex-nowrap ga-4'">
     <div
       v-if="props.hasLeftActions"
       class="adaptive-filter-bar__actions adaptive-filter-bar__actions--left d-flex align-center"
@@ -8,12 +8,12 @@
     </div>
 
     <v-divider
-      v-if="props.hasLeftActions && items.length > 0"
+      v-if="props.hasLeftActions && items.length > 0 && !props.mobile"
       vertical
       class="adaptive-filter-bar__divider"
     />
 
-    <div ref="visibleFiltersRef" class="adaptive-filter-bar__filters flex-grow-1">
+    <div v-show="!props.mobile" ref="visibleFiltersRef" class="adaptive-filter-bar__filters flex-grow-1">
       <div class="adaptive-filter-bar__filters-grid d-flex flex-nowrap ga-4">
         <div
           v-for="item in visibleItems"
@@ -28,8 +28,10 @@
 
     <div
       v-if="showRightCluster"
-      class="adaptive-filter-bar__right d-flex align-center ga-4 ms-auto"
+      class="adaptive-filter-bar__right d-flex align-center ms-auto"
+      :class="props.mobile ? 'ga-1' : 'ga-4'"
     >
+      <slot name="before-right-divider" />
       <v-divider
         vertical
         class="adaptive-filter-bar__divider"
@@ -37,7 +39,7 @@
 
       <div class="adaptive-filter-bar__actions adaptive-filter-bar__actions--right d-flex align-center justify-end ga-2">
         <v-menu
-          v-if="hiddenItems.length > 0"
+          v-if="props.mobile || hiddenItems.length > 0"
           v-model="overflowMenu"
           location="bottom end"
           :close-on-content-click="false"
@@ -61,7 +63,7 @@
             </v-badge>
           </template>
 
-          <v-card :min-width="props.overflowMenuMinWidth" class="pa-4">
+          <v-card :min-width="props.mobile ? 280 : props.overflowMenuMinWidth" max-width="calc(100vw - 32px)" class="pa-4">
             <div class="d-flex flex-column ga-4">
               <div
                 v-for="item in hiddenItems"
@@ -70,11 +72,12 @@
               >
                 <slot :name="`filter-${item.id}`" :item="item" :hidden="true" />
               </div>
+              <div v-if="props.mobile" class="d-flex flex-wrap ga-2"><slot name="right-actions" /></div>
             </div>
           </v-card>
         </v-menu>
 
-        <slot name="right-actions" />
+        <slot v-if="!props.mobile" name="right-actions" />
       </div>
     </div>
   </div>
@@ -95,6 +98,7 @@ const props = withDefaults(defineProps<{
   overflowMenuMinWidth?: number | string;
   hasLeftActions?: boolean;
   hasRightActions?: boolean;
+  mobile?: boolean;
 }>(), {
   overflowMenuMinWidth: 360,
   hasLeftActions: true,
@@ -110,8 +114,8 @@ const FILTER_GAP_PX = 16;
 
 let visibleFiltersResizeObserver: ResizeObserver | null = null;
 
-const visibleItems = computed(() => props.items.filter((item) => visibleItemIds.value.includes(item.id)));
-const hiddenItems = computed(() => props.items.filter((item) => hiddenItemIds.value.includes(item.id)));
+const visibleItems = computed(() => props.mobile ? [] : props.items.filter((item) => visibleItemIds.value.includes(item.id)));
+const hiddenItems = computed(() => props.mobile ? props.items : props.items.filter((item) => hiddenItemIds.value.includes(item.id)));
 const hiddenActiveCount = computed(() => hiddenItems.value.reduce((count, item) => count + (item.active ? 1 : 0), 0));
 const showRightCluster = computed(() => props.hasRightActions || hiddenItems.value.length > 0);
 

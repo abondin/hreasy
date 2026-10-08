@@ -43,7 +43,8 @@ public record ResourceAllocationAnalyticsDto(
             @Schema(description = "Actual project start date.", nullable = true) LocalDate startDate,
             @Schema(description = "Actual project end date.", nullable = true) LocalDate endDate,
             @Schema(description = "Whether the project dates overlap the requested year.") boolean active,
-            @Schema(description = "Whether the acting user may edit this project through the internal API; external API remains read-only.") boolean editable) {
+            @Schema(description = "Whether the acting user may edit this project through the internal API; external API remains read-only.") boolean editable,
+            @Schema(description = "Whether setting an allocation requires a workstream.") boolean workstreamRequired) {
     }
 
     @Schema(name = "ResourceAllocationCell", description = "Recorded monthly allocation for an employee and project/workstream dimension.")

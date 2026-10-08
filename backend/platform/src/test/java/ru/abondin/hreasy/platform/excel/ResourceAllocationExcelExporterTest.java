@@ -38,7 +38,7 @@ class ResourceAllocationExcelExporterTest {
         var analytics = new ResourceAllocationAnalyticsDto(2026,
                 List.of(new EmployeeDto(301, "Alex Morgan", null, null, null, null,
                         "Developer", "alex.morgan@example.test")),
-                List.of(new ProjectDto(401, "=2+2", null, null, 601, "Example account", null, null, true, false)),
+                List.of(new ProjectDto(401, "=2+2", null, null, 601, "Example account", null, null, true, false, false)),
                 List.of(new ProjectWorkstreamDto(501, null, "Delivery", null)),
                 List.of(new AllocationDto(202600, 301, 401, null, 50),
                         new AllocationDto(202601, 301, 401, null, 0),

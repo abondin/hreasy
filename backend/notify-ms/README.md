@@ -2,12 +2,12 @@
 
 Notification delivery service for HR Easy.
 
-The service accepts normalized notification requests from HR Easy Platform, stores them in its own `notify_ms` schema, and creates channel deliveries. The first implemented provider is Yandex Messenger.
+The service accepts notification requests from HR Easy Platform, stores them in its own `notify_ms` schema, and creates channel deliveries. Yandex Messenger is the implemented external channel. Platform supplies the localized message text.
 
 ## Stack
 
 - Java 25
-- Spring Boot 4.0.x
+- Spring Boot 4 (version pinned in `../parent/pom.xml`)
 - Spring WebFlux
 - Spring Security
 - Spring Data R2DBC
@@ -32,18 +32,18 @@ Content-Type: application/json
 
 ```json
 {
-  "eventType": "assessment.assigned",
+  "eventType": "salary_request.implemented",
   "recipient": {
     "type": "user",
-    "login": "ivan.petrov@example.com",
+    "login": "alex.morgan@example.test",
     "employeeId": 123
   },
   "priority": "normal",
-  "dedupeKey": "assessment.assigned:456:123",
+  "dedupeKey": "salary_request.implemented:456:123:2026-10-06T12:00:00Z",
   "locale": "ru",
-  "title": "Assessment assigned",
-  "body": "A self assessment form was assigned. Due date: 2026-06-05.",
-  "data": "{\"assessmentId\":456,\"dueDate\":\"2026-06-05\"}"
+  "title": "Salary request implemented",
+  "body": "Salary request for Taylor Reed was implemented for October 2026.",
+  "data": "{\"salaryRequestId\":456,\"employeeId\":201}"
 }
 ```
 
@@ -59,6 +59,8 @@ Successful response:
   "status": "accepted"
 }
 ```
+
+`eventType`, `recipient`, `dedupeKey`, and `body` are required. `data` is an optional string containing JSON, not a JSON object. Repeated `dedupeKey` values return the existing notification ID. `202 Accepted` confirms persistence, not provider delivery.
 
 ## Configuration
 
@@ -84,7 +86,7 @@ Email digest configuration is reserved for future work and must stay disabled un
 
 ### Channel Configuration
 
-Delivery channel settings are global for the initial implementation. Employee-level notification preferences are deferred and must not be modeled in `empl.employee` until global channel behavior is validated.
+Delivery channel settings are global. Employee-level notification preferences are not supported.
 
 Current channel semantics:
 
@@ -105,16 +107,14 @@ Global channel rules:
 
 Platform UI inbox notifications are not controlled by notify-ms channel settings. The Platform inbox remains the user-visible source of truth; notify-ms owns only external delivery attempts.
 
-Flyway is disabled by default, matching platform style. Enable it with:
-
-```yaml
-spring:
-  flyway:
-    enabled: true
-```
+The shared custom Flyway configuration runs the commands in `hreasy.db.flyway-commands` at startup; the default is `migrate`. Configure `hreasy.db.*` for the service database. The `spring.flyway.enabled` setting does not control this custom startup path.
 
 ## Build
 
 ```shell
-mvn -q -f ../pom.xml -pl notify-ms -am -DskipTests package
+mvn -q -f backend/pom.xml -pl notify-ms -am -DskipTests package
 ```
+
+Run this command from the monorepository root. The service listens on port `8083` by default. Configure `hreasy.notifications.http-token` and database credentials before starting the executable JAR.
+
+See [notification architecture](../../.docs/yandex_messenger_notifications_hld.md) for scheduling, retries, and reliability limits, and the [notification catalog](../../.docs/notification_catalog.md) for business events.

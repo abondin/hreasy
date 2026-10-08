@@ -4,35 +4,29 @@
 
 features:
 
-- Employee project roles are visible to anyone who can view the employee. Removed the `view_empl_current_project_role` permission and its role assignments; editing permissions are unchanged.
-- Added current project employees to the project details page with the same employee profile dialog used in resource allocations.
-- Added monthly resource allocations by project and workstream, with annual data entry, project- and employee-based analytics, employee profile previews, period locking, change history, concurrent-edit conflict protection, cell comments with author-only editing/deletion, and annual Excel export in percentages or person-months. Access follows the acting user's permissions.
-- Added a read-only external API for employees, avatars by employee ID or email, projects, overtime summaries, and annual allocation analytics, with opaque Bearer tokens, acting-user permissions, and dedicated Swagger UI and OpenAPI JSON/YAML documentation under `/external/docs/`.
-- Moved Java backend services under `backend/`, added backend Maven reactor/parent/common modules, upgraded services to Spring Boot 4.0.5, and updated GitHub Actions/devops scripts.
-- Implemented notification inbox UI and Yandex Messenger notification delivery.
-- Disabled self-service current project updates for regular employees
-- Added backend error contract for current project transfers that require approval.
-- Added current project transfer approver candidates for approval-required transfers.
-- Manager assignments for projects, business accounts, and departments now contribute to effective manager-scoped access in addition to manual user access settings.
-- Full migration from vue2 to vue3 
+- Added annual resource planning by project and workstream, with data entry, analytics, period locking, change history, conflict protection, cell comments, Excel export, and a project setting requiring workstream selection.
+- Added a read-only external API for employees, avatars, projects, overtime, and allocations, using email and configurable external keys, Bearer authentication, acting-user permissions, and OpenAPI documentation.
+- Employee Excel exports include a separate Children worksheet; Skype is no longer exported.
+- Added a notification inbox and Yandex Messenger delivery.
+- Current-project transfers support approval by an eligible manager; regular employees cannot change their project directly.
+- Manager assignments on projects, business accounts, and departments contribute to access scope alongside manual user access settings.
+- Project details include current employees, and employee project roles no longer require a separate viewing permission.
+- Migrated the main web application from Vue 2 to Vue 3.
 
 bugfix:
 
-- Fixed employee search focus in the resource allocation Add employee selector.
-- Fixed menu navigation from an open employee details panel returning users to the employee directory; manual panel closure preserves search filters.
-- Allowed manager-link deletion by its creator or an administrator and surfaced backend deletion errors in the confirmation dialog.
-- Prevented Telegram API authentication from creating a reusable web session and hardened file storage against unsafe filenames and filesystem changes before authorization.
+- Fixed manager assignments that their creators could add but could not delete; creators and administrators can now remove them.
 
 technical:
 
-- Updated compatible frontend dependencies and retained TypeScript 6 until the Vue toolchain supports TypeScript 7.
-- Updated GitHub Actions tooling and the Node 26 build image to Debian Trixie, aligned npm to 11.19.1, and removed unused build-stage tini installation.
+- Backend services require Java 25 and use Spring Boot 4. Building the web frontend requires Node.js 26 and npm 11.19.1.
+- Fixed security issues present in 1.3: Telegram API authentication could create a reusable web session, and file storage lacked filename protection and could modify files before authorization.
 
 
 ## 1.3.1 (2026-03-21)
 
 Final web release on Vue 2, available under the `/old` base URL.
-The next web release will be built on Vue 3.`
+The next web release will be built on Vue 3.
 
 ## 1.3.0 (2026-03-21)
 

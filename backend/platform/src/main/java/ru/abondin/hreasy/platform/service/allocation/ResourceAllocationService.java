@@ -198,6 +198,9 @@ public class ResourceAllocationService {
                     "No access to resource allocation project " + projectId));
         }
         for (var change : requested) {
+            if (project.workstreamRequired() && workstreamId == null && change.percent() != null) {
+                return Mono.error(new BusinessError("errors.resource_allocation.workstream_required"));
+            }
             var employee = employeeById.get(change.employeeId());
             if (change.percent() != null
                     && (employee == null || !employmentOverlaps(employee, parsePeriod(change.period())))) {
@@ -351,7 +354,7 @@ public class ResourceAllocationService {
                 && (project.endDate() == null || !project.endDate().isBefore(year.atDay(1)));
         return new ProjectDto(project.id(), project.name(), project.departmentId(), project.departmentName(),
                 project.baId(), project.baName(), project.startDate(), project.endDate(), active,
-                securityValidator.canWriteProject(auth, project));
+                securityValidator.canWriteProject(auth, project), project.workstreamRequired());
     }
 
     private YearMonth parsePeriod(int period) {

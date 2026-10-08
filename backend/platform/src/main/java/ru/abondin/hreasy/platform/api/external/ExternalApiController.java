@@ -24,132 +24,78 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.api.BusinessErrorDto;
 import ru.abondin.hreasy.platform.auth.AuthHandler;
-import ru.abondin.hreasy.platform.service.EmployeeService;
-import ru.abondin.hreasy.platform.service.FileStorage;
-import ru.abondin.hreasy.platform.service.allocation.ResourceAllocationService;
-import ru.abondin.hreasy.platform.service.allocation.dto.ResourceAllocationAnalyticsDto;
-import ru.abondin.hreasy.platform.service.dict.DictService;
-import ru.abondin.hreasy.platform.service.dto.EmployeeDto;
-import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
-import ru.abondin.hreasy.platform.service.overtime.OvertimeService;
-import ru.abondin.hreasy.platform.service.overtime.dto.ExternalOvertimeSummaryDto;
+import ru.abondin.hreasy.platform.service.external.ExternalApiService;
+import ru.abondin.hreasy.platform.service.external.dto.ExternalApiDto.*;
 
 import java.time.YearMonth;
 
-/**
- * Read-only integration API that applies the acting HR Easy user's current access rules.
- */
-@Tag(name = "External API", description = "Read-only system-to-system API. Requires an opaque Bearer token; network policy is enforced by the external load balancer.")
+/** Minimal read-only integration API using business keys instead of internal IDs. */
+@Tag(name = "External API", description = "Read-only API. Requires an opaque Bearer token bound to an acting user.")
 @SecurityScheme(name = "externalBearer", type = SecuritySchemeType.HTTP, scheme = "bearer",
-        bearerFormat = "opaque", description = "HR Easy-generated opaque token bound to an acting user. Not a JWT.")
+        bearerFormat = "opaque", description = "HR Easy-generated opaque token. Not a JWT.")
 @SecurityRequirement(name = "externalBearer")
 @ApiResponses({
         @ApiResponse(responseCode = "401", description = "Missing or invalid token, or unavailable acting user.",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = BusinessErrorDto.class))),
-        @ApiResponse(responseCode = "403", description = "Acting user lacks access, or the external load balancer rejects the request.",
+        @ApiResponse(responseCode = "403", description = "Acting user lacks access. Load-balancer errors may use its own response format.",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = BusinessErrorDto.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid request parameter.",
                 content = @Content(mediaType = "application/json", schema = @Schema(implementation = BusinessErrorDto.class)))
 })
 @RestController
 @RequestMapping("/external/api/v1")
 @RequiredArgsConstructor
 public class ExternalApiController {
-    private final EmployeeService employeeService;
-    private final OvertimeService overtimeService;
-    private final ResourceAllocationService resourceAllocationService;
-    private final DictService dictService;
-    private final FileStorage fileStorage;
+    private final ExternalApiService service;
 
-    @Operation(operationId = "externalListEmployees", summary = "Get basic information about employees",
-            description = "Returns active employees by default. Role and skill visibility follows the acting user's permissions. "
-                    + "The response contains HR Easy IDs and email, but no external ERP employee ID.")
-    @ApiResponse(responseCode = "200", description = "Employee list.", content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = EmployeeDto.class))))
-    @ApiResponse(responseCode = "400", description = "Invalid includeFired boolean value.", content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = BusinessErrorDto.class)))
+    @Operation(operationId = "externalListEmployees", summary = "Get active employee profiles",
+            description = "Email is the external employee key, exactly as stored. Dismissed employees, office information, skills and ratings are not exported. There is no includeFired option.")
+    @ApiResponse(responseCode = "200", description = "Active employees.", content = @Content(mediaType = "application/json",
+            array = @ArraySchema(schema = @Schema(implementation = Employee.class))))
     @GetMapping("/employees")
-    public Flux<EmployeeDto> employees(
-            @Parameter(description = "Include dismissed employees.", example = "false")
-            @RequestParam(defaultValue = "false") boolean includeFired) {
-        return AuthHandler.currentAuth().flatMapMany(auth -> employeeService.findAll(auth, includeFired)
-                .map(employee -> {
-                    employee.setHasAvatar(fileStorage.fileExists("avatars", employee.getId() + ".png"));
-                    return employee;
-                }));
+    public Flux<Employee> employees() {
+        return AuthHandler.currentAuth().flatMapMany(service::employees);
     }
 
-    @Operation(operationId = "externalGetEmployeeAvatar", summary = "Download employee avatar by ID",
-            description = "Returns the actual PNG avatar, including for dismissed employees. "
-                    + "Uses the same authenticated access as the employee list. No fallback image is returned.")
+    @Operation(operationId = "externalGetEmployeeAvatarByEmail", summary = "Download an active employee avatar by email",
+            description = "Matches the complete email without case sensitivity, ignoring surrounding whitespace. URL-encode the email, including plus signs. Dismissed employees return 404; no fallback image is returned.")
     @ApiResponse(responseCode = "200", description = "Employee avatar PNG.", content = @Content(mediaType = "image/png",
             schema = @Schema(type = "string", format = "binary")))
-    @ApiResponse(responseCode = "400", description = "Employee ID is not a valid integer.", content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = BusinessErrorDto.class)))
-    @ApiResponse(responseCode = "404", description = "Employee or avatar not found.", content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = BusinessErrorDto.class)))
-    @GetMapping(value = "/employees/{employeeId}/avatar", produces = MediaType.IMAGE_PNG_VALUE)
-    public Mono<Resource> avatar(
-            @Parameter(description = "HR Easy employee identifier.", required = true, example = "101")
-            @PathVariable int employeeId) {
-        return AuthHandler.currentAuth().flatMap(auth -> employeeService.avatar(employeeId, auth));
-    }
-
-    @Operation(operationId = "externalGetEmployeeAvatarByEmail", summary = "Download employee avatar by email",
-            description = "Matches the complete email without case sensitivity, ignoring surrounding whitespace. "
-                    + "Includes dismissed employees and returns no fallback image. URL-encode the email, including any plus sign.")
-    @ApiResponse(responseCode = "200", description = "Employee avatar PNG.", content = @Content(mediaType = "image/png",
-            schema = @Schema(type = "string", format = "binary")))
-    @ApiResponse(responseCode = "400", description = "Email parameter is missing or blank.", content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = BusinessErrorDto.class)))
-    @ApiResponse(responseCode = "404", description = "Employee or avatar not found.", content = @Content(mediaType = "application/json",
+    @ApiResponse(responseCode = "404", description = "Active employee or avatar not found.", content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = BusinessErrorDto.class)))
     @GetMapping(value = "/employees/avatar", produces = MediaType.IMAGE_PNG_VALUE)
-    public Mono<Resource> avatarByEmail(
-            @Parameter(description = "Employee email, matched exactly without case sensitivity.", required = true,
-                    example = "alex.morgan@example.test", schema = @Schema(type = "string", format = "email"))
-            @RequestParam String email) {
-        return AuthHandler.currentAuth().flatMap(auth -> employeeService.avatarByEmail(email, auth));
+    public Mono<Resource> avatarByEmail(@RequestParam String email) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.avatar(email, auth));
     }
 
     @Operation(operationId = "externalGetOvertimeSummary", summary = "Get overtime summary for a calendar month",
-            description = "Requires overtime_view. Returns employee report totals and approval statuses. "
-                    + "Items aggregate hours by date, project and workstream, including soft-deleted workstreams.")
-    @ApiResponse(responseCode = "200", description = "Monthly overtime summaries.", content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = ExternalOvertimeSummaryDto.class))))
-    @ApiResponse(responseCode = "400", description = "Invalid calendar month.", content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = BusinessErrorDto.class)))
+            description = "Requires overtime_view. Includes historical records of dismissed employees, identified only by email. Items sharing date, project and configured workstream external key are summed. No internal IDs are exposed.")
+    @ApiResponse(responseCode = "200", description = "Monthly overtime reports.", content = @Content(mediaType = "application/json",
+            array = @ArraySchema(schema = @Schema(implementation = Overtime.class))))
     @GetMapping("/overtimes/{period}")
-    public Flux<ExternalOvertimeSummaryDto> overtimes(
-            @Parameter(description = "Calendar month in ISO YYYY-MM format; month is 01 through 12.",
-                    required = true, example = "2026-09", schema = @Schema(type = "string", pattern = "^[0-9]{4}-(0[1-9]|1[0-2])$"))
+    public Flux<Overtime> overtimes(
+            @Parameter(description = "Calendar month in ISO YYYY-MM format.", example = "2026-09")
             @PathVariable @DateTimeFormat(pattern = "yyyy-MM") YearMonth period) {
-        var internalPeriod = period.getYear() * 100 + period.getMonthValue() - 1;
-        return AuthHandler.currentAuth().flatMapMany(auth -> overtimeService.getExternalSummary(internalPeriod, auth));
+        return AuthHandler.currentAuth().flatMapMany(auth -> service.overtimes(period, auth));
     }
 
-    @Operation(operationId = "externalGetAllocationAnalytics", summary = "Get annual resource allocation analytics",
-            description = "Requires resource_allocation_read. Returns employees whose current project is accessible or who have an allocation on an accessible project in this year, with all their annual allocations across projects. Employees without annual allocations are omitted. "
-                    + "Explicit zeros are included; absent cells mean no allocation. Periods use zero-based YYYYMM. "
-                    + "No write operations, revision feed, or closed-period states are exposed.")
-    @ApiResponse(responseCode = "200", description = "Complete annual allocation snapshot.", content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = ResourceAllocationAnalyticsDto.class)))
-    @ApiResponse(responseCode = "400", description = "Year is not a valid integer.", content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = BusinessErrorDto.class)))
+    @Operation(operationId = "externalGetAllocationAnalytics", summary = "Get annual resource allocations",
+            description = "Requires resource_allocation_read and preserves employee-based project visibility. Includes historical records of dismissed employees by email only. Periods use YYYY-MM. Explicit zeros are included; absent cells mean no allocation. Reused workstream external keys are summed. Replace the imported annual snapshot after a complete response; there is no revision feed or closed-period state.")
+    @ApiResponse(responseCode = "200", description = "Annual allocation snapshot.", content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Allocations.class)))
     @ApiResponse(responseCode = "422", description = "Year is outside the supported calendar range.", content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = BusinessErrorDto.class)))
     @GetMapping("/resource-allocations/analytics/{year}")
-    public Mono<ResourceAllocationAnalyticsDto> resourceAllocations(
-            @Parameter(description = "Calendar year to export.", required = true, example = "2026")
-            @PathVariable int year) {
-        return AuthHandler.currentAuth().flatMap(auth -> resourceAllocationService.getAnalytics(year, auth));
+    public Mono<Allocations> resourceAllocations(@PathVariable int year) {
+        return AuthHandler.currentAuth().flatMap(auth -> service.allocations(year, auth));
     }
 
-    @Operation(operationId = "externalListProjects", summary = "Get basic information about projects",
-            description = "Returns the project dictionary, including inactive projects, optional external IDs, and active workstreams. "
-                    + "Join project IDs with allocation cells. Referenced deleted workstreams are supplied by allocation analytics instead.")
+    @Operation(operationId = "externalListProjects", summary = "Get projects and active workstreams",
+            description = "Includes inactive projects. Projects, workstreams and business accounts contain names and external keys; unconfigured keys are null. Workstream keys are scoped to a project.")
     @ApiResponse(responseCode = "200", description = "Project dictionary.", content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = ProjectDictDto.class))))
+            array = @ArraySchema(schema = @Schema(implementation = Project.class))))
     @GetMapping("/projects")
-    public Flux<ProjectDictDto> projects() {
-        return AuthHandler.currentAuth().flatMapMany(dictService::findProjects);
+    public Flux<Project> projects() {
+        return AuthHandler.currentAuth().flatMapMany(service::projects);
     }
 }

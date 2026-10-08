@@ -2,6 +2,7 @@ package ru.abondin.hreasy.platform.service.admin.ba;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -59,6 +60,7 @@ public class AdminBusinessAccountService {
     }
 
     private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, BusinessAccountEntry entry, CreateOrUpdateBABody body) {
+        entry.setExternalId(StringUtils.stripToNull(body.getExternalId()));
         entry.setName(body.getName());
         entry.setDescription(body.getDescription());
         entry.setArchived(body.isArchived());
