@@ -12,6 +12,6 @@ import java.util.List;
 public interface DictWorkingDayCalendarRepo extends ReactiveCrudRepository<DictWorkingDaysCalendarEntry, Integer> {
 
 
-    @Query("select * from dict.working_days_calendar where year in (:year) and region=:region and type=:type")
+    @Query("select * from dict.working_days_calendar where year in (:years) and region=:region and type=:type")
     Flux<DictWorkingDaysCalendarEntry> find(@Param("years") List<Integer> years, @Param("region") String region, @Param("type") String type);
 }
