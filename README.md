@@ -1,4 +1,6 @@
-# HREasy - HR Portal for STM Internal Uses
+# HR Easy
+
+HR Easy is an internal HR portal for employee information, projects, resource planning, vacations, overtime, and compensation workflows.
 
 @author Alexander Bondin 2019-2026
 
@@ -11,7 +13,7 @@
 - View/Add/Approve Overtimes
 - View/Add/Update Vacations
 - Admin employees
-- Import employees from Excel
+- Import employees from Excel and export employee and child records
 - Admin all dictionaries
 - Admin projects
 - Admin Business Accounts
@@ -26,11 +28,36 @@
 - Report, Implement and export salaries requests and bonuses
 - Junior and mentors registry
 - Annual [resource allocations](.docs/resource_allocations.md) by project with read-only analytics
+- Read-only [external integration API](.docs/external_api_hld.md) with Bearer authentication
 - Upload office location map. See [instruction](.docs/create_ofiice_workplace_map.md)
 
 ## Architecture overview
 
-![Components Diagram](./.docs/Components_Diagram.drawio.png "Components Diagram")
+The application consists of a Vue web frontend, the Platform backend, and Notify MS for external notification delivery. Backend services use Java 25, Spring Boot 4, and PostgreSQL. The frontend uses Vue 3, Vuetify 4, TypeScript, and Pinia.
+
+```mermaid
+flowchart LR
+    Browser[Web browser / Vue 3] --> Web[Web container / nginx]
+    Web --> Platform[Platform / WebFlux]
+    External[External integrations] --> LB[Load balancer]
+    LB --> Platform
+    Platform --> PlatformDB[(PostgreSQL / Platform schemas)]
+    Platform --> LDAP[LDAP]
+    Platform --> Mail[Mail server]
+    Platform --> Notify[Notify MS]
+    Notify --> NotifyDB[(PostgreSQL / notify_ms)]
+    Notify --> Messenger[Yandex Messenger]
+```
+
+## Documentation
+
+- [Platform setup and tests](backend/platform/README.md)
+- [Web setup and tests](web/README.md)
+- [Notify MS configuration and API](backend/notify-ms/README.md)
+- [Notification architecture](.docs/yandex_messenger_notifications_hld.md) and [business event catalog](.docs/notification_catalog.md)
+- [Resource allocations](.docs/resource_allocations.md)
+- [External API](.docs/external_api_hld.md)
+- [Release history](changelogs/CHANGELOG.md)
 
 ## Telegram Bot
 
@@ -71,9 +98,8 @@ we have employee *Dave* without any role currently assigned to the *Project1*. I
 and Dave's overtimes. Dave can see only his own overtimes.
 
 - List of permissions are code based. Database table must be always in sync with backend and frontend code.
-- Set of permissions combined to the role. List of roles is code independent and can be updated in database (and in
-  admin UI in future releases). See `sec_role` and `sec_role_perm` tables.
-- Roles assigned to the user in `sec_user_role` in admin UI.
+- Permissions are combined into roles stored in `sec.role` and `sec.role_perm`.
+- Roles are assigned to users through the admin UI and stored in `sec.user_role`.
 
 **List of supported permissions**:
 
@@ -112,6 +138,9 @@ project, business account, and department manager links from `empl.manager`.
 | `project_admin_area`           | Access project admin area and list projects for administration.                                       |
 | `report_salary_request`        | Report salary increase or bonus requests; also participates in salary request visibility for own requests. |
 | `report_timesheet`             | Report daily timesheet for oneself or employees allowed by backend timesheet validator.                |
+| `resource_allocation_read`     | View employee-scoped allocation analytics and read/add comments on visible cells.                      |
+| `resource_allocation_write`    | Edit allocations for projects within effective manager scope.                                          |
+| `resource_allocation_admin`    | Close and reopen allocation months.                                                                   |
 | `techprofile_download`         | Download tech profiles; oneself is allowed for own tech profile.                                      |
 | `techprofile_upload`           | Upload or delete tech profiles; oneself is allowed for own tech profile.                              |
 | `update_avatar`                | Update employee avatar.                                                                               |
@@ -173,6 +202,9 @@ permissions below must stay aligned with Flyway migrations.
 | `project_admin_area`           | `global_admin`, `pm` |
 | `report_salary_request`        | `global_admin`, `salary_manager`, `pm_finance` |
 | `report_timesheet`             | `global_admin`, `pm` |
+| `resource_allocation_read`     | `global_admin`, `pm`, `finance`, `pm_finance`, `salary_manager` |
+| `resource_allocation_write`    | `global_admin`, `pm`, `finance`, `pm_finance`, `salary_manager` |
+| `resource_allocation_admin`    | `global_admin` |
 | `techprofile_download`         | `global_admin`, `hr`, `pm` |
 | `techprofile_upload`           | `global_admin`, `hr`, `pm` |
 | `update_avatar`                | `global_admin`, `hr` |
@@ -188,19 +220,15 @@ permissions below must stay aligned with Flyway migrations.
 | `view_timesheet`               | `global_admin`, `pm` |
 | `view_timesheet_summary`       | `global_admin`, `hr`, `pm` |
 
-## Assessments (Work in Progress)
+## Assessments
 
-Project Manager in UI able to select employee and schedule an assessment.
-The goal of this functionality
-
-- help PMs and HR to keep in sync employees attitude to work
+Project managers and HR can schedule employee assessments and collect self assessments, manager feedback, meeting notes, and conclusions.
 
 ![Security Database](./backend/platform/.architecture/assessment_use_cases.png "Assessment use case")
 
-**Assessments form template (WIP)**
+**Assessment form templates**
 
-Assessment form based on JSON template. System Administrator can update template for every form type
-in database table `assessment_form_template` (*//TODO Admin page to edit template*):
+Assessment forms use JSON templates configured in `assmnt.assessment_form_template`. Templates are edited in the database; there is no template admin page.
 
 * `form_type` - type of the form. Possible values:
     * 1 - self assessment
@@ -228,13 +256,9 @@ Employee (or HR/PM/Admin) can upload a technical profile documents.
 
 ## Managers
 
-* In 1.2.0 new functionality to deal with Department, Business Account and project
-  responsible employees added.
-* Manager can be technical, organization or HR lead on project/ba/department (**object** in terms of responsibility
+* Managers can be technical, organizational, or HR leads on a project, business account, or department (**object** in terms of responsibility
   feature).
 * Business account, department or project may have several managers
-* Before 1.2.0 we had only one responsible employee on Business Account. No managers for project. No manager for
-  department.
 
 **Goals**:
 
@@ -271,6 +295,8 @@ and can be changed with service configuration.
 
 HR Easy automatically sends one email for every upcoming vacation (vacation, which will be started in up to 3 weeks)
 
+The job is disabled by default. Enable it with `hreasy.background.upcoming-vacation.job-enabled=true`; the threshold is configured by `hreasy.background.upcoming-vacation.start-time-threshold-days` (default: 21).
+
 Email recipients:
 
 * (to) employee
@@ -281,11 +307,7 @@ Email recipients:
 
 ### Employees import from excel
 
-Web provides wizard to import employees from excel file.
-User selects the file, configure column to field mapping.
-After than the UI shows witch employees will be created, which will be updated.
-User can commit or abort import operation.
-Employees in the system and in the excel files match by email.
+The import wizard maps spreadsheet columns to employee fields and previews which records will be created or updated before saving. Employees are matched by email. The user can save or cancel the import.
 
 **Implementation:**
 ![Employees Import Process](./backend/platform/src/main/java/ru/abondin/hreasy/platform/service/admin/employee/imp/import-employee-flow.png "Employees import process")
@@ -299,18 +321,18 @@ Employees in the system and in the excel files match by email.
 - backend/telegram - deprecated legacy Telegram bot
 - web - Vue JS Single Page Application
 
-## Technologies Stack
+## Technology stack
 
-- Java on backend
+- Java 25 and Spring Boot 4 on the backend
 - PostgreSQL as database
 - Spring Reactive
-- Vue + vuetifyjs + ts on frontend
+- Vue 3, Vuetify 4, Vue Router 5, and TypeScript on the frontend
 
 ## Local build
 
 ```shell script
-export DOCKER_REPOSITORY=<Your Repository> (optional)
-export CI_DEPLOY_TAG=latest (optional)
+export DOCKER_REPOSITORY=local
+export CI_DEPLOY_TAG=latest
 ./devops/build.sh
 ```
 
@@ -320,14 +342,12 @@ Docker Compose file is located in `.hreasy-localdev`
 
 ```shell script
 cd .hreasy-localdev
-docker-compose up -d
+docker compose up -d hreasypg hreasyplatform hreasynotifyms hreasyweb
 ```
 
-*Tip* The following command pulls and updates single services
+The Compose file uses published images and development credentials. The web interface is available at `http://localhost:8080`. To update the application services:
 
 ```shell script
-sudo docker pull docker.io/abondin/hreasyplatform:latest
-sudo docker pull docker.io/abondin/hreasynotifyms:latest
-sudo docker pull docker.io/abondin/hreasyweb:latest
-sudo /usr/local/bin/docker-compose up -d --no-deps --force-recreate --build hreasyplatform hreasynotifyms hreasyweb
+docker compose pull hreasyplatform hreasynotifyms hreasyweb
+docker compose up -d --no-deps --force-recreate hreasyplatform hreasynotifyms hreasyweb
 ```

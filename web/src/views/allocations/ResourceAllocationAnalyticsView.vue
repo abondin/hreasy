@@ -277,7 +277,6 @@ import {
   type ResourceAllocationCommentSummary,
   type ResourceAllocationEmployee,
   type ResourceAllocationDisplayUnit,
-  type ResourceAllocationProject,
 } from "@/services/resource-allocation.service";
 
 defineOptions({ name: "ResourceAllocationAnalyticsView" });
@@ -362,13 +361,11 @@ const employeesById = computed(() => {
   return employees;
 });
 const projectsById = computed(() => {
-  const projects = new Map((sheet.value?.projects ?? []).map((project) => [project.id, project]));
+  const projects = new Map<number, ResourceAllocationCommentRow["project"]>(
+    (sheet.value?.projects ?? []).map((project) => [project.id, project]),
+  );
   for (const row of commentSummary.value?.rows ?? []) {
-    if (!projects.has(row.project.id)) projects.set(row.project.id, {
-      ...row.project,
-      active: true,
-      editable: false,
-    });
+    if (!projects.has(row.project.id)) projects.set(row.project.id, row.project);
   }
   return projects;
 });
@@ -858,7 +855,7 @@ function handleCommentOpen(open: boolean): void {
 
 function commentSummaryRow(
   employee: ResourceAllocationEmployee,
-  project: ResourceAllocationProject,
+  project: ResourceAllocationCommentRow["project"],
   workstreamId: number | null,
 ): ResourceAllocationCommentRow {
   return {

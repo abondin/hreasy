@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.service.admin.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -23,6 +24,8 @@ public class ProjectDto {
 
     @Nullable
     private String externalId;
+
+    private boolean workstreamRequired;
 
     @NonNull
     private String name;
@@ -63,6 +66,9 @@ public class ProjectDto {
         @Nullable
         private String externalId;
 
+        @NotNull
+        private Boolean workstreamRequired;
+
         @NonNull
         private String name;
 
@@ -86,7 +92,7 @@ public class ProjectDto {
 
         private String info;
 
-        @Nullable
+        @NotNull
         private List<ProjectWorkstreamDto> workstreams;
     }
 }

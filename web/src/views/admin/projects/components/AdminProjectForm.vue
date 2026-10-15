@@ -25,10 +25,17 @@
           variant="outlined"
         />
 
+        <v-checkbox
+          v-model="form.workstreamRequired"
+          :label="t('Выбор направления работ обязателен')"
+          data-testid="admin-project-workstream-required"
+        />
+
         <v-text-field
           v-model="form.externalId"
           :label="t('Внешний идентификатор')"
           :counter="255"
+          :rules="externalIdRules"
           variant="outlined"
           data-testid="admin-project-external-id"
         />
@@ -113,6 +120,7 @@
                 <v-text-field
                   v-model="workstream.externalId"
                   :counter="255"
+                  :rules="externalIdRules"
                   variant="outlined"
                   density="compact"
                   hide-details="auto"
@@ -184,6 +192,7 @@ type VFormInstance = InstanceType<typeof VForm>;
 
 /** Form state for admin project create/update dialogs. */
 interface ProjectFormState {
+  workstreamRequired: boolean;
   externalId: string;
   name: string;
   startDate: string;
@@ -219,6 +228,7 @@ const saving = ref(false);
 const error = ref("");
 
 const form = reactive<ProjectFormState>({
+  workstreamRequired: false,
   externalId: "",
   name: "",
   startDate: "",
@@ -249,6 +259,9 @@ const requiredTextRules = computed(() => [
     Boolean(value && value.length <= 255)
     || t("Обязательное поле. Не более N символов", { n: 255 }),
 ]);
+const externalIdRules = computed(() => [
+  (value: string) => !value || value.length <= 255 || t("Не более N символов", { n: 255 }),
+]);
 const dateRules = computed(() => [
   (value: unknown) => !value || typeof value === "string" || t("Дата в формате ДД.ММ.ГГ"),
 ]);
@@ -264,6 +277,7 @@ watch(
 function resetForm(): void {
   error.value = "";
   form.externalId = props.input?.externalId ?? "";
+  form.workstreamRequired = props.input?.workstreamRequired ?? false;
   form.name = props.input?.name ?? "";
   form.startDate = props.input?.startDate ?? "";
   form.endDate = props.input?.endDate ?? "";
@@ -285,6 +299,7 @@ function resetForm(): void {
 function buildPayload(): CreateOrUpdateProjectBody {
   return {
     externalId: form.externalId.trim() || undefined,
+    workstreamRequired: form.workstreamRequired,
     name: form.name.trim(),
     customer: form.customer.trim(),
     startDate: form.startDate || undefined,
@@ -313,6 +328,10 @@ function addWorkstream(): void {
 }
 
 async function submit(): Promise<void> {
+  if (form.workstreamRequired && form.workstreams.length === 0) {
+    error.value = t("Добавьте хотя бы одно направление работ");
+    return;
+  }
   const validation = await formRef.value?.validate();
   if (validation && !validation.valid) {
     return;

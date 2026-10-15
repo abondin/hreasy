@@ -15,6 +15,7 @@ public class BusinessAccountEntry {
     @Id
     private Integer id;
     private String name;
+    private String externalId;
     private String description;
     private boolean archived;
     private OffsetDateTime createdAt;

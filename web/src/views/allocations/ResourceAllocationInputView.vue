@@ -7,6 +7,7 @@
       <AdaptiveFilterBar
         :items="toolbarFilterItems"
         :has-right-actions="true"
+        :mobile="xs"
         class="mb-4"
       >
         <template #left-actions>
@@ -18,6 +19,7 @@
               @refresh="reload"
             />
             <PeriodSwitcherControl
+              :width="xs ? 196 : 248"
               :label="String(inputYear)"
               :is-current="inputYear === currentYear"
               :disabled="loading || saving"
@@ -73,6 +75,24 @@
             data-testid="resource-allocations-input-workstream"
             @update:model-value="changeInputWorkstream"
           />
+        </template>
+
+        <template #before-right-divider>
+          <v-tooltip v-if="workstreamMissing && xs" location="bottom" open-on-click :open-on-hover="false" :text="t('Направление работ для выбранного проекта обязательно')" max-width="280">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" icon="mdi-help-circle-outline" variant="text" size="small" color="info" :aria-label="t('Направление работ для выбранного проекта обязательно')" data-testid="resource-allocations-workstream-required" />
+            </template>
+          </v-tooltip>
+          <v-chip
+            v-else-if="workstreamMissing"
+            color="info"
+            variant="tonal"
+            size="small"
+            class="flex-shrink-0"
+            data-testid="resource-allocations-workstream-required"
+          >
+            {{ t("Направление работ для выбранного проекта обязательно") }}
+          </v-chip>
         </template>
 
         <template #right-actions>
@@ -173,6 +193,7 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from "vuetify";
 import { computed, nextTick, onActivated, onMounted, ref, shallowRef, type ComponentPublicInstance } from "vue";
 import { useI18n } from "vue-i18n";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
@@ -219,6 +240,7 @@ interface InputGridRow {
 }
 
 const { t } = useI18n();
+const { xs } = useDisplay();
 const route = useRoute();
 const router = useRouter();
 const currentPeriodId = ReportPeriod.currentPeriod().id;
@@ -377,6 +399,7 @@ const inputProject = computed(
       (project) => project.id === inputProjectId.value,
     ) ?? null,
 );
+const workstreamMissing = computed(() => !!inputProject.value?.workstreamRequired && inputWorkstreamId.value == null);
 const inputEmployeeIds = computed(() => {
   const ids = new Set(addedInputEmployeeIds.value);
   for (const employee of inputSheet.value?.employees ?? []) {
@@ -487,6 +510,7 @@ const inputGridColumns = computed<ColumnRegular[]>(() => [
         readonly: ({ model: sourceModel }) =>
           month.closed ||
           !inputProject.value?.editable ||
+          (workstreamMissing.value && !inputInitialValues.value.has(inputCellKey(month.period, (sourceModel as InputGridRow).id))) ||
           (!employeeMonthEditable(sourceModel as InputGridRow, month.period)
             && !inputInitialValues.value.has(inputCellKey(month.period, (sourceModel as InputGridRow).id))),
         cellProperties: ({ model: sourceModel }) => {
@@ -731,6 +755,7 @@ function updateInputCell(
 
 function canSetInputValue(model: InputGridRow, period: number, percent: number | null): boolean {
   return !!inputProject.value?.editable
+    && (!workstreamMissing.value || percent === null)
     && !model.addEmployee
     && inputSheet.value?.months.some(month => month.period === period && !month.closed) === true
     && (employeeMonthEditable(model, period) || percent === null);

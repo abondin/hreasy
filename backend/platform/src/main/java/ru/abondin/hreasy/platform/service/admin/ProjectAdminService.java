@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import static org.apache.commons.lang3.StringUtils.stripToNull;
+
 /**
  * Simple CRUD for Project Dictionary
  */
@@ -109,16 +111,13 @@ public class ProjectAdminService {
 
     private Mono<Void> syncWorkstreams(int projectId, List<ProjectWorkstreamDto> requested,
                                        int employeeId, OffsetDateTime now) {
-        if (requested == null) {
-            return Mono.empty();
-        }
         var ids = new HashSet<Integer>();
         var externalIds = new HashSet<String>();
         for (var item : requested) {
             if (item == null || item.displayName() == null || item.displayName().trim().isEmpty()
-                    || item.displayName().trim().length() > 255 || (item.id() != null && !ids.add(item.id()))
+                    || (item.id() != null && !ids.add(item.id()))
                     || (item.externalId() != null && !item.externalId().isBlank()
-                    && (!externalIds.add(item.externalId().trim()) || item.externalId().trim().length() > 255))) {
+                    && !externalIds.add(item.externalId().trim()))) {
                 return Mono.error(new BusinessError("errors.project.workstream.invalid"));
             }
         }
@@ -134,15 +133,15 @@ public class ProjectAdminService {
                     entry.setProjectId(projectId);
                     entry.setCreatedAt(now);
                     entry.setCreatedBy(employeeId);
-                } else if (!Objects.equals(entry.getExternalId(), normalize(item.externalId()))
+                } else if (!Objects.equals(entry.getExternalId(), stripToNull(item.externalId()))
                         || !Objects.equals(entry.getDisplayName(), item.displayName().trim())
-                        || !Objects.equals(entry.getDescription(), normalize(item.description()))) {
+                        || !Objects.equals(entry.getDescription(), stripToNull(item.description()))) {
                     entry.setUpdatedAt(now);
                     entry.setUpdatedBy(employeeId);
                 }
-                entry.setExternalId(normalize(item.externalId()));
+                entry.setExternalId(stripToNull(item.externalId()));
                 entry.setDisplayName(item.displayName().trim());
-                entry.setDescription(normalize(item.description()));
+                entry.setDescription(stripToNull(item.description()));
                 return entry;
             }).toList();
             byId.values().forEach(item -> {
@@ -155,14 +154,10 @@ public class ProjectAdminService {
     }
 
     private void normalize(ProjectDto.CreateOrUpdateProjectDto project) {
-        project.setExternalId(normalize(project.getExternalId()));
-        if (project.getExternalId() != null && project.getExternalId().length() > 255) {
-            throw new BusinessError("errors.project.workstream.invalid");
+        if (project.getWorkstreamRequired() && project.getWorkstreams().isEmpty()) {
+            throw new BusinessError("errors.project.workstream.required");
         }
-    }
-
-    private String normalize(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
+        project.setExternalId(stripToNull(project.getExternalId()));
     }
 
     private ProjectWorkstreamDto toDto(ProjectWorkstreamEntry entry) {

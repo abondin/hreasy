@@ -4,7 +4,7 @@
 
 1. Install and run Draw.IO
 2. Enable `plugins/svgdata.js` plugin. (probable you have to run `draw.io.exe --enable-plugins`)
-3. Load `hreasy_workplace.xml` library
+3. Load the [`hreasy_workplace.xml`](hreasy_workplace.xml) library
 4. Draw your office location map and add workplaces from library
 5. For every workplace open edit dialog (double click) and set `workplaceName` property
 6. Export as svg

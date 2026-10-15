@@ -1,12 +1,10 @@
-# HLD: External Read-only API
+# External Read-only API
 
 ## Context
 
-HR Easy needs a small server-to-server API for systems such as `pi-backend`. The API exposes existing HR data without creating a web session and performs every request on behalf of a real HR Easy user.
+HR Easy provides a server-to-server API for systems such as `pi-backend`. The API exposes HR data without creating a web session and performs every request on behalf of a configured HR Easy user.
 
 The URL prefix is `/external/api/v1`. All operations are read-only.
-
-The implementation may reuse the stateless Bearer authentication shape of the existing Telegram integration, but must use separate configuration and security components. The legacy Telegram module is not a domain API baseline.
 
 ## Goals
 
@@ -28,77 +26,100 @@ The implementation may reuse the stateless Bearer authentication shape of the ex
 
 ## API Contract
 
-| Endpoint | Parameters | Response | Existing business flow |
-|---|---|---|---|
-| `GET /external/api/v1/employees` | `includeFired=false` | `EmployeeDto[]` | `EmployeeService.findAll` |
-| `GET /external/api/v1/employees/{employeeId}/avatar` | HR Easy employee ID | PNG image, or 404 | `EmployeeService.avatar` / `FileStorage.streamImage` |
-| `GET /external/api/v1/employees/avatar` | required `email` query parameter | PNG image, or 404 | `EmployeeService.avatarByEmail` / `FileStorage.streamImage` |
-| `GET /external/api/v1/overtimes/{period}` | `period` is `YYYY-MM` | `ExternalOvertimeSummaryDto[]` | `OvertimeService.getExternalSummary` |
-| `GET /external/api/v1/resource-allocations/analytics/{year}` | four-digit calendar year | `ResourceAllocationAnalyticsDto` | `ResourceAllocationService.getAnalytics` |
-| `GET /external/api/v1/projects` | none | `ProjectDictDto[]` | `DictService.findProjects` |
+The API identifies employees by email and projects, workstreams, and business accounts
+by configured external keys. Responses do not expose database IDs.
 
-The external controller is an adapter over the existing services. It converts the ISO overtime period to the current internal report period and uses a separate overtime DTO for the workstream breakdown. Other endpoints reuse the existing web DTOs.
+| Endpoint | Parameters | Response |
+|---|---|---|
+| `GET /external/api/v1/employees` | none | Active employee profiles |
+| `GET /external/api/v1/employees/avatar` | required `email` | Active employee PNG, or 404 |
+| `GET /external/api/v1/overtimes/{period}` | ISO `YYYY-MM` | Monthly overtime reports |
+| `GET /external/api/v1/resource-allocations/analytics/{year}` | calendar year | Annual allocation cells |
+| `GET /external/api/v1/projects` | none | Projects with active workstreams |
 
-Example:
+### Business identifiers
 
-```http
-GET /external/api/v1/overtimes/2026-09 HTTP/1.1
-Host: hr.example.org
-Authorization: Bearer <opaque-token>
-Accept: application/json
-```
+- Employees use email exactly as stored in the database, with no output normalization.
+- Projects use their configured `externalId`.
+- Workstreams use `(project.externalId, workstream.externalId)`. A deleted workstream
+  and its replacement with the same key deliberately represent the same external entity.
+- Business accounts use their configured `externalId`, unique when populated.
+- Project references contain `name`, `externalId`, and nullable `ba`.
+- Workstream and BA references contain exactly `name` and `externalId`.
+- Unconfigured keys are returned as `externalId: null`, never replaced by internal IDs.
+  Such entities have no reliable integration key; their names are display labels.
+- Names may change without changing an external key. An email change changes the employee key.
 
-### Employee list
+Business-account keys are edited in the existing admin BA form and retained in BA history.
 
-The response matches `GET /api/v1/employee`:
+### Employee profiles and avatars
 
-- active employees by default;
-- dismissed employees when `includeFired=true`;
-- the same fields, ordering, permission-based role visibility, and skill visibility as the web API.
+The employee response contains only `email`, `displayName`, `department` (name),
+`position` (name), nullable `currentProject` (project reference), and `hasAvatar`.
+It contains no internal IDs, birthday, sex, messenger data, office/workplace, skills, or ratings.
+Dismissed employees are never included.
 
-The current basic response does not contain `extErpId`; consumers match employees by HR Easy ID or email. ERP-specific identifiers are outside this contract.
-
-### Employee avatars
-
-Both avatar endpoints use the same external Bearer authentication as the employee list. Active and dismissed employees are supported. A successful response contains the actual image bytes with `Content-Type: image/png`.
-
-- By ID: `GET /external/api/v1/employees/101/avatar`.
-- By email: `GET /external/api/v1/employees/avatar?email=alex.morgan%40example.test`.
-- Email lookup is exact and case-insensitive; surrounding whitespace is ignored. URL-encode the query value, especially `+` as `%2B`. SQL wildcard characters have no special meaning.
-- A missing employee or avatar returns `404`; no default profile image is substituted. Missing or blank email returns `400`.
-- The employee list's `hasAvatar` field can be used to skip downloads for employees without an image.
+Avatar lookup matches the complete email case-insensitively and ignores surrounding whitespace.
+URL-encode the query value, especially plus signs. Missing/blank email returns 400.
+A dismissed or missing employee, or a missing image, returns 404 without a fallback image.
 
 ### Overtimes
 
-The response contains employee/report identifiers, total hours, approval status timestamps and `commonApprovalStatus`, with the same permissions and approval rules as the web summary. Its separate `ExternalOvertimeSummaryDto` groups `items` by date, project and workstream. Each item contains `date`, `projectId`, `reportId`, `hours`, nullable `workstreamId`, `workstreamExternalId` and `workstreamDisplayName`. Project-level overtime remains a separate group without a workstream. Referenced soft-deleted workstreams retain their identifiers and names; deleted overtime items are excluded. The web summary and its Excel export still aggregate across workstreams.
+Each report contains `employeeEmail`, `period` in `YYYY-MM`, `totalHours`,
+`lastUpdate`, `lastApprove`, `lastDecline`, `commonApprovalStatus`, and `items`.
+Historical reports of dismissed employees remain available by email only, without profile data.
 
-Consumers must use `(date, projectId, workstreamId)` as the item key: a date/project pair can now have multiple items. Sum those items when project-level totals are needed.
+Each item contains `date`, `project`, nullable `workstream`, and `hours`.
+The report key is `(employeeEmail, period)`; the item key within a report is
+`(date, project.externalId, workstream.externalId)` when configured.
 
-The external contract uses `YYYY-MM` instead of exposing the existing zero-based numeric month representation. For example, `2026-09` maps internally to report period `202608`.
+Items of deleted/replacement workstreams with the same configured key are summed.
+The active workstream supplies the display name; if none is active, the last deleted
+workstream supplies it. Workstreams without configured keys remain separate.
+A null workstream is a separate project-level dimension, not a total over workstreams.
+
+`lastUpdate` means
+the latest creation timestamp among remaining non-deleted items, not a modification cursor.
+It must not be used for incremental synchronization.
 
 ### Resource allocations
 
-The response matches annual allocation analytics: `year`, referenced `employees`, `projects`, `workstreams`, and recorded monthly `allocations`. Each cell has an optional `workstreamId`; project-level and multiple workstream-level cells may coexist for the same employee and month.
+The response is `{year, allocations}`. Each allocation contains:
 
-Allocation periods retain the internal zero-based numeric convention: `202600` is January 2026, `202608` is September, and `202611` is December. This differs from the ISO month in the overtime request URL.
+```json
+{
+  "employeeEmail": "alex.morgan@example.test",
+  "period": "2026-09",
+  "project": {
+    "name": "Example project",
+    "externalId": "project-alpha",
+    "ba": {"name": "Example account", "externalId": "account-alpha"}
+  },
+  "workstream": {"name": "Delivery", "externalId": "delivery"},
+  "percent": 50
+}
+```
 
-A cell with `percent: 0` is an explicit zero allocation. An absent cell means no allocation; the read response does not emit a dense matrix of null cells. Clearing through the internal write API sends `percent: null`, deletes the current cell, and preserves a nullable before/after history entry.
+The key is `(employeeEmail, period, project.externalId, workstream.externalId)` when
+configured. Periods use ISO `YYYY-MM`.
+Percentages of reused workstream keys are summed and may exceed 100. Explicit zeros remain; absent cells mean
+no allocation. Null workstreams remain separate from workstream-level allocations.
 
-For a full annual import:
+Employee profiles and separate employee/project/workstream dictionaries are not included.
+Historical allocations of dismissed employees remain available by email.
+Allocation visibility is employee-based: current employees of accessible
+projects or employees allocated to accessible projects qualify, and all their annual
+allocations are included. Changes in user scope can therefore change the returned snapshot.
 
-1. Fetch `/external/api/v1/resource-allocations/analytics/{year}`.
-2. Match cells to the included employees and workstreams by their HR Easy IDs. Referenced soft-deleted workstreams are included in analytics; do not rely only on the active workstream list from `/projects`.
-3. Fetch `/external/api/v1/projects` if the consumer needs project `externalId`, and join by `projectId`.
-4. Identify each cell by `(period, employeeId, projectId, workstreamId)`, treating null workstream as a separate project-level dimension. Keep explicit zeros.
-5. Replace the consumer's annual snapshot after a successful complete response. Upserting only returned cells would leave previously deleted allocations behind.
-
-The external API provides no writes, allocation revision/history feed, or closed-period states. Consumers cannot infer whether an allocation month is finalized from this response. These are contract limitations, not permissions that can be enabled on the existing endpoint.
+Replace the consumer's annual snapshot only after a successful complete response.
+Upserting returned rows alone would retain deleted cells. No revision feed or closed-period
+state is exposed.
 
 ### Projects
 
-The response matches the existing project dictionary and includes the HR Easy project ID, optional `externalId`, name, active flag, business account ID, and active workstreams. Each workstream contains `id`, optional `externalId`, `displayName`, and optional `description`.
-
-External IDs are stable integration keys. Project external IDs are globally unique when present; workstream external IDs are unique among active workstreams in one project.
+The project response contains `name`, `externalId`, nullable `ba`, `active`,
+and `workstreams` (name/externalId references). It includes inactive projects and active
+workstreams. Historical reports also resolve deleted workstreams.
 
 ## Authentication
 
@@ -130,12 +151,12 @@ The web container does not proxy `/external/**` and does not implement external 
 
 Successful token validation loads the current HR Easy user details for the configured `subject`, including authorities and accessible departments, business accounts, and projects. The security chain adds a reserved `__external_api__` authority only to distinguish this authentication channel.
 
-The external endpoint then calls the same application service as the web endpoint with the acting user's normal `AuthContext`. Existing checks remain the source of truth:
+External endpoints delegate to application services with the acting user's `AuthContext`. Access rules are:
 
-| Data | Existing authorization behavior |
+| Data | Authorization behavior |
 |---|---|
-| Employees | available to an authenticated user; project roles and skills are filtered by the current employee permissions and scope |
-| Employee avatars | available to an authenticated external user, including dismissed employees |
+| Employees | active profiles available to an authenticated user; no roles, skills, offices or ratings are exported |
+| Employee avatars | active employees only, by email |
 | Overtime summary | requires `overtime_view` |
 | Allocation analytics | requires `resource_allocation_read`; only employees with annual allocations whose current project is accessible to the acting user or who have an allocation on an accessible project in that year are included; all annual allocations of these employees are returned, across projects and accounts |
 | Projects | available to an authenticated user |
@@ -158,7 +179,7 @@ external system
   -> resolve its configured system and subject
   -> load active HR Easy user and current authorities
   -> call existing application service with AuthContext
-  -> return existing read-only DTO
+  -> map to isolated external DTOs with business keys
 ```
 
 The chain is stateless and uses `NoOpServerSecurityContextRepository` and `NoOpServerRequestCache`. It disables form login, HTTP Basic, CSRF, and anonymous authentication for `/external/**`. Business access is limited to `GET /external/api/v1/**` with an external Bearer token; a web session grants no access. Every other method and unlisted external path is denied by authorization. The documentation GET routes listed below are public.
@@ -186,7 +207,7 @@ HREASY_EXTERNAL_API_TOKENS_0_SHA256=<hash-produced-by-the-script>
 
 Configuration validation fails application startup when the system, subject, or 64-character hexadecimal SHA-256 is invalid, or when a token hash is duplicated.
 
-Token rotation is a configuration/deployment operation in v1. Runtime credential management and automatic expiration are deferred until there is a concrete operational need.
+Token rotation is a configuration/deployment operation. Runtime credential management and automatic expiration are not supported.
 
 ## Error Handling
 
@@ -204,26 +225,24 @@ Backend errors use the platform's standard JSON format. Requests rejected by the
 
 The external load balancer records the source IP, method, path, and result status. Successful backend requests retain the external system ID in Spring Security authentication details while application services receive and log the acting HR Easy user.
 
-Do not log the Bearer token or response payload. Existing health endpoints remain unchanged. Springdoc publishes documentation containing only `/external/api/v1/**` operations:
+Do not log the Bearer token or response payload. Springdoc publishes documentation containing only `/external/api/v1/**` operations:
 
 - Swagger UI: `/external/docs/swagger-ui.html`.
 - OpenAPI JSON: `/external/docs/openapi`.
 - OpenAPI YAML: `/external/docs/openapi.yaml`.
 
-Documentation GETs do not require a token and do not create a web session. The allowlist also includes `/external/docs/openapi/swagger-config` and `/external/docs/swagger-ui/**` assets. Use Swagger UI Authorize with the opaque token to execute API calls. API authentication and permissions remain unchanged. The external load balancer must forward the entire `/external/**` prefix, including documentation and its assets, to the backend; the web container does not proxy these paths.
+Documentation GETs do not require a token and do not create a web session. The allowlist also includes `/external/docs/openapi/swagger-config` and `/external/docs/swagger-ui/**` assets. Use Swagger UI Authorize with the opaque token to execute API calls. API calls require Bearer authentication and the permissions listed above. The external load balancer must forward the entire `/external/**` prefix, including documentation and its assets, to the backend; the web container does not proxy these paths.
 
 ## Implementation Outline
 
-The minimum implementation is:
+The implementation consists of:
 
 1. configuration properties for hashed tokens and their system/user bindings;
 2. one ordered WebFlux security chain for `/external/**` with an opaque-token authentication converter;
-3. read-only external controllers delegating to the existing services;
+3. read-only external controllers delegating to an external adapter over existing services;
 4. focused security tests for valid, unknown, and malformed tokens plus existing business permissions;
 5. focused controller tests for period conversion and delegation.
 
-No new repositories, migrations, or Vue changes are required.
-
-## Open Contract Questions
-
-- Which external systems and acting users are required for the first deployment?
+Public records live in `service.external.dto.ExternalApiDto`.
+`ExternalApiService` adapts authorized domain reads to these records.
+The BA external key has a Flyway migration and an optional field in the Vue admin form.

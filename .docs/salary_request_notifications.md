@@ -1,13 +1,13 @@
 # Salary Request Notifications
 
-This document captures the business decision for salary request notifications.
+Salary request creators receive inbox notifications when their requests are implemented or rejected. External delivery is best effort through Notify MS. The [notification catalog](notification_catalog.md) lists all implemented business events.
 
 ## User Story
 
 As an employee who created a salary increase or bonus request, I want to receive a notification when the request is
 implemented or rejected.
 
-## Role Model Decision
+## Recipient access
 
 The Platform backend role model is the source of truth.
 
@@ -32,18 +32,18 @@ employee would bypass the backend salary request visibility model and could expo
 
 ## Message Content
 
-Messages should be status-oriented and must avoid salary amounts in the first implementation.
+Messages describe the request status without including salary amounts.
 
-Recommended content:
+Message content:
 
 - implemented: salary request or bonus request for employee `<employeeDisplayName>` was implemented for period `<period>`;
 - rejected: salary request or bonus request for employee `<employeeDisplayName>` was rejected; include reject reason if present.
 
-The implementation should use existing period formatting rules from `MapperBase.formatPeriod`.
+Periods are formatted by `MapperBase.formatPeriod`.
 
 ## Context Payload
 
-Recommended context fields:
+Context fields:
 
 | Field | Description |
 |-------|-------------|
@@ -69,11 +69,10 @@ The inbox dedupe key must identify a saved implementation-state change, not just
 Reason: implementation can be reset and then saved again for the same request. The second saved implementation is a new
 business notification and must not reuse the first inbox `client_uuid`.
 
-## Open Implementation Notes
+## Implementation
 
 - Rejection with rescheduling still sends `salary_request.rejected` for the original request.
-- If the notification later needs to link to the rescheduled request, `AdminSalaryRequestService.rescheduleIfRequired`
-  should return the new request id instead of discarding it.
-- The notification should follow the existing Platform notification architecture:
+- The context includes the rescheduled period, but not the new request ID.
+- The notification follows the Platform notification architecture:
   event record, `BusinessNotificationHandler`, `NotificationPlan`, Platform inbox persistence, and best-effort
   `notify-ms` delivery.

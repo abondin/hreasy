@@ -7,7 +7,7 @@
       {{ title }}
     </div>
     <div>
-      <property-list variant="aligned" density="compact">
+      <property-list variant="aligned" label-width="360px">
         <template
           v-for="item in items"
           :key="item.label"

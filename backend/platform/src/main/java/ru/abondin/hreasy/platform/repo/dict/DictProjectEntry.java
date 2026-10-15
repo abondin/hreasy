@@ -25,6 +25,8 @@ public class DictProjectEntry {
     @Nullable
     private String externalId;
 
+    private boolean workstreamRequired;
+
     @NonNull
     private String name;
 
@@ -88,6 +90,8 @@ public class DictProjectEntry {
 
         @Nullable
         private String externalId;
+
+        private boolean workstreamRequired;
 
         @NonNull
         private String name;

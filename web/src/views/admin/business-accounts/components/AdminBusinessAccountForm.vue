@@ -13,6 +13,15 @@
           variant="outlined"
         />
 
+        <v-text-field
+          v-model="form.externalId"
+          :label="t('Внешний идентификатор')"
+          :counter="255"
+          :rules="externalIdRules"
+          variant="outlined"
+          data-testid="admin-business-account-external-id"
+        />
+
         <v-textarea
           v-model="form.description"
           :label="t('Описание')"
@@ -68,6 +77,7 @@ type VFormInstance = InstanceType<typeof VForm>;
 
 interface BusinessAccountFormState {
   name: string;
+  externalId: string;
   description: string;
   archived: boolean;
 }
@@ -89,6 +99,7 @@ const error = ref("");
 
 const form = reactive<BusinessAccountFormState>({
   name: "",
+  externalId: "",
   description: "",
   archived: false,
 });
@@ -102,6 +113,9 @@ const nameRules = computed(() => [
     Boolean(value && value.length <= 255)
     || t("Обязательное поле. Не более N символов", { n: 255 }),
 ]);
+const externalIdRules = computed(() => [
+  (value: string) => !value || value.length <= 255 || t("Не более N символов", { n: 255 }),
+]);
 const descriptionRules = computed(() => [
   (value: string) => !value || value.length <= 1024 || t("Не более N символов", { n: 1024 }),
 ]);
@@ -110,6 +124,7 @@ watch(
   () => props.input,
   () => {
     form.name = props.input?.name ?? "";
+    form.externalId = props.input?.externalId ?? "";
     form.description = props.input?.description ?? "";
     form.archived = props.input?.archived ?? false;
     error.value = "";
@@ -129,6 +144,7 @@ async function submit(): Promise<void> {
   try {
     const payload = {
       name: form.name.trim(),
+      externalId: form.externalId.trim(),
       description: form.description.trim() || undefined,
       archived: form.archived,
     };

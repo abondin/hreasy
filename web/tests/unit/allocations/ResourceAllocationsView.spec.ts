@@ -6,6 +6,11 @@ import { BusinessError } from "@/lib/errors";
 import ResourceAllocationAnalyticsView from "@/views/allocations/ResourceAllocationAnalyticsView.vue";
 import ResourceAllocationCommentsPopover from "@/views/allocations/ResourceAllocationCommentsPopover.vue";
 import ResourceAllocationInputView from "@/views/allocations/ResourceAllocationInputView.vue";
+const displayMocks = vi.hoisted(() => ({ mobile: false }));
+vi.mock("vuetify", async (importOriginal) => ({
+  ...await importOriginal<typeof import("vuetify")>(),
+  useDisplay: () => ({ xs: ref(displayMocks.mobile) }),
+}));
 import {
   createResourceAllocationComment,
   exportResourceAllocationAnalytics,
@@ -348,6 +353,7 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  displayMocks.mobile = false;
   routerMocks.query = {};
   permissionMocks.canAdmin = false;
   vi.mocked(fetchClosedResourceAllocationPeriods).mockResolvedValue([]);
@@ -367,6 +373,66 @@ beforeEach(() => {
 });
 
 describe("ResourceAllocationsView", () => {
+  it.each([
+    { workstreamId: null, mobile: false }, { workstreamId: 11, mobile: false },
+    { workstreamId: null, mobile: true }, { workstreamId: 11, mobile: true },
+  ])("requires a workstream for values while allowing deletion (stream $workstreamId, mobile $mobile)", async ({ workstreamId, mobile }) => {
+    displayMocks.mobile = mobile;
+    vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
+      year: 2026,
+      selectedProjectId: 10,
+      selectedWorkstreamId: workstreamId,
+      months: [{ period: 202600, closed: false }],
+      employees: [{ id: 1, displayName: "Alex Morgan", currentProjectId: 10,
+        currentProjectName: "Example project", dateOfEmployment: "2020-01-01",
+        dateOfDismissal: null, dismissed: false }],
+      projects: [{ id: 10, name: "Example project", departmentId: null, departmentName: null,
+        baId: null, baName: null, active: true, editable: true, workstreamRequired: true }],
+      workstreams: [{ id: 11, displayName: "Delivery" }],
+      allocations: [{ period: 202600, employeeId: 1, percent: 50, revisionId: 5 }],
+      otherAllocations: [],
+    });
+    const wrapper = mount(ResourceAllocationInputView, { global: { stubs: {
+      ...globalStubs,
+      VBadge: PassThroughStub,
+      VTooltip: defineComponent({ setup(_, { slots }) {
+        return () => h("div", slots.activator?.({ props: {} }));
+      } }),
+      VMenu: defineComponent({ setup(_, { slots }) {
+        return () => h("div", [slots.activator?.({ props: {} }), slots.default?.()]);
+      } }),
+    } } });
+    await flushPromises();
+    expect(wrapper.find('[data-testid="resource-allocations-workstream-required"]').exists()).toBe(workstreamId == null);
+    expect(wrapper.find(".adaptive-filter-bar__right [data-testid='resource-allocations-workstream-required']")
+      .exists()).toBe(workstreamId == null);
+    expect(wrapper.find(".adaptive-filter-bar__filters-grid [data-testid='resource-allocations-input-project']")
+      .exists()).toBe(!mobile);
+    expect(wrapper.find('[data-testid="adaptive-filter-overflow"]').exists()).toBe(mobile);
+    expect(wrapper.find(".adaptive-filter-bar__actions--left [label-test-id='resource-allocations-year']")
+      .exists()).toBe(true);
+    const grid = wrapper.getComponent(GridStub);
+    const model = grid.props("source")?.[0];
+    for (const val of ["0", "60"]) {
+      const edit = new CustomEvent("beforeedit", {
+        cancelable: true, detail: { model, prop: "month_202600", val },
+      });
+      grid.vm.$emit("beforeedit", edit);
+      expect(edit.defaultPrevented).toBe(workstreamId == null);
+      const range = new CustomEvent("beforerangeedit", {
+        cancelable: true, detail: { models: { 0: model }, data: { 0: { month_202600: val } } },
+      });
+      grid.vm.$emit("beforerangeedit", range);
+      expect(range.defaultPrevented).toBe(workstreamId == null);
+    }
+    const deletion = new CustomEvent("beforeedit", {
+      cancelable: true, detail: { model, prop: "month_202600", val: "" },
+    });
+    grid.vm.$emit("beforeedit", deletion);
+    expect(deletion.defaultPrevented).toBe(false);
+    wrapper.unmount();
+  });
+
   it("loads and adds a comment in the cell-anchored popover", async () => {
     vi.mocked(fetchResourceAllocationComments).mockResolvedValue([]);
     vi.mocked(createResourceAllocationComment).mockResolvedValue({
@@ -472,6 +538,7 @@ describe("ResourceAllocationsView", () => {
         baName: null,
         active: true,
         editable: true,
+        workstreamRequired: false,
       }],
       workstreams: [],
       allocations: [],
@@ -650,6 +717,7 @@ describe("ResourceAllocationsView", () => {
           endDate: "2026-06-30",
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
         {
           id: 20,
@@ -660,6 +728,7 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
       ],
       allocations: [
@@ -793,6 +862,7 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
       ],
       allocations: [
@@ -849,7 +919,7 @@ describe("ResourceAllocationsView", () => {
     vi.mocked(fetchResourceAllocationProjectInput).mockResolvedValue({
       ...response, selectedProjectId: 10,
       projects: [{ id: 10, name: "Alpha", departmentId: null, departmentName: null,
-        baId: null, baName: null, active: true, editable: true }],
+        baId: null, baName: null, active: true, editable: true, workstreamRequired: false }],
     });
     const wrapper = mount(ResourceAllocationInputView, { global: { stubs: {
       ...globalStubs,
@@ -896,6 +966,7 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
         {
           id: 20,
@@ -906,6 +977,7 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: false,
+          workstreamRequired: false,
         },
       ],
       workstreams: [{ id: 11, displayName: "Delivery" }],
@@ -1102,6 +1174,7 @@ describe("ResourceAllocationsView", () => {
           baName: null,
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
       ],
       allocations: [
@@ -1246,6 +1319,7 @@ describe("ResourceAllocationsView", () => {
           baName: "BA A",
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
         {
           id: 20,
@@ -1256,6 +1330,7 @@ describe("ResourceAllocationsView", () => {
           baName: "BA B",
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
         {
           id: 30,
@@ -1266,6 +1341,7 @@ describe("ResourceAllocationsView", () => {
           baName: "BA B",
           active: true,
           editable: true,
+          workstreamRequired: false,
         },
       ],
       workstreams: [{ id: 31, displayName: "Operations" }],

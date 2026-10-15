@@ -25,7 +25,7 @@ public class ResourceAllocationCommentRepository {
                                e.current_project_role,
                                p.name as project_name, p.department_id as project_department_id,
                                pd.name as project_department_name, p.ba_id as project_ba_id,
-                               ba.name as project_ba_name, p.start_date, p.end_date,
+                               ba.name as project_ba_name, p.start_date, p.end_date, p.workstream_required,
                                w.display_name as workstream_name
                         from (
                             select period, employee_id, project_id, workstream_id, count(*)::integer as comment_count
@@ -64,7 +64,8 @@ public class ResourceAllocationCommentRepository {
                                 row.get("project_ba_id", Integer.class),
                                 row.get("project_ba_name", String.class),
                                 row.get("start_date", LocalDate.class),
-                                row.get("end_date", LocalDate.class)),
+                                row.get("end_date", LocalDate.class),
+                                Boolean.TRUE.equals(row.get("workstream_required", Boolean.class))),
                         row.get("workstream_name", String.class)))
                 .all();
     }

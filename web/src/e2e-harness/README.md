@@ -21,10 +21,10 @@ The harness isolates tests for shared building blocks such as:
 
 ## Entry points
 
-- HTML entry: [`e2e-harness.html`](/D:/stm/hreasy/src/web/e2e-harness.html)
-- App bootstrap: [`main.ts`](/D:/stm/hreasy/src/web/src/e2e-harness/main.ts)
-- Harness shell: [`HarnessApp.vue`](/D:/stm/hreasy/src/web/src/e2e-harness/HarnessApp.vue)
-- Harness router: [`router.ts`](/D:/stm/hreasy/src/web/src/e2e-harness/router.ts)
+- HTML entry: [`e2e-harness.html`](../../e2e-harness.html)
+- App bootstrap: [`main.ts`](./main.ts)
+- Harness shell: [`HarnessApp.vue`](./HarnessApp.vue)
+- Harness router: [`router.ts`](./router.ts)
 
 ## What belongs here
 
@@ -40,10 +40,10 @@ The harness isolates tests for shared building blocks such as:
 
 ## Current sandbox views
 
-- [`TableSandboxView.vue`](/D:/stm/hreasy/src/web/src/e2e-harness/views/TableSandboxView.vue)
-- [`TableSandboxPlainView.vue`](/D:/stm/hreasy/src/web/src/e2e-harness/views/TableSandboxPlainView.vue)
-- [`TableSandboxVacationsLikeView.vue`](/D:/stm/hreasy/src/web/src/e2e-harness/views/TableSandboxVacationsLikeView.vue)
-- [`TableSandboxEchoView.vue`](/D:/stm/hreasy/src/web/src/e2e-harness/views/TableSandboxEchoView.vue)
+- [`TableSandboxView.vue`](./views/TableSandboxView.vue)
+- [`TableSandboxPlainView.vue`](./views/TableSandboxPlainView.vue)
+- [`TableSandboxVacationsLikeView.vue`](./views/TableSandboxVacationsLikeView.vue)
+- [`TableSandboxEchoView.vue`](./views/TableSandboxEchoView.vue)
 
 ## Current fixture patterns
 
@@ -53,7 +53,7 @@ The harness isolates tests for shared building blocks such as:
 
 ## Related E2E suite
 
-- Stable harness regressions live under [`e2e/harness/`](/D:/stm/hreasy/src/web/e2e/harness)
+- Stable harness regressions live under [`e2e/harness/`](../../e2e/harness)
 - Current stable specs:
-  - [`table-sandbox-regression.spec.ts`](/D:/stm/hreasy/src/web/e2e/harness/table-sandbox-regression.spec.ts)
-  - [`table-harness-vacations-roundtrip.spec.ts`](/D:/stm/hreasy/src/web/e2e/harness/table-harness-vacations-roundtrip.spec.ts)
+  - [`table-sandbox-regression.spec.ts`](../../e2e/harness/table-sandbox-regression.spec.ts)
+  - [`table-harness-vacations-roundtrip.spec.ts`](../../e2e/harness/table-harness-vacations-roundtrip.spec.ts)

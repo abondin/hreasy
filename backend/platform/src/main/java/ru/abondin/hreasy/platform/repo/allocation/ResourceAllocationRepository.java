@@ -68,7 +68,7 @@ public class ResourceAllocationRepository {
     public Flux<ResourceAllocationProjectView> findProjects() {
         return dbTemplate.getDatabaseClient().sql("""
                         select p.id, p.name, p.department_id, d.name as department_name,
-                               p.ba_id, ba.name as ba_name, p.start_date, p.end_date
+                               p.ba_id, ba.name as ba_name, p.start_date, p.end_date, p.workstream_required
                         from proj.project p
                         left join dict.department d on d.id = p.department_id
                         left join ba.business_account ba on ba.id = p.ba_id
@@ -82,7 +82,8 @@ public class ResourceAllocationRepository {
                         row.get("ba_id", Integer.class),
                         row.get("ba_name", String.class),
                         row.get("start_date", LocalDate.class),
-                        row.get("end_date", LocalDate.class)))
+                        row.get("end_date", LocalDate.class),
+                        Boolean.TRUE.equals(row.get("workstream_required", Boolean.class))))
                 .all();
     }
 
@@ -341,7 +342,7 @@ public class ResourceAllocationRepository {
     public record ResourceAllocationProjectView(Integer id, String name,
                                                 Integer departmentId, String departmentName,
                                                 Integer baId, String baName,
-                                                LocalDate startDate, LocalDate endDate) {
+                                                LocalDate startDate, LocalDate endDate, boolean workstreamRequired) {
     }
 
     public record PeriodResourceAllocationView(Integer period, Integer employeeId, Integer projectId, Integer workstreamId,

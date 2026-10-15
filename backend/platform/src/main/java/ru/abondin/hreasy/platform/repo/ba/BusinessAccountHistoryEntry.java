@@ -13,6 +13,7 @@ public class BusinessAccountHistoryEntry {
     private Integer id;
     private int baId;
     private String name;
+    private String externalId;
     private Integer responsibleEmployee;
     private String description;
     private boolean archived;
