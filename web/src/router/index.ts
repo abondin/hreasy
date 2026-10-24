@@ -7,6 +7,7 @@ import NotFoundView from "@/views/NotFoundView.vue";
 import LoginView from "@/views/LoginView.vue";
 import ProfileMainView from "@/views/profile/ProfileMainView.vue";
 import EmployeesView from "@/views/employees/EmployeesView.vue";
+import OfficeMapsView from "@/views/office-map/OfficeMapsView.vue";
 import VacationsView from "@/views/vacations/VacationsView.vue";
 import OvertimesView from "@/views/overtimes/OvertimesView.vue";
 import AssessmentsView from "@/views/assessment/AssessmentsView.vue";
@@ -82,6 +83,7 @@ const router = createRouter({
     },
     { path: "/profile", name: "profile-main", component: ProfileMainView, meta: { requiresAuth: true } },
     { path: "/employees", name: "employees", component: EmployeesView, meta: { requiresAuth: true, keepAlive: true } },
+    { path: "/office-maps", name: "office-maps", component: OfficeMapsView, meta: { requiresAuth: true } },
     {
       path: "/employees/:employeeId/changeCurrentProject",
       name: "employee-change-current-project",

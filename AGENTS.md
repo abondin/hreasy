@@ -17,6 +17,7 @@ HR Easy is a monorepository with separate backend services and a Vue frontend.
 ## Simplicity First
 
 - Keep code simple, direct, and scoped to the requested user path.
+- Follow the single responsibility principle: keep distinct responsibilities separate, without speculative abstractions or unnecessary fragmentation.
 - Reuse nearby project patterns before adding queries, abstractions, payload fields, fallback branches, or infrastructure.
 - Prefer the smallest clear backend/frontend contract that solves the agreed scenario.
 - The web frontend and backend are deployed together. Do not add compatibility with older web clients unless explicitly requested; update both sides of the internal web API contract together instead of adding fallbacks for omitted fields or legacy payloads. This rule does not apply to the external integration API.
@@ -25,6 +26,7 @@ HR Easy is a monorepository with separate backend services and a Vue frontend.
 
 ## Shared Rules
 
+- Prefer IDEA MCP tools for reading, searching, editing, and inspecting project files. Use shell or other tools when IDEA MCP is unavailable or does not support the required operation.
 - Keep code comments, documentation, and tests in English.
 - Do not revert unrelated local changes.
 - Treat backend permissions as the source of truth for protected data and actions.

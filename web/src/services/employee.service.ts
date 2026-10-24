@@ -7,6 +7,7 @@ export interface Dict {
 }
 
 export interface OfficeLocationDict extends Dict {
+  officeId?: number | null;
   mapName?: string | null;
 }
 

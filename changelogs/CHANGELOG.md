@@ -4,6 +4,7 @@
 
 features:
 
+- Employees can browse office maps on a dedicated page by selecting an office and room.
 - Added annual resource planning by project and workstream, with data entry, analytics, period locking, change history, conflict protection, cell comments, Excel export, and a project setting requiring workstream selection.
 - Added a read-only external API for employees, avatars, projects, overtime, and allocations, using email and configurable external keys, Bearer authentication, acting-user permissions, and OpenAPI documentation.
 - Employee Excel exports include a separate Children worksheet; Skype is no longer exported.

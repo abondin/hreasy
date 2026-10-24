@@ -1,5 +1,5 @@
 import http from "@/lib/http";
-import type { Dict } from "@/services/employee.service";
+import type { Dict, OfficeLocationDict } from "@/services/employee.service";
 
 export interface DictItem extends Dict {
   active?: boolean;
@@ -37,8 +37,13 @@ export async function fetchLevels(): Promise<DictItem[]> {
   return response.data;
 }
 
-export async function fetchOfficeLocations(): Promise<DictItem[]> {
-  const response = await http.get<DictItem[]>("v1/dict/office_locations");
+export async function fetchOffices(): Promise<DictItem[]> {
+  const response = await http.get<DictItem[]>("v1/dict/offices");
+  return response.data;
+}
+
+export async function fetchOfficeLocations(): Promise<OfficeLocationDict[]> {
+  const response = await http.get<OfficeLocationDict[]>("v1/dict/office_locations");
   return response.data;
 }
 

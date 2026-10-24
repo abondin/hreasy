@@ -133,6 +133,7 @@ public class DictService {
                     var dto = new OfficeLocationDictDto();
                     dto.setId(e.getId());
                     dto.setOfficeId(e.getOfficeId());
+                    dto.setMapName(e.getMapName());
                     dto.setName(
                             Stream.of(e.getName(), e.getDescription())
                                     .filter(i -> i != null)

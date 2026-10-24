@@ -240,6 +240,12 @@ const primaryNavigationItems = computed(() => {
       icon: "mdi-account-group",
       to: { name: "employees" },
     },
+    {
+      key: "office-maps",
+      label: t("Карты кабинетов"),
+      icon: "mdi-map",
+      to: { name: "office-maps" },
+    },
   ];
 
   if (permissions.canViewAllOvertimes()) {
