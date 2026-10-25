@@ -30,6 +30,7 @@ public class DictOfficeEntry {
 
 
     private boolean archived = false;
+    private boolean primaryOffice = false;
 
     @Nullable
     private OffsetDateTime createdAt;

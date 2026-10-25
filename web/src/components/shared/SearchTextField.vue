@@ -18,7 +18,7 @@
             icon
             variant="text"
             size="x-small"
-            class="search-settings-button"
+            class="search-settings-button overflow-visible"
             :aria-label="t('Настройки поиска')"
           >
             <v-icon icon="mdi-magnify" />

@@ -14,6 +14,7 @@ import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dict.DictWorkingDaysCalendarService;
 import ru.abondin.hreasy.platform.service.dict.dto.DictOfficeLocationMap;
 import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
+import ru.abondin.hreasy.platform.service.dto.OfficeDictDto;
 import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 
@@ -66,7 +67,7 @@ public class DictController {
 
     @Operation(summary = "All offices")
     @GetMapping("/offices")
-    public Flux<SimpleDictDto> offices() {
+    public Flux<OfficeDictDto> offices() {
         return AuthHandler.currentAuth().flatMapMany(
                 dictService::findOffices);
     }

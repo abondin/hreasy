@@ -9,7 +9,11 @@
     :item-to-form="itemToForm"
     test-id="admin-dict-offices-view"
   >
+    <template #[`item.primaryOffice`]="{ item }">
+      {{ item.primaryOffice ? t("Да") : t("Нет") }}
+    </template>
     <template #additional-fields="{ form }">
+      <v-checkbox v-model="form.primaryOffice" :label="t('Основной офис')" />
       <v-text-field
         v-model="form.address"
         :label="t('Адрес')"
@@ -43,6 +47,7 @@ const { t } = useI18n();
 
 const headers = computed(() => [
   { title: t("Наименования"), key: "name", width: "300px" },
+  { title: t("Основной офис"), key: "primaryOffice", width: "160px" },
   { title: t("Адрес"), key: "address", width: "320px" },
   { title: t("Описание"), key: "description", width: "360px" },
   { title: t("Архив"), key: "archived", width: "140px" },
@@ -57,6 +62,7 @@ function createForm(): AdminOfficePayload {
   return {
     name: "",
     archived: false,
+    primaryOffice: false,
     address: "",
     description: "",
   };
@@ -66,6 +72,7 @@ function itemToForm(item: AdminOffice): AdminOfficePayload {
   return {
     name: item.name,
     archived: item.archived,
+    primaryOffice: item.primaryOffice,
     address: item.address ?? "",
     description: item.description ?? "",
   };

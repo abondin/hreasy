@@ -28,6 +28,7 @@
 build/
 target/
 **/target/
+.tmp
 
 ### VS Code ###
 .vscode/

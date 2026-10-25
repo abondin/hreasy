@@ -5,6 +5,10 @@ export interface DictItem extends Dict {
   active?: boolean;
 }
 
+export interface OfficeDict extends DictItem {
+  primaryOffice: boolean;
+}
+
 export async function fetchDaysNotIncludedInVacations(
   years: number[],
 ): Promise<string[]> {
@@ -37,8 +41,8 @@ export async function fetchLevels(): Promise<DictItem[]> {
   return response.data;
 }
 
-export async function fetchOffices(): Promise<DictItem[]> {
-  const response = await http.get<DictItem[]>("v1/dict/offices");
+export async function fetchOffices(): Promise<OfficeDict[]> {
+  const response = await http.get<OfficeDict[]>("v1/dict/offices");
   return response.data;
 }
 

@@ -48,11 +48,13 @@ export interface AdminPositionPayload {
 }
 
 export interface AdminOffice extends AdminSimpleDictItem {
+  primaryOffice: boolean;
   description?: string | null;
   address?: string | null;
 }
 
 export interface AdminOfficePayload {
+  primaryOffice: boolean;
   name: string;
   archived: boolean;
   description?: string | null;

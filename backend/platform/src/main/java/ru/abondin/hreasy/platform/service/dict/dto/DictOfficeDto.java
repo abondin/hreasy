@@ -11,5 +11,6 @@ public class DictOfficeDto {
     private String address;
     private String mapName;
     private boolean archived = false;
+    private boolean primaryOffice;
 
 }

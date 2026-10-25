@@ -4,10 +4,10 @@
   -->
 <template>
   <v-sheet
-      class="office-map-employee-card w-100 mx-auto"
+      class="w-100"
       elevation="0"
   >
-    <div v-if="loading" class="office-map-employee-card__state">
+    <div v-if="loading" class="d-flex justify-center py-8">
       <v-progress-circular indeterminate color="primary" size="48"/>
     </div>
     <v-alert
@@ -20,51 +20,47 @@
       {{ error }}
     </v-alert>
     <template v-else-if="employee">
-      <v-row no-gutters align="start">
-        <v-col cols="auto" class="pr-4">
-          <profile-avatar :owner="employee" :read-only="true"/>
-        </v-col>
-        <v-col>
-          <dl class="office-map-employee-card__list">
-            <div class="office-map-employee-card__item">
-              <dt>{{ t("ФИО") }}:</dt>
-              <dd>{{ employee.displayName }}</dd>
-            </div>
-            <div class="office-map-employee-card__item">
-              <dt>{{ t("Отдел") }}:</dt>
-              <dd>{{ employee.department?.name ?? t("Не задан") }}</dd>
-            </div>
-            <div class="office-map-employee-card__item">
-              <dt>{{ t("Текущий проект") }}:</dt>
-              <dd>{{ employee.currentProject?.name ?? t("Не задан") }}</dd>
-            </div>
-            <div class="office-map-employee-card__item">
-              <dt>{{ t("Роль на текущем проекте") }}:</dt>
-              <dd>{{ employee.currentProject?.role ?? t("Не задана") }}</dd>
-            </div>
-            <div class="office-map-employee-card__item">
-              <dt>{{ t("Бизнес Аккаунт") }}:</dt>
-              <dd>{{ employee.ba?.name ?? t("Не задан") }}</dd>
-            </div>
-            <div class="office-map-employee-card__item">
-              <dt>{{ t("Почтовый адрес") }}:</dt>
-              <dd>{{ employee.email ?? t("Не задан") }}</dd>
-            </div>
-            <div class="office-map-employee-card__item">
-              <dt>{{ t("Позиция") }}:</dt>
-              <dd>{{ employee.position?.name ?? t("Не задана") }}</dd>
-            </div>
-            <div class="office-map-employee-card__item">
-              <dt>{{ t("Кабинет") }}:</dt>
-              <dd>{{ employee.officeLocation?.name ?? t("Не задан") }}</dd>
-            </div>
-            <div class="office-map-employee-card__item">
-              <dt>{{ t("Рабочее место") }}:</dt>
-              <dd>{{ employee.officeWorkplace ?? t("Не задан") }}</dd>
-            </div>
-          </dl>
-        </v-col>
-      </v-row>
+      <div class="d-flex align-center ga-4 mb-6">
+        <v-avatar size="64" color="surface-light" class="flex-shrink-0">
+          <v-img v-if="employee.hasAvatar" :src="getEmployeeAvatarUrl(employee.id)" :alt="employee.displayName" cover />
+          <v-icon v-else icon="mdi-account" size="36" color="medium-emphasis" />
+        </v-avatar>
+        <div class="text-body-1 font-weight-medium text-break">{{ employee.displayName }}</div>
+      </div>
+      <dl class="d-flex flex-column ga-3">
+        <div>
+          <dt class="text-caption text-medium-emphasis">{{ t("Отдел") }}</dt>
+          <dd class="ma-0 text-body-2 text-break">{{ employee.department?.name ?? t("Не задан") }}</dd>
+        </div>
+        <div>
+          <dt class="text-caption text-medium-emphasis">{{ t("Текущий проект") }}</dt>
+          <dd class="ma-0 text-body-2 text-break">{{ employee.currentProject?.name ?? t("Не задан") }}</dd>
+        </div>
+        <div>
+          <dt class="text-caption text-medium-emphasis">{{ t("Роль на текущем проекте") }}</dt>
+          <dd class="ma-0 text-body-2 text-break">{{ employee.currentProject?.role ?? t("Не задана") }}</dd>
+        </div>
+        <div>
+          <dt class="text-caption text-medium-emphasis">{{ t("Бизнес Аккаунт") }}</dt>
+          <dd class="ma-0 text-body-2 text-break">{{ employee.ba?.name ?? t("Не задан") }}</dd>
+        </div>
+        <div>
+          <dt class="text-caption text-medium-emphasis">{{ t("Почтовый адрес") }}</dt>
+          <dd class="ma-0 text-body-2 text-break">{{ employee.email ?? t("Не задан") }}</dd>
+        </div>
+        <div>
+          <dt class="text-caption text-medium-emphasis">{{ t("Позиция") }}</dt>
+          <dd class="ma-0 text-body-2 text-break">{{ employee.position?.name ?? t("Не задана") }}</dd>
+        </div>
+        <div>
+          <dt class="text-caption text-medium-emphasis">{{ t("Кабинет") }}</dt>
+          <dd class="ma-0 text-body-2 text-break">{{ employee.officeLocation?.name ?? t("Не задан") }}</dd>
+        </div>
+        <div>
+          <dt class="text-caption text-medium-emphasis">{{ t("Рабочее место") }}</dt>
+          <dd class="ma-0 text-body-2 text-break">{{ employee.officeWorkplace?.trim() || t("Рабочее место не указано") }}</dd>
+        </div>
+      </dl>
     </template>
   </v-sheet>
 </template>
@@ -72,9 +68,8 @@
 <script setup lang="ts">
 import {ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
-import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
 import type {Employee} from "@/services/employee.service";
-import {findEmployee} from "@/services/employee.service";
+import {findEmployee, getEmployeeAvatarUrl} from "@/services/employee.service";
 import {errorUtils} from "@/lib/errors";
 
 const props = defineProps<{
@@ -114,29 +109,3 @@ watch(
     {immediate: true},
 );
 </script>
-
-<style scoped>
-.office-map-employee-card__state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 160px;
-}
-
-.office-map-employee-card__list {
-  display: grid;
-  grid-template-columns: max-content auto;
-  gap: 4px 12px;
-}
-
-.office-map-employee-card__item dt {
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.72);
-}
-
-.office-map-employee-card__item dd {
-  margin: 0;
-}
-
-
-</style>

@@ -10,6 +10,7 @@ export function initializeWorkplaces(
   workplaceClickHandler?: WorkplaceClickHandler,
   employees?: Employee[],
   highlightedWorkplaces?: string[],
+  locationId?: number | null,
 ) {
   const workplaces = svg.querySelectorAll<SVGElement>(
     "[data-workplaceName][data-workplaceType='1']",
@@ -17,21 +18,28 @@ export function initializeWorkplaces(
 
   workplaces.forEach((workplace) => {
     const workplaceName = getWorkplaceName(workplace);
-    attachHoverEffect(workplace);
 
     const employeeNode = workplace.parentElement?.querySelector("[data-empl]");
     if (employeeNode && workplaceName) {
-      const employee = findEmployee(workplaceName, employees);
+      const employee = (locationId != null
+        ? findEmployee(workplaceName, employees?.filter((item) => item.officeLocation?.id === locationId))
+        : undefined) ?? findEmployee(workplaceName, employees);
       updateEmployeeText(workplace as SVGGraphicsElement, employeeNode, employee);
-
-      if (
-        highlightedWorkplaces &&
-        highlightedWorkplaces.some(
-          (name) => normalizeWorkplaceName(name) === workplaceName,
-        )
-      ) {
-        highlightWorkplace(workplace);
+      addTooltip(workplace, employee, workplaceName);
+      if (locationId != null && employee && employee.officeLocation?.id !== locationId) {
+        workplace.setAttribute("aria-disabled", "true");
+        workplace.style.opacity = "0.35";
+        workplace.style.cursor = "default";
+        if (!workplace.contains(employeeNode)) {
+          (employeeNode as SVGElement).style.opacity = "0.35";
+        }
+        employeeNode.querySelectorAll("text").forEach((text) => {
+          text.removeAttribute("role");
+          text.style.cursor = "default";
+        });
+        return;
       }
+      attachHoverEffect(workplace);
 
       if (workplaceClickHandler) {
         workplace.style.cursor = "pointer";
@@ -40,9 +48,9 @@ export function initializeWorkplaces(
         });
       }
 
-      addTooltip(workplace, employee, workplaceName);
     }
   });
+  highlightWorkplaces(svg, highlightedWorkplaces);
 }
 
 function getWorkplaceName(workplace: SVGElement): string | undefined {
@@ -98,9 +106,14 @@ function updateEmployeeText(
   });
 }
 
-function highlightWorkplace(workplace: SVGElement) {
-  workplace.querySelectorAll("rect").forEach((rect) => {
-    rect.style.filter = "drop-shadow(2px 2px 4px rgba(255, 50, 50, 0.7))";
+export function highlightWorkplaces(svg: SVGElement, names: string[] = []) {
+  const normalizedNames = names.map(normalizeWorkplaceName);
+  svg.querySelectorAll<SVGElement>("[data-workplaceName][data-workplaceType='1']").forEach((workplace) => {
+    const highlighted = workplace.getAttribute("aria-disabled") !== "true"
+      && normalizedNames.includes(getWorkplaceName(workplace));
+    workplace.querySelectorAll("rect").forEach((rect) => {
+      rect.style.filter = highlighted ? "drop-shadow(2px 2px 4px rgba(255, 50, 50, 0.7))" : "";
+    });
   });
 }
 

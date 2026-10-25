@@ -12,5 +12,6 @@ public class CreateOrUpdateOfficeBody {
     private String description;
     private String mapName;
     private boolean archived = false;
+    private boolean primaryOffice;
 
 }

@@ -12,6 +12,7 @@ import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.FileStorage;
 import ru.abondin.hreasy.platform.service.dict.dto.DictOfficeLocationMap;
 import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
+import ru.abondin.hreasy.platform.service.dto.OfficeDictDto;
 import ru.abondin.hreasy.platform.service.dto.ProjectDictDto;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
 import ru.abondin.hreasy.platform.service.mapper.DictDtoMapper;
@@ -112,15 +113,16 @@ public class DictService {
                 });
     }
 
-    public Flux<SimpleDictDto> findOffices(AuthContext auth) {
+    public Flux<OfficeDictDto> findOffices(AuthContext auth) {
         log.trace("Get all offices {}", auth.getUsername());
         return officeRepo
                 .findNotArchived()
                 .map(e -> {
-                    var dto = new SimpleDictDto();
+                    var dto = new OfficeDictDto();
                     dto.setId(e.getId());
                     dto.setName(e.getName());
                     dto.setActive(!e.isArchived());
+                    dto.setPrimaryOffice(e.isPrimaryOffice());
                     return dto;
                 });
     }
