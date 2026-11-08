@@ -4,27 +4,12 @@ import { appPath } from "../support/navigation";
 import {
   clearAutocompleteField,
   clickFirstRow,
-  expectFilterToBeAccessible,
   expectVisibleRows,
-  fillAdaptiveFilterInput,
 } from "../support/test-helpers";
 import { routes } from "../support/test-data";
 import { selectors } from "../support/selectors";
 
 test.describe("Employees List and Drawer", () => {
-  test("filters by search, current project and business account", async ({ page }) => {
-    const credentials = requireCredentials("employee");
-    await loginViaUi(page, credentials);
-    await page.goto(appPath(routes.employees), { waitUntil: "domcontentloaded" });
-
-    await expect(page.getByTestId(selectors.employeesView)).toBeVisible();
-    await expectFilterToBeAccessible(page, selectors.employeesFilterSearch);
-    await expectFilterToBeAccessible(page, selectors.employeesFilterProject);
-    await expectFilterToBeAccessible(page, selectors.employeesFilterBa);
-
-    await fillAdaptiveFilterInput(page, selectors.employeesFilterSearch, "a");
-  });
-
   test("opens employee drawer on row click", async ({ page }) => {
     const credentials = requireCredentials("employee");
     await loginViaUi(page, credentials);

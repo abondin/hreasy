@@ -22,11 +22,6 @@ function envCredentials(role: TestRole): TestCredentials | null {
 
   return null;
 }
-
-export function credentialsOrSkip(role: TestRole): TestCredentials | null {
-  return envCredentials(role);
-}
-
 export function requireCredentials(...roles: TestRole[]): TestCredentials {
   for (const role of roles) {
     const credentials = envCredentials(role);
@@ -90,32 +85,4 @@ export async function loginViaUi(
       await page.reload({ waitUntil: "domcontentloaded" });
     }
   }
-}
-
-export async function logoutViaUi(page: Page): Promise<void> {
-  const logoutButton = page.getByTestId(selectors.logoutButton).first();
-  if (await logoutButton.isVisible()) {
-    await logoutButton.click();
-  }
-  await expect(page).toHaveURL(/\/login/);
-}
-
-export async function expectLoginPageOrAuthenticatedHome(page: Page): Promise<void> {
-  if (page.url().includes("/login")) {
-    await expect(page).toHaveURL(/\/login(?:\?returnPath=\/profile)?$/);
-    await expect(page.getByTestId(selectors.loginInput)).toBeVisible();
-    await expect(page.getByTestId(selectors.passwordInput)).toBeVisible();
-    await expect(page.getByTestId(selectors.loginSubmit)).toBeVisible();
-    return;
-  }
-
-  await expect(page).toHaveURL(/\/(?:$|profile)/);
-}
-
-export async function expectProtectedRouteRedirectOrAccess(
-  page: Page,
-  path: string,
-): Promise<void> {
-  const url = page.url();
-  expect(url.includes("/login") || url.includes(path)).toBeTruthy();
 }

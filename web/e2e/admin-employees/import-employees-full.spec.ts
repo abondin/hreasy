@@ -6,7 +6,7 @@ import { appPath } from "../support/navigation";
 import { selectors } from "../support/selectors";
 import { routes } from "../support/test-data";
 
-const importFile = resolve(process.cwd(), "../platform/src/test/resources/excel/employees-to-import.xlsx");
+const importFile = resolve(process.cwd(), "../backend/platform/src/test/resources/excel/employees-to-import.xlsx");
 const importedEmployeeName = "Новый Сотрудник Сотрудникович";
 
 const expectedDefaultColumns = {

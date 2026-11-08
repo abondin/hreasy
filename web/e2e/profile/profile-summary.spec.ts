@@ -14,7 +14,7 @@ test.describe("Profile Summary", () => {
     await expect(page.getByTestId(selectors.profileView).getByTestId(selectors.logoutButton).first()).toHaveCount(0);
   });
 
-  test("edits telegram and persists changes", async ({ page }) => {
+  test("opens the telegram edit dialog", async ({ page }) => {
     const credentials = requireCredentials("employee");
     await loginViaUi(page, credentials);
     await page.goto(appPath(routes.profile), { waitUntil: "domcontentloaded" });

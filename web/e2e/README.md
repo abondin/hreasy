@@ -28,7 +28,7 @@ npm run test:e2e -- --list
 Run a specific file:
 
 ```sh
-npm run test:e2e -- e2e/smoke/auth-and-routing.spec.ts
+npm run test:e2e -- e2e/smoke/post-login.spec.ts
 ```
 
 Run only autonomous harness regressions:
@@ -58,7 +58,7 @@ Some scenarios require test credentials from environment variables:
 - `PLAYWRIGHT_BASE_PATH` (optional, for apps served from a subpath)
 - `PLAYWRIGHT_BASE_URL` (optional override for full URL, has priority over port/base path)
 
-If required credentials are missing, such tests are skipped.
+If required credentials are missing, authenticated tests fail with a configuration error. Autonomous suites do not require credentials.
 
 ## Local run with env vars
 
@@ -77,7 +77,7 @@ Example for app on `http://localhost:5174`:
 PLAYWRIGHT_PORT=5174 \
 E2E_EMPLOYEE_USERNAME=test.employee \
 E2E_EMPLOYEE_PASSWORD='<test-password>' \
-npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
+npx playwright test e2e/smoke/post-login.spec.ts --project=chromium
 ```
 
 ### PowerShell
@@ -86,5 +86,5 @@ npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
 $env:PLAYWRIGHT_PORT='5174'; `
 $env:E2E_EMPLOYEE_USERNAME='test.employee'; `
 $env:E2E_EMPLOYEE_PASSWORD='<test-password>'; `
-npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
+npx playwright test e2e/smoke/post-login.spec.ts --project=chromium
 ```

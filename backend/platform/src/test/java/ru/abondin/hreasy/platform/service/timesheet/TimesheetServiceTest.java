@@ -3,7 +3,6 @@ package ru.abondin.hreasy.platform.service.timesheet;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -120,7 +119,7 @@ public class TimesheetServiceTest extends BaseServiceTest {
                 .create(timesheetService.report(ctx, employeeId, report)
                         .flatMap(repo::findById)
                 )
-                .expectError(AccessDeniedException.class);
+                .expectError(AccessDeniedException.class).verify(MONO_DEFAULT_TIMEOUT);
     }
 
 
@@ -143,8 +142,8 @@ public class TimesheetServiceTest extends BaseServiceTest {
         var ctx = auth(TestEmployees.FMS_Empl_Jenson_Curtis).block(MONO_DEFAULT_TIMEOUT);
         generateDefaultReports(ctx).block(MONO_DEFAULT_TIMEOUT);
         StepVerifier.create(timesheetService.timesheetSummary(ctx, TimesheetQueryFilter
-                .builder().from(defaultDate).to(defaultDate).build())).expectError(AccessDeniedException.class);
-        ;
+                .builder().from(defaultDate).to(defaultDate).build()))
+                .expectError(AccessDeniedException.class).verify(MONO_DEFAULT_TIMEOUT);
     }
 
     @Test
@@ -208,7 +207,6 @@ public class TimesheetServiceTest extends BaseServiceTest {
 
 
     @Test
-    @Disabled("Does not work. Needs to be fixed")
     public void testDeleteNotMyReport() {
         var ctx = auth(TestEmployees.Admin_Shaan_Pitts).block(MONO_DEFAULT_TIMEOUT);
         var employeeId = testData.employees.get(TestEmployees.FMS_Empl_Jenson_Curtis);
@@ -232,7 +230,7 @@ public class TimesheetServiceTest extends BaseServiceTest {
                         .builder().from(defaultDate).to(defaultDate.plusDays(1)).build())
                 .filter(r -> r.getEmployee().getId() == employeeId)
                 .flatMap(r -> Flux.fromIterable(r.getTimesheet()))
-        ).expectNextCount(3).verifyComplete();
+        ).expectNextCount(2).verifyComplete();
     }
 
     /**

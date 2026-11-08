@@ -29,8 +29,8 @@ async function readLayoutChain(table: import("@playwright/test").Locator) {
     const windowRoot = card?.closest<HTMLElement>(".v-window");
     const pageContent = element.closest<HTMLElement>("[style*='height']");
 
-    function describeNode(node: HTMLElement | null) {
-      if (!node) {
+    function describeNode(node: Element | null | undefined) {
+      if (!(node instanceof HTMLElement)) {
         return null;
       }
 

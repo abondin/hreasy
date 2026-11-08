@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { loginViaUi, requireCredentials } from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { selectors } from "../support/selectors";
@@ -38,7 +38,7 @@ test.describe("Vacations tabs regression", () => {
   });
 });
 
-async function expectNoBrowserScroll(page: Parameters<typeof test>[0]["page"]) {
+async function expectNoBrowserScroll(page: Page) {
   let lastMetrics: {
     htmlScrollHeight: number;
     htmlClientHeight: number;

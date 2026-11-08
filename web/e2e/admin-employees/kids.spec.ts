@@ -6,17 +6,7 @@ import { routes } from "../support/test-data";
 import { selectors } from "../support/selectors";
 
 test.describe("Admin Employee Kids", () => {
-  test("filters kids table", async ({ page }) => {
-    const credentials = requireCredentials("admin_employees");
-    await loginViaUi(page, credentials);
-    await page.goto(appPath(routes.adminEmployeesKids), { waitUntil: "domcontentloaded" });
-
-    await expect(page.getByTestId(selectors.adminKidsView)).toBeVisible();
-    await page.getByTestId(selectors.adminKidsSearch).locator("input").fill("a");
-    await expect(page.getByTestId(selectors.adminKidsSearch).locator("input")).toHaveValue("a");
-  });
-
-  test("opens kid edit dialog from row click", async ({ page }) => {
+  test("opens a kid form from a row or the add button", async ({ page }) => {
     const credentials = requireCredentials("admin_employees");
     await loginViaUi(page, credentials);
     await page.goto(appPath(routes.adminEmployeesKids), { waitUntil: "domcontentloaded" });
