@@ -123,7 +123,7 @@
           v-if="error"
           type="error"
           variant="tonal"
-          class="mb-4"
+          class="mb-4 flex-0-0"
           data-testid="assessments-error"
         >
           {{ error }}

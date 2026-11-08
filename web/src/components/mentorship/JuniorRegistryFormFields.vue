@@ -31,6 +31,7 @@
   />
   <v-combobox
     :model-value="form.role"
+    :return-object="false"
     :items="roleOptions"
     item-title="value"
     item-value="value"

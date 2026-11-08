@@ -16,7 +16,7 @@
         type="error"
         variant="tonal"
         border="start"
-        class="mb-4"
+        class="mb-4 flex-0-0"
       >
         {{ error }}
       </v-alert>

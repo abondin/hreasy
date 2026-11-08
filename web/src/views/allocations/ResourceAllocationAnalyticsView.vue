@@ -149,7 +149,7 @@
         v-if="error"
         type="error"
         variant="tonal"
-        class="mb-3 flex-grow-0"
+        class="mb-3 flex-0-0"
         closable
         @click:close="error = ''"
       >
