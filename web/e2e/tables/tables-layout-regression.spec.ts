@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { loginViaUi, requireCredentials } from "../fixtures/auth";
+import { loginViaApi, requireCredentials } from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { selectors } from "../support/selectors";
 import { routes } from "../support/test-data";
@@ -45,7 +45,7 @@ async function exerciseTableLayout(
 test.describe("Tables Layout Regression", () => {
   test("employees table survives resize, search and sort without width jumps", async ({ page }) => {
     const credentials = requireCredentials("employee");
-    await loginViaUi(page, credentials);
+    await loginViaApi(page, credentials);
     await page.goto(appPath(routes.employees), { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId(selectors.employeesView)).toBeVisible();
@@ -59,7 +59,7 @@ test.describe("Tables Layout Regression", () => {
 
   test("overtimes table survives resize and filtering", async ({ page }) => {
     const credentials = requireCredentials("overtime_admin", "employee");
-    await loginViaUi(page, credentials);
+    await loginViaApi(page, credentials);
     await page.goto(appPath(routes.overtimes), { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId(selectors.overtimesView)).toBeVisible();
@@ -73,7 +73,7 @@ test.describe("Tables Layout Regression", () => {
 
   test("vacations list and summary tables survive tab switches and resize", async ({ page }) => {
     const credentials = requireCredentials("employee");
-    await loginViaUi(page, credentials);
+    await loginViaApi(page, credentials);
     await page.goto(appPath(routes.vacations), { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId(selectors.vacationsView)).toBeVisible();

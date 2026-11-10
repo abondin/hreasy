@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { loginViaUi, requireCredentials } from "../fixtures/auth";
+import { loginViaApi, requireCredentials } from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { selectors } from "../support/selectors";
 import { routes } from "../support/test-data";
@@ -8,7 +8,7 @@ test.describe("Vacations tabs regression", () => {
   test("keeps tabs visible after switching summary -> list", async ({ page }) => {
     const credentials = requireCredentials("employee");
 
-    await loginViaUi(page, credentials);
+    await loginViaApi(page, credentials);
     await page.goto(appPath(routes.vacations), { waitUntil: "domcontentloaded" });
 
     const tabs = page.getByTestId(selectors.vacationsTabs);

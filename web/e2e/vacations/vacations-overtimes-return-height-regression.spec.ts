@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { loginViaUi, requireCredentials } from "../fixtures/auth";
+import { loginViaApi, requireCredentials } from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { selectors } from "../support/selectors";
 import { routes } from "../support/test-data";
@@ -35,7 +35,7 @@ test.describe("Vacations Return Height Regression", () => {
     const credentials = requireCredentials("employee");
 
     await page.setViewportSize({ width: 1280, height: 720 });
-    await loginViaUi(page, credentials);
+    await loginViaApi(page, credentials);
 
     await page.goto(appPath(routes.vacations), { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId(selectors.vacationsView)).toBeVisible();

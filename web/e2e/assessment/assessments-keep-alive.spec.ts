@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { loginViaUi, requireCredentials } from "../fixtures/auth";
+import { loginViaApi, requireCredentials } from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { selectors } from "../support/selectors";
 import { routes } from "../support/test-data";
@@ -8,7 +8,7 @@ test.describe("Assessments keep-alive", () => {
   test("keeps search filter after navigating to employee assessments and back", async ({ page }) => {
     const credentials = requireCredentials("employee");
 
-    await loginViaUi(page, credentials);
+    await loginViaApi(page, credentials);
     await page.goto(appPath(routes.assessments), { waitUntil: "domcontentloaded" });
 
     const assessmentsView = page.getByTestId(selectors.assessmentsView);

@@ -27,7 +27,7 @@ export default defineConfig({
   use: {
     actionTimeout: 0,
     baseURL,
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     headless: isCi
   },
   projects: runAllBrowsers ? [

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { loginViaUi, requireCredentials } from "../fixtures/auth";
+import { loginViaApi, requireCredentials } from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { routes } from "../support/test-data";
 import { selectors } from "../support/selectors";
@@ -7,7 +7,7 @@ import { selectors } from "../support/selectors";
 test.describe("Navigation Smoke", () => {
   test("opens profile, employees, vacations, overtimes, mentorship for authenticated user", async ({ page }) => {
     const credentials = requireCredentials("employee");
-    await loginViaUi(page, credentials);
+    await loginViaApi(page, credentials);
 
     await page.goto(appPath(routes.profile), { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId(selectors.profileView)).toBeVisible();
@@ -27,7 +27,7 @@ test.describe("Navigation Smoke", () => {
 
   test("opens admin employees tabs for admin user", async ({ page }) => {
     const credentials = requireCredentials("admin_employees");
-    await loginViaUi(page, credentials);
+    await loginViaApi(page, credentials);
     await page.goto(appPath(routes.adminEmployees), { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId(selectors.adminTabsView)).toBeVisible();

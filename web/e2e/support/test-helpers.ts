@@ -1,48 +1,9 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-export async function expectVisibleRows(rows: Locator, message: string): Promise<number> {
-  const rowCount = await rows.count();
-  expect(rowCount, message).toBeGreaterThan(0);
-  return rowCount;
-}
-
 export async function clickFirstRow(rows: Locator, emptyMessage: string): Promise<void> {
-  await expectVisibleRows(rows, emptyMessage);
-  await rows.first().locator("td").first().click();
-}
-
-interface OpenDialogFromRowsOptions {
-  rows: Locator;
-  dialog: Locator;
-  emptyMessage: string;
-  attempts?: number;
-  addButton?: Locator;
-}
-
-export async function openDialogFromRowsOrAddButton({
-  rows,
-  dialog,
-  emptyMessage,
-  attempts = 3,
-  addButton,
-}: OpenDialogFromRowsOptions): Promise<void> {
-  const rowCount = await expectVisibleRows(rows, emptyMessage);
-  const maxAttempts = Math.min(rowCount, attempts);
-
-  for (let index = 0; index < maxAttempts; index += 1) {
-    await rows.nth(index).locator("td").first().click();
-    if (await dialog.isVisible().catch(() => false)) {
-      await expect(dialog).toBeVisible();
-      return;
-    }
-  }
-
-  if (addButton) {
-    await expect(addButton).toBeVisible();
-    await addButton.click();
-  }
-
-  await expect(dialog).toBeVisible();
+  const row = rows.filter({ has: rows.page().locator("td:not([colspan])") }).first();
+  await expect(row, emptyMessage).toBeVisible();
+  await row.locator("td").first().click();
 }
 
 export interface TableScrollMetrics {
@@ -196,12 +157,16 @@ export async function fillAdaptiveFilterInput(
   await overflowInput.fill(value);
   await expect(overflowInput).toHaveValue(value);
   await page.keyboard.press("Escape");
+  await expect(page.locator(".v-menu .adaptive-filter-bar__overflow-field:visible")).toHaveCount(0);
 }
 
 export async function openAdaptiveFilterOverflow(page: Page): Promise<void> {
   const overflowButton = page.getByTestId("adaptive-filter-overflow").first();
   await expect(overflowButton).toBeVisible();
-  await overflowButton.click();
+  if (await overflowButton.getAttribute("aria-expanded") !== "true") {
+    await overflowButton.click();
+  }
+  await expect(overflowButton).toHaveAttribute("aria-expanded", "true");
 }
 
 export async function expectFilterToBeAccessible(page: Page, testId: string): Promise<void> {
@@ -214,21 +179,5 @@ export async function expectFilterToBeAccessible(page: Page, testId: string): Pr
   await openAdaptiveFilterOverflow(page);
   await expect(page.getByTestId(testId).first()).toBeVisible();
   await page.keyboard.press("Escape");
-}
-
-export async function clearAutocompleteField(field: Locator): Promise<void> {
-  await expect(field).toBeVisible();
-  await field.click();
-
-  const clearControl = field.locator(".v-field__clearable").first();
-  if (await clearControl.isVisible().catch(() => false)) {
-    await clearControl.click();
-    return;
-  }
-
-  const input = field.locator("input").first();
-  await input.focus();
-  await input.press(process.platform === "win32" ? "Control+A" : "Meta+A");
-  await input.press("Delete");
-  await input.press("Backspace");
+  await expect(page.locator(".v-menu .adaptive-filter-bar__overflow-field:visible")).toHaveCount(0);
 }
