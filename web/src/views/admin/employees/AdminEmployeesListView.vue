@@ -139,6 +139,9 @@
         </v-alert>
       </template>
 
+      <template #[`item.email`]="{ item }">
+        <EmployeeEmails :email="item.email" :additional-emails="item.additionalEmails" />
+      </template>
       <template #[`item.departmentId`]="{ item }">
         {{ getById(departments, item.departmentId) }}
       </template>
@@ -213,6 +216,7 @@ import SearchTextField from "@/components/shared/SearchTextField.vue";
 import AdminEmployeeForm from "@/views/admin/employees/components/AdminEmployeeForm.vue";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
+import EmployeeEmails from "@/components/employee/EmployeeEmails.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
 import { createSearchSettings, matchesSearch } from "@/lib/search";
@@ -341,7 +345,7 @@ const filteredItems = computed(() => {
     }
     return matchesSearch(
       search.value,
-      [item.displayName, item.email, item.skype, item.phone],
+      [item.displayName, item.email, ...(item.additionalEmails ?? []), item.skype, item.phone],
       searchSettings.value,
     );
   });

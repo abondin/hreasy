@@ -46,7 +46,9 @@
         </div>
         <div>
           <dt class="text-caption text-medium-emphasis">{{ t("Почтовый адрес") }}</dt>
-          <dd class="ma-0 text-body-2 text-break">{{ employee.email ?? t("Не задан") }}</dd>
+          <dd class="ma-0 text-body-2 text-break">
+            <EmployeeEmails :email="employee.email" :additional-emails="employee.additionalEmails" />
+          </dd>
         </div>
         <div>
           <dt class="text-caption text-medium-emphasis">{{ t("Позиция") }}</dt>
@@ -67,6 +69,7 @@
 
 <script setup lang="ts">
 import {ref, watch} from "vue";
+import EmployeeEmails from "@/components/employee/EmployeeEmails.vue";
 import {useI18n} from "vue-i18n";
 import type {Employee} from "@/services/employee.service";
 import {findEmployee, getEmployeeAvatarUrl} from "@/services/employee.service";

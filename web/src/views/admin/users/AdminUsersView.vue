@@ -193,6 +193,7 @@ const filteredItems = computed(() => {
     return matchesSearch(search.value, [
       item.employee.name,
       item.email,
+      ...(item.additionalEmails ?? []),
       ...projects.value.filter((project) => projectIds.has(project.id)).map((project) => project.name),
       ...departments.value.filter((department) =>
         item.accessibleDepartments.includes(department.id)

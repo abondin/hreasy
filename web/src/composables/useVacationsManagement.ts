@@ -195,6 +195,7 @@ export function useVacationsManagement(t: ComposerTranslation) {
       [
       item.employeeDisplayName,
       employee?.email,
+      ...(employee?.additionalEmails ?? []),
       item.employeeCurrentProject?.role,
       ],
       filter.searchSettings,

@@ -709,6 +709,7 @@ function getOrCreateRow(
   if (!matchesSearch(search.value, [
     employee.displayName,
     employee.email,
+    ...(employee.additionalEmails ?? []),
     employee.currentProjectRole,
     project.name,
     workstream?.displayName,

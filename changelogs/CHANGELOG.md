@@ -4,6 +4,7 @@
 
 features:
 
+- Administrators can maintain additional employee email addresses. All primary and additional addresses are unique regardless of case; employee searches include additional addresses, which can be viewed and copied alongside the primary address. Authentication, import matching, notification delivery, and external API identifiers continue to use the primary email.
 - Employees can browse office maps and employee lists by office and room, filter colleagues with configurable search or by selecting a workplace, open a colleague's map without changing list filters, and view employee details even for rooms without a map. Administrators can mark primary offices; the maps page initially selects the first marked active office, or leaves the office filter empty when none are marked.
 - Added annual resource planning by project and workstream, with data entry, analytics, period locking, change history, conflict protection, cell comments, Excel export, and a project setting requiring workstream selection.
 - Added a read-only external API for employees, avatars, projects, overtime, and allocations, using email and configurable external keys, Bearer authentication, acting-user permissions, and OpenAPI documentation.
@@ -20,6 +21,7 @@ bugfix:
 
 technical:
 
+- Employee email uniqueness is now case-insensitive across primary and additional addresses. Before upgrading, resolve any existing primary addresses that collide after `lower(trim(email))`; the migration rejects such conflicts without merging employees.
 - Backend services require Java 25 and use Spring Boot 4. Building the web frontend requires Node.js 26 and npm 11.19.1.
 - Fixed security issues present in 1.3: Telegram API authentication could create a reusable web session, and file storage lacked filename protection and could modify files before authorization.
 

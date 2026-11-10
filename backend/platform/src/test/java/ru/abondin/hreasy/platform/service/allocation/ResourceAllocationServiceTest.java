@@ -296,7 +296,7 @@ class ResourceAllocationServiceTest {
     void rejectsClosedMonthsAndMonthsAfterDismissal() {
         var dismissed = new ResourceAllocationEmployeeView(1, "Test Employee 1",
                 null, null, 10, "Project 10", "Developer",
-                LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10), "employee@example.test");
+                LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10), "employee@example.test", new String[0]);
         when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
                 .thenReturn(Flux.just(dismissed));
         when(repository.findProjects()).thenReturn(Flux.just(project(10)));
@@ -345,7 +345,7 @@ class ResourceAllocationServiceTest {
         var now = dateTimeService.now();
         var dismissed = new ResourceAllocationEmployeeView(1, "Alex Morgan",
                 null, null, 10, "Project 10", "Developer",
-                LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10), "alex.morgan@example.test");
+                LocalDate.of(2020, 1, 1), LocalDate.of(2026, 8, 10), "alex.morgan@example.test", new String[0]);
         when(repository.findEmployees(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31)))
                 .thenReturn(Flux.just(dismissed));
         when(repository.findProjects()).thenReturn(Flux.just(project(10)));
@@ -400,13 +400,13 @@ class ResourceAllocationServiceTest {
     private ResourceAllocationEmployeeView employee(int id, int currentProjectId) {
         return new ResourceAllocationEmployeeView(id, "Employee " + id, null, null,
                 currentProjectId, "Project " + currentProjectId, "Developer", LocalDate.of(2020, 1, 1), null,
-                "employee" + id + "@example.test");
+                "employee" + id + "@example.test", new String[0]);
     }
 
     private ResourceAllocationEmployeeView employee(int id) {
         return new ResourceAllocationEmployeeView(id, "Test Employee " + id,
                 null, null, null, null, "Developer", LocalDate.of(2020, 1, 1), null,
-                "employee" + id + "@example.test");
+                "employee" + id + "@example.test", new String[0]);
     }
 
     private ResourceAllocationProjectView project(int id) {

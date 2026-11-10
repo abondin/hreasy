@@ -100,7 +100,7 @@ const detailsOpen = computed({
 });
 const filteredEmployees = computed(() => props.employees.filter((employee) =>
   matchesSearch(search.value, [
-    employee.displayName, employee.email, employee.department?.name,
+    employee.displayName, employee.email, ...(employee.additionalEmails ?? []), employee.department?.name,
     employee.officeLocation?.name, employee.officeWorkplace,
     employee.currentProject?.name, employee.currentProject?.role,
     employee.ba?.name, employee.position?.name,

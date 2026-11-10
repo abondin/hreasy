@@ -3,6 +3,7 @@ package ru.abondin.hreasy.platform.service.admin.employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.Nullable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -491,8 +493,11 @@ public class AdminEmployeeService {
     }
 
     private Mono<Integer> doUpdateFromBody(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry, CreateOrUpdateEmployeeBody body) {
+        body.setAdditionalEmails(body.getAdditionalEmails().stream()
+                .map(email -> email.trim().toLowerCase(Locale.ROOT)).toList());
         mapper.populateFromBody(entry, body);
-        return doUpdate(currentEmployeeId, now, entry, body.getImportProcessId());
+        return doUpdate(currentEmployeeId, now, entry, body.getImportProcessId())
+                .onErrorMap(DuplicateKeyException.class, error -> new BusinessError("errors.employee.emails.conflict"));
     }
 
     private Mono<Integer> doUpdate(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry, @Nullable Integer importProcessId) {

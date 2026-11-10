@@ -131,10 +131,10 @@ const filteredItems = computed(() => {
     if (hideDismissed.value && !it.parent?.active) {
       return false;
     }
-    const parentEmail = employees.value.find((employee) => employee.id === it.parent?.id)?.email;
+    const parent = employees.value.find((employee) => employee.id === it.parent?.id);
     return matchesSearch(
       search.value,
-      [it.displayName, it.parent?.name, parentEmail],
+      [it.displayName, it.parent?.name, parent?.email, ...(parent?.additionalEmails ?? [])],
       searchSettings.value,
     );
   });

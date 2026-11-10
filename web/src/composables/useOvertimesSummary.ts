@@ -114,7 +114,7 @@ export function useOvertimesSummary(t: ComposerTranslation) {
   const filteredOvertimes = computed(() =>
     baseRows.value.filter((row) => {
       const employee = employees.value.find((item) => item.id === row.employee.id);
-      if (!matchesSearch(filter.search, [row.employee.name, employee?.email], filter.searchSettings)) {
+      if (!matchesSearch(filter.search, [row.employee.name, employee?.email, ...(employee?.additionalEmails ?? [])], filter.searchSettings)) {
         return false;
       }
       if (

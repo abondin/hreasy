@@ -529,6 +529,7 @@ const filteredItems = computed(() => {
     return matchesSearch(filter.search, [
       item.employee?.name,
       employee?.email,
+      ...(employee?.additionalEmails ?? []),
       item.responsibilityObject?.name,
       item.comment,
     ], filter.searchSettings);

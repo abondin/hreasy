@@ -44,6 +44,8 @@
                       <v-text-field
                         density="comfortable"
                         v-model="employeeForm.email"
+                        data-testid="admin-employee-email"
+                        :readonly="!isNew"
                         :counter="255"
                         :rules="emailRules"
                         :label="t('Email')"
@@ -68,6 +70,36 @@
                         :rules="string255Rules"
                         :label="t('Telegram')"
                       />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                        v-for="(_, index) in employeeForm.additionalEmails"
+                        :key="index"
+                        v-model="employeeForm.additionalEmails[index]"
+                        data-testid="admin-employee-additional-email"
+                        density="comfortable"
+                        type="email"
+                        :label="t('Дополнительный почтовый адрес')"
+                        :counter="255"
+                        :maxlength="255"
+                        :rules="additionalEmailRules"
+                      >
+                        <template #append-inner>
+                          <v-btn
+                            icon="mdi-close"
+                            variant="text"
+                            size="small"
+                            :aria-label="t('Удалить адрес')"
+                            @click="employeeForm.additionalEmails.splice(index, 1)"
+                          />
+                        </template>
+                      </v-text-field>
+                      <v-btn
+                        variant="text"
+                        prepend-icon="mdi-plus"
+                        data-testid="admin-employee-add-email"
+                        @click="employeeForm.additionalEmails.push('')"
+                      >{{ t('Добавить почтовый адрес') }}</v-btn>
                     </v-col>
                   </v-row>
                 </v-col>
@@ -377,6 +409,7 @@ interface EmployeeFormState {
   birthday: string;
   sex: string;
   email: string;
+  additionalEmails: string[];
   phone: string;
   skype: string;
   telegram: string;
@@ -432,6 +465,7 @@ const employeeForm = reactive<EmployeeFormState>({
   birthday: "",
   sex: "",
   email: "",
+  additionalEmails: [],
   phone: "",
   skype: "",
   telegram: "",
@@ -463,6 +497,15 @@ const string64Rules = computed<Rule[]>(() => [maxLenRule(64)]);
 const string1024Rules = computed<Rule[]>(() => [maxLenRule(1024)]);
 const displayNameRules = computed<Rule[]>(() => [maxLenRule(255)]);
 const emailRules = computed<Rule[]>(() => [requiredMaxLenRule(255)]);
+const additionalEmailRules = computed<Rule[]>(() => [
+  requiredMaxLenRule(255),
+  (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim()) || t('Укажите корректный email'),
+  (value) => {
+    const address = String(value).trim().toLowerCase();
+    return [employeeForm.email, ...employeeForm.additionalEmails]
+      .filter(email => email.trim().toLowerCase() === address).length === 1 || t('Почтовые адреса не должны повторяться');
+  },
+]);
 const phoneRules = computed<Rule[]>(() => [maxLenRule(12)]);
 const avatarOwner = computed(() => {
   if (!employeeForm.id) {
@@ -513,6 +556,7 @@ function reset(input?: EmployeeWithAllDetails) {
   employeeForm.birthday = input?.birthday ?? "";
   employeeForm.sex = input?.sex ?? "";
   employeeForm.email = input?.email ?? "";
+  employeeForm.additionalEmails = [...(input?.additionalEmails ?? [])];
   employeeForm.phone = input?.phone ?? "";
   employeeForm.skype = input?.skype ?? "";
   employeeForm.telegram = input?.telegram ?? "";
@@ -582,6 +626,7 @@ function toPayload(): CreateOrUpdateEmployeeBody {
     birthday: normalizeString(employeeForm.birthday),
     sex: normalizeString(employeeForm.sex),
     email: normalizeString(employeeForm.email) ?? "",
+    additionalEmails: employeeForm.additionalEmails.map(email => email.trim().toLowerCase()),
     phone: normalizeString(employeeForm.phone),
     skype: normalizeString(employeeForm.skype),
     telegram: normalizeString(employeeForm.telegram),
