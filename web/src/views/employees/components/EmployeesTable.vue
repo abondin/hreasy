@@ -21,6 +21,9 @@
     <template v-if="$slots.filters" #filters>
       <slot name="filters" />
     </template>
+    <template #[`item.email`]="{ item }">
+      <EmployeeEmails :email="item.email" :additional-emails="item.additionalEmails" />
+    </template>
     <template #[`item.department.name`]="{ item }">
       {{ item.department?.name ?? t('Не задан') }}
     </template>
@@ -38,6 +41,7 @@
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import EmployeeEmails from "@/components/employee/EmployeeEmails.vue";
 import type { VDataTable } from "vuetify/components";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";
 import { extractDataTableRow } from "@/lib/data-table";

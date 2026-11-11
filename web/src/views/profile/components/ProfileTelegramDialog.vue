@@ -3,7 +3,7 @@
   -->
 <template>
   <!--<editor-fold desc="Telegram update dialog">-->
-  <v-dialog
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)"
     :model-value="open"
     max-width="520"
     persistent
@@ -91,6 +91,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref, watch, toRef } from "vue";
 import { useI18n } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";

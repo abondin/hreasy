@@ -220,7 +220,7 @@
       </template>
     </TablePageCard>
 
-    <v-dialog v-model="addDialog" max-width="760">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="addDialog" max-width="760">
       <v-card>
         <v-card-title>{{ t("Добавление в реестр") }}</v-card-title>
         <v-card-text>
@@ -244,6 +244,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed } from "vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";

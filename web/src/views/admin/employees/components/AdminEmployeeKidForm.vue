@@ -20,6 +20,7 @@
           <v-col cols="12">
             <v-autocomplete
               v-model="kidForm.parentId"
+              :autofocus="isNew"
               :items="parentOptions"
               item-title="displayName"
               item-value="id"
@@ -32,6 +33,7 @@
           <v-col cols="12">
             <v-text-field
               v-model="kidForm.displayName"
+              :autofocus="!isNew"
               :counter="255"
               :rules="displayNameRules"
               :label="t('ФИО')"

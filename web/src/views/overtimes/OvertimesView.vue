@@ -229,7 +229,7 @@
         </template>
     </TablePageCard>
 
-    <v-dialog v-model="employeeDialog" max-width="1280" data-testid="overtimes-employee-dialog">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="employeeDialog" max-width="1280" data-testid="overtimes-employee-dialog">
       <v-card v-if="selectedEmployee">
         <v-card-item>
           <template #title>
@@ -241,7 +241,7 @@
             }}
           </template>
           <template #append>
-            <v-btn icon="mdi-close" variant="text" @click="closeEmployeeDialog" />
+            <v-btn data-dialog-initial-focus icon="mdi-close" variant="text" @click="closeEmployeeDialog" />
           </template>
         </v-card-item>
         <v-card-text>
@@ -266,6 +266,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed } from "vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";

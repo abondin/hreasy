@@ -268,7 +268,7 @@
     </v-card-text>
   </v-card>
 
-  <v-dialog v-model="applyDialog" width="500">
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="applyDialog" width="500">
     <v-card>
       <v-card-title>{{ t("Применение изменений в системе") }}</v-card-title>
       <v-card-text>
@@ -289,7 +289,7 @@
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="abortDialog" width="520">
+  <v-dialog ref="initialFocusDialog2" @after-enter="focusDialog($refs.initialFocusDialog2)" v-model="abortDialog" width="520">
     <v-card>
       <v-card-title>{{ t("Выбрать другой файл") }}</v-card-title>
       <v-card-text>
@@ -305,6 +305,7 @@
 </template>
 
 <script setup lang="ts" generic="C extends ImportConfig & { columns: Record<string, string | null> }, R extends ImportExcelRow">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, onMounted, reactive, ref, toRaw } from "vue";
 import { useI18n } from "vue-i18n";
 import HREasyTableBase from "@/components/shared/HREasyTableBase.vue";

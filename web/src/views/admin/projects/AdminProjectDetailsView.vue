@@ -164,7 +164,7 @@
       @close="selectedEmployeeId = null"
     />
 
-    <v-dialog v-model="editDialog" persistent scrollable width="96vw" max-width="960">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="editDialog" persistent scrollable width="96vw" max-width="960">
       <admin-project-form
         :input="project"
         :departments="departments"
@@ -177,6 +177,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";

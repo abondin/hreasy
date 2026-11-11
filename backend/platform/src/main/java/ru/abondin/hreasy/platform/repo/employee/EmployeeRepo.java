@@ -41,7 +41,7 @@ public interface EmployeeRepo extends ReactiveCrudRepository<EmployeeEntry, Inte
     Flux<Integer> findAccessibleProjects(int employeeId);
 
     @Query("""
-            select e.id as id, e.display_name, e.email,
+            select e.id as id, e.display_name, e.email, e.additional_emails,
             e.current_project current_project, e.department department,
             e.date_of_dismissal,
             pr.accessible_projects as accessible_projects,

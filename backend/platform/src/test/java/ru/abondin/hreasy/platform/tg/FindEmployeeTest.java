@@ -98,15 +98,15 @@ public class FindEmployeeTest {
         // Test data for tests in Russian
         testEmployees.addAll(Arrays.asList(
                 new EmployeeDto(1, "Иванов Петр Алексеевич", null, "male", null, null, null, null, null, null,
-                        "Petr.Ivanov@company.org", "petro1999", null, false, new ArrayList<>()),
+                        "Petr.Ivanov@company.org", "petro1999", null, false, new ArrayList<>(), new String[0]),
                 new EmployeeDto(2, "Иванов Петр Степанович", null, "male", null, null, null, null, null,null,
-                        "Petr.Ivanov2@company.org", "petro1999", null, false, new ArrayList<>()),
+                        "Petr.Ivanov2@company.org", "petro1999", null, false, new ArrayList<>(), new String[0]),
                 new EmployeeDto(3, "Сидоров Иван Петрович", null, "male", null, null, null, null, null,null,
-                        "Ivan.Sidorov@company.org", "ivan123", null, false, new ArrayList<>()),
+                        "Ivan.Sidorov@company.org", "ivan123", null, false, new ArrayList<>(), new String[0]),
                 new EmployeeDto(4, "Петров Иван Сидорович", null, "male", null, null, null, null, null,null,
-                        "Ivan.Petrov@company.org", "petrov", null, false, new ArrayList<>()),
+                        "Ivan.Petrov@company.org", "petrov", null, false, new ArrayList<>(), new String[0]),
                 new EmployeeDto(4, "Пчёлкина Антонина Сергеевна", null, "female", null, null, null, null, null,null,
-                        "Antonina.Pchelkina@company.org", "bee123", null, false, new ArrayList<>())
+                        "Antonina.Pchelkina@company.org", "bee123", null, false, new ArrayList<>(), new String[0])
         ));
     }
 }
