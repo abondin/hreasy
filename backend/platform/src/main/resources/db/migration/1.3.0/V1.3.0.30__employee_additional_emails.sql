@@ -3,33 +3,6 @@ ALTER TABLE empl.employee_history ADD COLUMN additional_emails varchar(255)[] NO
 COMMENT ON COLUMN empl.employee.additional_emails IS 'Additional contact emails; not login aliases';
 COMMENT ON COLUMN empl.employee_history.additional_emails IS 'Additional contact emails at the time of the change';
 
--- A shared unique key protects primary and additional addresses, including concurrent writes.
-CREATE TABLE empl.employee_email (
-    email varchar(255) PRIMARY KEY NOT NULL,
-    employee_id integer NOT NULL REFERENCES empl.employee(id) ON DELETE CASCADE
-);
-CREATE INDEX employee_email_employee_idx ON empl.employee_email(employee_id);
-COMMENT ON TABLE empl.employee_email IS 'Derived registry enforcing uniqueness of all employee email addresses';
-COMMENT ON COLUMN empl.employee_email.email IS 'Case-insensitive address key, trimmed and stored in lowercase';
-COMMENT ON COLUMN empl.employee_email.employee_id IS 'Employee owning the primary or additional address';
-
-INSERT INTO empl.employee_email(email, employee_id)
-SELECT lower(trim(email)), id FROM empl.employee;
-
-CREATE FUNCTION empl.sync_employee_emails() RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN
-    DELETE FROM empl.employee_email WHERE employee_id = NEW.id;
-    INSERT INTO empl.employee_email(email, employee_id)
-    SELECT lower(trim(address)), NEW.id
-    FROM unnest(array_prepend(NEW.email, NEW.additional_emails)) AS addresses(address);
-    RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER employee_emails_sync
-AFTER INSERT OR UPDATE OF email, additional_emails ON empl.employee
-FOR EACH ROW EXECUTE FUNCTION empl.sync_employee_emails();
-
 DROP VIEW empl.v_employee_detailed;
 CREATE VIEW empl.v_employee_detailed AS SELECT e.*,
     d.name AS department_name,

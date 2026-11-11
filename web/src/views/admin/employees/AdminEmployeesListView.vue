@@ -184,6 +184,7 @@
     >
       <AdminEmployeeForm
         :input="current"
+        :employees="items"
         :departments="departments"
         :organizations="organizations"
         :projects="projects"

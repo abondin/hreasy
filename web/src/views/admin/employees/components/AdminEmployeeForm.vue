@@ -440,6 +440,7 @@ interface EmployeeFormState {
 
 const props = defineProps<{
   input?: EmployeeWithAllDetails | null;
+  employees: EmployeeWithAllDetails[];
   departments: DictItem[];
   organizations: DictItem[];
   projects: ProjectDictDto[];
@@ -508,12 +509,33 @@ const string255Rules = computed<Rule[]>(() => [maxLenRule(255)]);
 const string64Rules = computed<Rule[]>(() => [maxLenRule(64)]);
 const string1024Rules = computed<Rule[]>(() => [maxLenRule(1024)]);
 const displayNameRules = computed<Rule[]>(() => [maxLenRule(255)]);
-const emailRules = computed<Rule[]>(() => [requiredMaxLenRule(255)]);
+const emailOwnerByAddress = computed(() => {
+  const owners = new Map<string, string>();
+  for (const employee of props.employees) {
+    if (employee.id === employeeForm.id) continue;
+    for (const email of [employee.email, ...(employee.additionalEmails ?? [])]) {
+      if (email) owners.set(email.trim().toLowerCase(), employee.displayName);
+    }
+  }
+  return owners;
+});
+function emailConflictRule(value: unknown): boolean | string {
+  const owner = emailOwnerByAddress.value.get(String(value).trim().toLowerCase());
+  return !owner || t('Почтовый адрес уже указан у сотрудника: {name}', { name: owner });
+}
+const emailRules = computed<Rule[]>(() => [requiredMaxLenRule(255),
+  value => isNew.value ? emailConflictRule(value) : true,
+]);
 const additionalEmailRules = computed<Rule[]>(() => [
   requiredMaxLenRule(255),
   (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim()) || t('Укажите корректный email'),
   (value) => {
     const address = String(value).trim().toLowerCase();
+    const previousCount = props.input?.additionalEmails?.filter(email => email.trim().toLowerCase() === address).length ?? 0;
+    const currentCount = employeeForm.additionalEmails.filter(email => email.trim().toLowerCase() === address).length;
+    if (currentCount <= previousCount) return true;
+    const conflict = emailConflictRule(value);
+    if (conflict !== true) return conflict;
     return [employeeForm.email, ...employeeForm.additionalEmails]
       .filter(email => email.trim().toLowerCase() === address).length === 1 || t('Почтовые адреса не должны повторяться');
   },

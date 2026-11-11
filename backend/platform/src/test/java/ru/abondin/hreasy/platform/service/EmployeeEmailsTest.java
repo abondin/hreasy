@@ -5,13 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.TestEmployees;
 import ru.abondin.hreasy.platform.repo.PostgreSQLTestContainerContextInitializer;
 import ru.abondin.hreasy.platform.service.admin.employee.AdminEmployeeService;
@@ -52,7 +48,7 @@ class EmployeeEmailsTest extends BaseServiceTest {
     }
 
     @Test
-    void savesAddressesInAdminDirectoryProfileAndHistoryAndReleasesRemovedAddresses() {
+    void savesAndRemovesAddressesInAdminDirectoryProfileAndHistory() {
         var body = body(firstEmployee);
         var primaryEmail = body.getEmail();
         body.setAdditionalEmails(List.of("New.Name@example.test", "other@example.test"));
@@ -77,49 +73,21 @@ class EmployeeEmailsTest extends BaseServiceTest {
 
         importedBody.setAdditionalEmails(List.of());
         adminService.update(auth, firstEmployee, importedBody).block(MONO_DEFAULT_TIMEOUT);
-        var otherBody = body(secondEmployee);
-        otherBody.setAdditionalEmails(List.of("new.name@example.test"));
-        adminService.update(auth, secondEmployee, otherBody).block(MONO_DEFAULT_TIMEOUT);
-        assertEquals(List.of("new.name@example.test"), body(secondEmployee).getAdditionalEmails());
+        assertEquals(List.of(), body(firstEmployee).getAdditionalEmails());
     }
 
     @Test
-    void rejectsConflictsAcrossPrimaryAndAdditionalAddressesIgnoringCaseAndRollsBack() {
+    void apiAllowsAdditionalAddressesSharedWithOtherEmployeesAndPrimaryAddresses() {
         var first = body(firstEmployee);
-        first.setAdditionalEmails(List.of("taken@example.test"));
-        adminService.update(auth, firstEmployee, first).block(MONO_DEFAULT_TIMEOUT);
         var second = body(secondEmployee);
-        for (var addresses : List.of(List.of(first.getEmail().toUpperCase(java.util.Locale.ROOT)),
-                List.of("TAKEN@example.test"), List.of(second.getEmail()),
-                List.of("duplicate@example.test", "DUPLICATE@example.test"))) {
-            second.setAdditionalEmails(addresses);
-            StepVerifier.create(adminService.update(auth, secondEmployee, second))
-                    .expectErrorSatisfies(error -> assertEquals("errors.employee.emails.conflict", ((BusinessError) error).getCode()))
-                    .verify(MONO_DEFAULT_TIMEOUT);
-            assertEquals(List.of(), body(secondEmployee).getAdditionalEmails());
-        }
-        var newEmployee = new CreateOrUpdateEmployeeBody();
-        newEmployee.setDisplayName("Alex Morgan");
-        newEmployee.setEmail("TAKEN@example.test");
-        StepVerifier.create(adminService.create(auth, newEmployee))
-                .expectErrorSatisfies(error -> assertEquals("errors.employee.emails.conflict", ((BusinessError) error).getCode()))
-                .verify(MONO_DEFAULT_TIMEOUT);
-    }
-
-    @Test
-    void databaseAllowsOnlyOneConcurrentClaimEvenWhenServiceChecksAreBypassed() {
-        var results = Mono.zip(claim(firstEmployee, " shared@example.test "), claim(secondEmployee, "SHARED@example.test"))
-                .block(MONO_DEFAULT_TIMEOUT);
-        assertNotEquals(results.getT1(), results.getT2());
-        var owners = db.sql("select employee_id from empl.employee_email where email = 'shared@example.test'")
-                .map(row -> row.get("employee_id", Integer.class)).all().collectList().block(MONO_DEFAULT_TIMEOUT);
-        assertEquals(List.of(results.getT1() ? firstEmployee : secondEmployee), owners);
-    }
-
-    private Mono<Boolean> claim(int employeeId, String email) {
-        return db.sql("update empl.employee set additional_emails = ARRAY[:email]::varchar[] where id = :id")
-                .bind("email", email).bind("id", employeeId).then().thenReturn(true)
-                .onErrorResume(DuplicateKeyException.class, error -> Mono.just(false));
+        first.setAdditionalEmails(List.of("shared@example.test", second.getEmail()));
+        adminService.update(auth, firstEmployee, first).block(MONO_DEFAULT_TIMEOUT);
+        second.setAdditionalEmails(List.of("shared@example.test", first.getEmail(), "shared@example.test"));
+        adminService.update(auth, secondEmployee, second).block(MONO_DEFAULT_TIMEOUT);
+        assertEquals(List.of("shared@example.test", second.getEmail().toLowerCase(java.util.Locale.ROOT)),
+                body(firstEmployee).getAdditionalEmails());
+        assertEquals(List.of("shared@example.test", first.getEmail().toLowerCase(java.util.Locale.ROOT), "shared@example.test"),
+                body(secondEmployee).getAdditionalEmails());
     }
 
     private CreateOrUpdateEmployeeBody body(int employeeId) {
