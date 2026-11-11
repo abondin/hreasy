@@ -1,0 +1,69 @@
+ALTER TABLE empl.employee ADD COLUMN additional_emails varchar(255)[] NOT NULL DEFAULT '{}';
+ALTER TABLE empl.employee_history ADD COLUMN additional_emails varchar(255)[] NOT NULL DEFAULT '{}';
+COMMENT ON COLUMN empl.employee.additional_emails IS 'Additional contact emails; not login aliases';
+COMMENT ON COLUMN empl.employee_history.additional_emails IS 'Additional contact emails at the time of the change';
+
+-- A shared unique key protects primary and additional addresses, including concurrent writes.
+CREATE TABLE empl.employee_email (
+    email varchar(255) PRIMARY KEY NOT NULL,
+    employee_id integer NOT NULL REFERENCES empl.employee(id) ON DELETE CASCADE
+);
+CREATE INDEX employee_email_employee_idx ON empl.employee_email(employee_id);
+COMMENT ON TABLE empl.employee_email IS 'Derived registry enforcing uniqueness of all employee email addresses';
+COMMENT ON COLUMN empl.employee_email.email IS 'Case-insensitive address key, trimmed and stored in lowercase';
+COMMENT ON COLUMN empl.employee_email.employee_id IS 'Employee owning the primary or additional address';
+
+INSERT INTO empl.employee_email(email, employee_id)
+SELECT lower(trim(email)), id FROM empl.employee;
+
+CREATE FUNCTION empl.sync_employee_emails() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    DELETE FROM empl.employee_email WHERE employee_id = NEW.id;
+    INSERT INTO empl.employee_email(email, employee_id)
+    SELECT lower(trim(address)), NEW.id
+    FROM unnest(array_prepend(NEW.email, NEW.additional_emails)) AS addresses(address);
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER employee_emails_sync
+AFTER INSERT OR UPDATE OF email, additional_emails ON empl.employee
+FOR EACH ROW EXECUTE FUNCTION empl.sync_employee_emails();
+
+DROP VIEW empl.v_employee_detailed;
+CREATE VIEW empl.v_employee_detailed AS SELECT e.*,
+    d.name AS department_name,
+    o.name AS organization_name,
+    l.name AS level_name,
+    p.name AS position_name,
+    p.category AS position_category,
+    project.name AS current_project_name,
+    o.id AS office_location_id,
+    o.office_id AS office_location_office_id,
+    o.name AS office_location_name,
+    o.map_name AS office_location_map_name,
+    sk.rating AS aggregated_skills,
+    ba.id AS ba_id,
+    ba.name AS ba_name
+FROM empl.employee e
+LEFT JOIN dict.department d ON e.department = d.id
+LEFT JOIN dict.organization org ON e.organization = org.id
+LEFT JOIN dict.level l ON e.level = l.id
+LEFT JOIN dict."position" p ON e."position" = p.id
+LEFT JOIN proj.project project ON e.current_project = project.id
+LEFT JOIN ba.business_account ba ON project.ba_id = ba.id
+LEFT JOIN dict.office_location o ON e.office_location = o.id
+LEFT JOIN (
+    SELECT sr.employee_id,
+        string_agg(concat_ws('|#|'::text, sr.id, sr.name, gr.id, gr.name, sr.str), '|$|'::text) AS rating
+    FROM (
+        SELECT s.employee_id, s.group_id, s.id, s.name,
+            string_agg(concat_ws(','::text, r.created_by, r.rating), '/'::text) AS str
+        FROM empl.skill s
+        LEFT JOIN empl.skill_rating r ON s.id = r.skill_id AND r.deleted_at IS NULL
+        WHERE s.deleted_at IS NULL
+        GROUP BY s.employee_id, s.group_id, s.id, s.name
+    ) sr
+    JOIN empl.skill_group gr ON gr.id = sr.group_id
+    GROUP BY sr.employee_id
+) sk ON e.id = sk.employee_id;
