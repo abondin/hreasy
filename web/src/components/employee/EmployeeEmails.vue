@@ -1,5 +1,5 @@
 <template>
-  <span class="d-inline-flex align-center flex-wrap ga-1">
+  <span class="d-inline-flex align-center flex-nowrap ga-1">
     <span class="text-break">{{ email || t('Не задан') }}</span>
     <v-btn
       v-if="email"

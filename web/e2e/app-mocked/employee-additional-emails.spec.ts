@@ -38,6 +38,7 @@ test("admin saves and removes additional emails without changing the primary add
   await expect(dialog.getByTestId(selectors.adminEmployeeEmail).locator("input")).toHaveAttribute("readonly", "");
   await dialog.getByTestId(selectors.adminEmployeeAddEmail).click();
   const addressInput = dialog.getByTestId(selectors.adminEmployeeAdditionalEmail).locator("input");
+  await expect(addressInput).toBeFocused();
   const save = dialog.getByRole("button", { name: "Изменить", exact: true });
   await addressInput.fill("not-an-email");
   await save.click();

@@ -283,7 +283,7 @@ const filterBarItems = computed(() => [
 
 const headers = computed(() => [
   { title: t("ФИО"), key: "displayName", width: "240px" },
-  { title: t("Email"), key: "email", width: "240px" },
+  { title: t("Email"), key: "email", width: "360px", minWidth: "360px" },
   { title: t("Текущий проект"), key: "currentProjectId", width: "240px" },
   { title: t("Бизнес Аккаунт"), key: "baId", width: "200px" },
   { title: t("Телефон"), key: "phone", width: "160px" },

@@ -76,6 +76,7 @@
                         v-for="(_, index) in employeeForm.additionalEmails"
                         :key="index"
                         v-model="employeeForm.additionalEmails[index]"
+                        :ref="field => { additionalEmailFields[index] = field as EmailField | null; }"
                         data-testid="admin-employee-additional-email"
                         density="comfortable"
                         type="email"
@@ -98,7 +99,7 @@
                         variant="text"
                         prepend-icon="mdi-plus"
                         data-testid="admin-employee-add-email"
-                        @click="employeeForm.additionalEmails.push('')"
+                        @click="addEmail"
                       >{{ t('Добавить почтовый адрес') }}</v-btn>
                     </v-col>
                   </v-row>
@@ -383,7 +384,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from "vue";
+import { computed, nextTick, reactive, ref, watch } from "vue";
+import type { VTextField } from "vuetify/components";
+type EmailField = InstanceType<typeof VTextField>;
 import { useI18n } from "vue-i18n";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
@@ -453,6 +456,14 @@ const { t } = useI18n();
 
 const employeeEditForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 const saving = ref(false);
+const additionalEmailFields: Array<InstanceType<typeof VTextField> | null> = [];
+
+async function addEmail() {
+  const index = employeeForm.additionalEmails.length;
+  employeeForm.additionalEmails.push("");
+  await nextTick();
+  additionalEmailFields[index]?.focus();
+}
 const error = ref<string | null>(null);
 
 const employeeForm = reactive<EmployeeFormState>({
