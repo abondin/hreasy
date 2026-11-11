@@ -70,7 +70,7 @@
       </template>
     </HREasyTableBase>
 
-    <v-dialog v-model="dialog" persistent max-width="760" data-testid="admin-kids-edit-dialog">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="dialog" persistent max-width="760" data-testid="admin-kids-edit-dialog">
       <AdminEmployeeKidForm
         :input="current"
         :employees="employees"
@@ -82,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

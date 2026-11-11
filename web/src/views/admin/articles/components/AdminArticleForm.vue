@@ -13,6 +13,7 @@
       <v-form ref="formRef" @submit.prevent="submit">
         <v-text-field
           v-model="form.name"
+          autofocus
           :label="t('Название статьи')"
           :counter="255"
           :rules="nameRules"
@@ -116,7 +117,7 @@
     </v-card-actions>
   </v-card>
 
-  <v-dialog v-model="uploadDialog" max-width="720" persistent>
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="uploadDialog" max-width="720" persistent>
     <v-card>
       <v-card-title>{{ t("Загрузить изображение") }}</v-card-title>
       <v-card-text>
@@ -133,6 +134,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { VForm } from "vuetify/components";

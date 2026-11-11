@@ -90,7 +90,7 @@
     </HREasyTableBase>
   </v-card>
 
-  <v-dialog v-model="deleteDialog" width="520">
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="deleteDialog" width="520">
     <v-card>
       <v-card-title>{{ t("Удаление") }}</v-card-title>
       <v-card-text>
@@ -106,6 +106,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { formatDate, formatDateTime } from "@/lib/datetime";

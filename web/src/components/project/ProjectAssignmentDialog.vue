@@ -2,7 +2,7 @@
   Dialog that allows updating the employee's current project and role.
 -->
 <template>
-  <v-dialog v-model="dialogOpen" max-width="560" scrollable persistent data-testid="project-assignment-dialog">
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusProjectDialog" v-model="dialogOpen" max-width="560" scrollable persistent data-testid="project-assignment-dialog">
     <v-card>
       <v-card-item>
         <template #title>{{ t(targetProject ? "Добавить сотрудника" : "Обновление текущего проекта") }}</template>
@@ -125,7 +125,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { focusDialog } from "@/lib/dialog-focus";
+import { computed, nextTick, onMounted, ref, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";
 import { BusinessError, errorUtils } from "@/lib/errors";
@@ -179,6 +180,23 @@ const dialogOpen = computed({
 });
 
 const dictionaryLoading = ref(false);
+const projectDialog = useTemplateRef<{ contentEl: HTMLElement }>("initialFocusDialog1");
+
+function focusProjectDialog() {
+  if (dictionaryLoading.value) {
+    projectDialog.value?.contentEl.focus({ preventScroll: true });
+  } else {
+    focusDialog(projectDialog.value);
+  }
+}
+
+watch(dictionaryLoading, async loading => {
+  if (loading || !dialogOpen.value) return;
+  await nextTick();
+  if (document.activeElement === projectDialog.value?.contentEl) {
+    focusDialog(projectDialog.value);
+  }
+});
 const saving = ref(false);
 const errorMessage = ref("");
 const transferApprovalRequired = ref(false);

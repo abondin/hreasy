@@ -13,6 +13,7 @@
     <template #activator="{ props: activatorProps }">
       <v-text-field
         v-model="formattedValue"
+        :autofocus="autofocus"
         clearable
         :label="label"
         :rules="fieldRules"
@@ -53,6 +54,7 @@ const props = withDefaults(
     label: string;
     rules?: Rule[];
     density?: "default" | "comfortable" | "compact";
+    autofocus?: boolean;
   }>(),
   {
     modelValue: "",

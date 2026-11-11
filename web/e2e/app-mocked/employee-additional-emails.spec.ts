@@ -35,6 +35,7 @@ test("admin saves and removes additional emails without changing the primary add
   const row = page.locator("tbody tr").filter({ hasText: "Alex Morgan" });
   await row.locator("td").first().click();
   const dialog = page.getByTestId(selectors.adminEmployeesEditDialog);
+  await expect(dialog.getByRole("textbox", { name: "ФИО", exact: true })).toBeFocused();
   await expect(dialog.getByTestId(selectors.adminEmployeeEmail).locator("input")).toHaveAttribute("readonly", "");
   await dialog.getByTestId(selectors.adminEmployeeAddEmail).click();
   const addressInput = dialog.getByTestId(selectors.adminEmployeeAdditionalEmail).locator("input");

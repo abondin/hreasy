@@ -195,7 +195,7 @@
       @count="updateCommentCount"
     />
 
-    <v-dialog v-model="periodDialog" max-width="560">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="periodDialog" max-width="560">
       <v-card>
         <v-card-title>{{ t("Блокировка периодов за {year} год", { year }) }}</v-card-title>
         <v-card-text>
@@ -223,7 +223,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn :disabled="periodUpdating" @click="periodDialog = false">
+          <v-btn data-dialog-initial-focus :disabled="periodUpdating" @click="periodDialog = false">
             {{ t("Отмена") }}
           </v-btn>
           <v-btn
@@ -241,6 +241,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, onActivated, onMounted, ref, shallowRef, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";

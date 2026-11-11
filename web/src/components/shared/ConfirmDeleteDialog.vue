@@ -2,7 +2,7 @@
   Generic confirmation dialog for delete actions.
 -->
 <template>
-  <v-dialog
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)"
     :model-value="open"
     max-width="480"
     persistent
@@ -27,7 +27,7 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn
+        <v-btn data-dialog-initial-focus
           variant="text"
           color="secondary"
           :disabled="loading"
@@ -49,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 withDefaults(
   defineProps<{
     open: boolean;

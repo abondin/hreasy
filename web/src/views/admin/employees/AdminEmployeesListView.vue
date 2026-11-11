@@ -176,7 +176,7 @@
       </HREasyTableBase>
     </TablePageCard>
 
-    <v-dialog data-testid="admin-employees-edit-dialog"
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" data-testid="admin-employees-edit-dialog"
       v-model="dialog"
       persistent
       width="96vw"
@@ -205,6 +205,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

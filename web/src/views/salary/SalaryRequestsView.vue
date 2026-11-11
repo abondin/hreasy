@@ -269,7 +269,7 @@
         </template>
     </TablePageCard>
 
-    <v-dialog v-model="createDialog" max-width="920" data-testid="salary-requests-create-dialog">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="createDialog" max-width="920" data-testid="salary-requests-create-dialog">
       <v-card>
         <v-card-title>{{ createNewTitle }}</v-card-title>
         <v-card-text>
@@ -279,6 +279,7 @@
           <v-form ref="createFormRef">
             <v-autocomplete
               v-model="createForm.employeeId"
+              autofocus
               :items="employees"
               item-title="displayName"
               item-value="id"
@@ -364,7 +365,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="periodToggleDialog" max-width="560" data-testid="salary-requests-period-toggle-dialog">
+    <v-dialog ref="initialFocusDialog2" @after-enter="focusDialog($refs.initialFocusDialog2)" v-model="periodToggleDialog" max-width="560" data-testid="salary-requests-period-toggle-dialog">
       <v-card>
         <v-card-title>
           {{ periodClosed ? t("Переоткрыть период") : t("Закрыть период") }}
@@ -378,7 +379,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" :disabled="loading" @click="periodToggleDialog = false">
+          <v-btn data-dialog-initial-focus variant="text" :disabled="loading" @click="periodToggleDialog = false">
             {{ t("Отмена") }}
           </v-btn>
           <v-btn color="primary" :loading="loading" @click="confirmPeriodToggle">
@@ -391,6 +392,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, reactive, ref, watch } from "vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";

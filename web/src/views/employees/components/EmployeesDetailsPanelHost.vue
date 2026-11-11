@@ -3,7 +3,7 @@
   Uses fullscreen dialog on mobile and right-side sheet on desktop.
 -->
 <template>
-  <v-dialog
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)"
     v-if="useFullscreen"
     v-model="openModel"
     fullscreen
@@ -12,7 +12,7 @@
     <v-card>
       <v-toolbar density="comfortable" border="b">
         <v-spacer />
-        <v-btn icon="mdi-close" variant="text" @click="openModel = false" />
+        <v-btn data-dialog-initial-focus icon="mdi-close" variant="text" @click="openModel = false" />
       </v-toolbar>
 
       <v-card-text class="pa-2">
@@ -58,6 +58,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, onBeforeUnmount, onMounted } from "vue";
 import type { Employee } from "@/services/employee.service";
 import EmployeeDetailsPanel from "@/views/employees/components/EmployeeDetailsPanel.vue";

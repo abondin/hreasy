@@ -82,7 +82,7 @@
       </v-card>
     </template>
 
-    <v-dialog v-model="createDialog" max-width="560">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="createDialog" max-width="560">
       <v-card>
         <v-card-title>{{ t("Планирование нового ассессмента") }}</v-card-title>
         <v-card-text>
@@ -90,6 +90,7 @@
           <v-form ref="createFormRef">
             <my-date-form-component
               v-model="createForm.plannedDate"
+              autofocus
               :label="`${t('Дата проведения')}*`"
               :rules="[requiredDateRule]"
             />
@@ -106,6 +107,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter, type RouteLocationRaw } from "vue-router";

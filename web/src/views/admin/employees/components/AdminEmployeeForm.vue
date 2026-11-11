@@ -35,6 +35,7 @@
                       <v-text-field
                         density="comfortable"
                         v-model="employeeForm.displayName"
+                        autofocus
                         :counter="255"
                         :rules="displayNameRules"
                         :label="t('ФИО')"

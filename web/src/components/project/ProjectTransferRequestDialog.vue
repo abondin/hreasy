@@ -2,7 +2,7 @@
   Dialog with active current project transfer request details.
 -->
 <template>
-  <v-dialog v-model="dialogOpen" max-width="560" scrollable data-testid="project-transfer-request-dialog">
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="dialogOpen" max-width="560" scrollable data-testid="project-transfer-request-dialog">
     <v-card>
       <v-card-item>
         <template #title>
@@ -98,6 +98,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import PropertyList from "@/components/shared/PropertyList.vue";

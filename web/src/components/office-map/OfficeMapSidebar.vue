@@ -62,11 +62,11 @@
     </v-list>
   </v-navigation-drawer>
 
-  <v-dialog v-model="detailsOpen" max-width="720" :fullscreen="display.smAndDown.value" scrollable>
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="detailsOpen" max-width="720" :fullscreen="display.smAndDown.value" scrollable>
     <v-card v-if="detailsEmployee">
       <v-card-item :title="t('Карточка сотрудника')">
         <template #append>
-          <v-btn icon="mdi-close" variant="text" :aria-label="t('Закрыть')" @click="detailsOpen = false" />
+          <v-btn data-dialog-initial-focus icon="mdi-close" variant="text" :aria-label="t('Закрыть')" @click="detailsOpen = false" />
         </template>
       </v-card-item>
       <v-card-text>
@@ -77,6 +77,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDisplay } from "vuetify";

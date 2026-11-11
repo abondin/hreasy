@@ -4,7 +4,7 @@
   -->
 <template>
   <!--<editor-fold desc="Add skill dialog">-->
-  <v-dialog
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)"
     :model-value="open"
     max-width="640"
     persistent
@@ -119,6 +119,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";

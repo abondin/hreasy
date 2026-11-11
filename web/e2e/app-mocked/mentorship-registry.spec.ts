@@ -42,6 +42,7 @@ test.describe("App Mocked Mentorship Registry", () => {
     await page.getByTestId(selectors.toolbarAdd).click();
 
     const junior = page.getByTestId("junior-registry-junior").locator('input[role="combobox"]');
+    await expect(junior).toBeFocused();
     await junior.fill("Alex Morgan");
     await page.getByRole("option", { name: "Alex Morgan", exact: true }).click();
     await expect(junior).toHaveValue("Alex Morgan");
