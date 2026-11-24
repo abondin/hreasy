@@ -118,7 +118,7 @@
       </HREasyTableBase>
     </TablePageCard>
 
-    <v-dialog v-model="dialog" persistent max-width="860">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="dialog" persistent max-width="860">
       <admin-user-roles-form
         :input="current"
         :all-projects="activeProjects"
@@ -133,6 +133,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref } from "vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";
@@ -193,6 +194,7 @@ const filteredItems = computed(() => {
     return matchesSearch(search.value, [
       item.employee.name,
       item.email,
+      ...(item.additionalEmails ?? []),
       ...projects.value.filter((project) => projectIds.has(project.id)).map((project) => project.name),
       ...departments.value.filter((department) =>
         item.accessibleDepartments.includes(department.id)

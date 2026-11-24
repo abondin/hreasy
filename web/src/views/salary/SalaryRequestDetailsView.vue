@@ -287,25 +287,25 @@
         </v-card>
       </template>
 
-    <v-dialog v-model="deleteDialog" max-width="480">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="deleteDialog" max-width="480">
       <v-card>
         <v-card-title>{{ t("Удалить запрос") }}</v-card-title>
         <v-card-text>{{ t("Вы уверены, что хотите удалить запрос?") }}</v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="deleteDialog = false">{{ t("Отмена") }}</v-btn>
+          <v-btn data-dialog-initial-focus variant="text" @click="deleteDialog = false">{{ t("Отмена") }}</v-btn>
           <v-btn color="error" :loading="actionLoading" @click="submitDelete">{{ t("Удалить") }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="updateDialog" max-width="820">
+    <v-dialog ref="initialFocusDialog2" @after-enter="focusDialog($refs.initialFocusDialog2)" v-model="updateDialog" max-width="820">
       <v-card>
         <v-card-title>{{ t("Внести изменения") }}</v-card-title>
         <v-card-text>
           <v-alert v-if="actionError" type="error" variant="tonal" class="mb-3">{{ actionError }}</v-alert>
           <v-form ref="updateFormRef">
-            <v-text-field v-if="request?.type === 1" v-model.number="updateForm.currentSalaryAmount" type="number" hide-spin-buttons :label="t('Текущая заработная плата')" />
+            <v-text-field v-if="request?.type === 1" autofocus v-model.number="updateForm.currentSalaryAmount" type="number" hide-spin-buttons :label="t('Текущая заработная плата')" />
             <v-text-field v-if="request?.type === 1" v-model.number="updateForm.plannedSalaryAmount" type="number" hide-spin-buttons :label="t('Планируемая заработная плата')" />
             <v-autocomplete v-if="request?.type === 1" v-model="updateForm.newPosition" :items="positions.filter((item) => item.active !== false)" item-title="name" item-value="id" clearable :label="t('Запрошенная позиция')" />
             <v-autocomplete v-if="request?.type === 1 && employeeAssessments.length > 0" v-model="updateForm.assessmentId" :items="employeeAssessments" item-title="plannedDate" item-value="id" clearable :label="t('Ассессмент')" />
@@ -313,7 +313,7 @@
             <my-date-form-component v-if="request?.type === 1" v-model="updateForm.previousSalaryIncreaseDate" :label="t('Предыдущий реализованный пересмотр (дата)')" />
             <v-text-field v-if="request?.type === 1" v-model="updateForm.previousSalaryIncreaseText" :label="t('Предыдущий реализованный пересмотр (примечание)')" :rules="[previousTextRule]" counter="1024" />
             <markdown-text-editor
-              v-model="updateCommentModel"
+              :autofocus="request?.type !== 1" v-model="updateCommentModel"
               :label="t('Примечание')"
               :rules="[commentRule]"
               :counter="4096"
@@ -329,7 +329,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="implementationDialog" max-width="820" data-testid="salary-request-implementation-dialog">
+    <v-dialog ref="initialFocusDialog3" @after-enter="focusDialog($refs.initialFocusDialog3)" v-model="implementationDialog" max-width="820" data-testid="salary-request-implementation-dialog">
       <v-card>
         <v-card-title>{{ implementationDialogTitle }}</v-card-title>
         <v-card-text>
@@ -339,13 +339,13 @@
           </template>
           <v-form v-else ref="implementationFormRef">
             <template v-if="implementationMode === 'implement'">
-              <v-text-field v-model.number="implementationForm.increaseAmount" type="number" hide-spin-buttons :rules="[requiredNumberRule]" :label="request?.type === 1 ? t('Итоговое изменение на') : t('Сумма бонуса')" />
+              <v-text-field autofocus v-model.number="implementationForm.increaseAmount" type="number" hide-spin-buttons :rules="[requiredNumberRule]" :label="request?.type === 1 ? t('Итоговое изменение на') : t('Сумма бонуса')" />
               <v-text-field v-if="request?.type === 1" v-model.number="implementationForm.salaryAmount" type="number" hide-spin-buttons :label="t('Итоговая сумма')" />
               <v-select v-model.number="implementationForm.increaseStartPeriod" :items="periodOptions" item-title="label" item-value="id" :label="t('Исполнить в периоде')" />
               <v-autocomplete v-if="request?.type === 1" v-model="implementationForm.newPosition" :items="positions.filter((item) => item.active !== false)" item-title="name" item-value="id" clearable :label="t('Изменить позицию')" />
             </template>
             <template v-else-if="implementationMode === 'reject'">
-              <v-select v-model.number="implementationForm.rescheduleToNewPeriod" :items="reschedulePeriodOptions" item-title="label" item-value="id" clearable :label="t('Перенести запрос в другой период')" />
+              <v-select autofocus v-model.number="implementationForm.rescheduleToNewPeriod" :items="reschedulePeriodOptions" item-title="label" item-value="id" clearable :label="t('Перенести запрос в другой период')" />
               <v-text-field v-model="implementationForm.rejectReason" :label="t('Обоснование отказа')" :rules="[requiredRejectReasonRule]" counter="128" />
             </template>
             <markdown-text-editor
@@ -365,13 +365,13 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="implementationTextDialog" max-width="760">
+    <v-dialog ref="initialFocusDialog4" @after-enter="focusDialog($refs.initialFocusDialog4)" v-model="implementationTextDialog" max-width="760">
       <v-card>
         <v-card-title>{{ t("Изменить сообщение") }}</v-card-title>
         <v-card-text>
           <v-alert v-if="actionError" type="error" variant="tonal" class="mb-3">{{ actionError }}</v-alert>
           <v-form ref="implementationTextFormRef">
-            <v-text-field v-model="implementationTextForm.increaseText" :label="t('Сообщение об изменениях')" :rules="[requiredImplementationTextRule]" counter="128" />
+            <v-text-field autofocus v-model="implementationTextForm.increaseText" :label="t('Сообщение об изменениях')" :rules="[requiredImplementationTextRule]" counter="128" />
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -382,15 +382,15 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="approvalDialog" max-width="760">
+    <v-dialog ref="initialFocusDialog5" @after-enter="focusDialog($refs.initialFocusDialog5)" v-model="approvalDialog" max-width="760">
       <v-card>
         <v-card-title>{{ t("Добавить согласование/комментарий") }}</v-card-title>
         <v-card-text>
           <v-alert v-if="actionError" type="error" variant="tonal" class="mb-3">{{ actionError }}</v-alert>
           <v-form ref="approvalFormRef">
-            <v-select v-model="approvalForm.action" :items="approvalActionOptions" item-title="title" item-value="value" :label="t('Действие')" :disabled="periodClosed" />
+            <v-select :autofocus="!periodClosed" v-model="approvalForm.action" :items="approvalActionOptions" item-title="title" item-value="value" :label="t('Действие')" :disabled="periodClosed" />
             <markdown-text-editor
-              v-model="approvalCommentModel"
+              :autofocus="periodClosed" v-model="approvalCommentModel"
               :label="t('Комментарий')"
               :rules="[approvalCommentRule]"
               :counter="4096"
@@ -406,25 +406,25 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="deleteApprovalDialog" max-width="480">
+    <v-dialog ref="initialFocusDialog6" @after-enter="focusDialog($refs.initialFocusDialog6)" v-model="deleteApprovalDialog" max-width="480">
       <v-card>
         <v-card-title>{{ t("Удалить согласование/комментарий") }}</v-card-title>
         <v-card-text>{{ t("Вы уверены, что хотите удалить согласование/комментарий?") }}</v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" :disabled="actionLoading" @click="deleteApprovalDialog = false">{{ t("Отмена") }}</v-btn>
+          <v-btn data-dialog-initial-focus variant="text" :disabled="actionLoading" @click="deleteApprovalDialog = false">{{ t("Отмена") }}</v-btn>
           <v-btn color="error" :loading="actionLoading" @click="submitDeleteApproval">{{ t("Удалить") }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="addLinkDialog" max-width="760">
+    <v-dialog ref="initialFocusDialog7" @after-enter="focusDialog($refs.initialFocusDialog7)" v-model="addLinkDialog" max-width="760">
       <v-card>
         <v-card-title>{{ t("Добавить связанный запрос") }}</v-card-title>
         <v-card-text>
           <v-alert v-if="actionError" type="error" variant="tonal" class="mb-3">{{ actionError }}</v-alert>
           <v-form ref="addLinkFormRef">
-            <v-select v-model="addLinkForm.type" :items="linkTypeOptions" item-title="title" item-value="value" :label="t('Тип связи')" />
+            <v-select autofocus v-model="addLinkForm.type" :items="linkTypeOptions" item-title="title" item-value="value" :label="t('Тип связи')" />
             <v-textarea v-model="addLinkForm.comment" :label="t('Примечание')" :rules="[commentRule]" />
           </v-form>
         </v-card-text>
@@ -436,13 +436,13 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="deleteLinkDialog" max-width="480">
+    <v-dialog ref="initialFocusDialog8" @after-enter="focusDialog($refs.initialFocusDialog8)" v-model="deleteLinkDialog" max-width="480">
       <v-card>
         <v-card-title>{{ t("Удалить связь") }}</v-card-title>
         <v-card-text>{{ t("Вы уверены, что хотите удалить связь?") }}</v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" :disabled="actionLoading" @click="deleteLinkDialog = false">{{ t("Отмена") }}</v-btn>
+          <v-btn data-dialog-initial-focus variant="text" :disabled="actionLoading" @click="deleteLinkDialog = false">{{ t("Отмена") }}</v-btn>
           <v-btn color="error" :loading="actionLoading" @click="submitDeleteLinkDialog">{{ t("Удалить") }}</v-btn>
         </v-card-actions>
       </v-card>
@@ -451,6 +451,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter, type RouteLocationRaw } from "vue-router";

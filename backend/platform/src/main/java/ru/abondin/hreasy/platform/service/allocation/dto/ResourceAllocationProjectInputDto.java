@@ -22,7 +22,7 @@ public record ResourceAllocationProjectInputDto(int year,
                               Integer currentProjectId, String currentProjectName,
                               String currentProjectRole,
                               LocalDate dateOfEmployment, LocalDate dateOfDismissal,
-                              boolean dismissed, String email) {
+                              boolean dismissed, String email, String[] additionalEmails) {
     }
 
     public record AllocationDto(int period, Integer employeeId, int percent, Integer revisionId) {

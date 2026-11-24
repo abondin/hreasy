@@ -101,7 +101,7 @@
           v-if="error"
           type="error"
           variant="tonal"
-          class="mb-3"
+          class="mb-3 flex-0-0"
           data-testid="salary-latest-error"
         >
           {{ error }}

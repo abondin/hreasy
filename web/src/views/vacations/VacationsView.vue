@@ -254,7 +254,7 @@
               @year-navigation="timeLineYearChanged"
             />
 
-          <v-dialog v-model="vacationDialog" max-width="720">
+          <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="vacationDialog" max-width="720">
             <vacation-edit-form
               ref="vacationEditForm"
               :all-employees="allEmployees"
@@ -283,6 +283,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, nextTick, ref } from "vue";
 import TablePageCard from "@/components/shared/TablePageCard.vue";
 import TableFirstPageLayout from "@/components/shared/TableFirstPageLayout.vue";

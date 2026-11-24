@@ -35,6 +35,7 @@
                       <v-text-field
                         density="comfortable"
                         v-model="employeeForm.displayName"
+                        autofocus
                         :counter="255"
                         :rules="displayNameRules"
                         :label="t('ФИО')"
@@ -44,6 +45,8 @@
                       <v-text-field
                         density="comfortable"
                         v-model="employeeForm.email"
+                        data-testid="admin-employee-email"
+                        :readonly="!isNew"
                         :counter="255"
                         :rules="emailRules"
                         :label="t('Email')"
@@ -68,6 +71,37 @@
                         :rules="string255Rules"
                         :label="t('Telegram')"
                       />
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                        v-for="(_, index) in employeeForm.additionalEmails"
+                        :key="index"
+                        v-model="employeeForm.additionalEmails[index]"
+                        :ref="field => { additionalEmailFields[index] = field as EmailField | null; }"
+                        data-testid="admin-employee-additional-email"
+                        density="comfortable"
+                        type="email"
+                        :label="t('Дополнительный почтовый адрес')"
+                        :counter="255"
+                        :maxlength="255"
+                        :rules="additionalEmailRules"
+                      >
+                        <template #append-inner>
+                          <v-btn
+                            icon="mdi-close"
+                            variant="text"
+                            size="small"
+                            :aria-label="t('Удалить адрес')"
+                            @click="employeeForm.additionalEmails.splice(index, 1)"
+                          />
+                        </template>
+                      </v-text-field>
+                      <v-btn
+                        variant="text"
+                        prepend-icon="mdi-plus"
+                        data-testid="admin-employee-add-email"
+                        @click="addEmail"
+                      >{{ t('Добавить почтовый адрес') }}</v-btn>
                     </v-col>
                   </v-row>
                 </v-col>
@@ -351,7 +385,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from "vue";
+import { computed, nextTick, reactive, ref, watch } from "vue";
+import type { VTextField } from "vuetify/components";
+type EmailField = InstanceType<typeof VTextField>;
 import { useI18n } from "vue-i18n";
 import MyDateFormComponent from "@/components/shared/MyDateFormComponent.vue";
 import ProfileAvatar from "@/views/profile/components/ProfileAvatar.vue";
@@ -377,6 +413,7 @@ interface EmployeeFormState {
   birthday: string;
   sex: string;
   email: string;
+  additionalEmails: string[];
   phone: string;
   skype: string;
   telegram: string;
@@ -403,6 +440,7 @@ interface EmployeeFormState {
 
 const props = defineProps<{
   input?: EmployeeWithAllDetails | null;
+  employees: EmployeeWithAllDetails[];
   departments: DictItem[];
   organizations: DictItem[];
   projects: ProjectDictDto[];
@@ -420,6 +458,14 @@ const { t } = useI18n();
 
 const employeeEditForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 const saving = ref(false);
+const additionalEmailFields: Array<InstanceType<typeof VTextField> | null> = [];
+
+async function addEmail() {
+  const index = employeeForm.additionalEmails.length;
+  employeeForm.additionalEmails.push("");
+  await nextTick();
+  additionalEmailFields[index]?.focus();
+}
 const error = ref<string | null>(null);
 
 const employeeForm = reactive<EmployeeFormState>({
@@ -432,6 +478,7 @@ const employeeForm = reactive<EmployeeFormState>({
   birthday: "",
   sex: "",
   email: "",
+  additionalEmails: [],
   phone: "",
   skype: "",
   telegram: "",
@@ -462,7 +509,37 @@ const string255Rules = computed<Rule[]>(() => [maxLenRule(255)]);
 const string64Rules = computed<Rule[]>(() => [maxLenRule(64)]);
 const string1024Rules = computed<Rule[]>(() => [maxLenRule(1024)]);
 const displayNameRules = computed<Rule[]>(() => [maxLenRule(255)]);
-const emailRules = computed<Rule[]>(() => [requiredMaxLenRule(255)]);
+const emailOwnerByAddress = computed(() => {
+  const owners = new Map<string, string>();
+  for (const employee of props.employees) {
+    if (employee.id === employeeForm.id) continue;
+    for (const email of [employee.email, ...(employee.additionalEmails ?? [])]) {
+      if (email) owners.set(email.trim().toLowerCase(), employee.displayName);
+    }
+  }
+  return owners;
+});
+function emailConflictRule(value: unknown): boolean | string {
+  const owner = emailOwnerByAddress.value.get(String(value).trim().toLowerCase());
+  return !owner || t('Почтовый адрес уже указан у сотрудника: {name}', { name: owner });
+}
+const emailRules = computed<Rule[]>(() => [requiredMaxLenRule(255),
+  value => isNew.value ? emailConflictRule(value) : true,
+]);
+const additionalEmailRules = computed<Rule[]>(() => [
+  requiredMaxLenRule(255),
+  (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim()) || t('Укажите корректный email'),
+  (value) => {
+    const address = String(value).trim().toLowerCase();
+    const previousCount = props.input?.additionalEmails?.filter(email => email.trim().toLowerCase() === address).length ?? 0;
+    const currentCount = employeeForm.additionalEmails.filter(email => email.trim().toLowerCase() === address).length;
+    if (currentCount <= previousCount) return true;
+    const conflict = emailConflictRule(value);
+    if (conflict !== true) return conflict;
+    return [employeeForm.email, ...employeeForm.additionalEmails]
+      .filter(email => email.trim().toLowerCase() === address).length === 1 || t('Почтовые адреса не должны повторяться');
+  },
+]);
 const phoneRules = computed<Rule[]>(() => [maxLenRule(12)]);
 const avatarOwner = computed(() => {
   if (!employeeForm.id) {
@@ -513,6 +590,7 @@ function reset(input?: EmployeeWithAllDetails) {
   employeeForm.birthday = input?.birthday ?? "";
   employeeForm.sex = input?.sex ?? "";
   employeeForm.email = input?.email ?? "";
+  employeeForm.additionalEmails = [...(input?.additionalEmails ?? [])];
   employeeForm.phone = input?.phone ?? "";
   employeeForm.skype = input?.skype ?? "";
   employeeForm.telegram = input?.telegram ?? "";
@@ -582,6 +660,7 @@ function toPayload(): CreateOrUpdateEmployeeBody {
     birthday: normalizeString(employeeForm.birthday),
     sex: normalizeString(employeeForm.sex),
     email: normalizeString(employeeForm.email) ?? "",
+    additionalEmails: employeeForm.additionalEmails.map(email => email.trim().toLowerCase()),
     phone: normalizeString(employeeForm.phone),
     skype: normalizeString(employeeForm.skype),
     telegram: normalizeString(employeeForm.telegram),

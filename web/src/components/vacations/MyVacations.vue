@@ -101,7 +101,7 @@
       </HREasyTableBase>
     </v-card-text>
 
-    <v-dialog v-model="requestDialogOpen" max-width="640">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="requestDialogOpen" max-width="640">
       <v-card>
         <v-card-title>
           {{ t("Запланировать отпуск на X год", { year: requestAction.formData.year }) }}
@@ -150,6 +150,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, onMounted, ref } from "vue";
 import { useDisplay } from "vuetify";
 import { useI18n } from "vue-i18n";

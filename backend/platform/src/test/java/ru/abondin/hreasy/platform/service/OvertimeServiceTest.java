@@ -58,17 +58,18 @@ public class OvertimeServiceTest extends BaseServiceTest {
     @Test
     public void testGetOvertimeSummary() {
         var ctx = auth(TestEmployees.FMS_Manager_Jawad_Mcghee).block(MONO_DEFAULT_TIMEOUT);
-        // Generate unique notes to filter new created item
-        var uniqueNotes = "testGetOvertimeSummary" + UUID.randomUUID().toString();
         StepVerifier
                 .create(
                         overtimeService.addItem(
                                 ctx.getEmployeeInfo().getEmployeeId(),
                                 202008,
-                                new NewOvertimeItemDto(LocalDate.now(), testData.project_M1_Billing(), 1, uniqueNotes),
+                                new NewOvertimeItemDto(LocalDate.now(), testData.project_M1_Billing(), 1, "Summary test"),
                                 ctx).thenMany(overtimeService.getSummary(202008, ctx)))
-                //TODO Validate the actual result
-                .expectNextMatches(o -> true).verifyComplete();
+                .assertNext(summary -> {
+                    assertEquals(ctx.getEmployeeInfo().getEmployeeId(), summary.getEmployeeId());
+                    assertEquals(1, summary.getItems().size());
+                    assertEquals(1, summary.getItems().getFirst().getHours());
+                }).verifyComplete();
     }
 
     @Test

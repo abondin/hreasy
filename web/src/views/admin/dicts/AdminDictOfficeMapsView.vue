@@ -88,7 +88,7 @@
       </HREasyTableBase>
     </TablePageCard>
 
-    <v-dialog v-model="uploadDialog" max-width="720" persistent>
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="uploadDialog" max-width="720" persistent>
       <v-card>
         <v-card-title>{{ t("Загрузить карту") }}</v-card-title>
         <v-card-text>
@@ -124,6 +124,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";

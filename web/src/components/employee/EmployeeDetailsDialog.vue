@@ -1,5 +1,5 @@
 <template>
-  <v-dialog
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)"
     :model-value="true"
     max-width="1040"
     scrollable
@@ -8,7 +8,7 @@
     <v-card data-testid="employee-details-dialog">
       <v-toolbar density="comfortable">
         <v-toolbar-title>{{ t("Карточка сотрудника") }}</v-toolbar-title>
-        <v-btn
+        <v-btn data-dialog-initial-focus
           icon="mdi-close"
           :aria-label="t('Закрыть')"
           @click="emit('close')"
@@ -24,6 +24,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { useI18n } from "vue-i18n";
 import { useEmployeeProfile } from "@/composables/useEmployeeProfile";
 import { errorUtils } from "@/lib/errors";

@@ -29,7 +29,8 @@ public record ResourceAllocationAnalyticsDto(
             @Schema(description = "Current project identifier; not necessarily the allocated project.", nullable = true) Integer currentProjectId,
             @Schema(description = "Current project name.", nullable = true) String currentProjectName,
             @Schema(description = "Employee role on the current project.", nullable = true) String currentProjectRole,
-            @Schema(description = "Employee email.", example = "alex.morgan@example.test", nullable = true) String email) {
+            @Schema(description = "Employee email.", example = "alex.morgan@example.test", nullable = true) String email,
+            @Schema(description = "Additional contact emails.") String[] additionalEmails) {
     }
 
     @Schema(name = "ResourceAllocationProject", description = "Project referenced by allocations; metadata describes the current project configuration.")

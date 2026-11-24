@@ -124,18 +124,19 @@ export function useJuniorRegistry(t: ComposerTranslation) {
       }
       return matchesSearch(filter.search, [
         item.juniorEmpl?.name,
-        employeeEmail(item.juniorEmpl?.id),
+        ...employeeEmails(item.juniorEmpl?.id),
         item.mentor?.name,
-        employeeEmail(item.mentor?.id),
+        ...employeeEmails(item.mentor?.id),
         item.latestReport?.createdBy?.name,
-        employeeEmail(item.latestReport?.createdBy?.id),
+        ...employeeEmails(item.latestReport?.createdBy?.id),
         item.role,
       ], filter.searchSettings);
     });
   });
 
-  function employeeEmail(id?: number): string | null | undefined {
-    return employees.value.find((employee) => employee.id === id)?.email;
+  function employeeEmails(id?: number) {
+    const employee = employees.value.find((employee) => employee.id === id);
+    return [employee?.email, ...(employee?.additionalEmails ?? [])];
   }
 
   watch(

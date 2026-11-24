@@ -16,6 +16,7 @@
       <v-card-text>
         <v-autocomplete
           v-model="form.employeeId"
+          :autofocus="form.isNew"
           :items="employeeOptions"
           item-title="name"
           item-value="id"
@@ -26,6 +27,7 @@
 
         <v-select
           v-model="form.year"
+          :autofocus="!form.isNew"
           :items="allYears"
           :label="t('Год')"
         />

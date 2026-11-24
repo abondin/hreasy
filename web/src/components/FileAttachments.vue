@@ -114,7 +114,7 @@
   </div>
   <!-- </editor-fold> -->
 
-  <v-dialog v-model="uploadDialog" max-width="620">
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="uploadDialog" max-width="620">
     <v-card>
       <v-card-title>{{ uploadTitleComputed }}</v-card-title>
       <v-card-text>
@@ -131,7 +131,7 @@
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="deleteDialog" max-width="520">
+  <v-dialog ref="initialFocusDialog2" @after-enter="focusDialog($refs.initialFocusDialog2)" v-model="deleteDialog" max-width="520">
     <v-card>
       <v-card-title>{{ t("Удаление") }} {{ deletingFilename }}</v-card-title>
       <v-card-text>
@@ -164,6 +164,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import FileUploadZone, { type UploadCompleteEvent } from "@/components/FileUploadZone.vue";

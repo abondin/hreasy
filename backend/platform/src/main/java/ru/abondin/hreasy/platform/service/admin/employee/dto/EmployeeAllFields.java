@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.NonNull;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Plain mapping of all employee fields (except id)
@@ -17,6 +18,7 @@ public class EmployeeAllFields {
     private String sex;
     @NonNull
     private String email;
+    private List<String> additionalEmails = List.of();
     private String phone;
     private String skype;
     private String telegram;

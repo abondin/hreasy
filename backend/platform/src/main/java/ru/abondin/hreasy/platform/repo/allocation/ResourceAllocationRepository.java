@@ -35,7 +35,7 @@ public class ResourceAllocationRepository {
         return dbTemplate.getDatabaseClient().sql("""
                         select e.id, e.display_name, e.department as department_id, d.name as department_name,
                                e.current_project as current_project_id, p.name as current_project_name,
-                               e.current_project_role, e.date_of_employment, e.date_of_dismissal, e.email
+                               e.current_project_role, e.date_of_employment, e.date_of_dismissal, e.email, e.additional_emails
                         from empl.employee e
                         left join dict.department d on d.id = e.department
                         left join proj.project p on p.id = e.current_project
@@ -58,7 +58,7 @@ public class ResourceAllocationRepository {
                         row.get("current_project_role", String.class),
                         row.get("date_of_employment", LocalDate.class),
                         row.get("date_of_dismissal", LocalDate.class),
-                        row.get("email", String.class)))
+                        row.get("email", String.class), row.get("additional_emails", String[].class)))
                 .all();
     }
 
@@ -336,7 +336,7 @@ public class ResourceAllocationRepository {
                                                  Integer currentProjectId, String currentProjectName,
                                                  String currentProjectRole,
                                                  LocalDate dateOfEmployment, LocalDate dateOfDismissal,
-                                                 String email) {
+                                                 String email, String[] additionalEmails) {
     }
 
     public record ResourceAllocationProjectView(Integer id, String name,

@@ -60,6 +60,7 @@ type MutableHeader = {
   title: string;
   key: string;
   width: string;
+  minWidth?: string;
 };
 
 const props = defineProps<{
@@ -99,7 +100,7 @@ const headers = computed<DataTableHeader>(() => {
   const items: MutableHeader[] = [
     { title: t('ФИО'), key: 'displayName', width: '240px' },
     { title: t('Отдел'), key: 'department.name', width: '260px' },
-    { title: t('E-mail'), key: 'email', width: '172px' },
+    { title: t('E-mail'), key: 'email', width: '360px', minWidth: '360px' },
     { title: t('Текущий проект'), key: 'currentProject.name', width: '192px' },
   ];
   items.push({ title: t('Роль на проекте'), key: 'currentProject.role', width: '172px' });

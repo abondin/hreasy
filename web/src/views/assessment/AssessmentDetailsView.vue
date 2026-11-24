@@ -133,7 +133,7 @@
         </v-card>
       </template>
 
-    <v-dialog v-model="uploadDialog" max-width="720" persistent>
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="uploadDialog" max-width="720" persistent>
       <v-card>
         <v-card-title>{{ t("Прикрепить файл") }}</v-card-title>
         <v-card-text>
@@ -147,7 +147,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="deleteAttachmentDialog" max-width="480">
+    <v-dialog ref="initialFocusDialog2" @after-enter="focusDialog($refs.initialFocusDialog2)" v-model="deleteAttachmentDialog" max-width="480">
       <v-card>
         <v-card-title>{{ t("Удаление") }}</v-card-title>
         <v-card-text>
@@ -165,7 +165,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="cancelDialog" max-width="480">
+    <v-dialog ref="initialFocusDialog3" @after-enter="focusDialog($refs.initialFocusDialog3)" v-model="cancelDialog" max-width="480">
       <v-card>
         <v-card-title>{{ t("Отмена") }}</v-card-title>
         <v-card-text>
@@ -180,7 +180,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="completeDialog" max-width="480">
+    <v-dialog ref="initialFocusDialog4" @after-enter="focusDialog($refs.initialFocusDialog4)" v-model="completeDialog" max-width="480">
       <v-card>
         <v-card-title>{{ t("Отметить как завершенный") }}</v-card-title>
         <v-card-text>
@@ -198,6 +198,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, type RouteLocationRaw } from "vue-router";

@@ -113,13 +113,14 @@
     </v-card-text>
   </v-card>
 
-  <v-dialog :model-value="reportDialog" max-width="800" @update:model-value="onReportDialogChange">
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" :model-value="reportDialog" max-width="800" @update:model-value="onReportDialogChange">
     <v-card>
       <v-card-title>{{ editingReportId ? t("Применить") : t("Создать отчёт") }}</v-card-title>
       <v-card-text>
         <v-form ref="reportFormRef">
         <v-select
           :model-value="reportForm.progress"
+          autofocus
           :items="progressOptions"
           item-title="title"
           item-value="value"
@@ -177,6 +178,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed } from "vue";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";

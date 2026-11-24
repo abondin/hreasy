@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" max-width="700">
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="dialog" max-width="700">
     <template #activator="{ props }">
       <v-tooltip location="bottom">
         <template #activator="{ props: tooltipProps }">
@@ -53,6 +53,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";

@@ -139,6 +139,9 @@
         </v-alert>
       </template>
 
+      <template #[`item.email`]="{ item }">
+        <EmployeeEmails :email="item.email" :additional-emails="item.additionalEmails" />
+      </template>
       <template #[`item.departmentId`]="{ item }">
         {{ getById(departments, item.departmentId) }}
       </template>
@@ -173,7 +176,7 @@
       </HREasyTableBase>
     </TablePageCard>
 
-    <v-dialog data-testid="admin-employees-edit-dialog"
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" data-testid="admin-employees-edit-dialog"
       v-model="dialog"
       persistent
       width="96vw"
@@ -181,6 +184,7 @@
     >
       <AdminEmployeeForm
         :input="current"
+        :employees="items"
         :departments="departments"
         :organizations="organizations"
         :projects="projects"
@@ -202,6 +206,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
@@ -213,6 +218,7 @@ import SearchTextField from "@/components/shared/SearchTextField.vue";
 import AdminEmployeeForm from "@/views/admin/employees/components/AdminEmployeeForm.vue";
 import { usePermissions } from "@/lib/permissions";
 import { errorUtils } from "@/lib/errors";
+import EmployeeEmails from "@/components/employee/EmployeeEmails.vue";
 import { extractDataTableRow } from "@/lib/data-table";
 import { formatDate } from "@/lib/datetime";
 import { createSearchSettings, matchesSearch } from "@/lib/search";
@@ -279,7 +285,7 @@ const filterBarItems = computed(() => [
 
 const headers = computed(() => [
   { title: t("ФИО"), key: "displayName", width: "240px" },
-  { title: t("Email"), key: "email", width: "240px" },
+  { title: t("Email"), key: "email", width: "360px", minWidth: "360px" },
   { title: t("Текущий проект"), key: "currentProjectId", width: "240px" },
   { title: t("Бизнес Аккаунт"), key: "baId", width: "200px" },
   { title: t("Телефон"), key: "phone", width: "160px" },
@@ -341,7 +347,7 @@ const filteredItems = computed(() => {
     }
     return matchesSearch(
       search.value,
-      [item.displayName, item.email, item.skype, item.phone],
+      [item.displayName, item.email, ...(item.additionalEmails ?? []), item.skype, item.phone],
       searchSettings.value,
     );
   });

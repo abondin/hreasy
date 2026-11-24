@@ -48,4 +48,6 @@ public class EmployeeDto {
     private boolean hasAvatar;
     @Schema(description = "Skills visible to the acting user.")
     private List<SkillDto> skills = new ArrayList<>();
+    @Schema(description = "Additional contact emails; not used for authentication.")
+    private String[] additionalEmails = new String[0];
 }

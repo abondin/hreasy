@@ -123,7 +123,7 @@
           v-if="error"
           type="error"
           variant="tonal"
-          class="mb-4"
+          class="mb-4 flex-0-0"
           data-testid="assessments-error"
         >
           {{ error }}
@@ -265,7 +265,7 @@ function getFilterSelectionLabel(item: unknown): string {
 const filteredItems = computed(() => {
   return items.value.filter((item) => {
     const employee = employees.value.find((candidate) => candidate.id === item.employeeId);
-    if (!matchesSearch(filter.search, [item.displayName, employee?.email], filter.searchSettings)) {
+    if (!matchesSearch(filter.search, [item.displayName, employee?.email, ...(employee?.additionalEmails ?? [])], filter.searchSettings)) {
       return false;
     }
 

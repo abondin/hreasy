@@ -56,7 +56,7 @@
       :business-account-id="businessAccount.id"
     />
 
-    <v-dialog v-model="editDialog" persistent max-width="720">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="editDialog" persistent max-width="720">
       <admin-business-account-form
         :input="businessAccount"
         @close="editDialog = false"
@@ -67,6 +67,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";

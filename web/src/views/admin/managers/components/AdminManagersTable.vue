@@ -202,7 +202,7 @@
       </HREasyTableBase>
     </v-card-text>
 
-    <v-dialog v-model="dialog" persistent max-width="720">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="dialog" persistent max-width="720">
       <v-card>
         <v-card-title>{{ dialogMode === "create" ? t("Добавить") : t("Изменить") }}</v-card-title>
         <v-card-text>
@@ -210,6 +210,7 @@
             <v-autocomplete
               v-if="dialogMode === 'create'"
               v-model="form.employee"
+              autofocus
               :items="employees"
               item-title="displayName"
               item-value="id"
@@ -316,7 +317,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="deleteDialog" max-width="480">
+    <v-dialog ref="initialFocusDialog2" @after-enter="focusDialog($refs.initialFocusDialog2)" v-model="deleteDialog" max-width="480">
       <v-card>
         <v-card-title>{{ t("Удалить") }}</v-card-title>
         <v-card-text>
@@ -333,7 +334,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" :disabled="saving" @click="deleteDialog = false">
+          <v-btn data-dialog-initial-focus variant="text" :disabled="saving" @click="deleteDialog = false">
             {{ t("Отменить") }}
           </v-btn>
           <v-btn color="error" :loading="saving" @click="confirmDelete">
@@ -346,6 +347,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { VForm } from "vuetify/components";
@@ -529,6 +531,7 @@ const filteredItems = computed(() => {
     return matchesSearch(filter.search, [
       item.employee?.name,
       employee?.email,
+      ...(employee?.additionalEmails ?? []),
       item.responsibilityObject?.name,
       item.comment,
     ], filter.searchSettings);

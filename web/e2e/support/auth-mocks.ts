@@ -25,9 +25,16 @@ export async function mockAuthenticatedUser(
     authorities: options.authorities ?? [],
     employee: {
       employeeId: options.employeeId ?? 101,
+      accessibleDepartments: [],
+      accessibleProjects: [],
       accessibleBas: options.accessibleBas ?? [200, 201, 202, 203],
     },
   };
+
+  await page.route("**/api/v1/notifications/my/unread-count", route =>
+    jsonResponse(route, 200, 0));
+  await page.route("**/api/v1/notifications/my", route =>
+    jsonResponse(route, 200, []));
 
   await page.route("**/api/v1/current-user", async (route) => {
     await jsonResponse(route, 200, user);

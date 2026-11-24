@@ -29,6 +29,7 @@ export interface ResourceAllocationEmployee {
   id: number;
   displayName: string;
   email?: string | null;
+  additionalEmails?: string[];
   departmentId: number | null;
   departmentName: string | null;
   currentProjectId: number | null;
@@ -80,6 +81,7 @@ export interface ResourceAllocationInputEmployee {
   id: number;
   displayName: string;
   email?: string | null;
+  additionalEmails?: string[];
   currentProjectId: number | null;
   currentProjectName: string | null;
   currentProjectRole?: string | null;

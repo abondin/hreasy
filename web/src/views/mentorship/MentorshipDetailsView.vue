@@ -49,7 +49,7 @@
         </div>
       </template>
 
-    <v-dialog v-model="editDialog" max-width="760">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="editDialog" max-width="760">
       <v-card>
         <v-card-title>{{ t("Обновление записи в реестре") }}</v-card-title>
         <v-card-text>
@@ -82,7 +82,7 @@
       @confirm="deleteJunior"
     />
 
-    <v-dialog v-model="graduateDialog" max-width="620">
+    <v-dialog ref="initialFocusDialog2" @after-enter="focusDialog($refs.initialFocusDialog2)" v-model="graduateDialog" max-width="620">
       <v-card>
         <v-card-title>
           {{ junior?.graduation ? t("Отменить факт окончания обучения") : t("Завершение обучения") }}
@@ -91,6 +91,7 @@
           <v-textarea
             v-if="!junior?.graduation"
             v-model="graduationComment"
+            autofocus
             :label="t('Комментарий')"
             :counter="1024"
           />
@@ -107,6 +108,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { useI18n } from "vue-i18n";
 import ConfirmDeleteDialog from "@/components/shared/ConfirmDeleteDialog.vue";
 import JuniorRegistryFormFields from "@/components/mentorship/JuniorRegistryFormFields.vue";

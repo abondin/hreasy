@@ -70,7 +70,7 @@
       </template>
     </HREasyTableBase>
 
-    <v-dialog v-model="dialog" persistent max-width="760" data-testid="admin-kids-edit-dialog">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="dialog" persistent max-width="760" data-testid="admin-kids-edit-dialog">
       <AdminEmployeeKidForm
         :input="current"
         :employees="employees"
@@ -82,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import AdaptiveFilterBar from "@/components/shared/AdaptiveFilterBar.vue";
@@ -131,10 +132,10 @@ const filteredItems = computed(() => {
     if (hideDismissed.value && !it.parent?.active) {
       return false;
     }
-    const parentEmail = employees.value.find((employee) => employee.id === it.parent?.id)?.email;
+    const parent = employees.value.find((employee) => employee.id === it.parent?.id);
     return matchesSearch(
       search.value,
-      [it.displayName, it.parent?.name, parentEmail],
+      [it.displayName, it.parent?.name, parent?.email, ...(parent?.additionalEmails ?? [])],
       searchSettings.value,
     );
   });

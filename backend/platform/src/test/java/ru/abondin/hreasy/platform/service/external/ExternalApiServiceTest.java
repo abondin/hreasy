@@ -119,7 +119,7 @@ class ExternalApiServiceTest {
     @Test
     void allocationsContainOnlyEmailsAndCellsIncludingExplicitZeros() {
         var historicalEmployee = new ResourceAllocationAnalyticsDto.EmployeeDto(201, "Former Employee", null,
-                null, null, null, null, "former.employee@example.test");
+                null, null, null, null, "former.employee@example.test", new String[]{"new.name@example.test"});
         when(allocations.getAnalytics(2026, auth)).thenReturn(Mono.just(new ResourceAllocationAnalyticsDto(2026,
                 List.of(historicalEmployee), List.of(), List.of(), List.of(
                 new ResourceAllocationAnalyticsDto.AllocationDto(202608, 201, 301, 401, 20),
@@ -142,7 +142,7 @@ class ExternalApiServiceTest {
     void doesNotMergeDifferentWorkstreamsWithoutExternalKeys() {
         when(workstreamRepo.findAll()).thenReturn(Flux.just(stream(401, "First", null), stream(402, "Second", null)));
         when(allocations.getAnalytics(2026, auth)).thenReturn(Mono.just(new ResourceAllocationAnalyticsDto(2026,
-                List.of(new ResourceAllocationAnalyticsDto.EmployeeDto(201, "Alex Morgan", null, null, null, null, null, "alex.morgan@example.test")),
+                List.of(new ResourceAllocationAnalyticsDto.EmployeeDto(201, "Alex Morgan", null, null, null, null, null, "alex.morgan@example.test", new String[0])),
                 List.of(), List.of(), List.of(
                 new ResourceAllocationAnalyticsDto.AllocationDto(202608, 201, 301, 401, 20),
                 new ResourceAllocationAnalyticsDto.AllocationDto(202608, 201, 301, 402, 30)))));

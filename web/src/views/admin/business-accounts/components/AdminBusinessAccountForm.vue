@@ -7,6 +7,7 @@
       <v-form ref="formRef" @submit.prevent="submit">
         <v-text-field
           v-model="form.name"
+          autofocus
           :label="t('Наименование')"
           :counter="255"
           :rules="nameRules"

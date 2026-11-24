@@ -4,6 +4,8 @@
 <template>
   <div class="vacation-request-fields">
     <v-date-picker
+      tabindex="-1"
+      data-dialog-initial-focus
       v-model="pickerRange"
       multiple="range"
       :first-day-of-week="1"
@@ -57,6 +59,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+
 import { useI18n } from "vue-i18n";
 import type { RequestVacationAction } from "@/components/vacations/useRequestVacationAction";
 import { addDays, formatDateOnly, parseDateOnly } from "@/lib/vacation-dates";

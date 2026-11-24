@@ -30,6 +30,7 @@ export interface Employee extends WithAvatar {
   officeLocation?: OfficeLocationDict | null;
   officeWorkplace?: string | null;
   email?: string | null;
+  additionalEmails?: string[];
   telegram?: string | null;
   telegramConfirmedAt?: string | null;
   skills?: Skill[];

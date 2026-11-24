@@ -4,6 +4,7 @@
 
 features:
 
+- Added additional employee emails with admin editing, duplicate checks in the form, search, and copying.
 - Employees can browse office maps and employee lists by office and room, filter colleagues with configurable search or by selecting a workplace, open a colleague's map without changing list filters, and view employee details even for rooms without a map. Administrators can mark primary offices; the maps page initially selects the first marked active office, or leaves the office filter empty when none are marked.
 - Added annual resource planning by project and workstream, with data entry, analytics, period locking, change history, conflict protection, cell comments, Excel export, and a project setting requiring workstream selection.
 - Added a read-only external API for employees, avatars, projects, overtime, and allocations, using email and configurable external keys, Bearer authentication, acting-user permissions, and OpenAPI documentation.

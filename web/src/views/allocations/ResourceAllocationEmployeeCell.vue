@@ -107,6 +107,7 @@ function employeeFilter(_value: string, query: string, item?: unknown): boolean 
   return matchesSearch(query, [
     employee?.displayName,
     employee?.email,
+    ...(employee?.additionalEmails ?? []),
     employee?.currentProjectName,
     employee?.currentProjectRole,
   ]);

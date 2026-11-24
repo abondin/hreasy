@@ -26,19 +26,7 @@ const config: ReturnType<typeof defineConfigWithVueTs> = defineConfigWithVueTs(
 
   {
     ...pluginPlaywright.configs['flat/recommended'],
-    files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
-    rules: {
-      ...pluginPlaywright.configs['flat/recommended'].rules,
-      'playwright/expect-expect': ['warn', {
-        assertFunctionNames: [
-          'expectLoginPageOrAuthenticatedHome',
-          'expectProtectedRouteRedirectOrAccess',
-          'expectVisibleRows',
-          'clickFirstRow',
-          'openDialogFromRowsOrAddButton'
-        ]
-      }]
-    }
+    files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}']
   },
   skipFormatting
 );

@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -491,6 +492,8 @@ public class AdminEmployeeService {
     }
 
     private Mono<Integer> doUpdateFromBody(int currentEmployeeId, OffsetDateTime now, EmployeeWithAllDetailsEntry entry, CreateOrUpdateEmployeeBody body) {
+        body.setAdditionalEmails(body.getAdditionalEmails().stream()
+                .map(email -> email.trim().toLowerCase(Locale.ROOT)).toList());
         mapper.populateFromBody(entry, body);
         return doUpdate(currentEmployeeId, now, entry, body.getImportProcessId());
     }

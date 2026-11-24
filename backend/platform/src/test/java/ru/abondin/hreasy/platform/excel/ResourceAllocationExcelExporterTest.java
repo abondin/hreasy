@@ -37,7 +37,7 @@ class ResourceAllocationExcelExporterTest {
     void rendersNumericRowsSeparatingWorkstreamsAndPreservingMissingAndZero(boolean percentages) throws Exception {
         var analytics = new ResourceAllocationAnalyticsDto(2026,
                 List.of(new EmployeeDto(301, "Alex Morgan", null, null, null, null,
-                        "Developer", "alex.morgan@example.test")),
+                        "Developer", "alex.morgan@example.test", new String[0])),
                 List.of(new ProjectDto(401, "=2+2", null, null, 601, "Example account", null, null, true, false, false)),
                 List.of(new ProjectWorkstreamDto(501, null, "Delivery", null)),
                 List.of(new AllocationDto(202600, 301, 401, null, 50),

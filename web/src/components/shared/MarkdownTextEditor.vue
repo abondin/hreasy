@@ -26,6 +26,7 @@
         <v-sheet color="transparent" :min-height="minHeight">
           <template v-if="!preview">
             <v-textarea
+              :autofocus="autofocus"
               :model-value="localValue"
               rows="6"
               :aria-label="label"
@@ -54,6 +55,7 @@ import MarkdownTextRenderer from "@/components/shared/MarkdownTextRenderer.vue";
 const props = withDefaults(
   defineProps<{
     modelValue?: string;
+    autofocus?: boolean;
     label?: string;
     placeholder?: string;
     hint?: string;

@@ -95,7 +95,7 @@
       </HREasyTableBase>
     </TablePageCard>
 
-    <v-dialog v-model="dialog" persistent max-width="640">
+    <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="dialog" persistent max-width="640">
       <v-card>
         <v-card-title>
           {{ dialogMode === "create" ? t("Добавить") : t("Изменить") }}: {{ title }}
@@ -104,6 +104,7 @@
           <v-form ref="formRef" @submit.prevent="save">
             <v-text-field
               v-model="form.name"
+              autofocus
               :label="t('Наименование')"
               :rules="nameRules"
               :counter="255"
@@ -148,6 +149,7 @@
 </template>
 
 <script setup lang="ts" generic="TItem extends { id: number; name: string; archived: boolean }, TForm extends { name: string; archived: boolean }">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref, useSlots } from "vue";
 import { useI18n } from "vue-i18n";
 import type { VDataTable, VForm } from "vuetify/components";

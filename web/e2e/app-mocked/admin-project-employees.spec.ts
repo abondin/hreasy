@@ -20,7 +20,12 @@ test("shows current project employees and opens the shared employee details dial
   await page.route("**/api/v1/employee/101/currentProject/transferRequests/active", route =>
     route.fulfill({ json: null }),
   );
-  await page.route("**/api/v1/employee/current_project_roles", route => route.fulfill({ json: [] }));
+  let releaseRoles!: () => void;
+  let rolesReady = new Promise<void>(resolve => { releaseRoles = resolve; });
+  await page.route("**/api/v1/employee/current_project_roles", async route => {
+    await rolesReady;
+    await route.fulfill({ json: [] });
+  });
   await page.route("**/api/v1/employee/101/currentProject", async route => {
     const assignment = route.request().postDataJSON();
     directory[0]!.currentProject = { ...assignment, name: assignment.id === 301 ? "Retail Terminal Platform" : "Billing Gateway" };
@@ -37,7 +42,7 @@ test("shows current project employees and opens the shared employee details dial
     { id: 303, name: "Billing Gateway", active: true },
   ] }));
   await page.route("**/api/v1/admin/managers/object/project/301", route => route.fulfill({ json: [
-    { id: 1, employee: { id: 101, name: "Alex Morgan", active: true }, responsibilityType: "technical" },
+    { id: 1, employee: { id: 101, name: "Alex Morgan", active: true }, responsibilityType: "technical", createdBy: 101 },
     { id: 2, employee: { id: 999, name: "Former Manager", active: false }, responsibilityType: "organization" },
   ] }));
 
@@ -45,6 +50,13 @@ test("shows current project employees and opens the shared employee details dial
   const managers = page.getByTestId("admin-project-managers");
   await expect(managers.getByRole("row").filter({ hasText: "Former Manager" })).toContainText("Уволен");
   await expect(managers.getByRole("row").filter({ hasText: "Alex Morgan" })).not.toContainText("Уволен");
+  const managerRow = managers.getByRole("row").filter({ hasText: "Alex Morgan" });
+  await managerRow.hover();
+  await managerRow.getByRole("button", { name: "Удалить", exact: true }).click();
+  const cancelDeletion = page.getByRole("dialog").getByRole("button", { name: "Отменить", exact: true });
+  await expect(cancelDeletion).toBeFocused();
+  await cancelDeletion.press("Enter");
+  await expect(cancelDeletion).toBeHidden();
   const employees = page.getByTestId("admin-project-employees");
   await expect(employees.getByRole("row").filter({ hasText: /Alex Morgan|Riley Brooks/ })).toHaveCount(2);
   await expect(employees).toContainText("Alex Morgan");
@@ -66,15 +78,32 @@ test("shows current project employees and opens the shared employee details dial
   await employees.getByRole("row").filter({ hasText: "Alex Morgan" }).click();
   const dialog = page.getByTestId("employee-details-dialog");
   await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Закрыть", exact: true }).first()).toBeFocused();
   await expect(dialog).toContainText("Alex Morgan");
   await expect(dialog).toContainText(appMockedEmployees[0]!.email);
   await dialog.getByTestId("profile-summary-edit-project").click();
+  await expect(page.getByTestId("project-assignment-project").locator('input[role="combobox"]')).toBeDisabled();
+  await expect.poll(() => page.getByTestId("project-assignment-dialog").evaluate(element =>
+    element.contains(document.activeElement) && document.activeElement?.tagName === "DIV",
+  )).toBe(true);
+  releaseRoles();
+  await expect(page.getByTestId("project-assignment-project").locator('input[role="combobox"]')).toBeFocused();
   await page.getByTestId("project-assignment-role").locator('input[type="text"]').fill("Lead Engineer");
   await page.getByTestId("project-assignment-role").locator('input[type="text"]').press("Tab");
   await page.getByTestId("project-assignment-submit").click();
   await expect(employees).toContainText("Lead Engineer");
   await expect(search).toHaveValue("Morgan");
+  rolesReady = new Promise<void>(resolve => { releaseRoles = resolve; });
   await dialog.getByTestId("profile-summary-edit-project").click();
+  await expect.poll(() => page.getByTestId("project-assignment-dialog").evaluate(element =>
+    element.contains(document.activeElement) && document.activeElement?.tagName === "DIV",
+  )).toBe(true);
+  await page.keyboard.press("Tab");
+  const cancelAssignment = page.getByTestId("project-assignment-cancel");
+  await expect(cancelAssignment).toBeFocused();
+  releaseRoles();
+  await expect(page.getByTestId("project-assignment-project").locator('input[role="combobox"]')).toBeEnabled();
+  await expect(cancelAssignment).toBeFocused();
   await page.getByTestId("project-assignment-project").locator('input[type="text"]').fill("Billing Gateway");
   await page.getByRole("option", { name: "Billing Gateway", exact: true }).click();
   await page.getByTestId("project-assignment-submit").click();
@@ -91,6 +120,7 @@ test("shows current project employees and opens the shared employee details dial
   await page.getByTestId("admin-project-add-employee").click();
   await expect(page.getByTestId("project-assignment-submit")).toBeDisabled();
   const employeeSelect = page.getByTestId("admin-project-add-employee-select").locator('input[type="text"]');
+  await expect(employeeSelect).toBeFocused();
   await employeeSelect.fill("Riley");
   await expect(page.getByRole("option").filter({ hasText: "Riley Brooks" })).toHaveCount(0);
   await employeeSelect.fill("Alex");

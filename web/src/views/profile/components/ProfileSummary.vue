@@ -57,15 +57,7 @@
         </profile-summary-item>
 
         <profile-summary-item :label="t('Почтовый адрес')">
-          <hover-action-wrapper
-            :show-action="Boolean(emailToCopy)"
-            :tooltip="copyTooltip('email')"
-            @action="copyToClipboard(emailToCopy, 'email')"
-          >
-            <span class="d-inline-flex align-center flex-wrap ga-1 min-w-0">
-              <span>{{ employee.email ?? t('Не задан') }}</span>
-            </span>
-          </hover-action-wrapper>
+          <EmployeeEmails :email="employee.email" :additional-emails="employee.additionalEmails" />
         </profile-summary-item>
 
         <profile-summary-item :label="t('Позиция')">
@@ -90,8 +82,8 @@
         <profile-summary-item :label="t('Телеграм')">
           <hover-action-wrapper
             :show-action="Boolean(telegramToCopy)"
-            :tooltip="copyTooltip('telegram')"
-            @action="copyToClipboard(telegramToCopy, 'telegram')"
+            :tooltip="copyTooltip()"
+            @action="copyToClipboard(telegramToCopy)"
           >
             <span class="d-inline-flex align-center flex-wrap ga-1 min-w-0">
               <profile-telegram-editor
@@ -147,6 +139,7 @@ import { computed, onBeforeUnmount, ref, toRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useDisplay } from "vuetify";
 import HoverActionWrapper from "@/components/shared/HoverActionWrapper.vue";
+import EmployeeEmails from "@/components/employee/EmployeeEmails.vue";
 import PropertyList from "@/components/shared/PropertyList.vue";
 import OfficeMapPreviewDialog from "@/components/office-map/OfficeMapPreviewDialog.vue";
 import ProjectAssignmentDialog from "@/components/project/ProjectAssignmentDialog.vue";
@@ -229,8 +222,7 @@ const activeTransferRequest = ref<CurrentProjectTransferRequest | null>(null);
 
 const canShowMap = computed(() => Boolean(mapName.value));
 const canViewBirthday = computed(() => permissions.canAdminEmployees());
-const copiedField = ref<'email' | 'telegram' | null>(null);
-const emailToCopy = computed(() => employee.value.email?.trim() || null);
+const telegramCopied = ref(false);
 const telegramToCopy = computed(
   () => extractTelegramAccount(employee.value.telegram) ?? employee.value.telegram?.trim() ?? null,
 );
@@ -294,24 +286,24 @@ async function openProjectUpdateFromRoute() {
   }
 }
 
-function copyTooltip(field: 'email' | 'telegram') {
-  return copiedField.value === field
+function copyTooltip() {
+  return telegramCopied.value
     ? t('Скопировано в буфер обмена')
     : t('Скопировать в буфер обмена');
 }
 
-async function copyToClipboard(value: string | null, field: 'email' | 'telegram') {
+async function copyToClipboard(value: string | null) {
   if (!value || !navigator.clipboard?.writeText) {
     return;
   }
   try {
     await navigator.clipboard.writeText(value);
-    copiedField.value = field;
+    telegramCopied.value = true;
     if (copiedResetTimer) {
       clearTimeout(copiedResetTimer);
     }
     copiedResetTimer = setTimeout(() => {
-      copiedField.value = null;
+      telegramCopied.value = false;
       copiedResetTimer = null;
     }, 1500);
   } catch {

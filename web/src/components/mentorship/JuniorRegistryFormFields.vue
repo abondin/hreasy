@@ -2,6 +2,7 @@
   <v-autocomplete
     v-if="mode === 'add'"
     :model-value="addForm.juniorEmplId"
+    autofocus
     :items="employees"
     item-title="displayName"
     item-value="id"
@@ -11,6 +12,7 @@
   />
   <v-autocomplete
     :model-value="form.mentorId"
+    :autofocus="mode !== 'add'"
     clearable
     :items="mentorOptions"
     :item-title="mentorTitle"
@@ -31,6 +33,7 @@
   />
   <v-combobox
     :model-value="form.role"
+    :return-object="false"
     :items="roleOptions"
     item-title="value"
     item-value="value"

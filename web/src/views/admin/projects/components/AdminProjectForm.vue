@@ -7,6 +7,7 @@
       <v-form ref="formRef" @submit.prevent="submit">
         <v-select
           v-model="form.departmentId"
+          autofocus
           :items="departments"
           item-title="name"
           item-value="id"
@@ -109,6 +110,7 @@
               <td>
                 <v-text-field
                   v-model="workstream.displayName"
+                  :autofocus="workstream.key === workstreamToFocus"
                   :counter="255"
                   :rules="requiredTextRules"
                   variant="outlined"
@@ -243,6 +245,7 @@ const form = reactive<ProjectFormState>({
 });
 
 let workstreamKey = 0;
+const workstreamToFocus = ref<string | null>(null);
 
 const isCreateMode = computed(() => !props.input?.id);
 const businessAccountsWithCurrent = computed(() => {
@@ -319,8 +322,10 @@ function buildPayload(): CreateOrUpdateProjectBody {
 }
 
 function addWorkstream(): void {
+  const key = `new-${workstreamKey++}`;
+  workstreamToFocus.value = key;
   form.workstreams.push({
-    key: `new-${workstreamKey++}`,
+    key,
     externalId: "",
     displayName: "",
     description: "",

@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" max-width="760">
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="dialog" max-width="760">
     <template #activator="{ props }">
       <v-btn v-bind="props" color="primary" variant="outlined" size="small" :disabled="periodClosed">
         {{ t("Добавить") }}
@@ -11,6 +11,7 @@
       <v-card-text>
         <v-autocomplete
           v-model="item.projectId"
+          autofocus
           :items="activeProjects"
           item-title="name"
           item-value="id"
@@ -76,6 +77,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { withArchivedOptionById, withCurrentOptionById } from "@/lib/dict-options";

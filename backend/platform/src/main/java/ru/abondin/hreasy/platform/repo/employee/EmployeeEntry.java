@@ -33,6 +33,7 @@ public class EmployeeEntry {
     @Column("date_of_dismissal")
     private LocalDate dateOfDismissal;
     private String email;
+    private String[] additionalEmails = new String[0];
     private String phone;
     private String skype;
     private String telegram;

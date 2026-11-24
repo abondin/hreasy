@@ -3,14 +3,14 @@
   assignment history for the selected employee.
 -->
 <template>
-  <v-dialog v-model="dialogOpen" max-width="1280" scrollable>
+  <v-dialog ref="initialFocusDialog1" @after-enter="focusDialog($refs.initialFocusDialog1)" v-model="dialogOpen" max-width="1280" scrollable>
     <v-card>
       <v-card-item>
         <template #title>
           <span>{{ t("Подробная информация по проекту") }}</span>
         </template>
         <template #append>
-          <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
+          <v-btn data-dialog-initial-focus icon="mdi-close" variant="text" @click="closeDialog" />
         </template>
       </v-card-item>
 
@@ -156,6 +156,7 @@
 </template>
 
 <script setup lang="ts">
+import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import DetailSectionBlock from "@/components/shared/DetailSectionBlock.vue";

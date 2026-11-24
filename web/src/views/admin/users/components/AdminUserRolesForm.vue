@@ -5,6 +5,7 @@
       <v-form ref="formRef" @submit.prevent="submit">
         <v-select
           v-model="form.roles"
+          autofocus
           :items="allRoles"
           item-title="name"
           item-value="id"

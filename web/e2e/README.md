@@ -7,7 +7,7 @@ This folder contains end-to-end tests for the Vue 3 application.
 - `smoke/` - fast route/auth/navigation checks.
 - `harness/` - autonomous E2E regressions for the standalone `e2e-harness` app. No login or backend required.
 - `app-mocked/` - tests for the real main app shell with mocked `/api` responses. No backend or credentials required.
-- `profile/`, `employees/`, `mentorship/`, `vacations/`, `overtimes/`, `admin-employees/` - domain specs.
+- `assessment/`, `salary/`, `mentorship/`, `vacations/`, `overtimes/`, `admin-employees/` - domain specs.
 - `fixtures/` - auth and role helpers.
 - `support/` - shared selectors, test data constants.
 
@@ -28,7 +28,7 @@ npm run test:e2e -- --list
 Run a specific file:
 
 ```sh
-npm run test:e2e -- e2e/smoke/auth-and-routing.spec.ts
+npm run test:e2e -- e2e/smoke/post-login.spec.ts
 ```
 
 Run only autonomous harness regressions:
@@ -50,6 +50,8 @@ CI runs both autonomous suites separately:
 
 ## Authenticated scenarios
 
+Domain scenarios authenticate through the real login API and reuse its session cookies in the browser. The post-login smoke test separately checks the login form. Failed tests retain a Playwright trace even when retries are disabled.
+
 Some scenarios require test credentials from environment variables:
 
 - `E2E_EMPLOYEE_USERNAME`
@@ -58,7 +60,7 @@ Some scenarios require test credentials from environment variables:
 - `PLAYWRIGHT_BASE_PATH` (optional, for apps served from a subpath)
 - `PLAYWRIGHT_BASE_URL` (optional override for full URL, has priority over port/base path)
 
-If required credentials are missing, such tests are skipped.
+If required credentials are missing, authenticated tests fail with a configuration error. Autonomous suites do not require credentials.
 
 ## Local run with env vars
 
@@ -77,7 +79,7 @@ Example for app on `http://localhost:5174`:
 PLAYWRIGHT_PORT=5174 \
 E2E_EMPLOYEE_USERNAME=test.employee \
 E2E_EMPLOYEE_PASSWORD='<test-password>' \
-npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
+npx playwright test e2e/smoke/post-login.spec.ts --project=chromium
 ```
 
 ### PowerShell
@@ -86,5 +88,5 @@ npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
 $env:PLAYWRIGHT_PORT='5174'; `
 $env:E2E_EMPLOYEE_USERNAME='test.employee'; `
 $env:E2E_EMPLOYEE_PASSWORD='<test-password>'; `
-npx playwright test e2e/smoke/auth-and-routing.spec.ts --project=chromium
+npx playwright test e2e/smoke/post-login.spec.ts --project=chromium
 ```

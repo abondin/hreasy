@@ -15,6 +15,7 @@ import java.time.YearMonth;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -39,6 +40,7 @@ class ExternalApiControllerTest {
                         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)))
                 .verifyComplete();
 
-        verify(service).overtimes(eq(YearMonth.of(2026, 9)), any(AuthContext.class));
+        verify(service).overtimes(eq(YearMonth.of(2026, 9)),
+                argThat(auth -> "integration.user@example.test".equals(auth.getUsername())));
     }
 }

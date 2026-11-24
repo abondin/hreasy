@@ -1,12 +1,12 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { loginViaUi, requireCredentials } from "../fixtures/auth";
+import { loginViaApi, requireCredentials } from "../fixtures/auth";
 import { appPath } from "../support/navigation";
 import { selectors } from "../support/selectors";
 import { routes } from "../support/test-data";
 
-const importFile = resolve(process.cwd(), "../platform/src/test/resources/excel/employees-to-import.xlsx");
+const importFile = resolve(process.cwd(), "../backend/platform/src/test/resources/excel/employees-to-import.xlsx");
 const importedEmployeeName = "Новый Сотрудник Сотрудникович";
 
 const expectedDefaultColumns = {
@@ -48,7 +48,7 @@ test.describe("Admin Employees Import Full", () => {
     expect(existsSync(importFile), `Import file was not found: ${importFile}`).toBeTruthy();
 
     const credentials = requireCredentials("admin_employees");
-    await loginViaUi(page, credentials);
+    await loginViaApi(page, credentials);
     await abortActiveImportProcess(page);
 
     await page.goto(appPath(routes.adminEmployeesImport), { waitUntil: "domcontentloaded" });
