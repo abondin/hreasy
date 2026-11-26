@@ -13,6 +13,8 @@ import ru.abondin.hreasy.platform.repo.dict.ProjectWorkstreamEntry;
 import ru.abondin.hreasy.platform.repo.dict.ProjectWorkstreamRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.SecAdminUserRolesRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.HistoryDomainService;
+import ru.abondin.hreasy.platform.repo.history.HistoryEntry;
 import ru.abondin.hreasy.platform.service.admin.dto.ProjectDto;
 import ru.abondin.hreasy.platform.service.admin.dto.ProjectDtoMapper;
 
@@ -34,7 +36,7 @@ class ProjectAdminServiceTest {
         var workstreamRepo = mock(ProjectWorkstreamRepo.class);
         var service = new ProjectAdminService(projectRepo, historyRepo, mock(DateTimeService.class),
                 mock(AdminSecurityValidator.class), mock(ProjectDtoMapper.class),
-                mock(SecAdminUserRolesRepo.class), workstreamRepo);
+                mock(SecAdminUserRolesRepo.class), workstreamRepo, mock(HistoryDomainService.class));
         var body = new ProjectDto.CreateOrUpdateProjectDto();
         body.setName("Example project");
         body.setDepartmentId(301);
@@ -95,8 +97,11 @@ class ProjectAdminServiceTest {
         var mapper = mock(ProjectDtoMapper.class);
         var adminUserRolesRepo = mock(SecAdminUserRolesRepo.class);
         var workstreamRepo = mock(ProjectWorkstreamRepo.class);
+        var historyService = mock(HistoryDomainService.class);
+        when(historyService.persistHistory(any(Integer.class), any(), any(), any(), any(Integer.class)))
+                .thenReturn(Mono.just(new HistoryEntry()));
         var service = new ProjectAdminService(projectRepo, historyRepo, dateTimeService, securityValidator,
-                mapper, adminUserRolesRepo, workstreamRepo);
+                mapper, adminUserRolesRepo, workstreamRepo, historyService);
         var now = OffsetDateTime.parse("2026-09-07T08:00:00Z");
         var project = new DictProjectEntry();
         project.setId(10);

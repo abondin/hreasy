@@ -55,7 +55,7 @@ public class DictService {
                     dto.setWorkstreams(data.getT2().getOrDefault(e.getId(), java.util.List.of()).stream()
                             .map(workstream -> new ru.abondin.hreasy.platform.service.dto.ProjectWorkstreamDto(
                                     workstream.getId(), workstream.getExternalId(), workstream.getDisplayName(),
-                                    workstream.getDescription()))
+                                    workstream.getDescription(), workstream.getArchivedAt()))
                             .toList());
                     return dto;
                 }));

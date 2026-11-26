@@ -27,7 +27,7 @@ public class ProjectCardService {
         return repo.findFullInfoWithManagersById(projectId).flatMap(entry ->
                 workstreamRepo.findActiveByProjectId(projectId)
                         .map(workstream -> new ProjectWorkstreamDto(workstream.getId(), workstream.getExternalId(),
-                                workstream.getDisplayName(), workstream.getDescription()))
+                                workstream.getDisplayName(), workstream.getDescription(), workstream.getArchivedAt()))
                         .collectList()
                         .map(workstreams -> {
                             var result = mapper.fromEntry(entry);

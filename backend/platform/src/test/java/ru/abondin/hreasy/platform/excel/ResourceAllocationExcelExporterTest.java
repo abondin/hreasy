@@ -39,7 +39,7 @@ class ResourceAllocationExcelExporterTest {
                 List.of(new EmployeeDto(301, "Alex Morgan", null, null, null, null,
                         "Developer", "alex.morgan@example.test", new String[0])),
                 List.of(new ProjectDto(401, "=2+2", null, null, 601, "Example account", null, null, true, false, false)),
-                List.of(new ProjectWorkstreamDto(501, null, "Delivery", null)),
+                List.of(new ProjectWorkstreamDto(501, null, "Delivery", null, null)),
                 List.of(new AllocationDto(202600, 301, 401, null, 50),
                         new AllocationDto(202601, 301, 401, null, 0),
                         new AllocationDto(202611, 301, 401, null, 25),

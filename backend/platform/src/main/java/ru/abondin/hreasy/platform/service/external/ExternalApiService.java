@@ -73,7 +73,7 @@ public class ExternalApiService {
         return catalog(auth).flatMapMany(catalog -> Flux.fromIterable(catalog.projects().values())
                 .map(project -> new Project(project.getName(), project.getExternalId(), catalog.ba(project.getBaId()),
                         project.isActive(), project.getWorkstreams().stream()
-                        .map(workstream -> new Reference(workstream.displayName(), workstream.externalId())).toList())));
+                        .map(workstream -> new Workstream(workstream.displayName(), workstream.externalId(), workstream.archivedAt())).toList())));
     }
 
     /** Retains historical hours using email, without exporting dismissed employee profiles. */

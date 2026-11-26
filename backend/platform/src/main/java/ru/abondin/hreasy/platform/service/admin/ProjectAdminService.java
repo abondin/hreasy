@@ -15,11 +15,13 @@ import ru.abondin.hreasy.platform.repo.dict.ProjectWorkstreamEntry;
 import ru.abondin.hreasy.platform.repo.dict.ProjectWorkstreamRepo;
 import ru.abondin.hreasy.platform.repo.employee.admin.SecAdminUserRolesRepo;
 import ru.abondin.hreasy.platform.service.DateTimeService;
+import ru.abondin.hreasy.platform.service.HistoryDomainService;
 import ru.abondin.hreasy.platform.service.admin.dto.ProjectDto;
 import ru.abondin.hreasy.platform.service.admin.dto.ProjectDtoMapper;
 import ru.abondin.hreasy.platform.service.dto.ProjectWorkstreamDto;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +43,7 @@ public class ProjectAdminService {
     private final ProjectDtoMapper mapper;
     private final SecAdminUserRolesRepo adminUserRolesRepo;
     private final ProjectWorkstreamRepo workstreamRepo;
+    private final HistoryDomainService historyService;
 
     @Transactional
     public Mono<Integer> create(AuthContext auth, ProjectDto.CreateOrUpdateProjectDto newProject) {
@@ -109,7 +112,7 @@ public class ProjectAdminService {
                 }));
     }
 
-    private Mono<Void> syncWorkstreams(int projectId, List<ProjectWorkstreamDto> requested,
+    private Mono<Void> syncWorkstreams(int projectId, List<ProjectDto.WorkstreamBody> requested,
                                        int employeeId, OffsetDateTime now) {
         var ids = new HashSet<Integer>();
         var externalIds = new HashSet<String>();
@@ -124,31 +127,42 @@ public class ProjectAdminService {
         return workstreamRepo.findActiveByProjectId(projectId).collectList().flatMap(existing -> {
             var byId = new HashMap<Integer, ProjectWorkstreamEntry>();
             existing.forEach(item -> byId.put(item.getId(), item));
-            var entries = requested.stream().map(item -> {
+            var entries = new ArrayList<ProjectWorkstreamEntry>();
+            for (var item : requested) {
                 var entry = item.id() == null ? new ProjectWorkstreamEntry() : byId.remove(item.id());
                 if (entry == null) {
                     throw new BusinessError("errors.project.workstream.invalid");
                 }
+                boolean archiveChanged = item.archived() != (entry.getArchivedAt() != null);
                 if (entry.getId() == null) {
                     entry.setProjectId(projectId);
                     entry.setCreatedAt(now);
                     entry.setCreatedBy(employeeId);
                 } else if (!Objects.equals(entry.getExternalId(), stripToNull(item.externalId()))
                         || !Objects.equals(entry.getDisplayName(), item.displayName().trim())
-                        || !Objects.equals(entry.getDescription(), stripToNull(item.description()))) {
+                        || !Objects.equals(entry.getDescription(), stripToNull(item.description()))
+                        || archiveChanged) {
                     entry.setUpdatedAt(now);
                     entry.setUpdatedBy(employeeId);
+                } else {
+                    continue;
+                }
+                if (archiveChanged) {
+                    entry.setArchivedAt(item.archived() ? now : null);
+                    entry.setArchivedBy(item.archived() ? employeeId : null);
                 }
                 entry.setExternalId(stripToNull(item.externalId()));
                 entry.setDisplayName(item.displayName().trim());
                 entry.setDescription(stripToNull(item.description()));
-                return entry;
-            }).toList();
+                entries.add(entry);
+            }
             byId.values().forEach(item -> {
                 item.setDeletedAt(now);
                 item.setDeletedBy(employeeId);
             });
             return workstreamRepo.saveAll(Flux.concat(Flux.fromIterable(byId.values()), Flux.fromIterable(entries)))
+                    .concatMap(saved -> historyService.persistHistory(saved.getId(),
+                            HistoryDomainService.HistoryEntityType.PROJECT_WORKSTREAM, saved, now, employeeId))
                     .then();
         });
     }
@@ -162,7 +176,7 @@ public class ProjectAdminService {
 
     private ProjectWorkstreamDto toDto(ProjectWorkstreamEntry entry) {
         return new ProjectWorkstreamDto(entry.getId(), entry.getExternalId(),
-                entry.getDisplayName(), entry.getDescription());
+                entry.getDisplayName(), entry.getDescription(), entry.getArchivedAt());
     }
 
     private ProjectDto withWorkstreams(ProjectDto project, List<ProjectWorkstreamDto> workstreams) {

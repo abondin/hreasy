@@ -98,6 +98,7 @@
               <th>{{ t("Наименование") }}</th>
               <th>{{ t("Внешний идентификатор") }}</th>
               <th>{{ t("Описание") }}</th>
+              <th>{{ t("Архив") }}</th>
               <th class="admin-project-workstream-actions" />
             </tr>
           </thead>
@@ -137,6 +138,9 @@
                   density="compact"
                   hide-details
                 />
+              </td>
+              <td>
+                <v-checkbox v-model="workstream.archived" :aria-label="t('Архив')" hide-details />
               </td>
               <td>
                 <v-btn
@@ -186,9 +190,9 @@ import {
   createAdminProject,
   type AdminProjectInfo,
   type CreateOrUpdateProjectBody,
+  type ProjectWorkstreamBody,
   updateAdminProject,
 } from "@/services/admin/admin-project.service";
-import type { ProjectWorkstream } from "@/services/projects.service";
 
 type VFormInstance = InstanceType<typeof VForm>;
 
@@ -208,7 +212,7 @@ interface ProjectFormState {
   workstreams: WorkstreamFormState[];
 }
 
-interface WorkstreamFormState extends ProjectWorkstream {
+interface WorkstreamFormState extends ProjectWorkstreamBody {
   key: string;
 }
 
@@ -292,6 +296,7 @@ function resetForm(): void {
   form.info = props.input?.info ?? "";
   form.workstreams = (props.input?.workstreams ?? []).map((workstream) => ({
     ...workstream,
+    archived: Boolean(workstream.archivedAt),
     externalId: workstream.externalId ?? "",
     description: workstream.description ?? "",
     key: String(workstream.id ?? `new-${workstreamKey++}`),
@@ -314,6 +319,7 @@ function buildPayload(): CreateOrUpdateProjectBody {
     info: form.info || undefined,
     workstreams: form.workstreams.map((workstream) => ({
       id: workstream.id,
+      archived: workstream.archived,
       externalId: workstream.externalId?.trim() || undefined,
       displayName: workstream.displayName.trim(),
       description: workstream.description?.trim() || undefined,
@@ -326,6 +332,7 @@ function addWorkstream(): void {
   workstreamToFocus.value = key;
   form.workstreams.push({
     key,
+    archived: false,
     externalId: "",
     displayName: "",
     description: "",

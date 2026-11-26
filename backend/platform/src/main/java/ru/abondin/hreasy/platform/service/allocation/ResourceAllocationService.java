@@ -427,7 +427,7 @@ public class ResourceAllocationService {
 
     private ProjectWorkstreamDto toWorkstreamDto(ProjectWorkstreamEntry workstream) {
         return new ProjectWorkstreamDto(workstream.getId(), workstream.getExternalId(),
-                workstream.getDisplayName(), workstream.getDescription());
+                workstream.getDisplayName(), workstream.getDescription(), workstream.getArchivedAt());
     }
 
     private record CellKey(int period, int employeeId) {

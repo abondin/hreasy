@@ -22,6 +22,8 @@ public class ProjectWorkstreamEntry {
     private Integer createdBy;
     private OffsetDateTime updatedAt;
     private Integer updatedBy;
+    private OffsetDateTime archivedAt;
+    private Integer archivedBy;
     private OffsetDateTime deletedAt;
     private Integer deletedBy;
 }

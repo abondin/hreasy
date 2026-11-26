@@ -26,9 +26,14 @@ public final class ExternalApiDto {
                            @Schema(nullable = true) ProjectReference currentProject, boolean hasAvatar) {
     }
 
-    @Schema(name = "ExternalProject", description = "Project and its active workstreams. Workstream keys are scoped to the project.")
+    @Schema(name = "ExternalWorkstream", description = "Non-deleted project workstream, including archived entries.")
+    public record Workstream(String name, @Schema(nullable = true) String externalId,
+                             @Schema(nullable = true, description = "Archive time; null when not archived.") OffsetDateTime archivedAt) {
+    }
+
+    @Schema(name = "ExternalProject", description = "Project and its non-deleted workstreams. Workstream keys are scoped to the project.")
     public record Project(String name, @Schema(nullable = true) String externalId,
-                          @Schema(nullable = true) Reference ba, boolean active, List<Reference> workstreams) {
+                          @Schema(nullable = true) Reference ba, boolean active, List<Workstream> workstreams) {
     }
 
     @Schema(name = "ExternalOvertime", description = "Monthly hours, including dismissed employees identified only by email.")

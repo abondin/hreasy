@@ -61,11 +61,9 @@
         </template>
 
         <template #filter-workstream>
-          <v-autocomplete
+          <ProjectWorkstreamSelect
             :model-value="inputWorkstreamId"
             :items="inputSheet?.workstreams ?? []"
-            item-title="displayName"
-            item-value="id"
             hide-details
             density="compact"
             variant="outlined"
@@ -193,6 +191,7 @@
 </template>
 
 <script setup lang="ts">
+import ProjectWorkstreamSelect from "@/components/project/ProjectWorkstreamSelect.vue";
 import { useDisplay } from "vuetify";
 import { computed, nextTick, onActivated, onMounted, ref, shallowRef, type ComponentPublicInstance } from "vue";
 import { useI18n } from "vue-i18n";

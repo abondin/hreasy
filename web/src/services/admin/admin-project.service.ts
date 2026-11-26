@@ -2,6 +2,14 @@ import http from "@/lib/http";
 import type { DictItem } from "@/services/dict.service";
 import type { ProjectWorkstream } from "@/services/projects.service";
 
+export interface ProjectWorkstreamBody {
+  id?: number;
+  externalId?: string | null;
+  displayName: string;
+  description?: string | null;
+  archived: boolean;
+}
+
 export interface CreateOrUpdateProjectBody {
   workstreamRequired: boolean;
   externalId?: string;
@@ -14,7 +22,7 @@ export interface CreateOrUpdateProjectBody {
   departmentId?: number;
   baId: number | null;
   info?: string;
-  workstreams: ProjectWorkstream[];
+  workstreams: ProjectWorkstreamBody[];
 }
 
 export interface AdminProjectInfo {

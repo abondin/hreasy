@@ -34,7 +34,8 @@ public class HistoryDomainService {
         SUPPORT_REQUEST("support_request"),
         JUNIOR_REGISTRY("junior_registry"),
         JUNIOR_REGISTRY_REPORT("junior_registry_report"),
-        PROJECT_TRANSFER_REQUEST("project_transfer_request");
+        PROJECT_TRANSFER_REQUEST("project_transfer_request"),
+        PROJECT_WORKSTREAM("project_workstream");
         private final String type;
     }
 

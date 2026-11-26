@@ -40,16 +40,10 @@
           class="px-3"
         />
 
-        <v-autocomplete
-          v-if="activeWorkstreams.length"
+        <ProjectWorkstreamSelect
+          v-if="projectWorkstreams.length"
           v-model="item.workstreamId"
-          :items="activeWorkstreams"
-          item-title="displayName"
-          item-value="id"
-          :label="t('Направление работ')"
-          :placeholder="t('Без направления')"
-          persistent-placeholder
-          clearable
+          :items="projectWorkstreams"
           data-testid="overtime-workstream"
         />
 
@@ -77,6 +71,7 @@
 </template>
 
 <script setup lang="ts">
+import ProjectWorkstreamSelect from "@/components/project/ProjectWorkstreamSelect.vue";
 import { focusDialog } from "@/lib/dialog-focus";
 import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -130,12 +125,12 @@ const activeProjects = computed(() => {
   }));
 });
 
-const activeWorkstreams = computed(() =>
+const projectWorkstreams = computed(() =>
   props.allProjects.find((project) => project.id === item.projectId)?.workstreams ?? [],
 );
 
 watch(() => item.projectId, () => {
-  if (!activeWorkstreams.value.some((workstream) => workstream.id === item.workstreamId)) {
+  if (!projectWorkstreams.value.some((workstream) => workstream.id === item.workstreamId)) {
     item.workstreamId = undefined;
   }
 });

@@ -97,7 +97,7 @@ Closed months remain protected by the backend even if a save request is sent man
 
 ### Project and workstream lifecycle
 
-Project administrators edit the optional project `externalId` and its workstreams on the project form. A workstream contains `id`, optional `externalId`, `displayName`, and optional `description`; removing it from the form sets `deleted_at`/`deleted_by` instead of deleting the row. New overtime and allocation entries accept active workstreams belonging to the selected project only. The project dictionary and external project API return active workstreams, while allocation analytics and detailed overtime reports resolve referenced soft-deleted workstreams for historical display.
+Project administrators edit the optional project `externalId` and its workstreams on the project form. A workstream contains `id`, optional `externalId`, `displayName`, optional `description`, and nullable `archivedAt`. The archive checkbox sends `archived`; the server records the archive time and actor, preserves them on unchanged saves, and clears both on unarchive. Workstream changes are recorded in `history.history` as `project_workstream`. Removing a workstream from the form sets `deleted_at`/`deleted_by` instead of deleting the row. Project dictionaries and the external project API include archived workstreams. Overtime and allocation selectors hide them by default, retain an existing selection, and offer a show-archived option with the archive date. Archived workstreams remain selectable; deleted workstreams cannot receive new entries. Allocation analytics and detailed overtime reports resolve referenced soft-deleted workstreams for historical display. Table rows keep their normal styling.
 
 ## Implementation details
 

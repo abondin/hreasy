@@ -25,6 +25,7 @@ export interface ProjectWorkstream {
   externalId?: string | null;
   displayName: string;
   description?: string | null;
+  archivedAt?: string | null;
 }
 
 export interface CurrentProjectRole {

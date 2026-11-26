@@ -93,6 +93,11 @@ public class ProjectDto {
         private String info;
 
         @NotNull
-        private List<ProjectWorkstreamDto> workstreams;
+        private List<WorkstreamBody> workstreams;
+    }
+
+    /** Editable workstream properties; archive metadata is assigned by the server. */
+    public record WorkstreamBody(Integer id, String externalId, String displayName, String description,
+                                 boolean archived) {
     }
 }

@@ -35,7 +35,7 @@ by configured external keys. Responses do not expose database IDs.
 | `GET /external/api/v1/employees/avatar` | required `email` | Active employee PNG, or 404 |
 | `GET /external/api/v1/overtimes/{period}` | ISO `YYYY-MM` | Monthly overtime reports |
 | `GET /external/api/v1/resource-allocations/analytics/{year}` | calendar year | Annual allocation cells |
-| `GET /external/api/v1/projects` | none | Projects with active workstreams |
+| `GET /external/api/v1/projects` | none | Projects with non-deleted workstreams, including archived ones |
 
 ### Business identifiers
 
@@ -49,6 +49,8 @@ by configured external keys. Responses do not expose database IDs.
 - Unconfigured keys are returned as `externalId: null`, never replaced by internal IDs.
   Such entities have no reliable integration key; their names are display labels.
 - Names may change without changing an external key. An email change changes the employee key.
+
+Workstream dictionary entries include nullable `archivedAt` (ISO-8601 archive timestamp). Archived workstreams remain in project responses; soft-deleted ones are excluded.
 
 Business-account keys are edited in the existing admin BA form and retained in BA history.
 

@@ -201,7 +201,7 @@ class RequestBodyDeserializationTest {
                   "baId": 604,
                   "info": "Delivery project",
                   "workstreams": [
-                    {"externalId": "ERP-DELIVERY", "displayName": "Delivery", "description": "Main delivery"}
+                    {"externalId": "ERP-DELIVERY", "displayName": "Delivery", "description": "Main delivery", "archived": false}
                   ]
                 }
                 """, ProjectDto.CreateOrUpdateProjectDto.class);
