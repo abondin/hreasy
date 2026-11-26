@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springdoc.core.configuration.SpringDocConfiguration;
 import org.springdoc.core.properties.SpringDocConfigProperties;
@@ -21,9 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
-import ru.abondin.hreasy.platform.config.external.ExternalTokenAuthenticationConverter;
 import ru.abondin.hreasy.platform.api.external.ExternalApiController;
+import ru.abondin.hreasy.platform.config.external.ExternalTokenAuthenticationConverter;
 import ru.abondin.hreasy.platform.service.external.ExternalApiService;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;

@@ -19,10 +19,13 @@ const employees = [
 ];
 function plan(width: number, height: number) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    <script>window.officeMapScriptExecuted = true</script>
+    <a href="javascript:alert(1)"><text x="30" y="500">Unsafe link</text></a>
+    <foreignObject><iframe src="https://example.test"></iframe></foreignObject>
     <rect id="plan-border" x="1" y="1" width="${width - 2}" height="${height - 2}" fill="white" stroke="gray"/>
     ${["A1", "A2", "A3", "A4"].map((name, index) => `<g>
       <g id="seat-${name}" data-workplaceName="${name}" data-workplaceType="1">
-        <rect x="20" y="${20 + index * 100}" width="240" height="80" rx="8" fill="#dbeafe" stroke="#93b4dc"/>
+        <rect x="20" y="${20 + index * 100}" width="240" height="80" rx="8" fill="#dbeafe" stroke="#93b4dc" onclick="alert(1)"/>
         <g data-empl=""><text x="30" y="${45 + index * 100}" font-size="14">\${empl}</text></g>
         <text x="30" y="${75 + index * 100}" font-size="18">${name}</text>
       </g></g>`).join("")}
@@ -61,6 +64,7 @@ test("shared map, search, clears, details, viewport and one employee snapshot", 
   await page.getByTestId("office-maps-employee-1").focus();
   await page.getByTestId("office-maps-employee-1").press("Enter");
   await expect(page.locator("#seat-A1 rect")).toHaveCSS("filter", /drop-shadow/);
+  await expect(page.locator(".office-map-svg script, .office-map-svg foreignObject, .office-map-svg iframe, .office-map-svg [onclick], .office-map-svg [href^='javascript:']")).toHaveCount(0);
   await expect.poll(async () => {
     const bounds = await page.locator("#plan-border").boundingBox();
     const viewport = await page.locator(".office-map-svg").boundingBox();

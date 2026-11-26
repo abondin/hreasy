@@ -165,7 +165,7 @@ export interface SalaryRequestLink {
 export interface SalaryLinkedRequest {
   id: number;
   period: number;
-  implState: number;
+  implState: number | null;
   createdAt: string;
   createdBy: Dict;
 }

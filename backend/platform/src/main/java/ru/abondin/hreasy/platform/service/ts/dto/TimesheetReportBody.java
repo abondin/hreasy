@@ -1,5 +1,6 @@
 package ru.abondin.hreasy.platform.service.ts.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +18,7 @@ import java.util.List;
 @Data
 @ToString
 @Builder()
-@NoArgsConstructor
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
 @AllArgsConstructor
 public class TimesheetReportBody {
     public record TimesheetReportOneDay(@NonNull

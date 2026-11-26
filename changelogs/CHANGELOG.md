@@ -21,7 +21,7 @@ bugfix:
 
 technical:
 
-- Backend services require Java 25 and use Spring Boot 4. Building the web frontend requires Node.js 26 and npm 11.19.1.
+- Backend services require Java 25 and use Spring Boot 4.2 with Jackson 3 for application JSON. Building the web frontend requires Node.js 26 and npm 11.19.1.
 - Fixed security issues present in 1.3: Telegram API authentication could create a reusable web session, and file storage lacked filename protection and could modify files before authorization.
 
 

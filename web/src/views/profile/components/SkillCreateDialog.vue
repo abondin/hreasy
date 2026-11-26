@@ -120,7 +120,7 @@
 
 <script setup lang="ts">
 import { focusDialog } from "@/lib/dialog-focus";
-import { computed, reactive, ref, watch } from "vue";
+import { computed, nextTick, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { errorUtils } from "@/lib/errors";
 import type {
@@ -198,7 +198,7 @@ function notesRule(value: string | null | undefined) {
   return t("Не более N символов", { n: 1024 });
 }
 
-function resetForm() {
+async function resetForm() {
   formState.groupId = undefined;
   formState.name = "";
   formState.ratingValue = undefined;
@@ -206,6 +206,7 @@ function resetForm() {
   successMessage.value = "";
   errorMessage.value = "";
   addMore.value = true;
+  await nextTick();
   form.value?.resetValidation();
 }
 
@@ -246,10 +247,11 @@ async function onSubmit() {
     const created = await props.submitSkill(payload);
     successMessage.value = t("Навык успешно создан", { skill: created.name });
     if (addMore.value) {
-      form.value.resetValidation();
       formState.name = "";
       formState.ratingValue = undefined;
       formState.ratingNotes = "";
+      await nextTick();
+      form.value?.resetValidation();
     } else {
       close();
     }

@@ -1,19 +1,14 @@
 package ru.abondin.hreasy.platform.config;
 
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.http.codec.ServerCodecConfigurer;
-import org.springframework.http.codec.json.Jackson2JsonDecoder;
-import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.config.WebFluxConfigurer;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 public class WebConfig {
@@ -28,41 +23,15 @@ public class WebConfig {
     }
 
     @Bean
-    JavaTimeModule javatimeModule() {
-        return new JavaTimeModule();
-    }
-
-    @Bean
     WebClient.Builder webClientBuilder() {
         return WebClient.builder();
     }
 
     @Bean
-    ObjectMapper objectMapper(JavaTimeModule javaTimeModule) {
-        return new ObjectMapper()
-                .registerModule(javaTimeModule)
+    JsonMapper objectMapper() {
+        return JsonMapper.builder()
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    }
-
-    @Bean
-    Jackson2JsonEncoder jackson2JsonEncoder(ObjectMapper mapper) {
-        return new Jackson2JsonEncoder(mapper);
-    }
-
-    @Bean
-    Jackson2JsonDecoder jackson2JsonDecoder(ObjectMapper mapper) {
-        return new Jackson2JsonDecoder(mapper);
-    }
-
-    @Bean
-    WebFluxConfigurer webFluxConfigurer(Jackson2JsonEncoder encoder, Jackson2JsonDecoder decoder) {
-        return new WebFluxConfigurer() {
-            @Override
-            public void configureHttpMessageCodecs(ServerCodecConfigurer configurer) {
-                configurer.defaultCodecs().jackson2JsonEncoder(encoder);
-                configurer.defaultCodecs().jackson2JsonDecoder(decoder);
-            }
-        };
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build();
     }
 }

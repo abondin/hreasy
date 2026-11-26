@@ -1,13 +1,12 @@
 package ru.abondin.hreasy.platform.service.mapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.r2dbc.postgresql.codec.Json;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.abondin.hreasy.platform.BusinessError;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -36,7 +35,7 @@ public abstract class MapperBaseWithJsonSupport implements MapperBase {
                 stream = stream.sorted(comparator);
             }
             return stream.collect(Collectors.toList());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             log.error("Unable to serialize json", e);
             throw new BusinessError("error.json.serialization");
         }
@@ -45,7 +44,7 @@ public abstract class MapperBaseWithJsonSupport implements MapperBase {
     protected <T> T fromJson(Json json, Class<T> type) {
         try {
             return json == null ? null : jsonMapper.readValue(json.asString(), type);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("Unable to serialize json", e);
             throw new BusinessError("error.json.serialization");
         }
@@ -57,7 +56,7 @@ public abstract class MapperBaseWithJsonSupport implements MapperBase {
     protected <T> String toJsonStr(T instance, boolean fakeAttribute) {
         try {
             return instance == null ? null : jsonMapper.writeValueAsString(instance);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("Unable to serialize json", e);
             throw new BusinessError("error.json.serialization");
         }

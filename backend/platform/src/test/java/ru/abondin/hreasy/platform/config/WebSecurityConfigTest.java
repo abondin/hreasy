@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -21,6 +20,7 @@ import ru.abondin.hreasy.platform.api.GlobalWebErrorsHandler;
 import ru.abondin.hreasy.platform.config.external.ExternalTokenAuthenticationConverter;
 import ru.abondin.hreasy.platform.config.telegram.TelegramJwtAuthenticationConverter;
 import ru.abondin.hreasy.platform.tg.TgAuthLogService;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 

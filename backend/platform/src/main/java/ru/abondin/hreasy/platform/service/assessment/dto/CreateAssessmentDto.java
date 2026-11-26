@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.service.assessment.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @Valid
 public class CreateAssessmentDto {

@@ -28,6 +28,24 @@ function notifications(count: number) {
 }
 
 test.describe("App Mocked Notifications Menu", () => {
+  test("sanitizes HTML notifications while preserving formatting and safe links", async ({ page }) => {
+    await installUnhandledApiGuard(page);
+    await mockAppRouteAuth(page, appMockedAuthorities.employees);
+    await mockEmployeesDirectoryApi(page);
+    const items = notifications(1);
+    items[0]!.category = "general";
+    items[0]!.markdownText = `<p><strong>Project update</strong> <a href="https://example.test">Details</a></p>
+      <script>alert(1)</script><img onerror="alert(1)">
+      <a href="javascript:alert(1)">Unsafe link</a><iframe src="https://example.test"></iframe>`;
+    await mockNotificationsApi(page, items);
+    await page.goto(appPath(routes.employees));
+    await page.getByTestId("notifications-menu-button").click();
+    const content = page.getByTestId("notifications-menu-list").locator(".markdown-body");
+    await expect(content.locator("strong")).toHaveText("Project update");
+    await expect(content.getByRole("link", { name: "Details" })).toHaveAttribute("href", "https://example.test");
+    await expect(content.locator("script, iframe, [onerror], [href^='javascript:']")).toHaveCount(0);
+  });
+
   test("keeps failed messages unread and allows dismissing the error", async ({ page }) => {
     await installUnhandledApiGuard(page);
     await mockAppRouteAuth(page, appMockedAuthorities.employees);

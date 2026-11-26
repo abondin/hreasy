@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.service.notification;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -9,6 +8,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Locale;

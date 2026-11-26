@@ -1,9 +1,8 @@
 package ru.abondin.hreasy.platform.test.service.assessment.dto;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import ru.abondin.hreasy.platform.service.assessment.dto.CreateAssessmentDto;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,7 +19,7 @@ class CreateAssessmentDtoTest {
      */
     @Test
     void deserializesAssessmentCreationRequest() throws Exception {
-        var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        var mapper = JsonMapper.builder().build();
         var json = """
                 {
                   "plannedDate": "2026-06-10",
@@ -32,5 +31,10 @@ class CreateAssessmentDtoTest {
 
         assertEquals(LocalDate.of(2026, 6, 10), dto.getPlannedDate());
         assertEquals(List.of(16, 42), dto.getManagers());
+
+        var withoutManagers = mapper.readValue("""
+                {"plannedDate":"2026-06-10"}
+                """, CreateAssessmentDto.class);
+        assertEquals(List.of(), withoutManagers.getManagers());
     }
 }

@@ -85,6 +85,11 @@
         </dependency>
 
         <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jxls</groupId>
             <artifactId>jxls</artifactId>
             <version>${jxls.version}</version>

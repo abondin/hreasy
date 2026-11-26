@@ -31,7 +31,7 @@ public class SalaryRequestLinkDto {
     public static class SalaryLinkedRequest {
         private int id;
         private int period;
-        private short implState;
+        private Integer implState;
         private OffsetDateTime createdAt;
         private SimpleDictDto createdBy;
     }

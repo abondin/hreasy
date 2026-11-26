@@ -1,11 +1,11 @@
 package ru.abondin.hreasy.platform.repo.udr;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.r2dbc.postgresql.codec.Json;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 import ru.abondin.hreasy.platform.service.PostgresJSONJacksonSerializer;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.time.OffsetDateTime;
 

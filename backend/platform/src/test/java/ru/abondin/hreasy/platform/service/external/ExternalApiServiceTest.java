@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.service.external;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ByteArrayResource;
@@ -28,6 +27,7 @@ import ru.abondin.hreasy.platform.service.external.dto.ExternalApiDto;
 import ru.abondin.hreasy.platform.service.overtime.OvertimeService;
 import ru.abondin.hreasy.platform.service.overtime.dto.ExternalOvertimeSummaryDto;
 import ru.abondin.hreasy.platform.service.overtime.dto.OvertimeEmployeeSummary;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;

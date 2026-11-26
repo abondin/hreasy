@@ -1,6 +1,5 @@
 package ru.abondin.hreasy.platform.service.article.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
@@ -12,7 +11,6 @@ import org.springframework.lang.NonNull;
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class CreateArticleBody {
     @NonNull
     private String name;

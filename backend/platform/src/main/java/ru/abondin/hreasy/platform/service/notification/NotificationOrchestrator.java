@@ -1,12 +1,12 @@
 package ru.abondin.hreasy.platform.service.notification;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.service.notification.dto.NewNotificationDto;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -159,7 +159,7 @@ public class NotificationOrchestrator {
     private String serializeContext(NotificationPlan plan) {
         try {
             return objectMapper.writeValueAsString(plan.getContext());
-        } catch (JsonProcessingException ex) {
+        } catch (JacksonException ex) {
             throw new IllegalStateException("Unable to serialize notification context for " + plan.getEventType(), ex);
         }
     }

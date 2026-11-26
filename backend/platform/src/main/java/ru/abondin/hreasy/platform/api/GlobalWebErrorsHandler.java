@@ -1,10 +1,7 @@
 package ru.abondin.hreasy.platform.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.r2dbc.spi.R2dbcException;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -26,6 +23,7 @@ import reactor.core.publisher.Mono;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.I18Helper;
 import ru.abondin.hreasy.platform.config.HrEasyCorsWebFilter;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 
@@ -51,7 +49,6 @@ public class GlobalWebErrorsHandler implements WebExceptionHandler, ServerAccess
         return handle(serverWebExchange, (Throwable) e);
     }
 
-    @SneakyThrows(JsonProcessingException.class)
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
         var response = exchange.getResponse();

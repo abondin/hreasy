@@ -1,9 +1,12 @@
 package ru.abondin.hreasy.platform.test.service.requestbody;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import ru.abondin.hreasy.platform.api.employee.EmployeeSkillsController.SkillRatingBody;
+import ru.abondin.hreasy.platform.config.WebConfig;
+import ru.abondin.hreasy.platform.service.article.dto.CreateArticleBody;
+import ru.abondin.hreasy.platform.service.article.dto.UpdateArticleBody;
 import ru.abondin.hreasy.platform.service.admin.ba.dto.CreateOrUpdateBAPositionBody;
 import ru.abondin.hreasy.platform.service.admin.dto.ProjectDto;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestImplementBody;
@@ -12,19 +15,67 @@ import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestReportBody;
 import ru.abondin.hreasy.platform.service.salary.dto.SalaryRequestUpdateBody;
 import ru.abondin.hreasy.platform.service.salary.dto.link.SalaryRequestLinkDto;
 import ru.abondin.hreasy.platform.service.ts.dto.TimesheetReportBody;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.MismatchedInputException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SpringJUnitConfig(WebConfig.class)
 class RequestBodyDeserializationTest {
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    @Autowired
+    private ObjectMapper mapper;
+
+    @Test
+    void preservesArticleDefaultsAndExplicitFalse() {
+        var create = mapper.readValue("""
+                {"name":"Guide","articleGroup":"general"}
+                """, CreateArticleBody.class);
+        var update = mapper.readValue("""
+                {"name":"Guide","articleGroup":"general","moderated":false}
+                """, UpdateArticleBody.class);
+
+        assertTrue(create.isModerated());
+        assertTrue(mapper.readValue("""
+                {"name":"Guide","articleGroup":"general"}
+                """, UpdateArticleBody.class).isModerated());
+        assertFalse(update.isModerated());
+        assertFalse(update.isArchived());
+    }
+
+    @Test
+    void preservesEmptyTimesheetHoursWhenOmitted() {
+        var body = mapper.readValue("""
+                {"businessAccount":604,"project":1162}
+                """, TimesheetReportBody.class);
+
+        assertTrue(body.getHours().isEmpty());
+    }
+
+    @Test
+    void rejectsNullForPrimitiveFields() {
+        assertThrows(MismatchedInputException.class, () -> mapper.readValue("""
+                {"name":"Guide","articleGroup":"general","moderated":null}
+                """, CreateArticleBody.class));
+        assertThrows(MismatchedInputException.class, () -> mapper.readValue("""
+                {"businessAccount":null}
+                """, TimesheetReportBody.class));
+        assertThrows(MismatchedInputException.class, () -> mapper.readValue("""
+                {"rating":null}
+                """, SkillRatingBody.class));
+    }
 
     /**
      * Test goal: verifies that salary request bodies with Lombok builders can be decoded from JSON.
      * <p>Precondition: JSON contains payloads sent by the frontend for salary and bonus workflows.
-     * <p>Action: deserialize JSON into salary request body DTOs with the platform Java time module.
+     * <p>Action: deserialize JSON into salary request body DTOs with the application mapper.
      * <p>Verification: representative fields are populated from the request bodies.
      */
     @Test
@@ -73,7 +124,7 @@ class RequestBodyDeserializationTest {
     /**
      * Test goal: verifies that the timesheet report body with a Lombok builder can be decoded from JSON.
      * <p>Precondition: JSON contains the payload sent by the frontend for reporting project hours.
-     * <p>Action: deserialize JSON into {@link TimesheetReportBody} with the platform Java time module.
+     * <p>Action: deserialize JSON into {@link TimesheetReportBody} with the application mapper.
      * <p>Verification: project identifiers and day records are populated from the request body.
      */
     @Test
@@ -99,7 +150,7 @@ class RequestBodyDeserializationTest {
     /**
      * Test goal: verifies that salary request links can be decoded from JSON stored in the database.
      * <p>Precondition: JSON contains the link array returned by the salary request SQL query.
-     * <p>Action: deserialize JSON into {@link SalaryRequestLinkDto} list with the platform Java time module.
+     * <p>Action: deserialize JSON into {@link SalaryRequestLinkDto} list with the application mapper.
      * <p>Verification: link metadata and nested linked request fields are populated from JSON.
      */
     @Test
@@ -112,7 +163,7 @@ class RequestBodyDeserializationTest {
                     "linkedRequest": {
                       "id": 11,
                       "period": 202606,
-                      "implState": 1,
+                      "implState": null,
                       "createdAt": "2026-06-17T09:30:00+03:00",
                       "createdBy": {"id": 1190, "name": "Test Employee"}
                     },
@@ -128,13 +179,14 @@ class RequestBodyDeserializationTest {
         assertEquals(1, links.size());
         assertEquals(10, links.getFirst().getId());
         assertEquals(11, links.getFirst().getLinkedRequest().getId());
+        assertNull(links.getFirst().getLinkedRequest().getImplState());
         assertEquals(1191, links.getFirst().getCreatedBy().getId());
     }
 
     /**
      * Test goal: verifies that project create/update request bodies can be decoded from JSON.
      * <p>Precondition: JSON contains the payload sent by the frontend for creating or updating a project.
-     * <p>Action: deserialize JSON into {@link ProjectDto.CreateOrUpdateProjectDto} with the platform Java time module.
+     * <p>Action: deserialize JSON into {@link ProjectDto.CreateOrUpdateProjectDto} with the application mapper.
      * <p>Verification: required and optional project fields are populated from the request body.
      */
     @Test
