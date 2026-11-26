@@ -23,6 +23,7 @@ public class WebConfig {
         var messageSource = new ReloadableResourceBundleMessageSource();
         messageSource.setBasenames("classpath:i18n/messages");
         messageSource.setDefaultEncoding("UTF-8");
+        messageSource.setFallbackToSystemLocale(false);
         return messageSource;
     }
 

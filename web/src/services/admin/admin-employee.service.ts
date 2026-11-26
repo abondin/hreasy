@@ -116,9 +116,22 @@ export async function updateAdminEmployee(
   return response.data;
 }
 
-export async function exportAdminEmployees(includeFired: boolean): Promise<Blob> {
+export interface EmployeeExportOptions {
+  includeFired: boolean;
+  includeAdditional: boolean;
+  includePassport: boolean;
+  includeKids: boolean;
+  departmentIds: number[];
+  baIds: number[];
+}
+
+export async function exportAdminEmployees(options: EmployeeExportOptions): Promise<Blob> {
   const response = await http.get<ArrayBuffer>("v1/admin/employees/export", {
-    params: { includeFired },
+    params: {
+      ...options,
+      departmentIds: options.departmentIds.join(","),
+      baIds: options.baIds.join(","),
+    },
     responseType: "arraybuffer",
   });
 

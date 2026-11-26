@@ -23,6 +23,7 @@ import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowDto;
 import ru.abondin.hreasy.platform.service.admin.imp.dto.ExcelImportWorkflowType;
 
 import java.util.Locale;
+import java.util.List;
 
 /**
  * Add new employee record and update existing one
@@ -61,10 +62,20 @@ public class AdminEmployeeController {
     }
 
     @GetMapping("/export")
-    public Mono<Resource> export(Locale locale, @RequestParam(defaultValue = "false") boolean includeFired) {
+    public Mono<Resource> export(Locale locale, @RequestParam(defaultValue = "false") boolean includeFired,
+                                 @RequestParam(defaultValue = "false") boolean includeAdditional,
+                                 @RequestParam(defaultValue = "false") boolean includePassport,
+                                 @RequestParam(defaultValue = "false") boolean includeKids,
+                                 @RequestParam(defaultValue = "") List<Integer> departmentIds,
+                                 @RequestParam(defaultValue = "") List<Integer> baIds) {
         return AuthHandler.currentAuth().flatMap(auth -> exportService.export(auth,
                 EmployeeExportFilter.builder()
                         .includeFired(includeFired)
+                        .includeAdditional(includeAdditional)
+                        .includePassport(includePassport)
+                        .includeKids(includeKids)
+                        .departmentIds(departmentIds)
+                        .baIds(baIds)
                         .build()
                 , locale));
     }

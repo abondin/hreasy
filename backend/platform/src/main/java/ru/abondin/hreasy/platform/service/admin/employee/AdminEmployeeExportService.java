@@ -7,16 +7,19 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import ru.abondin.hreasy.platform.BusinessError;
 import ru.abondin.hreasy.platform.auth.AuthContext;
 import ru.abondin.hreasy.platform.service.DateTimeService;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeAllFieldsMapper;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeExportFilter;
+import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeKidDto;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeKidExportDto;
 import ru.abondin.hreasy.platform.service.admin.employee.dto.EmployeeWithAllDetailsDto;
 import ru.abondin.hreasy.platform.service.ba.BusinessAccountService;
 import ru.abondin.hreasy.platform.service.dict.DictService;
 import ru.abondin.hreasy.platform.service.dto.SimpleDictDto;
+import ru.abondin.hreasy.platform.service.dto.OfficeLocationDictDto;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -50,16 +53,23 @@ public class AdminEmployeeExportService {
                 , dictService.findOfficeLocations(auth).collectList()
                 , dictService.findPositions(auth).collectList()
                 , dictService.findOrganizations(auth).collectList()
+                , dictService.findOffices(auth).collectList()
         ).flatMap(tupple -> {
             var projects = fromDicts(tupple.getT1());
             var bas = fromDicts(tupple.getT2());
             var departments = fromDicts(tupple.getT3());
             var levels = fromDicts(tupple.getT4());
-            var officeLocations = fromDicts(tupple.getT5());
+            var officeLocationsById = tupple.getT5().stream()
+                    .collect(Collectors.toMap(OfficeLocationDictDto::getId, location -> location));
             var positions = fromDicts(tupple.getT6());
             var organizations = fromDicts(tupple.getT7());
+            var offices = fromDicts(tupple.getT8());
             // 2. Load all employees (include fired)
             return employeeService.findAll(auth, filter.isIncludeFired())
+                    .filter(e -> filter.getDepartmentIds().isEmpty()
+                            || e.getDepartmentId() != null && filter.getDepartmentIds().contains(e.getDepartmentId()))
+                    .filter(e -> filter.getBaIds().isEmpty()
+                            || e.getBaId() != null && filter.getBaIds().contains(e.getBaId()))
                     .collectMap(EmployeeWithAllDetailsDto::getId, e -> {
                         var emplExp = mapper.toExportWithoutDictionaries(e);
                         emplExp.setCurrentProject(e.getCurrentProjectId() == null ? null : projects.get(e.getCurrentProjectId()));
@@ -69,9 +79,11 @@ public class AdminEmployeeExportService {
                         emplExp.setBa(bas.get(e.getBaId()));
                         emplExp.setPosition(positions.get(e.getPositionId()));
                         emplExp.setLevel(levels.get(e.getLevelId()));
-                        emplExp.setOfficeLocation(officeLocations.get(e.getOfficeLocationId()));
+                        var location = officeLocationsById.get(e.getOfficeLocationId());
+                        emplExp.setOfficeLocation(location == null ? null : location.getName());
+                        emplExp.setOffice(location == null ? null : offices.get(location.getOfficeId()));
                         return emplExp;
-                    }).flatMap(employees -> employeeService.findAllKids(auth)
+                    }).flatMap(employees -> (filter.isIncludeKids() ? employeeService.findAllKids(auth) : Flux.<EmployeeKidDto>empty())
                             .filter(kid -> employees.containsKey(kid.getParent().getId()))
                             .map(kid -> new EmployeeKidExportDto(employees.get(kid.getParent().getId()),
                                     kid.getDisplayName(), kid.getBirthday(), kid.getAge()))
@@ -79,10 +91,10 @@ public class AdminEmployeeExportService {
                             // 4. Prepare export bundle //TODO Get rid of collectList() and export employees in pipe
                             AdminEmployeeExcelExporter.AdminEmployeeExportBundle.builder()
                                     .exportTime(now)
-                                    .exportedBy(auth.getUsername())
                                     .locale(locale)
                                     .employees(List.copyOf(employees.values()))
                                     .kids(kids)
+                                    .filter(filter)
                                     .build()
                     ))
                     // 5. Write exported document to resource. //TODO Another place to migrate to pipes

@@ -7,7 +7,7 @@ import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 
 /**
- * DTO for admin_employees_template.xlsx XLSX template
+ * Employee values used by the Excel exporter.
  */
 @Data
 @NoArgsConstructor
@@ -28,6 +28,8 @@ public class EmployeeExportDto {
     private String ba;
     private String position;
     private String officeLocation;
+    private String office;
+    private String officeWorkplace;
     private String workType;
     private String workDay;
     private String registrationAddress;

@@ -31,7 +31,7 @@
                   :disabled="loading"
                   show-export
                   :export-label="t('Экспорт в Excel')"
-                  @export="downloadExport"
+                  @export="openExport"
                 />
               </template>
 
@@ -196,6 +196,37 @@
       />
     </v-dialog>
 
+    <v-dialog ref="exportDialogRef" v-model="exportDialog" :persistent="exportLoading" max-width="560"
+      @after-enter="focusDialog($refs.exportDialogRef)" data-testid="admin-employees-export-dialog">
+      <v-card :title="t('Экспорт сотрудников')">
+        <v-card-text>
+          <v-alert v-if="exportError" type="error" variant="tonal" class="mb-3">{{ exportError }}</v-alert>
+          <h3 class="text-subtitle-1 mb-3">{{ t('Фильтрация') }}</h3>
+          <v-autocomplete v-model="exportDepartmentIds" :items="departments" item-title="name" item-value="id"
+            :label="t('Подразделение')" :disabled="exportLoading" multiple chips closable-chips clearable
+            variant="outlined" density="compact" hide-details class="mb-4" />
+          <v-autocomplete v-model="exportBaIds" :items="businessAccounts" item-title="name" item-value="id"
+            :label="t('Бизнес Аккаунт')" :disabled="exportLoading" multiple chips closable-chips clearable
+            variant="outlined" density="compact" hide-details class="mb-4" />
+          <v-checkbox v-model="exportHideDismissed" :disabled="exportLoading" hide-details
+            :label="t('Скрыть уволенных')" />
+          <v-divider class="my-4" />
+          <h3 class="text-subtitle-1 mb-2">{{ t('Состав выгрузки') }}</h3>
+          <v-checkbox :model-value="true" disabled hide-details :label="t('Основная информация')" />
+          <v-checkbox v-model="includeAdditional" :disabled="exportLoading" hide-details
+            :label="t('Дополнительные сведения о сотрудниках')" />
+          <v-checkbox v-model="includePassport" :disabled="exportLoading" hide-details
+            :label="t('Паспортные данные и адрес регистрации')" />
+          <v-checkbox v-model="includeKids" :disabled="exportLoading" hide-details :label="t('Сведения о детях')" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn :disabled="exportLoading" @click="exportDialog = false">{{ t('Отмена') }}</v-btn>
+          <v-btn color="primary" :loading="exportLoading" @click="downloadExport">{{ t('Скачать Excel') }}</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar v-model="exportCompleted" timeout="5000">
       {{ t("Экспорт успешно завершён. Файл скачен.") }}
       <template #actions>
@@ -243,6 +274,14 @@ const permissions = usePermissions();
 
 const loading = ref(false);
 const exportLoading = ref(false);
+const exportDialog = ref(false);
+const exportError = ref("");
+const includeAdditional = ref(false);
+const includePassport = ref(false);
+const includeKids = ref(false);
+const exportDepartmentIds = ref<number[]>([]);
+const exportBaIds = ref<number[]>([]);
+const exportHideDismissed = ref(true);
 const exportCompleted = ref(false);
 const dialog = ref(false);
 const error = ref<string | null>(null);
@@ -443,10 +482,29 @@ async function onSaved(): Promise<void> {
   await load();
 }
 
+function openExport(): void {
+  exportDepartmentIds.value = [...selectedDepartments.value];
+  exportHideDismissed.value = hideDismissed.value;
+  exportBaIds.value = [];
+  includeAdditional.value = false;
+  includePassport.value = false;
+  includeKids.value = false;
+  exportError.value = "";
+  exportDialog.value = true;
+}
+
 async function downloadExport(): Promise<void> {
   exportLoading.value = true;
+  exportError.value = "";
   try {
-    const blob = await exportAdminEmployees(!hideDismissed.value);
+    const blob = await exportAdminEmployees({
+      includeFired: !exportHideDismissed.value,
+      includeAdditional: includeAdditional.value,
+      includePassport: includePassport.value,
+      includeKids: includeKids.value,
+      departmentIds: exportDepartmentIds.value,
+      baIds: exportBaIds.value,
+    });
     const link = document.createElement("a");
     const url = window.URL.createObjectURL(blob);
     link.href = url;
@@ -454,8 +512,9 @@ async function downloadExport(): Promise<void> {
     link.click();
     window.URL.revokeObjectURL(url);
     exportCompleted.value = true;
+    exportDialog.value = false;
   } catch (e: unknown) {
-    error.value = errorUtils.shortMessage(e);
+    exportError.value = errorUtils.shortMessage(e);
   } finally {
     exportLoading.value = false;
   }
