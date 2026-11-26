@@ -746,8 +746,6 @@ describe("ResourceAllocationsView", () => {
       global: { stubs: globalStubs },
     });
     await flushPromises();
-    expect(wrapper.text()).toContain("Закрыт: 30.06.2026");
-    expect(wrapper.find(".text-decoration-line-through").text()).toBe("Zulu");
     expect(wrapper.text()).toContain("Текущий проект: Other");
     expect(wrapper.text()).toContain("Роль: QA Engineer");
     expect(wrapper.text()).toContain("Дата увольнения: 15.12.2025");

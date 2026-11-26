@@ -9,6 +9,10 @@ import {
 } from "../support/app-mocked-api";
 import { appPath } from "../support/navigation";
 
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/v1/admin/projects/301/workstreams", route => route.fulfill({ json: [] }));
+});
+
 test("shows current project employees and opens the shared employee details dialog", async ({ page }) => {
   await installUnhandledApiGuard(page);
   await mockAppRouteAuth(page, ["project_admin_area", "update_current_project_global"]);

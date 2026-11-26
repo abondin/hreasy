@@ -3,7 +3,6 @@ import type { DictItem } from "@/services/dict.service";
 import type { ProjectWorkstream } from "@/services/projects.service";
 
 export interface ProjectWorkstreamBody {
-  id?: number;
   externalId?: string | null;
   displayName: string;
   description?: string | null;
@@ -22,7 +21,6 @@ export interface CreateOrUpdateProjectBody {
   departmentId?: number;
   baId: number | null;
   info?: string;
-  workstreams: ProjectWorkstreamBody[];
 }
 
 export interface AdminProjectInfo {
@@ -41,7 +39,6 @@ export interface AdminProjectInfo {
   createdAt?: string;
   info?: string;
   active: boolean;
-  workstreams: ProjectWorkstream[];
 }
 
 /** Admin CRUD contract for project management pages. */
@@ -66,4 +63,20 @@ export async function updateAdminProject(
 ): Promise<number> {
   const response = await http.put<number>(`v1/admin/projects/${projectId}`, body);
   return response.data;
+}
+
+export async function listProjectWorkstreams(projectId: number): Promise<ProjectWorkstream[]> {
+  return (await http.get<ProjectWorkstream[]>(`v1/admin/projects/${projectId}/workstreams`)).data;
+}
+
+export async function createProjectWorkstream(projectId: number, body: ProjectWorkstreamBody): Promise<number> {
+  return (await http.post<number>(`v1/admin/projects/${projectId}/workstreams`, body)).data;
+}
+
+export async function updateProjectWorkstream(projectId: number, id: number, body: ProjectWorkstreamBody): Promise<number> {
+  return (await http.put<number>(`v1/admin/projects/${projectId}/workstreams/${id}`, body)).data;
+}
+
+export async function deleteProjectWorkstream(projectId: number, id: number): Promise<number> {
+  return (await http.delete<number>(`v1/admin/projects/${projectId}/workstreams/${id}`)).data;
 }

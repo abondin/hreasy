@@ -12,6 +12,10 @@ import java.util.List;
 
 @Repository
 public interface DictProjectRepo extends ReactiveSortingRepository<DictProjectEntry, Integer>, ReactiveCrudRepository<DictProjectEntry, Integer>  {
+    /** Serializes project requirement changes and workstream mutations. */
+    @Query("select * from proj.project where id = :id for update")
+    Mono<DictProjectEntry> findByIdForUpdate(int id);
+
 
     String FULL_INFO_QUERY = """
             select p.*, d.name as department_name ,ba.name as ba_name

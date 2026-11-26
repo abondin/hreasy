@@ -53,25 +53,12 @@
       </div>
     </template>
 
-    <template v-if="project?.workstreams.length" #details>
-      <div class="text-h6 mb-3">{{ t("Направления работ") }}</div>
-      <v-table density="compact">
-        <thead>
-          <tr>
-            <th>{{ t("Наименование") }}</th>
-            <th>{{ t("Внешний идентификатор") }}</th>
-            <th>{{ t("Описание") }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="workstream in project.workstreams" :key="workstream.id">
-            <td>{{ workstream.displayName }}</td>
-            <td>{{ workstream.externalId ?? t("Не задан") }}</td>
-            <td>{{ workstream.description ?? t("Не задан") }}</td>
-          </tr>
-        </tbody>
-      </v-table>
-    </template>
+    <AdminProjectWorkstreamsTable
+      v-if="project"
+      :key="project.id"
+      :project-id="project.id"
+      :editable="permissions.canAdminProjects()"
+    />
 
     <admin-managers-table
       v-if="project"
@@ -181,6 +168,7 @@ import { focusDialog } from "@/lib/dialog-focus";
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
+import AdminProjectWorkstreamsTable from "./components/AdminProjectWorkstreamsTable.vue";
 import AdminDetailPageLayout from "@/components/shared/AdminDetailPageLayout.vue";
 import AdminDetailSummaryCard, { type AdminDetailSummaryItem } from "@/components/shared/AdminDetailSummaryCard.vue";
 import MarkdownTextRenderer from "@/components/shared/MarkdownTextRenderer.vue";

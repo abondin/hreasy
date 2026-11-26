@@ -122,6 +122,10 @@ function projectInput(data: typeof sheet, projectId?: number) {
   return {
     year: 2026,
     selectedProjectId,
+    workstreams: [
+      { id: 601, displayName: "Active direction", archivedAt: null },
+      { id: 602, displayName: "Archived direction", archivedAt: "2026-06-30T12:00:00Z" },
+    ],
     months: Array.from({ length: 12 }, (_, month) => ({ period: 202600 + month, closed: false })),
     employees: data.employees.map(employee => ({
       ...employee,
@@ -270,7 +274,30 @@ test.describe("App Mocked Resource Allocations Page", () => {
     const projectFilter = await revealAdaptiveFilter(page, "resource-allocations-input-project");
     await expect(projectFilter).toContainText("Retail Terminal Platform");
     await projectFilter.click();
+    await expect(page.getByRole("checkbox", { name: "Показать закрытые проекты", exact: true })).not.toBeChecked();
     await expect(page.getByText("Закрыт: 30.06.2026", { exact: true })).toBeVisible();
+    const closedToggle = page.getByRole("checkbox", { name: "Показать закрытые проекты", exact: true });
+    await closedToggle.evaluate(element => {
+      const list = element.closest(".v-sheet")?.querySelector(".v-list");
+      if (!list) throw new Error("Select list not found");
+      list.scrollTop = list.scrollHeight;
+    });
+    await expect(closedToggle).toBeInViewport();
+    const menuHeader = page.locator(".v-autocomplete__content header");
+    const menuList = page.locator(".v-autocomplete__content .v-list");
+    const headerBox = await menuHeader.boundingBox();
+    const listBox = await menuList.boundingBox();
+    expect(headerBox).not.toBeNull();
+    expect(listBox).not.toBeNull();
+    expect(listBox!.y).toBeGreaterThanOrEqual(headerBox!.y + headerBox!.height);
+    await page.keyboard.press("Escape");
+    const workstreamFilter = await revealAdaptiveFilter(page, "resource-allocations-input-workstream");
+    await workstreamFilter.click();
+    await expect(page.getByRole("option", { name: /Archived direction/ })).toHaveCount(0);
+    await page.getByRole("checkbox", { name: "Показать архивные", exact: true }).check();
+    const archivedDirection = page.getByRole("option", { name: /Archived direction/ });
+    await expect(archivedDirection).toContainText("Архивировано 30.06.2026");
+    await expect(archivedDirection.getByText("Archived direction", { exact: true })).toHaveCSS("text-decoration-line", "line-through");
     await page.keyboard.press("Escape");
     const inputCell = page.getByTestId("resource-allocation-input-102-202607");
     await expect(page.getByTestId("resource-allocation-input-101-202607")).toContainText("+ 40%");

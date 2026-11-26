@@ -28,6 +28,9 @@
 
         <v-checkbox
           v-model="form.workstreamRequired"
+          :disabled="isCreateMode"
+          :hint="isCreateMode ? t('Сначала сохраните проект и добавьте направление работ') : undefined"
+          :persistent-hint="isCreateMode"
           :label="t('Выбор направления работ обязателен')"
           data-testid="admin-project-workstream-required"
         />
@@ -84,76 +87,6 @@
           :counter="4000"
         />
 
-        <v-divider class="my-4" />
-        <div class="d-flex align-center mb-3">
-          <div class="text-h6">{{ t("Направления работ") }}</div>
-          <v-spacer />
-          <v-btn prepend-icon="mdi-plus" variant="text" data-testid="admin-project-add-workstream" @click="addWorkstream">
-            {{ t("Добавить") }}
-          </v-btn>
-        </div>
-        <v-table class="admin-project-workstreams-table" density="compact">
-          <thead>
-            <tr>
-              <th>{{ t("Наименование") }}</th>
-              <th>{{ t("Внешний идентификатор") }}</th>
-              <th>{{ t("Описание") }}</th>
-              <th>{{ t("Архив") }}</th>
-              <th class="admin-project-workstream-actions" />
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(workstream, index) in form.workstreams"
-              :key="workstream.key"
-              :data-testid="`admin-project-workstream-${index}`"
-            >
-              <td>
-                <v-text-field
-                  v-model="workstream.displayName"
-                  :autofocus="workstream.key === workstreamToFocus"
-                  :counter="255"
-                  :rules="requiredTextRules"
-                  variant="outlined"
-                  density="compact"
-                  hide-details="auto"
-                />
-              </td>
-              <td>
-                <v-text-field
-                  v-model="workstream.externalId"
-                  :counter="255"
-                  :rules="externalIdRules"
-                  variant="outlined"
-                  density="compact"
-                  hide-details="auto"
-                />
-              </td>
-              <td>
-                <v-textarea
-                  v-model="workstream.description"
-                  rows="1"
-                  auto-grow
-                  variant="outlined"
-                  density="compact"
-                  hide-details
-                />
-              </td>
-              <td>
-                <v-checkbox v-model="workstream.archived" :aria-label="t('Архив')" hide-details />
-              </td>
-              <td>
-                <v-btn
-                  icon="mdi-delete"
-                  color="error"
-                  variant="text"
-                  :aria-label="t('Удалить')"
-                  @click="form.workstreams.splice(index, 1)"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </v-table>
       </v-form>
 
       <v-alert
@@ -190,7 +123,6 @@ import {
   createAdminProject,
   type AdminProjectInfo,
   type CreateOrUpdateProjectBody,
-  type ProjectWorkstreamBody,
   updateAdminProject,
 } from "@/services/admin/admin-project.service";
 
@@ -209,11 +141,6 @@ interface ProjectFormState {
   departmentId?: number;
   baId: number | null;
   info: string;
-  workstreams: WorkstreamFormState[];
-}
-
-interface WorkstreamFormState extends ProjectWorkstreamBody {
-  key: string;
 }
 
 const props = defineProps<{
@@ -245,11 +172,7 @@ const form = reactive<ProjectFormState>({
   departmentId: undefined,
   baId: null,
   info: "",
-  workstreams: [],
 });
-
-let workstreamKey = 0;
-const workstreamToFocus = ref<string | null>(null);
 
 const isCreateMode = computed(() => !props.input?.id);
 const businessAccountsWithCurrent = computed(() => {
@@ -294,13 +217,6 @@ function resetForm(): void {
   form.departmentId = props.input?.department?.id;
   form.baId = props.input?.businessAccount?.id ?? null;
   form.info = props.input?.info ?? "";
-  form.workstreams = (props.input?.workstreams ?? []).map((workstream) => ({
-    ...workstream,
-    archived: Boolean(workstream.archivedAt),
-    externalId: workstream.externalId ?? "",
-    description: workstream.description ?? "",
-    key: String(workstream.id ?? `new-${workstreamKey++}`),
-  }));
   formRef.value?.resetValidation();
 }
 
@@ -317,33 +233,10 @@ function buildPayload(): CreateOrUpdateProjectBody {
     departmentId: form.departmentId,
     baId: form.baId,
     info: form.info || undefined,
-    workstreams: form.workstreams.map((workstream) => ({
-      id: workstream.id,
-      archived: workstream.archived,
-      externalId: workstream.externalId?.trim() || undefined,
-      displayName: workstream.displayName.trim(),
-      description: workstream.description?.trim() || undefined,
-    })),
   };
 }
 
-function addWorkstream(): void {
-  const key = `new-${workstreamKey++}`;
-  workstreamToFocus.value = key;
-  form.workstreams.push({
-    key,
-    archived: false,
-    externalId: "",
-    displayName: "",
-    description: "",
-  });
-}
-
 async function submit(): Promise<void> {
-  if (form.workstreamRequired && form.workstreams.length === 0) {
-    error.value = t("Добавьте хотя бы одно направление работ");
-    return;
-  }
   const validation = await formRef.value?.validate();
   if (validation && !validation.valid) {
     return;
@@ -364,13 +257,3 @@ async function submit(): Promise<void> {
   }
 }
 </script>
-
-<style scoped>
-.admin-project-workstream-actions {
-  width: 48px;
-}
-
-.admin-project-workstreams-table td {
-  vertical-align: top;
-}
-</style>

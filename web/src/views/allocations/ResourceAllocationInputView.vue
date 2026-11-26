@@ -32,11 +32,13 @@
         </template>
 
         <template #filter-project>
-          <v-autocomplete
+          <ArchivedItemsSelect
             :model-value="inputProjectId"
             :items="projects"
-            item-title="name"
-            item-value="id"
+            :item-title="item => item.name"
+            :archive-date="item => item.endDate"
+            :archived-label="date => t('Закрыт: {date}', { date })"
+            :show-archived-label="t('Показать закрытые проекты')"
             hide-details
             density="compact"
             variant="outlined"
@@ -44,20 +46,7 @@
             :label="t('Проект')"
             data-testid="resource-allocations-input-project"
             @update:model-value="changeInputProject"
-          >
-            <template #item="{ props, item }">
-              <v-list-item
-                v-bind="props"
-                :subtitle="projectClosedLabel(item)"
-              >
-                <template #title>
-                  <span :class="{ 'text-decoration-line-through': Boolean(item.endDate) }">
-                    {{ item.name }}
-                  </span>
-                </template>
-              </v-list-item>
-            </template>
-          </v-autocomplete>
+          />
         </template>
 
         <template #filter-workstream>
@@ -192,6 +181,7 @@
 
 <script setup lang="ts">
 import ProjectWorkstreamSelect from "@/components/project/ProjectWorkstreamSelect.vue";
+import ArchivedItemsSelect from "@/components/shared/ArchivedItemsSelect.vue";
 import { useDisplay } from "vuetify";
 import { computed, nextTick, onActivated, onMounted, ref, shallowRef, type ComponentPublicInstance } from "vue";
 import { useI18n } from "vue-i18n";
@@ -217,7 +207,6 @@ import {
   type ResourceAllocationCommentCellKey,
   type ResourceAllocationCommentSummary,
   type ResourceAllocationChange,
-  type ResourceAllocationProject,
   type ResourceAllocationProjectInput,
 } from "@/services/resource-allocation.service";
 
@@ -717,10 +706,6 @@ function formatMonth(period: number): string {
   return ReportPeriod.fromPeriodId(period)
     .toString()
     .replace(/\s+\d{4}$/, "");
-}
-
-function projectClosedLabel(project: ResourceAllocationProject): string | undefined {
-  return project.endDate ? t("Закрыт: {date}", { date: formatDate(project.endDate) }) : undefined;
 }
 
 function normalizePercent(value: string): number | null | undefined {

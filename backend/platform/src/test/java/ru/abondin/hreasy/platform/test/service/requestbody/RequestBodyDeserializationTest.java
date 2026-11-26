@@ -199,10 +199,7 @@ class RequestBodyDeserializationTest {
                   "startDate": "2026-06-17",
                   "departmentId": 10,
                   "baId": 604,
-                  "info": "Delivery project",
-                  "workstreams": [
-                    {"externalId": "ERP-DELIVERY", "displayName": "Delivery", "description": "Main delivery", "archived": false}
-                  ]
+                  "info": "Delivery project"
                 }
                 """, ProjectDto.CreateOrUpdateProjectDto.class);
 
@@ -211,7 +208,6 @@ class RequestBodyDeserializationTest {
         assertEquals(LocalDate.of(2026, 6, 17), body.getStartDate());
         assertEquals(10, body.getDepartmentId());
         assertEquals(604, body.getBaId());
-        assertEquals("Delivery", body.getWorkstreams().getFirst().displayName());
     }
 
     /**
